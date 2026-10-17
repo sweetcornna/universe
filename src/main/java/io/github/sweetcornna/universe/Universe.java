@@ -4,11 +4,16 @@ import org.slf4j.Logger;
 
 import com.mojang.logging.LogUtils;
 
+import io.github.sweetcornna.universe.network.UniverseNetwork;
+import io.github.sweetcornna.universe.world.DimensionCommand;
+import io.github.sweetcornna.universe.world.RuntimeDimensions;
 import net.minecraft.resources.Identifier;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.RegisterCommandsEvent;
 
 /**
  * 模组主类：注册表和事件监听都从这里接入。
@@ -20,6 +25,11 @@ public final class Universe {
 
     public Universe(IEventBus modBus, ModContainer container) {
         modBus.addListener(this::commonSetup);
+        modBus.addListener(UniverseNetwork::register);
+
+        IEventBus gameBus = NeoForge.EVENT_BUS;
+        RuntimeDimensions.registerEvents(gameBus);
+        gameBus.addListener(RegisterCommandsEvent.class, event -> DimensionCommand.register(event.getDispatcher()));
     }
 
     private void commonSetup(FMLCommonSetupEvent event) {

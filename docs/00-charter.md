@@ -101,13 +101,13 @@ Universe 是一个 Minecraft Java 版模组（NeoForge），用一条成长线�
 | 语言 | Java 25 |
 | 构建 | Gradle 9.2.1 + ModDevGradle 2.0.148 |
 | 测试 | JUnit 6（core 纯逻辑）+ NeoForge GameTest（游戏内行为） |
-| 可选依赖 | GeckoLib（动画）、JEI、Jade；运行时维度参考 Infiniverse（MIT） |
+| 可选依赖 | GeckoLib（动画）、JEI、Jade；运行时维度自己实现，参考了 Infiniverse（MIT）的思路 |
 | 许可证 | 代码 LGPL-3.0-only，美术资源 CC BY-NC-SA 4.0（[ADR-0002](adr/0002-license.md)） |
 
 关键的架构决定：
 
 - 纯 Java 核心（`core` 包）和游戏适配层分开（[ADR-0003](adr/0003-core-decoupling.md)）。
-- 每颗星球是一个运行时创建的维度，到访时生成，空闲时卸载（[ADR-0004](adr/0004-planets-as-runtime-dimensions.md)，待 M1 验证）。
+- 每颗星球是一个运行时创建的维度，到访时生成，空闲时卸载（[ADR-0004](adr/0004-planets-as-runtime-dimensions.md)，M1 原型 S1 已验证可行）。
 - 程序生成的内容全部由种子派生，服务端和客户端各自计算，只同步玩家造成的改变。
 - 传送带、电网、物流用数据导向的批量模拟，不让每个方块各自 tick。
 
@@ -133,7 +133,7 @@ Universe 是一个 Minecraft Java 版模组（NeoForge），用一条成长线�
 
 | 风险 | 影响 | 对策 |
 |---|---|---|
-| 运行时创建维度不是原版提供的功能 | 星球系统的地基 | M1 第一个验证；参考 Infiniverse 的 MIT 实现；退路是预先建好固定数量的维度池 |
+| 运行时创建维度不是原版提供的功能 | 星球系统的地基 | S1 已验证可行（2026-10-16）；依赖访问转换器开放的两个字段，每次升级 MC 都要确认；遗留问题见 ADR-0004 |
 | 26.x 渲染管线新、资料少，和 Iris 光影的兼容性未知 | 天空、星球、戴森球的视觉 | M1 做原型并实测 Iris；渲染代码集中在 `client` 包；准备简化版退路 |
 | 大规模工厂的性能 | 玩家体验和服务器负载 | 数据导向的模拟；M1 做基准测试；定期用 Spark 剖析；设定性能预算 |
 | 跟随最新版的移植成本 | 每个版本都要升级一次 | 核心逻辑和 MC 解耦；新版正式发布后 2–4 周内跟进；必要时停在某个长期版本 |

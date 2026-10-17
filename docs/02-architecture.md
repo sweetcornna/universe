@@ -38,7 +38,7 @@ io.github.sweetcornna.universe
 └── client/                    渲染、HUD、界面
 ```
 
-目前只建了入口类和 `core/procgen`，其余的包在用到时再建。
+目前建了入口类、`core/procgen`，以及 M1 原型 S1 用到的 `world`、`data`、`network`、`client`，其余的包在用到时再建。
 
 ## 3. 关键方案
 
@@ -50,16 +50,17 @@ io.github.sweetcornna.universe
 - 客户端拿到星团种子后自己算出宇宙描述，网络上只同步变化。
 - 派生算法属于存档格式，改动时必须附带存档迁移。`SeedsTest` 固定了几个派生结果，防止误改。
 
-### 3.2 星球维度（待 M1 验证）
+### 3.2 星球维度
 
-详见 [ADR-0004](adr/0004-planets-as-runtime-dimensions.md)。
+详见 [ADR-0004](adr/0004-planets-as-runtime-dimensions.md)。M1 原型 S1 已验证可行（2026-10-16），实现在 `world.RuntimeDimensions`。
 
-- 玩家第一次前往某颗星球时，在运行时创建它的维度（`LevelStem` + `ServerLevel`），注册到服务器，并通知客户端。
-- 已创建的星球列表存进 SavedData，服务器启动时重新创建。
-- 没有玩家、也没有强制加载区块的星球维度，空闲一段时间后卸载，以节省内存。
-- 参考 Infiniverse（Commoble，MIT 许可）的实现；它支持 26.3 后也可以直接依赖。
+- 玩家第一次前往某颗星球时，在运行时创建它的维度：按环境模板生成 `LevelStem`，直接构造 `ServerLevel` 放进服务器的维度表，再用自定义网络包通知客户端。不需要注册进 `LEVEL_STEM` 注册表（26.3 只在启动时读它）。
+- 已创建的星球列表存进 SavedData（`data/universe/runtime_dimensions.dat`），记录每颗星球当前是否加载；服务器启动时只重建加载着的那些，其余的等有人前往时再加载。
+- 没有玩家、也没有强制加载区块的星球维度，空闲一段时间后卸载，以节省内存。卸载时照原版关服的顺序：送走玩家、停用票据、等区块任务清空，再保存、关闭。S1 只做了手动卸载，空闲自动卸载在 M2 实现。
+- 自己实现，不依赖 Infiniverse（它没有 26.3 版本，依赖的 NeoForge 方法已删除）。需要用访问转换器开放 `MinecraftServer.levels` 和 `storageSource`。
+- 维度 tick 期间不能创建或卸载维度（`levels` 正在被遍历）。由方块、实体触发的创建要排进队列，在服务器 tick 末尾处理。
 - 维度类型、群系、时间线都属于登录时同步的注册表，运行时不能新增。所以预置一组"环境模板"（见 §3.4）供星球挑选，星球之间的细节差异通过参数化生成和客户端渲染体现。
-- 退路：服务器启动时预建固定数量的维度，组成维度池，按需分配。
+- 一个空闲维度约占 0.4 MB 堆内存，内存主要花在已加载的区块上。
 
 ### 3.3 星球地形
 
@@ -74,7 +75,7 @@ io.github.sweetcornna.universe
 - 方案：预置 8–16 套"环境模板"，区分昼夜长度、大气色调、是否潮汐锁定，每颗星球选一套。具体差异（天空色调、恒星大小和颜色、其他行星的位置）由客户端按星球参数计算后覆盖。
 - 自定义天空渲染：星空、恒星、同一恒星系的其他行星和卫星、戴森云和戴森球。
 - 接入点（已在 26.3 源码中确认）：原版的 `DimensionSpecialEffects` 已经不存在。NeoForge 提供 `CustomSkyboxRenderer`，在 `RegisterCustomEnvironmentEffectRendererEvent` 里注册，再通过环境属性 `NeoForgeEnvironmentAttributes.CUSTOM_SKYBOX` 指定给维度类型或群系；渲染要用的数据在 `ExtractLevelRenderStateEvent` 里提取。同一事件还能注册自定义的云和天气渲染器。所有环境模板都指向同一个天空渲染器，由它按当前星球的参数绘制。
-- 进出星球的过场：NeoForge 的 `RegisterDimensionTransitionScreenEvent` 可以按维度注册切换画面。它按维度键注册，运行时创建的星球维度怎么接入，在 M1 的 S1、S4 里一起验证。
+- 进出星球的过场：NeoForge 的 `RegisterDimensionTransitionScreenEvent` 按维度键注册切换画面，但只在客户端启动时触发一次，那时运行时维度还不存在。S1 保留事件对象，客户端得知新维度时再补注册，实测有效（`client.ClientDimensions`）。这依赖 NeoForge 的内部实现，长期方案（向 NeoForge 提 PR 或用 mixin）在 S4 做降落画面时定，见 ADR-0004。
 - 渲染代码集中在 `client` 包，方便随版本调整。
 - 光影兼容：M1 用 Iris 实测（26.3 已有 NeoForge 版），必要时提供简化渲染。
 
@@ -116,10 +117,10 @@ io.github.sweetcornna.universe
 
 ### 3.10 网络与存档
 
-- 网络包用 NeoForge 的 `CustomPacketPayload` 加 `StreamCodec`，在 `RegisterPayloadHandlersEvent` 里注册。
+- 网络包用 NeoForge 的 `CustomPacketPayload` 加 `StreamCodec`，在 `RegisterPayloadHandlersEvent` 里注册。发往客户端的包在这里只登记编解码器，处理器在客户端的 `RegisterClientPayloadHandlersEvent` 里注册（见 §4）。
 - 按恒星系订阅：客户端只接收所在恒星系的状态（戴森球、物流站等）。
 - 世界级数据用 SavedData，玩家数据（外骨骼能量、发现记录）用数据附件（data attachments）。
-- 每份存档数据都带版本号，加载时逐级迁移。
+- 每份存档数据都带版本号，加载时逐级迁移。注意 DFU 的 `optionalFieldOf(名称, 默认值)` 编码时会省略等于默认值的字段，版本号要用 `optionalFieldOf(名称)` 总是写出。
 
 ### 3.11 与其他模组互通
 
@@ -143,6 +144,16 @@ io.github.sweetcornna.universe
 | 渲染管线 `RenderPipeline` 在 `com.mojang.renderpearl.api.pipeline`，不在旧的 blaze3d 包里 | 已确认，用法待核实 |
 | 物品、流体、能量传输接口：`net.neoforged.neoforge.transfer`（`ResourceHandler`、`energy.EnergyHandler` 等） | 已确认，用法待核实 |
 | 物品模型定义（`ClientItem`，对应 `assets/<命名空间>/items/`） | 已确认类存在 |
+| `MinecraftServer` 没有公开的增删维度方法；NeoForge 以前提供的 `forgeGetWorldMap()`、`markWorldsDirty()` 在 26.3 已删除（26.1 还有）。`levels`（`LinkedHashMap`）在 tick 时被直接遍历，要用访问转换器开放（见 §3.2） | 已确认，S1 在用 |
+| `ServerLevel` 构造器参数：`server, executor, levelStorage, levelData, dimension, levelStem, isDebug, biomeZoomSeed, customSpawners, tickTime`；executor 用 `Util.backgroundExecutor()`，主世界以外的维度用 `DerivedLevelData` | 已确认，S1 在用 |
+| 区块票据随维度存盘：关服时 `ServerChunkCache#deactivateTicketsOnClosing()` 停用，启动时 `TicketStorage#activateAllDeactivatedTickets()` 和 NeoForge 的 `ForcedChunkManager.activateAllDeactivatedTickets(...)` 重新激活；运行时加载的维度要自己调用 | 已确认，S1 在用 |
+| 玩家登录时由配置任务 `PrepareSpawnTask` 选出生维度：存档里的维度没加载时，退回世界出生点所在的维度，但坐标不变 | 已确认 |
+| 服务器没人时按 `pause-when-empty-seconds`（默认 60 秒）暂停，暂停期间不触发 `ServerTickEvent` | 已确认 |
+| `SavedDataType(Identifier, Supplier, Codec)`，用 `server.getDataStorage().computeIfAbsent(type)` 读写，文件在 `<世界>/data/<命名空间>/<路径>.dat`；维度目录是 `<世界>/dimensions/<命名空间>/<路径>/` | 已确认，S1 在用 |
+| 发往客户端的包：`RegisterPayloadHandlersEvent` 里用 `playToClient(type, codec)` 只登记编解码器，客户端在 `RegisterClientPayloadHandlersEvent` 里注册处理器 | 已确认，S1 在用 |
+| `RegisterDimensionTransitionScreenEvent` 只在客户端启动时触发一次，按维度键精确匹配（见 §3.4） | 已确认 |
+| 传送用 `Entity#teleport(TeleportTransition)`；`TeleportTransition.PLACE_PORTAL_TICKET` 在目标点加 15 秒的传送门票据 | 已确认，S1 在用 |
+| 命令权限写法：`.requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))` | 已确认，S1 在用 |
 
 原则：拿不准的 API，先查源码再动手写，核实后把结果补进这张表。源码位置：
 

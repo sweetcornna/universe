@@ -16,7 +16,7 @@
 | [0001](adr/0001-target-version.md) | 目标版本：跟随最新正式版 | 已采纳 |
 | [0002](adr/0002-license.md) | 许可证：代码 LGPL-3.0-only，美术资源 CC BY-NC-SA 4.0 | 已采纳 |
 | [0003](adr/0003-core-decoupling.md) | 纯 Java 核心与游戏适配层分离 | 已采纳 |
-| [0004](adr/0004-planets-as-runtime-dimensions.md) | 每颗星球是一个运行时创建的维度 | 提议 |
+| [0004](adr/0004-planets-as-runtime-dimensions.md) | 每颗星球是一个运行时创建的维度 | 已采纳 |
 
 模板：
 
