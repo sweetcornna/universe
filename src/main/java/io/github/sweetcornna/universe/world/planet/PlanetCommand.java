@@ -19,6 +19,8 @@ import io.github.sweetcornna.universe.core.galaxy.Hazard;
 import io.github.sweetcornna.universe.core.galaxy.Planet;
 import io.github.sweetcornna.universe.core.galaxy.StarSystem;
 import io.github.sweetcornna.universe.core.galaxy.TerrainProfile;
+import io.github.sweetcornna.universe.core.sky.SkyBody;
+import io.github.sweetcornna.universe.core.sky.SkyModel;
 import io.github.sweetcornna.universe.core.terrain.TerrainModel;
 import io.github.sweetcornna.universe.world.DimensionTemplate;
 import io.github.sweetcornna.universe.world.RuntimeDimensions;
@@ -78,6 +80,12 @@ public final class PlanetCommand {
                         .then(Commands.argument("planet", IdentifierArgument.id())
                                 .suggests(PLANETS)
                                 .executes(context -> info(context.getSource(), dimension(context)))))
+                .then(Commands.literal("sky")
+                        .executes(context -> sky(context.getSource())))
+                .then(Commands.literal("weather")
+                        .then(weather("clear", false, false))
+                        .then(weather("normal", true, false))
+                        .then(weather("storm", true, true)))
                 .then(Commands.literal("tp")
                         .then(Commands.argument("planet", IdentifierArgument.id())
                                 .suggests(PLANETS)
@@ -130,6 +138,43 @@ public final class PlanetCommand {
         return system.get().bodies().size();
     }
 
+    /** {@code weather <名称> [秒数]}：设置当前星球的天气，默认持续 10 分钟。 */
+    private static LiteralArgumentBuilder<CommandSourceStack> weather(String name, boolean active, boolean storm) {
+        return Commands.literal(name)
+                .executes(context -> setWeather(context.getSource(), name, active, storm, 600))
+                .then(Commands.argument("seconds", IntegerArgumentType.integer(1, 1_000_000))
+                        .executes(context -> setWeather(context.getSource(), name, active, storm,
+                                IntegerArgumentType.getInteger(context, "seconds"))));
+    }
+
+    private static int setWeather(CommandSourceStack source, String name, boolean active, boolean storm, int seconds)
+            throws CommandSyntaxException {
+        ServerLevel level = source.getLevel();
+        if (!PlanetWeather.force(level, active, storm, seconds * 20)) {
+            throw NOT_A_PLANET.create(level.dimension().identifier());
+        }
+        source.sendSuccess(() -> Component.literal("星球天气设为 " + name + "，持续 " + seconds + " 秒"), true);
+        return 1;
+    }
+
+    /** 当前所在星球此刻的天空：每个天体的方向、视大小和亮面比例。 */
+    private static int sky(CommandSourceStack source) throws CommandSyntaxException {
+        ServerLevel level = source.getLevel();
+        PlanetEnvironment.Context context = PlanetEnvironment.context(level)
+                .orElseThrow(() -> NOT_A_PLANET.create(level.dimension().identifier()));
+        double days = level.getGameTime() / 24000.0;
+        StringBuilder text = new StringBuilder(String.format(Locale.ROOT, "%s 的天空（第 %.2f 天）：",
+                context.planet().name().zh(), days));
+        for (SkyBody body : SkyModel.bodies(context.system(), context.planet(), days)) {
+            String name = body.planet() == null ? context.system().star().starClass().nameZh() + "恒星" : body.planet().name().zh();
+            text.append(String.format(Locale.ROOT, "\n  %s %s：经度 %.0f°，纬度 %.1f°，视直径 %.1f°，亮面 %.0f%%",
+                    body.kind(), name, Math.toDegrees(body.longitude()), Math.toDegrees(body.latitude()),
+                    body.angularDiameter(), body.illumination() * 100));
+        }
+        source.sendSuccess(() -> Component.literal(text.toString()), false);
+        return 1;
+    }
+
     private static int info(CommandSourceStack source, ResourceKey<Level> dimension) throws CommandSyntaxException {
         Galaxy galaxy = Planets.galaxy(source.getServer());
         Planet planet = Planets.bodyId(dimension).flatMap(galaxy::body)
@@ -142,7 +187,7 @@ public final class PlanetCommand {
                 .collect(Collectors.joining("、"));
         String text = String.format(Locale.ROOT, """
                 %s（%s）  %s  %s
-                半径 %.0f km，重力 %.2f g，大气 %s %.2f atm，温度 %.0f °C（昼夜 ±%.0f），液体 %s
+                半径 %.2f 倍母星，重力 %.2f g，大气 %s %.2f atm，温度 %.0f °C（昼夜 ±%.0f），液体 %s
                 昼夜 %s，天气 %s（频率 %.2f，风 %.2f%s），危害 %s
                 地形：海平面 %d，基准 %d，大陆尺度 %.0f，起伏 %.0f，丘陵 %.0f，粗糙 %.2f，山脊 %.2f，台地 %.2f，陨坑 %.2f，洞穴 %.2f，悬垂 %.2f，尖塔 %.2f%s
                 生态：植被 %.2f，树木 %.2f，动物 %.2f，植物 %d 种，动物 %d 种

@@ -78,6 +78,7 @@ io.github.sweetcornna.universe
 - 进出星球的过场：NeoForge 的 `RegisterDimensionTransitionScreenEvent` 按维度键注册切换画面，但只在客户端启动时触发一次，那时运行时维度还不存在。S1 保留事件对象，客户端得知新维度时再补注册，实测有效（`client.ClientDimensions`）。这依赖 NeoForge 的内部实现，长期方案（向 NeoForge 提 PR 或用 mixin）在 S4 做降落画面时定，见 ADR-0004。
 - 渲染代码集中在 `client` 包，方便随版本调整。
 - 光影兼容：M1 用 Iris 实测（26.3 已有 NeoForge 版），必要时提供简化渲染。
+- S3 的实现：天体位置和配色在 `core.sky` 算，渲染器 `client.sky.PlanetSkyRenderer` 按参数画；每颗星球的天色、雾、云、日落、水色靠 mixin 往环境属性系统里插两层，不写数据包；天气按维度单独轮换。详见 [ADR-0006](adr/0006-planet-sky-and-weather.md)。
 
 ### 3.5 太空与飞船
 
@@ -140,8 +141,8 @@ io.github.sweetcornna.universe
 | `GuiGraphics` 改为 `GuiGraphicsExtractor`，`Screen#render` 改为 `extractRenderState` 等 | 已确认 |
 | `new ChunkPos(blockPos)` 改为 `ChunkPos.containing(...)` 等 | 已确认（NeoForge 26.1 公告） |
 | 环境属性、时间线、世界时钟：`net.minecraft.world.attribute`、`world.timeline`、`world.clock` | 已确认，字段细节待核实 |
-| `DimensionSpecialEffects` 已移除；自定义天空用 NeoForge 的 `CustomSkyboxRenderer` 加环境属性 `CUSTOM_SKYBOX`（见 §3.4） | 已确认 |
-| 渲染管线 `RenderPipeline` 在 `com.mojang.renderpearl.api.pipeline`，不在旧的 blaze3d 包里 | 已确认，用法待核实 |
+| `DimensionSpecialEffects` 已移除；自定义天空用 NeoForge 的 `CustomSkyboxRenderer` 加环境属性 `CUSTOM_SKYBOX`（见 §3.4） | 已确认，S3 在用 |
+| 渲染管线 `RenderPipeline` 在 `com.mojang.renderpearl.api.pipeline`，不在旧的 blaze3d 包里；`RenderSystem`、`BufferBuilder`、`PoseStack` 仍在 `com.mojang.blaze3d` | 已确认，S3 在用 |
 | 物品、流体、能量传输接口：`net.neoforged.neoforge.transfer`（`ResourceHandler`、`energy.EnergyHandler` 等） | 已确认，用法待核实 |
 | 物品模型定义（`ClientItem`，对应 `assets/<命名空间>/items/`） | 已确认类存在 |
 | `MinecraftServer` 没有公开的增删维度方法；NeoForge 以前提供的 `forgeGetWorldMap()`、`markWorldsDirty()` 在 26.3 已删除（26.1 还有）。`levels`（`LinkedHashMap`）在 tick 时被直接遍历，要用访问转换器开放（见 §3.2） | 已确认，S1 在用 |
@@ -160,6 +161,14 @@ io.github.sweetcornna.universe
 | 维度类型带时间线（`HolderSet<Timeline>`），同一时钟上的时间标记名必须唯一；不带周期、只有一个关键帧的时间线就是常量；床的规则是环境属性 `gameplay/bed_rule` | 已确认，S2 在用 |
 | 群系的生物刷新改为环境属性；配置地物的键是 `ResourceKey<Feature>`；同一群系源里各群系的地物列表顺序要一致；原版矿石认 `stone_ore_replaceables` 标签 | 已确认，S2 在用 |
 | "阻挡移动"改由方块标签决定：`blocks_motion_no_leaves` → `blocks_motion` → 高度图 `MOTION_BLOCKING`、窒息、传送落点、挡流体等。模组的实心方块不进这个标签，高度图会穿过整片地形 | 已确认，S2 踩过 |
+| `CustomSkyboxRenderer#renderSky(LevelRenderState, SkyRenderState, Matrix4fc, GpuBufferSlice)` 返回 true 跳过原版天空；每帧数据在 `ExtractLevelRenderStateEvent` 里用 `state.setRenderData(ContextKey, ...)` 挂上，先判断 `state.customSkyboxRenderer` 是不是自己。`RenderSystem` 在渲染线程以外调用会报错，缓冲区要懒加载 | 已确认，S3 在用 |
+| 自定义管线：`RenderPipeline.builder(snippets)`…`withVertexShader/withFragmentShader(Identifier)`、`withColorTargetState(new ColorTargetState(BlendFunction.X))`、`withVertexBinding(0, format)`，深度状态默认是不测深度；在 `RegisterRenderPipelinesEvent` 里登记。画的时候 `createCommandEncoder().createRenderPass(...)` 开渲染通道，`RenderSystem.bindDefaultUniforms(pass)`；每次绘制的参数用 `RenderSystem.getDynamicUniforms().writeTransform(modelView, colorModulator, modelOffset, textureMatrix)`，着色器里 `TextureMat[i]` 是矩阵的第 i 列 | 已确认，S3 在用 |
+| 环境属性按层求值：维度、群系（`addStaticLayers`），时间线、天气（`addDynamicLayers`），客户端再加闪电。NeoForge 没有给这个构建过程开事件，要加层只能 mixin。时间线入夜时把天色、雾色、云色乘向黑色；`CLOUD_COLOR` 透明度为 0 就没有云；`FOG_END_DISTANCE` 默认 1024 | 已确认，S3 在用 |
+| 雾色在 `FogRenderer` 里还会按夜视、水下视野把最亮的通道拉到 1：测试时玩家身上有夜视，雾会亮得不正常 | 已确认，S3 踩过 |
+| 流体染色走 `ClientLevel#calculateBlockTint(BlockPos, ColorResolver)`，返回值必须是不透明的 ARGB（透明度 0 时水看不见） | 已确认，S3 在用 |
+| 天气数据（`WeatherData`）全服一份，但每个能下雨的维度每刻都调用一次私有的 `ServerLevel#advanceWeatherCycle`；`Level` 的 `rainLevel`、`thunderLevel` 等字段是公开的，变化要自己用 `ClientboundGameEventPacket` 广播给维度里的玩家 | 已确认，S3 在用 |
+| 降水类型由群系温度和 `has_precipitation` 决定；维度自己的存档数据用 `level.getDataStorage().computeIfAbsent(new SavedDataType<>(id, level -> ..., level -> codec))` | 已确认，S3 在用 |
+| Mixin：在 `neoforge.mods.toml` 里用 `[[mixins]] config = "..."` 登记；运行时就是官方名，不需要 refmap | 已确认，S3 在用 |
 
 原则：拿不准的 API，先查源码再动手写，核实后把结果补进这张表。源码位置：
 

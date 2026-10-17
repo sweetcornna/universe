@@ -88,7 +88,10 @@ final class PlanetEnvironmentProvider implements DataProvider {
         }
     }
 
-    /** 星球的维度类型：主世界的副本，换上星球的时间线；星球上的床只能设重生点，不能睡觉跳过夜晚。 */
+    /**
+     * 星球的维度类型：主世界的副本，换上星球的时间线；星球上的床只能设重生点，不能睡觉跳过夜晚；
+     * 天空换成本模组的渲染器。
+     */
     private static JsonObject dimensionType(JsonObject overworld, List<String> timelineIds) {
         JsonObject type = overworld.deepCopy();
         JsonArray timelines = new JsonArray();
@@ -103,6 +106,8 @@ final class PlanetEnvironmentProvider implements DataProvider {
         message.addProperty("translate", "universe.bed.no_sleep_on_planet");
         bedRule.add("error_message", message);
         attributes.add("minecraft:gameplay/bed_rule", bedRule);
+        // 天空由客户端的 PlanetSkyRenderer 画；天色、雾色这些按星球变化的值不在这里，见 PlanetEnvironment
+        attributes.addProperty("neoforge:custom_skybox", Universe.id("planet").toString());
         return type;
     }
 

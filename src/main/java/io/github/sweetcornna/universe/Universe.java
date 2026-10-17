@@ -11,6 +11,7 @@ import io.github.sweetcornna.universe.registry.UniverseItems;
 import io.github.sweetcornna.universe.registry.UniverseWorldgen;
 import io.github.sweetcornna.universe.world.DimensionCommand;
 import io.github.sweetcornna.universe.world.RuntimeDimensions;
+import io.github.sweetcornna.universe.world.planet.PlanetWeather;
 import net.minecraft.resources.Identifier;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
@@ -37,6 +38,7 @@ public final class Universe {
 
         IEventBus gameBus = NeoForge.EVENT_BUS;
         RuntimeDimensions.registerEvents(gameBus);
+        PlanetWeather.registerEvents(gameBus);
         gameBus.addListener(RegisterCommandsEvent.class, event -> DimensionCommand.register(event.getDispatcher()));
     }
 

@@ -2,8 +2,11 @@ package io.github.sweetcornna.universe;
 
 import io.github.sweetcornna.universe.client.ClientDimensions;
 import io.github.sweetcornna.universe.client.ClientGalaxy;
+import io.github.sweetcornna.universe.client.ClientWeather;
 import io.github.sweetcornna.universe.client.PlanetTints;
+import io.github.sweetcornna.universe.client.sky.PlanetSkyRenderer;
 import io.github.sweetcornna.universe.datagen.UniverseDataGen;
+import io.github.sweetcornna.universe.world.planet.PlanetEnvironment;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
@@ -20,7 +23,11 @@ public final class UniverseClient {
         modBus.addListener(this::clientSetup);
         ClientDimensions.registerEvents(modBus, NeoForge.EVENT_BUS);
         ClientGalaxy.registerEvents(modBus, NeoForge.EVENT_BUS);
+        ClientWeather.registerEvents(modBus, NeoForge.EVENT_BUS);
         PlanetTints.registerEvents(modBus);
+        PlanetSkyRenderer.registerEvents(modBus, NeoForge.EVENT_BUS);
+        // 客户端世界建立环境属性时，从客户端的星团里查星球
+        PlanetEnvironment.setClientGalaxy(dimension -> ClientGalaxy.galaxy());
         // 数据生成用的是客户端运行配置（clientData），只在客户端入口登记
         UniverseDataGen.registerEvents(modBus);
     }

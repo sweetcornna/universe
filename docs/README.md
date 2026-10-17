@@ -17,6 +17,8 @@
 | [0002](adr/0002-license.md) | 许可证：代码 LGPL-3.0-only，美术资源 CC BY-NC-SA 4.0 | 已采纳 |
 | [0003](adr/0003-core-decoupling.md) | 纯 Java 核心与游戏适配层分离 | 已采纳 |
 | [0004](adr/0004-planets-as-runtime-dimensions.md) | 每颗星球是一个运行时创建的维度 | 已采纳 |
+| [0005](adr/0005-planet-terrain.md) | 星球地形：核心层高度场加原版噪声管线 | 已采纳 |
+| [0006](adr/0006-planet-sky-and-weather.md) | 星球天空、大气与天气 | 已采纳 |
 
 模板：
 

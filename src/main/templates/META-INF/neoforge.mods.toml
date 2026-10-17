@@ -13,6 +13,10 @@ description='''
 Set out from the blocky world, fly your starship across procedurally generated star systems, build interplanetary factories and raise a Dyson sphere around a star.
 '''
 
+# 少量 Mixin，每一处都写明为什么不能用事件或数据包做（技术架构 §4）
+[[mixins]]
+config="${mod_id}.mixins.json"
+
 [[dependencies.${mod_id}]]
     modId="neoforge"
     type="required"

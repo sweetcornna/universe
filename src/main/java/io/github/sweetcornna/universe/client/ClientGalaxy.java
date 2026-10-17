@@ -6,6 +6,7 @@ import org.jspecify.annotations.Nullable;
 
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.core.galaxy.Galaxy;
+import io.github.sweetcornna.universe.core.galaxy.Liquid;
 import io.github.sweetcornna.universe.core.galaxy.GalaxyGenerator;
 import io.github.sweetcornna.universe.core.galaxy.Palette;
 import io.github.sweetcornna.universe.core.galaxy.Planet;
@@ -30,7 +31,7 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
  * 所以当前星球缓存在 volatile 字段里，读到的总是一个完整的对象。
  */
 public final class ClientGalaxy {
-    private static @Nullable Galaxy galaxy;
+    private static volatile @Nullable Galaxy galaxy;
     private static volatile @Nullable Planet currentPlanet;
     private static final int[] NEUTRAL_STRATA = Strata.colors(Palette.NEUTRAL, 0);
     private static volatile int[] currentStrata = NEUTRAL_STRATA;
@@ -100,6 +101,23 @@ public final class ClientGalaxy {
         Planet planet = dimension == null || known == null ? null : Planets.generatedPlanet(known, dimension).orElse(null);
         currentStrata = planet == null ? NEUTRAL_STRATA : Strata.colors(planet.palette(), planet.seed());
         currentPlanet = planet;
+    }
+
+    /**
+     * 这个维度里水的颜色（不透明的 ARGB）：星球的海是水、酸液或冰时用星球的液体色；不是星球、
+     * 或者星球的液体是熔岩（玩家倒的水）时返回 0，用生物群系的颜色。可以在任意线程调用。
+     */
+    public static int waterColor(ResourceKey<Level> dimension) {
+        Galaxy known = galaxy;
+        if (known == null) {
+            return 0;
+        }
+        Planet planet = Planets.generatedPlanet(known, dimension).orElse(null);
+        if (planet == null || planet.liquid() == Liquid.LAVA || planet.liquid() == Liquid.NONE) {
+            return 0;
+        }
+        // 方块染色是带透明度的 ARGB，透明度为 0 的水会整个看不见
+        return 0xFF000000 | planet.palette().liquid();
     }
 
     /** 当前星球的岩层层序（下标 0 是世界底部）。可以在任意线程调用。 */
