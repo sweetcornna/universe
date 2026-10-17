@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "lit=false": {
+      "model": "universe:block/planet_bloom"
+    },
+    "lit=true": {
+      "model": "universe:block/planet_bloom_lit"
+    }
+  }
+}

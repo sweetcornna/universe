@@ -1,6 +1,8 @@
 package io.github.sweetcornna.universe.world.planet;
 
+import java.util.Map;
 import java.util.Optional;
+import java.util.WeakHashMap;
 
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.core.galaxy.BodyId;
@@ -10,6 +12,7 @@ import io.github.sweetcornna.universe.core.galaxy.Planet;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 
 /**
@@ -21,7 +24,17 @@ public final class Planets {
     /** 星团里的恒星系数量。暂时固定，以后做成世界生成时的配置项。 */
     public static final int SYSTEM_COUNT = GalaxyGenerator.DEFAULT_SYSTEM_COUNT;
 
+    /** 星球维度对应的星球，每个世界查一次。 */
+    private static final Map<ServerLevel, Optional<Planet>> PLANETS = new WeakHashMap<>();
+
     private Planets() {
+    }
+
+    /** 这个世界是本模组生成的星球维度时返回它的星球。可以在任意线程调用（世界生成在后台线程）。 */
+    public static Optional<Planet> planet(ServerLevel level) {
+        synchronized (PLANETS) {
+            return PLANETS.computeIfAbsent(level, key -> generatedPlanet(galaxy(key.getServer()), key.dimension()));
+        }
     }
 
     /** 服务端的星团。 */

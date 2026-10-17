@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "universe:block/planet_tendril_a",
+    "layer1": "universe:block/planet_tendril_a_detail"
+  }
+}

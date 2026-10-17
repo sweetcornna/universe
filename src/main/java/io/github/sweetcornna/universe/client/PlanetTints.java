@@ -12,6 +12,9 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import io.github.sweetcornna.universe.Universe;
+import io.github.sweetcornna.universe.block.FloraBlocks;
+import io.github.sweetcornna.universe.core.ecology.Flora;
+import io.github.sweetcornna.universe.core.ecology.PlantForm;
 import io.github.sweetcornna.universe.core.galaxy.Palette;
 import io.github.sweetcornna.universe.core.terrain.TerrainModel;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
@@ -54,9 +57,47 @@ public final class PlanetTints {
                 }
                 event.register(sources, tinted.block().get());
             }
+            // 植物：层 0 主体、层 1 点缀，按当前星球的物种和方块的变体号查颜色
+            UniverseBlocks.PLANTS.forEach((form, block) -> event.register(
+                    List.of(plant(form, 0), plant(form, 1)), block.get()));
+            event.register(List.of(tree(Flora.TreePart.WOOD)), UniverseBlocks.PLANET_LOG.get());
+            event.register(List.of(tree(Flora.TreePart.LEAVES)), UniverseBlocks.PLANET_LEAVES.get());
+            event.register(List.of(tree(Flora.TreePart.LEAVES)), UniverseBlocks.PLANET_CAP.get());
+            event.register(List.of(tree(Flora.TreePart.BLOOM)), UniverseBlocks.PLANET_BLOOM.get());
         });
-        modBus.addListener(RegisterColorHandlersEvent.ItemTintSources.class,
-                event -> event.register(Universe.id("planet_palette"), PaletteItemTint.MAP_CODEC));
+        modBus.addListener(RegisterColorHandlersEvent.ItemTintSources.class, event -> {
+            event.register(Universe.id("planet_palette"), PaletteItemTint.MAP_CODEC);
+            event.register(Universe.id("plant"), PlantItemTint.MAP_CODEC);
+            event.register(Universe.id("tree"), TreeItemTint.MAP_CODEC);
+        });
+    }
+
+    private static BlockTintSource plant(PlantForm form, int layer) {
+        return new BlockTintSource() {
+            @Override
+            public int color(BlockState state) {
+                return ARGB.opaque(ClientGalaxy.currentFlora().plantColor(form, state.getValue(FloraBlocks.VARIANT), layer));
+            }
+
+            @Override
+            public int colorInWorld(BlockState state, BlockAndTintGetter level, BlockPos pos) {
+                return this.color(state);
+            }
+        };
+    }
+
+    private static BlockTintSource tree(Flora.TreePart part) {
+        return new BlockTintSource() {
+            @Override
+            public int color(BlockState state) {
+                return ARGB.opaque(ClientGalaxy.currentFlora().treeColor(part, state.getValue(FloraBlocks.VARIANT)));
+            }
+
+            @Override
+            public int colorInWorld(BlockState state, BlockAndTintGetter level, BlockPos pos) {
+                return this.color(state);
+            }
+        };
     }
 
     /** 岩层：按方块的 Y 查当前星球的层序表。 */
@@ -102,5 +143,50 @@ public final class PlanetTints {
         public MapCodec<PaletteItemTint> type() {
             return MAP_CODEC;
         }
+    }
+
+    /** 植物物品的染色（物品没有方块状态，按变体 0）。 */
+    public record PlantItemTint(PlantForm form, int layer) implements ItemTintSource {
+        public static final MapCodec<PlantItemTint> MAP_CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+                enumCodec(PlantForm.class).fieldOf("form").forGetter(PlantItemTint::form),
+                Codec.INT.fieldOf("layer").forGetter(PlantItemTint::layer)
+        ).apply(i, PlantItemTint::new));
+
+        @Override
+        public int calculate(ItemStack itemStack, @Nullable ClientLevel level, @Nullable LivingEntity owner) {
+            return ARGB.opaque(ClientGalaxy.currentFlora().plantColor(this.form, 0, this.layer));
+        }
+
+        @Override
+        public MapCodec<PlantItemTint> type() {
+            return MAP_CODEC;
+        }
+    }
+
+    /** 树木方块物品的染色（按第一种树）。 */
+    public record TreeItemTint(Flora.TreePart part) implements ItemTintSource {
+        public static final MapCodec<TreeItemTint> MAP_CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+                enumCodec(Flora.TreePart.class).fieldOf("part").forGetter(TreeItemTint::part)
+        ).apply(i, TreeItemTint::new));
+
+        @Override
+        public int calculate(ItemStack itemStack, @Nullable ClientLevel level, @Nullable LivingEntity owner) {
+            return ARGB.opaque(ClientGalaxy.currentFlora().treeColor(this.part, 0));
+        }
+
+        @Override
+        public MapCodec<TreeItemTint> type() {
+            return MAP_CODEC;
+        }
+    }
+
+    private static <E extends Enum<E>> Codec<E> enumCodec(Class<E> type) {
+        return Codec.STRING.comapFlatMap(name -> {
+            try {
+                return DataResult.success(Enum.valueOf(type, name.toUpperCase(Locale.ROOT)));
+            } catch (IllegalArgumentException e) {
+                return DataResult.error(() -> "Unknown " + type.getSimpleName() + ": " + name);
+            }
+        }, value -> value.name().toLowerCase(Locale.ROOT));
     }
 }

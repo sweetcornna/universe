@@ -1,0 +1,76 @@
+{
+    "ambientocclusion": false,
+    "textures": {
+        "particle": "#body"
+    },
+    "elements": [
+        {
+            "from": [
+                0,
+                0.25,
+                0
+            ],
+            "to": [
+                16,
+                0.25,
+                16
+            ],
+            "faces": {
+                "up": {
+                    "uv": [
+                        0,
+                        0,
+                        16,
+                        16
+                    ],
+                    "texture": "#body",
+                    "tintindex": 0
+                },
+                "down": {
+                    "uv": [
+                        0,
+                        16,
+                        16,
+                        0
+                    ],
+                    "texture": "#body",
+                    "tintindex": 0
+                }
+            }
+        },
+        {
+            "from": [
+                0,
+                0.3,
+                0
+            ],
+            "to": [
+                16,
+                0.3,
+                16
+            ],
+            "faces": {
+                "up": {
+                    "uv": [
+                        0,
+                        0,
+                        16,
+                        16
+                    ],
+                    "texture": "#detail",
+                    "tintindex": 1
+                },
+                "down": {
+                    "uv": [
+                        0,
+                        16,
+                        16,
+                        0
+                    ],
+                    "texture": "#detail",
+                    "tintindex": 1
+                }
+            }
+        }
+    ]
+}

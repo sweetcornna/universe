@@ -3,6 +3,7 @@ package io.github.sweetcornna.universe.datagen;
 import java.util.concurrent.CompletableFuture;
 
 import io.github.sweetcornna.universe.Universe;
+import io.github.sweetcornna.universe.block.FloraBlocks;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
@@ -52,6 +53,30 @@ final class UniverseBlockTagsProvider extends BlockTagsProvider {
                 UniverseBlocks.PLANET_ICE.key(),
                 UniverseBlocks.PLANET_ASH.key(),
                 UniverseBlocks.PLANET_STRATA.key(),
-                UniverseBlocks.PLANET_CRYSTAL.key());
+                UniverseBlocks.PLANET_CRYSTAL.key(),
+                UniverseBlocks.PLANET_LOG.key(),
+                UniverseBlocks.PLANET_CAP.key(),
+                UniverseBlocks.PLANET_BLOOM.key());
+        // 树叶进 leaves 标签，原版的 blocks_motion 会把它算进去（高度图分有叶子、没叶子两种）
+        this.tag(BlockTags.LEAVES).add(UniverseBlocks.PLANET_LEAVES.key());
+        this.tag(BlockTags.LOGS).add(UniverseBlocks.PLANET_LOG.key());
+        this.tag(BlockTags.MINEABLE_WITH_AXE).add(UniverseBlocks.PLANET_LOG.key(), UniverseBlocks.PLANET_CAP.key());
+        this.tag(BlockTags.MINEABLE_WITH_HOE).add(UniverseBlocks.PLANET_LEAVES.key(), UniverseBlocks.PLANET_BLOOM.key());
+        for (var block : UniverseBlocks.PLANTS.values()) {
+            this.tag(BlockTags.REPLACEABLE).add(block.key());
+            this.tag(BlockTags.SWORD_EFFICIENT).add(block.key());
+            this.tag(BlockTags.REPLACEABLE_BY_TREES).add(block.key());
+        }
+        // 星球植物能长在土、沙、雪、风化层、灰烬上，地衣和晶花还能长在岩石上
+        this.tag(FloraBlocks.PLANT_SOIL)
+                .addTag(BlockTags.DIRT)
+                .addTag(BlockTags.SAND)
+                .addTag(BlockTags.SUPPORTS_VEGETATION)
+                .add(UniverseBlocks.PLANET_REGOLITH.key(),
+                        UniverseBlocks.PLANET_SNOW.key(),
+                        UniverseBlocks.PLANET_ASH.key(),
+                        UniverseBlocks.PLANET_ROCK.key(),
+                        UniverseBlocks.PLANET_STRATA.key(),
+                        UniverseBlocks.PLANET_CRYSTAL.key());
     }
 }

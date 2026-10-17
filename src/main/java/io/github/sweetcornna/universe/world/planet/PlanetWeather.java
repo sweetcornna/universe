@@ -1,8 +1,6 @@
 package io.github.sweetcornna.universe.world.planet;
 
-import java.util.Map;
 import java.util.Optional;
-import java.util.WeakHashMap;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -51,9 +49,6 @@ public final class PlanetWeather extends SavedData {
             Universe.id("planet_weather"),
             level -> new PlanetWeather(null),
             level -> CODEC);
-    /** 星球维度对应的星球，建世界时查一次。 */
-    private static final Map<ServerLevel, Optional<Planet>> PLANETS = new WeakHashMap<>();
-
     private WeatherCycle cycle;
     /** 沙尘一类天气的强度。 */
     private float intensity;
@@ -68,13 +63,6 @@ public final class PlanetWeather extends SavedData {
         gameBus.addListener(PlayerEvent.PlayerLoggedInEvent.class, event -> sync(event.getEntity()));
         gameBus.addListener(PlayerEvent.PlayerChangedDimensionEvent.class, event -> sync(event.getEntity()));
         gameBus.addListener(PlayerEvent.PlayerRespawnEvent.class, event -> sync(event.getEntity()));
-    }
-
-    /** 这个世界是星球维度时返回它的星球。 */
-    public static Optional<Planet> planet(ServerLevel level) {
-        synchronized (PLANETS) {
-            return PLANETS.computeIfAbsent(level, key -> PlanetEnvironment.context(key).map(PlanetEnvironment.Context::planet));
-        }
     }
 
     private static PlanetWeather of(ServerLevel level, WeatherProfile profile) {
@@ -92,7 +80,7 @@ public final class PlanetWeather extends SavedData {
      * @return 这个世界是星球维度、已经处理过天气时返回 true，原版的就不再执行
      */
     public static boolean tick(ServerLevel level) {
-        Optional<Planet> planet = planet(level);
+        Optional<Planet> planet = Planets.planet(level);
         if (planet.isEmpty()) {
             return false;
         }
@@ -139,7 +127,7 @@ public final class PlanetWeather extends SavedData {
 
     /** 命令用：设成晴天、普通天气或风暴，持续 {@code ticks} 刻。不是星球维度时返回 false。 */
     public static boolean force(ServerLevel level, boolean active, boolean storm, int ticks) {
-        Optional<Planet> planet = planet(level);
+        Optional<Planet> planet = Planets.planet(level);
         if (planet.isEmpty()) {
             return false;
         }
@@ -151,7 +139,7 @@ public final class PlanetWeather extends SavedData {
 
     private static void sync(Player player) {
         if (player instanceof ServerPlayer serverPlayer && player.level() instanceof ServerLevel level) {
-            float intensity = planet(level).map(planet -> of(level, planet.weather()).intensity).orElse(0.0F);
+            float intensity = Planets.planet(level).map(planet -> of(level, planet.weather()).intensity).orElse(0.0F);
             PacketDistributor.sendToPlayer(serverPlayer, new PlanetWeatherPayload(intensity));
         }
     }

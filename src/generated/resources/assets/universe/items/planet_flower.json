@@ -1,0 +1,18 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "universe:item/planet_flower",
+    "tints": [
+      {
+        "type": "universe:plant",
+        "form": "flower",
+        "layer": 0
+      },
+      {
+        "type": "universe:plant",
+        "form": "flower",
+        "layer": 1
+      }
+    ]
+  }
+}

@@ -37,7 +37,9 @@
     ],
     [],
     [],
-    [],
+    [
+      "universe:planet_flora"
+    ],
     [
       "minecraft:freeze_top_layer"
     ]

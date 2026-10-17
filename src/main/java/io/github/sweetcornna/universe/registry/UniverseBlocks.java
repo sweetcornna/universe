@@ -1,16 +1,28 @@
 package io.github.sweetcornna.universe.registry;
 
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import io.github.sweetcornna.universe.Universe;
+import io.github.sweetcornna.universe.block.FloraBlocks;
+import io.github.sweetcornna.universe.block.FloraVariantBlock;
+import io.github.sweetcornna.universe.block.PlanetBloomBlock;
+import io.github.sweetcornna.universe.block.PlanetLeavesBlock;
+import io.github.sweetcornna.universe.block.PlanetLogBlock;
+import io.github.sweetcornna.universe.block.PlanetPlantBlock;
+import io.github.sweetcornna.universe.core.ecology.PlantForm;
 import io.github.sweetcornna.universe.core.galaxy.Palette;
 import net.minecraft.util.ColorRGBA;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SandBlock;
 import net.minecraft.world.level.block.SoundType;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 import net.minecraft.world.level.material.MapColor;
+import net.minecraft.world.level.material.PushReaction;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredBlock;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -50,6 +62,43 @@ public final class UniverseBlocks {
     public static final DeferredBlock<Block> PLANET_CRYSTAL = BLOCKS.registerSimpleBlock("planet_crystal",
             p -> p.mapColor(MapColor.COLOR_PURPLE).strength(1.5F).sound(SoundType.AMETHYST).requiresCorrectToolForDrops()
                     .lightLevel(state -> 10));
+
+    /** 地面植物：每种形态一个方块，物种之间靠变体号区分颜色（{@link FloraBlocks}）。 */
+    public static final Map<PlantForm, DeferredBlock<PlanetPlantBlock>> PLANTS = registerPlants();
+    public static final DeferredBlock<PlanetLogBlock> PLANET_LOG = BLOCKS.registerBlock("planet_log", PlanetLogBlock::new,
+            p -> p.mapColor(MapColor.WOOD).instrument(NoteBlockInstrument.BASS).strength(2.0F).sound(SoundType.WOOD).ignitedByLava());
+    public static final DeferredBlock<PlanetLeavesBlock> PLANET_LEAVES = BLOCKS.registerBlock("planet_leaves", PlanetLeavesBlock::new,
+            p -> p.mapColor(MapColor.PLANT).strength(0.2F).sound(SoundType.GRASS).noOcclusion().isValidSpawn(Blocks::never)
+                    .isSuffocating((state, level, pos) -> false).isViewBlocking((state, level, pos, box) -> false).ignitedByLava().pushReaction(PushReaction.POPPED)
+                    .isRedstoneConductor((state, level, pos) -> false));
+    /** 肉质的实心方块：巨菌的菌盖、柱状肉茎。 */
+    public static final DeferredBlock<FloraVariantBlock> PLANET_CAP = BLOCKS.registerBlock("planet_cap", FloraVariantBlock::new,
+            p -> p.mapColor(MapColor.PLANT).strength(0.8F).sound(SoundType.FUNGUS));
+    /** 树上的花果，有的物种会发光。 */
+    public static final DeferredBlock<PlanetBloomBlock> PLANET_BLOOM = BLOCKS.registerBlock("planet_bloom", PlanetBloomBlock::new,
+            p -> p.mapColor(MapColor.COLOR_PINK).strength(0.4F).sound(SoundType.SHROOMLIGHT).noOcclusion()
+                    .isValidSpawn(Blocks::never).isSuffocating((state, level, pos) -> false).isViewBlocking((state, level, pos, box) -> false)
+                    .lightLevel(state -> state.getValue(FloraBlocks.LIT) ? 13 : 0));
+
+    private static Map<PlantForm, DeferredBlock<PlanetPlantBlock>> registerPlants() {
+        Map<PlantForm, DeferredBlock<PlanetPlantBlock>> plants = new EnumMap<>(PlantForm.class);
+        for (PlantForm form : PlantForm.values()) {
+            plants.put(form, BLOCKS.registerBlock(form.blockName(), p -> new PlanetPlantBlock(form, p), p -> plantProperties(p, form)));
+        }
+        return plants;
+    }
+
+    private static BlockBehaviour.Properties plantProperties(BlockBehaviour.Properties p, PlantForm form) {
+        p.mapColor(MapColor.PLANT).replaceable().noCollision().instabreak().pushReaction(PushReaction.POPPED)
+                .lightLevel(state -> state.getValue(FloraBlocks.LIT) ? 9 : 0);
+        switch (form) {
+            case CRYSTAL_BLOOM -> p.sound(SoundType.AMETHYST_CLUSTER).offsetType(BlockBehaviour.OffsetType.XZ);
+            case FUNGUS -> p.sound(SoundType.FUNGUS).offsetType(BlockBehaviour.OffsetType.XZ).ignitedByLava();
+            case LICHEN -> p.sound(SoundType.MOSS_CARPET).ignitedByLava();
+            default -> p.sound(SoundType.GRASS).offsetType(BlockBehaviour.OffsetType.XYZ).ignitedByLava();
+        }
+        return p;
+    }
 
     /**
      * 按星球配色染色的方块。

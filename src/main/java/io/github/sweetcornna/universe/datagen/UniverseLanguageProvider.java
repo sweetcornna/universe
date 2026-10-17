@@ -51,6 +51,12 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         block(UniverseBlocks.PLANET_ASH.get(), "灰烬", "Ash");
         block(UniverseBlocks.PLANET_CRYSTAL.get(), "星晶", "Planet Crystal");
         block(UniverseBlocks.PLANET_STRATA.get(), "岩层", "Planet Strata");
+        // 植物方块按形态命名，具体物种名以后由分析目镜显示
+        UniverseBlocks.PLANTS.forEach((form, plant) -> block(plant.get(), "异星" + form.nameZh(), "Alien " + form.nameEn()));
+        block(UniverseBlocks.PLANET_LOG.get(), "异星原木", "Alien Log");
+        block(UniverseBlocks.PLANET_LEAVES.get(), "异星树叶", "Alien Leaves");
+        block(UniverseBlocks.PLANET_CAP.get(), "肉质块", "Fleshy Block");
+        block(UniverseBlocks.PLANET_BLOOM.get(), "异星花果", "Alien Bloom");
     }
 
     private void block(net.minecraft.world.level.block.Block block, String zh, String en) {

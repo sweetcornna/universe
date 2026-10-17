@@ -1,0 +1,6 @@
+{
+  "parent": "universe:block/tinted_cube_all",
+  "textures": {
+    "all": "universe:block/planet_leaves"
+  }
+}

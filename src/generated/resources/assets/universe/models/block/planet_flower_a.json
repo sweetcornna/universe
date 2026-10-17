@@ -1,0 +1,7 @@
+{
+  "parent": "universe:block/plant_cross",
+  "textures": {
+    "body": "universe:block/planet_flower_a",
+    "detail": "universe:block/planet_flower_a_detail"
+  }
+}

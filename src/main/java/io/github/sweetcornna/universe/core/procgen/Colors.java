@@ -53,6 +53,33 @@ public final class Colors {
         };
     }
 
+    /** RGB 转 HSV，返回 {色相（圈）, 饱和度, 明度}，都在 0–1。 */
+    public static double[] toHsv(int color) {
+        double r = red(color) / 255.0;
+        double g = green(color) / 255.0;
+        double b = blue(color) / 255.0;
+        double max = Math.max(r, Math.max(g, b));
+        double min = Math.min(r, Math.min(g, b));
+        double delta = max - min;
+        double hue;
+        if (delta == 0) {
+            hue = 0;
+        } else if (max == r) {
+            hue = ((g - b) / delta) / 6.0;
+        } else if (max == g) {
+            hue = ((b - r) / delta + 2) / 6.0;
+        } else {
+            hue = ((r - g) / delta + 4) / 6.0;
+        }
+        return new double[] {hue - Math.floor(hue), max == 0 ? 0 : delta / max, max};
+    }
+
+    /** 在 HSV 空间里调整：色相加 {@code hueShift} 圈，饱和度、明度分别乘上系数。 */
+    public static int adjust(int color, double hueShift, double saturationScale, double valueScale) {
+        double[] hsv = toHsv(color);
+        return hsv(hsv[0] + hueShift, hsv[1] * saturationScale, hsv[2] * valueScale);
+    }
+
     /** 逐通道线性插值，{@code t = 0} 得到 {@code a}。 */
     public static int lerp(int a, int b, double t) {
         double k = clamp01(t);

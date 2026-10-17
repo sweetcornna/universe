@@ -1,0 +1,12 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "universe:block/planet_bloom",
+    "tints": [
+      {
+        "type": "universe:tree",
+        "part": "bloom"
+      }
+    ]
+  }
+}

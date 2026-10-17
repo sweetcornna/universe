@@ -1,0 +1,12 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "universe:block/planet_leaves",
+    "tints": [
+      {
+        "type": "universe:tree",
+        "part": "leaves"
+      }
+    ]
+  }
+}

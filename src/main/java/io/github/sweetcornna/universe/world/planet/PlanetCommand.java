@@ -19,6 +19,9 @@ import io.github.sweetcornna.universe.core.galaxy.Hazard;
 import io.github.sweetcornna.universe.core.galaxy.Planet;
 import io.github.sweetcornna.universe.core.galaxy.StarSystem;
 import io.github.sweetcornna.universe.core.galaxy.TerrainProfile;
+import io.github.sweetcornna.universe.core.ecology.Flora;
+import io.github.sweetcornna.universe.core.ecology.PlantSpecies;
+import io.github.sweetcornna.universe.core.ecology.TreeSpecies;
 import io.github.sweetcornna.universe.core.sky.SkyBody;
 import io.github.sweetcornna.universe.core.sky.SkyModel;
 import io.github.sweetcornna.universe.core.terrain.TerrainModel;
@@ -80,6 +83,8 @@ public final class PlanetCommand {
                         .then(Commands.argument("planet", IdentifierArgument.id())
                                 .suggests(PLANETS)
                                 .executes(context -> info(context.getSource(), dimension(context)))))
+                .then(Commands.literal("flora")
+                        .executes(context -> flora(context.getSource())))
                 .then(Commands.literal("sky")
                         .executes(context -> sky(context.getSource())))
                 .then(Commands.literal("weather")
@@ -158,6 +163,27 @@ public final class PlanetCommand {
     }
 
     /** 当前所在星球此刻的天空：每个天体的方向、视大小和亮面比例。 */
+    private static int flora(CommandSourceStack source) throws CommandSyntaxException {
+        ServerLevel level = source.getLevel();
+        Planet planet = Planets.planet(level).orElseThrow(() -> NOT_A_PLANET.create(level.dimension().identifier()));
+        Flora flora = Flora.of(planet);
+        StringBuilder text = new StringBuilder(String.format(Locale.ROOT, "%s 的植物：地面植物 %d 种，树 %d 种",
+                planet.name().zh(), flora.plants().size(), flora.trees().size()));
+        for (PlantSpecies plant : flora.plants()) {
+            text.append(String.format(Locale.ROOT, "\n  %s（%s #%d）%s 生境 %s，多度 %.2f，颜色 %06X / %06X",
+                    plant.name().zh(), plant.form().nameZh(), plant.variant(), plant.glowing() ? "发光，" : "",
+                    plant.biotopes(), plant.abundance(), plant.body(), plant.detail()));
+        }
+        for (TreeSpecies tree : flora.trees()) {
+            text.append(String.format(Locale.ROOT, "\n  %s（%s #%d）高 %d–%d，冠 %d%s，生境 %s，%s",
+                    tree.name().zh(), tree.shape().nameZh(), tree.index(), tree.height(), tree.height() + tree.heightRange(),
+                    tree.canopy(), tree.thick() ? "，粗干" : "", tree.biotopes(),
+                    tree.bloomChance() > 0 ? (tree.bloomGlows() ? "开发光的花" : "开花") : "不开花"));
+        }
+        source.sendSuccess(() -> Component.literal(text.toString()), false);
+        return 1;
+    }
+
     private static int sky(CommandSourceStack source) throws CommandSyntaxException {
         ServerLevel level = source.getLevel();
         PlanetEnvironment.Context context = PlanetEnvironment.context(level)

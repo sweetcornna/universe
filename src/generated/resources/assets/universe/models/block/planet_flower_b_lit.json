@@ -1,0 +1,7 @@
+{
+  "parent": "universe:block/plant_cross_emissive",
+  "textures": {
+    "body": "universe:block/planet_flower_b",
+    "detail": "universe:block/planet_flower_b_detail"
+  }
+}

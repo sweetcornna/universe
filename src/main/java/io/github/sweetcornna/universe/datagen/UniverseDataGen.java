@@ -3,8 +3,11 @@ package io.github.sweetcornna.universe.datagen;
 import java.util.List;
 import java.util.Set;
 
+import io.github.sweetcornna.universe.world.planet.gen.PlanetFloraFeature;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.loot.LootTableProvider;
+import net.minecraft.world.level.levelgen.placement.BiomeFilter;
+import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
@@ -36,6 +39,9 @@ public final class UniverseDataGen {
     private static void gatherRegistries(GatherDataRegistryEntriesEvent event) {
         event.add(Registries.LOOT_TABLE, new LootTableProvider(Set.of(),
                 List.of(new LootTableProvider.SubProviderEntry(UniverseBlockLoot::new, LootContextParamSets.BLOCK))));
+        event.add(Registries.FEATURE, context -> context.register(PlanetFloraFeature.KEY, new PlanetFloraFeature()));
+        event.add(Registries.PLACED_FEATURE, context -> context.register(PlanetFloraFeature.PLACED,
+                new PlacedFeature(context.lookup(Registries.FEATURE).getOrThrow(PlanetFloraFeature.KEY), List.of(BiomeFilter.biome()))));
         event.add(Registries.BIOME, UniverseBiomes::bootstrap);
     }
 }

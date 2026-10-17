@@ -1,0 +1,7 @@
+{
+  "parent": "universe:block/tinted_column",
+  "textures": {
+    "end": "universe:block/planet_log_top",
+    "side": "universe:block/planet_log"
+  }
+}

@@ -5,6 +5,7 @@ import java.util.Optional;
 import org.jspecify.annotations.Nullable;
 
 import io.github.sweetcornna.universe.Universe;
+import io.github.sweetcornna.universe.core.ecology.Flora;
 import io.github.sweetcornna.universe.core.galaxy.Galaxy;
 import io.github.sweetcornna.universe.core.galaxy.Liquid;
 import io.github.sweetcornna.universe.core.galaxy.GalaxyGenerator;
@@ -35,6 +36,7 @@ public final class ClientGalaxy {
     private static volatile @Nullable Planet currentPlanet;
     private static final int[] NEUTRAL_STRATA = Strata.colors(Palette.NEUTRAL, 0);
     private static volatile int[] currentStrata = NEUTRAL_STRATA;
+    private static volatile Flora currentFlora = Flora.NEUTRAL;
     private static @Nullable ResourceKey<Level> currentDimension;
 
     private ClientGalaxy() {
@@ -100,6 +102,7 @@ public final class ClientGalaxy {
         Galaxy known = galaxy;
         Planet planet = dimension == null || known == null ? null : Planets.generatedPlanet(known, dimension).orElse(null);
         currentStrata = planet == null ? NEUTRAL_STRATA : Strata.colors(planet.palette(), planet.seed());
+        currentFlora = planet == null ? Flora.NEUTRAL : Flora.of(planet);
         currentPlanet = planet;
     }
 
@@ -124,5 +127,11 @@ public final class ClientGalaxy {
     public static int[] currentStrata() {
         refresh();
         return currentStrata;
+    }
+
+    /** 当前星球的植物（不在星球上时是中性配色、没有物种）。可以在任意线程调用。 */
+    public static Flora currentFlora() {
+        refresh();
+        return currentFlora;
     }
 }

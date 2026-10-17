@@ -32,6 +32,12 @@ final class UniverseBlockLoot extends BlockLootSubProvider {
         this.dropSelf(UniverseBlocks.PLANET_ASH.get());
         this.dropSelf(UniverseBlocks.PLANET_CRYSTAL.get());
         this.dropSelf(UniverseBlocks.PLANET_STRATA.get());
+        // 植物：用剪刀或精准采集才掉本体（和原版的草一样）
+        UniverseBlocks.PLANTS.values().forEach(block -> this.add(block.get(), this.createShearsOrSilkTouchOnlyDrop(block.get())));
+        this.dropSelf(UniverseBlocks.PLANET_LOG.get());
+        this.add(UniverseBlocks.PLANET_LEAVES.get(), this.createShearsOrSilkTouchOnlyDrop(UniverseBlocks.PLANET_LEAVES.get()));
+        this.dropSelf(UniverseBlocks.PLANET_CAP.get());
+        this.dropSelf(UniverseBlocks.PLANET_BLOOM.get());
     }
 
     @Override

@@ -1,0 +1,28 @@
+{
+  "variants": {
+    "lit=false,variant=0": {
+      "model": "universe:block/planet_tendril_a"
+    },
+    "lit=false,variant=1": {
+      "model": "universe:block/planet_tendril_b"
+    },
+    "lit=false,variant=2": {
+      "model": "universe:block/planet_tendril_a"
+    },
+    "lit=false,variant=3": {
+      "model": "universe:block/planet_tendril_b"
+    },
+    "lit=true,variant=0": {
+      "model": "universe:block/planet_tendril_a_lit"
+    },
+    "lit=true,variant=1": {
+      "model": "universe:block/planet_tendril_b_lit"
+    },
+    "lit=true,variant=2": {
+      "model": "universe:block/planet_tendril_a_lit"
+    },
+    "lit=true,variant=3": {
+      "model": "universe:block/planet_tendril_b_lit"
+    }
+  }
+}

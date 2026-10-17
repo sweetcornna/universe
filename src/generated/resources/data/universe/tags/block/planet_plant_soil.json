@@ -1,0 +1,13 @@
+{
+  "values": [
+    "#minecraft:dirt",
+    "#minecraft:sand",
+    "#minecraft:supports_vegetation",
+    "universe:planet_regolith",
+    "universe:planet_snow",
+    "universe:planet_ash",
+    "universe:planet_rock",
+    "universe:planet_strata",
+    "universe:planet_crystal"
+  ]
+}

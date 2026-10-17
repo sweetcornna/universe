@@ -1,0 +1,18 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "universe:item/planet_fern",
+    "tints": [
+      {
+        "type": "universe:plant",
+        "form": "fern",
+        "layer": 0
+      },
+      {
+        "type": "universe:plant",
+        "form": "fern",
+        "layer": 1
+      }
+    ]
+  }
+}

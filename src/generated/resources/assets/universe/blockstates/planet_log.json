@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "axis=x": {
+      "model": "universe:block/planet_log",
+      "x": 90,
+      "y": 90
+    },
+    "axis=y": {
+      "model": "universe:block/planet_log"
+    },
+    "axis=z": {
+      "model": "universe:block/planet_log",
+      "x": 90
+    }
+  }
+}

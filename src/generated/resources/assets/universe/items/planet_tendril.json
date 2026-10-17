@@ -1,0 +1,18 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "universe:item/planet_tendril",
+    "tints": [
+      {
+        "type": "universe:plant",
+        "form": "tendril",
+        "layer": 0
+      },
+      {
+        "type": "universe:plant",
+        "form": "tendril",
+        "layer": 1
+      }
+    ]
+  }
+}

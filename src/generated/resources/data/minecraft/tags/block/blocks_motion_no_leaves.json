@@ -10,6 +10,9 @@
     "universe:planet_ice",
     "universe:planet_ash",
     "universe:planet_strata",
-    "universe:planet_crystal"
+    "universe:planet_crystal",
+    "universe:planet_log",
+    "universe:planet_cap",
+    "universe:planet_bloom"
   ]
 }

@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "universe:block/planet_fungus_a",
+    "layer1": "universe:block/planet_fungus_a_detail"
+  }
+}

@@ -4,6 +4,7 @@ import java.util.List;
 
 import io.github.sweetcornna.universe.core.terrain.BiomeKind;
 import io.github.sweetcornna.universe.world.planet.gen.PlanetBiomes;
+import io.github.sweetcornna.universe.world.planet.gen.PlanetFloraFeature;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BootstrapContext;
@@ -52,6 +53,7 @@ final class UniverseBiomes {
         for (ResourceKey<PlacedFeature> ore : ORES) {
             generation.addFeature(GenerationStep.Decoration.UNDERGROUND_ORES, ore);
         }
+        generation.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, PlanetFloraFeature.PLACED);
         generation.addFeature(GenerationStep.Decoration.TOP_LAYER_MODIFICATION, MiscOverworldPlacements.FREEZE_TOP_LAYER);
         return new Biome.BiomeBuilder()
                 .hasPrecipitation(kind.precipitation())

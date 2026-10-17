@@ -1,0 +1,7 @@
+{
+  "parent": "universe:block/plant_patch_emissive",
+  "textures": {
+    "body": "universe:block/planet_lichen_a",
+    "detail": "universe:block/planet_lichen_a_detail"
+  }
+}
