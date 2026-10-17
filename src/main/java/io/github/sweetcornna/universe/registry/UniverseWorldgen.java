@@ -1,0 +1,45 @@
+package io.github.sweetcornna.universe.registry;
+
+import com.mojang.serialization.MapCodec;
+
+import io.github.sweetcornna.universe.Universe;
+import io.github.sweetcornna.universe.world.planet.gen.PlanetBiomeSource;
+import io.github.sweetcornna.universe.world.planet.gen.PlanetCaveRoofFunction;
+import io.github.sweetcornna.universe.world.planet.gen.PlanetHeightFunction;
+import io.github.sweetcornna.universe.world.planet.gen.PlanetIslandFunction;
+import io.github.sweetcornna.universe.world.planet.gen.PlanetLavaCondition;
+import io.github.sweetcornna.universe.world.planet.gen.PlanetSteepCondition;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.world.level.biome.BiomeSource;
+import net.minecraft.world.level.levelgen.densityfunction.DensityFunction;
+import net.minecraft.world.level.levelgen.material.condition.MaterialCondition;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.registries.DeferredRegister;
+
+/** 世界生成用的自定义类型：密度函数、群系源、地表条件。 */
+public final class UniverseWorldgen {
+    public static final DeferredRegister<MapCodec<? extends DensityFunction>> DENSITY_FUNCTION_TYPES =
+            DeferredRegister.create(Registries.DENSITY_FUNCTION_TYPE, Universe.MOD_ID);
+    public static final DeferredRegister<MapCodec<? extends BiomeSource>> BIOME_SOURCES =
+            DeferredRegister.create(Registries.BIOME_SOURCE, Universe.MOD_ID);
+    public static final DeferredRegister<MapCodec<? extends MaterialCondition>> MATERIAL_CONDITION_TYPES =
+            DeferredRegister.create(Registries.MATERIAL_CONDITION_TYPE, Universe.MOD_ID);
+
+    static {
+        DENSITY_FUNCTION_TYPES.register("planet_height", () -> PlanetHeightFunction.CODEC);
+        DENSITY_FUNCTION_TYPES.register("planet_islands", () -> PlanetIslandFunction.CODEC);
+        DENSITY_FUNCTION_TYPES.register("planet_cave_roof", () -> PlanetCaveRoofFunction.CODEC);
+        BIOME_SOURCES.register("planet", () -> PlanetBiomeSource.CODEC);
+        MATERIAL_CONDITION_TYPES.register("planet_steep", () -> PlanetSteepCondition.CODEC);
+        MATERIAL_CONDITION_TYPES.register("planet_lava", () -> PlanetLavaCondition.CODEC);
+    }
+
+    private UniverseWorldgen() {
+    }
+
+    public static void register(IEventBus modBus) {
+        DENSITY_FUNCTION_TYPES.register(modBus);
+        BIOME_SOURCES.register(modBus);
+        MATERIAL_CONDITION_TYPES.register(modBus);
+    }
+}

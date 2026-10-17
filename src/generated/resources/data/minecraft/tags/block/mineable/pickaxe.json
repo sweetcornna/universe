@@ -3,6 +3,7 @@
     "universe:planet_rock",
     "universe:planet_cobblestone",
     "universe:planet_ice",
-    "universe:planet_crystal"
+    "universe:planet_crystal",
+    "universe:planet_strata"
   ]
 }

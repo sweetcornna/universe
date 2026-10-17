@@ -206,7 +206,7 @@ public final class RuntimeDimensions {
 
     private static ServerLevel createLevel(MinecraftServer server, ResourceKey<Level> key, DimensionTemplate template) {
         long startNanos = System.nanoTime();
-        LevelStem stem = template.createLevelStem(server.registryAccess(), key.identifier());
+        LevelStem stem = template.createLevelStem(server, key);
         WorldData worldData = server.getWorldData();
         long seed = server.getWorldGenSettings().options().seed();
         // 参数与 MinecraftServer#createLevels 创建下界、末地时相同；executor 就是那里用的 Util.backgroundExecutor()

@@ -9,6 +9,7 @@ import io.github.sweetcornna.universe.core.galaxy.Galaxy;
 import io.github.sweetcornna.universe.core.galaxy.GalaxyGenerator;
 import io.github.sweetcornna.universe.core.galaxy.Palette;
 import io.github.sweetcornna.universe.core.galaxy.Planet;
+import io.github.sweetcornna.universe.core.terrain.Strata;
 import io.github.sweetcornna.universe.network.GalaxyInfoPayload;
 import io.github.sweetcornna.universe.world.planet.Planets;
 import net.minecraft.client.Minecraft;
@@ -17,7 +18,9 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.network.event.RegisterClientPayloadHandlersEvent;
+import net.neoforged.neoforge.event.level.LevelEvent;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 /**
@@ -29,6 +32,8 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 public final class ClientGalaxy {
     private static @Nullable Galaxy galaxy;
     private static volatile @Nullable Planet currentPlanet;
+    private static final int[] NEUTRAL_STRATA = Strata.colors(Palette.NEUTRAL, 0);
+    private static volatile int[] currentStrata = NEUTRAL_STRATA;
     private static @Nullable ResourceKey<Level> currentDimension;
 
     private ClientGalaxy() {
@@ -42,6 +47,13 @@ public final class ClientGalaxy {
             currentPlanet = null;
             currentDimension = null;
         });
+        // 换维度时客户端会新建世界对象，在它开始渲染区块之前就换好配色
+        gameBus.addListener(LevelEvent.Load.class, event -> {
+            if (event.getLevel() instanceof ClientLevel level) {
+                update(level.dimension());
+            }
+        });
+        gameBus.addListener(ClientTickEvent.Post.class, event -> refresh());
     }
 
     private static void handle(GalaxyInfoPayload payload, IPayloadContext context) {
@@ -77,11 +89,22 @@ public final class ClientGalaxy {
         }
         ClientLevel level = minecraft.level;
         ResourceKey<Level> dimension = level == null ? null : level.dimension();
-        if (dimension == currentDimension) {
-            return;
+        if (dimension != currentDimension) {
+            update(dimension);
         }
+    }
+
+    private static void update(@Nullable ResourceKey<Level> dimension) {
         currentDimension = dimension;
         Galaxy known = galaxy;
-        currentPlanet = dimension == null || known == null ? null : Planets.generatedPlanet(known, dimension).orElse(null);
+        Planet planet = dimension == null || known == null ? null : Planets.generatedPlanet(known, dimension).orElse(null);
+        currentStrata = planet == null ? NEUTRAL_STRATA : Strata.colors(planet.palette(), planet.seed());
+        currentPlanet = planet;
+    }
+
+    /** 当前星球的岩层层序（下标 0 是世界底部）。可以在任意线程调用。 */
+    public static int[] currentStrata() {
+        refresh();
+        return currentStrata;
     }
 }

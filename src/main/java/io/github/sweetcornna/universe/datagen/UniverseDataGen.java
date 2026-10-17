@@ -30,10 +30,12 @@ public final class UniverseDataGen {
         event.createProvider(UniverseLanguageProvider.Chinese::new);
         event.createProvider(UniverseLanguageProvider.English::new);
         event.createProvider(UniverseBlockTagsProvider::new);
+        event.createProvider(PlanetEnvironmentProvider::new);
     }
 
     private static void gatherRegistries(GatherDataRegistryEntriesEvent event) {
         event.add(Registries.LOOT_TABLE, new LootTableProvider(Set.of(),
                 List.of(new LootTableProvider.SubProviderEntry(UniverseBlockLoot::new, LootContextParamSets.BLOCK))));
+        event.add(Registries.BIOME, UniverseBiomes::bootstrap);
     }
 }

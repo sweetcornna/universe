@@ -219,6 +219,17 @@ def crystal(rng):
     return quantize(image, 6)
 
 
+def strata(rng):
+    """岩层：横向的细纹理，颜色由游戏按方块高度分层染色，贴图只给层内的细密纹路。"""
+    rows = np.zeros((SIZE, SIZE))
+    # 每行一个亮度，相邻行略有差别，像一层层压实的沉积
+    row_shade = periodic_value_noise(rng, 8)[:, :1] * 0.5 + rng.random((SIZE, 1)) * 0.5
+    rows += row_shade
+    streak = periodic_value_noise(rng, 2) * 0.3 + periodic_value_noise(rng, 4) * 0.2
+    image = normalize(rows + streak * 0.6, 0.7, 0.95)
+    return quantize(speckle(rng, image, 0.06, 0.05), 5)
+
+
 def to_image(gray, alpha=None):
     g = (np.clip(gray, 0, 1) * 255).round().astype(np.uint8)
     if alpha is None:
@@ -239,6 +250,7 @@ TEXTURES = {
     "planet_ice": ice,
     "planet_ash": ash,
     "planet_crystal": crystal,
+    "planet_strata": strata,
 }
 
 

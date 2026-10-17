@@ -5,11 +5,11 @@
     "tints": [
       {
         "type": "universe:planet_palette",
-        "channel": "surface"
+        "channel": "ash"
       },
       {
         "type": "universe:planet_palette",
-        "channel": "surface"
+        "channel": "ash"
       }
     ]
   }

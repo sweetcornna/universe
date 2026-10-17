@@ -43,6 +43,10 @@ public final class UniverseBlocks {
             p -> p.mapColor(MapColor.ICE).instrument(NoteBlockInstrument.CHIME).friction(0.98F).strength(0.5F).sound(SoundType.GLASS));
     public static final DeferredBlock<Block> PLANET_ASH = BLOCKS.registerSimpleBlock("planet_ash",
             p -> p.mapColor(MapColor.COLOR_GRAY).strength(0.5F).sound(SoundType.SAND));
+    /** 岩层：按高度分层着色（每颗星球一套层序），方山和峡谷的崖壁用它。 */
+    public static final DeferredBlock<Block> PLANET_STRATA = BLOCKS.registerSimpleBlock("planet_strata",
+            p -> p.mapColor(MapColor.TERRACOTTA_ORANGE).instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops()
+                    .strength(1.25F, 4.2F));
     public static final DeferredBlock<Block> PLANET_CRYSTAL = BLOCKS.registerSimpleBlock("planet_crystal",
             p -> p.mapColor(MapColor.COLOR_PURPLE).strength(1.5F).sound(SoundType.AMETHYST).requiresCorrectToolForDrops()
                     .lightLevel(state -> 10));
@@ -63,13 +67,15 @@ public final class UniverseBlocks {
             Tinted.of(PLANET_ROCK, Palette.Channel.ROCK),
             Tinted.of(PLANET_COBBLESTONE, Palette.Channel.ROCK),
             Tinted.of(PLANET_SOIL, Palette.Channel.SOIL),
-            new Tinted(PLANET_TURF, Palette.Channel.SURFACE, Optional.of(Palette.Channel.SOIL)),
+            new Tinted(PLANET_TURF, Palette.Channel.GRASS, Optional.of(Palette.Channel.SOIL)),
             Tinted.of(PLANET_REGOLITH, Palette.Channel.SURFACE),
             Tinted.of(PLANET_SAND, Palette.Channel.SAND),
-            Tinted.of(PLANET_SNOW, Palette.Channel.SURFACE),
-            Tinted.of(PLANET_ICE, Palette.Channel.SOIL),
-            Tinted.of(PLANET_ASH, Palette.Channel.SURFACE),
-            Tinted.of(PLANET_CRYSTAL, Palette.Channel.ACCENT));
+            Tinted.of(PLANET_SNOW, Palette.Channel.SNOW),
+            Tinted.of(PLANET_ICE, Palette.Channel.ICE),
+            Tinted.of(PLANET_ASH, Palette.Channel.ASH),
+            Tinted.of(PLANET_CRYSTAL, Palette.Channel.ACCENT),
+            // 方块上的颜色按高度分层（见 PlanetTints），物品用岩石色
+            Tinted.of(PLANET_STRATA, Palette.Channel.ROCK));
 
     private UniverseBlocks() {
     }

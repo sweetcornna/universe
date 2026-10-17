@@ -31,6 +31,7 @@ final class UniverseBlockLoot extends BlockLootSubProvider {
         this.dropWhenSilkTouch(UniverseBlocks.PLANET_ICE.get());
         this.dropSelf(UniverseBlocks.PLANET_ASH.get());
         this.dropSelf(UniverseBlocks.PLANET_CRYSTAL.get());
+        this.dropSelf(UniverseBlocks.PLANET_STRATA.get());
     }
 
     @Override

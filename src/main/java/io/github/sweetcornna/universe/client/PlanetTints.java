@@ -13,6 +13,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.core.galaxy.Palette;
+import io.github.sweetcornna.universe.core.terrain.TerrainModel;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
 import net.minecraft.client.color.block.BlockTintSource;
 import net.minecraft.client.color.item.ItemTintSource;
@@ -48,12 +49,29 @@ public final class PlanetTints {
                 List<BlockTintSource> sources = new ArrayList<>();
                 sources.add(block(tinted.primary()));
                 tinted.secondary().ifPresent(channel -> sources.add(block(channel)));
+                if (tinted.block() == UniverseBlocks.PLANET_STRATA) {
+                    sources.set(0, STRATA);
+                }
                 event.register(sources, tinted.block().get());
             }
         });
         modBus.addListener(RegisterColorHandlersEvent.ItemTintSources.class,
                 event -> event.register(Universe.id("planet_palette"), PaletteItemTint.MAP_CODEC));
     }
+
+    /** 岩层：按方块的 Y 查当前星球的层序表。 */
+    private static final BlockTintSource STRATA = new BlockTintSource() {
+        @Override
+        public int color(BlockState state) {
+            return ARGB.opaque(ClientGalaxy.currentPalette().rock());
+        }
+
+        @Override
+        public int colorInWorld(BlockState state, BlockAndTintGetter level, BlockPos pos) {
+            int[] strata = ClientGalaxy.currentStrata();
+            return ARGB.opaque(strata[Math.clamp(pos.getY() - TerrainModel.MIN_Y, 0, strata.length - 1)]);
+        }
+    };
 
     public static BlockTintSource block(Palette.Channel channel) {
         return new BlockTintSource() {

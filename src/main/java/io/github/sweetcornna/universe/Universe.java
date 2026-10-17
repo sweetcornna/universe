@@ -8,6 +8,7 @@ import io.github.sweetcornna.universe.network.UniverseNetwork;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
 import io.github.sweetcornna.universe.registry.UniverseCreativeTabs;
 import io.github.sweetcornna.universe.registry.UniverseItems;
+import io.github.sweetcornna.universe.registry.UniverseWorldgen;
 import io.github.sweetcornna.universe.world.DimensionCommand;
 import io.github.sweetcornna.universe.world.RuntimeDimensions;
 import net.minecraft.resources.Identifier;
@@ -31,6 +32,7 @@ public final class Universe {
         UniverseBlocks.register(modBus);
         UniverseItems.register(modBus);
         UniverseCreativeTabs.register(modBus);
+        UniverseWorldgen.register(modBus);
         UniverseNetwork.registerEvents(modBus);
 
         IEventBus gameBus = NeoForge.EVENT_BUS;

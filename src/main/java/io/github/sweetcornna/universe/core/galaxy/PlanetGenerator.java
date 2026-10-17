@@ -1,7 +1,9 @@
 package io.github.sweetcornna.universe.core.galaxy;
 
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.List;
+import java.util.Map;
 
 import io.github.sweetcornna.universe.core.galaxy.Atmosphere.Kind;
 import io.github.sweetcornna.universe.core.galaxy.WeatherProfile.Precipitation;
@@ -83,7 +85,8 @@ final class PlanetGenerator {
         DayCycle dayCycle = decideDayCycle(Rng.of(Seeds.derive(seed, "day")), spec, moon);
         double swing = decideTemperatureSwing(Rng.of(Seeds.derive(seed, "swing")), atmosphere, dayCycle);
         WeatherProfile weather = decideWeather(Rng.of(Seeds.derive(seed, "weather")), type, atmosphere, temperature);
-        TerrainProfile terrain = decideTerrain(Rng.of(Seeds.derive(seed, "terrain")), type, liquid, moon);
+        TerrainProfile terrain = decideTerrain(Rng.of(Seeds.derive(seed, "terrain")), type, liquid, moon)
+                .withLandforms(decideLandforms(Rng.of(Seeds.derive(seed, "landforms")), type, liquid, moon));
         Ecology ecology = decideEcology(Rng.of(Seeds.derive(seed, "ecology")), type, moon, Seeds.derive(seed, "species"));
         Palette palette = PlanetPalettes.generate(Rng.of(Seeds.derive(seed, "palette")), type, atmosphere, liquid, star, temperature);
         List<Resource.Deposit> resources = decideResources(Rng.of(Seeds.derive(seed, "resources")), type, star, moon);
@@ -277,43 +280,134 @@ final class PlanetGenerator {
     private static TerrainProfile decideTerrain(Rng rng, PlanetType type, Liquid liquid, boolean moon) {
         int sea = 63;
         TerrainProfile t = switch (type) {
-            case HABITABLE -> new TerrainProfile(sea, sea + rng.range(4, 14), rng.range(400, 900), rng.range(20, 60),
-                    rng.range(8, 24), rng.range(0.3, 0.6), rng.range(0.1, 0.5), rng.range(0, 0.15), 0,
-                    rng.range(0.3, 0.7), rng.range(0, 0.25), 0, false);
-            case OCEAN -> new TerrainProfile(sea, sea - rng.range(4, 16), rng.range(300, 700), rng.range(25, 55),
-                    rng.range(4, 14), rng.range(0.2, 0.5), rng.range(0, 0.3), 0, 0,
-                    rng.range(0.2, 0.5), rng.range(0, 0.15), 0, false);
-            case BARREN -> new TerrainProfile(sea, rng.range(70, 90), rng.range(300, 1000), rng.range(10, 50),
-                    rng.range(4, 16), rng.range(0.3, 0.8), rng.range(0, 0.4), rng.range(0, 0.3), rng.range(0.4, 1.0),
-                    rng.range(0.2, 0.6), rng.range(0, 0.1), rng.range(0, 0.1), false);
-            case FROZEN -> new TerrainProfile(sea, rng.range(66, 90), rng.range(400, 1000), rng.range(15, 70),
-                    rng.range(6, 20), rng.range(0.2, 0.5), rng.range(0.2, 0.7), rng.range(0, 0.2), rng.range(0, 0.5),
-                    rng.range(0.3, 0.7), rng.range(0.1, 0.35), rng.range(0, 0.3), false);
-            case SCORCHED -> new TerrainProfile(rng.range(50, 63), rng.range(66, 85), rng.range(250, 700), rng.range(15, 60),
-                    rng.range(6, 22), rng.range(0.4, 0.9), rng.range(0.2, 0.6), rng.range(0, 0.25), rng.range(0, 0.3),
-                    rng.range(0.4, 0.9), rng.range(0.1, 0.4), rng.range(0.2, 0.7), false);
-            case TOXIC -> new TerrainProfile(sea, rng.range(64, 72), rng.range(250, 600), rng.range(10, 35),
-                    rng.range(4, 14), rng.range(0.3, 0.6), rng.range(0, 0.3), rng.range(0, 0.2), 0,
-                    rng.range(0.3, 0.6), rng.range(0, 0.3), rng.range(0, 0.2), false);
-            case IRRADIATED -> new TerrainProfile(sea, rng.range(68, 85), rng.range(300, 800), rng.range(10, 45),
-                    rng.range(5, 18), rng.range(0.4, 0.8), rng.range(0.1, 0.5), rng.range(0.1, 0.5), rng.range(0.1, 0.5),
-                    rng.range(0.2, 0.6), rng.range(0, 0.2), rng.range(0.3, 0.8), false);
-            case EXOTIC -> new TerrainProfile(sea, rng.range(66, 90), rng.range(200, 900), rng.range(20, 90),
-                    rng.range(6, 30), rng.range(0.3, 0.9), rng.range(0, 0.8), rng.range(0, 0.6), rng.range(0, 0.3),
-                    rng.range(0.3, 0.8), rng.range(0.3, 0.8), rng.range(0, 0.8), rng.chance(0.5));
+            case HABITABLE -> new TerrainProfile(sea, sea + rng.range(4, 14), rng.range(700, 1500), rng.range(30, 70),
+                    rng.range(10, 28), rng.range(0.3, 0.6), rng.range(0.3, 0.8), rng.range(0, 0.15), 0,
+                    rng.range(0.3, 0.7), rng.range(0, 0.25), 0, false, List.of());
+            case OCEAN -> new TerrainProfile(sea, sea - rng.range(4, 16), rng.range(500, 1100), rng.range(30, 60),
+                    rng.range(6, 16), rng.range(0.2, 0.5), rng.range(0.2, 0.6), 0, 0,
+                    rng.range(0.2, 0.5), rng.range(0, 0.15), 0, false, List.of());
+            case BARREN -> new TerrainProfile(sea, rng.range(70, 90), rng.range(500, 1500), rng.range(20, 60),
+                    rng.range(6, 18), rng.range(0.3, 0.8), rng.range(0.1, 0.6), rng.range(0, 0.3), rng.range(0.5, 1.0),
+                    rng.range(0.2, 0.6), rng.range(0, 0.1), rng.range(0, 0.1), false, List.of());
+            case FROZEN -> new TerrainProfile(sea, rng.range(66, 90), rng.range(600, 1500), rng.range(25, 80),
+                    rng.range(8, 22), rng.range(0.2, 0.5), rng.range(0.4, 0.9), rng.range(0, 0.2), rng.range(0, 0.5),
+                    rng.range(0.3, 0.7), rng.range(0.1, 0.35), rng.range(0, 0.3), false, List.of());
+            case SCORCHED -> new TerrainProfile(rng.range(50, 63), rng.range(66, 85), rng.range(400, 1100), rng.range(25, 70),
+                    rng.range(8, 24), rng.range(0.4, 0.9), rng.range(0.3, 0.8), rng.range(0, 0.25), rng.range(0, 0.3),
+                    rng.range(0.4, 0.9), rng.range(0.1, 0.4), rng.range(0.2, 0.7), false, List.of());
+            case TOXIC -> new TerrainProfile(sea, rng.range(64, 72), rng.range(400, 1000), rng.range(15, 45),
+                    rng.range(6, 16), rng.range(0.3, 0.6), rng.range(0.1, 0.5), rng.range(0, 0.2), 0,
+                    rng.range(0.3, 0.6), rng.range(0, 0.3), rng.range(0, 0.2), false, List.of());
+            case IRRADIATED -> new TerrainProfile(sea, rng.range(68, 85), rng.range(500, 1200), rng.range(20, 55),
+                    rng.range(6, 20), rng.range(0.4, 0.8), rng.range(0.2, 0.6), rng.range(0.1, 0.5), rng.range(0.1, 0.5),
+                    rng.range(0.2, 0.6), rng.range(0, 0.2), rng.range(0.3, 0.8), false, List.of());
+            case EXOTIC -> new TerrainProfile(sea, rng.range(66, 90), rng.range(400, 1400), rng.range(30, 90),
+                    rng.range(8, 30), rng.range(0.3, 0.9), rng.range(0.2, 0.9), rng.range(0, 0.6), rng.range(0, 0.3),
+                    rng.range(0.3, 0.8), rng.range(0.3, 0.8), rng.range(0, 0.8), rng.chance(0.5), List.of());
             case GAS_GIANT -> TerrainProfile.HOME;
         };
         if (moon) {
             // 卫星小、没有风化：陨坑更多，起伏更缓
             t = new TerrainProfile(t.seaLevel(), t.baseHeight(), t.continentScale() * 0.7, t.heightVariation() * 0.8,
                     t.hilliness(), t.roughness(), t.ridges() * 0.6, t.terraces(), Math.min(1, t.craters() + 0.35),
-                    t.caves(), t.overhangs(), t.spikes(), t.floatingIslands());
+                    t.caves(), t.overhangs(), t.spikes(), t.floatingIslands(), List.of());
         }
         if (liquid == Liquid.NONE && t.baseHeight() <= t.seaLevel()) {
             t = new TerrainProfile(t.seaLevel(), t.seaLevel() + 6, t.continentScale(), t.heightVariation(), t.hilliness(),
-                    t.roughness(), t.ridges(), t.terraces(), t.craters(), t.caves(), t.overhangs(), t.spikes(), t.floatingIslands());
+                    t.roughness(), t.ridges(), t.terraces(), t.craters(), t.caves(), t.overhangs(), t.spikes(),
+                    t.floatingIslands(), List.of());
         }
         return t;
+    }
+
+    /**
+     * 标志性地貌：按星球类型加权抽一到三种，各自带一个强度。用单独的随机流，不影响其他地形参数。
+     */
+    static List<Landform.Feature> decideLandforms(Rng rng, PlanetType type, Liquid liquid, boolean moon) {
+        boolean wet = liquid != Liquid.NONE;
+        Map<Landform, Double> weights = new EnumMap<>(Landform.class);
+        switch (type) {
+            case HABITABLE -> {
+                weights.put(Landform.MOUNTAIN_RANGES, 3.0);
+                weights.put(Landform.KARST, 1.2);
+                weights.put(Landform.PLATEAUS, 1.2);
+                weights.put(Landform.CANYONS, 1.0);
+                weights.put(Landform.MESAS, 0.8);
+                weights.put(Landform.ARCHIPELAGO, 0.8);
+                weights.put(Landform.RIFTS, 0.5);
+                weights.put(Landform.VOLCANOES, 0.5);
+                weights.put(Landform.SINKHOLES, 0.4);
+                weights.put(Landform.DUNES, 0.4);
+            }
+            case OCEAN -> {
+                weights.put(Landform.ARCHIPELAGO, 4.0);
+                weights.put(Landform.VOLCANOES, 2.0);
+                weights.put(Landform.KARST, 2.0);
+                weights.put(Landform.MOUNTAIN_RANGES, 1.0);
+            }
+            case BARREN -> {
+                weights.put(Landform.PLATEAUS, 1.5);
+                weights.put(Landform.RIFTS, 1.2);
+                weights.put(Landform.MOUNTAIN_RANGES, 1.0);
+                weights.put(Landform.DUNES, 1.0);
+                weights.put(Landform.MESAS, 0.6);
+                weights.put(Landform.SINKHOLES, 0.5);
+            }
+            case FROZEN -> {
+                weights.put(Landform.MOUNTAIN_RANGES, 3.0);
+                weights.put(Landform.RIFTS, 1.5);
+                weights.put(Landform.CANYONS, 1.0);
+                weights.put(Landform.PLATEAUS, 1.0);
+                weights.put(Landform.SINKHOLES, 0.4);
+            }
+            case SCORCHED -> {
+                weights.put(Landform.VOLCANOES, 4.0);
+                weights.put(Landform.RIFTS, 2.0);
+                weights.put(Landform.MESAS, 1.0);
+                weights.put(Landform.CANYONS, 1.0);
+                weights.put(Landform.DUNES, wet ? 0.3 : 1.5);
+                weights.put(Landform.PLATEAUS, 1.0);
+            }
+            case TOXIC -> {
+                weights.put(Landform.SINKHOLES, 2.0);
+                weights.put(Landform.KARST, 1.5);
+                weights.put(Landform.MESAS, 1.0);
+                weights.put(Landform.ARCHIPELAGO, 1.0);
+                weights.put(Landform.VOLCANOES, 1.0);
+            }
+            case IRRADIATED -> {
+                weights.put(Landform.MESAS, 2.0);
+                weights.put(Landform.CANYONS, 2.0);
+                weights.put(Landform.DUNES, 2.0);
+                weights.put(Landform.RIFTS, 1.0);
+                weights.put(Landform.KARST, 1.0);
+            }
+            case EXOTIC -> {
+                weights.put(Landform.KARST, 2.0);
+                weights.put(Landform.MESAS, 1.5);
+                weights.put(Landform.MOUNTAIN_RANGES, 1.5);
+                weights.put(Landform.CANYONS, 1.0);
+                weights.put(Landform.VOLCANOES, 1.0);
+                weights.put(Landform.SINKHOLES, 1.0);
+                weights.put(Landform.ARCHIPELAGO, 1.0);
+            }
+            case GAS_GIANT -> {
+                return List.of();
+            }
+        }
+        if (!wet) {
+            weights.remove(Landform.ARCHIPELAGO);
+        }
+        int count = moon ? 1 : 1 + (rng.chance(0.6) ? 1 : 0) + (rng.chance(0.25) ? 1 : 0);
+        List<Landform.Feature> features = new ArrayList<>();
+        for (int i = 0; i < count && !weights.isEmpty(); i++) {
+            Landform landform = rng.weighted(new ArrayList<>(weights.keySet()), weights::get);
+            weights.remove(landform);
+            // 第一种是主地貌，最强
+            double strength = i == 0 ? rng.range(0.7, 1.0) : rng.range(0.4, 0.8);
+            features.add(new Landform.Feature(landform, strength));
+        }
+        return features;
     }
 
     private static Ecology decideEcology(Rng rng, PlanetType type, boolean moon, long speciesSeed) {

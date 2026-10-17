@@ -154,6 +154,12 @@ io.github.sweetcornna.universe
 | `RegisterDimensionTransitionScreenEvent` 只在客户端启动时触发一次，按维度键精确匹配（见 §3.4） | 已确认 |
 | 传送用 `Entity#teleport(TeleportTransition)`；`TeleportTransition.PLACE_PORTAL_TICKET` 在目标点加 15 秒的传送门票据 | 已确认，S1 在用 |
 | 命令权限写法：`.requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))` | 已确认，S1 在用 |
+| 密度函数改为编译式：`compileSampler(CompileContext)` 返回 `DensitySampler`（`sampleVolume`/`sampleValue`），另有 `rewriteChildren`、`range()`（`net.minecraft.util.Interval`）、`domainAxes()`；二维函数按列填 `DensityBuffer` | 已确认，S2 在用 |
+| `NoiseRouter` 只剩 8 个字段，含水层参数移到 `NoiseGeneratorSettings` 的 `Optional<Aquifer.Config>`；原 `SurfaceRules` 改名为 `levelgen.material`（`MaterialRules`、`MaterialCondition`，注册表 `MATERIAL_CONDITION_TYPE`） | 已确认，S2 在用 |
+| `LevelStem(Holder<DimensionType>, ChunkGenerator, OptionalLong seedOverride)`：可以给单个维度换种子，原版噪声和洞穴随之改变 | 已确认，S2 在用 |
+| 维度类型带时间线（`HolderSet<Timeline>`），同一时钟上的时间标记名必须唯一；不带周期、只有一个关键帧的时间线就是常量；床的规则是环境属性 `gameplay/bed_rule` | 已确认，S2 在用 |
+| 群系的生物刷新改为环境属性；配置地物的键是 `ResourceKey<Feature>`；同一群系源里各群系的地物列表顺序要一致；原版矿石认 `stone_ore_replaceables` 标签 | 已确认，S2 在用 |
+| "阻挡移动"改由方块标签决定：`blocks_motion_no_leaves` → `blocks_motion` → 高度图 `MOTION_BLOCKING`、窒息、传送落点、挡流体等。模组的实心方块不进这个标签，高度图会穿过整片地形 | 已确认，S2 踩过 |
 
 原则：拿不准的 API，先查源码再动手写，核实后把结果补进这张表。源码位置：
 

@@ -40,6 +40,10 @@ neoForge {
         client {
             client()
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+            // 调试用：./gradlew runClient -PquickPlay="New World" 跳过标题界面直接进入存档
+            if (project.hasProperty('quickPlay')) {
+                programArguments.addAll '--quickPlaySingleplayer', project.property('quickPlay').toString()
+            }
         }
 
         server {

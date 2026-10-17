@@ -5,7 +5,7 @@
     "tints": [
       {
         "type": "universe:planet_palette",
-        "channel": "surface"
+        "channel": "grass"
       },
       {
         "type": "universe:planet_palette",

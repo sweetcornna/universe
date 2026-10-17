@@ -1,6 +1,7 @@
 package io.github.sweetcornna.universe.datagen;
 
 import io.github.sweetcornna.universe.Universe;
+import io.github.sweetcornna.universe.core.terrain.BiomeKind;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
 import net.minecraft.data.PackOutput;
 import net.neoforged.neoforge.common.data.LanguageProvider;
@@ -33,6 +34,11 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
     @Override
     protected void addTranslations() {
         both("itemGroup.universe", "寰宇", "Universe");
+        both("universe.bed.no_sleep_on_planet", "这颗星球的昼夜和母星不同步，床只能用来设置重生点",
+                "This planet's days don't follow the homeworld's; beds here only set your respawn point");
+        for (BiomeKind kind : BiomeKind.values()) {
+            both("biome.universe." + kind.serializedName(), kind.nameZh(), kind.nameEn());
+        }
 
         block(UniverseBlocks.PLANET_ROCK.get(), "星岩", "Planet Rock");
         block(UniverseBlocks.PLANET_COBBLESTONE.get(), "星岩碎石", "Planet Cobblestone");
@@ -44,6 +50,7 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         block(UniverseBlocks.PLANET_ICE.get(), "星冰", "Planet Ice");
         block(UniverseBlocks.PLANET_ASH.get(), "灰烬", "Ash");
         block(UniverseBlocks.PLANET_CRYSTAL.get(), "星晶", "Planet Crystal");
+        block(UniverseBlocks.PLANET_STRATA.get(), "岩层", "Planet Strata");
     }
 
     private void block(net.minecraft.world.level.block.Block block, String zh, String en) {

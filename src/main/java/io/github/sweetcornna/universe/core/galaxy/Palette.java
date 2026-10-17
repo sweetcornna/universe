@@ -1,5 +1,7 @@
 package io.github.sweetcornna.universe.core.galaxy;
 
+import io.github.sweetcornna.universe.core.procgen.Colors;
+
 /**
  * 星球的配色，颜色都是 {@code 0xRRGGBB}。
  *
@@ -40,7 +42,13 @@ public record Palette(
 
     /** 配色里的一项，方块按它决定染什么颜色。 */
     public enum Channel {
-        SURFACE, SOIL, ROCK, SAND, FOLIAGE, GRASS, LIQUID, SKY, FOG, CLOUD, ACCENT;
+        SURFACE, SOIL, ROCK, SAND, FOLIAGE, GRASS, LIQUID, SKY, FOG, CLOUD, ACCENT,
+        /** 雪：近白色，带一点天空的色调。 */
+        SNOW,
+        /** 冰：淡蓝，带一点液体的颜色。 */
+        ICE,
+        /** 灰烬：地表色压暗。 */
+        ASH;
 
         public int of(Palette palette) {
             return switch (this) {
@@ -55,6 +63,9 @@ public record Palette(
                 case FOG -> palette.fog();
                 case CLOUD -> palette.cloud();
                 case ACCENT -> palette.accent();
+                case SNOW -> Colors.lerp(0xF2F6FA, palette.sky(), 0.12);
+                case ICE -> Colors.lerp(0xB4D2F0, palette.liquid(), 0.25);
+                case ASH -> Colors.lerp(palette.surface(), 0x3A3634, 0.55);
             };
         }
     }

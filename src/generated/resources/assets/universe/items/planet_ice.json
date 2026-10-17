@@ -5,11 +5,11 @@
     "tints": [
       {
         "type": "universe:planet_palette",
-        "channel": "soil"
+        "channel": "ice"
       },
       {
         "type": "universe:planet_palette",
-        "channel": "soil"
+        "channel": "ice"
       }
     ]
   }

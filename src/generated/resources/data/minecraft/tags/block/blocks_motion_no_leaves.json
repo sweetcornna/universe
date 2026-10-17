@@ -1,0 +1,15 @@
+{
+  "values": [
+    "universe:planet_rock",
+    "universe:planet_cobblestone",
+    "universe:planet_soil",
+    "universe:planet_turf",
+    "universe:planet_regolith",
+    "universe:planet_sand",
+    "universe:planet_snow",
+    "universe:planet_ice",
+    "universe:planet_ash",
+    "universe:planet_strata",
+    "universe:planet_crystal"
+  ]
+}
