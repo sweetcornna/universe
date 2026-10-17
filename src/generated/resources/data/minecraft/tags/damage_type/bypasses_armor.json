@@ -1,0 +1,9 @@
+{
+  "values": [
+    "universe:vacuum",
+    "universe:cold",
+    "universe:heat",
+    "universe:toxic",
+    "universe:radiation"
+  ]
+}

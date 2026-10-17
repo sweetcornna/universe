@@ -85,6 +85,10 @@ final class UniverseModelProvider extends ModelProvider {
         }
         ships(blockModels);
         ores(blockModels, itemModels);
+        for (DeferredItem<?> item : List.of(UniverseItems.EXOSUIT_HELMET, UniverseItems.EXOSUIT_CHESTPLATE, UniverseItems.EXOSUIT_LEGGINGS,
+                UniverseItems.EXOSUIT_BOOTS, UniverseItems.OXYGEN_CAPSULE, UniverseItems.HAZARD_CELL)) {
+            itemModels.generateFlatItem(item.get(), ModelTemplates.FLAT_ITEM);
+        }
     }
 
     private static void ores(BlockModelGenerators blockModels, ItemModelGenerators itemModels) {

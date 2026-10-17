@@ -1,0 +1,6 @@
+{
+  "effects": "freezing",
+  "exhaustion": 0.0,
+  "message_id": "universe.cold",
+  "scaling": "never"
+}

@@ -39,6 +39,41 @@ final class UniverseRecipes extends RecipeProvider {
                 .save(this.output, "universe:leather_from_alien_hide");
         this.ships();
         this.ores();
+        this.suit();
+    }
+
+    /** 外骨骼：主世界的铁、铜、玻璃、红石就能做，第一次登月前要备好。 */
+    private void suit() {
+        this.shaped(RecipeCategory.COMBAT, UniverseItems.EXOSUIT_HELMET.get())
+                .pattern("ICI").pattern("IGI")
+                .define('I', Items.IRON_INGOT).define('C', Items.COPPER_INGOT).define('G', Items.GLASS_PANE)
+                .unlockedBy(getHasName(Items.COPPER_INGOT), this.has(Items.COPPER_INGOT))
+                .save(this.output);
+        this.shaped(RecipeCategory.COMBAT, UniverseItems.EXOSUIT_CHESTPLATE.get())
+                .pattern("I I").pattern("CRC").pattern("IBI")
+                .define('I', Items.IRON_INGOT).define('C', Items.COPPER_INGOT).define('R', Items.REDSTONE_BLOCK).define('B', Items.BUCKET)
+                .unlockedBy(getHasName(Items.COPPER_INGOT), this.has(Items.COPPER_INGOT))
+                .save(this.output);
+        this.shaped(RecipeCategory.COMBAT, UniverseItems.EXOSUIT_LEGGINGS.get())
+                .pattern("ICI").pattern("I I").pattern("I I")
+                .define('I', Items.IRON_INGOT).define('C', Items.COPPER_INGOT)
+                .unlockedBy(getHasName(Items.COPPER_INGOT), this.has(Items.COPPER_INGOT))
+                .save(this.output);
+        this.shaped(RecipeCategory.COMBAT, UniverseItems.EXOSUIT_BOOTS.get())
+                .pattern("C C").pattern("I I")
+                .define('I', Items.IRON_INGOT).define('C', Items.COPPER_INGOT)
+                .unlockedBy(getHasName(Items.COPPER_INGOT), this.has(Items.COPPER_INGOT))
+                .save(this.output);
+        // 氧气罐：树叶里的氧压进瓶子；防护电池：铜和红石
+        this.shapeless(RecipeCategory.MISC, UniverseItems.OXYGEN_CAPSULE.get(), 2)
+                .requires(Items.GLASS_BOTTLE).requires(Items.GLASS_BOTTLE).requires(Items.COPPER_INGOT)
+                .requires(ItemTags.LEAVES).requires(ItemTags.LEAVES)
+                .unlockedBy(getHasName(Items.GLASS_BOTTLE), this.has(Items.GLASS_BOTTLE))
+                .save(this.output);
+        this.shapeless(RecipeCategory.MISC, UniverseItems.HAZARD_CELL.get(), 2)
+                .requires(Items.COPPER_INGOT).requires(Items.REDSTONE).requires(Items.REDSTONE).requires(ItemTags.COALS)
+                .unlockedBy(getHasName(Items.REDSTONE), this.has(Items.REDSTONE))
+                .save(this.output);
     }
 
     /** 冶炼：粗矿烧成锭，精准采集下来的矿石直接烧出产物；高炉快一倍。 */

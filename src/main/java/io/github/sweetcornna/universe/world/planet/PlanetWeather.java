@@ -125,6 +125,20 @@ public final class PlanetWeather extends SavedData {
         return true;
     }
 
+    /** 星球生存用：0 晴，1 雨雪或沙尘，2 风暴（雷暴、强沙尘暴）。不是星球维度时为 0。 */
+    public static int severity(ServerLevel level) {
+        Optional<Planet> planet = Planets.planet(level);
+        if (planet.isEmpty()) {
+            return 0;
+        }
+        PlanetWeather weather = of(level, planet.get().weather());
+        float strength = Math.max(level.rainLevel, weather.intensity);
+        if (strength < 0.2F) {
+            return 0;
+        }
+        return level.thunderLevel > 0.5F || weather.cycle.storm() && strength > 0.5F ? 2 : 1;
+    }
+
     /** 命令用：设成晴天、普通天气或风暴，持续 {@code ticks} 刻。不是星球维度时返回 false。 */
     public static boolean force(ServerLevel level, boolean active, boolean storm, int ticks) {
         Optional<Planet> planet = Planets.planet(level);

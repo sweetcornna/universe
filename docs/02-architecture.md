@@ -29,6 +29,7 @@ io.github.sweetcornna.universe
 │   ├── space/                 太空维度里的天体布局
 │   ├── factory/               传送带线路、分拣器、配方执行
 │   ├── power/                 电网的连通和结算
+│   ├── survival/              生命维持、危害防护、喷气背包的数值，重力模型
 │   ├── logistics/             物流站供需匹配与运输排程
 │   └── dyson/                 戴森云与球壳的结构、建造进度、发电
 ├── registry/                  各类 DeferredRegister
@@ -45,7 +46,7 @@ io.github.sweetcornna.universe
 └── client/                    渲染、HUD、界面
 ```
 
-目前建了入口类、`core` 下的 `procgen`、`galaxy`、`terrain`、`sky`、`weather`、`ecology`、`ship`、`space`、`factory`、`power`，以及 `registry`、`block`、`entity`、`world`、`data`、`network`、`datagen`、`client`、`mixin`，其余的包在用到时再建。
+目前建了入口类、`core` 下的 `procgen`、`galaxy`、`terrain`、`sky`、`weather`、`ecology`、`ship`、`space`、`factory`、`power`、`survival`，以及 `registry`、`block`、`entity`、`world`、`survival`、`data`、`network`、`datagen`、`client`、`mixin`，其余的包在用到时再建。
 
 ## 3. 关键方案
 
@@ -188,6 +189,11 @@ io.github.sweetcornna.universe
 | 自定义刷怪器 `CustomSpawner#tick(ServerLevel, boolean)` 只在游戏规则 `spawn_mobs` 打开时调用；NeoForge 的 `ModifyCustomSpawnersEvent` 在 `ServerLevel` 构造器末尾触发，运行时创建的维度也会触发 | 已确认，`FaunaSpawner` 在用 |
 | 游戏规则改名：`spawn_mobs`（原 doMobSpawning）、`advance_time`（原 doDaylightCycle）、`advance_weather` 等 | 已确认 |
 | 配方也是数据包注册表的条目：数据生成用 `GatherDataRegistryEntriesEvent#recipe(RecipeProvider 的构造器)`；`RecipeProvider#simpleCookingRecipe` 会把配方存进 minecraft 命名空间，模组要自己指定 ID | 已确认 |
+| 盔甲：`Item.Properties#humanoidArmor(ArmorMaterial, ArmorType)`；`ArmorMaterial` 是记录（耐久倍数、各部位护甲值、附魔能力、穿戴声音、韧性、击退抗性、修补材料标签、外观键）。外观键是 `EquipmentAssets.ROOT_ID` 下的 `ResourceKey`，对应 `assets/<命名空间>/equipment/<名字>.json`，贴图在 `textures/entity/equipment/humanoid/`、`humanoid_leggings/` | 已确认，外骨骼在用 |
+| 数据附件同步：`AttachmentType.builder(...).sync((holder, player) -> ..., StreamCodec)`，之后 `setData` 自动发给对应的玩家；可变对象改完调 `syncData` | 已确认，外骨骼 HUD 在用 |
+| 伤害类型是数据包注册表的条目：`GatherDataRegistryEntriesEvent#add(Registries.DAMAGE_TYPE, ...)`，标签继承 `DamageTypeTagsProvider(输出, 查找, 模组 ID)`（数据生成的查找里已经有本模组的条目）；死亡消息键是 `death.attack.<message_id>`；造成伤害用 `hurtServer(ServerLevel, DamageSource, float)`，来源 `level.damageSources().source(键)` | 已确认 |
+| 重力、起跳速度、安全摔落高度、摔落伤害倍数都是会同步的属性（`Attributes.GRAVITY` 等）；`AttributeInstance#addTransientModifier` 加不存档的修饰。`EntityJoinLevelEvent` 在换维度、登录、重生、读档时都会触发 | 已确认，星球重力在用 |
+| 玩家移动由客户端决定：要改本地玩家的速度，在客户端的 `PlayerTickEvent.Pre` 里 `setDeltaMovement`（这时还没执行 `aiStep`）；按键状态在 `LocalPlayer#input.keyPresses`（`Input` 记录），服务端能看到的是 `ServerPlayer#getLastClientInput()` | 已确认，喷气背包在用 |
 | 原版 `minecraft:ores` 标签已经在 `blocks_motion_no_leaves` 里，矿石进 `ores` 就不用再单独加；`BlockTags` 里没有煤矿标签，要用 `BlockItemTags.COAL_ORES.block()`。矿石方块是 `DropExperienceBlock(IntProvider, 属性)`，掉落表照原版的 `createOreDrop` 或"精准采集分支 + 数量 + 时运加成 + 爆炸损耗" | 已确认，星球矿石在用 |
 | 战利品表的数值提供器改为 `ContextIntProviders`、`ContextFloatProviders`；刷怪蛋是 `SpawnEggItem` 加 `Item.Properties#spawnEgg(type)`，每种刷怪蛋有自己的贴图；实体类型先于物品注册，物品属性里可以直接取实体类型 | 已确认 |
 | 方块能不能整体搬走看 `BlockState#getRelocability(level, pos)`：`BlockRelocability.No` 不能搬，`BlockRelocability.Multiblock#isRelocatable(positions)` 判断床、门这类结构是否整个都在 | 已确认，飞船组装在用 |

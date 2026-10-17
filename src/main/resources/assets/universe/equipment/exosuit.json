@@ -1,0 +1,14 @@
+{
+    "layers": {
+        "humanoid": [
+            {
+                "texture": "universe:exosuit"
+            }
+        ],
+        "humanoid_leggings": [
+            {
+                "texture": "universe:exosuit"
+            }
+        ]
+    }
+}

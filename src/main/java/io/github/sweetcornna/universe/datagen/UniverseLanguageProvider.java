@@ -71,6 +71,7 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         item(UniverseItems.ALIEN_FLYER_SPAWN_EGG.get(), "异星飞兽刷怪蛋", "Alien Flyer Spawn Egg");
         this.ships();
         this.ores();
+        this.suit();
     }
 
     private void ships() {
@@ -133,6 +134,39 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("hud.universe.ship.hint.no_fuel", "燃料耗尽：着陆后给燃料舱加燃料", "Out of fuel: land and refuel the tanks");
         both("hud.universe.ship.target", "%s  %s 格", "%s  %s m");
         both("hud.universe.ship.unlandable", "（不能着陆）", " (no landing)");
+    }
+
+    private void suit() {
+        item(UniverseItems.EXOSUIT_HELMET.get(), "外骨骼头盔", "Exosuit Helmet");
+        item(UniverseItems.EXOSUIT_CHESTPLATE.get(), "外骨骼胸甲", "Exosuit Chestplate");
+        item(UniverseItems.EXOSUIT_LEGGINGS.get(), "外骨骼护腿", "Exosuit Leggings");
+        item(UniverseItems.EXOSUIT_BOOTS.get(), "外骨骼靴子", "Exosuit Boots");
+        item(UniverseItems.OXYGEN_CAPSULE.get(), "氧气罐", "Oxygen Capsule");
+        item(UniverseItems.HAZARD_CELL.get(), "防护电池", "Hazard Cell");
+        both("hazard.universe.cold", "寒冷", "Cold");
+        both("hazard.universe.heat", "高温", "Heat");
+        both("hazard.universe.toxic", "毒性", "Toxicity");
+        both("hazard.universe.radiation", "辐射", "Radiation");
+        both("hud.universe.suit.title", "外骨骼", "Exosuit");
+        both("hud.universe.suit.planet", "%s  %s °C  %s g", "%s  %s °C  %s g");
+        both("hud.universe.suit.oxygen", "氧气", "Oxygen");
+        both("hud.universe.suit.jetpack", "喷气背包", "Jetpack");
+        both("hud.universe.suit.unsealed", "未密封", "unsealed");
+        both("hud.universe.suit.near_heat", "取暖中", "warming");
+        both("hud.universe.suit.near_cold", "降温中", "cooling");
+        both("hud.universe.suit.cabin", "舱内供氧", "cabin air");
+        both("hud.universe.suit.sheltered", "有遮挡", "sheltered");
+        both("hud.universe.suit.storm", "风暴", "storm");
+        both("hud.universe.suit.warning.oxygen", "氧气即将耗尽", "Oxygen low");
+        both("hud.universe.suit.warning.no_oxygen", "氧气耗尽！", "Out of oxygen!");
+        both("hud.universe.suit.warning.hazard", "%s防护即将耗尽", "%s protection low");
+        both("message.universe.suit.oxygen_used", "用掉一个氧气罐：氧气 +50%", "Used an oxygen capsule: oxygen +50%");
+        both("message.universe.suit.cell_used", "用掉一个防护电池：防护 +50%", "Used a hazard cell: protection +50%");
+        both("death.attack.universe.vacuum", "%1$s耗尽了氧气", "%1$s ran out of oxygen");
+        both("death.attack.universe.cold", "%1$s冻僵了", "%1$s froze to death");
+        both("death.attack.universe.heat", "%1$s被高温烤熟了", "%1$s was cooked by the heat");
+        both("death.attack.universe.toxic", "%1$s吸进了太多毒气", "%1$s breathed too much toxic air");
+        both("death.attack.universe.radiation", "%1$s死于辐射", "%1$s died of radiation");
     }
 
     private void ores() {

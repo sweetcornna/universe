@@ -22,6 +22,7 @@
 | [0007](adr/0007-planet-ecology.md) | 星球生态：植物和动物 | 已采纳 |
 | [0008](adr/0008-block-built-ships.md) | 飞船：方块拼装、服务端飞控、太空维度用真实坐标 | 已采纳 |
 | [0009](adr/0009-belts-and-power-core.md) | 工厂模拟的核心：按线路推进的传送带，覆盖式电网 | 已采纳 |
+| [0010](adr/0010-exosuit-and-hazards.md) | 星球生存：外骨骼、环境危害和重力 | 已采纳 |
 
 模板：
 

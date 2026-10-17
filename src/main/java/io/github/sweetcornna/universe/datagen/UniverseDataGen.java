@@ -3,6 +3,7 @@ package io.github.sweetcornna.universe.datagen;
 import java.util.List;
 import java.util.Set;
 
+import io.github.sweetcornna.universe.survival.SurvivalDamage;
 import io.github.sweetcornna.universe.world.planet.gen.PlanetFloraFeature;
 import io.github.sweetcornna.universe.world.planet.gen.PlanetOreFeature;
 import net.minecraft.core.registries.Registries;
@@ -34,6 +35,7 @@ public final class UniverseDataGen {
         event.createProvider(UniverseLanguageProvider.Chinese::new);
         event.createProvider(UniverseLanguageProvider.English::new);
         event.createProvider(UniverseBlockTagsProvider::new);
+        event.createProvider(UniverseDamageTypeTagsProvider::new);
         event.createProvider(PlanetEnvironmentProvider::new);
     }
 
@@ -53,5 +55,6 @@ public final class UniverseDataGen {
                     new PlacedFeature(context.lookup(Registries.FEATURE).getOrThrow(PlanetOreFeature.KEY), List.of(BiomeFilter.biome())));
         });
         event.add(Registries.BIOME, UniverseBiomes::bootstrap);
+        event.add(Registries.DAMAGE_TYPE, SurvivalDamage::bootstrap);
     }
 }
