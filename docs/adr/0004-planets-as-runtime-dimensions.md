@@ -72,6 +72,14 @@
 - 维度 tick 期间不能建维度：飞船跨维度（S4）在服务器 tick 末尾处理，没碰到这个问题。
 - 以下仍未处理，列进 M2：空闲自动卸载（目前只能手动卸载，所以去过的星球会一直加载着，重启时也会恢复）；玩家所在星球被卸载后再上线的落点；服务器暂停期间的卸载；`perWorldTickTimes` 的残留。
 
+## M2 的处理（2026-10-17）
+
+- **空闲自动卸载**：每秒检查一次本模组管的已加载维度，没有玩家、没有强制加载区块（原版 `/forceload`，以及 NeoForge 的方块、实体加载器）的连续 5 分钟就申请卸载，走原有的卸载流程。世界出生点所在的维度不卸载。计时逻辑在 `core.dimension.IdleTimer`，有单元测试。以后的工厂要在玩家离开后继续运转，就用强制加载区块（M3 的设备或"星球锚"）。
+- **上线的落点**：在登录的配置阶段、原版 `PrepareSpawnTask` 之前插一个配置任务（NeoForge 的 `RegisterConfigurationTasksEvent`），读玩家存档里的维度，是本模组管的、没加载的就先加载。任务的 `start` 可能在网络线程上调用，所以加载放在 `tick` 里做：它在服务器 tick 末尾处理连接时调用，不在维度的 tick 里。
+- **重生点在已卸载的维度里**：NeoForge 的 `PlayerRespawnPositionEvent` 里先加载那个维度，再调 `findRespawnPositionAndUseSpawnBlock` 重新算重生位置（原版第一次算时找不到维度，没有消耗重生锚）。
+- **`perWorldTickTimes`**：用访问转换器开放，关闭维度时删掉它的记录。
+- **服务器暂停期间的卸载**：不处理。暂停时所有维度都不 tick，加载着也不花 CPU，只占内存；有玩家上线后计时继续，该卸的会卸。
+
 ## 参考
 
 - [Infiniverse](https://github.com/Commoble/infiniverse)（Commoble，MIT 许可）：运行时创建和移除维度的库。最新版 26.1.0.1 对应 NeoForge 26.1，没有 26.3 版本；它依赖的 `MinecraftServer#forgeGetWorldMap`、`markWorldsDirty` 在 26.3 已删除，不能直接用。本模组参考了它的思路，没有复制代码。它移除维度时不调用 `ServerLevel#close()`，IO 线程会泄漏，这一点没有照搬。

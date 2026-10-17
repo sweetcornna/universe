@@ -47,7 +47,7 @@ public final class Universe {
         UniverseNetwork.registerEvents(modBus);
 
         IEventBus gameBus = NeoForge.EVENT_BUS;
-        RuntimeDimensions.registerEvents(gameBus);
+        RuntimeDimensions.registerEvents(modBus, gameBus);
         PlanetWeather.registerEvents(gameBus);
         FaunaSpawner.registerEvents(gameBus);
         ShipTransit.registerEvents(gameBus);

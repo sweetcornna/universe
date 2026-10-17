@@ -30,6 +30,7 @@ io.github.sweetcornna.universe
 │   ├── factory/               传送带线路、分拣器、配方执行
 │   ├── power/                 电网的连通和结算
 │   ├── survival/              生命维持、危害防护、喷气背包的数值，重力模型，激光热量，扫描时矿脉的合并
+│   ├── dimension/             运行时维度的空闲计时
 │   ├── logistics/             物流站供需匹配与运输排程
 │   └── dyson/                 戴森云与球壳的结构、建造进度、发电
 ├── registry/                  各类 DeferredRegister
@@ -46,7 +47,7 @@ io.github.sweetcornna.universe
 └── client/                    渲染、HUD、界面
 ```
 
-目前建了入口类、`core` 下的 `procgen`、`galaxy`、`terrain`、`sky`、`weather`、`ecology`、`ship`、`space`、`factory`、`power`、`survival`，以及 `registry`、`block`、`entity`、`world`、`survival`、`data`、`network`、`datagen`、`client`、`mixin`，其余的包在用到时再建。
+目前建了入口类、`core` 下的 `procgen`、`galaxy`、`terrain`、`sky`、`weather`、`ecology`、`ship`、`space`、`factory`、`power`、`survival`、`dimension`，以及 `registry`、`block`、`entity`、`world`、`survival`、`data`、`network`、`datagen`、`client`、`mixin`，其余的包在用到时再建。
 
 ## 3. 关键方案
 
@@ -219,6 +220,9 @@ io.github.sweetcornna.universe
 | 遍历区块里的方块：`LevelChunkSection#hasOnlyAir()`、`maybeHas(谓词)` 先按调色板跳过整段；`getChunkSource().getChunkNow(x, z)` 只取已加载的区块 | 已确认，扫描在用 |
 | 成书：`DataComponents.WRITTEN_BOOK_CONTENT` 是 `new WrittenBookContent(Filterable<String> 标题, 作者, 代数, List<Filterable<Component>> 页, resolved)`，页面可以是可翻译文字，客户端按自己的语言显示；`Filterable.passThrough(...)` | 已确认，探测器日志在用 |
 | 世界出生点：`level.getRespawnData().globalPos().pos()`；信号篝火是 `CampfireBlock.SIGNAL_FIRE` | 已确认，坠毁点在用 |
+| 登录的配置任务：NeoForge 的 `RegisterConfigurationTasksEvent`（模组总线）登记的任务排在原版 `PrepareSpawnTask` 之前；`ConfigurationTask#start` 可能在网络线程上调用，`tick()` 在服务器处理连接时调用，返回 true 算完成。玩家存档用 `PlayerList#loadPlayerData(NameAndId)` 读，维度在 `ServerPlayer.SavedPosition.MAP_CODEC` 里 | 已确认，运行时维度在用 |
+| 重生：`PlayerList#respawn` 先算 `findRespawnPositionAndUseSpawnBlock`，维度不存在就退回世界出生点；之后触发 NeoForge 的 `PlayerRespawnPositionEvent`，可以换掉 `TeleportTransition` | 已确认，运行时维度在用 |
+| 强制加载的区块：`ServerLevel#getForceLoadedChunks()` 只算原版 `/forceload` 的票据；NeoForge 的方块、实体加载器在 `TicketStorage#getBlockForcedChunks()`、`getEntityForcedChunks()`（`TicketTracker#isEmpty()`），`TicketStorage` 从 `level.getDataStorage().get(TicketStorage.TYPE)` 取 | 已确认 |
 
 原则：拿不准的 API，先查源码再动手写，核实后把结果补进这张表。源码位置：
 

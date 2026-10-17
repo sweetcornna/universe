@@ -1,6 +1,7 @@
 package io.github.sweetcornna.universe.world;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -12,6 +13,7 @@ import org.slf4j.Logger;
 
 import com.mojang.logging.LogUtils;
 
+import io.github.sweetcornna.universe.core.dimension.IdleTimer;
 import io.github.sweetcornna.universe.data.RuntimeDimensionsData;
 import io.github.sweetcornna.universe.network.DimensionListPayload;
 import net.minecraft.core.registries.Registries;
@@ -32,12 +34,14 @@ import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.common.world.chunk.ForcedChunkManager;
+import net.neoforged.neoforge.event.entity.player.PlayerRespawnPositionEvent;
 import net.neoforged.neoforge.event.level.LevelEvent;
 import net.neoforged.neoforge.event.server.ServerStartingEvent;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
+import net.neoforged.neoforge.network.event.RegisterConfigurationTasksEvent;
 
 /**
  * 在运行时创建、卸载维度，并在服务器重启后恢复（ADR-0004，M1 原型 S1）。
@@ -49,11 +53,19 @@ import net.neoforged.neoforge.network.PacketDistributor;
  *
  * <p>只能在服务端主线程调用。服务器 tick 各维度时直接遍历 {@code levels}，所以维度 tick 期间不能增删维度：
  * 创建会检查这一点，卸载一律排到 tick 末尾分步执行。
+ *
+ * <p>没有玩家、没有强制加载区块的维度空闲 {@link #IDLE_UNLOAD_TICKS} 刻后自动卸载。玩家上线时，配置阶段先把他下线时
+ * 所在的维度加载回来（{@link LoadPlayerDimensionTask}）；死亡后重生点所在的维度没加载时，重生前加载它。
  */
 public final class RuntimeDimensions {
     private static final Logger LOGGER = LogUtils.getLogger();
     /** 卸载时最多等这么多 tick 让区块卸完、存完，超时就直接关闭。 */
     private static final int MAX_DRAIN_TICKS = 30 * 20;
+    /** 空闲多久自动卸载：5 分钟。 */
+    static final int IDLE_UNLOAD_TICKS = 5 * 60 * 20;
+    /** 每隔多少刻检查一次空闲。 */
+    private static final int IDLE_CHECK_INTERVAL = 20;
+    private static final IdleTimer<ResourceKey<Level>> IDLE = new IdleTimer<>(IDLE_UNLOAD_TICKS);
 
     private static final Map<ResourceKey<Level>, PendingUnload> PENDING_UNLOADS = new LinkedHashMap<>();
     /** 服务端是否正在 tick 某个维度（{@link LevelTickEvent.Pre} 与 {@link LevelTickEvent.Post} 之间）。 */
@@ -62,7 +74,9 @@ public final class RuntimeDimensions {
     private RuntimeDimensions() {
     }
 
-    public static void registerEvents(IEventBus gameBus) {
+    public static void registerEvents(IEventBus modBus, IEventBus gameBus) {
+        modBus.addListener(RegisterConfigurationTasksEvent.class, LoadPlayerDimensionTask::register);
+        gameBus.addListener(PlayerRespawnPositionEvent.class, RuntimeDimensions::loadRespawnDimension);
         gameBus.addListener(EventPriority.HIGHEST, LevelTickEvent.Pre.class, event -> {
             if (!event.getLevel().isClientSide()) {
                 tickingLevel = true;
@@ -75,10 +89,14 @@ public final class RuntimeDimensions {
         });
         // ServerStartingEvent 在原版维度建好之后、第一个 tick 之前，玩家还连不进来
         gameBus.addListener(ServerStartingEvent.class, event -> restore(event.getServer()));
-        gameBus.addListener(EventPriority.LOWEST, ServerTickEvent.Post.class, event -> processUnloads(event.getServer()));
+        gameBus.addListener(EventPriority.LOWEST, ServerTickEvent.Post.class, event -> {
+            checkIdle(event.getServer());
+            processUnloads(event.getServer());
+        });
         gameBus.addListener(ServerStoppedEvent.class, event -> {
             // 单人游戏退出存档后 JVM 还在，下次进入别的存档前要清空
             PENDING_UNLOADS.clear();
+            IDLE.clear();
             tickingLevel = false;
         });
     }
@@ -94,6 +112,11 @@ public final class RuntimeDimensions {
 
     public static boolean isUnloading(ResourceKey<Level> key) {
         return PENDING_UNLOADS.containsKey(key);
+    }
+
+    /** 现在能不能创建、加载维度：服务端主线程上，而且不在某个维度的 tick 里。 */
+    static boolean canModifyLevels(MinecraftServer server) {
+        return server.isSameThread() && !tickingLevel;
     }
 
     /**
@@ -165,6 +188,7 @@ public final class RuntimeDimensions {
     /** 服务器启动时重建上次处于加载状态的维度。 */
     private static void restore(MinecraftServer server) {
         PENDING_UNLOADS.clear();
+        IDLE.clear();
         int restored = 0;
         long startNanos = System.nanoTime();
         for (RuntimeDimensionsData.Entry entry : List.copyOf(RuntimeDimensionsData.get(server).entries())) {
@@ -242,6 +266,61 @@ public final class RuntimeDimensions {
         }
     }
 
+    /** 每秒检查一次：本模组管的、已加载的维度，空闲够久就申请卸载。世界出生点所在的维度不卸载。 */
+    private static void checkIdle(MinecraftServer server) {
+        if (server.getTickCount() % IDLE_CHECK_INTERVAL != 0) {
+            return;
+        }
+        ServerLevel respawn = server.findRespawnDimension();
+        List<ResourceKey<Level>> candidates = new ArrayList<>();
+        for (RuntimeDimensionsData.Entry entry : RuntimeDimensionsData.get(server).entries()) {
+            ResourceKey<Level> key = key(entry.id());
+            ServerLevel level = server.getLevel(key);
+            if (level != null && level != respawn && !PENDING_UNLOADS.containsKey(key)) {
+                candidates.add(key);
+            }
+        }
+        for (ResourceKey<Level> key : IDLE.advance(candidates, key -> isBusy(server.getLevel(key)), IDLE_CHECK_INTERVAL)) {
+            if (requestUnload(server, key)) {
+                LOGGER.info("Unloading runtime dimension {} after {} s without players", key.identifier(), IDLE_UNLOAD_TICKS / 20);
+            }
+        }
+    }
+
+    /** 维度在用：有玩家，或者有强制加载的区块（原版的 /forceload，以及模组的方块、实体加载器）。 */
+    private static boolean isBusy(ServerLevel level) {
+        if (!level.players().isEmpty() || !level.getForceLoadedChunks().isEmpty()) {
+            return true;
+        }
+        TicketStorage tickets = level.getDataStorage().get(TicketStorage.TYPE);
+        return tickets != null && (!tickets.getBlockForcedChunks().isEmpty() || !tickets.getEntityForcedChunks().isEmpty());
+    }
+
+    /**
+     * 重生前：重生点（床、重生锚）在一个已卸载的维度里时先把它加载回来，再重新算重生位置。
+     * 不处理的话原版找不到维度，会把玩家送回世界出生点。
+     */
+    private static void loadRespawnDimension(PlayerRespawnPositionEvent event) {
+        if (!(event.getEntity() instanceof ServerPlayer player) || player.getRespawnConfig() == null) {
+            return;
+        }
+        MinecraftServer server = player.level().getServer();
+        ResourceKey<Level> key = ServerPlayer.RespawnConfig.getDimensionOrDefault(player.getRespawnConfig());
+        if (server.getLevel(key) != null || !isManaged(server, key) || !canModifyLevels(server)) {
+            return;
+        }
+        try {
+            load(server, key);
+        } catch (RuntimeException e) {
+            LOGGER.error("Failed to load respawn dimension {} for {}", key.identifier(), player.getGameProfile().name(), e);
+            return;
+        }
+        TeleportTransition transition = player.findRespawnPositionAndUseSpawnBlock(!event.isFromEndFight(), TeleportTransition.DO_NOTHING);
+        event.setTeleportTransition(transition);
+        // 和原版一样：床或重生锚没了的话，新玩家不继承这个重生点
+        event.setCopyOriginalSpawnPosition(!transition.missingRespawnBlock());
+    }
+
     /** 每个服务器 tick 末尾推进待卸载的维度：送走玩家、停用票据、等区块卸完，最后保存并关闭。 */
     private static void processUnloads(MinecraftServer server) {
         if (PENDING_UNLOADS.isEmpty()) {
@@ -298,6 +377,8 @@ public final class RuntimeDimensions {
         }
         // NeoForge 在这个事件里清理该维度的假玩家（FakePlayerFactory），不发会泄漏整个维度
         NeoForge.EVENT_BUS.post(new LevelEvent.Unload(level));
+        // 按维度记的 tick 耗时，原版不会删
+        server.perWorldTickTimes.remove(key);
         PacketDistributor.sendToAllPlayers(DimensionListPayload.removed(key));
         LOGGER.info("Unloaded runtime dimension {} after {} ticks (closing took {} ms)",
                 key.identifier(), waitedTicks, (System.nanoTime() - startNanos) / 1_000_000);
