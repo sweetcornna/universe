@@ -72,6 +72,7 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         this.ships();
         this.ores();
         this.suit();
+        this.multitool();
     }
 
     private void ships() {
@@ -134,6 +135,33 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("hud.universe.ship.hint.no_fuel", "燃料耗尽：着陆后给燃料舱加燃料", "Out of fuel: land and refuel the tanks");
         both("hud.universe.ship.target", "%s  %s 格", "%s  %s m");
         both("hud.universe.ship.unlandable", "（不能着陆）", " (no landing)");
+    }
+
+    private void multitool() {
+        item(UniverseItems.MULTITOOL.get(), "多功能工具", "Multitool");
+        item(UniverseItems.DAMAGED_MULTITOOL.get(), "损坏的多功能工具", "Damaged Multitool");
+        both("message.universe.multitool.overheated", "激光过热！", "Laser overheated!");
+        both("message.universe.multitool.charging", "扫描仪充能中", "Scanner recharging");
+        both("message.universe.multitool.scanned", "扫描完成：%s 条矿脉，共 %s 块", "Scan complete: %s veins, %s blocks");
+        both("hud.universe.multitool.overheated", "过热", "OVERHEATED");
+        both("hud.universe.multitool.marker", "%s ×%s  %s 格", "%s ×%s  %sm");
+        both("message.universe.crash_site.smoke", "远处%s方升起一道烟柱，大约 %s 格远。好像有什么东西坠落了。",
+                "A column of smoke rises to the %s, about %s blocks away. Something has crashed.");
+        both("direction.universe.east", "东", "east");
+        both("direction.universe.southeast", "东南", "southeast");
+        both("direction.universe.south", "南", "south");
+        both("direction.universe.southwest", "西南", "southwest");
+        both("direction.universe.west", "西", "west");
+        both("direction.universe.northwest", "西北", "northwest");
+        both("direction.universe.north", "北", "north");
+        both("direction.universe.northeast", "东北", "northeast");
+        both("book.universe.probe_log.title", "探测器日志", "Probe Log");
+        both("book.universe.probe_log.page.1", "UNV-7 勘测探测器 日志\n\n主引擎失效，被迫降落在这颗行星上。外壳破损，主要系统离线。\n\n致拾到者：探测器里的设备还能修。", "UNV-7 SURVEY PROBE LOG\n\nMain engine failure. Forced landing on this planet. Hull breached, primary systems offline.\n\nTo whoever finds this: the gear aboard can still be repaired.");
+        both("book.universe.probe_log.page.2", "【多功能工具】\n工具在撞击中损坏。两块铜锭、两份红石和一块铁锭就能修好。\n\n按住使用键：采矿激光，连续开火会过热。\n潜行时使用：扫描附近的矿脉。", "[MULTITOOL]\nDamaged in the impact. Two copper ingots, two redstone and an iron ingot will fix it.\n\nHold USE: mining laser. It overheats if fired too long.\nSneak + USE: scan for nearby ore veins.");
+        both("book.universe.probe_log.page.3", "【外骨骼】\n头盔加胸甲才能密封供氧，整套才能抵御寒冷、高温、毒性和辐射。\n\n氧气罐：玻璃瓶装进树叶的氧。\n防护电池：铜、红石和煤。\n\n喷气背包：空中再按一次跳跃。", "[EXOSUIT]\nHelmet and chestplate seal in your oxygen; the full set holds off cold, heat, toxins and radiation.\n\nOxygen capsules: bottled leaves.\nHazard cells: copper, redstone, coal.\n\nJetpack: jump again in mid-air.");
+        both("book.universe.probe_log.page.4", "【飞船】\n用方块搭一艘船：驾驶台、推进器、燃料舱，船体随你装饰。在驾驶台上右键组装。\n\n燃料舱里装发射燃料（煤、火药、玻璃瓶）。\n一直往上飞，穿过天空就是太空。", "[SHIPS]\nBuild one from blocks: a helm, thrusters, fuel tanks; dress the hull as you like. Use the helm to assemble.\n\nFill the tanks with launch fuel (coal, gunpowder, a glass bottle).\nClimb past the sky to reach space.");
+        both("book.universe.probe_log.page.5", "【航线】\n这颗行星有一颗卫星：没有大气、很冷，但富含钛。\n\n在太空里开脉冲引擎赶路，飞进目标的大气层就会降落。\n\n更好的设备都离不开钛。", "[COURSE]\nThis planet has a moon: airless and cold, but rich in titanium.\n\nIn space the impulse engine gets you there fast. Fly into a body's atmosphere to land.\n\nBetter equipment needs titanium.");
+        both("book.universe.probe_log.page.6", "【任务记录】\n本探测器隶属寰宇勘测计划。\n其余探测器的信号都已中断。\n\n这个星系里还有更多行星等着测绘。\n\n—— 日志结束 ——", "[MISSION]\nThis probe belongs to the Universe Survey Programme.\nAll other probes have gone silent.\n\nMore worlds in this system await mapping.\n\n— END OF LOG —");
     }
 
     private void suit() {

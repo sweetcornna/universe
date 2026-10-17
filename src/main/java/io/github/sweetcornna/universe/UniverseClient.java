@@ -3,6 +3,7 @@ package io.github.sweetcornna.universe;
 import io.github.sweetcornna.universe.client.ClientDimensions;
 import io.github.sweetcornna.universe.client.ClientGalaxy;
 import io.github.sweetcornna.universe.client.ClientWeather;
+import io.github.sweetcornna.universe.client.MultitoolClient;
 import io.github.sweetcornna.universe.client.SuitClient;
 import io.github.sweetcornna.universe.client.PlanetTints;
 import io.github.sweetcornna.universe.client.creature.AlienCreatureRenderer;
@@ -34,6 +35,7 @@ public final class UniverseClient {
         PlanetSkyRenderer.registerEvents(modBus, NeoForge.EVENT_BUS);
         ShipClient.registerEvents(modBus, NeoForge.EVENT_BUS);
         SuitClient.registerEvents(modBus, NeoForge.EVENT_BUS);
+        MultitoolClient.registerEvents(modBus);
         // 客户端世界建立环境属性时，从客户端的星团里查星球
         PlanetEnvironment.setClientGalaxy(dimension -> ClientGalaxy.galaxy());
         // 客户端的动物按当前星球的物种表画

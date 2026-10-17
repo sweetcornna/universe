@@ -86,9 +86,11 @@ final class UniverseModelProvider extends ModelProvider {
         ships(blockModels);
         ores(blockModels, itemModels);
         for (DeferredItem<?> item : List.of(UniverseItems.EXOSUIT_HELMET, UniverseItems.EXOSUIT_CHESTPLATE, UniverseItems.EXOSUIT_LEGGINGS,
-                UniverseItems.EXOSUIT_BOOTS, UniverseItems.OXYGEN_CAPSULE, UniverseItems.HAZARD_CELL)) {
+                UniverseItems.EXOSUIT_BOOTS, UniverseItems.OXYGEN_CAPSULE, UniverseItems.HAZARD_CELL, UniverseItems.DAMAGED_MULTITOOL)) {
             itemModels.generateFlatItem(item.get(), ModelTemplates.FLAT_ITEM);
         }
+        // 多功能工具拿在手里像工具一样斜着
+        itemModels.generateFlatItem(UniverseItems.MULTITOOL.get(), ModelTemplates.FLAT_HANDHELD_ITEM);
     }
 
     private static void ores(BlockModelGenerators blockModels, ItemModelGenerators itemModels) {

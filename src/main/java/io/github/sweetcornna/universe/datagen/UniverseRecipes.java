@@ -40,6 +40,23 @@ final class UniverseRecipes extends RecipeProvider {
         this.ships();
         this.ores();
         this.suit();
+        this.multitool();
+    }
+
+    /** 多功能工具：修好坠毁点找到的那把，或者用钻石从头造一把（多人游戏里别的玩家用）。 */
+    private void multitool() {
+        this.shapeless(RecipeCategory.TOOLS, UniverseItems.MULTITOOL.get())
+                .requires(UniverseItems.DAMAGED_MULTITOOL.get())
+                .requires(Items.COPPER_INGOT).requires(Items.COPPER_INGOT)
+                .requires(Items.REDSTONE).requires(Items.REDSTONE).requires(Items.IRON_INGOT)
+                .unlockedBy(getHasName(UniverseItems.DAMAGED_MULTITOOL.get()), this.has(UniverseItems.DAMAGED_MULTITOOL.get()))
+                .save(this.output, "universe:multitool_from_repair");
+        this.shaped(RecipeCategory.TOOLS, UniverseItems.MULTITOOL.get())
+                .pattern(" GD").pattern("CRC").pattern("I  ")
+                .define('G', Items.GLASS_PANE).define('D', Items.DIAMOND).define('C', Items.COPPER_INGOT)
+                .define('R', Items.REDSTONE_BLOCK).define('I', Items.IRON_INGOT)
+                .unlockedBy(getHasName(Items.DIAMOND), this.has(Items.DIAMOND))
+                .save(this.output);
     }
 
     /** 外骨骼：主世界的铁、铜、玻璃、红石就能做，第一次登月前要备好。 */

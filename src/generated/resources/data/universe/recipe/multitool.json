@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "C": "minecraft:copper_ingot",
+    "D": "minecraft:diamond",
+    "G": "minecraft:glass_pane",
+    "I": "minecraft:iron_ingot",
+    "R": "minecraft:redstone_block"
+  },
+  "pattern": [
+    " GD",
+    "CRC",
+    "I  "
+  ],
+  "result": {
+    "id": "universe:multitool"
+  }
+}

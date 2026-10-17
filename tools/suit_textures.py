@@ -1,4 +1,4 @@
-"""生成外骨骼的盔甲贴图和物品图标。
+"""生成外骨骼的盔甲贴图和物品图标，以及多功能工具的图标。
 
 用法：python tools/suit_textures.py [贴图根目录]
 默认输出到 src/main/resources/assets/universe/textures。
@@ -340,12 +340,63 @@ def save(img, *parts):
     img.save(path)
 
 
+def segment_distance(px_, py_, ax, ay, bx, by):
+    """点到线段的距离，以及投影在线段上的位置 t（0–1）。"""
+    dx, dy = bx - ax, by - ay
+    t = max(0.0, min(1.0, ((px_ - ax) * dx + (py_ - ay) * dy) / (dx * dx + dy * dy)))
+    cx, cy = ax + t * dx, ay + t * dy
+    return ((px_ - cx) ** 2 + (py_ - cy) ** 2) ** 0.5, t
+
+
+def multitool_icon(damaged):
+    """多功能工具：斜着的粗枪管，尖上是发射口（完好的是青色、坏的是黑的），中间一道橙色，下面一个握把。"""
+    img = new(16, 16)
+    lens = (VISOR, (20, 24, 30)) if damaged else (VISOR_GLINT, (196, 236, 255))
+    band = ORANGE_DARK if damaged else ORANGE
+    for y in range(16):
+        for x in range(16):
+            cx, cy = x + 0.5, y + 0.5
+            d, t = segment_distance(cx, cy, 3.5, 11.5, 12.5, 3.0)
+            grip, _ = segment_distance(cx, cy, 5.5, 10.0, 3.0, 14.0)
+            tip, _ = segment_distance(cx, cy, 12.5, 3.0, 14.0, 1.5)
+            if tip <= 1.5:
+                # 发射口：左上一半亮
+                px(img, x, y, lens[1] if (cx - 13) + (cy - 2.3) < -0.5 else lens[0])
+            elif d <= 1.75:
+                # 枪管：线段左上一侧亮、右下一侧暗
+                side = (cx - 3.5) * (3.0 - 11.5) - (cy - 11.5) * (12.5 - 3.5)
+                color = WHITE if side > 4 else SHADE if side > -4 else GREY
+                if 0.45 <= t <= 0.58:
+                    color = band
+                px(img, x, y, color)
+            elif grip <= 1.1:
+                px(img, x, y, GREY_DARK)
+    # 外面描一圈深色
+    edge = []
+    for y in range(16):
+        for x in range(16):
+            if img.getpixel((x, y))[3] == 0 and any(
+                    0 <= x + ox < 16 and 0 <= y + oy < 16 and img.getpixel((x + ox, y + oy))[3] > 0
+                    for ox, oy in ((1, 0), (-1, 0), (0, 1), (0, -1))):
+                edge.append((x, y))
+    for x, y in edge:
+        px(img, x, y, DARK)
+    if damaged:
+        # 几道裂纹、一块烧黑的地方
+        for x, y in ((8, 7), (9, 7), (7, 8), (10, 5), (5, 10), (6, 9)):
+            if img.getpixel((x, y))[3] > 0:
+                px(img, x, y, (34, 34, 38))
+    return img
+
+
 def main():
     main_layer, leggings = armor_layers()
     save(main_layer, "entity", "equipment", "humanoid", "exosuit.png")
     save(leggings, "entity", "equipment", "humanoid_leggings", "exosuit.png")
     for name, rows in ICONS.items():
         save(icon(rows), "item", name + ".png")
+    save(multitool_icon(False), "item", "multitool.png")
+    save(multitool_icon(True), "item", "damaged_multitool.png")
 
 
 if __name__ == "__main__":

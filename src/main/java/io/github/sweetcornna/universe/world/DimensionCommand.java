@@ -76,6 +76,7 @@ public final class DimensionCommand {
                 .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                 .then(PlanetCommand.build())
                 .then(ShipCommand.build())
+                .then(CrashSite.command())
                 .then(Commands.literal("dim")
                         .then(Commands.literal("create")
                                 .then(Commands.argument("name", StringArgumentType.word())

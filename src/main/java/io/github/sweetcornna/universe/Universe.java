@@ -9,6 +9,7 @@ import io.github.sweetcornna.universe.entity.ship.ShipTransit;
 import io.github.sweetcornna.universe.network.UniverseNetwork;
 import io.github.sweetcornna.universe.registry.UniverseAttachments;
 import io.github.sweetcornna.universe.survival.PlayerSurvival;
+import io.github.sweetcornna.universe.world.CrashSite;
 import io.github.sweetcornna.universe.registry.UniverseBlockEntities;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
 import io.github.sweetcornna.universe.registry.UniverseCreativeTabs;
@@ -51,6 +52,7 @@ public final class Universe {
         FaunaSpawner.registerEvents(gameBus);
         ShipTransit.registerEvents(gameBus);
         PlayerSurvival.registerEvents(gameBus);
+        CrashSite.registerEvents(gameBus);
         gameBus.addListener(RegisterCommandsEvent.class, event -> DimensionCommand.register(event.getDispatcher()));
     }
 

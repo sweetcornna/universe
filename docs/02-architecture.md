@@ -29,7 +29,7 @@ io.github.sweetcornna.universe
 │   ├── space/                 太空维度里的天体布局
 │   ├── factory/               传送带线路、分拣器、配方执行
 │   ├── power/                 电网的连通和结算
-│   ├── survival/              生命维持、危害防护、喷气背包的数值，重力模型
+│   ├── survival/              生命维持、危害防护、喷气背包的数值，重力模型，激光热量，扫描时矿脉的合并
 │   ├── logistics/             物流站供需匹配与运输排程
 │   └── dyson/                 戴森云与球壳的结构、建造进度、发电
 ├── registry/                  各类 DeferredRegister
@@ -211,6 +211,14 @@ io.github.sweetcornna.universe
 | 区块存盘入口 `ChunkMap#save(ChunkAccess)`，不想存时 `chunk.tryMarkSaved()` 后返回 false；实体存在单独的 `entities/` 文件里，和区块存盘无关 | 已确认，太空维度在用 |
 | 实体低于维度底部 64 格时 `checkBelowWorld` → `onBelowWorld`：普通实体直接删除，生物受伤 | 已确认 |
 | `/tick query` 给出平均每刻耗时和 P50/P95/P99，测性能很方便 | 已确认 |
+| 工具的挖掘规则是数据组件 `DataComponents.TOOL`：`new Tool(List<Tool.Rule>, 默认速度, 每块耗损, 创造模式能否破坏)`，规则用 `Tool.Rule.deniesDrops(HolderSet)`、`minesAndDrops(HolderSet, 速度)`；物品注册时拿方块标签用 `BuiltInRegistries.acquireBootstrapRegistrationLookup(BuiltInRegistries.BLOCK)` | 已确认，多功能工具在用 |
+| 代替玩家挖掉方块：`ServerPlayer#gameMode.destroyBlock(pos)` 走完整的破坏流程（事件、掉落、经验、工具耗损）；裂纹用 `level.destroyBlockProgress(编号, pos, 0–9)`，-1 清除，编号和玩家自己挖的分开 | 已确认，采矿激光在用 |
+| 持续使用的物品：`Item#use` 里 `player.startUsingItem(hand)` 返回 `InteractionResult.CONSUME`，之后每刻调 `onUseTick(Level, LivingEntity, ItemStack, 剩余刻数)`；时长 `getUseDuration(ItemStack, LivingEntity)`，动作 `getUseAnimation` 返回 `ItemUseAnimation.NONE` 就不举手 | 已确认，采矿激光在用 |
+| 服务端发粒子：`ServerLevel#sendParticles(选项, x, y, z, 数量, dx, dy, dz, 速度)`；彩色尘埃 `new DustParticleOptions(RGB, 大小)` | 已确认 |
+| HUD 上把世界坐标投到屏幕：`gameRenderer.mainCamera()` 的 `position()`、`yRot()`、`xRot()`，再按 `options.fov()` 算焦距；HUD 层在 `RegisterGuiLayersEvent` 里 `registerBelow/registerAbove(VanillaGuiLayers.CROSSHAIR, ...)` | 已确认，扫描标记在用 |
+| 遍历区块里的方块：`LevelChunkSection#hasOnlyAir()`、`maybeHas(谓词)` 先按调色板跳过整段；`getChunkSource().getChunkNow(x, z)` 只取已加载的区块 | 已确认，扫描在用 |
+| 成书：`DataComponents.WRITTEN_BOOK_CONTENT` 是 `new WrittenBookContent(Filterable<String> 标题, 作者, 代数, List<Filterable<Component>> 页, resolved)`，页面可以是可翻译文字，客户端按自己的语言显示；`Filterable.passThrough(...)` | 已确认，探测器日志在用 |
+| 世界出生点：`level.getRespawnData().globalPos().pos()`；信号篝火是 `CampfireBlock.SIGNAL_FIRE` | 已确认，坠毁点在用 |
 
 原则：拿不准的 API，先查源码再动手写，核实后把结果补进这张表。源码位置：
 

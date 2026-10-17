@@ -88,6 +88,7 @@ public final class PlayerSurvival {
         gameBus.addListener(PlayerEvent.PlayerLoggedOutEvent.class, event -> {
             JETTING.remove(event.getEntity().getUUID());
             SOURCES.remove(event.getEntity().getUUID());
+            Multitool.forget(event.getEntity().getUUID());
         });
     }
 
@@ -127,11 +128,16 @@ public final class PlayerSurvival {
     // ---- 生命维持
 
     private static void tick(ServerPlayer player) {
+        Multitool.tick(player);
         LifeSupport support = player.getData(UniverseAttachments.LIFE_SUPPORT);
         if (player.isCreative() || player.isSpectator()) {
             support.refill();
             JETTING.remove(player.getUUID());
-            publish(player, SuitHud.FULL);
+            if (player.tickCount % HUD_INTERVAL == 0) {
+                SuitHud full = SuitHud.FULL;
+                publish(player, new SuitHud(full.oxygen(), full.cold(), full.heat(), full.toxic(), full.radiation(), full.jet(),
+                        Multitool.heat(player), Multitool.overheated(player) ? SuitHud.OVERHEATED : 0));
+            }
             return;
         }
         ServerLevel level = player.level();
@@ -164,7 +170,7 @@ public final class PlayerSurvival {
             player.hurtServer(level, level.damageSources().source(SurvivalDamage.BY_HAZARD.get(worst)), total);
         }
         if (player.tickCount % HUD_INTERVAL == 0) {
-            publish(player, SuitHud.of(support, env, suit));
+            publish(player, SuitHud.of(support, env, suit, Multitool.heat(player), Multitool.overheated(player)));
         }
     }
 
