@@ -16,6 +16,8 @@ import net.minecraft.client.data.models.ModelProvider;
 import net.minecraft.client.data.models.blockstates.MultiVariantGenerator;
 import net.minecraft.client.data.models.blockstates.PropertyDispatch;
 import net.minecraft.client.data.models.model.ItemModelUtils;
+import net.minecraft.client.data.models.model.ModelLocationUtils;
+import net.minecraft.client.data.models.model.TexturedModel;
 import net.minecraft.client.data.models.model.ModelTemplate;
 import net.minecraft.client.data.models.model.ModelTemplates;
 import net.minecraft.client.data.models.model.TextureMapping;
@@ -74,9 +76,27 @@ final class UniverseModelProvider extends ModelProvider {
         UniverseBlocks.PLANTS.forEach((form, block) -> plant(blockModels, itemModels, form, block.get()));
         this.trees(blockModels, itemModels);
         for (DeferredItem<?> item : List.of(UniverseItems.ALIEN_MEAT, UniverseItems.COOKED_ALIEN_MEAT, UniverseItems.ALIEN_HIDE,
-                UniverseItems.ALIEN_CREATURE_SPAWN_EGG, UniverseItems.ALIEN_FLYER_SPAWN_EGG)) {
+                UniverseItems.ALIEN_CREATURE_SPAWN_EGG, UniverseItems.ALIEN_FLYER_SPAWN_EGG, UniverseItems.LAUNCH_FUEL)) {
             itemModels.generateFlatItem(item.get(), ModelTemplates.FLAT_ITEM);
         }
+        ships(blockModels);
+    }
+
+    /** 飞船部件：驾驶台、推进器、脉冲引擎、座椅的模型是手写的（{@code models/block/}），这里只出方块状态。 */
+    private static void ships(BlockModelGenerators blockModels) {
+        for (Block block : new Block[] {UniverseBlocks.SHIP_HELM.get(), UniverseBlocks.SHIP_SEAT.get(), UniverseBlocks.IMPULSE_ENGINE.get()}) {
+            Identifier model = ModelLocationUtils.getModelLocation(block);
+            blockModels.blockStateOutput.accept(MultiVariantGenerator.dispatch(block, BlockModelGenerators.plainVariant(model))
+                    .with(BlockModelGenerators.ROTATION_HORIZONTAL_FACING));
+            blockModels.registerSimpleItemModel(block, model);
+        }
+        Block thruster = UniverseBlocks.SHIP_THRUSTER.get();
+        Identifier thrusterModel = ModelLocationUtils.getModelLocation(thruster);
+        blockModels.blockStateOutput.accept(MultiVariantGenerator.dispatch(thruster, BlockModelGenerators.plainVariant(thrusterModel))
+                .with(BlockModelGenerators.ROTATION_FACING));
+        blockModels.registerSimpleItemModel(thruster, thrusterModel);
+        blockModels.createTrivialBlock(UniverseBlocks.FUEL_TANK.get(), TexturedModel.COLUMN);
+        UniverseBlocks.HULL_PLATING.values().forEach(block -> blockModels.createTrivialCube(block.get()));
     }
 
     /** 地面植物：变体号单双数用两种外形，发光的物种换自发光模型。 */

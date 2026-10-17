@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "universe:block/ship_seat",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "universe:block/ship_seat"
+    },
+    "facing=south": {
+      "model": "universe:block/ship_seat",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "universe:block/ship_seat",
+      "y": 270
+    }
+  }
+}

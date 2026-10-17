@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    "#minecraft:coals",
+    "#minecraft:coals",
+    "#minecraft:coals",
+    "minecraft:gunpowder",
+    "minecraft:glass_bottle"
+  ],
+  "result": {
+    "id": "universe:launch_fuel"
+  }
+}

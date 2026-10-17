@@ -38,6 +38,13 @@ final class UniverseBlockLoot extends BlockLootSubProvider {
         this.add(UniverseBlocks.PLANET_LEAVES.get(), this.createShearsOrSilkTouchOnlyDrop(UniverseBlocks.PLANET_LEAVES.get()));
         this.dropSelf(UniverseBlocks.PLANET_CAP.get());
         this.dropSelf(UniverseBlocks.PLANET_BLOOM.get());
+        // 飞船部件拆下来原样掉落（燃料舱里的燃料不保留）
+        this.dropSelf(UniverseBlocks.SHIP_HELM.get());
+        this.dropSelf(UniverseBlocks.SHIP_THRUSTER.get());
+        this.dropSelf(UniverseBlocks.FUEL_TANK.get());
+        this.dropSelf(UniverseBlocks.IMPULSE_ENGINE.get());
+        this.dropSelf(UniverseBlocks.SHIP_SEAT.get());
+        UniverseBlocks.HULL_PLATING.values().forEach(block -> this.dropSelf(block.get()));
     }
 
     @Override

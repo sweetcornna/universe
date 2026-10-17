@@ -1,0 +1,35 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "group": "universe:hull_plating",
+  "key": {
+    "#": [
+      "universe:hull_plating_white",
+      "universe:hull_plating_orange",
+      "universe:hull_plating_magenta",
+      "universe:hull_plating_light_blue",
+      "universe:hull_plating_yellow",
+      "universe:hull_plating_lime",
+      "universe:hull_plating_pink",
+      "universe:hull_plating_gray",
+      "universe:hull_plating_light_gray",
+      "universe:hull_plating_cyan",
+      "universe:hull_plating_purple",
+      "universe:hull_plating_blue",
+      "universe:hull_plating_brown",
+      "universe:hull_plating_green",
+      "universe:hull_plating_red",
+      "universe:hull_plating_black"
+    ],
+    "D": "#c:dyes/purple"
+  },
+  "pattern": [
+    "###",
+    "#D#",
+    "###"
+  ],
+  "result": {
+    "count": 8,
+    "id": "universe:hull_plating_purple"
+  }
+}

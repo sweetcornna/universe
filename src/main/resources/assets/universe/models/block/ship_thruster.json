@@ -1,0 +1,33 @@
+{
+    "parent": "block/block",
+    "textures": {
+        "particle": "universe:block/ship_thruster_side",
+        "side": "universe:block/ship_thruster_side",
+        "back": "universe:block/ship_thruster_back",
+        "nozzle_side": "universe:block/ship_thruster_nozzle_side",
+        "nozzle": "universe:block/ship_thruster_nozzle"
+    },
+    "elements": [
+        {   "from": [ 1, 1, 6 ],
+            "to": [ 15, 15, 16 ],
+            "faces": {
+                "down":  { "texture": "#side" },
+                "up":    { "texture": "#side" },
+                "north": { "texture": "#back" },
+                "south": { "texture": "#back", "cullface": "south" },
+                "west":  { "texture": "#side" },
+                "east":  { "texture": "#side" }
+            }
+        },
+        {   "from": [ 3, 3, 0 ],
+            "to": [ 13, 13, 6 ],
+            "faces": {
+                "down":  { "texture": "#nozzle_side" },
+                "up":    { "texture": "#nozzle_side" },
+                "north": { "uv": [ 0, 0, 16, 16 ], "texture": "#nozzle", "cullface": "north" },
+                "west":  { "texture": "#nozzle_side" },
+                "east":  { "texture": "#nozzle_side" }
+            }
+        }
+    ]
+}

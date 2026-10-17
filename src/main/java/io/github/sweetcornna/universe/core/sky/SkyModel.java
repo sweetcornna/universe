@@ -99,29 +99,26 @@ public final class SkyModel {
         double[] bodyToObserver = {-toBody[0], -toBody[1], -toBody[2]};
         double cos = dot3(bodyToStar, bodyToObserver) / (length(bodyToStar) * length(bodyToObserver));
         double illumination = (1 + cos) / 2;
+        int[] colors = bodyColors(planet);
+        return new SkyBody(kind, planet, longitude, latitude, displayDiameter(kind, real), illumination, distance,
+                colors[0], colors[1], planet.rings());
+    }
+
+    /** 远处看到的星球的主色和第二种颜色（云带、陆地或熔岩），太空里画星球也用它。 */
+    public static int[] bodyColors(Planet planet) {
         Palette palette = planet.palette();
-        int color;
-        int band;
         if (planet.type() == PlanetType.GAS_GIANT) {
-            color = palette.surface();
-            band = palette.soil();
+            return new int[] {palette.surface(), palette.soil()};
         } else if (planet.liquid() == Liquid.WATER || planet.liquid() == Liquid.ACID) {
             // 有海的星球从远处看主要是海和云
-            color = Colors.lerp(palette.liquid(), palette.cloud(), 0.25);
-            band = palette.surface();
+            return new int[] {Colors.lerp(palette.liquid(), palette.cloud(), 0.25), palette.surface()};
         } else if (planet.liquid() == Liquid.LAVA) {
             // 暗色的岩壳，裂缝里透出熔岩的光
-            color = palette.rock();
-            band = palette.liquid();
+            return new int[] {palette.rock(), palette.liquid()};
         } else if (planet.liquid() == Liquid.ICE) {
-            color = Colors.lerp(palette.surface(), 0xF0F4FF, 0.4);
-            band = palette.liquid();
-        } else {
-            color = palette.surface();
-            band = palette.rock();
+            return new int[] {Colors.lerp(palette.surface(), 0xF0F4FF, 0.4), palette.liquid()};
         }
-        return new SkyBody(kind, planet, longitude, latitude, displayDiameter(kind, real), illumination, distance,
-                color, band, planet.rings());
+        return new int[] {palette.surface(), palette.rock()};
     }
 
     /** 真实视直径（度）压缩成显示用的大小。 */

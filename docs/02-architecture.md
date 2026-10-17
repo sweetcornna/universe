@@ -25,15 +25,16 @@ io.github.sweetcornna.universe
 │   ├── sky/                   天体位置、天空配色
 │   ├── weather/               天气轮换
 │   ├── ecology/               植物、树、动物的物种和外观
+│   ├── ship/                  飞船部件、性能、飞控、组装时的连通性
+│   ├── space/                 太空维度里的天体布局
 │   ├── factory/               传送带、分拣器、配方执行
 │   ├── power/                 电网结算
 │   ├── logistics/             物流站供需匹配与运输排程
 │   └── dyson/                 戴森云与球壳的结构、建造进度、发电
 ├── registry/                  各类 DeferredRegister
-├── block/                     方块类（星球方块、植物、树）
-├── entity/                    实体（异星动物）和刷怪器
-├── world/                     维度管理、星球区块生成器、群系、地物
-├── space/                     太空维度、飞船实体、跃迁
+├── block/                     方块类（星球方块、植物、树、飞船部件）
+├── entity/                    实体（异星动物、飞船）和刷怪器
+├── world/                     维度管理（星球、太空）、星球区块生成器、群系、地物
 ├── survival/                  外骨骼、危害、生命维持、多功能工具
 ├── machine/                   设备方块与方块实体（只做壳，逻辑交给 core）
 ├── research/                  科技树数据与研究进度
@@ -44,7 +45,7 @@ io.github.sweetcornna.universe
 └── client/                    渲染、HUD、界面
 ```
 
-目前建了入口类、`core` 下的 `procgen`、`galaxy`、`terrain`、`sky`、`weather`、`ecology`，以及 `registry`、`block`、`entity`、`world`、`data`、`network`、`datagen`、`client`、`mixin`，其余的包在用到时再建。
+目前建了入口类、`core` 下的 `procgen`、`galaxy`、`terrain`、`sky`、`weather`、`ecology`、`ship`、`space`，以及 `registry`、`block`、`entity`、`world`、`data`、`network`、`datagen`、`client`、`mixin`，其余的包在用到时再建。
 
 ## 3. 关键方案
 
@@ -89,12 +90,11 @@ io.github.sweetcornna.universe
 
 ### 3.5 太空与飞船
 
-- 每个恒星系一个太空维度，使用空的区块生成器。
-- 飞船是实体，用 GeckoLib 做模型和动画，玩家作为乘客驾驶。跨维度时先下船，飞船和玩家分别传送，再重新上船。
-- 高速飞行会不断触发区块加载，M1 比较两种方案：
-  - **A 真实坐标**：飞船在太空维度里真实移动，靠空区块降低加载成本。实现简单。
-  - **B 浮动原点**：飞船始终在原点附近，行星按"虚拟坐标"绘制。完全不加载区块，但多人时其他飞船的位置要自己同步。
-- 飞控、HUD、相机在 `client` 包，飞行状态由服务端校验。
+- 飞船用方块拼装：驾驶台、推进器、燃料舱、脉冲引擎、座椅、船体板，加上任意别的方块。在驾驶台上组装后，方块变成一个实体 `universe:ship`，带着方块状态和方块实体数据飞；着陆后按住 Shift 停船，方块放回世界。
+- 飞控、性能、组装连通性在 `core.ship`，服务端按驾驶员的输入算位置，客户端只插值。船身网格用原版方块模型烘焙，方块实体走原版渲染器。
+- 每个恒星系一个太空维度（空区块、黑色天空，区块不存盘），天体按 `core.space.SpaceLayout` 摆在黄道面上。飞出星球维度顶部进入太空，飞进星球的大气球就降落到那颗星球，飞船连同乘客一起传送。
+- 高速飞行的区块加载：S4 选了方案 A（真实坐标，飞船在太空维度里真实移动）。开脉冲引擎以 40 格/刻飞行时服务端平均 5.4 ms/刻，单人够用；方案 B（浮动原点）等多人时再评估。
+- 详见 [ADR-0008](adr/0008-block-built-ships.md)。
 
 ### 3.6 工厂模拟
 
@@ -189,6 +189,21 @@ io.github.sweetcornna.universe
 | 游戏规则改名：`spawn_mobs`（原 doMobSpawning）、`advance_time`（原 doDaylightCycle）、`advance_weather` 等 | 已确认 |
 | 配方也是数据包注册表的条目：数据生成用 `GatherDataRegistryEntriesEvent#recipe(RecipeProvider 的构造器)`；`RecipeProvider#simpleCookingRecipe` 会把配方存进 minecraft 命名空间，模组要自己指定 ID | 已确认 |
 | 战利品表的数值提供器改为 `ContextIntProviders`、`ContextFloatProviders`；刷怪蛋是 `SpawnEggItem` 加 `Item.Properties#spawnEgg(type)`，每种刷怪蛋有自己的贴图；实体类型先于物品注册，物品属性里可以直接取实体类型 | 已确认 |
+| 方块能不能整体搬走看 `BlockState#getRelocability(level, pos)`：`BlockRelocability.No` 不能搬，`BlockRelocability.Multiblock#isRelocatable(positions)` 判断床、门这类结构是否整个都在 | 已确认，飞船组装在用 |
+| 不触发副作用地搬方块：移走时 `UPDATE_CLIENTS \| UPDATE_SKIP_ALL_SIDEEFFECTS`，放回时 `UPDATE_CLIENTS \| UPDATE_KNOWN_SHAPE` 再 `updateNeighborsAt`；方块实体用 `saveWithFullMetadata(registries)` 存、`BlockEntity.loadStatic(pos, state, tag, registries)` 或 `loadWithComponents(TagValueInput.create(reporter, registries, tag))` 读 | 已确认，飞船在用 |
+| 服务端拿玩家的移动输入：`ServerPlayer#getLastClientInput()` 返回 `Input`（前后左右、跳跃、潜行、疾跑）；骑乘时按潜行下马的判断在 `Player#wantsToStopRiding` | 已确认，飞船在用 |
+| 客户端输入换成了 SDL3：按键码是 SDL 扫描码（潜行默认 225 = 左 Shift），`InputConstants.isKeyDown` 读 `SDL_GetKeyboardState` | 已确认 |
+| 客户端位置插值：实体覆写 `createInterpolationHandler()`，返回 `LinearInterpolationHandler.create(this, 刻数)`；`Entity#commonTick` 在 `tick` 之前插值 | 已确认，飞船在用 |
+| 生成时带额外数据的实体实现 NeoForge 的 `IEntityWithComplexSpawn`（`writeSpawnData`/`readSpawnData`，参数是 `RegistryFriendlyByteBuf`） | 已确认，飞船在用 |
+| `Entity#teleport(TeleportTransition)` 跨维度时带着乘客一起走；客户端收到乘坐数据包会显示原版的"按 Shift 下马"，同一刻发的动作栏提示会被盖掉 | 已确认，飞船在用 |
+| 方块模型烘焙：`new ModelBlockRenderer(环境光遮蔽, 剔面, blockColors).tesselateBlock(BlockQuadOutput, x, y, z, BlockAndTintGetter, pos, state, model, seed)`；实体里画方块用 `collector.submitCustomGeometry(pose, RenderTypes.solidMovingBlock(), ...)` 和 `VertexConsumer#putBakedQuad(pose, quad, QuadInstance)` | 已确认，飞船在用 |
+| 方块实体渲染也是提取加提交：`renderer.createRenderState()`、`extractRenderState(be, state, partialTicks, cameraPos, crumbling)`，再 `BlockEntityRenderDispatcher#submit(state, poseStack, collector, camera)`；光照在状态的 `lightCoords` 里 | 已确认，飞船在用 |
+| 数据附件：`AttachmentType.builder(Supplier).serialize(MapCodec).copyOnDeath().build()`，注册表键 `NeoForgeRegistries.Keys.ATTACHMENT_TYPES` | 已确认，飞船在用 |
+| `Tags.Blocks` 的公共标签在 26.3 标为待删除，改用 `Tags.BlockItems.X.block()` | 已确认 |
+| F1 隐藏界面：`minecraft.gui.hud.isHidden()`（没有 `options.hideGui` 了），模组的 HUD 层要自己判断 | 已确认 |
+| 区块存盘入口 `ChunkMap#save(ChunkAccess)`，不想存时 `chunk.tryMarkSaved()` 后返回 false；实体存在单独的 `entities/` 文件里，和区块存盘无关 | 已确认，太空维度在用 |
+| 实体低于维度底部 64 格时 `checkBelowWorld` → `onBelowWorld`：普通实体直接删除，生物受伤 | 已确认 |
+| `/tick query` 给出平均每刻耗时和 P50/P95/P99，测性能很方便 | 已确认 |
 
 原则：拿不准的 API，先查源码再动手写，核实后把结果补进这张表。源码位置：
 

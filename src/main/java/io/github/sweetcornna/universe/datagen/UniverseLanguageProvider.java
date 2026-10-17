@@ -68,6 +68,69 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         item(UniverseItems.ALIEN_HIDE.get(), "异兽皮", "Alien Hide");
         item(UniverseItems.ALIEN_CREATURE_SPAWN_EGG.get(), "异星生物刷怪蛋", "Alien Creature Spawn Egg");
         item(UniverseItems.ALIEN_FLYER_SPAWN_EGG.get(), "异星飞兽刷怪蛋", "Alien Flyer Spawn Egg");
+        this.ships();
+    }
+
+    private void ships() {
+        block(UniverseBlocks.SHIP_HELM.get(), "驾驶台", "Ship Helm");
+        block(UniverseBlocks.SHIP_THRUSTER.get(), "推进器", "Thruster");
+        block(UniverseBlocks.FUEL_TANK.get(), "燃料舱", "Fuel Tank");
+        block(UniverseBlocks.IMPULSE_ENGINE.get(), "脉冲引擎", "Impulse Engine");
+        block(UniverseBlocks.SHIP_SEAT.get(), "乘客座椅", "Passenger Seat");
+        String[][] colors = {
+                {"white", "白色"}, {"orange", "橙色"}, {"magenta", "品红色"}, {"light_blue", "淡蓝色"},
+                {"yellow", "黄色"}, {"lime", "黄绿色"}, {"pink", "粉红色"}, {"gray", "灰色"},
+                {"light_gray", "淡灰色"}, {"cyan", "青色"}, {"purple", "紫色"}, {"blue", "蓝色"},
+                {"brown", "棕色"}, {"green", "绿色"}, {"red", "红色"}, {"black", "黑色"}};
+        for (String[] color : colors) {
+            String en = java.util.Arrays.stream(color[0].split("_"))
+                    .map(word -> Character.toUpperCase(word.charAt(0)) + word.substring(1))
+                    .collect(java.util.stream.Collectors.joining(" "));
+            both("block.universe.hull_plating_" + color[0], color[1] + "船体板", en + " Hull Plating");
+        }
+        item(UniverseItems.LAUNCH_FUEL.get(), "发射燃料", "Launch Fuel");
+        both("entity.universe.ship", "飞船", "Ship");
+        both("universe.bed.no_sleep_in_space", "太空里不能睡觉", "You can't sleep in space");
+
+        both("message.universe.fuel_tank.full", "燃料舱已经满了", "The fuel tank is full");
+        both("message.universe.fuel_tank.level", "燃料：%s / %s", "Fuel: %s / %s");
+        both("message.universe.ship.too_large", "飞船太大了（超过 %s 个方块），或者连到了地面、建筑上",
+                "Too big for a ship (over %s blocks), or it is attached to the ground or a building");
+        both("message.universe.ship.split_multiblock", "%s 只有一部分在船上", "Only part of the %s is on the ship");
+        both("message.universe.ship.two_helms", "一艘船只能有一个驾驶台", "A ship can only have one helm");
+        both("message.universe.ship.no_thrusters", "船上没有推进器，飞不起来", "This ship has no thrusters");
+        both("message.universe.ship.assembled", "飞船就绪：%s 个方块，%s 吨，推重比 %s，燃料 %s/%s",
+                "Ship ready: %s blocks, %s t, thrust-to-weight %s, fuel %s/%s");
+        both("message.universe.ship.too_heavy", "推力不够，这艘船在这里飞不起来：多装推进器，或者换轻一些的船体板。",
+                "Not enough thrust to lift off here. Add thrusters or switch to lighter hull plating.");
+        both("message.universe.ship.blocked", "这里放不下飞船，找块空旷的地方再停", "Not enough room to park here; find an open spot");
+        both("message.universe.ship.too_hot", "离恒星太近了！", "Too close to the star!");
+        both("message.universe.ship.cannot_land", "%1$s 是气态巨行星，没有可以着陆的地面", "%2$s is a gas giant with no ground to land on");
+        both("message.universe.ship.entered_planet", "进入 %1$s 的大气层", "Entering the atmosphere of %2$s");
+        both("message.universe.ship.entered_space", "进入太空", "Entering space");
+        both("message.universe.ship.boarded_pilot", "空格上升，Shift 下降；着陆后按住 Shift 停船",
+                "Space to climb, Shift to descend; hold Shift after landing to park");
+        both("message.universe.ship.boarded_passenger", "着陆后按 Shift 下船", "Press Shift after landing to get off");
+
+        both("hud.universe.ship.title", "飞船", "Ship");
+        both("hud.universe.ship.status.impulse", "脉冲巡航", "Impulse");
+        both("hud.universe.ship.status.space", "太空", "Space");
+        both("hud.universe.ship.status.landed", "已着陆", "Landed");
+        both("hud.universe.ship.status.flying", "飞行中", "Flying");
+        both("hud.universe.ship.speed", "速度 %s 格/秒", "Speed %s m/s");
+        both("hud.universe.ship.altitude", "高度 %s（%s 进入太空）", "Altitude %s (space at %s)");
+        both("hud.universe.ship.thrust", "推重比 %s  重力 %s g", "Thrust/weight %s  Gravity %s g");
+        both("hud.universe.ship.mass", "%s 个方块  %s 吨", "%s blocks  %s t");
+        both("hud.universe.ship.fuel", "燃料 %s / %s", "Fuel %s / %s");
+        both("hud.universe.ship.keys", "WASD 推进转向  空格 上升  Shift 下降", "WASD move  Space up  Shift down");
+        both("hud.universe.ship.keys.space", "WASD 推进转向  疾跑键 脉冲引擎", "WASD move  Sprint: impulse engine");
+        both("hud.universe.ship.parking", "停船中", "Parking");
+        both("hud.universe.ship.hint.park", "按住 Shift 停船", "Hold Shift to park");
+        both("hud.universe.ship.hint.space", "一直往上飞就能进入太空", "Keep climbing to reach space");
+        both("hud.universe.ship.hint.land", "飞进行星的大气层就会开始降落", "Fly into a planet's atmosphere to land");
+        both("hud.universe.ship.hint.no_fuel", "燃料耗尽：着陆后给燃料舱加燃料", "Out of fuel: land and refuel the tanks");
+        both("hud.universe.ship.target", "%s  %s 格", "%s  %s m");
+        both("hud.universe.ship.unlandable", "（不能着陆）", " (no landing)");
     }
 
     private void item(net.minecraft.world.item.Item item, String zh, String en) {

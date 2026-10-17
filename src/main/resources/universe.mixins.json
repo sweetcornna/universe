@@ -4,7 +4,9 @@
   "package": "io.github.sweetcornna.universe.mixin",
   "compatibilityLevel": "JAVA_25",
   "mixins": [
+    "ChunkMapMixin",
     "EnvironmentAttributeSystemMixin",
+    "PlayerMixin",
     "ServerLevelMixin"
   ],
   "client": [

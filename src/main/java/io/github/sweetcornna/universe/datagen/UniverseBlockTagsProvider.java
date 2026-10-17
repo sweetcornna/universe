@@ -4,10 +4,13 @@ import java.util.concurrent.CompletableFuture;
 
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.block.FloraBlocks;
+import io.github.sweetcornna.universe.entity.ship.ShipParts;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.world.level.block.Blocks;
+import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.common.data.BlockTagsProvider;
 
 /** 方块标签：挖掘工具、阻挡移动等。 */
@@ -67,6 +70,39 @@ final class UniverseBlockTagsProvider extends BlockTagsProvider {
             this.tag(BlockTags.SWORD_EFFICIENT).add(block.key());
             this.tag(BlockTags.REPLACEABLE_BY_TREES).add(block.key());
         }
+        // 飞船部件
+        this.tag(BlockTags.MINEABLE_WITH_PICKAXE).add(
+                UniverseBlocks.SHIP_HELM.key(),
+                UniverseBlocks.SHIP_THRUSTER.key(),
+                UniverseBlocks.FUEL_TANK.key(),
+                UniverseBlocks.IMPULSE_ENGINE.key());
+        UniverseBlocks.HULL_PLATING.values().forEach(block -> this.tag(BlockTags.MINEABLE_WITH_PICKAXE).add(block.key()));
+        // 天然地形不会被组装进飞船：船停在地上时不会把地面、矿、树叶、草一起带走
+        this.tag(ShipParts.EXCLUDED)
+                .addTag(BlockTags.DIRT)
+                .addTag(BlockTags.SAND)
+                .addTag(BlockTags.BASE_STONE_OVERWORLD)
+                .addTag(BlockTags.BASE_STONE_NETHER)
+                .addTag(BlockTags.LEAVES)
+                .addTag(BlockTags.ICE)
+                .addTag(BlockTags.SNOW)
+                .addTag(BlockTags.REPLACEABLE)
+                .addTag(BlockTags.NYLIUM)
+                .addTag(BlockTags.BADLANDS_TERRACOTTA)
+                .addTag(Tags.BlockItems.ORES.block())
+                .addTag(Tags.BlockItems.GRAVELS.block())
+                .add(Blocks.BEDROCK.builtInRegistryHolder().key(),
+                        Blocks.CLAY.builtInRegistryHolder().key(),
+                        Blocks.MUD.builtInRegistryHolder().key(),
+                        Blocks.MAGMA_BLOCK.builtInRegistryHolder().key(),
+                        Blocks.END_STONE.builtInRegistryHolder().key(),
+                        UniverseBlocks.PLANET_REGOLITH.key(),
+                        UniverseBlocks.PLANET_SNOW.key(),
+                        UniverseBlocks.PLANET_ASH.key(),
+                        UniverseBlocks.PLANET_STRATA.key(),
+                        UniverseBlocks.PLANET_CRYSTAL.key(),
+                        UniverseBlocks.PLANET_CAP.key(),
+                        UniverseBlocks.PLANET_BLOOM.key());
         // 星球植物能长在土、沙、雪、风化层、灰烬上，地衣和晶花还能长在岩石上
         this.tag(FloraBlocks.PLANT_SOIL)
                 .addTag(BlockTags.DIRT)

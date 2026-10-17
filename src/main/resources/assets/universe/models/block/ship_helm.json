@@ -1,0 +1,59 @@
+{
+    "parent": "block/block",
+    "textures": {
+        "particle": "universe:block/ship_hull_panel",
+        "hull": "universe:block/ship_hull_panel",
+        "screen": "universe:block/ship_helm_screen",
+        "seat": "universe:block/ship_seat_fabric"
+    },
+    "elements": [
+        {   "from": [ 1, 0, 1 ],
+            "to": [ 15, 2, 15 ],
+            "faces": {
+                "down":  { "texture": "#hull", "cullface": "down" },
+                "up":    { "texture": "#hull" },
+                "north": { "texture": "#hull" },
+                "south": { "texture": "#hull" },
+                "west":  { "texture": "#hull" },
+                "east":  { "texture": "#hull" }
+            }
+        },
+        {   "from": [ 2, 2, 0 ],
+            "to": [ 14, 12, 5 ],
+            "faces": {
+                "up":    { "texture": "#hull" },
+                "north": { "texture": "#hull", "cullface": "north" },
+                "south": { "texture": "#hull" },
+                "west":  { "texture": "#hull" },
+                "east":  { "texture": "#hull" }
+            }
+        },
+        {   "from": [ 3, 4, 5.05 ],
+            "to": [ 13, 11, 5.05 ],
+            "light_emission": 12,
+            "faces": {
+                "south": { "uv": [ 0, 0, 16, 16 ], "texture": "#screen" }
+            }
+        },
+        {   "from": [ 3, 2, 7 ],
+            "to": [ 13, 7, 15 ],
+            "faces": {
+                "up":    { "texture": "#seat" },
+                "north": { "texture": "#seat" },
+                "south": { "texture": "#seat" },
+                "west":  { "texture": "#seat" },
+                "east":  { "texture": "#seat" }
+            }
+        },
+        {   "from": [ 3, 7, 13 ],
+            "to": [ 13, 16, 15 ],
+            "faces": {
+                "up":    { "texture": "#seat", "cullface": "up" },
+                "north": { "texture": "#seat" },
+                "south": { "texture": "#seat" },
+                "west":  { "texture": "#seat" },
+                "east":  { "texture": "#seat" }
+            }
+        }
+    ]
+}

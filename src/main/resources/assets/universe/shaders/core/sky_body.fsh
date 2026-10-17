@@ -144,7 +144,7 @@ void main() {
         }
         float ndl = dot(n, light);
         float diffuse = clamp(ndl * 1.05 + 0.03, 0.0, 1.0) * smoothstep(-0.04, 0.06, ndl);
-        vec3 color = albedo * (diffuse + 0.015);
+        vec3 color = albedo * (diffuse + 0.035);
         // 熔岩的光在夜面最显眼
         color += band * glow * (0.35 + 0.65 * (1.0 - diffuse)) * 1.2;
         // 大气：边缘偏向大气的颜色，只在亮面看得出

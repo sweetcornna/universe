@@ -19,6 +19,7 @@ import com.google.gson.JsonPrimitive;
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.core.galaxy.DayCycle;
 import io.github.sweetcornna.universe.world.planet.PlanetDimensionTypes;
+import io.github.sweetcornna.universe.world.space.SpaceDimensions;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
 import net.minecraft.data.PackOutput;
@@ -67,7 +68,43 @@ final class PlanetEnvironmentProvider implements DataProvider {
             writes.add(DataProvider.saveStable(cache, dimensionType(overworld, timelineIds),
                     this.dimensionTypes.json(PlanetDimensionTypes.forCycle(cycle).identifier())));
         }
+        writes.add(DataProvider.saveStable(cache, spaceType(overworld), this.dimensionTypes.json(SpaceDimensions.TYPE.identifier())));
         return CompletableFuture.allOf(writes.toArray(CompletableFuture[]::new));
+    }
+
+    /**
+     * 太空的维度类型：没有时间线（不分昼夜）、天和雾都是黑的、不出云，天空由太空渲染器画；
+     * 有天空光照，飞船不会黑成一团。上下各 256 格，飞船在黄道面附近活动。
+     */
+    private static JsonObject spaceType(JsonObject overworld) {
+        JsonObject type = overworld.deepCopy();
+        type.add("timelines", new JsonArray());
+        type.addProperty("min_y", -256);
+        type.addProperty("height", 512);
+        type.addProperty("logical_height", 512);
+        JsonObject attributes = type.getAsJsonObject("attributes");
+        attributes.remove("minecraft:gameplay/nether_portal_spawns_piglin");
+        attributes.remove("minecraft:audio/ambient_sounds");
+        attributes.addProperty("minecraft:visual/sky_color", "#000000");
+        attributes.addProperty("minecraft:visual/fog_color", "#000000");
+        attributes.addProperty("minecraft:visual/cloud_color", "#00ffffff");
+        JsonObject bedRule = new JsonObject();
+        bedRule.addProperty("can_set_spawn", "never");
+        bedRule.addProperty("can_sleep", "never");
+        JsonObject message = new JsonObject();
+        message.addProperty("translate", "universe.bed.no_sleep_in_space");
+        bedRule.add("error_message", message);
+        attributes.add("minecraft:gameplay/bed_rule", bedRule);
+        // 太空里放末地的音乐
+        JsonObject music = new JsonObject();
+        JsonObject track = new JsonObject();
+        track.addProperty("sound", "minecraft:music.end");
+        track.addProperty("min_delay", 6000);
+        track.addProperty("max_delay", 24000);
+        music.add("default", track);
+        attributes.add("minecraft:audio/background_music", music);
+        attributes.addProperty("neoforge:custom_skybox", Universe.id("space").toString());
+        return type;
     }
 
     @Override

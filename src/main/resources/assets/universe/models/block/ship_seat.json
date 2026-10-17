@@ -1,0 +1,31 @@
+{
+    "parent": "block/block",
+    "textures": {
+        "particle": "universe:block/ship_seat_fabric",
+        "fabric": "universe:block/ship_seat_fabric",
+        "frame": "universe:block/ship_hull_panel"
+    },
+    "elements": [
+        {   "from": [ 2, 0, 2 ],
+            "to": [ 14, 6, 14 ],
+            "faces": {
+                "down":  { "texture": "#frame", "cullface": "down" },
+                "up":    { "texture": "#fabric" },
+                "north": { "texture": "#frame" },
+                "south": { "texture": "#frame" },
+                "west":  { "texture": "#frame" },
+                "east":  { "texture": "#frame" }
+            }
+        },
+        {   "from": [ 2, 6, 12 ],
+            "to": [ 14, 16, 14 ],
+            "faces": {
+                "up":    { "texture": "#fabric", "cullface": "up" },
+                "north": { "texture": "#fabric" },
+                "south": { "texture": "#frame" },
+                "west":  { "texture": "#frame" },
+                "east":  { "texture": "#frame" }
+            }
+        }
+    ]
+}

@@ -1,8 +1,11 @@
 package io.github.sweetcornna.universe.client.sky;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.OptionalDouble;
+import java.util.OptionalInt;
 import java.util.function.Supplier;
 
 import org.joml.Matrix4f;
@@ -32,6 +35,7 @@ import io.github.sweetcornna.universe.client.ClientGalaxy;
 import io.github.sweetcornna.universe.client.ClientWeather;
 import io.github.sweetcornna.universe.core.galaxy.Planet;
 import io.github.sweetcornna.universe.core.galaxy.PlanetType;
+import io.github.sweetcornna.universe.core.galaxy.StarSystem;
 import io.github.sweetcornna.universe.core.procgen.Colors;
 import io.github.sweetcornna.universe.core.procgen.Rng;
 import io.github.sweetcornna.universe.core.procgen.Seeds;
@@ -41,7 +45,9 @@ import io.github.sweetcornna.universe.core.sky.SkyBody;
 import io.github.sweetcornna.universe.core.sky.SkyColors;
 import io.github.sweetcornna.universe.core.sky.SkyModel;
 import io.github.sweetcornna.universe.core.sky.StarField;
+import io.github.sweetcornna.universe.core.space.SpaceLayout;
 import io.github.sweetcornna.universe.world.planet.PlanetEnvironment;
+import io.github.sweetcornna.universe.world.space.SpaceDimensions;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.state.level.LevelRenderState;
@@ -52,6 +58,7 @@ import net.minecraft.util.ARGB;
 import net.minecraft.util.Mth;
 import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.client.CustomSkyboxRenderer;
 import net.neoforged.neoforge.client.event.ExtractLevelRenderStateEvent;
@@ -94,10 +101,23 @@ public final class PlanetSkyRenderer implements CustomSkyboxRenderer {
     private record SkyFrame(PlanetEnvironment.Context context, List<SkyBody> bodies, double days) {
     }
 
+    /** 太空维度的一帧：天体按真实的位置和大小画，观察者就是摄像机。 */
+    private record SpaceFrame(StarSystem system, List<SpaceLayout.Body> bodies, Vec3 camera, double days) {
+    }
+
+    /** 太空维度的天空（维度类型的 {@code neoforge:custom_skybox} 指向它），和星球天空共用星空和天体的画法。 */
+    public static final Identifier SPACE_ID = Universe.id("space");
+    private static final ContextKey<SpaceFrame> SPACE_FRAME = new ContextKey<>(Universe.id("space_frame"));
+    private int spaceSystemIndex = -1;
+    private @Nullable StarSystem spaceSystem;
+    private List<SpaceLayout.Body> spaceBodies = List.of();
+
     public static void registerEvents(IEventBus modBus, IEventBus gameBus) {
         PlanetSkyRenderer renderer = new PlanetSkyRenderer();
-        modBus.addListener(RegisterCustomEnvironmentEffectRendererEvent.class,
-                event -> event.registerSkyboxRenderer(ID, renderer));
+        modBus.addListener(RegisterCustomEnvironmentEffectRendererEvent.class, event -> {
+            event.registerSkyboxRenderer(ID, renderer);
+            event.registerSkyboxRenderer(SPACE_ID, renderer);
+        });
         modBus.addListener(RegisterRenderPipelinesEvent.class, SkyPipelines::register);
         gameBus.addListener(ExtractLevelRenderStateEvent.class, renderer::extract);
     }
@@ -107,13 +127,20 @@ public final class PlanetSkyRenderer implements CustomSkyboxRenderer {
         if (state.customSkyboxRenderer != this) {
             return;
         }
+        // 轨道按母星日计时，跟着世界的游戏刻走
+        double days = (state.gameTime + state.worldPartialTicks) / 24000.0;
+        OptionalInt space = SpaceDimensions.system(event.getLevel().dimension());
+        if (space.isPresent()) {
+            state.setRenderData(FRAME, null);
+            state.setRenderData(SPACE_FRAME, this.spaceFrame(space.getAsInt(), event.getCamera().position(), days));
+            return;
+        }
+        state.setRenderData(SPACE_FRAME, null);
         PlanetEnvironment.Context context = this.context(event.getLevel().dimension());
         if (context == null) {
             state.setRenderData(FRAME, null);
             return;
         }
-        // 轨道按母星日计时，跟着世界的游戏刻走
-        double days = (state.gameTime + state.worldPartialTicks) / 24000.0;
         List<SkyBody> bodies = SkyModel.bodies(context.system(), context.planet(), days);
         state.setRenderData(FRAME, new SkyFrame(context, bodies, days));
     }
@@ -128,13 +155,27 @@ public final class PlanetSkyRenderer implements CustomSkyboxRenderer {
         return this.cachedContext;
     }
 
+    private @Nullable SpaceFrame spaceFrame(int systemIndex, Vec3 camera, double days) {
+        if (systemIndex != this.spaceSystemIndex || this.spaceSystem == null) {
+            this.spaceSystem = ClientGalaxy.galaxy().flatMap(galaxy -> galaxy.system(systemIndex)).orElse(null);
+            this.spaceBodies = this.spaceSystem == null ? List.of() : SpaceLayout.of(this.spaceSystem);
+            this.spaceSystemIndex = this.spaceSystem == null ? -1 : systemIndex;
+        }
+        return this.spaceSystem == null ? null : new SpaceFrame(this.spaceSystem, this.spaceBodies, camera, days);
+    }
+
     @Override
     public boolean renderSky(LevelRenderState levelState, SkyRenderState sky, Matrix4fc modelView, GpuBufferSlice skyFog) {
+        SpaceFrame space = levelState.getRenderData(SPACE_FRAME);
+        if (space != null) {
+            this.renderSpace(space, skyFog);
+            return true;
+        }
         SkyFrame frame = levelState.getRenderData(FRAME);
         if (frame == null) {
             return false;
         }
-        this.ensureBuffers(frame.context());
+        this.ensureBuffers(frame.context().system().seed());
         RenderSystem.setShaderFog(skyFog);
         RenderTarget target = Minecraft.getInstance().gameRenderer.mainRenderTarget();
         try (RenderPass pass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Universe planet sky",
@@ -160,6 +201,96 @@ public final class PlanetSkyRenderer implements CustomSkyboxRenderer {
             }
         }
         return true;
+    }
+
+    /**
+     * 太空：黑色背景上的星空，恒星和每颗行星、卫星按摄像机到它的真实距离和大气球半径算出视大小，
+     * 都画在天球上（深度不写），所以总在飞船和方块后面——飞船飞进大气球之前就会切换维度，不会穿进星球里。
+     */
+    private void renderSpace(SpaceFrame frame, GpuBufferSlice skyFog) {
+        this.ensureBuffers(frame.system().seed());
+        RenderSystem.setShaderFog(skyFog);
+        RenderTarget target = Minecraft.getInstance().gameRenderer.mainRenderTarget();
+        try (RenderPass pass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> "Universe space sky",
+                target.getColorTextureView(), Optional.empty(), target.getDepthTextureView(), OptionalDouble.empty())) {
+            RenderSystem.bindDefaultUniforms(pass);
+            this.drawSkyDisc(pass, new Vector3f(0.0F, 0.0F, 0.0F));
+            this.drawStarField(pass, 0.0F, 1.0F);
+            Vec3 camera = frame.camera();
+            Vector3f toStar = new Vector3f((float) -camera.x, (float) -camera.y, (float) -camera.z);
+            double starDistance = toStar.length();
+            toStar.normalize();
+            float starAngular = (float) Math.max(0.8, Math.toDegrees(2 * Math.atan(SpaceLayout.STAR_RADIUS / Math.max(starDistance, 1))));
+            boolean starDrawn = starDistance <= 1;
+            // 由远及近地画，近的盖住远的；恒星按它的距离插在中间，整个躲在恒星背后的星球不画
+            List<SpaceLayout.Body> bodies = new ArrayList<>(frame.bodies());
+            bodies.sort(Comparator.comparingDouble(body -> -body.distanceTo(camera.x, camera.y, camera.z)));
+            for (SpaceLayout.Body body : bodies) {
+                double distance = body.distanceTo(camera.x, camera.y, camera.z);
+                if (distance <= body.radius()) {
+                    continue;
+                }
+                if (!starDrawn && distance < starDistance) {
+                    this.drawStarAt(pass, toStar, starAngular, frame.system().star().color());
+                    starDrawn = true;
+                }
+                // 再远也留一个小点，看得出那里有颗星球
+                float angular = (float) Math.max(0.3, Math.toDegrees(2 * Math.asin(body.radius() / distance)));
+                Vector3f direction = new Vector3f((float) (body.x() - camera.x), (float) (body.y() - camera.y),
+                        (float) (body.z() - camera.z)).normalize();
+                if (!starDrawn) {
+                    double apart = Math.toDegrees(Math.acos(Mth.clamp(direction.dot(toStar), -1.0F, 1.0F)));
+                    if (apart < (starAngular - angular) / 2) {
+                        continue;
+                    }
+                }
+                Vector3f light = new Vector3f((float) -body.x(), (float) -body.y(), (float) -body.z()).normalize();
+                this.drawBodyAt(pass, body.planet(), direction, angular, light, frame.days());
+            }
+            if (!starDrawn) {
+                this.drawStarAt(pass, toStar, starAngular, frame.system().star().color());
+            }
+        }
+    }
+
+    private void drawStarAt(RenderPass pass, Vector3f direction, float angularDiameter, int color) {
+        Matrix4f celestial = celestialFor(direction);
+        float radius = radiusAtDistance(angularDiameter);
+        // 真空里没有散射，只留一圈不大的光晕
+        float extent = Math.max(2.0F, 8.0F / (angularDiameter / 2));
+        Matrix4f matrix = bodyMatrix(celestial, radius * extent);
+        GpuBufferSlice transform = RenderSystem.getDynamicUniforms().writeTransform(matrix,
+                new Vector4f(Colors.red(color) / 255.0F, Colors.green(color) / 255.0F, Colors.blue(color) / 255.0F, 1.0F),
+                new Vector3f(0.0F, extent, 0.0F),
+                new Matrix4f());
+        this.drawQuad(pass, SkyPipelines.STAR, transform);
+    }
+
+    private void drawBodyAt(RenderPass pass, Planet planet, Vector3f direction, float angularDiameter, Vector3f lightWorld, double days) {
+        BodyLook look = BodyLook.of(planet);
+        Matrix4f celestial = celestialFor(direction);
+        Vector3f e1 = celestial.transformDirection(new Vector3f(1.0F, 0.0F, 0.0F));
+        Vector3f e2 = celestial.transformDirection(new Vector3f(0.0F, 0.0F, 1.0F));
+        Vector3f toViewer = new Vector3f(direction).negate();
+        Vector3f light = new Vector3f(lightWorld.dot(e1), lightWorld.dot(e2), lightWorld.dot(toViewer));
+        // 黄道坐标里 x 是黄道面的法线，太空维度里黄道面是 y = 0
+        double[] axisEcliptic = look.axis();
+        Vector3f axisWorld = new Vector3f((float) axisEcliptic[1], (float) axisEcliptic[0], (float) axisEcliptic[2]);
+        Vector3f axis = new Vector3f(axisWorld.dot(e1), axisWorld.dot(e2), axisWorld.dot(toViewer)).normalize();
+        int[] colors = SkyModel.bodyColors(planet);
+        this.drawDisc(pass, planet, look, celestial, angularDiameter, light, axis, colors[0], colors[1], 1.0F, 1.0F, days);
+    }
+
+    /** 让天球坐标的 +y 指向 {@code direction} 的旋转（列向量依次是圆盘的两个轴和指向）。 */
+    private static Matrix4f celestialFor(Vector3f direction) {
+        Vector3f reference = Math.abs(direction.y()) < 0.95F ? new Vector3f(0.0F, 1.0F, 0.0F) : new Vector3f(1.0F, 0.0F, 0.0F);
+        Vector3f e1 = new Vector3f(reference).cross(direction).normalize();
+        Vector3f e2 = new Vector3f(e1).cross(direction).normalize();
+        return new Matrix4f(
+                e1.x(), e1.y(), e1.z(), 0.0F,
+                direction.x(), direction.y(), direction.z(), 0.0F,
+                e2.x(), e2.y(), e2.z(), 0.0F,
+                0.0F, 0.0F, 0.0F, 1.0F);
     }
 
     /** 天空有多亮：0 是夜里或真空，1 是母星正午那样的蓝天。 */
@@ -274,13 +405,24 @@ public final class PlanetSkyRenderer implements CustomSkyboxRenderer {
         Vector3f axisWorld = new Matrix4f().rotateY(-HALF_PI).rotateX(sky.starAngle)
                 .transformDirection(new Vector3f((float) axisEcliptic[0], (float) axisEcliptic[1], (float) axisEcliptic[2]));
         Vector3f axis = new Vector3f(axisWorld.dot(e1), axisWorld.dot(e2), axisWorld.dot(toViewer)).normalize();
+        float occlusion = 1.0F - 0.97F * dayFactor;
+        this.drawDisc(pass, planet, look, celestial, (float) body.angularDiameter(), light, axis, body.color(), body.bandColor(),
+                visibility, occlusion, days);
+    }
 
+    /**
+     * 画一颗星球的圆盘。
+     *
+     * @param light     圆盘坐标系里指向恒星的方向（x、y 沿圆盘的两个轴，z 指向观察者）
+     * @param axis      圆盘坐标系里的自转轴
+     * @param occlusion 天光遮住多少（白天的天光会盖住暗面）
+     */
+    private void drawDisc(RenderPass pass, Planet planet, BodyLook look, Matrix4f celestial, float angularDiameter, Vector3f light,
+            Vector3f axis, int main, int band, float visibility, float occlusion, double days) {
         float rimStrength = rimStrength(planet);
         float extent = look.hasRings() ? (float) look.ringOuter() + 0.05F : rimStrength > 0 ? 1.15F : 1.03F;
-        float radius = radiusAtDistance(body.angularDiameter());
+        float radius = radiusAtDistance(angularDiameter);
         Matrix4f matrix = bodyMatrix(celestial, radius * extent);
-        int main = body.color();
-        int band = body.bandColor();
         int rim = planet.palette().sky();
         Matrix4f parameters = new Matrix4f(
                 light.x(), light.y(), light.z(), look.surface().shaderId(),
@@ -288,7 +430,6 @@ public final class PlanetSkyRenderer implements CustomSkyboxRenderer {
                 axis.x(), axis.y(), axis.z(), (float) look.ringInner(),
                 Colors.red(rim) / 255.0F * rimStrength, Colors.green(rim) / 255.0F * rimStrength,
                 Colors.blue(rim) / 255.0F * rimStrength, (float) look.ringOuter());
-        float occlusion = 1.0F - 0.97F * dayFactor;
         GpuBufferSlice transform = RenderSystem.getDynamicUniforms().writeTransform(matrix,
                 new Vector4f(Colors.red(main) / 255.0F, Colors.green(main) / 255.0F, Colors.blue(main) / 255.0F, visibility),
                 new Vector3f(occlusion, extent, (float) look.spinAngle(days)),
@@ -335,7 +476,7 @@ public final class PlanetSkyRenderer implements CustomSkyboxRenderer {
         pass.drawIndexed(6, 1, 0, 0, 0);
     }
 
-    private void ensureBuffers(PlanetEnvironment.Context context) {
+    private void ensureBuffers(long seed) {
         if (this.skyDisc == null) {
             this.quadIndices = RenderSystem.getSequentialBuffer(PrimitiveTopology.QUADS);
             this.skyDisc = buildSkyDisc("Universe sky disc", 16.0F);
@@ -343,7 +484,6 @@ public final class PlanetSkyRenderer implements CustomSkyboxRenderer {
             this.sunriseFan = buildSunriseFan();
             this.bodyQuad = buildBodyQuad();
         }
-        long seed = context.system().seed();
         if (this.starBuffer == null || seed != this.starSystemSeed) {
             if (this.starBuffer != null) {
                 this.starBuffer.close();

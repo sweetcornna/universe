@@ -1,0 +1,28 @@
+{
+  "values": [
+    "#minecraft:dirt",
+    "#minecraft:sand",
+    "#minecraft:base_stone_overworld",
+    "#minecraft:base_stone_nether",
+    "#minecraft:leaves",
+    "#minecraft:ice",
+    "#minecraft:snow",
+    "#minecraft:replaceable",
+    "#minecraft:nylium",
+    "#minecraft:badlands_terracotta",
+    "#c:ores",
+    "#c:gravels",
+    "minecraft:bedrock",
+    "minecraft:clay",
+    "minecraft:mud",
+    "minecraft:magma_block",
+    "minecraft:end_stone",
+    "universe:planet_regolith",
+    "universe:planet_snow",
+    "universe:planet_ash",
+    "universe:planet_strata",
+    "universe:planet_crystal",
+    "universe:planet_cap",
+    "universe:planet_bloom"
+  ]
+}

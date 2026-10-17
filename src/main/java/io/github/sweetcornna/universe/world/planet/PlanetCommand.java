@@ -431,6 +431,12 @@ public final class PlanetCommand {
         return surface(level, 0, 0);
     }
 
+    /** 星球上离原点最近的一块陆地（不生成区块）；找不到就是原点。飞船第一次降落时以它为中心。 */
+    public static int[] landingColumn(Planet planet) {
+        List<int[]> candidates = landCandidates(PlanetGenSpec.of(planet).model());
+        return candidates.isEmpty() ? new int[] {0, 0} : candidates.get(0);
+    }
+
     /** 从原点向外螺旋搜索高出液面、不太陡的陆地列。 */
     static List<int[]> landCandidates(TerrainModel model) {
         List<int[]> result = new ArrayList<>();

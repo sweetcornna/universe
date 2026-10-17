@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "key": {
+    "B": "minecraft:iron_bars",
+    "C": "minecraft:copper_ingot",
+    "F": "minecraft:furnace",
+    "I": "minecraft:iron_ingot"
+  },
+  "pattern": [
+    "IBI",
+    "IFI",
+    "C C"
+  ],
+  "result": {
+    "id": "universe:ship_thruster"
+  }
+}

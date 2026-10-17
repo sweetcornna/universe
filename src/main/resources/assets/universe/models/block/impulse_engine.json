@@ -1,0 +1,28 @@
+{
+    "parent": "block/block",
+    "textures": {
+        "particle": "universe:block/impulse_engine_side",
+        "side": "universe:block/impulse_engine_side",
+        "back": "universe:block/impulse_engine_back",
+        "front": "universe:block/impulse_engine_front"
+    },
+    "elements": [
+        {   "from": [ 0, 0, 0 ],
+            "to": [ 16, 16, 16 ],
+            "faces": {
+                "down":  { "texture": "#side", "cullface": "down" },
+                "up":    { "texture": "#side", "cullface": "up" },
+                "south": { "texture": "#back", "cullface": "south" },
+                "west":  { "texture": "#side", "cullface": "west" },
+                "east":  { "texture": "#side", "cullface": "east" }
+            }
+        },
+        {   "from": [ 0, 0, 0 ],
+            "to": [ 16, 16, 0 ],
+            "light_emission": 15,
+            "faces": {
+                "north": { "uv": [ 0, 0, 16, 16 ], "texture": "#front", "cullface": "north" }
+            }
+        }
+    ]
+}

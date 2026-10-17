@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "C": "minecraft:copper_ingot",
+    "I": "minecraft:iron_ingot"
+  },
+  "pattern": [
+    "ICI",
+    "CIC",
+    "ICI"
+  ],
+  "result": {
+    "count": 16,
+    "id": "universe:hull_plating_light_gray"
+  }
+}

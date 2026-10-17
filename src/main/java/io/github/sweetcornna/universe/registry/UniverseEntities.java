@@ -3,6 +3,7 @@ package io.github.sweetcornna.universe.registry;
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.entity.AlienCreature;
 import io.github.sweetcornna.universe.entity.AlienFlyer;
+import io.github.sweetcornna.universe.entity.ship.ShipEntity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
 import net.neoforged.bus.api.IEventBus;
@@ -20,6 +21,10 @@ public final class UniverseEntities {
     /** 飞兽。 */
     public static final DeferredHolder<EntityType<?>, EntityType<AlienFlyer>> ALIEN_FLYER = ENTITIES.registerEntityType(
             "alien_flyer", AlienFlyer::new, MobCategory.CREATURE, builder -> builder.sized(0.6F, 0.6F).clientTrackingRange(10));
+
+    /** 组装好的飞船。尺寸按船身在实体里算；每刻同步位置，远处也看得见。 */
+    public static final DeferredHolder<EntityType<?>, EntityType<ShipEntity>> SHIP = ENTITIES.registerEntityType(
+            "ship", ShipEntity::new, MobCategory.MISC, builder -> builder.sized(1.0F, 1.0F).clientTrackingRange(16).updateInterval(1).fireImmune().noLootTable());
 
     private UniverseEntities() {
     }

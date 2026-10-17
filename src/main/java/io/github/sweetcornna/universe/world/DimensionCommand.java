@@ -16,6 +16,7 @@ import com.mojang.brigadier.suggestion.SuggestionProvider;
 
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.data.RuntimeDimensionsData;
+import io.github.sweetcornna.universe.entity.ship.ShipCommand;
 import io.github.sweetcornna.universe.world.planet.PlanetCommand;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -74,6 +75,7 @@ public final class DimensionCommand {
         dispatcher.register(Commands.literal(Universe.MOD_ID)
                 .requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS))
                 .then(PlanetCommand.build())
+                .then(ShipCommand.build())
                 .then(Commands.literal("dim")
                         .then(Commands.literal("create")
                                 .then(Commands.argument("name", StringArgumentType.word())

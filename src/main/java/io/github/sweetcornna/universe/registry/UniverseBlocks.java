@@ -12,9 +12,15 @@ import io.github.sweetcornna.universe.block.PlanetBloomBlock;
 import io.github.sweetcornna.universe.block.PlanetLeavesBlock;
 import io.github.sweetcornna.universe.block.PlanetLogBlock;
 import io.github.sweetcornna.universe.block.PlanetPlantBlock;
+import io.github.sweetcornna.universe.block.ship.FuelTankBlock;
+import io.github.sweetcornna.universe.block.ship.ImpulseEngineBlock;
+import io.github.sweetcornna.universe.block.ship.ShipHelmBlock;
+import io.github.sweetcornna.universe.block.ship.ShipSeatBlock;
+import io.github.sweetcornna.universe.block.ship.ShipThrusterBlock;
 import io.github.sweetcornna.universe.core.ecology.PlantForm;
 import io.github.sweetcornna.universe.core.galaxy.Palette;
 import net.minecraft.util.ColorRGBA;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.SandBlock;
@@ -79,6 +85,30 @@ public final class UniverseBlocks {
             p -> p.mapColor(MapColor.COLOR_PINK).strength(0.4F).sound(SoundType.SHROOMLIGHT).noOcclusion()
                     .isValidSpawn(Blocks::never).isSuffocating((state, level, pos) -> false).isViewBlocking((state, level, pos, box) -> false)
                     .lightLevel(state -> state.getValue(FloraBlocks.LIT) ? 13 : 0));
+
+    // ---- 飞船部件（ADR-0008）
+    public static final DeferredBlock<ShipHelmBlock> SHIP_HELM = BLOCKS.registerBlock("ship_helm", ShipHelmBlock::new,
+            p -> p.mapColor(MapColor.METAL).strength(3.0F, 6.0F).sound(SoundType.COPPER).requiresCorrectToolForDrops().noOcclusion());
+    public static final DeferredBlock<ShipThrusterBlock> SHIP_THRUSTER = BLOCKS.registerBlock("ship_thruster", ShipThrusterBlock::new,
+            p -> p.mapColor(MapColor.METAL).strength(3.0F, 6.0F).sound(SoundType.COPPER).requiresCorrectToolForDrops().noOcclusion());
+    public static final DeferredBlock<FuelTankBlock> FUEL_TANK = BLOCKS.registerBlock("fuel_tank", FuelTankBlock::new,
+            p -> p.mapColor(MapColor.COLOR_ORANGE).strength(3.0F, 6.0F).sound(SoundType.COPPER).requiresCorrectToolForDrops());
+    public static final DeferredBlock<ImpulseEngineBlock> IMPULSE_ENGINE = BLOCKS.registerBlock("impulse_engine", ImpulseEngineBlock::new,
+            p -> p.mapColor(MapColor.COLOR_LIGHT_BLUE).strength(4.0F, 8.0F).sound(SoundType.NETHERITE_BLOCK).requiresCorrectToolForDrops()
+                    .lightLevel(state -> 7));
+    public static final DeferredBlock<ShipSeatBlock> SHIP_SEAT = BLOCKS.registerBlock("ship_seat", ShipSeatBlock::new,
+            p -> p.mapColor(MapColor.COLOR_GRAY).strength(1.5F).sound(SoundType.WOOL).noOcclusion());
+    /** 船体板：16 种颜色，比普通方块轻一半，给飞船换外观用。 */
+    public static final Map<DyeColor, DeferredBlock<Block>> HULL_PLATING = registerPlating();
+
+    private static Map<DyeColor, DeferredBlock<Block>> registerPlating() {
+        Map<DyeColor, DeferredBlock<Block>> plating = new EnumMap<>(DyeColor.class);
+        for (DyeColor color : DyeColor.values()) {
+            plating.put(color, BLOCKS.registerSimpleBlock("hull_plating_" + color.getSerializedName(),
+                    p -> p.mapColor(color).strength(2.0F, 6.0F).sound(SoundType.COPPER).requiresCorrectToolForDrops()));
+        }
+        return plating;
+    }
 
     private static Map<PlantForm, DeferredBlock<PlanetPlantBlock>> registerPlants() {
         Map<PlantForm, DeferredBlock<PlanetPlantBlock>> plants = new EnumMap<>(PlantForm.class);
