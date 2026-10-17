@@ -1,0 +1,13 @@
+{
+  "block.universe.planet_ash": "Ash",
+  "block.universe.planet_cobblestone": "Planet Cobblestone",
+  "block.universe.planet_crystal": "Planet Crystal",
+  "block.universe.planet_ice": "Planet Ice",
+  "block.universe.planet_regolith": "Regolith",
+  "block.universe.planet_rock": "Planet Rock",
+  "block.universe.planet_sand": "Planet Sand",
+  "block.universe.planet_snow": "Planet Snow",
+  "block.universe.planet_soil": "Planet Soil",
+  "block.universe.planet_turf": "Planet Turf",
+  "itemGroup.universe": "Universe"
+}

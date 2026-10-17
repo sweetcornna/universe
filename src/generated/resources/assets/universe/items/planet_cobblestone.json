@@ -1,0 +1,16 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "universe:block/planet_cobblestone",
+    "tints": [
+      {
+        "type": "universe:planet_palette",
+        "channel": "rock"
+      },
+      {
+        "type": "universe:planet_palette",
+        "channel": "rock"
+      }
+    ]
+  }
+}

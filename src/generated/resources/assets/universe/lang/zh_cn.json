@@ -1,0 +1,13 @@
+{
+  "block.universe.planet_ash": "灰烬",
+  "block.universe.planet_cobblestone": "星岩碎石",
+  "block.universe.planet_crystal": "星晶",
+  "block.universe.planet_ice": "星冰",
+  "block.universe.planet_regolith": "风化层",
+  "block.universe.planet_rock": "星岩",
+  "block.universe.planet_sand": "星沙",
+  "block.universe.planet_snow": "星雪",
+  "block.universe.planet_soil": "星壤",
+  "block.universe.planet_turf": "星原草皮",
+  "itemGroup.universe": "寰宇"
+}

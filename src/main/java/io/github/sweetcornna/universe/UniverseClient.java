@@ -1,6 +1,9 @@
 package io.github.sweetcornna.universe;
 
 import io.github.sweetcornna.universe.client.ClientDimensions;
+import io.github.sweetcornna.universe.client.ClientGalaxy;
+import io.github.sweetcornna.universe.client.PlanetTints;
+import io.github.sweetcornna.universe.datagen.UniverseDataGen;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
@@ -16,6 +19,10 @@ public final class UniverseClient {
     public UniverseClient(IEventBus modBus, ModContainer container) {
         modBus.addListener(this::clientSetup);
         ClientDimensions.registerEvents(modBus, NeoForge.EVENT_BUS);
+        ClientGalaxy.registerEvents(modBus, NeoForge.EVENT_BUS);
+        PlanetTints.registerEvents(modBus);
+        // 数据生成用的是客户端运行配置（clientData），只在客户端入口登记
+        UniverseDataGen.registerEvents(modBus);
     }
 
     private void clientSetup(FMLClientSetupEvent event) {

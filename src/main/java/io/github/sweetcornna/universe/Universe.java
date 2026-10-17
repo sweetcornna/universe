@@ -5,6 +5,9 @@ import org.slf4j.Logger;
 import com.mojang.logging.LogUtils;
 
 import io.github.sweetcornna.universe.network.UniverseNetwork;
+import io.github.sweetcornna.universe.registry.UniverseBlocks;
+import io.github.sweetcornna.universe.registry.UniverseCreativeTabs;
+import io.github.sweetcornna.universe.registry.UniverseItems;
 import io.github.sweetcornna.universe.world.DimensionCommand;
 import io.github.sweetcornna.universe.world.RuntimeDimensions;
 import net.minecraft.resources.Identifier;
@@ -25,7 +28,10 @@ public final class Universe {
 
     public Universe(IEventBus modBus, ModContainer container) {
         modBus.addListener(this::commonSetup);
-        modBus.addListener(UniverseNetwork::register);
+        UniverseBlocks.register(modBus);
+        UniverseItems.register(modBus);
+        UniverseCreativeTabs.register(modBus);
+        UniverseNetwork.registerEvents(modBus);
 
         IEventBus gameBus = NeoForge.EVENT_BUS;
         RuntimeDimensions.registerEvents(gameBus);

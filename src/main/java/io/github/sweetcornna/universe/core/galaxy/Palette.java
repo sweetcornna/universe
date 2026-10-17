@@ -30,7 +30,32 @@ public record Palette(
         int fog,
         int cloud,
         int accent) {
+    /** 不在任何星球上时（主世界、下界、物品栏）星球方块用的中性配色。 */
+    public static final Palette NEUTRAL = new Palette(
+            0x9C9C88, 0x7D6A55, 0x8E8E8E, 0xD6CDA6, 0x6E9A4E, 0x82AA5C, 0x3F76E4, 0x78A7FF, 0xC0D8FF, 0xFFFFFF, 0xB896F0);
+
     /** 母星的配色接近原版平原，只在星图之类的界面里用到。 */
     public static final Palette HOME = new Palette(
             0x7CBD6B, 0x866043, 0x7F7F7F, 0xDBD3A0, 0x59AE30, 0x91BD59, 0x3F76E4, 0x78A7FF, 0xC0D8FF, 0xFFFFFF, 0xF5D33F);
+
+    /** 配色里的一项，方块按它决定染什么颜色。 */
+    public enum Channel {
+        SURFACE, SOIL, ROCK, SAND, FOLIAGE, GRASS, LIQUID, SKY, FOG, CLOUD, ACCENT;
+
+        public int of(Palette palette) {
+            return switch (this) {
+                case SURFACE -> palette.surface();
+                case SOIL -> palette.soil();
+                case ROCK -> palette.rock();
+                case SAND -> palette.sand();
+                case FOLIAGE -> palette.foliage();
+                case GRASS -> palette.grass();
+                case LIQUID -> palette.liquid();
+                case SKY -> palette.sky();
+                case FOG -> palette.fog();
+                case CLOUD -> palette.cloud();
+                case ACCENT -> palette.accent();
+            };
+        }
+    }
 }

@@ -41,27 +41,41 @@ public final class GalaxyGenerator {
     private GalaxyGenerator() {
     }
 
-    /** 取得星团，结果会缓存。线程安全。 */
+    /** 由世界种子取得星团，结果会缓存。线程安全。 */
     public static Galaxy get(long worldSeed, int systemCount) {
-        long key = Seeds.derive(worldSeed, systemCount);
+        return fromGalaxySeed(galaxySeed(worldSeed), systemCount);
+    }
+
+    /** 世界种子派生出的星团种子。客户端只拿到星团种子，算不出世界种子（多人服务器不泄露主世界种子）。 */
+    public static long galaxySeed(long worldSeed) {
+        return Seeds.derive(worldSeed, "galaxy");
+    }
+
+    /** 由星团种子取得星团，结果会缓存。线程安全。 */
+    public static Galaxy fromGalaxySeed(long galaxySeed, int systemCount) {
+        long key = Seeds.derive(galaxySeed, systemCount);
         synchronized (CACHE) {
             Galaxy cached = CACHE.get(key);
             if (cached != null) {
                 return cached;
             }
         }
-        Galaxy galaxy = generate(worldSeed, systemCount);
+        Galaxy galaxy = generateFromGalaxySeed(galaxySeed, systemCount);
         synchronized (CACHE) {
             CACHE.put(key, galaxy);
         }
         return galaxy;
     }
 
+    /** 由世界种子生成星团，不经过缓存。 */
     public static Galaxy generate(long worldSeed, int systemCount) {
+        return generateFromGalaxySeed(galaxySeed(worldSeed), systemCount);
+    }
+
+    private static Galaxy generateFromGalaxySeed(long galaxySeed, int systemCount) {
         if (systemCount < 1 || systemCount > MAX_SYSTEM_COUNT) {
             throw new IllegalArgumentException("system count out of range: " + systemCount);
         }
-        long galaxySeed = Seeds.derive(worldSeed, "galaxy");
         double[][] positions = placeSystems(Rng.of(Seeds.derive(galaxySeed, "positions")), systemCount);
         List<StarSystem> systems = new ArrayList<>(systemCount);
         for (int i = 0; i < systemCount; i++) {

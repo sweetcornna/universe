@@ -1,0 +1,16 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "universe:block/planet_sand",
+    "tints": [
+      {
+        "type": "universe:planet_palette",
+        "channel": "sand"
+      },
+      {
+        "type": "universe:planet_palette",
+        "channel": "sand"
+      }
+    ]
+  }
+}

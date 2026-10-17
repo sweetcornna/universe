@@ -1,0 +1,16 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "universe:block/planet_crystal",
+    "tints": [
+      {
+        "type": "universe:planet_palette",
+        "channel": "accent"
+      },
+      {
+        "type": "universe:planet_palette",
+        "channel": "accent"
+      }
+    ]
+  }
+}

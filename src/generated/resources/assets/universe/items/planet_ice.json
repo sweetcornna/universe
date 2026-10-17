@@ -1,0 +1,16 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "universe:block/planet_ice",
+    "tints": [
+      {
+        "type": "universe:planet_palette",
+        "channel": "soil"
+      },
+      {
+        "type": "universe:planet_palette",
+        "channel": "soil"
+      }
+    ]
+  }
+}

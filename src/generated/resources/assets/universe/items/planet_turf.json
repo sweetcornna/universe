@@ -1,0 +1,16 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "universe:block/planet_turf",
+    "tints": [
+      {
+        "type": "universe:planet_palette",
+        "channel": "surface"
+      },
+      {
+        "type": "universe:planet_palette",
+        "channel": "soil"
+      }
+    ]
+  }
+}
