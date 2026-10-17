@@ -86,6 +86,8 @@ public class ShipEntity extends Entity implements IEntityWithComplexSpawn {
     private final Map<Identifier, Long> departures = new HashMap<>();
     private @Nullable Component notice;
     private int noticeDelay;
+    /** 刚穿过大气层：驾驶员松开升降键之前不理会它们。 */
+    private boolean verticalLatched;
     private @Nullable ShipCollider collider;
     private @Nullable Environment environment;
     private @Nullable Level environmentLevel;
@@ -392,6 +394,11 @@ public class ShipEntity extends Entity implements IEntityWithComplexSpawn {
                 dir[0] * speed + motion.x * 0.5, facing.getStepY() * speed + motion.y * 0.5, dir[1] * speed + motion.z * 0.5);
     }
 
+    /** 穿过大气层后调用：驾驶员还按着的升降键要松开一次才生效。 */
+    public void latchVertical() {
+        this.verticalLatched = true;
+    }
+
     /** 过几刻把提示发给船上的玩家（见 {@link #NOTICE_DELAY}）。 */
     public void noticeLater(Component message) {
         this.notice = message;
@@ -422,7 +429,13 @@ public class ShipEntity extends Entity implements IEntityWithComplexSpawn {
         Controls controls;
         if (pilot instanceof ServerPlayer player) {
             Input input = player.getLastClientInput();
-            controls = new Controls(input.forward(), input.backward(), input.left(), input.right(), input.jump(), input.shift(), input.sprint());
+            // 刚穿过大气层时还按着的升降键先不算，松开再按才生效：不然一路冲进太空几百格，从星球上方飞过去
+            if (this.verticalLatched && !input.jump() && !input.shift()) {
+                this.verticalLatched = false;
+            }
+            boolean up = input.jump() && !this.verticalLatched;
+            boolean down = input.shift() && !this.verticalLatched;
+            controls = new Controls(input.forward(), input.backward(), input.left(), input.right(), up, down, input.sprint());
         } else if (this.landed || env.space()) {
             controls = Controls.NONE;
         } else {

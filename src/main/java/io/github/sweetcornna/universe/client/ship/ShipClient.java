@@ -120,21 +120,38 @@ public final class ShipClient {
         }
         lines.add(Component.translatable("hud.universe.ship.mass", stats.blocks(), String.format("%.0f", stats.mass())));
 
+        Component title = Component.translatable("hud.universe.ship.title").append(" · ").append(status);
+        float capacity = (float) Math.max(1, stats.fuelCapacity());
+        Component fuelText = Component.translatable("hud.universe.ship.fuel", Math.round(ship.fuel()), Math.round(capacity));
+        Component keys = Component.translatable(space ? "hud.universe.ship.keys.space" : "hud.universe.ship.keys");
+        String hintKey = ship.isLanded() ? "hud.universe.ship.hint.park"
+                : ship.fuel() <= 0 && !minecraft.player.hasInfiniteMaterials() ? "hud.universe.ship.hint.no_fuel"
+                : space ? "hud.universe.ship.hint.land"
+                : "hud.universe.ship.hint.space";
+        Component hint = Component.translatable(hintKey);
+        // 面板跟着最长的一行变宽，英文的按键说明比中文长
+        int panelWidth = Math.max(PANEL_WIDTH, font.width(title) + 6);
+        for (Component line : lines) {
+            panelWidth = Math.max(panelWidth, font.width(line) + 6);
+        }
+        if (pilot) {
+            panelWidth = Math.max(panelWidth, Math.max(font.width(keys), font.width(hint)) + 6);
+        }
+
         int x = 6;
         int lineHeight = 10;
         int height = 14 + lines.size() * lineHeight + 14 + (pilot ? 22 : 0);
         int y = graphics.guiHeight() / 2 - height / 2;
-        graphics.fill(x - 3, y - 3, x + PANEL_WIDTH, y + height, 0x90000000);
-        graphics.text(font, Component.translatable("hud.universe.ship.title").append(" · ").append(status), x, y, 0xFF9FE6FF, false);
+        graphics.fill(x - 3, y - 3, x + panelWidth, y + height, 0x90000000);
+        graphics.text(font, title, x, y, 0xFF9FE6FF, false);
         y += 13;
         for (Component line : lines) {
             graphics.text(font, line, x, y, 0xFFE0E0E0, false);
             y += lineHeight;
         }
         // 燃料条
-        float capacity = (float) Math.max(1, stats.fuelCapacity());
         float fuelShare = Mth.clamp(ship.fuel() / capacity, 0, 1);
-        graphics.text(font, Component.translatable("hud.universe.ship.fuel", Math.round(ship.fuel()), Math.round(capacity)), x, y, 0xFFE0E0E0, false);
+        graphics.text(font, fuelText, x, y, 0xFFE0E0E0, false);
         y += 10;
         int barWidth = PANEL_WIDTH - 8;
         int color = fuelShare > 0.3F ? 0xFF4FD16B : fuelShare > 0.1F ? 0xFFE8C341 : 0xFFE5533D;
@@ -142,7 +159,7 @@ public final class ShipClient {
         graphics.fill(x, y, x + Math.round(barWidth * fuelShare), y + 3, color);
         y += 6;
         if (pilot) {
-            graphics.text(font, Component.translatable(space ? "hud.universe.ship.keys.space" : "hud.universe.ship.keys"), x, y, 0xFF9A9A9A, false);
+            graphics.text(font, keys, x, y, 0xFF9A9A9A, false);
             y += 10;
             int parking = ship.parkingTicks();
             if (parking > 0) {
@@ -150,11 +167,7 @@ public final class ShipClient {
                 int w = Math.round(barWidth * parking / (float) ShipEntity.PARK_TICKS);
                 graphics.fill(x + 60, y + 3, x + 60 + Math.min(w, barWidth - 60), y + 6, 0xFFFFD27F);
             } else {
-                String hint = ship.isLanded() ? "hud.universe.ship.hint.park"
-                        : ship.fuel() <= 0 && !minecraft.player.hasInfiniteMaterials() ? "hud.universe.ship.hint.no_fuel"
-                        : space ? "hud.universe.ship.hint.land"
-                        : "hud.universe.ship.hint.space";
-                graphics.text(font, Component.translatable(hint), x, y, 0xFF9A9A9A, false);
+                graphics.text(font, hint, x, y, 0xFF9A9A9A, false);
             }
         }
     }
@@ -178,7 +191,12 @@ public final class ShipClient {
             int distance = (int) Math.max(0, body.distanceTo(ship.getX(), ship.getY(), ship.getZ()) - body.radius());
             String name = Minecraft.getInstance().options.languageCode.startsWith("zh") ? body.planet().name().zh() : body.planet().name().en();
             Component kind = body.planet().landable() ? Component.empty() : Component.translatable("hud.universe.ship.unlandable");
-            lines.add(Component.literal(arrow(relative) + " ").append(Component.translatable("hud.universe.ship.target", name, distance)).append(kind));
+            // 箭头只管水平方向；高度差超过半个大气球时标出来，不然会从星球上方或下方飞过去
+            double dy = body.y() - ship.getY();
+            Component vertical = Math.abs(dy) < body.radius() * 0.5 ? Component.empty()
+                    : Component.translatable(dy > 0 ? "hud.universe.ship.above" : "hud.universe.ship.below", (int) Math.abs(dy));
+            lines.add(Component.literal(arrow(relative) + " ").append(Component.translatable("hud.universe.ship.target", name, distance))
+                    .append(vertical).append(kind));
         }
     }
 

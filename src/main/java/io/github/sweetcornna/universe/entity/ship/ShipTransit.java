@@ -211,6 +211,7 @@ public final class ShipTransit {
         Entity moved = ship.teleport(new TeleportTransition(target, pos, calmed, yaw, 0, TeleportTransition.DO_NOTHING));
         if (moved instanceof ShipEntity arrived) {
             arrived.flight().restore(calmed.x, 0, calmed.z, yaw);
+            arrived.latchVertical();
             Component where = Planets.bodyId(key).flatMap(id -> Planets.galaxy(server).body(id))
                     .map(planet -> Component.translatable("message.universe.ship.entered_planet", planet.name().zh(), planet.name().en()))
                     .orElseGet(() -> Component.translatable("message.universe.ship.entered_space"));

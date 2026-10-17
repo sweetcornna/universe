@@ -105,7 +105,8 @@ final class UniverseBlockTagsProvider extends BlockTagsProvider {
         this.tag(BlockItemTags.COAL_ORES.block()).add(UniverseBlocks.ORES.get(OreKind.COAL).key());
         // 天然地形不会被组装进飞船：船停在地上时不会把地面、矿、树叶、草一起带走
         this.tag(ShipParts.EXCLUDED)
-                .addTag(BlockTags.DIRT)
+                // 26.x 的 dirt 标签不含草方块了，用 substrate_overworld（泥土、草方块、苔藓、泥巴）
+                .addTag(BlockTags.SUBSTRATE_OVERWORLD)
                 .addTag(BlockTags.SAND)
                 .addTag(BlockTags.BASE_STONE_OVERWORLD)
                 .addTag(BlockTags.BASE_STONE_NETHER)

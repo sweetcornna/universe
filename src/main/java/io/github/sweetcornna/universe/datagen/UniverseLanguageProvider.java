@@ -127,14 +127,17 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("hud.universe.ship.mass", "%s 个方块  %s 吨", "%s blocks  %s t");
         both("hud.universe.ship.fuel", "燃料 %s / %s", "Fuel %s / %s");
         both("hud.universe.ship.keys", "WASD 推进转向  空格 上升  Shift 下降", "WASD move  Space up  Shift down");
-        both("hud.universe.ship.keys.space", "WASD 推进转向  疾跑键 脉冲引擎", "WASD move  Sprint: impulse engine");
+        both("hud.universe.ship.keys.space", "WASD 推进转向  空格/Shift 升降  疾跑键 脉冲引擎",
+                "WASD move  Space/Shift up/down  Sprint: impulse");
         both("hud.universe.ship.parking", "停船中", "Parking");
         both("hud.universe.ship.hint.park", "按住 Shift 停船", "Hold Shift to park");
-        both("hud.universe.ship.hint.space", "一直往上飞就能进入太空", "Keep climbing to reach space");
+        both("hud.universe.ship.hint.space", "一直往上飞进入太空，按住 Shift 下降着陆", "Climb to reach space, hold Shift to land");
         both("hud.universe.ship.hint.land", "飞进行星的大气层就会开始降落", "Fly into a planet's atmosphere to land");
         both("hud.universe.ship.hint.no_fuel", "燃料耗尽：着陆后给燃料舱加燃料", "Out of fuel: land and refuel the tanks");
         both("hud.universe.ship.target", "%s  %s 格", "%s  %s m");
         both("hud.universe.ship.unlandable", "（不能着陆）", " (no landing)");
+        both("hud.universe.ship.above", "  ▲%s 格", "  ▲%s m");
+        both("hud.universe.ship.below", "  ▼%s 格", "  ▼%s m");
     }
 
     private void multitool() {
