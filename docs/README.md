@@ -21,6 +21,7 @@
 | [0006](adr/0006-planet-sky-and-weather.md) | 星球天空、大气与天气 | 已采纳 |
 | [0007](adr/0007-planet-ecology.md) | 星球生态：植物和动物 | 已采纳 |
 | [0008](adr/0008-block-built-ships.md) | 飞船：方块拼装、服务端飞控、太空维度用真实坐标 | 已采纳 |
+| [0009](adr/0009-belts-and-power-core.md) | 工厂模拟的核心：按线路推进的传送带，覆盖式电网 | 已采纳 |
 
 模板：
 

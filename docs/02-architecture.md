@@ -27,8 +27,8 @@ io.github.sweetcornna.universe
 │   ├── ecology/               植物、树、动物的物种和外观
 │   ├── ship/                  飞船部件、性能、飞控、组装时的连通性
 │   ├── space/                 太空维度里的天体布局
-│   ├── factory/               传送带、分拣器、配方执行
-│   ├── power/                 电网结算
+│   ├── factory/               传送带线路、分拣器、配方执行
+│   ├── power/                 电网的连通和结算
 │   ├── logistics/             物流站供需匹配与运输排程
 │   └── dyson/                 戴森云与球壳的结构、建造进度、发电
 ├── registry/                  各类 DeferredRegister
@@ -45,7 +45,7 @@ io.github.sweetcornna.universe
 └── client/                    渲染、HUD、界面
 ```
 
-目前建了入口类、`core` 下的 `procgen`、`galaxy`、`terrain`、`sky`、`weather`、`ecology`、`ship`、`space`，以及 `registry`、`block`、`entity`、`world`、`data`、`network`、`datagen`、`client`、`mixin`，其余的包在用到时再建。
+目前建了入口类、`core` 下的 `procgen`、`galaxy`、`terrain`、`sky`、`weather`、`ecology`、`ship`、`space`、`factory`、`power`，以及 `registry`、`block`、`entity`、`world`、`data`、`network`、`datagen`、`client`、`mixin`，其余的包在用到时再建。
 
 ## 3. 关键方案
 
@@ -99,15 +99,15 @@ io.github.sweetcornna.universe
 ### 3.6 工厂模拟
 
 - 方块实体只是"壳"：保存位置和配置，具体逻辑交给 core 里的模拟对象。
-- 传送带：相连的传送带合并成一条"线路"，线路上的物品用紧凑数组记录位置。每 tick 按线路批量推进，而不是每段传送带各自 tick。
+- 传送带：相连的传送带合并成一条"线路"（`core.factory.BeltLine`），线路上的物品用紧凑的环形数组记录位置。每 tick 按线路批量推进，下游先算，而不是每段传送带各自 tick。
 - 分拣器和设备按网络批量结算；渲染时按线路批量提交物品模型。
-- 增删方块时只重建受影响的那一段线路。
-- 性能预算（M1 用基准测试确认）：1 万段传送带、4 万个物品的推进在 2 ms/tick 以内。
+- 增删方块时只重建受影响的那一段线路（`split`、`concat`）。
+- 性能预算：1 万段传送带、4 万个物品的推进在 2 ms/tick 以内。S5 的基准测试是 0.018 ms，详见 [ADR-0009](adr/0009-belts-and-power-core.md)。
 
 ### 3.7 电网
 
-- 电力感应塔的覆盖范围决定设备属于哪个电网；连接距离内的塔合并成同一个网络（用并查集维护）。
-- 每个电网每 tick 结算一次：发电、耗电、蓄电器充放电、满足率。
+- 电力感应塔的覆盖范围决定设备属于哪个电网；连接距离内的塔合并成同一个网络（`core.power.PowerSystem`）。加塔时合并碰到的电网，拆塔时只在原来的电网里重新找连通部分，塔和设备按格子建空间索引。
+- 每个电网每 tick 结算一次：发电、耗电、蓄电器充放电、满足率。200 台设备 0.005 ms，详见 [ADR-0009](adr/0009-belts-and-power-core.md)。
 - 单位：内部用焦耳和瓦特；和 FE 互通时按 1 FE = 1 J 换算（M3 定稿）。
 
 ### 3.8 物流
