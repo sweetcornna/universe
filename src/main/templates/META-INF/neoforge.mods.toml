@@ -1,0 +1,28 @@
+# 模组元数据模板：占位符由 build.gradle 的 generateModMetadata 任务展开，取值见 gradle.properties
+# 字段说明：https://docs.neoforged.net/docs/gettingstarted/modfiles
+
+license="${mod_license}"
+
+[[mods]]
+modId="${mod_id}"
+version="${mod_version}"
+displayName="${mod_name}"
+authors="${mod_authors}"
+description='''
+从方块世界出发，驾驶飞船探索程序生成的星系，建设跨星球的自动化工业，最终在恒星周围建造戴森球。
+Set out from the blocky world, fly your starship across procedurally generated star systems, build interplanetary factories and raise a Dyson sphere around a star.
+'''
+
+[[dependencies.${mod_id}]]
+    modId="neoforge"
+    type="required"
+    versionRange="[${neo_version},)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.${mod_id}]]
+    modId="minecraft"
+    type="required"
+    versionRange="${minecraft_version_range}"
+    ordering="NONE"
+    side="BOTH"

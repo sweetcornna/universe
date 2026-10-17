@@ -1,0 +1,10 @@
+# Windows 和 macOS 都会参与开发，统一用 LF，避免换行符差异
+* text=auto eol=lf
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+*.jar binary
+*.png binary
+*.ogg binary
+*.nbt binary
+*.zip binary

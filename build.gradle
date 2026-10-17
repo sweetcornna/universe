@@ -1,0 +1,152 @@
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+    id 'net.neoforged.moddev' version '2.0.148'
+    id 'idea'
+}
+
+tasks.named('wrapper', Wrapper).configure {
+    distributionType = Wrapper.DistributionType.BIN
+}
+
+version = mod_version
+group = mod_group_id
+
+sourceSets.main.resources {
+    // 数据生成器的输出
+    srcDir('src/generated/resources')
+
+    // 只在开发时使用的文件不进成品
+    exclude('**/*.bbmodel') // Blockbench 工程文件
+    exclude('src/generated/**/.cache') // 数据生成缓存
+}
+
+repositories {
+    // 需要额外的 Maven 仓库时加在这里
+}
+
+base {
+    // 成品文件名带上 MC 版本，例如 universe-26.3-0.0.1.jar
+    archivesName = "${mod_id}-${minecraft_version}"
+}
+
+// 26.3 给玩家分发的是 Java 25，模组也以 Java 25 为目标
+java.toolchain.languageVersion = JavaLanguageVersion.of(25)
+
+neoForge {
+    version = project.neo_version
+
+    runs {
+        client {
+            client()
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+        }
+
+        server {
+            server()
+            programArgument '--nogui'
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+        }
+
+        // 启动 GameTestServer，跑完全部游戏内测试后退出（没有注册任何测试时会报错）
+        gameTestServer {
+            type = 'gameTestServer'
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+        }
+
+        // 数据生成：输出到 src/generated/resources
+        data {
+            clientData()
+            programArguments.addAll '--mod', project.mod_id, '--all',
+                    '--output', file('src/generated/resources/').getAbsolutePath(),
+                    '--existing', file('src/main/resources/').getAbsolutePath()
+        }
+
+        configureEach {
+            // 日志标记：SCAN 模组扫描；REGISTRIES 注册事件；REGISTRYDUMP 输出全部注册表
+            systemProperty 'forge.logging.markers', 'REGISTRIES'
+            logLevel = org.slf4j.event.Level.DEBUG
+        }
+    }
+
+    mods {
+        "${mod_id}" {
+            sourceSet(sourceSets.main)
+        }
+    }
+}
+
+// localRuntime：只在开发运行时加载、不写进发布依赖的模组（例如 JEI 完整包）
+configurations {
+    runtimeClasspath.extendsFrom localRuntime
+}
+
+dependencies {
+    // core 包的纯 Java 单元测试
+    testImplementation platform("org.junit:junit-bom:${junit_version}")
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    // 可选兼容（JEI、Jade 等）在用到时再加，写法参考：
+    // compileOnly "mezz.jei:jei-${minecraft_version}-neoforge-api:${jei_version}"
+    // localRuntime "mezz.jei:jei-${minecraft_version}-neoforge:${jei_version}"
+}
+
+tasks.named('test', Test).configure {
+    useJUnitPlatform()
+}
+
+// 把 gradle.properties 里的属性展开到 src/main/templates 下的模板（neoforge.mods.toml）
+var generateModMetadata = tasks.register('generateModMetadata', ProcessResources) {
+    var replaceProperties = [
+            minecraft_version      : minecraft_version,
+            minecraft_version_range: minecraft_version_range,
+            neo_version            : neo_version,
+            mod_id                 : mod_id,
+            mod_name               : mod_name,
+            mod_license            : mod_license,
+            mod_version            : mod_version,
+            mod_authors            : mod_authors,
+    ]
+    inputs.properties replaceProperties
+    filteringCharset = 'UTF-8'
+    expand replaceProperties
+    from 'src/main/templates'
+    into 'build/generated/sources/modMetadata'
+}
+sourceSets.main.resources.srcDir generateModMetadata
+// IDE 同步工程时也生成一次，免得手动跑任务
+neoForge.ideSyncTask generateModMetadata
+
+// 许可证随 jar 一起分发
+var licenseSuffix = mod_id
+tasks.named('jar', Jar).configure {
+    from(files('LICENSE', 'LICENSE_ASSETS')) {
+        rename { "${it}_${licenseSuffix}" }
+    }
+}
+
+publishing {
+    publications {
+        register('mavenJava', MavenPublication) {
+            from components.java
+        }
+    }
+    repositories {
+        maven {
+            url = uri('repo')
+        }
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+// IDEA 默认不再自动下载依赖的源码和文档
+idea {
+    module {
+        downloadSources = true
+        downloadJavadoc = true
+    }
+}
