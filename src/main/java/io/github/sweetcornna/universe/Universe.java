@@ -4,9 +4,11 @@ import org.slf4j.Logger;
 
 import com.mojang.logging.LogUtils;
 
+import io.github.sweetcornna.universe.entity.FaunaSpawner;
 import io.github.sweetcornna.universe.network.UniverseNetwork;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
 import io.github.sweetcornna.universe.registry.UniverseCreativeTabs;
+import io.github.sweetcornna.universe.registry.UniverseEntities;
 import io.github.sweetcornna.universe.registry.UniverseItems;
 import io.github.sweetcornna.universe.registry.UniverseWorldgen;
 import io.github.sweetcornna.universe.world.DimensionCommand;
@@ -32,6 +34,7 @@ public final class Universe {
         modBus.addListener(this::commonSetup);
         UniverseBlocks.register(modBus);
         UniverseItems.register(modBus);
+        UniverseEntities.register(modBus);
         UniverseCreativeTabs.register(modBus);
         UniverseWorldgen.register(modBus);
         UniverseNetwork.registerEvents(modBus);
@@ -39,6 +42,7 @@ public final class Universe {
         IEventBus gameBus = NeoForge.EVENT_BUS;
         RuntimeDimensions.registerEvents(gameBus);
         PlanetWeather.registerEvents(gameBus);
+        FaunaSpawner.registerEvents(gameBus);
         gameBus.addListener(RegisterCommandsEvent.class, event -> DimensionCommand.register(event.getDispatcher()));
     }
 

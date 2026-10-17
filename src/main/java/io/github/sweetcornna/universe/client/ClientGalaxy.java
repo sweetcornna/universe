@@ -5,6 +5,7 @@ import java.util.Optional;
 import org.jspecify.annotations.Nullable;
 
 import io.github.sweetcornna.universe.Universe;
+import io.github.sweetcornna.universe.core.ecology.Fauna;
 import io.github.sweetcornna.universe.core.ecology.Flora;
 import io.github.sweetcornna.universe.core.galaxy.Galaxy;
 import io.github.sweetcornna.universe.core.galaxy.Liquid;
@@ -37,6 +38,7 @@ public final class ClientGalaxy {
     private static final int[] NEUTRAL_STRATA = Strata.colors(Palette.NEUTRAL, 0);
     private static volatile int[] currentStrata = NEUTRAL_STRATA;
     private static volatile Flora currentFlora = Flora.NEUTRAL;
+    private static volatile Fauna currentFauna = Fauna.FALLBACK;
     private static @Nullable ResourceKey<Level> currentDimension;
 
     private ClientGalaxy() {
@@ -103,6 +105,8 @@ public final class ClientGalaxy {
         Planet planet = dimension == null || known == null ? null : Planets.generatedPlanet(known, dimension).orElse(null);
         currentStrata = planet == null ? NEUTRAL_STRATA : Strata.colors(planet.palette(), planet.seed());
         currentFlora = planet == null ? Flora.NEUTRAL : Flora.of(planet);
+        Fauna fauna = planet == null ? Fauna.FALLBACK : Fauna.of(planet);
+        currentFauna = fauna.lifeless() ? Fauna.FALLBACK : fauna;
         currentPlanet = planet;
     }
 
@@ -133,5 +137,11 @@ public final class ClientGalaxy {
     public static Flora currentFlora() {
         refresh();
         return currentFlora;
+    }
+
+    /** 当前星球的动物（不在星球上、或者星球上没有动物时是 {@link Fauna#FALLBACK}）。可以在任意线程调用。 */
+    public static Fauna currentFauna() {
+        refresh();
+        return currentFauna;
     }
 }

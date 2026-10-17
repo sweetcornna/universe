@@ -5,6 +5,7 @@ import java.util.Optional;
 import java.util.WeakHashMap;
 
 import io.github.sweetcornna.universe.Universe;
+import io.github.sweetcornna.universe.core.ecology.Fauna;
 import io.github.sweetcornna.universe.core.galaxy.BodyId;
 import io.github.sweetcornna.universe.core.galaxy.Galaxy;
 import io.github.sweetcornna.universe.core.galaxy.GalaxyGenerator;
@@ -26,6 +27,8 @@ public final class Planets {
 
     /** 星球维度对应的星球，每个世界查一次。 */
     private static final Map<ServerLevel, Optional<Planet>> PLANETS = new WeakHashMap<>();
+    /** 星球维度上的动物，每个世界算一次。 */
+    private static final Map<ServerLevel, Optional<Fauna>> FAUNA = new WeakHashMap<>();
 
     private Planets() {
     }
@@ -34,6 +37,13 @@ public final class Planets {
     public static Optional<Planet> planet(ServerLevel level) {
         synchronized (PLANETS) {
             return PLANETS.computeIfAbsent(level, key -> generatedPlanet(galaxy(key.getServer()), key.dimension()));
+        }
+    }
+
+    /** 星球维度上的动物；不是星球、或者星球上没有动物时返回空。 */
+    public static Optional<Fauna> fauna(ServerLevel level) {
+        synchronized (FAUNA) {
+            return FAUNA.computeIfAbsent(level, key -> planet(key).map(Fauna::of).filter(fauna -> !fauna.lifeless()));
         }
     }
 

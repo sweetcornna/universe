@@ -19,12 +19,17 @@ import io.github.sweetcornna.universe.core.galaxy.Hazard;
 import io.github.sweetcornna.universe.core.galaxy.Planet;
 import io.github.sweetcornna.universe.core.galaxy.StarSystem;
 import io.github.sweetcornna.universe.core.galaxy.TerrainProfile;
+import io.github.sweetcornna.universe.core.ecology.CreatureSpecies;
+import io.github.sweetcornna.universe.core.ecology.Fauna;
 import io.github.sweetcornna.universe.core.ecology.Flora;
 import io.github.sweetcornna.universe.core.ecology.PlantSpecies;
 import io.github.sweetcornna.universe.core.ecology.TreeSpecies;
 import io.github.sweetcornna.universe.core.sky.SkyBody;
 import io.github.sweetcornna.universe.core.sky.SkyModel;
 import io.github.sweetcornna.universe.core.terrain.TerrainModel;
+import io.github.sweetcornna.universe.entity.AlienCreature;
+import io.github.sweetcornna.universe.entity.AlienFlyer;
+import io.github.sweetcornna.universe.entity.FaunaSpawner;
 import io.github.sweetcornna.universe.world.DimensionTemplate;
 import io.github.sweetcornna.universe.world.RuntimeDimensions;
 import io.github.sweetcornna.universe.world.planet.gen.PlanetGenSpec;
@@ -85,6 +90,18 @@ public final class PlanetCommand {
                                 .executes(context -> info(context.getSource(), dimension(context)))))
                 .then(Commands.literal("flora")
                         .executes(context -> flora(context.getSource())))
+                .then(Commands.literal("fauna")
+                        .executes(context -> fauna(context.getSource()))
+                        .then(Commands.literal("lineup")
+                                .executes(context -> lineup(context.getSource())))
+                        .then(Commands.literal("spawn")
+                                .then(Commands.argument("species", IntegerArgumentType.integer(0))
+                                        .executes(context -> spawnCreature(context.getSource(),
+                                                IntegerArgumentType.getInteger(context, "species"), 1))
+                                        .then(Commands.argument("count", IntegerArgumentType.integer(1, 32))
+                                                .executes(context -> spawnCreature(context.getSource(),
+                                                        IntegerArgumentType.getInteger(context, "species"),
+                                                        IntegerArgumentType.getInteger(context, "count")))))))
                 .then(Commands.literal("sky")
                         .executes(context -> sky(context.getSource())))
                 .then(Commands.literal("weather")
@@ -162,7 +179,7 @@ public final class PlanetCommand {
         return 1;
     }
 
-    /** 当前所在星球此刻的天空：每个天体的方向、视大小和亮面比例。 */
+    /** 当前所在星球的植物物种。 */
     private static int flora(CommandSourceStack source) throws CommandSyntaxException {
         ServerLevel level = source.getLevel();
         Planet planet = Planets.planet(level).orElseThrow(() -> NOT_A_PLANET.create(level.dimension().identifier()));
@@ -184,6 +201,86 @@ public final class PlanetCommand {
         return 1;
     }
 
+    /** 当前所在星球的动物物种，以及周围现有多少只。 */
+    private static int fauna(CommandSourceStack source) throws CommandSyntaxException {
+        ServerLevel level = source.getLevel();
+        Planet planet = Planets.planet(level).orElseThrow(() -> NOT_A_PLANET.create(level.dimension().identifier()));
+        Fauna fauna = Fauna.of(planet);
+        List<AlienCreature> around = FaunaSpawner.around(level, source.getPosition().x, source.getPosition().z);
+        long flyers = around.stream().filter(c -> c instanceof AlienFlyer).count();
+        StringBuilder text = new StringBuilder(String.format(Locale.ROOT, "%s 的动物：%d 种；周围 64 格内 %d 只（飞兽 %d），上限 %d",
+                planet.name().zh(), fauna.species().size(), around.size(), flyers, FaunaSpawner.cap(planet)));
+        for (CreatureSpecies s : fauna.species()) {
+            text.append(String.format(Locale.ROOT, "\n  #%d %s（%s，%s）大小 %.2f，生命 %.0f，速度 %.2f%s，%d–%d 只一群，生境 %s，花纹 %s%s%s",
+                    s.index(), s.name().zh(), s.plan().nameZh(), s.temperament().nameZh(), s.size(), s.health(), s.speed(),
+                    s.attack() > 0 ? String.format(Locale.ROOT, "，攻击 %.1f", s.attack()) : "", s.groupMin(), s.groupMax(),
+                    s.biotopes(), s.skin().patternType(), s.skin().glowingPattern() ? "（发光）" : "",
+                    s.skin().glowingEyes() ? "，眼睛发光" : ""));
+        }
+        source.sendSuccess(() -> Component.literal(text.toString()), false);
+        return 1;
+    }
+
+    /** 在面前刷几只指定物种的动物（不在星球上时用备用的动物表）。 */
+    private static int spawnCreature(CommandSourceStack source, int index, int count) {
+        ServerLevel level = source.getLevel();
+        Fauna fauna = Planets.fauna(level).orElse(Fauna.FALLBACK);
+        if (index >= fauna.species().size()) {
+            source.sendFailure(Component.literal("这里只有 " + fauna.species().size() + " 种动物（编号 0–" + (fauna.species().size() - 1) + "）"));
+            return 0;
+        }
+        CreatureSpecies species = fauna.get(index);
+        Vec3 look = source.getRotation() == null ? Vec3.ZERO : Vec3.directionFromRotation(0, source.getRotation().y);
+        Vec3 front = source.getPosition().add(look.scale(4 + species.size() * 2));
+        int spawned = 0;
+        for (int i = 0; i < count * 4 && spawned < count; i++) {
+            int x = (int) Math.floor(front.x) + (i == 0 ? 0 : level.getRandom().nextInt(7) - 3);
+            int z = (int) Math.floor(front.z) + (i == 0 ? 0 : level.getRandom().nextInt(7) - 3);
+            BlockPos pos = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, new BlockPos(x, 0, z));
+            if (FaunaSpawner.spawn(level, species, pos, level.getRandom()) != null) {
+                spawned++;
+            }
+        }
+        int done = spawned;
+        source.sendSuccess(() -> Component.literal("刷出了 " + done + " 只 " + species.name().zh()), true);
+        return done;
+    }
+
+    /** 把这里的每种动物在面前排成一排（不动），方便对照外观。 */
+    private static int lineup(CommandSourceStack source) {
+        ServerLevel level = source.getLevel();
+        Fauna fauna = Planets.fauna(level).orElse(Fauna.FALLBACK);
+        float yaw = source.getRotation() == null ? 0 : source.getRotation().y;
+        Vec3 forward = Vec3.directionFromRotation(0, yaw);
+        Vec3 right = Vec3.directionFromRotation(0, yaw + 90);
+        double width = 0;
+        for (CreatureSpecies species : fauna.species()) {
+            width += species.size() * 1.6 + 1;
+        }
+        double offset = -width / 2;
+        int spawned = 0;
+        for (CreatureSpecies species : fauna.species()) {
+            double half = (species.size() * 1.6 + 1) / 2;
+            offset += half;
+            Vec3 at = source.getPosition().add(forward.scale(7)).add(right.scale(offset));
+            offset += half;
+            BlockPos pos = level.getHeightmapPos(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, BlockPos.containing(at.x, 0, at.z));
+            AlienCreature creature = FaunaSpawner.spawn(level, species, pos, level.getRandom());
+            if (creature != null) {
+                creature.setNoAi(true);
+                // 面朝玩家
+                creature.setYRot(yaw + 180);
+                creature.setYHeadRot(yaw + 180);
+                creature.setYBodyRot(yaw + 180);
+                spawned++;
+            }
+        }
+        int done = spawned;
+        source.sendSuccess(() -> Component.literal("排出了 " + done + "/" + fauna.species().size() + " 种动物"), true);
+        return done;
+    }
+
+    /** 当前所在星球此刻的天空：每个天体的方向、视大小和亮面比例。 */
     private static int sky(CommandSourceStack source) throws CommandSyntaxException {
         ServerLevel level = source.getLevel();
         PlanetEnvironment.Context context = PlanetEnvironment.context(level)

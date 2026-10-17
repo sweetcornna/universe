@@ -3,6 +3,7 @@ package io.github.sweetcornna.universe.datagen;
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.core.terrain.BiomeKind;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
+import io.github.sweetcornna.universe.registry.UniverseItems;
 import net.minecraft.data.PackOutput;
 import net.neoforged.neoforge.common.data.LanguageProvider;
 
@@ -57,6 +58,20 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         block(UniverseBlocks.PLANET_LEAVES.get(), "异星树叶", "Alien Leaves");
         block(UniverseBlocks.PLANET_CAP.get(), "肉质块", "Fleshy Block");
         block(UniverseBlocks.PLANET_BLOOM.get(), "异星花果", "Alien Bloom");
+
+        both("entity.universe.alien_creature", "异星生物", "Alien Creature");
+        both("entity.universe.alien_flyer", "异星飞兽", "Alien Flyer");
+        // 物种名：实体把中英文两个名字都作为参数传进来，各语言挑自己的
+        both("entity.universe.species", "%1$s", "%2$s");
+        item(UniverseItems.ALIEN_MEAT.get(), "异兽生肉", "Raw Alien Meat");
+        item(UniverseItems.COOKED_ALIEN_MEAT.get(), "熟异兽肉", "Cooked Alien Meat");
+        item(UniverseItems.ALIEN_HIDE.get(), "异兽皮", "Alien Hide");
+        item(UniverseItems.ALIEN_CREATURE_SPAWN_EGG.get(), "异星生物刷怪蛋", "Alien Creature Spawn Egg");
+        item(UniverseItems.ALIEN_FLYER_SPAWN_EGG.get(), "异星飞兽刷怪蛋", "Alien Flyer Spawn Egg");
+    }
+
+    private void item(net.minecraft.world.item.Item item, String zh, String en) {
+        this.add(item, this.chinese ? zh : en);
     }
 
     private void block(net.minecraft.world.level.block.Block block, String zh, String en) {

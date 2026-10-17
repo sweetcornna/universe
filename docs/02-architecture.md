@@ -21,11 +21,17 @@ io.github.sweetcornna.universe
 ├── core/                      纯 Java 核心
 │   ├── procgen/               种子派生、噪声、命名
 │   ├── galaxy/                星团、恒星、行星参数与轨道
+│   ├── terrain/               地形模型、群系
+│   ├── sky/                   天体位置、天空配色
+│   ├── weather/               天气轮换
+│   ├── ecology/               植物、树、动物的物种和外观
 │   ├── factory/               传送带、分拣器、配方执行
 │   ├── power/                 电网结算
 │   ├── logistics/             物流站供需匹配与运输排程
 │   └── dyson/                 戴森云与球壳的结构、建造进度、发电
 ├── registry/                  各类 DeferredRegister
+├── block/                     方块类（星球方块、植物、树）
+├── entity/                    实体（异星动物）和刷怪器
 ├── world/                     维度管理、星球区块生成器、群系、地物
 ├── space/                     太空维度、飞船实体、跃迁
 ├── survival/                  外骨骼、危害、生命维持、多功能工具
@@ -38,7 +44,7 @@ io.github.sweetcornna.universe
 └── client/                    渲染、HUD、界面
 ```
 
-目前建了入口类、`core/procgen`，以及 M1 原型 S1 用到的 `world`、`data`、`network`、`client`，其余的包在用到时再建。
+目前建了入口类、`core` 下的 `procgen`、`galaxy`、`terrain`、`sky`、`weather`、`ecology`，以及 `registry`、`block`、`entity`、`world`、`data`、`network`、`datagen`、`client`、`mixin`，其余的包在用到时再建。
 
 ## 3. 关键方案
 
@@ -68,6 +74,7 @@ io.github.sweetcornna.universe
 - 群系：在数据包里预置一批"星球群系原型"，比如 30–40 个（陨坑原野、冰川、酸沼、晶簇林……），每颗星球从中选一部分。同一个原型在不同星球上的颜色由星球参数决定。
 - 地物：矿脉节点、植物、遗迹结构由代码注册的地物按星球参数放置。
 - 性能目标：星球区块的生成速度不低于原版主世界。
+- 生态：植物、树、动物都按星球种子生成，固定的几种方块和两种实体按物种序号显示不同的外观，动物用自己的刷怪器按生境刷新，详见 [ADR-0007](adr/0007-planet-ecology.md)。
 
 ### 3.4 天空与环境
 
@@ -169,6 +176,19 @@ io.github.sweetcornna.universe
 | 天气数据（`WeatherData`）全服一份，但每个能下雨的维度每刻都调用一次私有的 `ServerLevel#advanceWeatherCycle`；`Level` 的 `rainLevel`、`thunderLevel` 等字段是公开的，变化要自己用 `ClientboundGameEventPacket` 广播给维度里的玩家 | 已确认，S3 在用 |
 | 降水类型由群系温度和 `has_precipitation` 决定；维度自己的存档数据用 `level.getDataStorage().computeIfAbsent(new SavedDataType<>(id, level -> ..., level -> codec))` | 已确认，S3 在用 |
 | Mixin：在 `neoforge.mods.toml` 里用 `[[mixins]] config = "..."` 登记；运行时就是官方名，不需要 refmap | 已确认，S3 在用 |
+| 地物是接口，实现写成 record，`MapCodec.unit(...)` 作编解码器；类型注册在 `Registries.FEATURE_TYPE`，配置地物和放置地物是数据包注册表（`FEATURE`、`PLACED_FEATURE`），放置地物要带 `BiomeFilter.biome()`，否则数据生成报错 | 已确认，植物在用 |
+| 方块走哪个渲染层由贴图的透明度自动决定（`ChunkSectionLayer.byTransparency`），模型里不用再写 `render_type` | 已确认 |
+| 方块不再需要 `codec()`；`VegetationBlock#mayPlaceOn`、`LeavesBlock(声音, 属性)`；`PushReaction` 里"被推就掉落"叫 `POPPED`；`isViewBlocking` 的谓词有 4 个参数 | 已确认 |
+| 实体渲染改为提交式：`LivingEntityRenderer#submit` 调 `submitModel(model, state, ...)`，模型的 `setupAnim` 在真正绘制时才按状态执行；所以在 `super.submit` 前换掉 `model` 就能每个实体用不同的模型。`CameraRenderState` 在 `client.renderer.state.level` | 已确认，异星动物在用 |
+| 自发光层照 `EyesLayer`：`collector.order(1).submitModel(..., RenderTypes.eyes(贴图), ...)`；`EntityModel(root)` 默认 `RenderTypes::entityCutout`（不剔除背面） | 已确认 |
+| 运行时贴图：`new DynamicTexture(Supplier<String>, NativeImage)` 注册到 `TextureManager#register(Identifier, ...)`，用完 `release`；`NativeImage#setPixel` 收的是 ARGB | 已确认 |
+| 长方体的贴图展开没变：顶面 (u+d, v)、底面 (u+d+w, v)，第二行依次是 -x 侧、正面（-z）、+x 侧、背面，宽各为 d、w、d、w | 已确认 |
+| 实体类型用 `DeferredRegister.Entities#registerEntityType(名字, 工厂, 分类, builder -> ...)`；原版常量在 `EntityTypes`；`Entity#moveTo` 改名 `snapTo`；生成原因 `EntitySpawnReason`；存档读写用 `ValueOutput`/`ValueInput` | 已确认 |
+| 体型可以直接用 `Attributes.SCALE`：碰撞箱（`getDimensions` 乘 `getScale()`）、渲染（`state.scale`）、影子都跟着缩放 | 已确认，异星动物在用 |
+| 自定义刷怪器 `CustomSpawner#tick(ServerLevel, boolean)` 只在游戏规则 `spawn_mobs` 打开时调用；NeoForge 的 `ModifyCustomSpawnersEvent` 在 `ServerLevel` 构造器末尾触发，运行时创建的维度也会触发 | 已确认，`FaunaSpawner` 在用 |
+| 游戏规则改名：`spawn_mobs`（原 doMobSpawning）、`advance_time`（原 doDaylightCycle）、`advance_weather` 等 | 已确认 |
+| 配方也是数据包注册表的条目：数据生成用 `GatherDataRegistryEntriesEvent#recipe(RecipeProvider 的构造器)`；`RecipeProvider#simpleCookingRecipe` 会把配方存进 minecraft 命名空间，模组要自己指定 ID | 已确认 |
+| 战利品表的数值提供器改为 `ContextIntProviders`、`ContextFloatProviders`；刷怪蛋是 `SpawnEggItem` 加 `Item.Properties#spawnEgg(type)`，每种刷怪蛋有自己的贴图；实体类型先于物品注册，物品属性里可以直接取实体类型 | 已确认 |
 
 原则：拿不准的 API，先查源码再动手写，核实后把结果补进这张表。源码位置：
 

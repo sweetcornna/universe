@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_alien_hide": {
+      "conditions": {
+        "items": [
+          {
+            "items": "universe:alien_hide"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipes": "universe:leather_from_alien_hide"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_alien_hide"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "universe:leather_from_alien_hide"
+    ]
+  }
+}

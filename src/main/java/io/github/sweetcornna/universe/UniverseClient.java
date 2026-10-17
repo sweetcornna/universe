@@ -4,14 +4,18 @@ import io.github.sweetcornna.universe.client.ClientDimensions;
 import io.github.sweetcornna.universe.client.ClientGalaxy;
 import io.github.sweetcornna.universe.client.ClientWeather;
 import io.github.sweetcornna.universe.client.PlanetTints;
+import io.github.sweetcornna.universe.client.creature.AlienCreatureRenderer;
 import io.github.sweetcornna.universe.client.sky.PlanetSkyRenderer;
 import io.github.sweetcornna.universe.datagen.UniverseDataGen;
+import io.github.sweetcornna.universe.entity.AlienCreature;
+import io.github.sweetcornna.universe.registry.UniverseEntities;
 import io.github.sweetcornna.universe.world.planet.PlanetEnvironment;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.common.NeoForge;
 
 /**
@@ -28,6 +32,12 @@ public final class UniverseClient {
         PlanetSkyRenderer.registerEvents(modBus, NeoForge.EVENT_BUS);
         // 客户端世界建立环境属性时，从客户端的星团里查星球
         PlanetEnvironment.setClientGalaxy(dimension -> ClientGalaxy.galaxy());
+        // 客户端的动物按当前星球的物种表画
+        AlienCreature.setClientFauna(ClientGalaxy::currentFauna);
+        modBus.addListener(EntityRenderersEvent.RegisterRenderers.class, event -> {
+            event.registerEntityRenderer(UniverseEntities.ALIEN_CREATURE.get(), AlienCreatureRenderer::new);
+            event.registerEntityRenderer(UniverseEntities.ALIEN_FLYER.get(), AlienCreatureRenderer::new);
+        });
         // 数据生成用的是客户端运行配置（clientData），只在客户端入口登记
         UniverseDataGen.registerEvents(modBus);
     }

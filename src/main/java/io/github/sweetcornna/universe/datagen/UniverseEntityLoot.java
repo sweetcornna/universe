@@ -1,0 +1,53 @@
+package io.github.sweetcornna.universe.datagen;
+
+import io.github.sweetcornna.universe.registry.UniverseEntities;
+import io.github.sweetcornna.universe.registry.UniverseItems;
+import net.minecraft.core.Holder;
+import net.minecraft.data.loot.EntityLootSubProvider;
+import net.minecraft.data.loot.LootTableSubProvider;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.flag.FeatureFlags;
+import net.minecraft.world.level.storage.loot.LootPool;
+import net.minecraft.world.level.storage.loot.LootTable;
+import net.minecraft.world.level.storage.loot.entries.LootItem;
+import net.minecraft.world.level.storage.loot.functions.EnchantedCountIncreaseFunction;
+import net.minecraft.world.level.storage.loot.functions.SetItemCountFunction;
+import net.minecraft.world.level.storage.loot.functions.SmeltItemFunction;
+import net.minecraft.world.level.storage.loot.providers.number.floats.ContextFloatProviders;
+import net.minecraft.world.level.storage.loot.providers.number.ints.ContextIntProviders;
+
+/** 动物掉落：生肉（着火时是熟肉）和兽皮。大个子另外多掉的肉在实体里按体型加。 */
+final class UniverseEntityLoot extends EntityLootSubProvider {
+    UniverseEntityLoot(LootTableSubProvider.Context context) {
+        super(FeatureFlags.REGISTRY.allFlags(), context);
+    }
+
+    @Override
+    public void generate() {
+        this.add(UniverseEntities.ALIEN_CREATURE.get(), LootTable.lootTable()
+                .withPool(this.meat(1, 2))
+                .withPool(LootPool.lootPool()
+                        .setRolls(ContextIntProviders.exactly(1))
+                        .add(LootItem.lootTableItem(UniverseItems.ALIEN_HIDE.get())
+                                .apply(SetItemCountFunction.setCount(ContextIntProviders.between(0, 2)))
+                                .apply(EnchantedCountIncreaseFunction.lootingMultiplier(this.enchantments,
+                                        ContextFloatProviders.between(0.0F, 1.0F))))));
+        this.add(UniverseEntities.ALIEN_FLYER.get(), LootTable.lootTable().withPool(this.meat(0, 1)));
+    }
+
+    private LootPool.Builder meat(int min, int max) {
+        return LootPool.lootPool()
+                .setRolls(ContextIntProviders.exactly(1))
+                .add(LootItem.lootTableItem(UniverseItems.ALIEN_MEAT.get())
+                        .apply(SetItemCountFunction.setCount(ContextIntProviders.between(min, max)))
+                        .apply(SmeltItemFunction.smelted().when(this.shouldSmeltLoot()))
+                        .apply(EnchantedCountIncreaseFunction.lootingMultiplier(this.enchantments,
+                                ContextFloatProviders.between(0.0F, 1.0F))));
+    }
+
+    /** 只生成本模组的实体。 */
+    @Override
+    protected java.util.stream.Stream<EntityType<?>> getKnownEntityTypes() {
+        return UniverseEntities.ENTITIES.getEntries().stream().map(Holder::value);
+    }
+}

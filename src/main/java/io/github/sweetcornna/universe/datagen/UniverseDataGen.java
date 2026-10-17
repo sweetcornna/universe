@@ -38,7 +38,9 @@ public final class UniverseDataGen {
 
     private static void gatherRegistries(GatherDataRegistryEntriesEvent event) {
         event.add(Registries.LOOT_TABLE, new LootTableProvider(Set.of(),
-                List.of(new LootTableProvider.SubProviderEntry(UniverseBlockLoot::new, LootContextParamSets.BLOCK))));
+                List.of(new LootTableProvider.SubProviderEntry(UniverseBlockLoot::new, LootContextParamSets.BLOCK),
+                        new LootTableProvider.SubProviderEntry(UniverseEntityLoot::new, LootContextParamSets.ENTITY))));
+        event.recipe(UniverseRecipes::new);
         event.add(Registries.FEATURE, context -> context.register(PlanetFloraFeature.KEY, new PlanetFloraFeature()));
         event.add(Registries.PLACED_FEATURE, context -> context.register(PlanetFloraFeature.PLACED,
                 new PlacedFeature(context.lookup(Registries.FEATURE).getOrThrow(PlanetFloraFeature.KEY), List.of(BiomeFilter.biome()))));

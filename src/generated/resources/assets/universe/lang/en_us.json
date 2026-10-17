@@ -56,6 +56,14 @@
   "block.universe.planet_tendril": "Alien Tendril",
   "block.universe.planet_tuft": "Alien Tuft",
   "block.universe.planet_turf": "Planet Turf",
+  "entity.universe.alien_creature": "Alien Creature",
+  "entity.universe.alien_flyer": "Alien Flyer",
+  "entity.universe.species": "%2$s",
+  "item.universe.alien_creature_spawn_egg": "Alien Creature Spawn Egg",
+  "item.universe.alien_flyer_spawn_egg": "Alien Flyer Spawn Egg",
+  "item.universe.alien_hide": "Alien Hide",
+  "item.universe.alien_meat": "Raw Alien Meat",
+  "item.universe.cooked_alien_meat": "Cooked Alien Meat",
   "itemGroup.universe": "Universe",
   "universe.bed.no_sleep_on_planet": "This planet's days don't follow the homeworld's; beds here only set your respawn point"
 }

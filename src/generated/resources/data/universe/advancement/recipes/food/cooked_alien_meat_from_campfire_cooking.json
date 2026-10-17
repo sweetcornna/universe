@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_alien_meat": {
+      "conditions": {
+        "items": [
+          {
+            "items": "universe:alien_meat"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipes": "universe:cooked_alien_meat_from_campfire_cooking"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_alien_meat"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "universe:cooked_alien_meat_from_campfire_cooking"
+    ]
+  }
+}

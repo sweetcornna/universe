@@ -56,6 +56,14 @@
   "block.universe.planet_tendril": "异星卷须",
   "block.universe.planet_tuft": "异星草丛",
   "block.universe.planet_turf": "星原草皮",
+  "entity.universe.alien_creature": "异星生物",
+  "entity.universe.alien_flyer": "异星飞兽",
+  "entity.universe.species": "%1$s",
+  "item.universe.alien_creature_spawn_egg": "异星生物刷怪蛋",
+  "item.universe.alien_flyer_spawn_egg": "异星飞兽刷怪蛋",
+  "item.universe.alien_hide": "异兽皮",
+  "item.universe.alien_meat": "异兽生肉",
+  "item.universe.cooked_alien_meat": "熟异兽肉",
   "itemGroup.universe": "寰宇",
   "universe.bed.no_sleep_on_planet": "这颗星球的昼夜和母星不同步，床只能用来设置重生点"
 }
