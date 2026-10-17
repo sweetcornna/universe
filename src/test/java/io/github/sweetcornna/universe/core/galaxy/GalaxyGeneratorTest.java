@@ -54,6 +54,8 @@ class GalaxyGeneratorTest {
             assertEquals(PlanetType.BARREN, moon.type());
             assertFalse(moon.atmosphere().present());
             assertTrue(moon.landable());
+            // 路线图 M2 的退出标准：飞到卫星采集钛
+            assertTrue(moon.abundance(Resource.TITANIUM) >= 0.4);
 
             assertEquals(PlanetType.BARREN, home.planets().get(2).type());
             Planet giant = home.planets().get(3);

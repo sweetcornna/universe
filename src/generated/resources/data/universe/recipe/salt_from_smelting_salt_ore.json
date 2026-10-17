@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:smelting",
+  "cookingtime": 200,
+  "experience": 0.7,
+  "ingredient": "universe:salt_ore",
+  "result": {
+    "id": "universe:salt"
+  }
+}

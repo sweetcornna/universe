@@ -1,6 +1,8 @@
 package io.github.sweetcornna.universe.datagen;
 
+import io.github.sweetcornna.universe.block.OreKind;
 import io.github.sweetcornna.universe.registry.UniverseItems;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.RecipeProvider;
@@ -36,6 +38,31 @@ final class UniverseRecipes extends RecipeProvider {
                 .unlockedBy(getHasName(UniverseItems.ALIEN_HIDE.get()), this.has(UniverseItems.ALIEN_HIDE.get()))
                 .save(this.output, "universe:leather_from_alien_hide");
         this.ships();
+        this.ores();
+    }
+
+    /** 冶炼：粗矿烧成锭，精准采集下来的矿石直接烧出产物；高炉快一倍。 */
+    private void ores() {
+        for (OreKind kind : OreKind.values()) {
+            Item ore = UniverseItems.ORES.get(kind).get();
+            Item drop = UniverseItems.oreDrop(kind);
+            Item product = kind.smelted() != null ? UniverseItems.ORE_SMELTED.get(kind).get() : drop;
+            float xp = kind.toolTier() >= 2 ? 1.0F : 0.7F;
+            this.oreCooking(ore, product, xp, kind.blockName());
+            if (kind.smelted() != null) {
+                this.oreCooking(drop, product, xp, kind.drop());
+            }
+        }
+    }
+
+    private void oreCooking(Item input, Item result, float xp, String from) {
+        String name = "universe:" + BuiltInRegistries.ITEM.getKey(result).getPath();
+        SimpleCookingRecipeBuilder.smelting(Ingredient.of(input), RecipeCategory.MISC, CookingBookCategory.MISC, result, xp, 200)
+                .unlockedBy(getHasName(input), this.has(input))
+                .save(this.output, name + "_from_smelting_" + from);
+        SimpleCookingRecipeBuilder.blasting(Ingredient.of(input), RecipeCategory.MISC, CookingBookCategory.MISC, result, xp, 100)
+                .unlockedBy(getHasName(input), this.has(input))
+                .save(this.output, name + "_from_blasting_" + from);
     }
 
     /** 飞船部件：前期的铁、铜、熔炉就能造出能飞的船，脉冲引擎要钻石和末影珍珠。 */

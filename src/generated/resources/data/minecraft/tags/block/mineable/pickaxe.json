@@ -24,6 +24,19 @@
     "universe:hull_plating_brown",
     "universe:hull_plating_green",
     "universe:hull_plating_red",
-    "universe:hull_plating_black"
+    "universe:hull_plating_black",
+    "universe:planet_iron_ore",
+    "universe:planet_copper_ore",
+    "universe:planet_coal_ore",
+    "universe:titanium_ore",
+    "universe:silicon_ore",
+    "universe:sulfur_ore",
+    "universe:fire_ice_ore",
+    "universe:optical_crystal_ore",
+    "universe:organic_crystal_ore",
+    "universe:uranium_ore",
+    "universe:salt_ore",
+    "universe:magnetic_ore",
+    "universe:strange_matter_ore"
   ]
 }

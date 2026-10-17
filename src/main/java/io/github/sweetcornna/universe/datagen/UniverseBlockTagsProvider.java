@@ -4,10 +4,12 @@ import java.util.concurrent.CompletableFuture;
 
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.block.FloraBlocks;
+import io.github.sweetcornna.universe.block.OreKind;
 import io.github.sweetcornna.universe.entity.ship.ShipParts;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
+import net.minecraft.tags.BlockItemTags;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.level.block.Blocks;
 import net.neoforged.neoforge.common.Tags;
@@ -77,6 +79,30 @@ final class UniverseBlockTagsProvider extends BlockTagsProvider {
                 UniverseBlocks.FUEL_TANK.key(),
                 UniverseBlocks.IMPULSE_ENGINE.key());
         UniverseBlocks.HULL_PLATING.values().forEach(block -> this.tag(BlockTags.MINEABLE_WITH_PICKAXE).add(block.key()));
+        // 飞船方块也是实心的：不进"阻挡移动"的话水会穿过船体板，高度图也会漏过去
+        this.tag(BlockTags.BLOCKS_MOTION_NO_LEAVES).add(
+                UniverseBlocks.SHIP_HELM.key(),
+                UniverseBlocks.SHIP_THRUSTER.key(),
+                UniverseBlocks.FUEL_TANK.key(),
+                UniverseBlocks.IMPULSE_ENGINE.key(),
+                UniverseBlocks.SHIP_SEAT.key());
+        UniverseBlocks.HULL_PLATING.values().forEach(block -> this.tag(BlockTags.BLOCKS_MOTION_NO_LEAVES).add(block.key()));
+        // 星球矿石：进原版的 ores（它已经在"阻挡移动"里）和通用的 c:ores，按矿种要求镐的等级
+        UniverseBlocks.ORES.forEach((kind, block) -> {
+            this.tag(BlockTags.MINEABLE_WITH_PICKAXE).add(block.key());
+            this.tag(BlockTags.ORES).add(block.key());
+            this.tag(Tags.BlockItems.ORES.block()).add(block.key());
+            switch (kind.toolTier()) {
+                case 1 -> this.tag(BlockTags.NEEDS_STONE_TOOL).add(block.key());
+                case 2 -> this.tag(BlockTags.NEEDS_IRON_TOOL).add(block.key());
+                case 3 -> this.tag(BlockTags.NEEDS_DIAMOND_TOOL).add(block.key());
+                default -> {
+                }
+            }
+        });
+        this.tag(BlockTags.IRON_ORES).add(UniverseBlocks.ORES.get(OreKind.IRON).key());
+        this.tag(BlockTags.COPPER_ORES).add(UniverseBlocks.ORES.get(OreKind.COPPER).key());
+        this.tag(BlockItemTags.COAL_ORES.block()).add(UniverseBlocks.ORES.get(OreKind.COAL).key());
         // 天然地形不会被组装进飞船：船停在地上时不会把地面、矿、树叶、草一起带走
         this.tag(ShipParts.EXCLUDED)
                 .addTag(BlockTags.DIRT)

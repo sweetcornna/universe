@@ -5,6 +5,7 @@ import java.util.List;
 import io.github.sweetcornna.universe.core.terrain.BiomeKind;
 import io.github.sweetcornna.universe.world.planet.gen.PlanetBiomes;
 import io.github.sweetcornna.universe.world.planet.gen.PlanetFloraFeature;
+import io.github.sweetcornna.universe.world.planet.gen.PlanetOreFeature;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.worldgen.BootstrapContext;
@@ -53,6 +54,8 @@ final class UniverseBiomes {
         for (ResourceKey<PlacedFeature> ore : ORES) {
             generation.addFeature(GenerationStep.Decoration.UNDERGROUND_ORES, ore);
         }
+        // 铁、铜、煤和外星矿物按星球的资源表生成，换成星球矿石
+        generation.addFeature(GenerationStep.Decoration.UNDERGROUND_ORES, PlanetOreFeature.PLACED);
         generation.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, PlanetFloraFeature.PLACED);
         generation.addFeature(GenerationStep.Decoration.TOP_LAYER_MODIFICATION, MiscOverworldPlacements.FREEZE_TOP_LAYER);
         return new Biome.BiomeBuilder()
@@ -71,11 +74,6 @@ final class UniverseBiomes {
     /** 原版矿石：矿石替换规则认 {@code stone_ore_replaceables} 标签，星岩已加进去。以后换成按星球资源生成的星球矿石。 */
     private static final List<ResourceKey<PlacedFeature>> ORES = List.of(
             OrePlacements.ORE_GRAVEL,
-            OrePlacements.ORE_COAL_UPPER,
-            OrePlacements.ORE_COAL_LOWER,
-            OrePlacements.ORE_IRON_UPPER,
-            OrePlacements.ORE_IRON_MIDDLE,
-            OrePlacements.ORE_IRON_SMALL,
             OrePlacements.ORE_GOLD,
             OrePlacements.ORE_GOLD_LOWER,
             OrePlacements.ORE_REDSTONE,
@@ -85,6 +83,5 @@ final class UniverseBiomes {
             OrePlacements.ORE_DIAMOND_LARGE,
             OrePlacements.ORE_DIAMOND_BURIED,
             OrePlacements.ORE_LAPIS,
-            OrePlacements.ORE_LAPIS_BURIED,
-            OrePlacements.ORE_COPPER);
+            OrePlacements.ORE_LAPIS_BURIED);
 }

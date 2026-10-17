@@ -66,6 +66,12 @@
   - NeoForge 的 `MinecraftServer.perWorldTickTimes` 按维度键记录 tick 耗时，卸载后不会删除，每个用过的维度键约占 1 KB。
 - 地图、小地图类模组怎么处理运行时维度还不知道，M8 测。
 
+## M1 收尾时的状态（2026-10-17）
+
+- 过场画面：S4 里飞船进出星球不经过传送门，走的是原版的维度切换，现有的补注册方式够用，没有给 NeoForge 提 PR。
+- 维度 tick 期间不能建维度：飞船跨维度（S4）在服务器 tick 末尾处理，没碰到这个问题。
+- 以下仍未处理，列进 M2：空闲自动卸载（目前只能手动卸载，所以去过的星球会一直加载着，重启时也会恢复）；玩家所在星球被卸载后再上线的落点；服务器暂停期间的卸载；`perWorldTickTimes` 的残留。
+
 ## 参考
 
 - [Infiniverse](https://github.com/Commoble/infiniverse)（Commoble，MIT 许可）：运行时创建和移除维度的库。最新版 26.1.0.1 对应 NeoForge 26.1，没有 26.3 版本；它依赖的 `MinecraftServer#forgeGetWorldMap`、`markWorldsDirty` 在 26.3 已删除，不能直接用。本模组参考了它的思路，没有复制代码。它移除维度时不调用 `ServerLevel#close()`，IO 线程会泄漏，这一点没有照搬。

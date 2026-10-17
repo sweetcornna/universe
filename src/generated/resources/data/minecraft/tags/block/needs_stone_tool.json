@@ -1,0 +1,10 @@
+{
+  "values": [
+    "universe:planet_iron_ore",
+    "universe:planet_copper_ore",
+    "universe:silicon_ore",
+    "universe:sulfur_ore",
+    "universe:fire_ice_ore",
+    "universe:organic_crystal_ore"
+  ]
+}

@@ -3,12 +3,22 @@ package io.github.sweetcornna.universe.datagen;
 import java.util.Set;
 
 import io.github.sweetcornna.universe.Universe;
+import io.github.sweetcornna.universe.block.OreKind;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
+import io.github.sweetcornna.universe.registry.UniverseItems;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.loot.BlockLootSubProvider;
 import net.minecraft.data.loot.LootTableSubProvider;
 import net.minecraft.world.flag.FeatureFlags;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.storage.loot.LootTable;
+import net.minecraft.world.level.storage.loot.entries.LootItem;
+import net.minecraft.world.level.storage.loot.entries.LootPoolEntryContainer;
+import net.minecraft.world.level.storage.loot.functions.ApplyBonusCount;
+import net.minecraft.world.level.storage.loot.functions.SetItemCountFunction;
+import net.minecraft.world.level.storage.loot.providers.number.ints.ContextIntProviders;
 
 /** 方块掉落。 */
 final class UniverseBlockLoot extends BlockLootSubProvider {
@@ -45,6 +55,19 @@ final class UniverseBlockLoot extends BlockLootSubProvider {
         this.dropSelf(UniverseBlocks.IMPULSE_ENGINE.get());
         this.dropSelf(UniverseBlocks.SHIP_SEAT.get());
         UniverseBlocks.HULL_PLATING.values().forEach(block -> this.dropSelf(block.get()));
+        // 星球矿石：和原版矿石一样，精准采集掉本体，时运加成掉落
+        UniverseBlocks.ORES.forEach((kind, block) -> this.add(block.get(), this.createOreDrops(block.get(), kind)));
+    }
+
+    private LootTable.Builder createOreDrops(Block block, OreKind kind) {
+        Item drop = UniverseItems.oreDrop(kind);
+        if (kind.minDrops() == 1 && kind.maxDrops() == 1) {
+            return this.createOreDrop(block, drop);
+        }
+        return this.createSilkTouchDispatchTable(block, (LootPoolEntryContainer.Builder<?>) this.applyExplosionDecay(block,
+                LootItem.lootTableItem(drop)
+                        .apply(SetItemCountFunction.setCount(ContextIntProviders.between(kind.minDrops(), kind.maxDrops())))
+                        .apply(ApplyBonusCount.addOreBonusCount(this.enchantments.getOrThrow(Enchantments.FORTUNE)))));
     }
 
     @Override

@@ -1,0 +1,12 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "universe:block/planet_iron_ore",
+    "tints": [
+      {
+        "type": "universe:planet_palette",
+        "channel": "rock"
+      }
+    ]
+  }
+}

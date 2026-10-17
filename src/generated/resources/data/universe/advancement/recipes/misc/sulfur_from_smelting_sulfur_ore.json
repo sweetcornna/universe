@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_sulfur_ore": {
+      "conditions": {
+        "items": [
+          {
+            "items": "universe:sulfur_ore"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipes": "universe:sulfur_from_smelting_sulfur_ore"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_sulfur_ore"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "universe:sulfur_from_smelting_sulfur_ore"
+    ]
+  }
+}

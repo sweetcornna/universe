@@ -1,0 +1,12 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "universe:block/strange_matter_ore",
+    "tints": [
+      {
+        "type": "universe:planet_palette",
+        "channel": "rock"
+      }
+    ]
+  }
+}

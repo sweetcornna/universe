@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:blasting",
+  "cookingtime": 100,
+  "experience": 1.0,
+  "ingredient": "universe:optical_crystal_ore",
+  "result": {
+    "id": "universe:optical_crystal"
+  }
+}

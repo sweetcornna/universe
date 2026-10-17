@@ -6,7 +6,10 @@ import java.util.List;
 import java.util.Map;
 
 import io.github.sweetcornna.universe.Universe;
+import io.github.sweetcornna.universe.block.OreKind;
 import io.github.sweetcornna.universe.core.ecology.PlantForm;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.DyeColor;
@@ -71,6 +74,30 @@ public final class UniverseItems {
     /** 发射燃料：一罐能加满半个燃料舱。 */
     public static final DeferredItem<Item> LAUNCH_FUEL = ITEMS.registerSimpleItem("launch_fuel", properties -> properties.stacksTo(16));
 
+    // ---- 星球矿石和资源
+    public static final Map<OreKind, DeferredItem<BlockItem>> ORES = new EnumMap<>(OreKind.class);
+    /** 矿石掉的本模组物品（粗矿、硫、晶体……）；铁、铜、煤掉原版的，不在这里。 */
+    public static final Map<OreKind, DeferredItem<Item>> ORE_DROPS = new EnumMap<>(OreKind.class);
+    /** 粗矿烧出来的锭。 */
+    public static final Map<OreKind, DeferredItem<Item>> ORE_SMELTED = new EnumMap<>(OreKind.class);
+
+    static {
+        UniverseBlocks.ORES.forEach((kind, block) -> ORES.put(kind, ITEMS.registerSimpleBlockItem(block)));
+        for (OreKind kind : OreKind.values()) {
+            if (!kind.vanillaDrop()) {
+                ORE_DROPS.put(kind, ITEMS.registerSimpleItem(kind.drop()));
+            }
+            if (kind.smelted() != null) {
+                ORE_SMELTED.put(kind, ITEMS.registerSimpleItem(kind.smelted()));
+            }
+        }
+    }
+
+    /** 矿石掉的物品。 */
+    public static Item oreDrop(OreKind kind) {
+        return kind.vanillaDrop() ? BuiltInRegistries.ITEM.getValue(Identifier.parse(kind.drop())) : ORE_DROPS.get(kind).get();
+    }
+
     /** 创造模式物品栏里的顺序。 */
     public static final List<DeferredItem<?>> CREATIVE_ORDER = creativeOrder();
 
@@ -83,6 +110,9 @@ public final class UniverseItems {
         order.addAll(List.of(ALIEN_MEAT, COOKED_ALIEN_MEAT, ALIEN_HIDE, ALIEN_CREATURE_SPAWN_EGG, ALIEN_FLYER_SPAWN_EGG));
         order.addAll(List.of(SHIP_HELM, SHIP_THRUSTER, FUEL_TANK, IMPULSE_ENGINE, SHIP_SEAT, LAUNCH_FUEL));
         order.addAll(HULL_PLATING.values());
+        order.addAll(ORES.values());
+        order.addAll(ORE_DROPS.values());
+        order.addAll(ORE_SMELTED.values());
         return List.copyOf(order);
     }
 

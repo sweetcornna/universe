@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_optical_crystal_ore": {
+      "conditions": {
+        "items": [
+          {
+            "items": "universe:optical_crystal_ore"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipes": "universe:optical_crystal_from_smelting_optical_crystal_ore"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_optical_crystal_ore"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "universe:optical_crystal_from_smelting_optical_crystal_ore"
+    ]
+  }
+}

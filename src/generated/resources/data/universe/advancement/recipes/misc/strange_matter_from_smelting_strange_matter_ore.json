@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_strange_matter_ore": {
+      "conditions": {
+        "items": [
+          {
+            "items": "universe:strange_matter_ore"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipes": "universe:strange_matter_from_smelting_strange_matter_ore"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_strange_matter_ore"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "universe:strange_matter_from_smelting_strange_matter_ore"
+    ]
+  }
+}

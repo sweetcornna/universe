@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Set;
 
 import io.github.sweetcornna.universe.world.planet.gen.PlanetFloraFeature;
+import io.github.sweetcornna.universe.world.planet.gen.PlanetOreFeature;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.loot.LootTableProvider;
 import net.minecraft.world.level.levelgen.placement.BiomeFilter;
@@ -41,9 +42,16 @@ public final class UniverseDataGen {
                 List.of(new LootTableProvider.SubProviderEntry(UniverseBlockLoot::new, LootContextParamSets.BLOCK),
                         new LootTableProvider.SubProviderEntry(UniverseEntityLoot::new, LootContextParamSets.ENTITY))));
         event.recipe(UniverseRecipes::new);
-        event.add(Registries.FEATURE, context -> context.register(PlanetFloraFeature.KEY, new PlanetFloraFeature()));
-        event.add(Registries.PLACED_FEATURE, context -> context.register(PlanetFloraFeature.PLACED,
-                new PlacedFeature(context.lookup(Registries.FEATURE).getOrThrow(PlanetFloraFeature.KEY), List.of(BiomeFilter.biome()))));
+        event.add(Registries.FEATURE, context -> {
+            context.register(PlanetFloraFeature.KEY, new PlanetFloraFeature());
+            context.register(PlanetOreFeature.KEY, new PlanetOreFeature());
+        });
+        event.add(Registries.PLACED_FEATURE, context -> {
+            context.register(PlanetFloraFeature.PLACED,
+                    new PlacedFeature(context.lookup(Registries.FEATURE).getOrThrow(PlanetFloraFeature.KEY), List.of(BiomeFilter.biome())));
+            context.register(PlanetOreFeature.PLACED,
+                    new PlacedFeature(context.lookup(Registries.FEATURE).getOrThrow(PlanetOreFeature.KEY), List.of(BiomeFilter.biome())));
+        });
         event.add(Registries.BIOME, UniverseBiomes::bootstrap);
     }
 }

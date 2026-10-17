@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:blasting",
+  "cookingtime": 100,
+  "experience": 1.0,
+  "ingredient": "universe:titanium_ore",
+  "result": {
+    "id": "universe:titanium_ingot"
+  }
+}

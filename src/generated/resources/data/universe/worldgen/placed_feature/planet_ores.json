@@ -1,0 +1,8 @@
+{
+  "feature": "universe:planet_ores",
+  "placement": [
+    {
+      "type": "minecraft:biome"
+    }
+  ]
+}

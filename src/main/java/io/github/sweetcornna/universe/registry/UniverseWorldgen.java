@@ -9,6 +9,7 @@ import io.github.sweetcornna.universe.world.planet.gen.PlanetFloraFeature;
 import io.github.sweetcornna.universe.world.planet.gen.PlanetHeightFunction;
 import io.github.sweetcornna.universe.world.planet.gen.PlanetIslandFunction;
 import io.github.sweetcornna.universe.world.planet.gen.PlanetLavaCondition;
+import io.github.sweetcornna.universe.world.planet.gen.PlanetOreFeature;
 import io.github.sweetcornna.universe.world.planet.gen.PlanetSteepCondition;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.biome.BiomeSource;
@@ -37,6 +38,7 @@ public final class UniverseWorldgen {
         MATERIAL_CONDITION_TYPES.register("planet_steep", () -> PlanetSteepCondition.CODEC);
         MATERIAL_CONDITION_TYPES.register("planet_lava", () -> PlanetLavaCondition.CODEC);
         FEATURE_TYPES.register("planet_flora", () -> PlanetFloraFeature.CODEC);
+        FEATURE_TYPES.register("planet_ores", () -> PlanetOreFeature.CODEC);
     }
 
     private UniverseWorldgen() {

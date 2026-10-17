@@ -13,6 +13,27 @@
     "universe:planet_crystal",
     "universe:planet_log",
     "universe:planet_cap",
-    "universe:planet_bloom"
+    "universe:planet_bloom",
+    "universe:ship_helm",
+    "universe:ship_thruster",
+    "universe:fuel_tank",
+    "universe:impulse_engine",
+    "universe:ship_seat",
+    "universe:hull_plating_white",
+    "universe:hull_plating_orange",
+    "universe:hull_plating_magenta",
+    "universe:hull_plating_light_blue",
+    "universe:hull_plating_yellow",
+    "universe:hull_plating_lime",
+    "universe:hull_plating_pink",
+    "universe:hull_plating_gray",
+    "universe:hull_plating_light_gray",
+    "universe:hull_plating_cyan",
+    "universe:hull_plating_purple",
+    "universe:hull_plating_blue",
+    "universe:hull_plating_brown",
+    "universe:hull_plating_green",
+    "universe:hull_plating_red",
+    "universe:hull_plating_black"
   ]
 }

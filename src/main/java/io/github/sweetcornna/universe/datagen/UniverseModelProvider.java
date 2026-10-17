@@ -8,6 +8,7 @@ import io.github.sweetcornna.universe.block.FloraBlocks;
 import io.github.sweetcornna.universe.client.PlanetTints;
 import io.github.sweetcornna.universe.core.ecology.Flora;
 import io.github.sweetcornna.universe.core.ecology.PlantForm;
+import io.github.sweetcornna.universe.core.galaxy.Palette;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
 import io.github.sweetcornna.universe.registry.UniverseItems;
 import net.minecraft.client.data.models.BlockModelGenerators;
@@ -47,6 +48,9 @@ final class UniverseModelProvider extends ModelProvider {
     private static final ModelTemplate PLANT_PATCH_EMISSIVE = template("plant_patch_emissive", BODY, DETAIL);
     private static final ModelTemplate TINTED_COLUMN = template("tinted_column", TextureSlot.SIDE, TextureSlot.END);
     private static final ModelTemplate TINTED_CUBE_ALL_EMISSIVE = template("tinted_cube_all_emissive", TextureSlot.ALL);
+    /** 矿石：底层是染成星岩色的岩石（索引 0），上面一层不染色的矿点；会发光的矿点层自发光。 */
+    private static final ModelTemplate TINTED_ORE = template("tinted_ore", TextureSlot.ALL, OVERLAY);
+    private static final ModelTemplate TINTED_ORE_EMISSIVE = template("tinted_ore_emissive", TextureSlot.ALL, OVERLAY);
 
     UniverseModelProvider(PackOutput output) {
         super(output, Universe.MOD_ID);
@@ -80,6 +84,22 @@ final class UniverseModelProvider extends ModelProvider {
             itemModels.generateFlatItem(item.get(), ModelTemplates.FLAT_ITEM);
         }
         ships(blockModels);
+        ores(blockModels, itemModels);
+    }
+
+    private static void ores(BlockModelGenerators blockModels, ItemModelGenerators itemModels) {
+        UniverseBlocks.ORES.forEach((kind, holder) -> {
+            Block block = holder.get();
+            TextureMapping textures = new TextureMapping()
+                    .put(TextureSlot.ALL, texture("planet_rock"))
+                    .put(OVERLAY, texture(kind.blockName() + "_overlay"));
+            Identifier model = (kind.light() > 0 ? TINTED_ORE_EMISSIVE : TINTED_ORE).create(block, textures, blockModels.modelOutput);
+            blockModels.blockStateOutput.accept(BlockModelGenerators.createSimpleBlock(block, BlockModelGenerators.plainVariant(model)));
+            itemModels.itemModelOutput.accept(block.asItem(),
+                    ItemModelUtils.tintedModel(model, new PlanetTints.PaletteItemTint(Palette.Channel.ROCK)));
+        });
+        UniverseItems.ORE_DROPS.values().forEach(item -> itemModels.generateFlatItem(item.get(), ModelTemplates.FLAT_ITEM));
+        UniverseItems.ORE_SMELTED.values().forEach(item -> itemModels.generateFlatItem(item.get(), ModelTemplates.FLAT_ITEM));
     }
 
     /** 飞船部件：驾驶台、推进器、脉冲引擎、座椅的模型是手写的（{@code models/block/}），这里只出方块状态。 */

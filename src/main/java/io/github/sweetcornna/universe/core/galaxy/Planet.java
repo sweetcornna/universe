@@ -78,6 +78,13 @@ public record Planet(
                 this.terrain, this.ecology, this.palette, this.resources, this.worldSize, this.rings, this.moons);
     }
 
+    /** 换一份资源表（母星的卫星保证有钛）。 */
+    public Planet withResources(List<Resource.Deposit> newResources) {
+        return new Planet(this.id, this.seed, this.name, this.type, this.orbit, this.radius, this.gravity, this.atmosphere,
+                this.temperature, this.temperatureSwing, this.hazards, this.liquid, this.dayCycle, this.weather,
+                this.terrain, this.ecology, this.palette, newResources, this.worldSize, this.rings, this.moons);
+    }
+
     /** 摄氏度，界面上显示用。 */
     public double temperatureCelsius() {
         return this.temperature - 273.15;

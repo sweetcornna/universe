@@ -64,6 +64,8 @@ public final class PlanetTints {
             event.register(List.of(tree(Flora.TreePart.LEAVES)), UniverseBlocks.PLANET_LEAVES.get());
             event.register(List.of(tree(Flora.TreePart.LEAVES)), UniverseBlocks.PLANET_CAP.get());
             event.register(List.of(tree(Flora.TreePart.BLOOM)), UniverseBlocks.PLANET_BLOOM.get());
+            // 矿石的底色跟星岩一样，矿点层不染色
+            UniverseBlocks.ORES.values().forEach(block -> event.register(List.of(block(Palette.Channel.ROCK)), block.get()));
         });
         modBus.addListener(RegisterColorHandlersEvent.ItemTintSources.class, event -> {
             event.register(Universe.id("planet_palette"), PaletteItemTint.MAP_CODEC);

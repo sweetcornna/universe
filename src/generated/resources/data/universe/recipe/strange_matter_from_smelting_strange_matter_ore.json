@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:smelting",
+  "cookingtime": 200,
+  "experience": 1.0,
+  "ingredient": "universe:strange_matter_ore",
+  "result": {
+    "id": "universe:strange_matter"
+  }
+}

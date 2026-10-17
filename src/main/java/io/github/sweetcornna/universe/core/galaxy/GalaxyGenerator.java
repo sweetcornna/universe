@@ -215,6 +215,17 @@ public final class GalaxyGenerator {
         Planet moon = PlanetGenerator.generate(new PlanetGenerator.Spec(
                 HOME_MOON_ID, Seeds.derive(seed, 0), star, moonOrbit, 1.0, false, PlanetType.BARREN, false, true))
                 .withName(new Name("Moon", "月球"));
+        // 第一个目的地一定要有钛（路线图 M2 的退出标准：飞到卫星采集钛）
+        if (moon.abundance(Resource.TITANIUM) < 0.4) {
+            List<Resource.Deposit> withTitanium = new ArrayList<>();
+            for (Resource.Deposit deposit : moon.resources()) {
+                if (deposit.resource() != Resource.TITANIUM) {
+                    withTitanium.add(deposit);
+                }
+            }
+            withTitanium.add(new Resource.Deposit(Resource.TITANIUM, 0.5));
+            moon = moon.withResources(withTitanium);
+        }
         List<Resource.Deposit> resources = List.of(
                 new Resource.Deposit(Resource.IRON, 0.6),
                 new Resource.Deposit(Resource.COPPER, 0.5),

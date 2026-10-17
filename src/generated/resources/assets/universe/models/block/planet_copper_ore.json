@@ -1,0 +1,7 @@
+{
+  "parent": "universe:block/tinted_ore",
+  "textures": {
+    "all": "universe:block/planet_rock",
+    "overlay": "universe:block/planet_copper_ore_overlay"
+  }
+}

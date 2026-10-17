@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_raw_magnetite": {
+      "conditions": {
+        "items": [
+          {
+            "items": "universe:raw_magnetite"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipes": "universe:magnet_from_smelting_raw_magnetite"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_raw_magnetite"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "universe:magnet_from_smelting_raw_magnetite"
+    ]
+  }
+}

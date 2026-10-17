@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:blasting",
+  "cookingtime": 100,
+  "experience": 1.0,
+  "ingredient": "universe:uranium_ore",
+  "result": {
+    "id": "universe:uranium_ingot"
+  }
+}

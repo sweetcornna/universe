@@ -8,6 +8,7 @@ import java.util.Optional;
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.block.FloraBlocks;
 import io.github.sweetcornna.universe.block.FloraVariantBlock;
+import io.github.sweetcornna.universe.block.OreKind;
 import io.github.sweetcornna.universe.block.PlanetBloomBlock;
 import io.github.sweetcornna.universe.block.PlanetLeavesBlock;
 import io.github.sweetcornna.universe.block.PlanetLogBlock;
@@ -20,9 +21,11 @@ import io.github.sweetcornna.universe.block.ship.ShipThrusterBlock;
 import io.github.sweetcornna.universe.core.ecology.PlantForm;
 import io.github.sweetcornna.universe.core.galaxy.Palette;
 import net.minecraft.util.ColorRGBA;
+import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.DropExperienceBlock;
 import net.minecraft.world.level.block.SandBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
@@ -100,6 +103,18 @@ public final class UniverseBlocks {
             p -> p.mapColor(MapColor.COLOR_GRAY).strength(1.5F).sound(SoundType.WOOL).noOcclusion());
     /** 船体板：16 种颜色，比普通方块轻一半，给飞船换外观用。 */
     public static final Map<DyeColor, DeferredBlock<Block>> HULL_PLATING = registerPlating();
+    /** 星球矿石：按星球资源生成，底色跟星岩一样按星球染色。 */
+    public static final Map<OreKind, DeferredBlock<DropExperienceBlock>> ORES = registerOres();
+
+    private static Map<OreKind, DeferredBlock<DropExperienceBlock>> registerOres() {
+        Map<OreKind, DeferredBlock<DropExperienceBlock>> ores = new EnumMap<>(OreKind.class);
+        for (OreKind kind : OreKind.values()) {
+            ores.put(kind, BLOCKS.registerBlock(kind.blockName(), p -> new DropExperienceBlock(UniformInt.of(kind.minXp(), kind.maxXp()), p),
+                    p -> p.mapColor(MapColor.STONE).instrument(NoteBlockInstrument.BASEDRUM).requiresCorrectToolForDrops()
+                            .strength(kind.toolTier() >= 3 ? 5.0F : 3.0F, 3.0F).lightLevel(state -> kind.light())));
+        }
+        return ores;
+    }
 
     private static Map<DyeColor, DeferredBlock<Block>> registerPlating() {
         Map<DyeColor, DeferredBlock<Block>> plating = new EnumMap<>(DyeColor.class);

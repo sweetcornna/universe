@@ -1,0 +1,7 @@
+{
+  "parent": "universe:block/tinted_ore_emissive",
+  "textures": {
+    "all": "universe:block/planet_rock",
+    "overlay": "universe:block/uranium_ore_overlay"
+  }
+}

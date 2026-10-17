@@ -188,6 +188,7 @@ io.github.sweetcornna.universe
 | 自定义刷怪器 `CustomSpawner#tick(ServerLevel, boolean)` 只在游戏规则 `spawn_mobs` 打开时调用；NeoForge 的 `ModifyCustomSpawnersEvent` 在 `ServerLevel` 构造器末尾触发，运行时创建的维度也会触发 | 已确认，`FaunaSpawner` 在用 |
 | 游戏规则改名：`spawn_mobs`（原 doMobSpawning）、`advance_time`（原 doDaylightCycle）、`advance_weather` 等 | 已确认 |
 | 配方也是数据包注册表的条目：数据生成用 `GatherDataRegistryEntriesEvent#recipe(RecipeProvider 的构造器)`；`RecipeProvider#simpleCookingRecipe` 会把配方存进 minecraft 命名空间，模组要自己指定 ID | 已确认 |
+| 原版 `minecraft:ores` 标签已经在 `blocks_motion_no_leaves` 里，矿石进 `ores` 就不用再单独加；`BlockTags` 里没有煤矿标签，要用 `BlockItemTags.COAL_ORES.block()`。矿石方块是 `DropExperienceBlock(IntProvider, 属性)`，掉落表照原版的 `createOreDrop` 或"精准采集分支 + 数量 + 时运加成 + 爆炸损耗" | 已确认，星球矿石在用 |
 | 战利品表的数值提供器改为 `ContextIntProviders`、`ContextFloatProviders`；刷怪蛋是 `SpawnEggItem` 加 `Item.Properties#spawnEgg(type)`，每种刷怪蛋有自己的贴图；实体类型先于物品注册，物品属性里可以直接取实体类型 | 已确认 |
 | 方块能不能整体搬走看 `BlockState#getRelocability(level, pos)`：`BlockRelocability.No` 不能搬，`BlockRelocability.Multiblock#isRelocatable(positions)` 判断床、门这类结构是否整个都在 | 已确认，飞船组装在用 |
 | 不触发副作用地搬方块：移走时 `UPDATE_CLIENTS \| UPDATE_SKIP_ALL_SIDEEFFECTS`，放回时 `UPDATE_CLIENTS \| UPDATE_KNOWN_SHAPE` 再 `updateNeighborsAt`；方块实体用 `saveWithFullMetadata(registries)` 存、`BlockEntity.loadStatic(pos, state, tag, registries)` 或 `loadWithComponents(TagValueInput.create(reporter, registries, tag))` 读 | 已确认，飞船在用 |

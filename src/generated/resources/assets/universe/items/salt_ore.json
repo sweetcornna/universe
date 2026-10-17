@@ -1,0 +1,12 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "universe:block/salt_ore",
+    "tints": [
+      {
+        "type": "universe:planet_palette",
+        "channel": "rock"
+      }
+    ]
+  }
+}
