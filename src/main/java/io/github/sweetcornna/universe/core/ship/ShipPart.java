@@ -21,7 +21,24 @@ public enum ShipPart {
     /** 脉冲引擎：在太空里加速巡航。 */
     IMPULSE_ENGINE(4.0),
     /** 跃迁引擎：在恒星系之间跃迁，装得越多射程越远。 */
-    WARP_DRIVE(5.0);
+    WARP_DRIVE(5.0),
+    // ---- ADR-0017：武器、护盾和 Mk.II 部件
+    /** 合金船体板：比船体板略重，每块给船体加 {@link ShipStats#HULL_PER_ALLOY} 点。 */
+    ALLOY_PLATING(0.6),
+    /** Mk.II 推进器：推力 {@link ShipStats#THRUST_PER_THRUSTER_MK2}。 */
+    THRUSTER_MK2(2.0),
+    /** Mk.II 燃料舱：容量 {@link ShipStats#FUEL_PER_TANK_MK2}。 */
+    FUEL_TANK_MK2(2.0),
+    /** Mk.II 脉冲引擎：推得动更重的船，最快 {@link ShipStats#IMPULSE_SPEED_MK2} 格/刻。 */
+    IMPULSE_ENGINE_MK2(4.5),
+    /** Mk.II 跃迁引擎：每台射程多 10 光年。 */
+    WARP_DRIVE_MK2(5.5),
+    /** 光子炮：开火键发射光子弹。 */
+    PHOTON_CANNON(2.0),
+    /** 采矿光束：采矿模式下按住开火键持续照射。 */
+    MINING_BEAM(2.0),
+    /** 护盾发生器：每台 {@link ShipStats#SHIELD_PER_GENERATOR} 点护盾。 */
+    SHIELD_GENERATOR(3.0);
 
     private final double mass;
 

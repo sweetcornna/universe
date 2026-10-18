@@ -49,6 +49,11 @@ public final class ShipCommand {
                                 .executes(ShipCommand::fuel)))
                 .then(Commands.literal("info")
                         .executes(ShipCommand::info))
+                .then(Commands.literal("damage")
+                        .then(Commands.argument("amount", DoubleArgumentType.doubleArg(0))
+                                .executes(ShipCommand::damage)))
+                .then(Commands.literal("repair")
+                        .executes(ShipCommand::repair))
                 .then(Commands.literal("warp")
                         .then(Commands.argument("system", IntegerArgumentType.integer(0))
                                 .executes(ShipCommand::warp)));
@@ -86,6 +91,25 @@ public final class ShipCommand {
         return 1;
     }
 
+    /** 让飞船挨一下打（先扣护盾再扣船体），测试击毁和拖船用。 */
+    private static int damage(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        ShipEntity ship = ship(context);
+        float amount = (float) DoubleArgumentType.getDouble(context, "amount");
+        boolean hit = ship.damageShip(context.getSource().getLevel(), amount);
+        context.getSource().sendSuccess(() -> Component.literal(hit
+                ? String.format(Locale.ROOT, "船体 %.0f/%.0f，护盾 %.0f/%.0f", ship.missingHull() < 0 ? 0 : ship.maxHull() - ship.missingHull(),
+                        ship.maxHull(), ship.maxShield() - ship.missingShield(), ship.maxShield())
+                : "飞船没有受伤"), false);
+        return hit ? 1 : 0;
+    }
+
+    private static int repair(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        ShipEntity ship = ship(context);
+        ship.repair();
+        context.getSource().sendSuccess(() -> Component.literal("已修好飞船"), false);
+        return 1;
+    }
+
     /** 不管射程、翘曲器和引力井，直接跃迁到某个恒星系（编号见 {@code /universe planet list}）。 */
     private static int warp(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         ShipEntity ship = ship(context);
@@ -107,8 +131,11 @@ public final class ShipCommand {
         ShipEntity ship = ship(context);
         ShipStats s = ship.structure().stats();
         String text = String.format(Locale.ROOT,
-                "%d 个方块，%.1f 吨，推进器 %d，燃料舱 %d，脉冲引擎 %d，跃迁引擎 %d，推重比(1g) %.2f，燃料 %.0f/%.0f，位置 %.1f %.1f %.1f，偏航 %.1f，速度 %.3f，%s",
-                s.blocks(), s.mass(), s.thrusters(), s.fuelTanks(), s.impulse(), s.warpDrives(), s.thrustToWeight(1), ship.fuelServer(), s.fuelCapacity(),
+                "%d 个方块，%.1f 吨，推进器 %d，燃料舱 %d，脉冲引擎 %d（%.0f 格/刻），跃迁引擎 %d（%.0f 光年），推重比(1g) %.2f，燃料 %.0f/%.0f，"
+                        + "船体 %.0f/%.0f，护盾 %.0f/%.0f，光子炮 %d，采矿光束 %d，位置 %.1f %.1f %.1f，偏航 %.1f，速度 %.3f，%s",
+                s.blocks(), s.mass(), s.thrusters(), s.fuelTanks(), s.impulse(), s.impulseSpeed(), s.warpDrives(), s.warpRange(),
+                s.thrustToWeight(1), ship.fuelServer(), s.fuelCapacity(),
+                ship.maxHull() - ship.missingHull(), ship.maxHull(), ship.maxShield() - ship.missingShield(), ship.maxShield(), s.cannons(), s.beams(),
                 ship.getX(), ship.getY(), ship.getZ(), ship.getYRot(), ship.flight().speed(), ship.isLanded() ? "着陆" : "飞行");
         context.getSource().sendSuccess(() -> Component.literal(text), false);
         return 1;

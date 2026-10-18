@@ -16,7 +16,9 @@ public final class ShipFlight {
     /** 一台脉冲引擎加速时每刻消耗的燃料。 */
     public static final double FUEL_PER_IMPULSE = 0.8;
     /** 太空里开脉冲引擎能到的最高速度（格/刻）。 */
-    public static final double MAX_IMPULSE_SPEED = 40;
+    public static final double MAX_IMPULSE_SPEED = ShipStats.IMPULSE_SPEED;
+    /** 装 Mk.II 脉冲引擎时的最高速度（ADR-0017）。 */
+    public static final double MAX_IMPULSE_SPEED_MK2 = ShipStats.IMPULSE_SPEED_MK2;
 
     private double vx;
     private double vy;
@@ -75,9 +77,8 @@ public final class ShipFlight {
         // 脉冲引擎关掉以后反推减速的加速度：两三秒内从巡航速度降下来，不会一路漂出去上千格
         double brake = 0;
         if (env.space()) {
-            // 一台脉冲引擎能推满两百吨
-            double share = clamp(stats.impulse() * 200 / Math.max(1, stats.mass()), 0, 1);
-            double impulseMax = stats.impulse() > 0 ? Math.min(MAX_IMPULSE_SPEED, 6 + 34 * share) : 0;
+            // 一台脉冲引擎能推满两百吨（Mk.II 三百吨），见 ShipStats#impulseSpeed
+            double impulseMax = stats.impulseSpeed();
             if (boostImpulse) {
                 vmax = impulseMax;
                 accel = vmax / 60;
@@ -153,7 +154,7 @@ public final class ShipFlight {
             this.vy -= g;
             this.vy *= 1 - 0.01 * env.density();
         }
-        this.vy = clamp(this.vy, -4, env.space() ? MAX_IMPULSE_SPEED : 2);
+        this.vy = clamp(this.vy, -4, env.space() ? MAX_IMPULSE_SPEED_MK2 : 2);
         if (onGround && this.vy < 0) {
             this.vy = 0;
         }

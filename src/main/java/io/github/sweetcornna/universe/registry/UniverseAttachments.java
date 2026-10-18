@@ -19,6 +19,7 @@ import io.github.sweetcornna.universe.poi.PoiProgress;
 import io.github.sweetcornna.universe.poi.Waypoint;
 import io.github.sweetcornna.universe.survival.SuitHud;
 import io.github.sweetcornna.universe.tech.ExosuitData;
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.resources.Identifier;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.attachment.AttachmentType;
@@ -78,6 +79,15 @@ public final class UniverseAttachments {
     /** 发给玩家自己的守卫机读数，HUD 用（不存档）。 */
     public static final Supplier<AttachmentType<SentinelHud>> SENTINEL_HUD = ATTACHMENT_TYPES.register("sentinel_hud",
             () -> AttachmentType.builder(() -> SentinelHud.NONE).sync((holder, player) -> holder == player, SentinelHud.STREAM_CODEC).build());
+
+    /** 信用点（ADR-0017）：死亡不丢，同步给本人，交易界面和 HUD 上显示。 */
+    public static final Supplier<AttachmentType<Long>> CREDITS = ATTACHMENT_TYPES.register("credits",
+            () -> AttachmentType.builder(() -> 0L).serialize(Codec.LONG.fieldOf("credits")).copyOnDeath()
+                    .sync((holder, player) -> holder == player, ByteBufCodecs.VAR_LONG).build());
+
+    /** 太空维度的区块存过盘（有过方块，ADR-0017）：以后方块拆光了也要再存一次。 */
+    public static final Supplier<AttachmentType<Boolean>> SPACE_BUILT = ATTACHMENT_TYPES.register("space_built",
+            () -> AttachmentType.builder(() -> false).serialize(Codec.BOOL.fieldOf("built")).build());
 
     /** 区块里开采过的矿脉节点和原油涌泉：打包坐标 → 开采了多少（ADR-0011）。没碰过的不记。 */
     public static final Supplier<AttachmentType<Map<Long, Integer>>> VEIN_USAGE = ATTACHMENT_TYPES.register("vein_usage",

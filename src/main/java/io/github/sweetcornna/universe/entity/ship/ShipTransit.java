@@ -57,11 +57,13 @@ public final class ShipTransit {
      * 一次登记好的切换。
      *
      * @param yaw  到了以后的船头偏航；NaN 表示保持原来的
-     * @param warp 跃迁的目标恒星系；普通的进出大气是 -1
+     * @param warp 跃迁的目标恒星系；普通的进出大气是 -1，被击毁后拖回空间站是 {@link #TOW}
      */
     private record Pending(ShipEntity ship, ResourceKey<Level> target, Optional<BodyId> landingOn, Vec3 position, float yaw, int warp) {
     }
 
+    /** {@link Pending#warp()} 的特殊值：被击毁后拖回空间站（ADR-0017）。 */
+    private static final int TOW = -2;
     private static final List<Pending> PENDING = new ArrayList<>();
     private static final Map<Integer, List<SpaceLayout.Body>> LAYOUTS = new HashMap<>();
     private static final Map<Integer, Double> STAR_RADII = new HashMap<>();
@@ -163,6 +165,12 @@ public final class ShipTransit {
         PENDING.add(new Pending(ship, SpaceDimensions.key(system), Optional.empty(), position, yaw, system));
     }
 
+    /** 被击毁：登记拖回空间站的机库（ADR-0017），同一维度里也走这里，在服务器刻末尾传送。 */
+    static void tow(ShipEntity ship, ResourceKey<Level> target, Vec3 position, float yaw) {
+        PENDING.removeIf(pending -> pending.ship() == ship);
+        PENDING.add(new Pending(ship, target, Optional.empty(), position, yaw, TOW));
+    }
+
     /** 把飞船推回球面外，朝球心的速度清零。 */
     private static void pushOut(ShipEntity ship, double cx, double cy, double cz, double radius, double distance) {
         double dx = ship.getX() - cx;
@@ -228,10 +236,15 @@ public final class ShipTransit {
         // 进出大气时把速度降下来，免得一头扎进地里或者冲出太远；跃迁出来时朝着恒星滑行一段
         Vec3 calmed = pending.warp() >= 0
                 ? new Vec3(-Math.sin(Math.toRadians(yaw)) * 2.5, 0, Math.cos(Math.toRadians(yaw)) * 2.5)
+                : pending.warp() == TOW ? Vec3.ZERO
                 : new Vec3(velocity.x * 0.2, 0, velocity.z * 0.2);
         Entity moved = ship.teleport(new TeleportTransition(target, pos, calmed, yaw, 0, TeleportTransition.DO_NOTHING));
         if (moved instanceof ShipEntity arrived) {
             arrived.flight().restore(calmed.x, 0, calmed.z, yaw);
+            if (pending.warp() == TOW) {
+                arrived.noticeLater(Component.translatable("message.universe.ship.towed"));
+                return;
+            }
             arrived.latchVertical();
             if (pending.warp() >= 0) {
                 Planets.galaxy(server).system(pending.warp()).ifPresent(system -> {

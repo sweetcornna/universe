@@ -4,6 +4,7 @@
 默认输出到 src/main/resources/assets/universe/textures/block 和 textures/item。
 
 船体板按染料的颜色出 16 张；喷口、屏幕这些发光的部分在模型里单独设了自发光，贴图只管颜色。
+武器、护盾发生器和 Mk.II 部件（ADR-0017）：Mk.II 用深色的钛合金机壳配金色饰条，和普通版一眼分得出来。
 随机数用固定种子，每次生成的结果一样。
 """
 import math
@@ -403,7 +404,297 @@ def launch_fuel():
     save(img, ITEM, "launch_fuel")
 
 
+def weapon(name, accent, seed, beam):
+    """光子炮和采矿光束：深灰的炮座，侧面一道彩色的能量槽，炮管带散热环，炮口发光。"""
+    rng = random.Random(seed)
+    base = (70, 74, 84)
+    side = panel(base, rng, seams=False)
+    for x in range(1, N - 1):
+        put(side, x, 9, shade(accent, 0.55))
+        put(side, x, 10, accent)
+        put(side, x, 11, shade(accent, 0.55))
+    for y in (3, 5):
+        for x in range(3, 13):
+            put(side, x, y, shade(base, 0.6))
+    save(side, BLOCK, name + "_side")
+
+    back = panel(shade(base, 0.9), rng, seams=False, rivets=False)
+    for y in range(4, 12, 2):
+        for x in range(4, 12):
+            put(back, x, y, (34, 36, 42))
+    for x, y in ((2, 2), (12, 2), (2, 12), (12, 12)):
+        rivet(back, x, y, base)
+    save(back, BLOCK, name + "_back")
+
+    front = panel(base, rng, seams=False, rivets=False)
+    for y in range(N):
+        for x in range(N):
+            d = max(abs(x - 7.5), abs(y - 7.5))
+            if d < 4.0:
+                put(front, x, y, (40, 42, 48))
+            elif d < 5.0:
+                put(front, x, y, shade(accent, 0.7))
+    for x, y in ((2, 2), (12, 2), (2, 12), (12, 12)):
+        rivet(front, x, y, base)
+    save(front, BLOCK, name + "_front")
+
+    barrel = new((86, 90, 100))
+    for y in range(N):
+        for x in range(N):
+            # 一圈圈散热环：沿炮管方向（贴图的 y）交替明暗
+            ring = (y % 3 == 0)
+            c = (58, 60, 68) if ring else (96, 100, 110)
+            if x in (0, N - 1):
+                c = shade(c, 0.8)
+            put(barrel, x, y, shade(c, 1 + rng.uniform(-0.04, 0.04)))
+    if beam:
+        for y in range(N):
+            put(barrel, 7, y, shade(accent, 0.8))
+            put(barrel, 8, y, shade(accent, 0.8))
+    save(barrel, BLOCK, name + "_barrel")
+
+    muzzle = new((30, 30, 36))
+    for y in range(N):
+        for x in range(N):
+            d = math.hypot(x - 7.5, y - 7.5)
+            if d < 2.0:
+                c = (255, 250, 230)
+            elif d < 4.0:
+                c = mix((255, 240, 200), accent, (d - 2.0) / 2.0)
+            elif d < 6.0:
+                c = shade(accent, 0.75)
+            else:
+                c = (60, 62, 70)
+            put(muzzle, x, y, c)
+    save(muzzle, BLOCK, name + "_muzzle")
+
+
+def shield_generator():
+    """护盾发生器：灰白机壳，侧面一个环形线圈（另出一张发光的线圈贴图），顶上是散热格栅。"""
+    rng = random.Random(97)
+    base = (176, 184, 194)
+    blue = (110, 220, 255)
+    side = panel(base, rng, seams=False)
+    glow = Image.new("RGBA", (N, N), (0, 0, 0, 0))
+    for y in range(N):
+        for x in range(N):
+            d = math.hypot(x - 7.5, y - 7.5)
+            if abs(d - 4.6) < 0.8:
+                put(side, x, y, (40, 70, 96))
+                put(glow, x, y, blue if (x + y) % 3 else (220, 250, 255))
+            elif d < 2.2:
+                put(side, x, y, (30, 50, 70))
+                put(glow, x, y, (180, 240, 255))
+    save(side, BLOCK, "shield_generator_side")
+    save(glow, BLOCK, "shield_generator_glow")
+
+    top = panel(base, rng, seams=False, rivets=False)
+    for y in range(3, 13, 2):
+        for x in range(3, 13):
+            put(top, x, y, (70, 76, 86))
+            put(top, x, y + 1, shade(base, 1.1))
+    for x in range(3, 13):
+        put(top, x, 2, shade(blue, 0.7))
+        put(top, x, 13, shade(blue, 0.7))
+    save(top, BLOCK, "shield_generator_top")
+
+
+GOLD = (232, 190, 70)
+TITANIUM = (58, 64, 76)
+
+
+def mk2_badge(img):
+    """Mk.II 的标记：右下角两道金色的竖杠。"""
+    for y in range(11, 14):
+        put(img, 11, y, GOLD)
+        put(img, 13, y, GOLD)
+
+
+def thruster_mk2():
+    rng = random.Random(123)
+    side = panel(TITANIUM, rng, seams=False, rivets=False)
+    for x in range(1, N - 1):
+        for y in (10, 11):
+            put(side, x, y, GOLD if (x + y) % 4 < 2 else (30, 30, 34))
+    for y in (3, 5, 7):
+        for x in range(3, 13):
+            put(side, x, y, shade(TITANIUM, 0.55))
+    save(side, BLOCK, "ship_thruster_mk2_side")
+
+    back = panel(shade(TITANIUM, 0.9), rng, seams=False)
+    mk2_badge(back)
+    save(back, BLOCK, "ship_thruster_mk2_back")
+
+    nozzle_side = new((60, 62, 72))
+    for y in range(N):
+        color = mix((66, 68, 78), (70, 100, 150), (y / (N - 1)) ** 2)
+        for x in range(N):
+            put(nozzle_side, x, y, shade(color, 1 + rng.uniform(-0.05, 0.05)))
+    for y in (3, 7, 11, 15):
+        for x in range(N):
+            put(nozzle_side, x, y, GOLD if y == 15 else (44, 44, 52))
+    save(nozzle_side, BLOCK, "ship_thruster_mk2_nozzle_side")
+
+    nozzle = new((26, 26, 32))
+    for y in range(N):
+        for x in range(N):
+            d = math.hypot(x - 7.5, y - 7.5)
+            if d < 2.4:
+                c = (240, 250, 255)
+            elif d < 3.8:
+                c = (140, 210, 255)
+            elif d < 5.2:
+                c = (60, 120, 230)
+            elif d < 6.3:
+                c = GOLD
+            else:
+                c = (40, 42, 50) if (x + y) % 2 else (48, 50, 58)
+            put(nozzle, x, y, c)
+    save(nozzle, BLOCK, "ship_thruster_mk2_nozzle")
+
+
+def fuel_tank_mk2():
+    rng = random.Random(131)
+    base = (176, 50, 44)
+    side = new(base)
+    noise(side, rng, 0.05)
+    for y in range(N):
+        for x in (1, 14):
+            put(side, x, y, GOLD)
+        put(side, 2, y, (70, 74, 84))
+        put(side, 13, y, (70, 74, 84))
+    for x in range(N):
+        for y in (1, 14):
+            put(side, x, y, TITANIUM)
+    # 两个液位窗
+    for wx in (4, 9):
+        for y in range(3, 13):
+            for x in range(wx, wx + 3):
+                if x in (wx, wx + 2) or y in (3, 12):
+                    put(side, x, y, (50, 50, 56))
+                else:
+                    put(side, x, y, (90, 230, 120) if y > 5 else (30, 50, 40))
+    save(side, BLOCK, "fuel_tank_mk2_side")
+
+    top = panel(TITANIUM, rng, seams=False, rivets=False)
+    for y in range(N):
+        for x in range(N):
+            d = math.hypot(x - 7.5, y - 7.5)
+            if abs(d - 4.8) < 0.7:
+                put(top, x, y, GOLD)
+            elif d < 3.4:
+                put(top, x, y, shade(base, 0.9))
+    for i in range(-2, 3):
+        put(top, 7 + i, 7, (250, 240, 220))
+        put(top, 7, 7 + i, (250, 240, 220))
+    save(top, BLOCK, "fuel_tank_mk2_top")
+
+
+def impulse_engine_mk2():
+    rng = random.Random(141)
+    side = panel(TITANIUM, rng, seams=False)
+    for x in range(2, N - 2):
+        for y, c in ((4, (90, 240, 255)), (5, (40, 130, 160)), (9, (90, 240, 255)), (10, (40, 130, 160))):
+            put(side, x, y, c)
+    for x in range(2, N - 2):
+        put(side, x, 13, GOLD)
+    save(side, BLOCK, "impulse_engine_mk2_side")
+
+    front = new((20, 24, 34))
+    for y in range(N):
+        for x in range(N):
+            d = math.hypot(x - 7.5, y - 7.5)
+            if d < 2.8:
+                c = (240, 255, 255)
+            elif d < 4.2:
+                c = (110, 230, 255)
+            elif d < 5.4:
+                c = (50, 130, 240)
+            elif d < 6.2:
+                c = GOLD
+            else:
+                c = (34, 38, 50)
+            put(front, x, y, c)
+    save(front, BLOCK, "impulse_engine_mk2_front")
+
+    back = panel(shade(TITANIUM, 0.85), rng, seams=False, rivets=False)
+    for y in range(3, 13, 2):
+        for x in range(3, 13):
+            put(back, x, y, (18, 20, 26))
+    mk2_badge(back)
+    save(back, BLOCK, "impulse_engine_mk2_back")
+
+
+def warp_drive_mk2():
+    rng = random.Random(177)
+    magenta = (255, 110, 220)
+    side = panel((44, 38, 58), rng, seams=False)
+    glow = Image.new("RGBA", (N, N), (0, 0, 0, 0))
+    for x in (2, 5, 10, 13):
+        for y in range(2, N - 2):
+            put(side, x, y, (90, 30, 90))
+            put(glow, x, y, magenta if y % 4 else (255, 220, 250))
+    for x in range(2, N - 2):
+        put(side, x, 1, GOLD)
+        put(side, x, N - 2, GOLD)
+    save(side, BLOCK, "warp_drive_mk2_side")
+    save(glow, BLOCK, "warp_drive_mk2_glow")
+
+    front = new((28, 22, 38))
+    for y in range(N):
+        for x in range(N):
+            d = math.hypot(x - 7.5, y - 7.5)
+            if d < 1.8:
+                c = (255, 245, 255)
+            elif d < 3.0:
+                c = (255, 170, 240)
+            elif d < 3.8:
+                c = (60, 20, 70)
+            elif d < 5.0:
+                c = magenta
+            elif d < 5.8:
+                c = (150, 50, 170)
+            elif d < 6.8:
+                c = GOLD
+            else:
+                c = (36, 30, 48)
+            put(front, x, y, c)
+    save(front, BLOCK, "warp_drive_mk2_front")
+
+    back = panel((42, 36, 54), rng, seams=False, rivets=False)
+    for y in range(3, 13, 3):
+        for x in range(3, 13):
+            put(back, x, y, (22, 18, 28))
+            put(back, x, y + 1, (110, 40, 110) if x % 3 == 0 else (30, 26, 38))
+    mk2_badge(back)
+    save(back, BLOCK, "warp_drive_mk2_back")
+
+
+def alloy_plating():
+    """合金船体板：深色的钛合金面板，斜向的加强纹，四角金色铆钉。"""
+    rng = random.Random(151)
+    img = panel(TITANIUM, rng, seams=False, rivets=False)
+    for y in range(1, N - 1):
+        for x in range(1, N - 1):
+            if (x + y) % 5 == 0:
+                put(img, x, y, shade(TITANIUM, 1.25))
+            elif (x + y) % 5 == 1:
+                put(img, x, y, shade(TITANIUM, 0.8))
+    for x, y in ((2, 2), (12, 2), (2, 12), (12, 12)):
+        put(img, x, y, GOLD)
+        put(img, x + 1, y + 1, shade(GOLD, 0.55))
+    save(img, BLOCK, "alloy_hull_plating")
+
+
 if __name__ == "__main__":
+    weapon("photon_cannon", (255, 190, 70), 61, False)
+    weapon("mining_beam", (255, 96, 60), 62, True)
+    shield_generator()
+    thruster_mk2()
+    fuel_tank_mk2()
+    impulse_engine_mk2()
+    warp_drive_mk2()
+    alloy_plating()
     hull_panel()
     helm_screen()
     seat_fabric()

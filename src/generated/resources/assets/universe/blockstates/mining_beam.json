@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "universe:block/mining_beam",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "universe:block/mining_beam"
+    },
+    "facing=south": {
+      "model": "universe:block/mining_beam",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "universe:block/mining_beam",
+      "y": 270
+    }
+  }
+}

@@ -1,0 +1,33 @@
+{
+    "parent": "block/block",
+    "textures": {
+        "particle": "universe:block/shield_generator_side",
+        "side": "universe:block/shield_generator_side",
+        "top": "universe:block/shield_generator_top",
+        "glow": "universe:block/shield_generator_glow"
+    },
+    "elements": [
+        {   "from": [ 0, 0, 0 ],
+            "to": [ 16, 16, 16 ],
+            "faces": {
+                "down":  { "texture": "#top", "cullface": "down" },
+                "up":    { "texture": "#top", "cullface": "up" },
+                "north": { "texture": "#side", "cullface": "north" },
+                "south": { "texture": "#side", "cullface": "south" },
+                "west":  { "texture": "#side", "cullface": "west" },
+                "east":  { "texture": "#side", "cullface": "east" }
+            }
+        },
+        {   "from": [ -0.01, -0.01, -0.01 ],
+            "to": [ 16.01, 16.01, 16.01 ],
+            "light_emission": 12,
+            "shade": false,
+            "faces": {
+                "north": { "uv": [ 0, 0, 16, 16 ], "texture": "#glow", "cullface": "north" },
+                "south": { "uv": [ 0, 0, 16, 16 ], "texture": "#glow", "cullface": "south" },
+                "west":  { "uv": [ 0, 0, 16, 16 ], "texture": "#glow", "cullface": "west" },
+                "east":  { "uv": [ 0, 0, 16, 16 ], "texture": "#glow", "cullface": "east" }
+            }
+        }
+    ]
+}

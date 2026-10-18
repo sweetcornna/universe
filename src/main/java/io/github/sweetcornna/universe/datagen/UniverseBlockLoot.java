@@ -69,6 +69,11 @@ final class UniverseBlockLoot extends BlockLootSubProvider {
         this.dropSelf(UniverseBlocks.IMPULSE_ENGINE.get());
         this.dropSelf(UniverseBlocks.WARP_DRIVE.get());
         this.dropSelf(UniverseBlocks.SHIP_SEAT.get());
+        for (Block block : List.of(UniverseBlocks.PHOTON_CANNON.get(), UniverseBlocks.MINING_BEAM.get(), UniverseBlocks.SHIELD_GENERATOR.get(),
+                UniverseBlocks.SHIP_THRUSTER_MK2.get(), UniverseBlocks.FUEL_TANK_MK2.get(), UniverseBlocks.IMPULSE_ENGINE_MK2.get(),
+                UniverseBlocks.WARP_DRIVE_MK2.get(), UniverseBlocks.ALLOY_HULL_PLATING.get())) {
+            this.dropSelf(block);
+        }
         UniverseBlocks.HULL_PLATING.values().forEach(block -> this.dropSelf(block.get()));
         // 工业设备：两格高的只认下半截；蓄电器拆下来带着电量
         for (Block block : List.of(UniverseBlocks.TESLA_TOWER.get(), UniverseBlocks.WIND_TURBINE.get(), UniverseBlocks.THERMAL_PLANT.get(),

@@ -10,6 +10,7 @@
     "ServerLevelMixin"
   ],
   "client": [
+    "client.CameraMixin",
     "client.ClientLevelMixin",
     "client.MouseHandlerMixin"
   ],

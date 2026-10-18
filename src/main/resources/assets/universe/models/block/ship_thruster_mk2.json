@@ -1,0 +1,10 @@
+{
+    "parent": "universe:block/ship_thruster",
+    "textures": {
+        "particle": "universe:block/ship_thruster_mk2_side",
+        "side": "universe:block/ship_thruster_mk2_side",
+        "back": "universe:block/ship_thruster_mk2_back",
+        "nozzle_side": "universe:block/ship_thruster_mk2_nozzle_side",
+        "nozzle": "universe:block/ship_thruster_mk2_nozzle"
+    }
+}

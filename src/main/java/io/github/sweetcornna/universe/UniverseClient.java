@@ -21,8 +21,10 @@ import io.github.sweetcornna.universe.client.galaxy.WarpClient;
 import io.github.sweetcornna.universe.client.ship.ShipClient;
 import io.github.sweetcornna.universe.client.poi.PoiClient;
 import io.github.sweetcornna.universe.client.sky.PlanetSkyRenderer;
+import io.github.sweetcornna.universe.client.station.StationClient;
 import io.github.sweetcornna.universe.client.stats.StatsClient;
 import io.github.sweetcornna.universe.client.tech.TechClient;
+import io.github.sweetcornna.universe.client.trade.TradeClient;
 import io.github.sweetcornna.universe.datagen.UniverseDataGen;
 import io.github.sweetcornna.universe.entity.AlienCreature;
 import io.github.sweetcornna.universe.registry.UniverseEntities;
@@ -59,6 +61,8 @@ public final class UniverseClient {
         AnalysisVisor.registerEvents(modBus, NeoForge.EVENT_BUS);
         TechClient.registerEvents(modBus, NeoForge.EVENT_BUS);
         StatsClient.registerEvents(modBus, NeoForge.EVENT_BUS);
+        TradeClient.registerEvents(modBus);
+        StationClient.registerEvents(modBus, NeoForge.EVENT_BUS);
         PoiClient.registerEvents(modBus);
         SentinelClient.registerEvents(modBus);
         // 开发用：带了 -Duniverse.devScript 才启用

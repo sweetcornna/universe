@@ -1,0 +1,23 @@
+{
+  "values": [
+    "minecraft:raw_iron",
+    "minecraft:raw_copper",
+    "minecraft:raw_gold",
+    "minecraft:coal",
+    "minecraft:redstone",
+    "minecraft:quartz",
+    "minecraft:lapis_lazuli",
+    "minecraft:sand",
+    "minecraft:clay_ball",
+    "universe:raw_titanium",
+    "universe:raw_silicon",
+    "universe:raw_magnetite",
+    "universe:raw_uranium",
+    "universe:sulfur",
+    "universe:fire_ice",
+    "universe:salt",
+    "universe:optical_crystal",
+    "universe:crude_oil",
+    "universe:water"
+  ]
+}

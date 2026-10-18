@@ -1,0 +1,28 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 4,
+      "ingredient": "universe:steel"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:synthetic_diamond"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:titanium_alloy"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:plasma_exciter"
+    }
+  ],
+  "research": "ship_weapons",
+  "results": [
+    {
+      "id": "universe:mining_beam"
+    }
+  ],
+  "time": 160
+}

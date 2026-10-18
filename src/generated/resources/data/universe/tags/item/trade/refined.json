@@ -1,0 +1,22 @@
+{
+  "values": [
+    "minecraft:iron_ingot",
+    "minecraft:copper_ingot",
+    "minecraft:gold_ingot",
+    "minecraft:glass",
+    "universe:titanium_ingot",
+    "universe:silicon",
+    "universe:magnet",
+    "universe:uranium_ingot",
+    "universe:steel",
+    "universe:energetic_graphite",
+    "universe:crystal_silicon",
+    "universe:titanium_alloy",
+    "universe:synthetic_diamond",
+    "universe:plastic",
+    "universe:sulfuric_acid",
+    "universe:graphene",
+    "universe:titanium_crystal",
+    "universe:titanium_glass"
+  ]
+}

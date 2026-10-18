@@ -456,6 +456,19 @@ final class UniverseRecipes extends RecipeProvider {
         this.machine(Kind.ASSEMBLING, "warp_drive", 120, "warp_drive",
                 in(titanium, 4, UniverseItems.PLASMA_EXCITER.get(), 2, UniverseItems.STEEL.get(), 2, UniverseItems.ACCUMULATOR.get(), 1),
                 out(UniverseItems.WARP_DRIVE.get(), 1));
+        // 飞船武器和护盾（ADR-0017）也能在制造台里做
+        this.machine(Kind.ASSEMBLING, "photon_cannon", 160, "ship_weapons",
+                in(UniverseItems.STEEL.get(), 4, UniverseItems.PLASMA_EXCITER.get(), 1, UniverseItems.TITANIUM_ALLOY.get(), 2,
+                        UniverseItems.PROCESSOR.get(), 1),
+                out(UniverseItems.PHOTON_CANNON.get(), 1));
+        this.machine(Kind.ASSEMBLING, "mining_beam", 160, "ship_weapons",
+                in(UniverseItems.STEEL.get(), 4, UniverseItems.SYNTHETIC_DIAMOND.get(), 1, UniverseItems.TITANIUM_ALLOY.get(), 2,
+                        UniverseItems.PLASMA_EXCITER.get(), 1),
+                out(UniverseItems.MINING_BEAM.get(), 1));
+        this.machine(Kind.ASSEMBLING, "shield_generator", 240, "ship_shields",
+                in(UniverseItems.TITANIUM_ALLOY.get(), 4, UniverseItems.SUPER_MAGNETIC_RING.get(), 2, UniverseItems.PARTICLE_BROADBAND.get(), 2,
+                        UniverseItems.ACCUMULATOR.get(), 1),
+                out(UniverseItems.SHIELD_GENERATOR.get(), 1));
         // 技术模块（ADR-0014）：都要守卫机残骸和勘探数据，再加各自的材料；做出来是 C 级，第一次进背包时定下数值
         Item survey = UniverseItems.SURVEY_DATA.get();
         Item scrap = UniverseItems.SENTINEL_SCRAP.get();
@@ -668,6 +681,19 @@ final class UniverseRecipes extends RecipeProvider {
                 .requires(Items.GUNPOWDER).requires(Items.GLASS_BOTTLE)
                 .unlockedBy("has_coal", this.has(ItemTags.COALS))
                 .save(this.output);
+
+        // 飞船武器和护盾（ADR-0017）：光子炮是钢壳里两组等离子激发器，处理器管瞄准；采矿光束把激发器换成合成钻石的聚焦镜；
+        // 护盾发生器用超级磁场环绕着蓄电器，粒子宽带控制场强
+        Item steel = UniverseItems.STEEL.get();
+        Item exciter = UniverseItems.PLASMA_EXCITER.get();
+        Item alloy = UniverseItems.TITANIUM_ALLOY.get();
+        this.researchShaped("ship_weapons", RecipeCategory.COMBAT, UniverseItems.PHOTON_CANNON.get(), 1,
+                List.of("SPS", "TCT", "S S"), Map.of('S', steel, 'P', exciter, 'T', alloy, 'C', UniverseItems.PROCESSOR.get()));
+        this.researchShaped("ship_weapons", RecipeCategory.TOOLS, UniverseItems.MINING_BEAM.get(), 1,
+                List.of("SDS", "TPT", "S S"), Map.of('S', steel, 'D', UniverseItems.SYNTHETIC_DIAMOND.get(), 'T', alloy, 'P', exciter));
+        this.researchShaped("ship_shields", RecipeCategory.COMBAT, UniverseItems.SHIELD_GENERATOR.get(), 1,
+                List.of("TMT", "BAB", "TMT"), Map.of('T', alloy, 'M', UniverseItems.SUPER_MAGNETIC_RING.get(),
+                        'B', UniverseItems.PARTICLE_BROADBAND.get(), 'A', UniverseItems.ACCUMULATOR.get()));
 
         // 船体板：铁和铜压成淡灰色的板，八块围着一份染料换颜色
         Item lightGray = UniverseItems.HULL_PLATING.get(DyeColor.LIGHT_GRAY).get();

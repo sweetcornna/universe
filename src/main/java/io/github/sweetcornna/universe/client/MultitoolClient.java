@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+import io.github.sweetcornna.universe.entity.ship.ShipEntity;
 import io.github.sweetcornna.universe.survival.Multitool;
 import io.github.sweetcornna.universe.network.ToolModePayload;
 import io.github.sweetcornna.universe.core.survival.ToolMode;
@@ -62,6 +63,10 @@ public final class MultitoolClient {
                 event -> event.register(ScanResultPayload.TYPE, MultitoolClient::handle));
         gameBus.addListener(ClientTickEvent.Post.class, event -> {
             Minecraft minecraft = Minecraft.getInstance();
+            if (minecraft.player != null && minecraft.player.getVehicle() instanceof ShipEntity) {
+                // 坐在飞船上时模式键切换飞船的武器（ShipClient）
+                return;
+            }
             while (UniverseKeys.TOOL_MODE.consumeClick()) {
                 if (minecraft.gui.screen() == null && minecraft.player != null
                         && minecraft.player.getMainHandItem().getItem() instanceof MultitoolItem) {

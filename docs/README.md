@@ -29,6 +29,7 @@
 | [0014](adr/0014-exploration-rewards.md) | 探索的回报：技术模块、兴趣点、武器和守卫机 | 已采纳 |
 | [0015](adr/0015-logistics-and-midgame-industry.md) | 物流网络与中期工业 | 已采纳 |
 | [0016](adr/0016-dyson-sphere.md) | 戴森球 | 已采纳 |
+| [0017](adr/0017-space-and-trade.md) | 太空与贸易：空间站、信用点、小行星、飞船战斗、探索车、驯养和传送 | 已采纳 |
 
 模板：
 

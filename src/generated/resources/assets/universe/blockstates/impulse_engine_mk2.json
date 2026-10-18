@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "universe:block/impulse_engine_mk2",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "universe:block/impulse_engine_mk2"
+    },
+    "facing=south": {
+      "model": "universe:block/impulse_engine_mk2",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "universe:block/impulse_engine_mk2",
+      "y": 270
+    }
+  }
+}

@@ -21,14 +21,19 @@ import io.github.sweetcornna.universe.block.poi.SmolderingWreckBlock;
 import io.github.sweetcornna.universe.block.poi.SupplyCrateBlock;
 import io.github.sweetcornna.universe.block.ship.FuelTankBlock;
 import io.github.sweetcornna.universe.block.ship.ImpulseEngineBlock;
+import io.github.sweetcornna.universe.block.ship.ShieldGeneratorBlock;
 import io.github.sweetcornna.universe.block.ship.ShipHelmBlock;
 import io.github.sweetcornna.universe.block.ship.ShipSeatBlock;
 import io.github.sweetcornna.universe.block.ship.ShipThrusterBlock;
+import io.github.sweetcornna.universe.block.ship.ShipWeaponBlock;
 import io.github.sweetcornna.universe.block.ship.WarpDriveBlock;
+import io.github.sweetcornna.universe.block.station.ShipRepairBlock;
+import io.github.sweetcornna.universe.block.station.TradeTerminalBlock;
 import io.github.sweetcornna.universe.core.ecology.PlantForm;
 import io.github.sweetcornna.universe.core.factory.BeltTier;
 import io.github.sweetcornna.universe.core.factory.SorterTier;
 import io.github.sweetcornna.universe.core.galaxy.Palette;
+import io.github.sweetcornna.universe.core.ship.ShipStats;
 import io.github.sweetcornna.universe.dyson.DysonBlocks;
 import io.github.sweetcornna.universe.factory.ArcSmelterBlock;
 import io.github.sweetcornna.universe.factory.FactoryAnchorBlock;
@@ -47,6 +52,7 @@ import io.github.sweetcornna.universe.factory.resource.CrudeOilSeepBlock;
 import io.github.sweetcornna.universe.factory.resource.ResourceMachineBlocks;
 import io.github.sweetcornna.universe.logistics.OrbitalCollectorBlock;
 import io.github.sweetcornna.universe.logistics.StationBlock;
+import net.minecraft.world.level.block.TransparentBlock;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.util.ColorRGBA;
 import net.minecraft.util.valueproviders.UniformInt;
@@ -132,6 +138,29 @@ public final class UniverseBlocks {
                     .lightLevel(state -> 9));
     public static final DeferredBlock<ShipSeatBlock> SHIP_SEAT = BLOCKS.registerBlock("ship_seat", ShipSeatBlock::new,
             p -> p.mapColor(MapColor.COLOR_GRAY).strength(1.5F).sound(SoundType.WOOL).noOcclusion());
+    // ---- 飞船武器、护盾和 Mk.II 部件（ADR-0017）
+    public static final DeferredBlock<ShipWeaponBlock> PHOTON_CANNON = BLOCKS.registerBlock("photon_cannon", ShipWeaponBlock::new,
+            p -> p.mapColor(MapColor.COLOR_ORANGE).strength(4.0F, 8.0F).sound(SoundType.NETHERITE_BLOCK).requiresCorrectToolForDrops()
+                    .noOcclusion().lightLevel(state -> 4));
+    public static final DeferredBlock<ShipWeaponBlock> MINING_BEAM = BLOCKS.registerBlock("mining_beam", ShipWeaponBlock::new,
+            p -> p.mapColor(MapColor.COLOR_RED).strength(4.0F, 8.0F).sound(SoundType.NETHERITE_BLOCK).requiresCorrectToolForDrops()
+                    .noOcclusion().lightLevel(state -> 4));
+    public static final DeferredBlock<ShieldGeneratorBlock> SHIELD_GENERATOR = BLOCKS.registerBlock("shield_generator", ShieldGeneratorBlock::new,
+            p -> p.mapColor(MapColor.COLOR_LIGHT_BLUE).strength(4.0F, 8.0F).sound(SoundType.NETHERITE_BLOCK).requiresCorrectToolForDrops()
+                    .lightLevel(state -> 8));
+    public static final DeferredBlock<ShipThrusterBlock> SHIP_THRUSTER_MK2 = BLOCKS.registerBlock("ship_thruster_mk2", ShipThrusterBlock::new,
+            p -> p.mapColor(MapColor.METAL).strength(3.5F, 8.0F).sound(SoundType.NETHERITE_BLOCK).requiresCorrectToolForDrops().noOcclusion());
+    public static final DeferredBlock<FuelTankBlock> FUEL_TANK_MK2 = BLOCKS.registerBlock("fuel_tank_mk2",
+            p -> new FuelTankBlock(p, ShipStats.FUEL_PER_TANK_MK2),
+            p -> p.mapColor(MapColor.COLOR_RED).strength(3.5F, 8.0F).sound(SoundType.NETHERITE_BLOCK).requiresCorrectToolForDrops());
+    public static final DeferredBlock<ImpulseEngineBlock> IMPULSE_ENGINE_MK2 = BLOCKS.registerBlock("impulse_engine_mk2", ImpulseEngineBlock::new,
+            p -> p.mapColor(MapColor.COLOR_CYAN).strength(5.0F, 10.0F).sound(SoundType.NETHERITE_BLOCK).requiresCorrectToolForDrops()
+                    .lightLevel(state -> 9));
+    public static final DeferredBlock<WarpDriveBlock> WARP_DRIVE_MK2 = BLOCKS.registerBlock("warp_drive_mk2", WarpDriveBlock::new,
+            p -> p.mapColor(MapColor.COLOR_MAGENTA).strength(5.0F, 10.0F).sound(SoundType.NETHERITE_BLOCK).requiresCorrectToolForDrops()
+                    .lightLevel(state -> 11));
+    public static final DeferredBlock<Block> ALLOY_HULL_PLATING = BLOCKS.registerSimpleBlock("alloy_hull_plating",
+            p -> p.mapColor(MapColor.COLOR_GRAY).strength(5.0F, 12.0F).sound(SoundType.NETHERITE_BLOCK).requiresCorrectToolForDrops());
     // ---- 兴趣点（ADR-0014）
     /** 掉落舱的控制台：挖不掉，修好一次就亮绿灯。 */
     public static final DeferredBlock<DropPodBlock> DROP_POD = BLOCKS.registerBlock("drop_pod", DropPodBlock::new,
@@ -155,6 +184,29 @@ public final class UniverseBlocks {
     public static final DeferredBlock<SmolderingWreckBlock> SMOLDERING_WRECK = BLOCKS.registerBlock("smoldering_wreck",
             SmolderingWreckBlock::new, p -> p.mapColor(MapColor.COLOR_BLACK).strength(2.0F, 6.0F).sound(SoundType.NETHERITE_BLOCK)
                     .requiresCorrectToolForDrops().lightLevel(state -> 3));
+    // ---- 空间站（ADR-0017）：外壳、地板、玻璃、灯板、停机坪标线、灯带都挖不掉
+    public static final DeferredBlock<Block> STATION_HULL = BLOCKS.registerSimpleBlock("station_hull",
+            p -> station(p.mapColor(MapColor.METAL)));
+    public static final DeferredBlock<Block> STATION_FLOOR = BLOCKS.registerSimpleBlock("station_floor",
+            p -> station(p.mapColor(MapColor.COLOR_GRAY)));
+    public static final DeferredBlock<TransparentBlock> STATION_GLASS = BLOCKS.registerBlock("station_glass", TransparentBlock::new,
+            p -> station(p.mapColor(MapColor.NONE)).sound(SoundType.GLASS).noOcclusion().isValidSpawn(Blocks::never)
+                    .isRedstoneConductor((state, level, pos) -> false).isSuffocating((state, level, pos) -> false)
+                    .isViewBlocking((state, level, pos, box) -> false));
+    public static final DeferredBlock<Block> STATION_LIGHT = BLOCKS.registerSimpleBlock("station_light",
+            p -> station(p.mapColor(MapColor.SNOW)).lightLevel(state -> 15));
+    public static final DeferredBlock<Block> STATION_PAD = BLOCKS.registerSimpleBlock("station_pad",
+            p -> station(p.mapColor(MapColor.COLOR_YELLOW)));
+    public static final DeferredBlock<Block> STATION_TRIM = BLOCKS.registerSimpleBlock("station_trim",
+            p -> station(p.mapColor(MapColor.COLOR_CYAN)).lightLevel(state -> 9));
+    /** 交易终端：挖不掉，只在空间站里有。 */
+    public static final DeferredBlock<TradeTerminalBlock> TRADE_TERMINAL = BLOCKS.registerBlock("trade_terminal", TradeTerminalBlock::new,
+            p -> p.mapColor(MapColor.METAL).strength(-1.0F, 3600000.0F).sound(SoundType.METAL).noLootTable().lightLevel(state -> 10)
+                    .pushReaction(PushReaction.IMMOVEABLE));
+    /** 飞船维修台：挖不掉，只在空间站的机库里有。 */
+    public static final DeferredBlock<ShipRepairBlock> SHIP_REPAIR = BLOCKS.registerBlock("ship_repair", ShipRepairBlock::new,
+            p -> p.mapColor(MapColor.METAL).strength(-1.0F, 3600000.0F).sound(SoundType.METAL).noLootTable().lightLevel(state -> 10)
+                    .pushReaction(PushReaction.IMMOVEABLE));
     // ---- 工业（ADR-0011）
     public static final DeferredBlock<TallMachineBlock> TESLA_TOWER = BLOCKS.registerBlock("tesla_tower",
             p -> new TallMachineBlock(p, UniverseBlockEntities.TESLA_TOWER),
@@ -247,6 +299,12 @@ public final class UniverseBlocks {
             p -> p.mapColor(MapColor.COLOR_BLACK).strength(-1.0F, 3600000.0F).noLootTable().sound(SoundType.MUD));
 
     /** 传送带、分拣器、分流器：金属，拆起来很快，不挑工具。 */
+    /** 空间站的方块：挖不掉、炸不坏、推不动，不掉落。 */
+    private static BlockBehaviour.Properties station(BlockBehaviour.Properties properties) {
+        return properties.strength(-1.0F, 3600000.0F).sound(SoundType.METAL).noLootTable().pushReaction(PushReaction.IMMOVEABLE)
+                .isValidSpawn(Blocks::never);
+    }
+
     private static BlockBehaviour.Properties logistics(BlockBehaviour.Properties properties) {
         return properties.mapColor(MapColor.METAL).strength(1.0F, 3.0F).sound(SoundType.METAL).noOcclusion();
     }

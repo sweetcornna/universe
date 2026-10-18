@@ -19,11 +19,24 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 
 /**
- * 燃料舱：拿着燃料右键加注，空手右键看存量。组装飞船时燃料从各个燃料舱汇总到船上，停船时再按比例分回去。
+ * 燃料舱：拿着燃料右键加注，空手右键看存量。组装飞船时燃料从各个燃料舱汇总到船上，停船时再按容量分回去。
+ * Mk.II 燃料舱（ADR-0017）是同一个类，容量更大。
  */
 public class FuelTankBlock extends Block implements EntityBlock {
+    private final double capacity;
+
     public FuelTankBlock(Properties properties) {
+        this(properties, ShipStats.FUEL_PER_TANK);
+    }
+
+    public FuelTankBlock(Properties properties, double capacity) {
         super(properties);
+        this.capacity = capacity;
+    }
+
+    /** 能装多少燃料。 */
+    public double capacity() {
+        return this.capacity;
     }
 
     @Override
@@ -41,7 +54,7 @@ public class FuelTankBlock extends Block implements EntityBlock {
         if (!(level.getBlockEntity(pos) instanceof FuelTankBlockEntity tank)) {
             return InteractionResult.PASS;
         }
-        if (tank.fuel() >= ShipStats.FUEL_PER_TANK - 1e-6) {
+        if (tank.fuel() >= tank.capacity() - 1e-6) {
             if (!level.isClientSide()) {
                 player.sendOverlayMessage(Component.translatable("message.universe.fuel_tank.full"));
             }
@@ -66,6 +79,6 @@ public class FuelTankBlock extends Block implements EntityBlock {
 
     private static void showLevel(Player player, FuelTankBlockEntity tank) {
         player.sendOverlayMessage(Component.translatable("message.universe.fuel_tank.level",
-                Math.round(tank.fuel()), Math.round(ShipStats.FUEL_PER_TANK)));
+                Math.round(tank.fuel()), Math.round(tank.capacity())));
     }
 }

@@ -27,7 +27,8 @@ public final class TechTree {
      * M3 的科技：电磁学阶段上交物品，之后用蓝矩阵、再用蓝红两种矩阵研究；M4 加了上交勘探数据的科技（ADR-0012）；
      * M5 加了物流和中期工业（ADR-0015）：蓝红阶段做到结构矩阵，蓝红黄做到信息矩阵，四种矩阵研究星际物流。
      * M6 加了戴森球（ADR-0016）：蓝红黄研究太阳帆和弹射器，四种矩阵研究射线接收站、量子芯片、对撞机和引力矩阵，
-     * 有了绿矩阵才能研究垂直发射井和应力系统。
+     * 有了绿矩阵才能研究垂直发射井和应力系统。M7 加了飞船武器和护盾（ADR-0017）：蓝红黄研究光子炮和采矿光束，
+     * 四种矩阵研究护盾发生器。
      */
     public static final TechTree DEFAULT = new TechTree(List.of(
             Tech.handIn("electromagnetism", List.of(),
@@ -119,7 +120,12 @@ public final class TechTree {
                     items("vertical_launching_silo", "dyson_sphere_component", "small_carrier_rocket", "deuteron_fuel_rod")),
             // 应力系统不解锁物品，放宽戴森球能建的纬度
             Tech.lab("dyson_stress_1", List.of("vertical_launching_silo"), List.of(BLUE, RED, YELLOW, PURPLE, GREEN), 200, items()),
-            Tech.lab("dyson_stress_2", List.of("dyson_stress_1"), List.of(BLUE, RED, YELLOW, PURPLE, GREEN), 400, items())));
+            Tech.lab("dyson_stress_2", List.of("dyson_stress_1"), List.of(BLUE, RED, YELLOW, PURPLE, GREEN), 400, items()),
+            // ---- M7：飞船武器和护盾（ADR-0017）
+            Tech.lab("ship_weapons", List.of("structure_matrix", "thruster"), List.of(BLUE, RED, YELLOW), 80,
+                    items("photon_cannon", "mining_beam")),
+            Tech.lab("ship_shields", List.of("ship_weapons", "information_matrix"), List.of(BLUE, RED, YELLOW, PURPLE), 120,
+                    items("shield_generator"))));
 
     private final List<Tech> techs;
     private final Map<String, Tech> byId;

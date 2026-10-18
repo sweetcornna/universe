@@ -139,7 +139,12 @@ public class PlasmaBolt extends ThrowableProjectile {
 
     @Override
     protected boolean canHitEntity(Entity entity) {
-        return super.canHitEntity(entity) && !Sentinel.friendly(this.getOwner(), entity);
+        Entity owner = this.getOwner();
+        // 飞船的炮打不中自己的船和船上的人（ADR-0017）
+        if (owner != null && owner.isPassenger() && entity.getRootVehicle() == owner.getRootVehicle()) {
+            return false;
+        }
+        return super.canHitEntity(entity) && !Sentinel.friendly(owner, entity);
     }
 
     @Override

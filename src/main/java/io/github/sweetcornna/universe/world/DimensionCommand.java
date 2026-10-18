@@ -21,6 +21,8 @@ import io.github.sweetcornna.universe.data.RuntimeDimensionsData;
 import io.github.sweetcornna.universe.entity.ship.ShipCommand;
 import io.github.sweetcornna.universe.factory.research.ResearchCommand;
 import io.github.sweetcornna.universe.poi.PoiCommand;
+import io.github.sweetcornna.universe.station.StationCommand;
+import io.github.sweetcornna.universe.trade.CreditsCommand;
 import io.github.sweetcornna.universe.world.planet.PlanetCommand;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -85,6 +87,8 @@ public final class DimensionCommand {
                 .then(SentinelCommand.build())
                 .then(ResearchCommand.build())
                 .then(DysonCommand.build())
+                .then(StationCommand.build())
+                .then(CreditsCommand.build())
                 .then(Commands.literal("dim")
                         .then(Commands.literal("create")
                                 .then(Commands.argument("name", StringArgumentType.word())

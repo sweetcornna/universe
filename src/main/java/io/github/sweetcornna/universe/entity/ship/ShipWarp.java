@@ -79,9 +79,10 @@ public final class ShipWarp {
         if (from.isEmpty() || to.isEmpty() || from.get().index() == to.get().index()) {
             return Component.translatable("message.universe.warp.bad_target");
         }
-        if (!Warp.inRange(from.get(), to.get(), drives)) {
+        double range = ship.structure().stats().warpRange();
+        if (!Warp.inReach(from.get(), to.get(), range)) {
             return Component.translatable("message.universe.warp.out_of_range",
-                    String.format(Locale.ROOT, "%.1f", from.get().distanceTo(to.get())), (int) Warp.range(drives));
+                    String.format(Locale.ROOT, "%.1f", from.get().distanceTo(to.get())), (int) range);
         }
         List<SpaceLayout.Body> bodies = ShipTransit.layout(server, here.getAsInt());
         switch (Warp.check(bodies, ship.getX(), ship.getY(), ship.getZ())) {

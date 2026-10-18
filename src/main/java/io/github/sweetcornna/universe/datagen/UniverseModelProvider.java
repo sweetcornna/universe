@@ -301,22 +301,33 @@ final class UniverseModelProvider extends ModelProvider {
         UniverseItems.ORE_SMELTED.values().forEach(item -> itemModels.generateFlatItem(item.get(), ModelTemplates.FLAT_ITEM));
     }
 
-    /** 飞船部件：驾驶台、推进器、脉冲引擎、跃迁引擎、座椅的模型是手写的（{@code models/block/}），这里只出方块状态。 */
+    /**
+     * 飞船部件：驾驶台、推进器、脉冲引擎、跃迁引擎、座椅、光子炮、采矿光束、护盾发生器的模型是手写的（{@code models/block/}），
+     * Mk.II 部件的手写模型继承普通版、换贴图，这里只出方块状态。
+     */
     private static void ships(BlockModelGenerators blockModels) {
         for (Block block : new Block[] {UniverseBlocks.SHIP_HELM.get(), UniverseBlocks.SHIP_SEAT.get(), UniverseBlocks.IMPULSE_ENGINE.get(),
-                UniverseBlocks.WARP_DRIVE.get()}) {
+                UniverseBlocks.WARP_DRIVE.get(), UniverseBlocks.PHOTON_CANNON.get(), UniverseBlocks.MINING_BEAM.get(),
+                UniverseBlocks.IMPULSE_ENGINE_MK2.get(), UniverseBlocks.WARP_DRIVE_MK2.get()}) {
             Identifier model = ModelLocationUtils.getModelLocation(block);
             blockModels.blockStateOutput.accept(MultiVariantGenerator.dispatch(block, BlockModelGenerators.plainVariant(model))
                     .with(BlockModelGenerators.ROTATION_HORIZONTAL_FACING));
             blockModels.registerSimpleItemModel(block, model);
         }
-        Block thruster = UniverseBlocks.SHIP_THRUSTER.get();
-        Identifier thrusterModel = ModelLocationUtils.getModelLocation(thruster);
-        blockModels.blockStateOutput.accept(MultiVariantGenerator.dispatch(thruster, BlockModelGenerators.plainVariant(thrusterModel))
-                .with(BlockModelGenerators.ROTATION_FACING));
-        blockModels.registerSimpleItemModel(thruster, thrusterModel);
+        for (Block thruster : new Block[] {UniverseBlocks.SHIP_THRUSTER.get(), UniverseBlocks.SHIP_THRUSTER_MK2.get()}) {
+            Identifier thrusterModel = ModelLocationUtils.getModelLocation(thruster);
+            blockModels.blockStateOutput.accept(MultiVariantGenerator.dispatch(thruster, BlockModelGenerators.plainVariant(thrusterModel))
+                    .with(BlockModelGenerators.ROTATION_FACING));
+            blockModels.registerSimpleItemModel(thruster, thrusterModel);
+        }
+        Block shield = UniverseBlocks.SHIELD_GENERATOR.get();
+        Identifier shieldModel = ModelLocationUtils.getModelLocation(shield);
+        blockModels.blockStateOutput.accept(BlockModelGenerators.createSimpleBlock(shield, BlockModelGenerators.plainVariant(shieldModel)));
+        blockModels.registerSimpleItemModel(shield, shieldModel);
         blockModels.createTrivialBlock(UniverseBlocks.FUEL_TANK.get(), TexturedModel.COLUMN);
+        blockModels.createTrivialBlock(UniverseBlocks.FUEL_TANK_MK2.get(), TexturedModel.COLUMN);
         UniverseBlocks.HULL_PLATING.values().forEach(block -> blockModels.createTrivialCube(block.get()));
+        blockModels.createTrivialCube(UniverseBlocks.ALLOY_HULL_PLATING.get());
     }
 
     /** 兴趣点的方块（ADR-0014）：掉落舱的正面按修没修好换贴图；信号增强器的模型是手写的。 */
@@ -335,7 +346,8 @@ final class UniverseModelProvider extends ModelProvider {
                 .with(PropertyDispatch.initial(DropPodBlock.REPAIRED).generate(repaired -> BlockModelGenerators.plainVariant(podModels[repaired ? 1 : 0])))
                 .with(BlockModelGenerators.ROTATION_HORIZONTAL_FACING));
         blockModels.registerSimpleItemModel(pod, podModels[0]);
-        for (Block block : List.of(UniverseBlocks.DATA_TERMINAL.get(), UniverseBlocks.SUPPLY_CRATE.get())) {
+        for (Block block : List.of(UniverseBlocks.DATA_TERMINAL.get(), UniverseBlocks.SUPPLY_CRATE.get(), UniverseBlocks.TRADE_TERMINAL.get(),
+                UniverseBlocks.SHIP_REPAIR.get())) {
             String name = BuiltInRegistries.BLOCK.getKey(block).getPath();
             Identifier model = ModelTemplates.CUBE_ORIENTABLE_TOP_BOTTOM.create(block, new TextureMapping()
                     .put(TextureSlot.FRONT, texture(name + "_front"))
@@ -345,6 +357,11 @@ final class UniverseModelProvider extends ModelProvider {
             blockModels.blockStateOutput.accept(MultiVariantGenerator.dispatch(block, BlockModelGenerators.plainVariant(model))
                     .with(BlockModelGenerators.ROTATION_HORIZONTAL_FACING));
             blockModels.registerSimpleItemModel(block, model);
+        }
+        // 空间站的建材（ADR-0017）
+        for (Block block : List.of(UniverseBlocks.STATION_HULL.get(), UniverseBlocks.STATION_FLOOR.get(), UniverseBlocks.STATION_GLASS.get(),
+                UniverseBlocks.STATION_LIGHT.get(), UniverseBlocks.STATION_PAD.get(), UniverseBlocks.STATION_TRIM.get())) {
+            blockModels.createTrivialCube(block);
         }
         for (Block block : List.of(UniverseBlocks.MONOLITH.get(), UniverseBlocks.TECH_CACHE.get(), UniverseBlocks.SMOLDERING_WRECK.get())) {
             blockModels.createTrivialBlock(block, TexturedModel.COLUMN);

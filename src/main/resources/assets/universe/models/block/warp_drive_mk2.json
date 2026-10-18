@@ -1,0 +1,10 @@
+{
+    "parent": "universe:block/warp_drive",
+    "textures": {
+        "particle": "universe:block/warp_drive_mk2_side",
+        "side": "universe:block/warp_drive_mk2_side",
+        "glow": "universe:block/warp_drive_mk2_glow",
+        "back": "universe:block/warp_drive_mk2_back",
+        "front": "universe:block/warp_drive_mk2_front"
+    }
+}

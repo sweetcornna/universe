@@ -12,10 +12,15 @@ import org.jspecify.annotations.Nullable;
 
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.client.dyson.ClientDyson;
+import io.github.sweetcornna.universe.client.ship.ShipClient;
 import io.github.sweetcornna.universe.dyson.EmRailEjectorBlockEntity;
 import io.github.sweetcornna.universe.dyson.LaunchSiloBlockEntity;
+import io.github.sweetcornna.universe.registry.UniverseAttachments;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Screenshot;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.input.MouseButtonInfo;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -37,12 +42,13 @@ import net.neoforged.neoforge.client.event.ClientTickEvent;
  * <li>{@code look <偏航> <俯仰>}：转视角
  * <li>{@code use <x> <y> <z>}：右键点方块的顶面（打开设备界面）
  * <li>{@code button <编号>}：按当前设备界面的第几个按钮
+ * <li>{@code click <x> <y> [shift] [ctrl]}：在当前界面上点一下，坐标相对界面中心（界面缩放后的像素）
  * <li>{@code await launch|shot <x> <y> <z> [最多等几刻]}：等那里的发射井发射、弹射器射出一次再往下走
  * <li>{@code dyson}：打开戴森球编辑器；{@code close}：关掉当前界面
  * <li>{@code hud on|off}：显示、隐藏界面（F1）
  * <li>{@code fly on|off}：创造模式下悬停，好在半空里取景
  * <li>{@code shot <名字>}：截图存到 {@code screenshots/<名字>.png}
- * <li>{@code log <文字>}：写一行日志
+ * <li>{@code log <文字>}：写一行日志（带上鼠标有没有被抓住、信用点、位置和重力）
  * <li>{@code quit}：退出游戏
  * </ul>
  */
@@ -148,12 +154,27 @@ public final class DevScript {
                     minecraft.gameMode.handleInventoryButtonClick(player.containerMenu.containerId, Integer.parseInt(args[0]));
                 }
             }
+            case "click" -> {
+                Screen screen = minecraft.gui.screen();
+                if (screen != null) {
+                    // 修饰键的位：Shift 1、Ctrl 64（InputWithModifiers）
+                    int modifiers = 0;
+                    for (int i = 2; i < args.length; i++) {
+                        modifiers |= args[i].equals("shift") ? 1 : args[i].equals("ctrl") ? 64 : 0;
+                    }
+                    double x = screen.width / 2.0 + Double.parseDouble(args[0]);
+                    double y = screen.height / 2.0 + Double.parseDouble(args[1]);
+                    screen.mouseClicked(new MouseButtonEvent(x, y, new MouseButtonInfo(0, modifiers)), false);
+                }
+            }
             case "await" -> {
                 BlockPos pos = new BlockPos(Integer.parseInt(args[1]), Integer.parseInt(args[2]), Integer.parseInt(args[3]));
                 int timeout = args.length > 4 ? Integer.parseInt(args[4]) : 1200;
                 this.await = new Await(pos, lastAction(minecraft, pos), minecraft.level.getGameTime() + timeout);
             }
             case "dyson" -> ClientDyson.openEditor();
+            case "fire" -> ShipClient.forceFire = args.length == 0 || args[0].equals("on");
+            case "shipmode" -> ShipClient.toggleWeaponMode();
             case "close" -> minecraft.gui.setScreen(null);
             case "hud" -> {
                 boolean show = args.length == 0 || !args[0].equals("off");
@@ -169,7 +190,10 @@ public final class DevScript {
             }
             case "shot" -> Screenshot.grab(minecraft.gameDirectory, name(args), minecraft.gameRenderer.mainRenderTarget(), 1,
                     message -> Universe.LOGGER.info("Dev script screenshot: {}", message.getString()));
-            case "log" -> Universe.LOGGER.info("Dev script note: {} (mouse grabbed: {})", rest, minecraft.mouseHandler.isMouseGrabbed());
+            case "log" -> Universe.LOGGER.info("Dev script note: {} (mouse grabbed: {}, credits: {}, pos: {} {} {}, gravity: {})", rest,
+                    minecraft.mouseHandler.isMouseGrabbed(), player.getData(UniverseAttachments.CREDITS), String.format("%.2f", player.getX()),
+                    String.format("%.2f", player.getY()), String.format("%.2f", player.getZ()),
+                    player.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.GRAVITY));
             case "quit" -> minecraft.stop();
             default -> Universe.LOGGER.warn("Dev script: unknown command {}", verb);
         }

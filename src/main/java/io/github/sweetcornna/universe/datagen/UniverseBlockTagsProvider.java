@@ -81,6 +81,12 @@ final class UniverseBlockTagsProvider extends BlockTagsProvider {
                 UniverseBlocks.IMPULSE_ENGINE.key(),
                 UniverseBlocks.WARP_DRIVE.key());
         UniverseBlocks.HULL_PLATING.values().forEach(block -> this.tag(BlockTags.MINEABLE_WITH_PICKAXE).add(block.key()));
+        for (var block : List.of(UniverseBlocks.PHOTON_CANNON, UniverseBlocks.MINING_BEAM, UniverseBlocks.SHIELD_GENERATOR,
+                UniverseBlocks.SHIP_THRUSTER_MK2, UniverseBlocks.FUEL_TANK_MK2, UniverseBlocks.IMPULSE_ENGINE_MK2, UniverseBlocks.WARP_DRIVE_MK2,
+                UniverseBlocks.ALLOY_HULL_PLATING)) {
+            this.tag(BlockTags.MINEABLE_WITH_PICKAXE).add(block.key());
+            this.tag(BlockTags.BLOCKS_MOTION_NO_LEAVES).add(block.key());
+        }
         // 飞船方块也是实心的：不进"阻挡移动"的话水会穿过船体板，高度图也会漏过去
         this.tag(BlockTags.BLOCKS_MOTION_NO_LEAVES).add(
                 UniverseBlocks.SHIP_HELM.key(),

@@ -8,6 +8,7 @@ import org.jspecify.annotations.Nullable;
 
 import io.github.sweetcornna.universe.block.ship.ShipHelmBlock;
 import io.github.sweetcornna.universe.block.ship.ShipSeatBlock;
+import io.github.sweetcornna.universe.core.ship.ShipCombat;
 import io.github.sweetcornna.universe.core.ship.ShipFlight;
 import io.github.sweetcornna.universe.core.ship.ShipFlight.Controls;
 import io.github.sweetcornna.universe.core.ship.ShipFlight.Environment;
@@ -15,9 +16,11 @@ import io.github.sweetcornna.universe.core.ship.ShipShape;
 import io.github.sweetcornna.universe.core.ship.ShipStats;
 import io.github.sweetcornna.universe.core.space.Warp;
 import io.github.sweetcornna.universe.registry.UniverseEntities;
+import io.github.sweetcornna.universe.station.Stations;
 import io.github.sweetcornna.universe.world.space.SpaceDimensions;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -28,6 +31,8 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -73,6 +78,21 @@ public class ShipEntity extends Entity implements IEntityWithComplexSpawn {
     private static final EntityDataAccessor<Boolean> DATA_IMPULSE = SynchedEntityData.defineId(ShipEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Boolean> DATA_LANDED = SynchedEntityData.defineId(ShipEntity.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Integer> DATA_PARKING = SynchedEntityData.defineId(ShipEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Float> DATA_HULL = SynchedEntityData.defineId(ShipEntity.class, EntityDataSerializers.FLOAT);
+    private static final EntityDataAccessor<Float> DATA_SHIELD = SynchedEntityData.defineId(ShipEntity.class, EntityDataSerializers.FLOAT);
+    private static final EntityDataAccessor<Float> DATA_HEAT = SynchedEntityData.defineId(ShipEntity.class, EntityDataSerializers.FLOAT);
+    private static final EntityDataAccessor<Byte> DATA_WEAPON = SynchedEntityData.defineId(ShipEntity.class, EntityDataSerializers.BYTE);
+    /** {@link #DATA_WEAPON} 的位：采矿模式、过热、光束开着、驾驶员按着开火键。 */
+    private static final int WEAPON_BEAM_MODE = 1;
+    private static final int WEAPON_OVERHEATED = 2;
+    private static final int WEAPON_BEAM_ON = 4;
+    private static final int WEAPON_FIRING = 8;
+    /** 实体事件：护盾挡住了、船体挨了打（客户端放粒子）。 */
+    private static final byte EVENT_SHIELD_HIT = 100;
+    private static final byte EVENT_HULL_HIT = 101;
+    /** 被击毁后这么多刻内不再挨打，等拖船传送。 */
+    private static final int WRECK_TICKS = 40;
+    private static final DustParticleOptions SHIELD_DUST = new DustParticleOptions(0x7FDBFF, 1.1F);
 
     private @Nullable ShipStructure structure;
     /** 组装时驾驶台朝向对应的偏航；方块按这个方向存，画的时候转 {@code getYRot() - baseYaw}。 */
@@ -96,6 +116,17 @@ public class ShipEntity extends Entity implements IEntityWithComplexSpawn {
     private @Nullable ShipCollider collider;
     private @Nullable Environment environment;
     private @Nullable Level environmentLevel;
+    /** 在空间站里（按有重力、有空气算）。 */
+    private boolean docked;
+    /** 船体、护盾和武器的热量（ADR-0017）。 */
+    private final ShipCombat combat = new ShipCombat(0, 0);
+    /** 驾驶员按着开火键。 */
+    private boolean firing;
+    /** 采矿模式：开火键开采矿光束而不是光子炮。 */
+    private boolean beamMode;
+    /** 下一发轮到第几门炮。 */
+    private int nextCannon;
+    private int wreckTicks;
     /** 客户端：渲染缓存（由渲染器创建和使用，服务端始终为空）。 */
     public @Nullable Object renderCache;
     /** 客户端：上一刻的位置，用来算 HUD 上的速度。 */
@@ -117,6 +148,9 @@ public class ShipEntity extends Entity implements IEntityWithComplexSpawn {
         ship.lastYaw = yaw;
         ship.refreshDimensions();
         ship.entityData.set(DATA_FUEL, (float) ship.fuel);
+        // 组装出来的船船体和护盾都是满的：停船再组装就修好了
+        ship.combat.set(structure.stats().hull(), structure.stats().shield());
+        ship.syncCombat();
         return ship;
     }
 
@@ -128,6 +162,10 @@ public class ShipEntity extends Entity implements IEntityWithComplexSpawn {
         builder.define(DATA_IMPULSE, false);
         builder.define(DATA_LANDED, true);
         builder.define(DATA_PARKING, 0);
+        builder.define(DATA_HULL, 0F);
+        builder.define(DATA_SHIELD, 0F);
+        builder.define(DATA_HEAT, 0F);
+        builder.define(DATA_WEAPON, (byte) 0);
     }
 
     // ---- 查询
@@ -167,6 +205,54 @@ public class ShipEntity extends Entity implements IEntityWithComplexSpawn {
 
     public int parkingTicks() {
         return this.entityData.get(DATA_PARKING);
+    }
+
+    /** 船体（客户端用同步来的值）。 */
+    public float hull() {
+        return this.entityData.get(DATA_HULL);
+    }
+
+    public float shield() {
+        return this.entityData.get(DATA_SHIELD);
+    }
+
+    public double maxHull() {
+        return this.structure == null ? 0 : this.structure.stats().hull();
+    }
+
+    public double maxShield() {
+        return this.structure == null ? 0 : this.structure.stats().shield();
+    }
+
+    /** 武器的热量（0–100）。 */
+    public float weaponHeat() {
+        return this.entityData.get(DATA_HEAT);
+    }
+
+    public boolean beamMode() {
+        return (this.entityData.get(DATA_WEAPON) & WEAPON_BEAM_MODE) != 0;
+    }
+
+    public boolean weaponOverheated() {
+        return (this.entityData.get(DATA_WEAPON) & WEAPON_OVERHEATED) != 0;
+    }
+
+    public boolean beamActive() {
+        return (this.entityData.get(DATA_WEAPON) & WEAPON_BEAM_ON) != 0;
+    }
+
+    /** 驾驶员按着开火键（客户端画准星用）。 */
+    public boolean weaponFiring() {
+        return (this.entityData.get(DATA_WEAPON) & WEAPON_FIRING) != 0;
+    }
+
+    /** 服务端：还差多少船体、多少护盾（维修台报价用）。 */
+    public double missingHull() {
+        return Math.max(0, this.maxHull() - this.combat.hull());
+    }
+
+    public double missingShield() {
+        return Math.max(0, this.maxShield() - this.combat.shield());
     }
 
     double fuelServer() {
@@ -224,9 +310,156 @@ public class ShipEntity extends Entity implements IEntityWithComplexSpawn {
         return false;
     }
 
+    /** 算在飞船上的伤害：弹射物（光子弹、等离子弹、箭……）和爆炸；拳头、摔落、岩浆之类的不算。 */
+    public static boolean isShipDamage(DamageSource source) {
+        return source.is(DamageTypeTags.IS_PROJECTILE) || source.is(DamageTypeTags.IS_EXPLOSION);
+    }
+
     @Override
     public boolean hurtServer(ServerLevel level, DamageSource source, float damage) {
-        return false;
+        Entity attacker = source.getEntity();
+        // 自己船上的人打不坏自己的船；空间站里安全
+        if (this.structure == null || this.docked || !isShipDamage(source) || attacker != null && attacker.getRootVehicle() == this) {
+            return false;
+        }
+        return this.damageShip(level, damage);
+    }
+
+    /** 服务端：飞船挨一下打（先扣护盾再扣船体），船体打光就被击毁、拖回空间站。 */
+    public boolean damageShip(ServerLevel level, float damage) {
+        if (this.structure == null || this.wreckTicks > 0 || damage <= 0) {
+            return false;
+        }
+        ShipCombat.Hit hit = this.combat.damage(damage);
+        level.broadcastEntityEvent(this, hit == ShipCombat.Hit.SHIELD ? EVENT_SHIELD_HIT : EVENT_HULL_HIT);
+        if (hit == ShipCombat.Hit.SHIELD) {
+            this.playSound(SoundEvents.SHIELD_BLOCK.value(), 0.7F, 1.5F + this.random.nextFloat() * 0.2F);
+        } else {
+            this.playSound(SoundEvents.ZOMBIE_ATTACK_IRON_DOOR, 0.6F, 1.3F + this.random.nextFloat() * 0.2F);
+        }
+        this.syncCombat();
+        if (hit == ShipCombat.Hit.DESTROYED) {
+            ShipWreck.destroy(this, level);
+        }
+        return true;
+    }
+
+    /** 被击毁之后：船体剩两成五，护盾清空，停火，跃迁取消。 */
+    void wrecked() {
+        this.combat.set(this.maxHull() * ShipCombat.TOW_HULL, 0);
+        this.wreckTicks = WRECK_TICKS;
+        this.firing = false;
+        this.warpTarget = -1;
+        this.flight.restore(0, 0, 0, this.flight.yaw());
+        this.syncCombat();
+    }
+
+    /** 维修台修好：船体、护盾都充满。 */
+    public void repair() {
+        this.combat.set(this.maxHull(), this.maxShield());
+        this.syncCombat();
+    }
+
+    /** 货舱里的东西变了（被击毁丢了货）：换成新的方块数据，方块的位置和种类不变。 */
+    void replaceStructure(ShipStructure structure) {
+        this.structure = structure;
+    }
+
+    public void setFiring(boolean firing) {
+        this.firing = firing;
+    }
+
+    /** 驾驶员按了武器模式键：在光子炮和采矿光束之间切换。 */
+    public void toggleWeaponMode(Player pilot) {
+        if (this.structure == null) {
+            return;
+        }
+        ShipStats stats = this.structure.stats();
+        if (!this.beamMode && stats.beams() == 0) {
+            pilot.sendOverlayMessage(Component.translatable("message.universe.ship.no_beam"));
+            return;
+        }
+        if (this.beamMode && stats.cannons() == 0) {
+            pilot.sendOverlayMessage(Component.translatable("message.universe.ship.no_cannon"));
+            return;
+        }
+        this.beamMode = !this.beamMode;
+        pilot.sendOverlayMessage(Component.translatable(this.beamMode ? "message.universe.ship.mode_beam" : "message.universe.ship.mode_cannon"));
+        this.syncCombat();
+    }
+
+    /** 轮到第几门炮开火（服务端）。 */
+    int nextCannon(int cannons) {
+        int index = Math.floorMod(this.nextCannon, cannons);
+        this.nextCannon = index + 1;
+        return index;
+    }
+
+    private void syncCombat() {
+        this.entityData.set(DATA_HULL, (float) this.combat.hull());
+        this.entityData.set(DATA_SHIELD, (float) this.combat.shield());
+        this.entityData.set(DATA_HEAT, this.combat.heat());
+        int flags = (this.beamMode ? WEAPON_BEAM_MODE : 0) | (this.combat.overheated() ? WEAPON_OVERHEATED : 0)
+                | (this.firing ? WEAPON_FIRING : 0) | (this.entityData.get(DATA_WEAPON) & WEAPON_BEAM_ON);
+        this.entityData.set(DATA_WEAPON, (byte) flags);
+    }
+
+    /** 每刻：回护盾、开火、照射。空间站里、跃迁充能时、刚被击毁时不开火。 */
+    private void tickCombat(ServerLevel level, ShipStats stats, @Nullable Player pilot, boolean warping) {
+        if (this.wreckTicks > 0) {
+            this.wreckTicks--;
+        }
+        if (pilot == null) {
+            this.firing = false;
+        }
+        if (this.beamMode && stats.beams() == 0) {
+            this.beamMode = false;
+        }
+        boolean trigger = this.firing && pilot != null && !warping && !this.docked && this.wreckTicks == 0;
+        int shots = this.combat.tick(stats.shield(), trigger, stats.cannons(), this.beamMode);
+        if (shots > 0) {
+            ShipWeapons.fireCannons(this, level, pilot, shots);
+        } else if (shots < 0) {
+            ShipWeapons.fireBeam(this, level, pilot);
+        }
+        this.syncCombat();
+        byte weapon = this.entityData.get(DATA_WEAPON);
+        this.entityData.set(DATA_WEAPON, (byte) (shots < 0 ? weapon | WEAPON_BEAM_ON : weapon & ~WEAPON_BEAM_ON));
+    }
+
+    @Override
+    public void handleEntityEvent(byte id) {
+        if (id == EVENT_SHIELD_HIT || id == EVENT_HULL_HIT) {
+            this.hitEffect(id == EVENT_SHIELD_HIT);
+        } else {
+            super.handleEntityEvent(id);
+        }
+    }
+
+    /** 客户端：护盾挡住时船外闪一圈淡蓝色的护盾泡；船体挨打时冒火花和烟。 */
+    private void hitEffect(boolean shield) {
+        if (this.structure == null) {
+            return;
+        }
+        double r = this.structure.shape().radius() + 0.8;
+        double h = this.structure.shape().height() / 2.0;
+        if (shield) {
+            for (int i = 0; i < 48; i++) {
+                double theta = this.random.nextDouble() * Math.PI * 2;
+                double cos = this.random.nextDouble() * 2 - 1;
+                double sin = Math.sqrt(1 - cos * cos);
+                this.level().addParticle(SHIELD_DUST, this.getX() + r * sin * Math.cos(theta), this.getY() + h + (h + 0.8) * cos,
+                        this.getZ() + r * sin * Math.sin(theta), 0, 0, 0);
+            }
+            return;
+        }
+        for (int i = 0; i < 10; i++) {
+            ShipStructure.ShipBlock block = this.structure.block(this.random.nextInt(this.structure.blocks().size()));
+            Vec3 p = this.toWorld(block.x(), block.y() + 0.5, block.z(), this.getYRot() - this.baseYaw);
+            this.level().addParticle(i % 3 == 0 ? ParticleTypes.LARGE_SMOKE : ParticleTypes.ELECTRIC_SPARK, p.x, p.y, p.z,
+                    (this.random.nextDouble() - 0.5) * 0.3, this.random.nextDouble() * 0.2, (this.random.nextDouble() - 0.5) * 0.3);
+        }
+        this.level().addParticle(ParticleTypes.LAVA, this.getX(), this.getY() + h, this.getZ(), 0, 0, 0);
     }
 
     @Override
@@ -349,6 +582,9 @@ public class ShipEntity extends Entity implements IEntityWithComplexSpawn {
             this.clientSpeed = this.position().distanceTo(this.clientLastPos);
             this.clientLastPos = this.position();
             this.exhaust();
+            if (this.beamActive()) {
+                ShipWeapons.drawBeams(this);
+            }
         }
         this.yawDelta = Mth.wrapDegrees(this.getYRot() - this.lastYaw);
         this.lastYaw = this.getYRot();
@@ -450,8 +686,14 @@ public class ShipEntity extends Entity implements IEntityWithComplexSpawn {
         }
         boolean warping = this.tickWarp(level);
         ShipStats stats = this.structure.stats();
-        if (this.environmentLevel != level) {
+        boolean docked = Stations.inside(level, this.position());
+        if (this.environmentLevel != level || docked != this.docked) {
             this.environment = ShipEnvironment.of(level);
+            if (docked) {
+                // 空间站里有重力和空气（ADR-0017）：能降落在停机坪上停船、下船
+                this.environment = Environment.HOMEWORLD;
+            }
+            this.docked = docked;
             this.environmentLevel = level;
             this.collider = new ShipCollider(level);
             this.entityData.set(DATA_GRAVITY, (float) (this.environment.space() ? 0 : this.environment.gravity()));
@@ -550,6 +792,8 @@ public class ShipEntity extends Entity implements IEntityWithComplexSpawn {
         this.entityData.set(DATA_LANDED, this.landed);
         this.entityData.set(DATA_PARKING, this.parkingTicks);
 
+        this.tickCombat(level, stats, pilot, warping);
+
         if (!warping) {
             ShipTransit.check(this, level);
         }
@@ -565,6 +809,9 @@ public class ShipEntity extends Entity implements IEntityWithComplexSpawn {
         output.putFloat("BaseYaw", this.baseYaw);
         output.putDouble("Fuel", this.fuel);
         output.putBoolean("Landed", this.landed);
+        output.putDouble("Hull", this.combat.hull());
+        output.putDouble("Shield", this.combat.shield());
+        output.putBoolean("BeamMode", this.beamMode);
         ValueOutput.ValueOutputList list = output.childrenList("Departures");
         this.departures.forEach((dimension, pos) -> {
             ValueOutput child = list.addChild();
@@ -590,6 +837,13 @@ public class ShipEntity extends Entity implements IEntityWithComplexSpawn {
         this.flight.restore(motion.x, motion.y, motion.z, this.getYRot());
         this.lastYaw = this.getYRot();
         this.entityData.set(DATA_FUEL, (float) this.fuel);
+        if (this.structure != null) {
+            ShipStats stats = this.structure.stats();
+            this.combat.set(Math.min(stats.hull(), input.getDoubleOr("Hull", stats.hull())),
+                    Math.min(stats.shield(), input.getDoubleOr("Shield", stats.shield())));
+            this.beamMode = input.getBooleanOr("BeamMode", false) && stats.beams() > 0;
+            this.syncCombat();
+        }
         this.refreshDimensions();
     }
 

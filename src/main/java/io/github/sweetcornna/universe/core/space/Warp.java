@@ -8,7 +8,8 @@ import io.github.sweetcornna.universe.core.galaxy.StarSystem;
 /**
  * 跃迁（玩法设计 §5.1、ADR-0012）：射程、能不能在这里跃迁、到了目标恒星系停在哪里。
  *
- * <p>飞船上每装一台跃迁引擎射程多 5 光年（底数 5，最多算 4 台）；每跳一次消耗一个空间翘曲器。离恒星或天体太近时
+ * <p>飞船上每装一台跃迁引擎射程多 5 光年、每台 Mk.II 多 10 光年（ADR-0017），底数 5，最多算 4 台（先算 Mk.II）；
+ * 每跳一次消耗一个空间翘曲器。离恒星或天体太近时
  * 引力井太深，不能跃迁。到达时从出发地的方向进入目标恒星系，停在朝着来路的那颗行星外面不远，船头对着它。
  */
 public final class Warp {
@@ -41,11 +42,26 @@ public final class Warp {
 
     /** 跃迁射程（光年）；没有跃迁引擎时为 0。 */
     public static double range(int drives) {
-        return drives <= 0 ? 0 : 5 + 5 * Math.min(drives, MAX_DRIVES);
+        return range(drives, 0);
+    }
+
+    /** 装了 {@code drives} 台普通跃迁引擎和 {@code advanced} 台 Mk.II 时的射程（光年）。 */
+    public static double range(int drives, int advanced) {
+        if (drives + advanced <= 0) {
+            return 0;
+        }
+        int a = Math.min(Math.max(0, advanced), MAX_DRIVES);
+        int b = Math.min(Math.max(0, drives), MAX_DRIVES - a);
+        return 5 + 10 * a + 5 * b;
     }
 
     public static boolean inRange(StarSystem from, StarSystem to, int drives) {
-        return from.index() != to.index() && from.distanceTo(to) <= range(drives) + 1e-9;
+        return inReach(from, to, range(drives));
+    }
+
+    /** 射程 {@code range} 光年够不够从 {@code from} 跳到 {@code to}。 */
+    public static boolean inReach(StarSystem from, StarSystem to, double range) {
+        return from.index() != to.index() && from.distanceTo(to) <= range + 1e-9;
     }
 
     /** 太空维度里的这个位置能不能开始跃迁。 */

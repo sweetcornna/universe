@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "universe:block/photon_cannon",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "universe:block/photon_cannon"
+    },
+    "facing=south": {
+      "model": "universe:block/photon_cannon",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "universe:block/photon_cannon",
+      "y": 270
+    }
+  }
+}

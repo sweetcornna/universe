@@ -1,0 +1,9 @@
+{
+    "parent": "universe:block/impulse_engine",
+    "textures": {
+        "particle": "universe:block/impulse_engine_mk2_side",
+        "side": "universe:block/impulse_engine_mk2_side",
+        "back": "universe:block/impulse_engine_mk2_back",
+        "front": "universe:block/impulse_engine_mk2_front"
+    }
+}

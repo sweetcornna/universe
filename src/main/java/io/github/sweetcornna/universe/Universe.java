@@ -8,6 +8,7 @@ import io.github.sweetcornna.universe.discovery.Discoveries;
 import io.github.sweetcornna.universe.dyson.Dyson;
 import io.github.sweetcornna.universe.entity.FaunaSpawner;
 import io.github.sweetcornna.universe.entity.ship.ShipTransit;
+import io.github.sweetcornna.universe.entity.ship.ShipWeapons;
 import io.github.sweetcornna.universe.factory.FactoryAnchorBlock;
 import io.github.sweetcornna.universe.factory.FactoryCapabilities;
 import io.github.sweetcornna.universe.factory.belt.BeltNetwork;
@@ -28,9 +29,11 @@ import io.github.sweetcornna.universe.registry.UniverseMenus;
 import io.github.sweetcornna.universe.registry.UniverseRecipeTypes;
 import io.github.sweetcornna.universe.registry.UniverseWorldgen;
 import io.github.sweetcornna.universe.sentinel.Sentinels;
+import io.github.sweetcornna.universe.station.ShipRepair;
 import io.github.sweetcornna.universe.stats.ProductionLog;
 import io.github.sweetcornna.universe.survival.PlayerSurvival;
 import io.github.sweetcornna.universe.tech.SuitTech;
+import io.github.sweetcornna.universe.trade.Trading;
 import io.github.sweetcornna.universe.world.CrashSite;
 import io.github.sweetcornna.universe.world.DimensionCommand;
 import io.github.sweetcornna.universe.world.RuntimeDimensions;
@@ -85,6 +88,9 @@ public final class Universe {
         Logistics.registerEvents(gameBus);
         ProductionLog.registerEvents(gameBus);
         Dyson.registerEvents(gameBus);
+        Trading.registerEvents(gameBus);
+        ShipWeapons.registerEvents(gameBus);
+        ShipRepair.registerEvents(gameBus);
         gameBus.addListener(RegisterCommandsEvent.class, event -> DimensionCommand.register(event.getDispatcher()));
     }
 

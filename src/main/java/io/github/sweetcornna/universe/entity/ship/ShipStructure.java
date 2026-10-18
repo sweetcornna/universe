@@ -43,6 +43,8 @@ public final class ShipStructure {
     private final int[] seats;
     private final int[] thrusters;
     private final int[] engines;
+    private final int[] cannons;
+    private final int[] beams;
 
     public ShipStructure(List<ShipBlock> blocks) {
         if (blocks.isEmpty()) {
@@ -58,6 +60,8 @@ public final class ShipStructure {
         List<Integer> seatList = new ArrayList<>();
         List<Integer> thrusterList = new ArrayList<>();
         List<Integer> engineList = new ArrayList<>();
+        List<Integer> cannonList = new ArrayList<>();
+        List<Integer> beamList = new ArrayList<>();
         for (int i = 0; i < n; i++) {
             ShipBlock block = blocks.get(i);
             xs[i] = block.x();
@@ -72,8 +76,10 @@ public final class ShipStructure {
                     }
                 }
                 case SEAT -> seatList.add(i);
-                case THRUSTER -> thrusterList.add(i);
-                case IMPULSE_ENGINE -> engineList.add(i);
+                case THRUSTER, THRUSTER_MK2 -> thrusterList.add(i);
+                case IMPULSE_ENGINE, IMPULSE_ENGINE_MK2 -> engineList.add(i);
+                case PHOTON_CANNON -> cannonList.add(i);
+                case MINING_BEAM -> beamList.add(i);
                 default -> {
                 }
             }
@@ -85,6 +91,8 @@ public final class ShipStructure {
         this.seats = seatList.stream().mapToInt(Integer::intValue).toArray();
         this.thrusters = thrusterList.stream().mapToInt(Integer::intValue).toArray();
         this.engines = engineList.stream().mapToInt(Integer::intValue).toArray();
+        this.cannons = cannonList.stream().mapToInt(Integer::intValue).toArray();
+        this.beams = beamList.stream().mapToInt(Integer::intValue).toArray();
     }
 
     public List<ShipBlock> blocks() {
@@ -127,6 +135,16 @@ public final class ShipStructure {
 
     public int[] engines() {
         return this.engines;
+    }
+
+    /** 光子炮（ADR-0017）。 */
+    public int[] cannons() {
+        return this.cannons;
+    }
+
+    /** 采矿光束。 */
+    public int[] beams() {
+        return this.beams;
     }
 
     // ---- 存档

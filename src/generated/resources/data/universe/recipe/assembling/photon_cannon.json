@@ -1,0 +1,28 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 4,
+      "ingredient": "universe:steel"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:plasma_exciter"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:titanium_alloy"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:processor"
+    }
+  ],
+  "research": "ship_weapons",
+  "results": [
+    {
+      "id": "universe:photon_cannon"
+    }
+  ],
+  "time": 160
+}

@@ -169,7 +169,8 @@ public final class ShipAssembly {
                     blockEntity.setChanged();
                 }
             }
-            if (ShipParts.of(block.state()) == ShipPart.FUEL_TANK) {
+            ShipPart part = ShipParts.of(block.state());
+            if (part == ShipPart.FUEL_TANK || part == ShipPart.FUEL_TANK_MK2) {
                 tanks.add(pos);
             }
         }
@@ -177,11 +178,17 @@ public final class ShipAssembly {
         for (int i = 0; i < targets.size(); i++) {
             level.updateNeighborsAt(targets.get(i), level.getBlockState(targets.get(i)).getBlock());
         }
-        // 剩下的燃料平均分回各个燃料舱
+        // 剩下的燃料按容量分回各个燃料舱
         double fuel = ship.fuelServer();
+        double capacity = 0;
         for (BlockPos pos : tanks) {
             if (level.getBlockEntity(pos) instanceof FuelTankBlockEntity tank) {
-                tank.setFuel(fuel / tanks.size());
+                capacity += tank.capacity();
+            }
+        }
+        for (BlockPos pos : tanks) {
+            if (level.getBlockEntity(pos) instanceof FuelTankBlockEntity tank) {
+                tank.setFuel(capacity <= 0 ? 0 : fuel * tank.capacity() / capacity);
             }
         }
 

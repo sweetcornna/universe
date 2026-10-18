@@ -24,6 +24,7 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.SpawnEggItem;
 import net.minecraft.world.item.component.CookingFuel;
 import net.minecraft.world.item.component.Tool;
@@ -82,6 +83,20 @@ public final class UniverseItems {
     public static final DeferredItem<BlockItem> IMPULSE_ENGINE = ITEMS.registerSimpleBlockItem(UniverseBlocks.IMPULSE_ENGINE);
     public static final DeferredItem<BlockItem> WARP_DRIVE = ITEMS.registerSimpleBlockItem(UniverseBlocks.WARP_DRIVE);
     public static final DeferredItem<BlockItem> SHIP_SEAT = ITEMS.registerSimpleBlockItem(UniverseBlocks.SHIP_SEAT);
+    public static final DeferredItem<BlockItem> PHOTON_CANNON = ITEMS.registerSimpleBlockItem(UniverseBlocks.PHOTON_CANNON);
+    public static final DeferredItem<BlockItem> MINING_BEAM = ITEMS.registerSimpleBlockItem(UniverseBlocks.MINING_BEAM);
+    public static final DeferredItem<BlockItem> SHIELD_GENERATOR = ITEMS.registerSimpleBlockItem(UniverseBlocks.SHIELD_GENERATOR);
+    // Mk.II 部件只能在空间站买、在坠毁飞船里拆到，名字用稀有色
+    public static final DeferredItem<BlockItem> SHIP_THRUSTER_MK2 = ITEMS.registerSimpleBlockItem(UniverseBlocks.SHIP_THRUSTER_MK2,
+            p -> p.rarity(Rarity.UNCOMMON));
+    public static final DeferredItem<BlockItem> FUEL_TANK_MK2 = ITEMS.registerSimpleBlockItem(UniverseBlocks.FUEL_TANK_MK2,
+            p -> p.rarity(Rarity.UNCOMMON));
+    public static final DeferredItem<BlockItem> IMPULSE_ENGINE_MK2 = ITEMS.registerSimpleBlockItem(UniverseBlocks.IMPULSE_ENGINE_MK2,
+            p -> p.rarity(Rarity.RARE));
+    public static final DeferredItem<BlockItem> WARP_DRIVE_MK2 = ITEMS.registerSimpleBlockItem(UniverseBlocks.WARP_DRIVE_MK2,
+            p -> p.rarity(Rarity.RARE));
+    public static final DeferredItem<BlockItem> ALLOY_HULL_PLATING = ITEMS.registerSimpleBlockItem(UniverseBlocks.ALLOY_HULL_PLATING,
+            p -> p.rarity(Rarity.UNCOMMON));
     public static final Map<DyeColor, DeferredItem<BlockItem>> HULL_PLATING = new EnumMap<>(DyeColor.class);
 
     static {
@@ -111,6 +126,15 @@ public final class UniverseItems {
     public static final DeferredItem<BlockItem> MONOLITH = ITEMS.registerSimpleBlockItem(UniverseBlocks.MONOLITH);
     public static final DeferredItem<BlockItem> TECH_CACHE = ITEMS.registerSimpleBlockItem(UniverseBlocks.TECH_CACHE);
     public static final DeferredItem<BlockItem> SMOLDERING_WRECK = ITEMS.registerSimpleBlockItem(UniverseBlocks.SMOLDERING_WRECK);
+    // ---- 空间站（ADR-0017）
+    public static final DeferredItem<BlockItem> TRADE_TERMINAL = ITEMS.registerSimpleBlockItem(UniverseBlocks.TRADE_TERMINAL);
+    public static final DeferredItem<BlockItem> STATION_HULL = ITEMS.registerSimpleBlockItem(UniverseBlocks.STATION_HULL);
+    public static final DeferredItem<BlockItem> STATION_FLOOR = ITEMS.registerSimpleBlockItem(UniverseBlocks.STATION_FLOOR);
+    public static final DeferredItem<BlockItem> STATION_GLASS = ITEMS.registerSimpleBlockItem(UniverseBlocks.STATION_GLASS);
+    public static final DeferredItem<BlockItem> STATION_LIGHT = ITEMS.registerSimpleBlockItem(UniverseBlocks.STATION_LIGHT);
+    public static final DeferredItem<BlockItem> STATION_PAD = ITEMS.registerSimpleBlockItem(UniverseBlocks.STATION_PAD);
+    public static final DeferredItem<BlockItem> STATION_TRIM = ITEMS.registerSimpleBlockItem(UniverseBlocks.STATION_TRIM);
+    public static final DeferredItem<BlockItem> SHIP_REPAIR = ITEMS.registerSimpleBlockItem(UniverseBlocks.SHIP_REPAIR);
 
     // ---- 外骨骼
     public static final DeferredItem<Item> EXOSUIT_HELMET = ITEMS.registerSimpleItem("exosuit_helmet",
@@ -296,12 +320,15 @@ public final class UniverseItems {
                 PLANET_LOG, PLANET_LEAVES, PLANET_CAP, PLANET_BLOOM));
         order.addAll(PLANTS.values());
         order.addAll(List.of(ALIEN_MEAT, COOKED_ALIEN_MEAT, ALIEN_HIDE, ALIEN_CREATURE_SPAWN_EGG, ALIEN_FLYER_SPAWN_EGG));
-        order.addAll(List.of(SHIP_HELM, SHIP_THRUSTER, FUEL_TANK, IMPULSE_ENGINE, WARP_DRIVE, SHIP_SEAT, LAUNCH_FUEL, SPACE_WARPER, SURVEY_DATA));
+        order.addAll(List.of(SHIP_HELM, SHIP_THRUSTER, FUEL_TANK, IMPULSE_ENGINE, WARP_DRIVE, SHIP_SEAT, PHOTON_CANNON, MINING_BEAM,
+                SHIELD_GENERATOR, SHIP_THRUSTER_MK2, FUEL_TANK_MK2, IMPULSE_ENGINE_MK2, WARP_DRIVE_MK2, ALLOY_HULL_PLATING,
+                LAUNCH_FUEL, SPACE_WARPER, SURVEY_DATA));
         order.addAll(HULL_PLATING.values());
         order.addAll(List.of(EXOSUIT_HELMET, EXOSUIT_CHESTPLATE, EXOSUIT_LEGGINGS, EXOSUIT_BOOTS, OXYGEN_CAPSULE, HAZARD_CELL,
                 MULTITOOL, DAMAGED_MULTITOOL));
         order.addAll(MODULES.values());
         order.addAll(List.of(NAVIGATION_DATA, SIGNAL_BOOSTER, SUPPLY_CRATE, DROP_POD, DATA_TERMINAL, MONOLITH, TECH_CACHE, SMOLDERING_WRECK));
+        order.addAll(List.of(TRADE_TERMINAL, SHIP_REPAIR, STATION_HULL, STATION_FLOOR, STATION_GLASS, STATION_LIGHT, STATION_PAD, STATION_TRIM));
         order.addAll(List.of(SENTINEL_SCRAP, SENTINEL_SPAWN_EGG, HEAVY_SENTINEL_SPAWN_EGG));
         order.addAll(ORES.values());
         order.addAll(ORE_DROPS.values());

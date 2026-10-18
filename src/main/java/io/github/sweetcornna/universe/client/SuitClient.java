@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.client.galaxy.GalaxyText;
+import io.github.sweetcornna.universe.client.station.StationClient;
 import io.github.sweetcornna.universe.core.galaxy.Hazard;
 import io.github.sweetcornna.universe.core.galaxy.Planet;
 import io.github.sweetcornna.universe.core.survival.LifeSupport;
@@ -69,7 +70,7 @@ public final class SuitClient {
         boolean jumpDown = player.input.keyPresses.jump();
         boolean chest = player.getItemBySlot(EquipmentSlot.CHEST).is(UniverseItems.EXOSUIT_CHESTPLATE);
         boolean blocked = !chest || player.onGround() || player.isInWater() || player.isInLava() || player.isPassenger()
-                || player.getAbilities().mayfly || player.isFallFlying();
+                || player.getAbilities().mayfly || player.isFallFlying() || StationClient.weightless(player);
         if (blocked) {
             armed = false;
         } else if (jumpDown && !jumpWasDown) {

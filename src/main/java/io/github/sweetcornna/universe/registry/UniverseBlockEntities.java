@@ -39,7 +39,7 @@ public final class UniverseBlockEntities {
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES = DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, Universe.MOD_ID);
 
     public static final Supplier<BlockEntityType<FuelTankBlockEntity>> FUEL_TANK = BLOCK_ENTITIES.register("fuel_tank",
-            () -> new BlockEntityType<>(FuelTankBlockEntity::new, UniverseBlocks.FUEL_TANK.get()));
+            () -> new BlockEntityType<>(FuelTankBlockEntity::new, UniverseBlocks.FUEL_TANK.get(), UniverseBlocks.FUEL_TANK_MK2.get()));
     public static final Supplier<BlockEntityType<SupplyCrateBlockEntity>> SUPPLY_CRATE = BLOCK_ENTITIES.register("supply_crate",
             () -> new BlockEntityType<>(SupplyCrateBlockEntity::new, UniverseBlocks.SUPPLY_CRATE.get()));
 

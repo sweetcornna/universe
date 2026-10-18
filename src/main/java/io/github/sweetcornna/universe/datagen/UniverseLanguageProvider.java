@@ -76,6 +76,77 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         this.suit();
         this.multitool();
         this.factory();
+        this.trade();
+    }
+
+    /** 空间站和交易（ADR-0017）。 */
+    private void trade() {
+        block(UniverseBlocks.TRADE_TERMINAL.get(), "交易终端", "Trade Terminal");
+        block(UniverseBlocks.SHIP_REPAIR.get(), "飞船维修台", "Ship Repair Console");
+        both("message.universe.repair.no_ship", "机库里没有飞船", "There is no ship in the hangar");
+        both("message.universe.repair.intact", "飞船完好，不用修", "Your ship is in perfect shape");
+        both("message.universe.repair.quote", "修好 %s 点船体要 %s 信用点，再点一次确认", "Repairing %s hull costs %s credits; click again to confirm");
+        both("message.universe.repair.poor", "信用点不够：要 %s，你有 %s", "Not enough credits: %s needed, you have %s");
+        both("message.universe.repair.done", "修好了 %s 点船体，花了 %s 信用点；护盾已充满", "Repaired %s hull for %s credits; shields recharged");
+        block(UniverseBlocks.STATION_HULL.get(), "空间站外壳", "Station Hull");
+        block(UniverseBlocks.STATION_FLOOR.get(), "空间站地板", "Station Floor");
+        block(UniverseBlocks.STATION_GLASS.get(), "空间站玻璃", "Station Glass");
+        block(UniverseBlocks.STATION_LIGHT.get(), "空间站灯板", "Station Light Panel");
+        block(UniverseBlocks.STATION_PAD.get(), "停机坪标线", "Landing Pad Marking");
+        block(UniverseBlocks.STATION_TRIM.get(), "空间站灯带", "Station Light Strip");
+        both("hud.universe.station", "空间站 · %s 格", "Station · %s m");
+        both("gui.universe.star_map.economy", "空间站：%s · %s", "Station: %s · %s");
+        both("hud.universe.station.credits", "%s 信用点", "%s credits");
+        both("message.universe.station.welcome", "欢迎来到%s空间站", "Welcome to %s Station");
+        both("gui.universe.trade.title", "交易终端", "Trade Terminal");
+        both("gui.universe.trade.station", "%s空间站", "%s Station");
+        both("gui.universe.trade.credits", "%s 信用点", "%s credits");
+        both("gui.universe.trade.economy", "%s · %s", "%s · %s");
+        both("gui.universe.trade.economy.mining", "采矿经济", "Mining");
+        both("gui.universe.trade.economy.manufacturing", "制造经济", "Manufacturing");
+        both("gui.universe.trade.economy.technology", "科技经济", "Technology");
+        both("gui.universe.trade.economy.trading", "贸易经济", "Trading");
+        both("gui.universe.trade.economy.scientific", "科研经济", "Scientific");
+        both("gui.universe.trade.economy.power", "能源经济", "Power Generation");
+        both("gui.universe.trade.economy.materials", "先进材料经济", "Advanced Materials");
+        both("gui.universe.trade.wealth.poor", "贫穷", "Poor");
+        both("gui.universe.trade.wealth.average", "中等", "Average");
+        both("gui.universe.trade.wealth.wealthy", "富裕", "Wealthy");
+        both("gui.universe.trade.category.raw", "原料", "Raw");
+        both("gui.universe.trade.category.refined", "冶炼品", "Refined");
+        both("gui.universe.trade.category.component", "零件", "Components");
+        both("gui.universe.trade.category.advanced", "高级品", "Advanced");
+        both("gui.universe.trade.category.energy", "能源", "Energy");
+        both("gui.universe.trade.category.bio", "生物产物", "Biological");
+        both("gui.universe.trade.category.tech", "科技", "Technology");
+        both("gui.universe.trade.category.demanded", "%s · 这里缺", "%s · in demand");
+        both("gui.universe.trade.category.supplied", "%s · 本地产", "%s · local");
+        both("gui.universe.trade.separator", "、", ", ");
+        both("gui.universe.trade.demands", "缺：%s", "Wants: %s");
+        both("gui.universe.trade.supplies", "产：%s", "Makes: %s");
+        both("gui.universe.trade.sell", "卖出（%s）", "Sell (%s)");
+        both("gui.universe.trade.buy", "购买（%s）", "Buy (%s)");
+        both("gui.universe.trade.item", "物品", "Item");
+        both("gui.universe.trade.held", "持有", "Held");
+        both("gui.universe.trade.stock", "存货", "Stock");
+        both("gui.universe.trade.unit", "单价", "Each");
+        both("gui.universe.trade.all_total", "全部卖出", "Sell all");
+        both("gui.universe.trade.stack_total", "买一组", "Buy stack");
+        both("gui.universe.trade.empty_sell", "背包里没有空间站收购的东西。工厂产品、矿石、探索得到的数据都能卖。",
+                "Nothing in your inventory this station will buy. Factory products, ores and exploration data all sell.");
+        both("gui.universe.trade.empty_buy", "空间站暂时没有货。", "This station has nothing for sale right now.");
+        both("gui.universe.trade.hint_sell", "单击卖一件 · Shift 卖一组 · Ctrl 全部卖掉", "Click: sell one · Shift: a stack · Ctrl: all of it");
+        both("gui.universe.trade.hint_buy", "单击买一件 · Shift 买一组（钱不够就少买几件）", "Click: buy one · Shift: a stack (as many as you can afford)");
+        both("gui.universe.trade.quote_sell", "一件 %s · 一组（%s）%s · 全部（%s）%s", "One %s · stack (%s) %s · all (%s) %s");
+        both("gui.universe.trade.quote_buy", "一件 %s · 一组（%s）%s", "One %s · stack (%s) %s");
+        both("gui.universe.trade.sold_out", "卖完了，等补货", "Sold out; check back later");
+        both("message.universe.trade.no_signal", "这里收不到空间站的信号", "No station signal here");
+        both("message.universe.trade.sold", "卖出 %s 件%s，得到 %s 信用点", "Sold %s × %s for %s credits");
+        both("message.universe.trade.bought", "买下 %s 件%s，花了 %s 信用点", "Bought %s × %s for %s credits");
+        both("message.universe.trade.nothing_to_sell", "背包里没有这样东西了", "You don't have that any more");
+        both("message.universe.trade.too_cheap", "一件卖不出一个信用点，多卖几件", "Worth less than a credit; sell more at once");
+        both("message.universe.trade.out_of_stock", "卖完了，等补货", "Out of stock; check back later");
+        both("message.universe.trade.not_enough", "信用点不够（一件要 %s）", "Not enough credits (%s each)");
     }
 
     private void ships() {
@@ -87,6 +158,14 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         item(UniverseItems.SPACE_WARPER.get(), "空间翘曲器", "Space Warper");
         item(UniverseItems.SURVEY_DATA.get(), "勘探数据", "Survey Data");
         block(UniverseBlocks.SHIP_SEAT.get(), "乘客座椅", "Passenger Seat");
+        block(UniverseBlocks.PHOTON_CANNON.get(), "光子炮", "Photon Cannon");
+        block(UniverseBlocks.MINING_BEAM.get(), "采矿光束", "Mining Beam");
+        block(UniverseBlocks.SHIELD_GENERATOR.get(), "护盾发生器", "Shield Generator");
+        block(UniverseBlocks.SHIP_THRUSTER_MK2.get(), "Mk.II 推进器", "Thruster Mk.II");
+        block(UniverseBlocks.FUEL_TANK_MK2.get(), "Mk.II 燃料舱", "Fuel Tank Mk.II");
+        block(UniverseBlocks.IMPULSE_ENGINE_MK2.get(), "Mk.II 脉冲引擎", "Impulse Engine Mk.II");
+        block(UniverseBlocks.WARP_DRIVE_MK2.get(), "Mk.II 跃迁引擎", "Warp Drive Mk.II");
+        block(UniverseBlocks.ALLOY_HULL_PLATING.get(), "合金船体板", "Alloy Hull Plating");
         String[][] colors = {
                 {"white", "白色"}, {"orange", "橙色"}, {"magenta", "品红色"}, {"light_blue", "淡蓝色"},
                 {"yellow", "黄色"}, {"lime", "黄绿色"}, {"pink", "粉红色"}, {"gray", "灰色"},
@@ -303,6 +382,14 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("message.universe.ship.boarded_pilot", "空格上升，Shift 下降；着陆后按住 Shift 停船",
                 "Space to climb, Shift to descend; hold Shift after landing to park");
         both("message.universe.ship.boarded_passenger", "着陆后按 Shift 下船", "Press Shift after landing to get off");
+        both("message.universe.ship.no_beam", "这艘船没有采矿光束", "This ship has no mining beam");
+        both("message.universe.ship.no_cannon", "这艘船没有光子炮", "This ship has no photon cannon");
+        both("message.universe.ship.mode_cannon", "武器：光子炮", "Weapon: photon cannon");
+        both("message.universe.ship.mode_beam", "武器：采矿光束", "Weapon: mining beam");
+        both("message.universe.ship.destroyed", "飞船被击毁！拖船把你送回了空间站，船体只剩两成五；货舱里丢了 %s 件东西。",
+                "Your ship was destroyed! A tug hauled you back to the station with 25%% hull; %s items were lost from the cargo hold.");
+        both("message.universe.ship.towed", "已拖回空间站的机库：停船重新组装，或者在维修台付钱修好船体",
+                "Towed to the station hangar: park and reassemble, or pay at the repair console to fix the hull");
 
         both("hud.universe.ship.title", "飞船", "Ship");
         both("hud.universe.ship.status.impulse", "脉冲巡航", "Impulse");
@@ -326,6 +413,15 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("hud.universe.ship.unlandable", "（不能着陆）", " (no landing)");
         both("hud.universe.ship.above", "  ▲%s 格", "  ▲%s m");
         both("hud.universe.ship.below", "  ▼%s 格", "  ▼%s m");
+        both("hud.universe.ship.hull", "船体 %s / %s", "Hull %s / %s");
+        both("hud.universe.ship.shield", "护盾 %s / %s", "Shield %s / %s");
+        both("hud.universe.ship.weapon", "武器：%s", "Weapon: %s");
+        both("hud.universe.ship.weapon.cannon", "光子炮 ×%s", "Photon cannon ×%s");
+        both("hud.universe.ship.weapon.beam", "采矿光束 ×%s", "Mining beam ×%s");
+        both("hud.universe.ship.weapon.overheated", "（过热）", " (overheated)");
+        both("hud.universe.ship.keys.weapons", "%s 开火  %s 切换武器", "%s fire  %s switch weapon");
+        tech("ship_weapons", "飞船武器", "Ship Weapons");
+        tech("ship_shields", "飞船护盾", "Ship Shields");
     }
 
     private void multitool() {

@@ -1,0 +1,18 @@
+{
+  "values": [
+    "universe:gear",
+    "universe:magnetic_coil",
+    "universe:circuit_board",
+    "universe:electric_motor",
+    "universe:prism",
+    "universe:plasma_exciter",
+    "universe:microcrystalline_component",
+    "universe:electromagnetic_turbine",
+    "universe:super_magnetic_ring",
+    "universe:particle_container",
+    "universe:thruster",
+    "universe:reinforced_thruster",
+    "universe:logistics_drone",
+    "universe:carbon_nanotube"
+  ]
+}

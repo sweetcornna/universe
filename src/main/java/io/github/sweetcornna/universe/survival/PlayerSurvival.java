@@ -19,6 +19,7 @@ import io.github.sweetcornna.universe.entity.ship.ShipEntity;
 import io.github.sweetcornna.universe.network.JetpackPayload;
 import io.github.sweetcornna.universe.registry.UniverseAttachments;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
+import io.github.sweetcornna.universe.station.Stations;
 import io.github.sweetcornna.universe.tech.SuitTech;
 import io.github.sweetcornna.universe.world.planet.PlanetWeather;
 import io.github.sweetcornna.universe.world.planet.Planets;
@@ -109,6 +110,39 @@ public final class PlayerSurvival {
     /** 按所在星球的重力改重力加速度、起跳速度、安全摔落高度和摔落伤害；不在星球上时去掉。 */
     static void applyGravity(LivingEntity entity, ServerLevel level) {
         double g = Planets.planet(level).map(Planet::gravity).orElse(1.0);
+        if (entity instanceof ServerPlayer player && SpaceDimensions.isSpace(level.dimension())) {
+            g = spaceGravity(player, level);
+        }
+        setGravity(entity, g);
+    }
+
+    /** 太空里：空间站里 1 g，外面失重（ADR-0017）。 */
+    private static double spaceGravity(ServerPlayer player, ServerLevel level) {
+        return Stations.inside(level, player.position()) ? 1 : 0;
+    }
+
+    /** 每刻看一眼太空里的玩家进出空间站没有，变了才改属性（改属性会发包）。 */
+    private static void updateSpaceGravity(ServerPlayer player, ServerLevel level) {
+        if (!SpaceDimensions.isSpace(level.dimension())) {
+            return;
+        }
+        AttributeInstance gravity = player.getAttribute(Attributes.GRAVITY);
+        boolean weightless = gravity != null && gravity.getModifier(GRAVITY_MODIFIER) != null;
+        boolean wanted = spaceGravity(player, level) == 0;
+        if (weightless != wanted) {
+            setGravity(player, wanted ? 0 : 1);
+        }
+    }
+
+    private static void setGravity(LivingEntity entity, double g) {
+        if (g <= 0) {
+            // 失重：不往下掉，也不摔伤
+            setModifier(entity, Attributes.GRAVITY, -1, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
+            setModifier(entity, Attributes.JUMP_STRENGTH, 0, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
+            setModifier(entity, Attributes.SAFE_FALL_DISTANCE, 1000, AttributeModifier.Operation.ADD_VALUE);
+            setModifier(entity, Attributes.FALL_DAMAGE_MULTIPLIER, -1, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
+            return;
+        }
         setModifier(entity, Attributes.GRAVITY, GravityModel.gravity(g) - 1, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
         setModifier(entity, Attributes.JUMP_STRENGTH, GravityModel.jump(g) - 1, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
         setModifier(entity, Attributes.SAFE_FALL_DISTANCE, GravityModel.safeFall(g) - GravityModel.safeFall(1),
@@ -131,6 +165,7 @@ public final class PlayerSurvival {
 
     private static void tick(ServerPlayer player) {
         Multitool.tick(player);
+        updateSpaceGravity(player, player.level());
         LifeSupport support = player.getData(UniverseAttachments.LIFE_SUPPORT);
         TechBonuses bonuses = SuitTech.suit(player);
         if (player.isCreative() || player.isSpectator()) {
@@ -189,6 +224,10 @@ public final class PlayerSurvival {
         boolean supplied = player.getVehicle() instanceof ShipEntity;
         boolean underwater = suit.sealed() && player.isEyeInFluid(FluidTags.WATER);
         Optional<Planet> planet = Planets.planet(level);
+        if (Stations.inside(level, player.position())) {
+            // 空间站里有空气，不消耗生命维持（ADR-0017）
+            return Environment.SAFE;
+        }
         if (planet.isEmpty() && !SpaceDimensions.isSpace(level.dimension())) {
             return underwater || supplied ? new Environment(!underwater, Map.of(), false, 0, false, false, supplied) : Environment.SAFE;
         }

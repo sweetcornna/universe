@@ -1,0 +1,17 @@
+{
+  "values": [
+    "universe:processor",
+    "universe:particle_broadband",
+    "universe:quantum_chip",
+    "universe:frame_material",
+    "universe:dyson_sphere_component",
+    "universe:casimir_crystal",
+    "universe:plane_filter",
+    "universe:graviton_lens",
+    "universe:photon_combiner",
+    "universe:solar_sail",
+    "universe:small_carrier_rocket",
+    "universe:logistics_vessel",
+    "universe:strange_matter"
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "type": "universe:research_shaped",
+  "category": "equipment",
+  "key": {
+    "C": "universe:processor",
+    "P": "universe:plasma_exciter",
+    "S": "universe:steel",
+    "T": "universe:titanium_alloy"
+  },
+  "pattern": [
+    "SPS",
+    "TCT",
+    "S S"
+  ],
+  "research": "ship_weapons",
+  "result": {
+    "id": "universe:photon_cannon"
+  }
+}

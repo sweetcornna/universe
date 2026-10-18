@@ -1,6 +1,7 @@
 package io.github.sweetcornna.universe.network;
 
 import io.github.sweetcornna.universe.dyson.Dyson;
+import io.github.sweetcornna.universe.entity.ship.ShipWeapons;
 import io.github.sweetcornna.universe.stats.ProductionLog;
 import io.github.sweetcornna.universe.survival.Multitool;
 import io.github.sweetcornna.universe.discovery.Discoveries;
@@ -8,6 +9,7 @@ import io.github.sweetcornna.universe.entity.ship.ShipWarp;
 import io.github.sweetcornna.universe.factory.research.Research;
 import io.github.sweetcornna.universe.survival.PlayerSurvival;
 import io.github.sweetcornna.universe.tech.SuitTech;
+import io.github.sweetcornna.universe.trade.Trading;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.network.event.RegisterConfigurationTasksEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
@@ -21,7 +23,7 @@ import net.neoforged.neoforge.server.ServerLifecycleHooks;
  */
 public final class UniverseNetwork {
     /** 协议版本：任何包的格式改动都要加一，版本不同的客户端和服务端会拒绝连接。 */
-    private static final String PROTOCOL_VERSION = "15";
+    private static final String PROTOCOL_VERSION = "17";
 
     private UniverseNetwork() {
     }
@@ -47,6 +49,7 @@ public final class UniverseNetwork {
                 .playToClient(LogisticsFlightsPayload.TYPE, LogisticsFlightsPayload.STREAM_CODEC)
                 .playToClient(StatsSnapshotPayload.TYPE, StatsSnapshotPayload.STREAM_CODEC)
                 .playToClient(DysonSyncPayload.TYPE, DysonSyncPayload.STREAM_CODEC)
+                .playToClient(TradeStatePayload.TYPE, TradeStatePayload.STREAM_CODEC)
                 .playToServer(DysonEditPayload.TYPE, DysonEditPayload.STREAM_CODEC, Dyson::handleEdit)
                 .playToServer(JetpackPayload.TYPE, JetpackPayload.STREAM_CODEC, PlayerSurvival::handleJetpack)
                 .playToServer(ResearchActionPayload.TYPE, ResearchActionPayload.STREAM_CODEC, Research::handleAction)
@@ -56,6 +59,8 @@ public final class UniverseNetwork {
                 .playToServer(OpenTechPayload.TYPE, OpenTechPayload.STREAM_CODEC, SuitTech::handleOpen)
                 .playToServer(LocatePoiPayload.TYPE, LocatePoiPayload.STREAM_CODEC, LocatePoiPayload::handle)
                 .playToServer(ToolModePayload.TYPE, ToolModePayload.STREAM_CODEC, Multitool::handleToggleMode)
-                .playToServer(StatsRequestPayload.TYPE, StatsRequestPayload.STREAM_CODEC, ProductionLog::handleRequest);
+                .playToServer(StatsRequestPayload.TYPE, StatsRequestPayload.STREAM_CODEC, ProductionLog::handleRequest)
+                .playToServer(TradeActionPayload.TYPE, TradeActionPayload.STREAM_CODEC, Trading::handleAction)
+                .playToServer(ShipControlPayload.TYPE, ShipControlPayload.STREAM_CODEC, ShipWeapons::handleControl);
     }
 }

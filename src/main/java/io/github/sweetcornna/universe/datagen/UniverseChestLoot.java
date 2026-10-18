@@ -44,7 +44,15 @@ final class UniverseChestLoot implements LootTableSubProvider {
                         .add(item(UniverseItems.SPACE_WARPER.get(), 1, 1, 1)))
                 .withPool(chance(item(UniverseItems.NAVIGATION_DATA.get(), 1, 2, 1), 0.75F))
                 .withPool(chance(LootItem.lootTableItem(UniverseItems.MODULES.get(ModuleType.LIFE_SUPPORT).get())
-                        .apply(RandomModuleFunction.randomModule(1)), 0.4F)));
+                        .apply(RandomModuleFunction.randomModule(1)), 0.4F))
+                // 偶尔能拆到一件 Mk.II 部件（ADR-0017）
+                .withPool(LootPool.lootPool().setRolls(ContextIntProviders.exactly(1))
+                        .when(LootItemRandomChanceCondition.randomChance(0.15F))
+                        .add(item(UniverseItems.SHIP_THRUSTER_MK2.get(), 1, 2, 4))
+                        .add(item(UniverseItems.FUEL_TANK_MK2.get(), 1, 1, 4))
+                        .add(item(UniverseItems.ALLOY_HULL_PLATING.get(), 2, 6, 3))
+                        .add(item(UniverseItems.IMPULSE_ENGINE_MK2.get(), 1, 1, 1))
+                        .add(item(UniverseItems.WARP_DRIVE_MK2.get(), 1, 1, 1))));
         this.context.accept(PoiStructures.OUTPOST_LOOT, LootTable.lootTable()
                 .withPool(LootPool.lootPool().setRolls(ContextIntProviders.between(3, 5))
                         .add(item(Items.BREAD, 2, 4, 6))

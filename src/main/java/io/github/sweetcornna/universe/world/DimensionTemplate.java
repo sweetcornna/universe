@@ -6,9 +6,11 @@ import java.util.Optional;
 import java.util.OptionalLong;
 
 import io.github.sweetcornna.universe.core.galaxy.Planet;
+import io.github.sweetcornna.universe.station.Stations;
 import io.github.sweetcornna.universe.world.planet.PlanetDimensionTypes;
 import io.github.sweetcornna.universe.world.planet.Planets;
 import io.github.sweetcornna.universe.world.planet.gen.PlanetChunkGenerators;
+import io.github.sweetcornna.universe.world.space.SpaceChunkGenerator;
 import io.github.sweetcornna.universe.world.space.SpaceDimensions;
 
 import net.minecraft.core.Holder;
@@ -54,7 +56,7 @@ public enum DimensionTemplate {
     PLANET,
     /** 原版主世界的地形生成器，开发时用来对照星球地形的生成速度（{@code /universe planet bench}）。 */
     VANILLA,
-    /** 太空：一个恒星系一个，什么都不生成的虚空（{@link SpaceDimensions}）。 */
+    /** 太空：一个恒星系一个，虚空里只有一座空间站（{@link SpaceDimensions}，ADR-0017）。 */
     SPACE;
 
     private static final List<Block> SURFACE_PALETTE = List.of(
@@ -81,7 +83,7 @@ public enum DimensionTemplate {
             case FLAT -> flat(server.registryAccess(), key.identifier());
             case PLANET -> planet(server, key);
             case VANILLA -> vanilla(server.registryAccess());
-            case SPACE -> space(server.registryAccess());
+            case SPACE -> space(server, key);
         };
     }
 
@@ -103,12 +105,15 @@ public enum DimensionTemplate {
         return new LevelStem(type, PlanetChunkGenerators.create(registries, planet), OptionalLong.of(planet.seed()));
     }
 
-    /** 没有地层、不装饰、不生成结构的平坦生成器就是虚空；群系用原版的虚空，不下雨。 */
-    private static LevelStem space(RegistryAccess registries) {
+    /**
+     * 没有地层、不装饰、不生成结构的平坦生成器就是虚空；群系用原版的虚空，不下雨。生成区块时放上恒星系的空间站。
+     */
+    private static LevelStem space(MinecraftServer server, ResourceKey<Level> key) {
+        RegistryAccess registries = server.registryAccess();
         Holder<DimensionType> type = registries.lookupOrThrow(Registries.DIMENSION_TYPE).getOrThrow(SpaceDimensions.TYPE);
         Holder<Biome> biome = registries.lookupOrThrow(Registries.BIOME).getOrThrow(Biomes.THE_VOID);
         FlatLevelGeneratorSettings settings = new FlatLevelGeneratorSettings(Optional.of(HolderSet.empty()), biome, List.of());
-        return new LevelStem(type, new FlatLevelSource(settings));
+        return new LevelStem(type, new SpaceChunkGenerator(settings, Stations.site(server, key)));
     }
 
     private static LevelStem flat(RegistryAccess registries, Identifier id) {

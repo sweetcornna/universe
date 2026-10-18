@@ -176,6 +176,78 @@
         }
       ],
       "rolls": 1
+    },
+    {
+      "condition": {
+        "type": "minecraft:random_chance",
+        "chance": 0.15
+      },
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "modifier": {
+            "type": "minecraft:set_count",
+            "count": {
+              "type": "minecraft:uniform",
+              "max": 2,
+              "min": 1
+            }
+          },
+          "name": "universe:ship_thruster_mk2",
+          "weight": 4
+        },
+        {
+          "type": "minecraft:item",
+          "modifier": {
+            "type": "minecraft:set_count",
+            "count": {
+              "type": "minecraft:uniform",
+              "max": 1,
+              "min": 1
+            }
+          },
+          "name": "universe:fuel_tank_mk2",
+          "weight": 4
+        },
+        {
+          "type": "minecraft:item",
+          "modifier": {
+            "type": "minecraft:set_count",
+            "count": {
+              "type": "minecraft:uniform",
+              "max": 6,
+              "min": 2
+            }
+          },
+          "name": "universe:alloy_hull_plating",
+          "weight": 3
+        },
+        {
+          "type": "minecraft:item",
+          "modifier": {
+            "type": "minecraft:set_count",
+            "count": {
+              "type": "minecraft:uniform",
+              "max": 1,
+              "min": 1
+            }
+          },
+          "name": "universe:impulse_engine_mk2"
+        },
+        {
+          "type": "minecraft:item",
+          "modifier": {
+            "type": "minecraft:set_count",
+            "count": {
+              "type": "minecraft:uniform",
+              "max": 1,
+              "min": 1
+            }
+          },
+          "name": "universe:warp_drive_mk2"
+        }
+      ],
+      "rolls": 1
     }
   ],
   "random_sequence": "universe:chests/crashed_ship"

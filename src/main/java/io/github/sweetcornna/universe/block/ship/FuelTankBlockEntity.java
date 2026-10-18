@@ -21,8 +21,13 @@ public class FuelTankBlockEntity extends BlockEntity {
     }
 
     public void setFuel(double fuel) {
-        this.fuel = Math.max(0, Math.min(ShipStats.FUEL_PER_TANK, fuel));
+        this.fuel = Math.max(0, Math.min(this.capacity(), fuel));
         this.setChanged();
+    }
+
+    /** 这个燃料舱能装多少（Mk.II 更多）。 */
+    public double capacity() {
+        return this.getBlockState().getBlock() instanceof FuelTankBlock tank ? tank.capacity() : ShipStats.FUEL_PER_TANK;
     }
 
     @Override

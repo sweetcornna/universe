@@ -52,9 +52,13 @@ class SurvivalProgressionTest {
             NS + "survey_data", NS + "multitool",
             NS + "deuterium", NS + "fractionator",
             NS + "critical_photon", NS + "ray_receiver");
-    /** 生存里本来就拿不到的：挖不掉的涌泉、掉落舱和石碑，只在坠毁点箱子里的损坏工具。刷怪蛋另算。 */
+    /** 生存里本来就拿不到的：挖不掉的涌泉、掉落舱和石碑、空间站的交易终端和建材，只在坠毁点箱子里的损坏工具。刷怪蛋另算。 */
     private static final Set<String> UNOBTAINABLE = Set.of(NS + "crude_oil_seep", NS + "damaged_multitool", NS + "drop_pod",
-            NS + "monolith");
+            NS + "monolith", NS + "trade_terminal",
+            NS + "station_hull", NS + "station_floor", NS + "station_glass", NS + "station_light", NS + "station_pad", NS + "station_trim",
+            NS + "ship_repair",
+            // Mk.II 部件只能在空间站买、在坠毁飞船里拆到（ADR-0017）
+            NS + "ship_thruster_mk2", NS + "fuel_tank_mk2", NS + "impulse_engine_mk2", NS + "warp_drive_mk2", NS + "alloy_hull_plating");
     /** 兴趣点的建筑里天然放着的方块（ADR-0014），挖了按各自的战利品表掉落。 */
     private static final Set<String> STRUCTURE_BLOCKS = Set.of(NS + "data_terminal", NS + "supply_crate", NS + "tech_cache",
             NS + "smoldering_wreck");

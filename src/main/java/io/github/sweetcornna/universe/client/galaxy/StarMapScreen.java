@@ -35,6 +35,7 @@ import io.github.sweetcornna.universe.core.procgen.Rng;
 import io.github.sweetcornna.universe.core.sky.BodyLook;
 import io.github.sweetcornna.universe.core.space.SpaceLayout;
 import io.github.sweetcornna.universe.core.space.Warp;
+import io.github.sweetcornna.universe.core.trade.Economy;
 import io.github.sweetcornna.universe.entity.ship.ShipEntity;
 import io.github.sweetcornna.universe.network.WarpRequestPayload;
 import io.github.sweetcornna.universe.registry.UniverseItems;
@@ -268,7 +269,7 @@ public class StarMapScreen extends Screen {
         if (this.ship == null || this.ship.structure() == null || !SpaceDimensions.isSpace(this.ship.level().dimension())) {
             return 0;
         }
-        return Warp.range(this.ship.structure().stats().warpDrives());
+        return this.ship.structure().stats().warpRange();
     }
 
     /** 跃迁射程：以当前恒星系为圆心、在它那一层水平面上画一个圈。 */
@@ -302,8 +303,7 @@ public class StarMapScreen extends Screen {
             boolean focused = i == this.selected || i == this.hovered;
             int color = ARGB.color(focused ? 0x90 : 0x40, system.star().color());
             line(graphics, star.x(), star.y(), foot.x(), foot.y(), 0.6F, color);
-            boolean reachable = this.current.isPresent() && Warp.inRange(systems.get(this.current.getAsInt()), system,
-                    this.ship == null || this.ship.structure() == null ? 0 : this.ship.structure().stats().warpDrives())
+            boolean reachable = this.current.isPresent() && Warp.inReach(systems.get(this.current.getAsInt()), system, this.warpRange())
                     && this.warpRange() > 0;
             sprite(graphics, DISC, foot.x(), foot.y(), reachable ? 3.2 : 2.2, reachable ? WARP : color);
         }
@@ -508,6 +508,19 @@ public class StarMapScreen extends Screen {
             y = this.smallText(graphics, Component.translatable("gui.universe.star_map.discovered_by", discovery.discovererName()), x, y, width,
                     DIM) + 3;
         }
+        if (!system.planets().isEmpty()) {
+            // 空间站的经济和财富（ADR-0017）
+            Economy economy = Economy.of(system);
+            Component line = Component.translatable("gui.universe.star_map.economy",
+                    Component.translatable("gui.universe.trade.economy." + economy.type().key()),
+                    Component.translatable("gui.universe.trade.wealth." + economy.wealth().key()));
+            int color = switch (economy.wealth()) {
+                case POOR -> DIM;
+                case AVERAGE -> TEXT;
+                case WEALTHY -> 0xFFF2C94C;
+            };
+            y = this.smallText(graphics, line, x, y, width, color) + 3;
+        }
         y = this.drawStrip(graphics, system, x, y, width, mouseX, mouseY) + 4;
 
         graphics.text(this.font, Component.translatable("gui.universe.star_map.planets", system.planets().size()), x, y, TEXT, false);
@@ -573,9 +586,10 @@ public class StarMapScreen extends Screen {
             return Component.translatable("gui.universe.star_map.warp.here");
         }
         StarSystem from = this.galaxy.systems().get(here.getAsInt());
-        if (!Warp.inRange(from, target, drives)) {
+        double range = this.ship.structure().stats().warpRange();
+        if (!Warp.inReach(from, target, range)) {
             return Component.translatable("message.universe.warp.out_of_range", GalaxyText.number(from.distanceTo(target), 1),
-                    (int) Warp.range(drives));
+                    (int) range);
         }
         switch (Warp.check(this.currentBodies, this.ship.getX(), this.ship.getY(), this.ship.getZ())) {
             case NEAR_STAR -> {

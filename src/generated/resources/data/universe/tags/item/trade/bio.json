@@ -1,0 +1,16 @@
+{
+  "values": [
+    "universe:alien_meat",
+    "universe:cooked_alien_meat",
+    "universe:alien_hide",
+    "universe:organic_crystal",
+    "minecraft:leather",
+    "minecraft:wheat",
+    "minecraft:string",
+    "minecraft:egg",
+    "minecraft:feather",
+    "minecraft:bone",
+    "minecraft:slime_ball",
+    "minecraft:honeycomb"
+  ]
+}
