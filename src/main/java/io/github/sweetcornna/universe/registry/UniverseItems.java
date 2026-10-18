@@ -204,6 +204,12 @@ public final class UniverseItems {
     public static final DeferredItem<StationItem> INTERSTELLAR_LOGISTICS_STATION = ITEMS.registerItem("interstellar_logistics_station",
             properties -> new StationItem(UniverseBlocks.INTERSTELLAR_LOGISTICS_STATION.get(), properties),
             () -> new Item.Properties().useBlockDescriptionPrefix());
+    // 戴森球的设备（ADR-0016）
+    public static final DeferredItem<BlockItem> EM_RAIL_EJECTOR = ITEMS.registerSimpleBlockItem(UniverseBlocks.EM_RAIL_EJECTOR);
+    public static final DeferredItem<BlockItem> VERTICAL_LAUNCHING_SILO = ITEMS.registerSimpleBlockItem(UniverseBlocks.VERTICAL_LAUNCHING_SILO);
+    public static final DeferredItem<BlockItem> RAY_RECEIVER = ITEMS.registerSimpleBlockItem(UniverseBlocks.RAY_RECEIVER);
+    public static final DeferredItem<BlockItem> MINIATURE_PARTICLE_COLLIDER = ITEMS.registerSimpleBlockItem(
+            UniverseBlocks.MINIATURE_PARTICLE_COLLIDER);
     public static final DeferredItem<StationItem> ORBITAL_COLLECTOR = ITEMS.registerItem("orbital_collector",
             properties -> new StationItem(UniverseBlocks.ORBITAL_COLLECTOR.get(), properties), () -> new Item.Properties().useBlockDescriptionPrefix());
 
@@ -248,6 +254,22 @@ public final class UniverseItems {
     public static final DeferredItem<Item> LOGISTICS_VESSEL = ITEMS.registerSimpleItem("logistics_vessel");
     public static final DeferredItem<Item> STRUCTURE_MATRIX = ITEMS.registerSimpleItem("structure_matrix");
     public static final DeferredItem<Item> INFORMATION_MATRIX = ITEMS.registerSimpleItem("information_matrix");
+    /** 戴森球阶段的物品（ADR-0016），配方照戴森球计划。 */
+    public static final DeferredItem<Item> PHOTON_COMBINER = ITEMS.registerSimpleItem("photon_combiner");
+    public static final DeferredItem<Item> SOLAR_SAIL = ITEMS.registerSimpleItem("solar_sail");
+    public static final DeferredItem<Item> FRAME_MATERIAL = ITEMS.registerSimpleItem("frame_material");
+    public static final DeferredItem<Item> DYSON_SPHERE_COMPONENT = ITEMS.registerSimpleItem("dyson_sphere_component");
+    public static final DeferredItem<Item> SMALL_CARRIER_ROCKET = ITEMS.registerSimpleItem("small_carrier_rocket", properties -> properties.stacksTo(20));
+    public static final DeferredItem<Item> DEUTERON_FUEL_ROD = ITEMS.registerSimpleItem("deuteron_fuel_rod", properties -> properties.stacksTo(32));
+    public static final DeferredItem<Item> TITANIUM_GLASS = ITEMS.registerSimpleItem("titanium_glass");
+    public static final DeferredItem<Item> CASIMIR_CRYSTAL = ITEMS.registerSimpleItem("casimir_crystal");
+    public static final DeferredItem<Item> PLANE_FILTER = ITEMS.registerSimpleItem("plane_filter");
+    public static final DeferredItem<Item> QUANTUM_CHIP = ITEMS.registerSimpleItem("quantum_chip");
+    /** 奇异物质：就是黑洞附近星球上奇异物质矿掉的那种，微型粒子对撞机也能造。 */
+    public static final DeferredItem<Item> STRANGE_MATTER = ORE_DROPS.get(OreKind.STRANGE_MATTER);
+    public static final DeferredItem<Item> GRAVITON_LENS = ITEMS.registerSimpleItem("graviton_lens");
+    public static final DeferredItem<Item> CRITICAL_PHOTON = ITEMS.registerSimpleItem("critical_photon");
+    public static final DeferredItem<Item> GRAVITY_MATRIX = ITEMS.registerSimpleItem("gravity_matrix");
 
     /** 能进火力发电厂和熔炉的燃料，燃烧时间按原版的刻数。 */
     private static Item.Properties fuel(Item.Properties properties, int burnTime) {
@@ -289,10 +311,13 @@ public final class UniverseItems {
                 SORTER, SORTER_MK2, SORTER_MK3, SPLITTER, STORAGE_DEPOT, STORAGE_TANK, CRUDE_OIL_SEEP,
                 ASSEMBLER_MK2, ASSEMBLER_MK3, PLANE_SMELTER, CHEMICAL_PLANT, FRACTIONATOR, ADVANCED_MINING_MACHINE, FACTORY_ANCHOR,
                 PLANETARY_LOGISTICS_STATION, INTERSTELLAR_LOGISTICS_STATION, ORBITAL_COLLECTOR,
+                EM_RAIL_EJECTOR, VERTICAL_LAUNCHING_SILO, RAY_RECEIVER, MINIATURE_PARTICLE_COLLIDER,
                 GEAR, MAGNETIC_COIL, CIRCUIT_BOARD, ELECTRIC_MOTOR, STEEL, PRISM, PLASMA_EXCITER, ENERGETIC_GRAPHITE,
                 WATER, CRUDE_OIL, REFINED_OIL, HYDROGEN, DEUTERIUM, ELECTROMAGNETIC_MATRIX, ENERGY_MATRIX,
                 CRYSTAL_SILICON, TITANIUM_ALLOY, SYNTHETIC_DIAMOND, PLASTIC, SULFURIC_ACID, GRAPHENE, CARBON_NANOTUBE, TITANIUM_CRYSTAL, MICROCRYSTALLINE_COMPONENT, PROCESSOR,
-                PARTICLE_BROADBAND, THRUSTER, REINFORCED_THRUSTER, ELECTROMAGNETIC_TURBINE, SUPER_MAGNETIC_RING, PARTICLE_CONTAINER, LOGISTICS_DRONE, LOGISTICS_VESSEL, STRUCTURE_MATRIX, INFORMATION_MATRIX));
+                PARTICLE_BROADBAND, THRUSTER, REINFORCED_THRUSTER, ELECTROMAGNETIC_TURBINE, SUPER_MAGNETIC_RING, PARTICLE_CONTAINER, LOGISTICS_DRONE, LOGISTICS_VESSEL, STRUCTURE_MATRIX, INFORMATION_MATRIX,
+                PHOTON_COMBINER, SOLAR_SAIL, FRAME_MATERIAL, DYSON_SPHERE_COMPONENT, SMALL_CARRIER_ROCKET, DEUTERON_FUEL_ROD, TITANIUM_GLASS,
+                CASIMIR_CRYSTAL, PLANE_FILTER, QUANTUM_CHIP, GRAVITON_LENS, CRITICAL_PHOTON, GRAVITY_MATRIX));
         return List.copyOf(order);
     }
 

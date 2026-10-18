@@ -1,0 +1,20 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:casimir_crystal"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:titanium_glass"
+    }
+  ],
+  "research": "quantum_printing",
+  "results": [
+    {
+      "id": "universe:plane_filter"
+    }
+  ],
+  "time": 240
+}

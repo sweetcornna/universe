@@ -44,6 +44,10 @@ neoForge {
             if (project.hasProperty('quickPlay')) {
                 programArguments.addAll '--quickPlaySingleplayer', project.property('quickPlay').toString()
             }
+            // 无头验收用：./gradlew runClient -PdevScript=<脚本> 进存档后按脚本自动操作、截图（client/dev/DevScript）
+            if (project.hasProperty('devScript')) {
+                systemProperty 'universe.devScript', file(project.property('devScript').toString()).getAbsolutePath()
+            }
         }
 
         server {

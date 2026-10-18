@@ -1,0 +1,19 @@
+{
+  "type": "universe:research_shaped",
+  "category": "redstone",
+  "key": {
+    "A": "universe:titanium_alloy",
+    "F": "universe:frame_material",
+    "P": "universe:processor",
+    "R": "universe:super_magnetic_ring"
+  },
+  "pattern": [
+    "ARA",
+    "FPF",
+    "ARA"
+  ],
+  "research": "miniature_collider",
+  "result": {
+    "id": "universe:miniature_particle_collider"
+  }
+}

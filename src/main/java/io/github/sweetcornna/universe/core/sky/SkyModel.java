@@ -60,8 +60,8 @@ public final class SkyModel {
         return result;
     }
 
-    /** 以恒星为原点的位置（AU），黄道面是 xy 平面。 */
-    static double[] position(StarSystem system, Planet body, Planet parent, double days) {
+    /** 以恒星为原点的位置（AU），黄道面是 xy 平面；parent 是卫星的母行星，可以为空（按编号查）。 */
+    public static double[] position(StarSystem system, Planet body, Planet parent, double days) {
         if (body.moon()) {
             Planet host = parent != null ? parent : system.planets().get(body.id().planet());
             double[] base = orbitPoint(host.orbit(), days);
@@ -77,6 +77,11 @@ public final class SkyModel {
         double x = orbit.radius() * Math.cos(angle);
         double y = orbit.radius() * Math.sin(angle);
         return new double[] {x, y * Math.cos(inclination), y * Math.sin(inclination)};
+    }
+
+    /** 在 here（AU，黄道坐标）看恒星，天空里显示的直径（度）。 */
+    public static double starDiameter(StarSystem system, double[] here) {
+        return star(system.star(), here).angularDiameter();
     }
 
     private static SkyBody star(Star star, double[] here) {

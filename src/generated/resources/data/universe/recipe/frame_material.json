@@ -1,0 +1,16 @@
+{
+  "type": "universe:research_shaped",
+  "key": {
+    "A": "universe:titanium_alloy",
+    "N": "universe:carbon_nanotube",
+    "S": "universe:silicon"
+  },
+  "pattern": [
+    "NNA",
+    "NNS"
+  ],
+  "research": "frame_material",
+  "result": {
+    "id": "universe:frame_material"
+  }
+}

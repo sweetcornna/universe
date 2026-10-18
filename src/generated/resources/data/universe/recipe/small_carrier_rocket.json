@@ -1,0 +1,16 @@
+{
+  "type": "universe:research_shaped",
+  "key": {
+    "C": "universe:dyson_sphere_component",
+    "Q": "universe:quantum_chip",
+    "R": "universe:deuteron_fuel_rod"
+  },
+  "pattern": [
+    "CRQ",
+    "CRQ"
+  ],
+  "research": "vertical_launching_silo",
+  "result": {
+    "id": "universe:small_carrier_rocket"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:graphene"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:photon_combiner"
+    }
+  ],
+  "research": "solar_sail_orbit",
+  "results": [
+    {
+      "count": 2,
+      "id": "universe:solar_sail"
+    }
+  ],
+  "time": 80
+}

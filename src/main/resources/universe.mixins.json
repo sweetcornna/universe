@@ -10,7 +10,8 @@
     "ServerLevelMixin"
   ],
   "client": [
-    "client.ClientLevelMixin"
+    "client.ClientLevelMixin",
+    "client.MouseHandlerMixin"
   ],
   "injectors": {
     "defaultRequire": 1

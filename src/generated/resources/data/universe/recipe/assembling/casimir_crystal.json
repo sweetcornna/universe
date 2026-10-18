@@ -1,0 +1,24 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:titanium_crystal"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:graphene"
+    },
+    {
+      "count": 12,
+      "ingredient": "universe:hydrogen"
+    }
+  ],
+  "research": "quantum_printing",
+  "results": [
+    {
+      "id": "universe:casimir_crystal"
+    }
+  ],
+  "time": 80
+}

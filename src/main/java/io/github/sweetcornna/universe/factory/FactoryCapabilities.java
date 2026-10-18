@@ -26,7 +26,8 @@ public final class FactoryCapabilities {
                 UniverseBlockEntities.OIL_REFINERY, UniverseBlockEntities.MINING_MACHINE, UniverseBlockEntities.WATER_PUMP,
                 UniverseBlockEntities.OIL_EXTRACTOR, UniverseBlockEntities.MATRIX_LAB, UniverseBlockEntities.ASSEMBLER_MK2,
                 UniverseBlockEntities.ASSEMBLER_MK3, UniverseBlockEntities.PLANE_SMELTER, UniverseBlockEntities.CHEMICAL_PLANT,
-                UniverseBlockEntities.FRACTIONATOR, UniverseBlockEntities.ADVANCED_MINING_MACHINE);
+                UniverseBlockEntities.FRACTIONATOR, UniverseBlockEntities.ADVANCED_MINING_MACHINE, UniverseBlockEntities.EM_RAIL_EJECTOR,
+                UniverseBlockEntities.VERTICAL_LAUNCHING_SILO, UniverseBlockEntities.RAY_RECEIVER, UniverseBlockEntities.MINIATURE_PARTICLE_COLLIDER);
     }
 
     private static void register(RegisterCapabilitiesEvent event) {

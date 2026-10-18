@@ -49,6 +49,7 @@ public final class FactoryClient {
         recipeMachine(event, RecipeMachines.ASSEMBLER_MK3);
         recipeMachine(event, RecipeMachines.PLANE_SMELTER);
         recipeMachine(event, RecipeMachines.CHEMICAL_PLANT);
+        recipeMachine(event, RecipeMachines.MINIATURE_PARTICLE_COLLIDER);
         event.register(UniverseMenus.FRACTIONATOR.menuType(), ResourceScreens.Fractionator::new);
         event.register(UniverseMenus.MINING_MACHINE.menuType(), ResourceScreens.MiningMachine::new);
         event.register(UniverseMenus.WATER_PUMP.menuType(), ResourceScreens.WaterPump::new);

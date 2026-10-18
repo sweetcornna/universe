@@ -1,0 +1,14 @@
+{
+  "type": "universe:research_shaped",
+  "key": {
+    "B": "universe:circuit_board",
+    "P": "universe:prism"
+  },
+  "pattern": [
+    "PBP"
+  ],
+  "research": "solar_sail_orbit",
+  "result": {
+    "id": "universe:photon_combiner"
+  }
+}

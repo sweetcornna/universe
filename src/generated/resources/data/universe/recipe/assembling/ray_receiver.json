@@ -1,0 +1,28 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 20,
+      "ingredient": "universe:steel"
+    },
+    {
+      "count": 10,
+      "ingredient": "universe:photon_combiner"
+    },
+    {
+      "count": 5,
+      "ingredient": "universe:processor"
+    },
+    {
+      "count": 20,
+      "ingredient": "universe:super_magnetic_ring"
+    }
+  ],
+  "research": "ray_receiver",
+  "results": [
+    {
+      "id": "universe:ray_receiver"
+    }
+  ],
+  "time": 160
+}

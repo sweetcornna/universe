@@ -1,0 +1,24 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 4,
+      "ingredient": "universe:carbon_nanotube"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:titanium_alloy"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:silicon"
+    }
+  ],
+  "research": "frame_material",
+  "results": [
+    {
+      "id": "universe:frame_material"
+    }
+  ],
+  "time": 120
+}

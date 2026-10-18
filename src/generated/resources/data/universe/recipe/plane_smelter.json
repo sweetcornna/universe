@@ -3,14 +3,13 @@
   "category": "redstone",
   "key": {
     "A": "universe:arc_smelter",
-    "C": "universe:carbon_nanotube",
-    "P": "universe:processor",
-    "T": "universe:titanium_alloy"
+    "F": "universe:frame_material",
+    "P": "universe:plane_filter"
   },
   "pattern": [
-    "TCT",
-    "PAP",
-    "TCT"
+    "FPF",
+    "FAF",
+    "PFP"
   ],
   "research": "plane_smelting",
   "result": {

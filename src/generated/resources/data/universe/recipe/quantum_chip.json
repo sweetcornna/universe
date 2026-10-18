@@ -1,0 +1,15 @@
+{
+  "type": "universe:research_shaped",
+  "key": {
+    "F": "universe:plane_filter",
+    "P": "universe:processor"
+  },
+  "pattern": [
+    "PF",
+    "FP"
+  ],
+  "research": "quantum_printing",
+  "result": {
+    "id": "universe:quantum_chip"
+  }
+}

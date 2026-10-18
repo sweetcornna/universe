@@ -29,6 +29,7 @@ import io.github.sweetcornna.universe.core.ecology.PlantForm;
 import io.github.sweetcornna.universe.core.factory.BeltTier;
 import io.github.sweetcornna.universe.core.factory.SorterTier;
 import io.github.sweetcornna.universe.core.galaxy.Palette;
+import io.github.sweetcornna.universe.dyson.DysonBlocks;
 import io.github.sweetcornna.universe.factory.ArcSmelterBlock;
 import io.github.sweetcornna.universe.factory.FactoryAnchorBlock;
 import io.github.sweetcornna.universe.factory.MachineBlock;
@@ -232,6 +233,15 @@ public final class UniverseBlocks {
                     && state.getValue(MachineBlock.WORKING) ? 12 : 0));
     public static final DeferredBlock<OrbitalCollectorBlock> ORBITAL_COLLECTOR = BLOCKS.registerBlock("orbital_collector",
             p -> new OrbitalCollectorBlock(p, UniverseBlockEntities.ORBITAL_COLLECTOR), p -> machine(p).noOcclusion().lightLevel(state -> 9));
+    // ---- 戴森球（ADR-0016）
+    public static final DeferredBlock<DysonBlocks.Ejector> EM_RAIL_EJECTOR = BLOCKS.registerBlock("em_rail_ejector", DysonBlocks.Ejector::new,
+            p -> machine(p).noOcclusion());
+    public static final DeferredBlock<DysonBlocks.Silo> VERTICAL_LAUNCHING_SILO = BLOCKS.registerBlock("vertical_launching_silo",
+            DysonBlocks.Silo::new, p -> machine(p).noOcclusion());
+    public static final DeferredBlock<DysonBlocks.Receiver> RAY_RECEIVER = BLOCKS.registerBlock("ray_receiver", DysonBlocks.Receiver::new,
+            p -> machine(p).noOcclusion().lightLevel(state -> state.getValue(MachineBlock.WORKING) ? 10 : 0));
+    public static final DeferredBlock<DysonBlocks.Collider> MINIATURE_PARTICLE_COLLIDER = BLOCKS.registerBlock("miniature_particle_collider",
+            DysonBlocks.Collider::new, p -> machine(p).lightLevel(state -> state.getValue(MachineBlock.WORKING) ? 11 : 2));
     /** 原油涌泉：挖不掉，也不掉落。 */
     public static final DeferredBlock<CrudeOilSeepBlock> CRUDE_OIL_SEEP = BLOCKS.registerBlock("crude_oil_seep", CrudeOilSeepBlock::new,
             p -> p.mapColor(MapColor.COLOR_BLACK).strength(-1.0F, 3600000.0F).noLootTable().sound(SoundType.MUD));

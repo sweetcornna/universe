@@ -1,0 +1,24 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 3,
+      "ingredient": "universe:frame_material"
+    },
+    {
+      "count": 3,
+      "ingredient": "universe:solar_sail"
+    },
+    {
+      "count": 3,
+      "ingredient": "universe:processor"
+    }
+  ],
+  "research": "vertical_launching_silo",
+  "results": [
+    {
+      "id": "universe:dyson_sphere_component"
+    }
+  ],
+  "time": 160
+}

@@ -1,0 +1,28 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 20,
+      "ingredient": "universe:steel"
+    },
+    {
+      "count": 20,
+      "ingredient": "universe:gear"
+    },
+    {
+      "count": 5,
+      "ingredient": "universe:processor"
+    },
+    {
+      "count": 10,
+      "ingredient": "universe:super_magnetic_ring"
+    }
+  ],
+  "research": "solar_sail_orbit",
+  "results": [
+    {
+      "id": "universe:em_rail_ejector"
+    }
+  ],
+  "time": 120
+}

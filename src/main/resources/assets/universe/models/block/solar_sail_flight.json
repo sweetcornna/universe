@@ -1,0 +1,78 @@
+{
+  "parent": "block/block",
+  "textures": {
+    "particle": "universe:block/solar_sail_flight",
+    "sail": "universe:block/solar_sail_flight"
+  },
+  "elements": [
+    {
+      "from": [
+        2,
+        7.5,
+        2
+      ],
+      "to": [
+        14,
+        8.5,
+        14
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            2,
+            7.5,
+            14,
+            8.5
+          ],
+          "texture": "#sail"
+        },
+        "south": {
+          "uv": [
+            2,
+            7.5,
+            14,
+            8.5
+          ],
+          "texture": "#sail"
+        },
+        "west": {
+          "uv": [
+            2,
+            7.5,
+            14,
+            8.5
+          ],
+          "texture": "#sail"
+        },
+        "east": {
+          "uv": [
+            2,
+            7.5,
+            14,
+            8.5
+          ],
+          "texture": "#sail"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#sail"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#sail"
+        }
+      },
+      "light_emission": 15
+    }
+  ]
+}

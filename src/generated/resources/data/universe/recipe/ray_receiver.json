@@ -1,0 +1,19 @@
+{
+  "type": "universe:research_shaped",
+  "category": "redstone",
+  "key": {
+    "C": "universe:photon_combiner",
+    "P": "universe:processor",
+    "R": "universe:super_magnetic_ring",
+    "S": "universe:steel"
+  },
+  "pattern": [
+    "CCC",
+    "RPR",
+    "SRS"
+  ],
+  "research": "ray_receiver",
+  "result": {
+    "id": "universe:ray_receiver"
+  }
+}

@@ -6,16 +6,12 @@
       "ingredient": "universe:assembler_mk2"
     },
     {
-      "count": 2,
+      "count": 8,
       "ingredient": "universe:particle_broadband"
     },
     {
-      "count": 4,
-      "ingredient": "universe:processor"
-    },
-    {
       "count": 2,
-      "ingredient": "universe:titanium_alloy"
+      "ingredient": "universe:quantum_chip"
     }
   ],
   "research": "high_speed_assembling",

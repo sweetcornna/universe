@@ -64,6 +64,99 @@ final class UniverseRecipes extends RecipeProvider {
         this.multitool();
         this.factory();
         this.midgame();
+        this.dyson();
+    }
+
+    /**
+     * 戴森球阶段（ADR-0016）：配方照戴森球计划，时间是戴森球计划的秒数 × 20；设备只有 4 个原料格，原料多的去掉一种。
+     * 组装件和设备也能手工合成，化工、对撞机的产物和矩阵只能在设备里做。
+     */
+    private void dyson() {
+        Item board = UniverseItems.CIRCUIT_BOARD.get();
+        Item gear = UniverseItems.GEAR.get();
+        Item steel = UniverseItems.STEEL.get();
+        Item prism = UniverseItems.PRISM.get();
+        Item silicon = UniverseItems.ORE_SMELTED.get(OreKind.SILICON).get();
+        Item titanium = UniverseItems.ORE_SMELTED.get(OreKind.TITANIUM).get();
+        Item water = UniverseItems.WATER.get();
+        Item hydrogen = UniverseItems.HYDROGEN.get();
+        Item deuterium = UniverseItems.DEUTERIUM.get();
+        Item alloy = UniverseItems.TITANIUM_ALLOY.get();
+        Item diamond = UniverseItems.SYNTHETIC_DIAMOND.get();
+        Item graphene = UniverseItems.GRAPHENE.get();
+        Item nanotube = UniverseItems.CARBON_NANOTUBE.get();
+        Item titaniumCrystal = UniverseItems.TITANIUM_CRYSTAL.get();
+        Item processor = UniverseItems.PROCESSOR.get();
+        Item ring = UniverseItems.SUPER_MAGNETIC_RING.get();
+        Item container = UniverseItems.PARTICLE_CONTAINER.get();
+        Item combiner = UniverseItems.PHOTON_COMBINER.get();
+        Item sail = UniverseItems.SOLAR_SAIL.get();
+        Item frame = UniverseItems.FRAME_MATERIAL.get();
+        Item component = UniverseItems.DYSON_SPHERE_COMPONENT.get();
+        Item rocket = UniverseItems.SMALL_CARRIER_ROCKET.get();
+        Item rod = UniverseItems.DEUTERON_FUEL_ROD.get();
+        Item titaniumGlass = UniverseItems.TITANIUM_GLASS.get();
+        Item casimir = UniverseItems.CASIMIR_CRYSTAL.get();
+        Item filter = UniverseItems.PLANE_FILTER.get();
+        Item quantum = UniverseItems.QUANTUM_CHIP.get();
+        Item strange = UniverseItems.STRANGE_MATTER.get();
+        Item lens = UniverseItems.GRAVITON_LENS.get();
+
+        // ---- 组装件
+        this.machine(Kind.ASSEMBLING, "photon_combiner", 60, "solar_sail_orbit", in(prism, 2, board, 1), out(combiner, 1));
+        this.machine(Kind.ASSEMBLING, "solar_sail", 80, "solar_sail_orbit", in(graphene, 1, combiner, 1), out(sail, 2));
+        this.machine(Kind.ASSEMBLING, "frame_material", 120, "frame_material", in(nanotube, 4, alloy, 1, silicon, 1), out(frame, 1));
+        this.machine(Kind.ASSEMBLING, "dyson_sphere_component", 160, "vertical_launching_silo", in(frame, 3, sail, 3, processor, 3),
+                out(component, 1));
+        this.machine(Kind.ASSEMBLING, "small_carrier_rocket", 120, "vertical_launching_silo", in(component, 2, rod, 2, quantum, 2),
+                out(rocket, 1));
+        this.machine(Kind.ASSEMBLING, "deuteron_fuel_rod", 240, "vertical_launching_silo", in(alloy, 1, deuterium, 20, ring, 1), out(rod, 2));
+        this.machine(Kind.ASSEMBLING, "plane_filter", 240, "quantum_printing", in(casimir, 1, titaniumGlass, 2), out(filter, 1));
+        this.machine(Kind.ASSEMBLING, "quantum_chip", 120, "quantum_printing", in(processor, 2, filter, 2), out(quantum, 1));
+        this.machine(Kind.ASSEMBLING, "graviton_lens", 120, "gravitational_wave_refraction", in(diamond, 4, strange, 1), out(lens, 1));
+        this.machine(Kind.ASSEMBLING, "gravity_matrix", 480, "gravity_matrix", in(lens, 1, quantum, 1),
+                out(UniverseItems.GRAVITY_MATRIX.get(), 2));
+        this.machine(Kind.ASSEMBLING, "casimir_crystal", 80, "quantum_printing", in(titaniumCrystal, 1, graphene, 2, hydrogen, 12),
+                out(casimir, 1));
+        // ---- 冶炼、对撞
+        this.machine(Kind.SMELTING, "titanium_glass", 100, "quantum_printing",
+                List.of(SizedIngredient.of(Items.GLASS, 2), SizedIngredient.of(titanium, 2), SizedIngredient.of(water, 2)), out(titaniumGlass, 2));
+        this.machine(Kind.PARTICLE, "strange_matter", 160, "miniature_collider", in(container, 2, Items.IRON_INGOT, 2, deuterium, 10),
+                out(strange, 1));
+
+        // ---- 设备
+        this.machine(Kind.ASSEMBLING, "em_rail_ejector", 120, "solar_sail_orbit", in(steel, 20, gear, 20, processor, 5, ring, 10),
+                out(UniverseItems.EM_RAIL_EJECTOR.get(), 1));
+        // 戴森球计划还要 20 高纯硅，设备只有 4 个原料格，去掉
+        this.machine(Kind.ASSEMBLING, "ray_receiver", 160, "ray_receiver", in(steel, 20, combiner, 10, processor, 5, ring, 20),
+                out(UniverseItems.RAY_RECEIVER.get(), 1));
+        // 垂直发射井的原料减半
+        this.machine(Kind.ASSEMBLING, "vertical_launching_silo", 600, "vertical_launching_silo", in(alloy, 40, frame, 15, lens, 10, quantum, 5),
+                out(UniverseItems.VERTICAL_LAUNCHING_SILO.get(), 1));
+        // 戴森球计划还要 10 石墨烯，去掉
+        this.machine(Kind.ASSEMBLING, "miniature_particle_collider", 300, "miniature_collider", in(alloy, 20, frame, 20, ring, 50, processor, 8),
+                out(UniverseItems.MINIATURE_PARTICLE_COLLIDER.get(), 1));
+
+        // ---- 手工合成
+        this.researchShaped("solar_sail_orbit", RecipeCategory.MISC, combiner, 1, List.of("PBP"), Map.of('P', prism, 'B', board));
+        this.researchShaped("solar_sail_orbit", RecipeCategory.MISC, sail, 2, List.of("G", "C"), Map.of('G', graphene, 'C', combiner));
+        this.researchShaped("frame_material", RecipeCategory.MISC, frame, 1, List.of("NNA", "NNS"), Map.of('N', nanotube, 'A', alloy, 'S', silicon));
+        this.researchShaped("vertical_launching_silo", RecipeCategory.MISC, component, 1, List.of("FFF", "SSS", "PPP"),
+                Map.of('F', frame, 'S', sail, 'P', processor));
+        this.researchShaped("vertical_launching_silo", RecipeCategory.MISC, rocket, 1, List.of("CRQ", "CRQ"),
+                Map.of('C', component, 'R', rod, 'Q', quantum));
+        this.researchShaped("quantum_printing", RecipeCategory.MISC, filter, 1, List.of("GCG"), Map.of('C', casimir, 'G', titaniumGlass));
+        this.researchShaped("quantum_printing", RecipeCategory.MISC, quantum, 1, List.of("PF", "FP"), Map.of('P', processor, 'F', filter));
+        this.researchShaped("gravitational_wave_refraction", RecipeCategory.MISC, lens, 1, List.of(" D ", "DSD", " D "),
+                Map.of('D', diamond, 'S', strange));
+        this.researchShaped("solar_sail_orbit", RecipeCategory.REDSTONE, UniverseItems.EM_RAIL_EJECTOR.get(), 1, List.of("SRS", "GPG", "SGS"),
+                Map.of('S', steel, 'R', ring, 'G', gear, 'P', processor));
+        this.researchShaped("ray_receiver", RecipeCategory.REDSTONE, UniverseItems.RAY_RECEIVER.get(), 1, List.of("CCC", "RPR", "SRS"),
+                Map.of('C', combiner, 'R', ring, 'P', processor, 'S', steel));
+        this.researchShaped("vertical_launching_silo", RecipeCategory.REDSTONE, UniverseItems.VERTICAL_LAUNCHING_SILO.get(), 1,
+                List.of("AFA", "LQL", "AFA"), Map.of('A', alloy, 'F', frame, 'L', lens, 'Q', quantum));
+        this.researchShaped("miniature_collider", RecipeCategory.REDSTONE, UniverseItems.MINIATURE_PARTICLE_COLLIDER.get(), 1,
+                List.of("ARA", "FPF", "ARA"), Map.of('A', alloy, 'R', ring, 'F', frame, 'P', processor));
     }
 
     /**
@@ -156,9 +249,11 @@ final class UniverseRecipes extends RecipeProvider {
         this.machine(Kind.ASSEMBLING, "assembler_mk2", 20, "improved_assembling", in(UniverseItems.ASSEMBLER.get(), 1, graphene, 8, processor, 4),
                 out(UniverseItems.ASSEMBLER_MK2.get(), 1));
         this.machine(Kind.ASSEMBLING, "assembler_mk3", 20, "high_speed_assembling",
-                in(UniverseItems.ASSEMBLER_MK2.get(), 1, broadband, 2, processor, 4, alloy, 2), out(UniverseItems.ASSEMBLER_MK3.get(), 1));
+                in(UniverseItems.ASSEMBLER_MK2.get(), 1, broadband, 8, UniverseItems.QUANTUM_CHIP.get(), 2), out(UniverseItems.ASSEMBLER_MK3.get(), 1));
+        // 戴森球计划还要 15 单极磁石，本模组没有，去掉
         this.machine(Kind.ASSEMBLING, "plane_smelter", 100, "plane_smelting",
-                in(UniverseItems.ARC_SMELTER.get(), 1, alloy, 4, processor, 4, nanotube, 4), out(UniverseItems.PLANE_SMELTER.get(), 1));
+                in(UniverseItems.ARC_SMELTER.get(), 1, UniverseItems.FRAME_MATERIAL.get(), 5, UniverseItems.PLANE_FILTER.get(), 4),
+                out(UniverseItems.PLANE_SMELTER.get(), 1));
         this.machine(Kind.ASSEMBLING, "chemical_plant", 100, "basic_chemical", in(steel, 8, Items.STONE_BRICKS, 20, Items.GLASS, 8, board, 2),
                 out(UniverseItems.CHEMICAL_PLANT.get(), 1));
         this.machine(Kind.ASSEMBLING, "fractionator", 60, "deuterium_fractionation", in(steel, 8, Items.STONE_BRICKS, 4, Items.GLASS, 4, processor, 1),
@@ -166,7 +261,8 @@ final class UniverseRecipes extends RecipeProvider {
         this.machine(Kind.ASSEMBLING, "solar_panel", 120, "solar_power", in(Items.COPPER_INGOT, 10, silicon, 10, board, 15),
                 out(UniverseItems.SOLAR_PANEL.get(), 1));
         this.machine(Kind.ASSEMBLING, "advanced_mining_machine", 400, "advanced_mining",
-                in(UniverseItems.MINING_MACHINE.get(), 1, alloy, 10, ring, 4, processor, 4), out(UniverseItems.ADVANCED_MINING_MACHINE.get(), 1));
+                in(alloy, 20, UniverseItems.FRAME_MATERIAL.get(), 20, ring, 10, UniverseItems.QUANTUM_CHIP.get(), 10),
+                out(UniverseItems.ADVANCED_MINING_MACHINE.get(), 1));
         this.machine(Kind.ASSEMBLING, "factory_anchor", 200, "interstellar_logistics", in(alloy, 8, processor, 8, ring, 4, container, 2),
                 out(UniverseItems.FACTORY_ANCHOR.get(), 1));
         // 物流站：戴森球计划的原料比例缩到四分之一
@@ -205,18 +301,18 @@ final class UniverseRecipes extends RecipeProvider {
                 Map.of('I', Items.IRON_INGOT, 'G', Items.GLASS, 'B', Items.STONE_BRICKS));
         this.researchShaped("improved_assembling", RecipeCategory.REDSTONE, UniverseItems.ASSEMBLER_MK2.get(), 1, List.of("GPG", "PAP", "GPG"),
                 Map.of('G', graphene, 'P', processor, 'A', UniverseItems.ASSEMBLER.get()));
-        this.researchShaped("high_speed_assembling", RecipeCategory.REDSTONE, UniverseItems.ASSEMBLER_MK3.get(), 1, List.of("PBP", "TAT", "PBP"),
-                Map.of('P', processor, 'B', broadband, 'T', alloy, 'A', UniverseItems.ASSEMBLER_MK2.get()));
-        this.researchShaped("plane_smelting", RecipeCategory.REDSTONE, UniverseItems.PLANE_SMELTER.get(), 1, List.of("TCT", "PAP", "TCT"),
-                Map.of('T', alloy, 'C', nanotube, 'P', processor, 'A', UniverseItems.ARC_SMELTER.get()));
+        this.researchShaped("high_speed_assembling", RecipeCategory.REDSTONE, UniverseItems.ASSEMBLER_MK3.get(), 1, List.of("BQB", "BAB", "BQB"),
+                Map.of('B', broadband, 'Q', UniverseItems.QUANTUM_CHIP.get(), 'A', UniverseItems.ASSEMBLER_MK2.get()));
+        this.researchShaped("plane_smelting", RecipeCategory.REDSTONE, UniverseItems.PLANE_SMELTER.get(), 1, List.of("FPF", "FAF", "PFP"),
+                Map.of('F', UniverseItems.FRAME_MATERIAL.get(), 'P', UniverseItems.PLANE_FILTER.get(), 'A', UniverseItems.ARC_SMELTER.get()));
         this.researchShaped("basic_chemical", RecipeCategory.REDSTONE, UniverseItems.CHEMICAL_PLANT.get(), 1, List.of("SGS", "KBK", "SGS"),
                 Map.of('S', steel, 'G', Items.GLASS, 'K', Items.STONE_BRICKS, 'B', board));
         this.researchShaped("deuterium_fractionation", RecipeCategory.REDSTONE, UniverseItems.FRACTIONATOR.get(), 1, List.of("SGS", "KPK", "SGS"),
                 Map.of('S', steel, 'G', Items.GLASS, 'K', Items.STONE_BRICKS, 'P', processor));
         this.researchShaped("solar_power", RecipeCategory.REDSTONE, UniverseItems.SOLAR_PANEL.get(), 1, List.of("SSS", "BCB", "CIC"),
                 Map.of('S', silicon, 'B', board, 'C', Items.COPPER_INGOT, 'I', Items.IRON_INGOT));
-        this.researchShaped("advanced_mining", RecipeCategory.REDSTONE, UniverseItems.ADVANCED_MINING_MACHINE.get(), 1, List.of("TRT", "PMP", "TRT"),
-                Map.of('T', alloy, 'R', ring, 'P', processor, 'M', UniverseItems.MINING_MACHINE.get()));
+        this.researchShaped("advanced_mining", RecipeCategory.REDSTONE, UniverseItems.ADVANCED_MINING_MACHINE.get(), 1, List.of("TFT", "RQR", "TFT"),
+                Map.of('T', alloy, 'F', UniverseItems.FRAME_MATERIAL.get(), 'R', ring, 'Q', UniverseItems.QUANTUM_CHIP.get()));
         this.researchShaped("interstellar_logistics", RecipeCategory.REDSTONE, UniverseItems.FACTORY_ANCHOR.get(), 1, List.of("TPT", "RCR", "TPT"),
                 Map.of('T', alloy, 'P', processor, 'R', ring, 'C', container));
         this.researchShaped("planetary_logistics", RecipeCategory.TRANSPORTATION, UniverseItems.PLANETARY_LOGISTICS_STATION.get(), 1,

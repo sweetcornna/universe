@@ -210,9 +210,22 @@ final class UniverseModelProvider extends ModelProvider {
                 UniverseItems.TITANIUM_CRYSTAL, UniverseItems.MICROCRYSTALLINE_COMPONENT, UniverseItems.PROCESSOR, UniverseItems.PARTICLE_BROADBAND,
                 UniverseItems.THRUSTER, UniverseItems.REINFORCED_THRUSTER, UniverseItems.ELECTROMAGNETIC_TURBINE, UniverseItems.SUPER_MAGNETIC_RING,
                 UniverseItems.PARTICLE_CONTAINER, UniverseItems.STRUCTURE_MATRIX,
-                UniverseItems.INFORMATION_MATRIX)) {
+                UniverseItems.INFORMATION_MATRIX, UniverseItems.PHOTON_COMBINER, UniverseItems.SOLAR_SAIL, UniverseItems.FRAME_MATERIAL,
+                UniverseItems.DYSON_SPHERE_COMPONENT, UniverseItems.SMALL_CARRIER_ROCKET, UniverseItems.DEUTERON_FUEL_ROD,
+                UniverseItems.TITANIUM_GLASS, UniverseItems.CASIMIR_CRYSTAL, UniverseItems.PLANE_FILTER, UniverseItems.QUANTUM_CHIP,
+                UniverseItems.GRAVITON_LENS, UniverseItems.CRITICAL_PHOTON, UniverseItems.GRAVITY_MATRIX)) {
             itemModels.generateFlatItem(item.get(), ModelTemplates.FLAT_ITEM);
         }
+        // 戴森球的设备（ADR-0016）：会动的部分（炮管、碟面、火箭）由方块实体渲染器画，模型由 tools/dyson_models.py 生成
+        for (Block block : List.of(UniverseBlocks.EM_RAIL_EJECTOR.get(), UniverseBlocks.RAY_RECEIVER.get())) {
+            String name = BuiltInRegistries.BLOCK.getKey(block).getPath();
+            blockModels.blockStateOutput.accept(BlockModelGenerators.createSimpleBlock(block,
+                    BlockModelGenerators.plainVariant(Universe.id("block/" + name))));
+            itemModels.itemModelOutput.accept(block.asItem(), ItemModelUtils.plainModel(Universe.id("block/" + name + "_item")));
+        }
+        tall(blockModels, itemModels, UniverseBlocks.VERTICAL_LAUNCHING_SILO.get(), "vertical_launching_silo", false, true);
+        recipeMachine(blockModels, UniverseBlocks.MINIATURE_PARTICLE_COLLIDER.get(), "miniature_particle_collider", false,
+                "machine_casing_top");
     }
 
     /** 载具：界面里用平面图标，其余场合用 {@code models/block/} 下手写的立体模型。 */

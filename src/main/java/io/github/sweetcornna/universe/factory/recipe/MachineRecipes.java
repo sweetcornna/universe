@@ -34,8 +34,10 @@ public final class MachineRecipes {
     }
 
     public static void registerEvents(IEventBus gameBus) {
+        // 每种设备配方都要发给客户端，界面左边的配方清单读的是客户端的副本
         gameBus.addListener(OnDatapackSyncEvent.class, event -> event.sendRecipes(
-                UniverseRecipeTypes.SMELTING.get(), UniverseRecipeTypes.ASSEMBLING.get(), UniverseRecipeTypes.REFINING.get()));
+                UniverseRecipeTypes.SMELTING.get(), UniverseRecipeTypes.ASSEMBLING.get(), UniverseRecipeTypes.REFINING.get(),
+                UniverseRecipeTypes.CHEMICAL.get(), UniverseRecipeTypes.PARTICLE.get()));
     }
 
     public static void setClientRecipes(Supplier<RecipeMap> recipes) {

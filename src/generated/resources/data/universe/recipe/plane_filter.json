@@ -1,0 +1,14 @@
+{
+  "type": "universe:research_shaped",
+  "key": {
+    "C": "universe:casimir_crystal",
+    "G": "universe:titanium_glass"
+  },
+  "pattern": [
+    "GCG"
+  ],
+  "research": "quantum_printing",
+  "result": {
+    "id": "universe:plane_filter"
+  }
+}

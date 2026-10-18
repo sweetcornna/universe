@@ -2,20 +2,20 @@
   "type": "universe:assembling",
   "ingredients": [
     {
-      "count": 1,
-      "ingredient": "universe:mining_machine"
-    },
-    {
-      "count": 10,
+      "count": 20,
       "ingredient": "universe:titanium_alloy"
     },
     {
-      "count": 4,
+      "count": 20,
+      "ingredient": "universe:frame_material"
+    },
+    {
+      "count": 10,
       "ingredient": "universe:super_magnetic_ring"
     },
     {
-      "count": 4,
-      "ingredient": "universe:processor"
+      "count": 10,
+      "ingredient": "universe:quantum_chip"
     }
   ],
   "research": "advanced_mining",

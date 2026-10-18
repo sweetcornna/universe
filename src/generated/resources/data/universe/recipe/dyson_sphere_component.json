@@ -1,0 +1,17 @@
+{
+  "type": "universe:research_shaped",
+  "key": {
+    "F": "universe:frame_material",
+    "P": "universe:processor",
+    "S": "universe:solar_sail"
+  },
+  "pattern": [
+    "FFF",
+    "SSS",
+    "PPP"
+  ],
+  "research": "vertical_launching_silo",
+  "result": {
+    "id": "universe:dyson_sphere_component"
+  }
+}

@@ -493,6 +493,7 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         item(UniverseItems.HYDROGEN.get(), "氢", "Hydrogen");
         item(UniverseItems.ELECTROMAGNETIC_MATRIX.get(), "电磁矩阵", "Electromagnetic Matrix");
         item(UniverseItems.ENERGY_MATRIX.get(), "能量矩阵", "Energy Matrix");
+        this.dyson();
 
         both("gui.universe.machine.unpowered", "未接入电网：放在电力感应塔的覆盖范围里", "No power: needs a tesla tower nearby");
         both("gui.universe.machine.power", "功率 %s · 满足率 %s%%", "Power %s · %s%% satisfied");
@@ -850,6 +851,124 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("gui.universe.discovery.footer", "点选查看 · 发现者可以改名 · K 关闭", "Click to inspect · discoverers can rename · K to close");
         both("gui.universe.star_map.unexplored", "未探测：跃迁过去才能看到行星", "Unexplored: warp there to chart its planets");
         both("gui.universe.star_map.discovered_by", "发现者：%s", "Discovered by %s");
+    }
+
+    /** 戴森球（ADR-0016）：物品、设备、科技、设备界面和编辑器。 */
+    private void dyson() {
+        item(UniverseItems.PHOTON_COMBINER.get(), "光子合并器", "Photon Combiner");
+        item(UniverseItems.SOLAR_SAIL.get(), "太阳帆", "Solar Sail");
+        item(UniverseItems.FRAME_MATERIAL.get(), "框架材料", "Frame Material");
+        item(UniverseItems.DYSON_SPHERE_COMPONENT.get(), "戴森球组件", "Dyson Sphere Component");
+        item(UniverseItems.SMALL_CARRIER_ROCKET.get(), "小型运载火箭", "Small Carrier Rocket");
+        item(UniverseItems.DEUTERON_FUEL_ROD.get(), "氘核燃料棒", "Deuteron Fuel Rod");
+        item(UniverseItems.TITANIUM_GLASS.get(), "钛化玻璃", "Titanium Glass");
+        item(UniverseItems.CASIMIR_CRYSTAL.get(), "卡西米尔晶体", "Casimir Crystal");
+        item(UniverseItems.PLANE_FILTER.get(), "位面过滤器", "Plane Filter");
+        item(UniverseItems.QUANTUM_CHIP.get(), "量子芯片", "Quantum Chip");
+        item(UniverseItems.GRAVITON_LENS.get(), "引力透镜", "Graviton Lens");
+        item(UniverseItems.CRITICAL_PHOTON.get(), "临界光子", "Critical Photon");
+        item(UniverseItems.GRAVITY_MATRIX.get(), "引力矩阵", "Gravity Matrix");
+        block(UniverseBlocks.EM_RAIL_EJECTOR.get(), "电磁轨道弹射器", "EM-Rail Ejector");
+        block(UniverseBlocks.VERTICAL_LAUNCHING_SILO.get(), "垂直发射井", "Vertical Launching Silo");
+        block(UniverseBlocks.RAY_RECEIVER.get(), "射线接收站", "Ray Receiver");
+        block(UniverseBlocks.MINIATURE_PARTICLE_COLLIDER.get(), "微型粒子对撞机", "Miniature Particle Collider");
+
+        tech("frame_material", "框架材料", "Frame Material");
+        tech("quantum_printing", "量子打印技术", "Quantum Printing Technology");
+        tech("solar_sail_orbit", "太阳帆轨道系统", "Solar Sail Orbit System");
+        tech("ray_receiver", "射线接收站", "Ray Receiver");
+        tech("miniature_collider", "微型粒子对撞机", "Miniature Particle Collider");
+        tech("gravitational_wave_refraction", "引力波折射", "Gravitational Wave Refraction");
+        tech("gravity_matrix", "引力矩阵", "Gravity Matrix");
+        tech("vertical_launching_silo", "垂直发射井", "Vertical Launching Silo");
+        tech("dyson_stress_1", "戴森球应力系统 I", "Dyson Sphere Stress System I");
+        tech("dyson_stress_2", "戴森球应力系统 II", "Dyson Sphere Stress System II");
+        both("tech.universe.dyson_stress_1.effect", "戴森球能建的纬度从 ±30° 放宽到 ±60°", "Dyson shells can be built up to ±60° latitude (was ±30°)");
+        both("tech.universe.dyson_stress_2.effect", "戴森球能建满整个球面（±90°）", "Dyson shells can cover the whole sphere (±90°)");
+        both("tech.universe.interstellar_survey.effect", "解锁跃迁到别的恒星系", "Unlocks warping to other star systems");
+
+        // 弹射器
+        both("gui.universe.ejector.orbit", "戴森云轨道 %s", "Swarm orbit %s");
+        both("gui.universe.ejector.orbit_info", "半径 %s AU · 倾角 %s°", "Radius %s AU · inclination %s°");
+        both("gui.universe.ejector.swarm", "戴森云：%s 张帆，发电 %s", "Swarm: %s sails, %s");
+        both("gui.universe.ejector.progress", "下一张 %s%%", "Next sail %s%%");
+        both("gui.universe.ejector.status.0", "正在弹射太阳帆", "Launching solar sails");
+        both("gui.universe.ejector.status.1", "放入太阳帆", "Insert solar sails");
+        both("gui.universe.ejector.status.2", "没有这条轨道：在戴森球编辑器里新建，或换一条", "No such orbit: create one in the Dyson editor or pick another");
+        both("gui.universe.ejector.status.3", "恒星不在地平线 5° 以上，等它升起来", "The star is below 5° elevation; wait for it to rise");
+        both("gui.universe.ejector.status.4", "头顶被挡住了，看不见天空", "Blocked: needs a clear view of the sky");
+        both("gui.universe.ejector.status.5", "这里没有恒星", "There is no star here");
+        both("gui.universe.ejector.status.6", "电力不足", "Not enough power");
+        // 发射井
+        both("gui.universe.silo.progress", "下一枚 %s%%", "Next rocket %s%%");
+        both("gui.universe.silo.structure", "结构点 %s / %s", "Structure points %s / %s");
+        both("gui.universe.silo.target", "下一枚去第 %s 层", "Next rocket: layer %s");
+        both("gui.universe.silo.status.0", "正在发射运载火箭", "Launching carrier rockets");
+        both("gui.universe.silo.status.1", "放入小型运载火箭", "Insert small carrier rockets");
+        both("gui.universe.silo.status.2", "戴森球还没有层：在编辑器里加一层", "The Dyson sphere has no layers: add one in the editor");
+        both("gui.universe.silo.status.3", "能建的结构都建完了（研究应力系统能建到更高的纬度）",
+                "Everything buildable is built (Stress System research opens higher latitudes)");
+        both("gui.universe.silo.status.4", "井口上方被挡住了", "The silo mouth is blocked");
+        both("gui.universe.silo.status.5", "这里没有恒星", "There is no star here");
+        both("gui.universe.silo.status.6", "电力不足", "Not enough power");
+        // 射线接收站
+        both("gui.universe.receiver.mode.0", "发电模式", "Power mode");
+        both("gui.universe.receiver.mode.1", "光子模式", "Photon mode");
+        both("gui.universe.receiver.switch", "切换", "Switch");
+        both("gui.universe.receiver.continuity", "连续接收 %s%% · 效率 %s%%", "Continuity %s%% · efficiency %s%%");
+        both("gui.universe.receiver.max_output", "最大输出 %s · 分到 %s%%", "Max output %s · share %s%%");
+        both("gui.universe.receiver.photon_draw", "从戴森球取 %s · 分到 %s%%", "Drawing %s · share %s%%");
+        both("gui.universe.receiver.photon", "下一个临界光子 %s%%", "Next critical photon %s%%");
+        both("gui.universe.receiver.lens", "引力透镜 %s%%（功率×2）", "Graviton lens %s%% (power ×2)");
+        both("gui.universe.receiver.no_lens", "没有引力透镜", "No graviton lens");
+        both("gui.universe.receiver.lens_hint", "功率翻倍；有大气的星球上不用看见恒星", "Doubles power; no line of sight needed under an atmosphere");
+        both("gui.universe.receiver.status.0", "正在接收", "Receiving");
+        both("gui.universe.receiver.status.1", "戴森球还没有发电：先用弹射器发射太阳帆", "The Dyson sphere produces nothing yet: launch solar sails first");
+        both("gui.universe.receiver.status.2", "恒星在地平线以下", "The star is below the horizon");
+        both("gui.universe.receiver.status.3", "头顶被挡住了，看不见天空", "Blocked: needs a clear view of the sky");
+        both("gui.universe.receiver.status.4", "这里没有恒星", "There is no star here");
+        both("gui.universe.receiver.status.5", "没有接入电网：放在电力感应塔的覆盖范围里", "No grid: place it within a tesla tower's range");
+        both("gui.universe.receiver.status.6", "临界光子满了，取走一些", "Critical photons are full; take some out");
+        both("gui.universe.receiver.sphere", "戴森球 %s · 接收站共取走 %s", "Dyson sphere %s · receivers draw %s");
+        // 编辑器
+        both("key.universe.dyson_editor", "戴森球编辑器", "Dyson Sphere Editor");
+        both("gui.universe.dyson.title", "戴森球编辑器 · %s", "Dyson Sphere Editor · %s");
+        both("gui.universe.dyson.open", "戴森球编辑器", "Dyson Editor");
+        both("gui.universe.dyson.open_short", "编辑器", "Editor");
+        both("gui.universe.dyson.swarm", "戴森云", "Swarm");
+        both("gui.universe.dyson.shells", "戴森壳", "Shells");
+        both("gui.universe.dyson.orbit", "轨道 %s", "Orbit %s");
+        both("gui.universe.dyson.layer", "第 %s 层", "Layer %s");
+        both("gui.universe.dyson.add", "新建", "Add");
+        both("gui.universe.dyson.remove", "删除", "Delete");
+        both("gui.universe.dyson.confirm", "确定删除？", "Really delete?");
+        both("gui.universe.dyson.radius", "半径 %s AU", "Radius %s AU");
+        both("gui.universe.dyson.inclination", "倾角 %s°", "Inclination %s°");
+        both("gui.universe.dyson.node", "升交点 %s°", "Ascending node %s°");
+        both("gui.universe.dyson.template", "网格", "Grid");
+        both("gui.universe.dyson.template.0", "测地三角网", "Geodesic");
+        both("gui.universe.dyson.template.1", "蜂窝网", "Honeycomb");
+        both("gui.universe.dyson.template.2", "经纬网", "Lat-long");
+        both("gui.universe.dyson.density", "密度 %s", "Density %s");
+        both("gui.universe.dyson.locked", "已经开始建造：只能改朝向", "Construction started: only orientation can change");
+        both("gui.universe.dyson.power", "发电 %s", "Generating %s");
+        both("gui.universe.dyson.power_split", "戴森云 %s · 戴森壳 %s", "Swarm %s · shells %s");
+        both("gui.universe.dyson.drawn", "接收站取走 %s", "Receivers draw %s");
+        both("gui.universe.dyson.sails", "%s 张帆", "%s sails");
+        both("gui.universe.dyson.sail_life", "太阳帆寿命 90 分钟", "Sails last 90 minutes");
+        both("gui.universe.dyson.elements", "节点 %s/%s · 框架 %s/%s · 球壳 %s/%s", "Nodes %s/%s · frames %s/%s · shells %s/%s");
+        both("gui.universe.dyson.sp", "结构点 %s / %s", "Structure points %s / %s");
+        both("gui.universe.dyson.cells", "单元点 %s / %s", "Cell points %s / %s");
+        both("gui.universe.dyson.capacity", "建完以后 %s", "When finished %s");
+        both("gui.universe.dyson.latitude", "能建的纬度 ±%s°", "Buildable latitude ±%s°");
+        both("gui.universe.dyson.rockets", "在飞的火箭 %s", "%s rockets in flight");
+        both("gui.universe.dyson.light", "恒星光照系数 %s · 半径上限 %s AU", "Star light factor %s · max radius %s AU");
+        both("gui.universe.dyson.empty", "这个恒星系的戴森球还是空的：新建一条戴森云轨道或一层戴森壳",
+                "This system's Dyson sphere is empty: add a swarm orbit or a shell layer");
+        both("gui.universe.dyson.no_system", "这里看不到恒星", "No star in sight here");
+        both("gui.universe.dyson.waiting", "正在接收戴森球的数据……", "Waiting for Dyson sphere data…");
+        both("gui.universe.dyson.hint", "拖动旋转 · 滚轮缩放 · Y 关闭", "Drag to rotate · scroll to zoom · Y to close");
+        both("gui.universe.dyson.full", "满了：最多 %s 个", "Full: at most %s");
     }
 
     private void tech(String id, String zh, String en) {

@@ -4,13 +4,12 @@
   "key": {
     "A": "universe:assembler_mk2",
     "B": "universe:particle_broadband",
-    "P": "universe:processor",
-    "T": "universe:titanium_alloy"
+    "Q": "universe:quantum_chip"
   },
   "pattern": [
-    "PBP",
-    "TAT",
-    "PBP"
+    "BQB",
+    "BAB",
+    "BQB"
   ],
   "research": "high_speed_assembling",
   "result": {

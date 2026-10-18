@@ -28,6 +28,7 @@
 | [0013](adr/0013-dsp-and-nms-core-loops.md) | 先复刻戴森球计划和无人深空的核心玩法 | 已采纳 |
 | [0014](adr/0014-exploration-rewards.md) | 探索的回报：技术模块、兴趣点、武器和守卫机 | 已采纳 |
 | [0015](adr/0015-logistics-and-midgame-industry.md) | 物流网络与中期工业 | 已采纳 |
+| [0016](adr/0016-dyson-sphere.md) | 戴森球 | 已采纳 |
 
 模板：
 

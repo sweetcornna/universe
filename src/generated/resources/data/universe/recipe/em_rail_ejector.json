@@ -1,0 +1,19 @@
+{
+  "type": "universe:research_shaped",
+  "category": "redstone",
+  "key": {
+    "G": "universe:gear",
+    "P": "universe:processor",
+    "R": "universe:super_magnetic_ring",
+    "S": "universe:steel"
+  },
+  "pattern": [
+    "SRS",
+    "GPG",
+    "SGS"
+  ],
+  "research": "solar_sail_orbit",
+  "result": {
+    "id": "universe:em_rail_ejector"
+  }
+}

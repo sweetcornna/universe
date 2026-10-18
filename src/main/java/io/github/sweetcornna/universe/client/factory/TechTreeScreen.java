@@ -30,6 +30,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.sounds.SoundEvents;
@@ -368,6 +369,11 @@ public class TechTreeScreen extends Screen {
         int ux = iconsX;
         for (String unlock : tech.unlocks()) {
             ux = this.itemIcon(graphics, new ItemStack(Research.item(unlock)), ux, unlockY, mouseX, mouseY);
+        }
+        // 不解锁物品的科技（比如戴森球应力系统）写一句效果
+        String effect = "tech.universe." + tech.id() + ".effect";
+        if (Language.getInstance().has(effect)) {
+            graphics.text(this.font, Component.translatable(effect), ux + (tech.unlocks().isEmpty() ? 0 : 4), unlockY + 4, TEXT, false);
         }
 
         // 右边：进度和按钮

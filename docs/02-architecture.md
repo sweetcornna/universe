@@ -120,10 +120,10 @@ io.github.sweetcornna.universe
 
 ### 3.9 戴森球
 
-- 数据模型在 `core.dyson`：每颗恒星一个戴森球，包括戴森云轨道（半径、倾角、太阳帆数量与寿命）和球壳层（半径、朝向、节点、框架、壳面、建造进度）。
-- 服务端每秒结算一次太阳帆消散、建造进度和发电量。
-- 状态存进 SavedData。客户端订阅自己所在恒星系的戴森球，按增量同步。
-- 渲染：太阳帆用实例化的点精灵，框架用线，壳面用半透明网格，按距离分级。
+- 数据模型在 `core.dyson`：每颗恒星一个戴森球，包括戴森云轨道（半径、倾角、升交点，太阳帆按到期时间分批）和球壳层（半径、朝向、网格模板和密度，每个节点、框架、壳面的建造进度）。网格由模板算出来（`DysonGrid`），存档和同步只有进度（ADR-0016）。
+- 服务端每秒结算一次太阳帆消散、火箭到达、节点吸帆铺壳和发电量，射线接收站按各自要的比例分电。
+- 状态存进全局的 SavedData。客户端只拿自己所在恒星系的戴森球：进入时发一份完整的，之后有变化时每 5 秒最多发一次。
+- 渲染：不在世界里摆实体，而是把节点、框架、壳面和帆投到天球上画（`DysonSkyRenderer`，接在 `RenderLevelStageEvent.AfterSky` 上）。星球上按观察者的位置算方向，再把角距离映射到恒星圆盘外面；太空维度里按 `SpaceLayout` 的真实位置。编辑器的三维视图在界面里自己画三角形（`GuiMesh`）。
 
 ### 3.10 网络与存档
 
@@ -224,11 +224,6 @@ io.github.sweetcornna.universe
 | 登录的配置任务：NeoForge 的 `RegisterConfigurationTasksEvent`（模组总线）登记的任务排在原版 `PrepareSpawnTask` 之前；`ConfigurationTask#start` 可能在网络线程上调用，`tick()` 在服务器处理连接时调用，返回 true 算完成。玩家存档用 `PlayerList#loadPlayerData(NameAndId)` 读，维度在 `ServerPlayer.SavedPosition.MAP_CODEC` 里 | 已确认，运行时维度在用 |
 | 重生：`PlayerList#respawn` 先算 `findRespawnPositionAndUseSpawnBlock`，维度不存在就退回世界出生点；之后触发 NeoForge 的 `PlayerRespawnPositionEvent`，可以换掉 `TeleportTransition` | 已确认，运行时维度在用 |
 | 强制加载的区块：`ServerLevel#getForceLoadedChunks()` 只算原版 `/forceload` 的票据；NeoForge 的方块、实体加载器在 `TicketStorage#getBlockForcedChunks()`、`getEntityForcedChunks()`（`TicketTracker#isEmpty()`），`TicketStorage` 从 `level.getDataStorage().get(TicketStorage.TYPE)` 取 | 已确认 |
-
-原则：拿不准的 API，先查源码再动手写，核实后把结果补进这张表。源码位置：
-
-- Minecraft（含 NeoForge 补丁）：`build/moddev/artifacts/minecraft-patched-26.3.0.86-sources.jar`，IDE 里可以直接跳转。
-- NeoForge 自己的类：Gradle 缓存里的 `neoforge-26.3.0.86-sources.jar`（`~/.gradle/caches/modules-2/files-2.1/net.neoforged/neoforge/26.3.0.86/`）。
 | 燃料改成物品组件 `DataComponents.COOKING_FUEL`（`CookingFuel(ResolvableInt burnTime, ResolvableFloat speedMultiplier)`），NeoForge 的 `furnace_fuels` 数据映射没有了；读燃烧时间要 `ResolvableInt.getFromItem(stack, COOKING_FUEL, CookingFuel::burnTime, lootContext, 0)`，常量用 `new ResolvableInt.Constant(n)` | 已确认，火力发电厂在用 |
 | 容器数据（`ContainerData`、`DataSlot`）同步时按 16 位有符号数传，大的数要拆成两格 | 已确认，设备界面在用 |
 | 容器方块实体 `BaseContainerBlockEntity` 实现了 `Container` 时，拆掉方块会在 `preRemoveSideEffects` 里自动掉出物品；对外的物品能力用 `event.registerBlockEntity(Capabilities.Item.BLOCK, type, WorldlyContainerWrapper::new)` | 已确认，设备在用 |
@@ -278,6 +273,21 @@ io.github.sweetcornna.universe
 | 原版漏斗（`HopperBlockEntity.getContainerOrHandlerAt`）只要方块实体是 `Container` 就只走 `Container` 的接口，不查物品能力；同时实现两者的方块实体，`Container` 那一面也得能正常进出货 | 已确认，物流站踩过 |
 | 太阳角度 `EnvironmentAttributes.SUN_ANGLE` 是按位置插值的属性：`environmentAttributes().getDimensionValue(...)` 直接抛异常，要用 `getValue(属性, BlockPos)`。单位是度，0 是正午、180 是午夜，正值时太阳在西边（原版天空先绕 Y 转 -90°，再绕 X 转这个角） | 已确认，太阳能板踩过（崩溃） |
 | 在世界里画不是实体的东西：`ExtractLevelRenderStateEvent` 里用 `state.setRenderData(ContextKey, 数据)` 记下要画的（坐标减去 `event.getCamera().position()`），`SubmitCustomGeometryEvent` 里取出来提交；插值的时间用 `LevelRenderState.gameTime + worldPartialTicks` | 已确认，物流载具在用 |
+| 方块实体渲染器画到方块外面：`getRenderBoundingBox(方块实体)` 返回要画的范围（可以是 `AABB.INFINITE`），`getViewDistance()` 改可见距离，`shouldRenderOffScreen()` 为真时方块本身出了视锥也画 | 已确认，弹射器、发射井、射线接收站在用 |
+| 信标光束能朝任意方向画：`BeaconRenderer.submitBeaconBeam(poseStack, collector, BeaconRenderer.BEAM_LOCATION, 缩放, 动画时间, 起点, 高度, 颜色, 内半径, 外半径)` 沿 +Y 画，里面先平移 (0.5, 0, 0.5)；调用前 `poseStack.rotate(Quaternionf)` 转到目标方向 | 已确认，射线接收站的光束在用 |
+| 叠加发光的四边形用 `RenderTypes.lightning()`（位置加颜色），全亮度的光照值是 `LightCoordsUtil.FULL_BRIGHT` | 已确认，弹射器的光迹在用 |
+| 在天空上叠加：`RenderLevelStageEvent.AfterSky` 在原版天空或自定义天空画完以后触发，每个维度都有；事件不给渲染通道，要自己 `createRenderPass`。顶点放进常驻的 `GpuBuffer`（`USAGE_VERTEX \| USAGE_COPY_DST`），每帧用 `CommandEncoder.writeToBuffer(slice, ByteBuffer)` 写入；四边形的索引用 `RenderSystem.getSequentialBuffer(PrimitiveTopology.QUADS)`；原版着色器 `core/position_color` 配 `PROJECTION`、`DYNAMIC_TRANSFORMS` 两个绑定组。这时模型视图栈里只有视角的旋转 | 已确认，戴森球的天空渲染在用 |
+| 原版太阳是边长 30 的贴图，放在 100 格外（`SkyRenderer.SUN_SIZE`、`SUN_HEIGHT`），亮的方块只占中间一半，视半径约 4.3°，比自定义天空里按真实大小画的恒星大得多。天色 `EnvironmentAttributes.SKY_COLOR` 是 `Vector3fc`，入夜时已经乘暗 | 已确认，戴森球踩过 |
+| 界面里画任意三角形：实现 `GuiElementRenderState`（自己写顶点，带上 `pose`、裁剪框 `graphics.peekScissorStack()` 和范围），用 `graphics.submitGuiElementRenderState(...)` 提交 | 已确认，戴森球编辑器在用 |
+| 判断语言键有没有翻译：`Language.getInstance().has(键)`（`I18n.exists` 没有了） | 已确认，科技树的效果说明在用 |
+| `Level#addAlwaysVisibleParticle(...)` 不受粒子设置和距离的限制，几十格外的火箭尾焰和烟也看得见 | 已确认，发射井在用 |
+| `OnDatapackSyncEvent#sendRecipes` 漏登记的配方类型，客户端拿不到，配方界面的清单是空的 | 已确认，M5 的化工厂踩过 |
+| 无头验收用到的客户端接口：`Screenshot.grab(目录, 文件名, minecraft.gameRenderer.mainRenderTarget(), 1, 回调)` 截帧缓冲（窗口在屏幕外也行）；代替玩家右键方块用 `minecraft.gameMode.useItemOn(player, hand, BlockHitResult)`，服务端照样检查距离（约 5 格以内）；执行命令 `player.connection.sendCommand(不带斜杠的命令)`；创造模式悬停是改 `getAbilities().flying` 再 `onUpdateAbilities()` | 已确认，`DevScript` 在用 |
+
+原则：拿不准的 API，先查源码再动手写，核实后把结果补进这张表。源码位置：
+
+- Minecraft（含 NeoForge 补丁）：`build/moddev/artifacts/minecraft-patched-26.3.0.86-sources.jar`，IDE 里可以直接跳转。
+- NeoForge 自己的类：Gradle 缓存里的 `neoforge-26.3.0.86-sources.jar`（`~/.gradle/caches/modules-2/files-2.1/net.neoforged/neoforge/26.3.0.86/`）。
 
 ## 5. 性能预算（目标）
 
@@ -290,6 +300,7 @@ io.github.sweetcornna.universe
 - core：JUnit 6 单元测试，随 `gradlew build` 运行，CI 上也跑。
 - 数据：`SurvivalProgressionTest` 读 `src/generated/resources`，检查科技树和配方在生存里走得通（ADR-0011）；改了数据生成要先跑 `runData`。
 - 游戏内行为：NeoForge GameTest（`gameTestServer` 运行配置），覆盖设备、传送带、维度切换等。
+- 脚本验收：`./gradlew runClient -PdevScript=<脚本>` 启动时，`client.dev.DevScript` 进存档后逐行执行脚本：执行命令、转视角、悬停、右键设备、按界面按钮、等设备动作一次、截图、退出，不碰键盘鼠标。截的是帧缓冲，窗口可以一直放在屏幕外；要在 `options.txt` 里关掉 `pauseOnLostFocus`，否则窗口没有焦点时游戏会暂停。
 - 性能：core 层做基准测试（M1 定方案），游戏内用 Spark 剖析。
 - 回归：保留几个固定种子的测试世界，每次升级 MC 版本后手动走一遍。
 

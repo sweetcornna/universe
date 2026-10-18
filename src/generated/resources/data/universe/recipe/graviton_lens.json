@@ -1,0 +1,16 @@
+{
+  "type": "universe:research_shaped",
+  "key": {
+    "D": "universe:synthetic_diamond",
+    "S": "universe:strange_matter"
+  },
+  "pattern": [
+    " D ",
+    "DSD",
+    " D "
+  ],
+  "research": "gravitational_wave_refraction",
+  "result": {
+    "id": "universe:graviton_lens"
+  }
+}

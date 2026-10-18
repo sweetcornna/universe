@@ -6,16 +6,12 @@
       "ingredient": "universe:arc_smelter"
     },
     {
-      "count": 4,
-      "ingredient": "universe:titanium_alloy"
+      "count": 5,
+      "ingredient": "universe:frame_material"
     },
     {
       "count": 4,
-      "ingredient": "universe:processor"
-    },
-    {
-      "count": 4,
-      "ingredient": "universe:carbon_nanotube"
+      "ingredient": "universe:plane_filter"
     }
   ],
   "research": "plane_smelting",

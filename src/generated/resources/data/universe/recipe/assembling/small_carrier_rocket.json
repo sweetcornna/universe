@@ -1,0 +1,24 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 2,
+      "ingredient": "universe:dyson_sphere_component"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:deuteron_fuel_rod"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:quantum_chip"
+    }
+  ],
+  "research": "vertical_launching_silo",
+  "results": [
+    {
+      "id": "universe:small_carrier_rocket"
+    }
+  ],
+  "time": 120
+}

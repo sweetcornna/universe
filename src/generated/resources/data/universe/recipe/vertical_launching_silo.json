@@ -1,0 +1,19 @@
+{
+  "type": "universe:research_shaped",
+  "category": "redstone",
+  "key": {
+    "A": "universe:titanium_alloy",
+    "F": "universe:frame_material",
+    "L": "universe:graviton_lens",
+    "Q": "universe:quantum_chip"
+  },
+  "pattern": [
+    "AFA",
+    "LQL",
+    "AFA"
+  ],
+  "research": "vertical_launching_silo",
+  "result": {
+    "id": "universe:vertical_launching_silo"
+  }
+}

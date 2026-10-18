@@ -28,7 +28,7 @@ import net.minecraft.world.item.ItemStack;
 public class MatrixLabScreen extends MachineScreen {
     private static final int TEXT_WIDTH = 100;
     private static final int BUTTON_X = 112;
-    private static final int BUTTON_Y = 56;
+    private static final int BUTTON_Y = 68;
     private static final int BUTTON_WIDTH = 56;
     private static final int BUTTON_HEIGHT = 14;
 

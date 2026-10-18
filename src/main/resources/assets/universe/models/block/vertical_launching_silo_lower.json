@@ -1,0 +1,88 @@
+{
+  "parent": "block/block",
+  "textures": {
+    "particle": "universe:block/vertical_launching_silo_side",
+    "side": "universe:block/vertical_launching_silo_side",
+    "lower": "universe:block/vertical_launching_silo_lower",
+    "rim": "universe:block/vertical_launching_silo_rim",
+    "pad": "universe:block/vertical_launching_silo_pad",
+    "post": "universe:block/em_rail_ejector_rail",
+    "light": "universe:block/vertical_launching_silo_light",
+    "light_on": "universe:block/vertical_launching_silo_light_on"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#lower",
+          "cullface": "north"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#lower",
+          "cullface": "south"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#lower",
+          "cullface": "west"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#lower",
+          "cullface": "east"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#pad"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#side",
+          "cullface": "down"
+        }
+      }
+    }
+  ]
+}

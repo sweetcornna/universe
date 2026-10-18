@@ -1,0 +1,6 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "universe:block/em_rail_ejector_item"
+  }
+}

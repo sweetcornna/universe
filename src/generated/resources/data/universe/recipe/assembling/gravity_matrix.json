@@ -1,0 +1,21 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:graviton_lens"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:quantum_chip"
+    }
+  ],
+  "research": "gravity_matrix",
+  "results": [
+    {
+      "count": 2,
+      "id": "universe:gravity_matrix"
+    }
+  ],
+  "time": 480
+}

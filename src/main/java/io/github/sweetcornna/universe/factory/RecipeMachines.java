@@ -20,6 +20,8 @@ public final class RecipeMachines {
     public static final Spec PLANE_SMELTER = new Spec(Kind.SMELTING, 2, 1, 72, 2.0, UniverseMenus.PLANE_SMELTER);
     /** 化工厂：720 kW，速度 1，三种原料、两种产物。 */
     public static final Spec CHEMICAL_PLANT = new Spec(Kind.CHEMICAL, 3, 2, 36, 1.0, UniverseMenus.CHEMICAL_PLANT);
+    /** 微型粒子对撞机：12 MW，速度 1，三种原料（ADR-0016）。 */
+    public static final Spec MINIATURE_PARTICLE_COLLIDER = new Spec(Kind.PARTICLE, 3, 1, 600, 1.0, UniverseMenus.MINIATURE_PARTICLE_COLLIDER);
 
     private RecipeMachines() {
     }

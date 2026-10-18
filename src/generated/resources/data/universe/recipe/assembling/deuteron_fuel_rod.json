@@ -1,0 +1,25 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:titanium_alloy"
+    },
+    {
+      "count": 20,
+      "ingredient": "universe:deuterium"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:super_magnetic_ring"
+    }
+  ],
+  "research": "vertical_launching_silo",
+  "results": [
+    {
+      "count": 2,
+      "id": "universe:deuteron_fuel_rod"
+    }
+  ],
+  "time": 240
+}

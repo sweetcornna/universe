@@ -130,6 +130,7 @@ public final class MachineRecipe implements Recipe<MachineRecipe.Input> {
             case ASSEMBLING -> UniverseRecipeTypes.ASSEMBLING_SERIALIZER.get();
             case REFINING -> UniverseRecipeTypes.REFINING_SERIALIZER.get();
             case CHEMICAL -> UniverseRecipeTypes.CHEMICAL_SERIALIZER.get();
+            case PARTICLE -> UniverseRecipeTypes.PARTICLE_SERIALIZER.get();
         };
     }
 
@@ -153,7 +154,9 @@ public final class MachineRecipe implements Recipe<MachineRecipe.Input> {
         SMELTING,
         ASSEMBLING,
         REFINING,
-        CHEMICAL;
+        CHEMICAL,
+        /** 微型粒子对撞机（ADR-0016）。 */
+        PARTICLE;
 
         public RecipeType<MachineRecipe> type() {
             return switch (this) {
@@ -161,6 +164,7 @@ public final class MachineRecipe implements Recipe<MachineRecipe.Input> {
                 case ASSEMBLING -> UniverseRecipeTypes.ASSEMBLING.get();
                 case REFINING -> UniverseRecipeTypes.REFINING.get();
                 case CHEMICAL -> UniverseRecipeTypes.CHEMICAL.get();
+                case PARTICLE -> UniverseRecipeTypes.PARTICLE.get();
             };
         }
     }

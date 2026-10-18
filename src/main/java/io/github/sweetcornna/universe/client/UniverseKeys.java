@@ -23,6 +23,9 @@ public final class UniverseKeys {
 
     /** 生产统计面板（默认 O）。 */
     public static final KeyMapping STATS = new KeyMapping("key.universe.stats", InputConstants.Type.KEYBOARD, InputConstants.KEY_O, CATEGORY);
+    /** 戴森球编辑器（ADR-0016），戴森球计划也是 Y。 */
+    public static final KeyMapping DYSON_EDITOR = new KeyMapping("key.universe.dyson_editor", InputConstants.Type.KEYBOARD, InputConstants.KEY_Y,
+            CATEGORY);
 
     /** 多功能工具在采矿和战斗模式之间切换（默认 G）。 */
     public static final KeyMapping TOOL_MODE = new KeyMapping("key.universe.tool_mode", InputConstants.Type.KEYBOARD, InputConstants.KEY_G, CATEGORY);
@@ -39,6 +42,7 @@ public final class UniverseKeys {
             event.register(DISCOVERY_LOG);
             event.register(TECH);
             event.register(STATS);
+            event.register(DYSON_EDITOR);
             event.register(TOOL_MODE);
         });
     }

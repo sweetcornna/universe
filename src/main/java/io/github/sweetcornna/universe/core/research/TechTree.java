@@ -19,12 +19,15 @@ public final class TechTree {
     private static final String RED = NS + "energy_matrix";
     private static final String YELLOW = NS + "structure_matrix";
     private static final String PURPLE = NS + "information_matrix";
+    private static final String GREEN = NS + "gravity_matrix";
     /** 研究站认的矩阵，顺序就是研究站格子的顺序。以后加新的矩阵只能往后加，免得存档里的格子对不上。 */
-    public static final List<String> MATRICES = List.of(BLUE, RED, YELLOW, PURPLE);
+    public static final List<String> MATRICES = List.of(BLUE, RED, YELLOW, PURPLE, GREEN);
 
     /**
      * M3 的科技：电磁学阶段上交物品，之后用蓝矩阵、再用蓝红两种矩阵研究；M4 加了上交勘探数据的科技（ADR-0012）；
      * M5 加了物流和中期工业（ADR-0015）：蓝红阶段做到结构矩阵，蓝红黄做到信息矩阵，四种矩阵研究星际物流。
+     * M6 加了戴森球（ADR-0016）：蓝红黄研究太阳帆和弹射器，四种矩阵研究射线接收站、量子芯片、对撞机和引力矩阵，
+     * 有了绿矩阵才能研究垂直发射井和应力系统。
      */
     public static final TechTree DEFAULT = new TechTree(List.of(
             Tech.handIn("electromagnetism", List.of(),
@@ -83,18 +86,40 @@ public final class TechTree {
             Tech.lab("efficient_logistics", List.of("planetary_logistics", "structure_matrix"), List.of(BLUE, RED, YELLOW), 80,
                     items("conveyor_belt_mk3", "sorter_mk3")),
             Tech.lab("titanium_alloy", List.of("structure_matrix"), List.of(BLUE, RED, YELLOW), 80, items("titanium_alloy")),
-            Tech.lab("plane_smelting", List.of("titanium_alloy"), List.of(BLUE, RED, YELLOW), 100, items("plane_smelter")),
             Tech.lab("information_matrix", List.of("titanium_alloy"), List.of(BLUE, RED, YELLOW), 100,
                     items("information_matrix", "particle_broadband")),
+            Tech.lab("frame_material", List.of("titanium_alloy", "high_strength_materials"), List.of(BLUE, RED, YELLOW), 100,
+                    items("frame_material")),
+            Tech.lab("quantum_printing", List.of("information_matrix"), List.of(BLUE, RED, YELLOW, PURPLE), 150,
+                    items("titanium_glass", "casimir_crystal", "plane_filter", "quantum_chip")),
+            Tech.lab("plane_smelting", List.of("frame_material", "quantum_printing"), List.of(BLUE, RED, YELLOW, PURPLE), 120,
+                    items("plane_smelter")),
             Tech.lab("interstellar_logistics", List.of("efficient_logistics", "information_matrix", "warp_drive"),
                     List.of(BLUE, RED, YELLOW, PURPLE), 150,
                     items("interstellar_logistics_station", "logistics_vessel", "reinforced_thruster", "factory_anchor")),
             Tech.lab("orbital_collection", List.of("interstellar_logistics", "deuterium_fractionation"), List.of(BLUE, RED, YELLOW, PURPLE), 150,
                     items("orbital_collector")),
-            Tech.lab("advanced_mining", List.of("information_matrix"), List.of(BLUE, RED, YELLOW, PURPLE), 120,
+            Tech.lab("advanced_mining", List.of("frame_material", "quantum_printing"), List.of(BLUE, RED, YELLOW, PURPLE), 120,
                     items("advanced_mining_machine")),
-            Tech.lab("high_speed_assembling", List.of("improved_assembling", "information_matrix"), List.of(BLUE, RED, YELLOW, PURPLE), 120,
-                    items("assembler_mk3"))));
+            Tech.lab("high_speed_assembling", List.of("improved_assembling", "quantum_printing"), List.of(BLUE, RED, YELLOW, PURPLE), 120,
+                    items("assembler_mk3")),
+            // ---- 戴森球（ADR-0016）
+            Tech.lab("solar_sail_orbit", List.of("structure_matrix", "solar_power"), List.of(BLUE, RED, YELLOW), 100,
+                    items("photon_combiner", "solar_sail", "em_rail_ejector")),
+            Tech.lab("ray_receiver", List.of("solar_sail_orbit", "information_matrix"), List.of(BLUE, RED, YELLOW, PURPLE), 150,
+                    items("ray_receiver")),
+            Tech.lab("miniature_collider", List.of("frame_material", "information_matrix"), List.of(BLUE, RED, YELLOW, PURPLE), 150,
+                    items("miniature_particle_collider", "strange_matter")),
+            Tech.lab("gravitational_wave_refraction", List.of("miniature_collider"), List.of(BLUE, RED, YELLOW, PURPLE), 150,
+                    items("graviton_lens")),
+            Tech.lab("gravity_matrix", List.of("gravitational_wave_refraction", "quantum_printing"), List.of(BLUE, RED, YELLOW, PURPLE), 200,
+                    items("gravity_matrix")),
+            Tech.lab("vertical_launching_silo", List.of("gravity_matrix", "solar_sail_orbit", "deuterium_fractionation"),
+                    List.of(BLUE, RED, YELLOW, PURPLE, GREEN), 200,
+                    items("vertical_launching_silo", "dyson_sphere_component", "small_carrier_rocket", "deuteron_fuel_rod")),
+            // 应力系统不解锁物品，放宽戴森球能建的纬度
+            Tech.lab("dyson_stress_1", List.of("vertical_launching_silo"), List.of(BLUE, RED, YELLOW, PURPLE, GREEN), 200, items()),
+            Tech.lab("dyson_stress_2", List.of("dyson_stress_1"), List.of(BLUE, RED, YELLOW, PURPLE, GREEN), 400, items())));
 
     private final List<Tech> techs;
     private final Map<String, Tech> byId;

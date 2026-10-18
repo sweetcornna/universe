@@ -5,6 +5,9 @@ import java.util.function.Supplier;
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.block.poi.SupplyCrateBlockEntity;
 import io.github.sweetcornna.universe.block.ship.FuelTankBlockEntity;
+import io.github.sweetcornna.universe.dyson.EmRailEjectorBlockEntity;
+import io.github.sweetcornna.universe.dyson.LaunchSiloBlockEntity;
+import io.github.sweetcornna.universe.dyson.RayReceiverBlockEntity;
 import io.github.sweetcornna.universe.factory.FactoryAnchorBlockEntity;
 import io.github.sweetcornna.universe.factory.FractionatorBlockEntity;
 import io.github.sweetcornna.universe.factory.RecipeMachineBlockEntity;
@@ -101,6 +104,15 @@ public final class UniverseBlockEntities {
             () -> new BlockEntityType<>(StationBlockEntity::interstellar, UniverseBlocks.INTERSTELLAR_LOGISTICS_STATION.get()));
     public static final Supplier<BlockEntityType<StationBlockEntity>> ORBITAL_COLLECTOR = BLOCK_ENTITIES.register("orbital_collector",
             () -> new BlockEntityType<>(StationBlockEntity::collector, UniverseBlocks.ORBITAL_COLLECTOR.get()));
+    // 戴森球（ADR-0016）
+    public static final Supplier<BlockEntityType<EmRailEjectorBlockEntity>> EM_RAIL_EJECTOR = BLOCK_ENTITIES.register("em_rail_ejector",
+            () -> new BlockEntityType<>(EmRailEjectorBlockEntity::new, UniverseBlocks.EM_RAIL_EJECTOR.get()));
+    public static final Supplier<BlockEntityType<LaunchSiloBlockEntity>> VERTICAL_LAUNCHING_SILO = BLOCK_ENTITIES.register(
+            "vertical_launching_silo", () -> new BlockEntityType<>(LaunchSiloBlockEntity::new, UniverseBlocks.VERTICAL_LAUNCHING_SILO.get()));
+    public static final Supplier<BlockEntityType<RayReceiverBlockEntity>> RAY_RECEIVER = BLOCK_ENTITIES.register("ray_receiver",
+            () -> new BlockEntityType<>(RayReceiverBlockEntity::new, UniverseBlocks.RAY_RECEIVER.get()));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<RecipeMachineBlockEntity>> MINIATURE_PARTICLE_COLLIDER = recipeMachine(
+            "miniature_particle_collider", UniverseBlocks.MINIATURE_PARTICLE_COLLIDER, RecipeMachines.MINIATURE_PARTICLE_COLLIDER);
 
     private UniverseBlockEntities() {
     }
