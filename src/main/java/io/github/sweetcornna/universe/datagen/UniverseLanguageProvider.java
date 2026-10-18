@@ -73,6 +73,7 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         this.ores();
         this.suit();
         this.multitool();
+        this.factory();
     }
 
     private void ships() {
@@ -228,6 +229,44 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         item(UniverseItems.ORE_SMELTED.get(OreKind.SILICON).get(), "高纯硅", "Silicon");
         item(UniverseItems.ORE_SMELTED.get(OreKind.URANIUM).get(), "铀锭", "Uranium Ingot");
         item(UniverseItems.ORE_SMELTED.get(OreKind.MAGNETIC).get(), "磁铁", "Magnet");
+    }
+
+    private void factory() {
+        block(UniverseBlocks.TESLA_TOWER.get(), "电力感应塔", "Tesla Tower");
+        block(UniverseBlocks.WIND_TURBINE.get(), "风力涡轮机", "Wind Turbine");
+        block(UniverseBlocks.THERMAL_PLANT.get(), "火力发电厂", "Thermal Power Plant");
+        block(UniverseBlocks.ACCUMULATOR.get(), "蓄电器", "Accumulator");
+        item(UniverseItems.GEAR.get(), "齿轮", "Gear");
+        item(UniverseItems.MAGNETIC_COIL.get(), "磁线圈", "Magnetic Coil");
+        item(UniverseItems.CIRCUIT_BOARD.get(), "电路板", "Circuit Board");
+        item(UniverseItems.ELECTRIC_MOTOR.get(), "电动机", "Electric Motor");
+        item(UniverseItems.STEEL.get(), "钢材", "Steel");
+        item(UniverseItems.PRISM.get(), "棱镜", "Prism");
+        item(UniverseItems.PLASMA_EXCITER.get(), "电浆激发器", "Plasma Exciter");
+        item(UniverseItems.ENERGETIC_GRAPHITE.get(), "高能石墨", "Energetic Graphite");
+        item(UniverseItems.WATER.get(), "水", "Water");
+        item(UniverseItems.CRUDE_OIL.get(), "原油", "Crude Oil");
+        item(UniverseItems.REFINED_OIL.get(), "精炼油", "Refined Oil");
+        item(UniverseItems.HYDROGEN.get(), "氢", "Hydrogen");
+        item(UniverseItems.ELECTROMAGNETIC_MATRIX.get(), "电磁矩阵", "Electromagnetic Matrix");
+        item(UniverseItems.ENERGY_MATRIX.get(), "能量矩阵", "Energy Matrix");
+
+        both("gui.universe.machine.unpowered", "未接入电网：放在电力感应塔的覆盖范围里", "No power: place within a tesla tower's range");
+        both("gui.universe.machine.power", "功率 %s · 满足率 %s%%", "Power %s · %s%% satisfied");
+        both("gui.universe.machine.output", "输出 %s · 负荷 %s%%", "Output %s · load %s%%");
+        both("gui.universe.tesla_tower.grid", "电网：%s 座感应塔，%s 台设备", "Grid: %s towers, %s devices");
+        both("gui.universe.tesla_tower.flow", "发电能力 %s · 用电 %s", "Capacity %s · Demand %s");
+        both("gui.universe.tesla_tower.satisfaction", "满足率 %s%%", "Satisfied %s%%");
+        both("gui.universe.tesla_tower.storage", "蓄电器 充 %s · 放 %s", "Accumulators: in %s · out %s");
+        both("gui.universe.tesla_tower.range", "覆盖半径 %s 格，相距 %s 格内的塔自动相连", "Range %s, links towers within %s");
+        both("gui.universe.wind_turbine.wind", "风力系数 %s", "Wind factor %s");
+        both("gui.universe.wind_turbine.hint", "越高风越大，雨天、雷雨天更大", "Windier up high and in storms");
+        both("gui.universe.thermal_plant.fuel", "炉膛", "Firebox");
+        both("gui.universe.thermal_plant.hint", "只按电网需要烧燃料", "Burns only what the grid needs");
+        both("gui.universe.accumulator.charging", "充电中 %s", "Charging %s");
+        both("gui.universe.accumulator.discharging", "放电中 %s", "Discharging %s");
+        both("gui.universe.accumulator.idle", "待机", "Idle");
+        both("gui.universe.accumulator.energy", "电量 %s / %s", "Stored %s / %s");
     }
 
     private void item(net.minecraft.world.item.Item item, String zh, String en) {

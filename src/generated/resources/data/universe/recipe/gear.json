@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    "minecraft:iron_ingot"
+  ],
+  "result": {
+    "id": "universe:gear"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "B": "minecraft:stone_bricks",
+    "C": "universe:magnetic_coil",
+    "F": "minecraft:furnace",
+    "G": "universe:gear",
+    "I": "minecraft:iron_ingot"
+  },
+  "pattern": [
+    "BCB",
+    "GFG",
+    "BIB"
+  ],
+  "result": {
+    "id": "universe:thermal_plant"
+  }
+}

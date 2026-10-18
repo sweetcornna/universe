@@ -1,10 +1,13 @@
 package io.github.sweetcornna.universe.datagen;
 
+import java.util.List;
 import java.util.Set;
 
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.block.OreKind;
+import io.github.sweetcornna.universe.factory.TallMachineBlock;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
+import io.github.sweetcornna.universe.registry.UniverseDataComponents;
 import io.github.sweetcornna.universe.registry.UniverseItems;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.loot.BlockLootSubProvider;
@@ -13,7 +16,11 @@ import net.minecraft.world.flag.FeatureFlags;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.enchantment.Enchantments;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
+import net.minecraft.world.level.storage.loot.LootPool;
 import net.minecraft.world.level.storage.loot.LootTable;
+import net.minecraft.world.level.storage.loot.functions.CopyComponentsFunction;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.level.storage.loot.entries.LootItem;
 import net.minecraft.world.level.storage.loot.entries.LootPoolEntryContainer;
 import net.minecraft.world.level.storage.loot.functions.ApplyBonusCount;
@@ -55,6 +62,14 @@ final class UniverseBlockLoot extends BlockLootSubProvider {
         this.dropSelf(UniverseBlocks.IMPULSE_ENGINE.get());
         this.dropSelf(UniverseBlocks.SHIP_SEAT.get());
         UniverseBlocks.HULL_PLATING.values().forEach(block -> this.dropSelf(block.get()));
+        // 工业设备：两格高的只认下半截；蓄电器拆下来带着电量
+        for (Block block : List.of(UniverseBlocks.TESLA_TOWER.get(), UniverseBlocks.WIND_TURBINE.get(), UniverseBlocks.THERMAL_PLANT.get())) {
+            this.add(block, this.createSinglePropConditionTable(block, TallMachineBlock.HALF, DoubleBlockHalf.LOWER));
+        }
+        this.add(UniverseBlocks.ACCUMULATOR.get(), block -> LootTable.lootTable().withPool(this.applyExplosionCondition(block,
+                LootPool.lootPool().setRolls(ContextIntProviders.exactly(1)).add(LootItem.lootTableItem(block)
+                        .apply(CopyComponentsFunction.copyComponentsFromBlockEntity(LootContextParams.BLOCK_ENTITY)
+                                .include(UniverseDataComponents.STORED_ENERGY.get()))))));
         // 星球矿石：和原版矿石一样，精准采集掉本体，时运加成掉落
         UniverseBlocks.ORES.forEach((kind, block) -> this.add(block.get(), this.createOreDrops(block.get(), kind)));
     }

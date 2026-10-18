@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "C": "universe:magnetic_coil",
+    "I": "minecraft:iron_ingot"
+  },
+  "pattern": [
+    "C",
+    "I",
+    "I"
+  ],
+  "result": {
+    "id": "universe:tesla_tower"
+  }
+}

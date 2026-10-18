@@ -40,6 +40,14 @@ public final class Planets {
         }
     }
 
+    /** 这个世界对应的天体，包括母星（主世界）；其他维度返回空。 */
+    public static Optional<Planet> body(ServerLevel level) {
+        if (level.dimension() == Level.OVERWORLD) {
+            return galaxy(level.getServer()).body(GalaxyGenerator.HOME_PLANET_ID);
+        }
+        return planet(level);
+    }
+
     /** 星球维度上的动物；不是星球、或者星球上没有动物时返回空。 */
     public static Optional<Fauna> fauna(ServerLevel level) {
         synchronized (FAUNA) {

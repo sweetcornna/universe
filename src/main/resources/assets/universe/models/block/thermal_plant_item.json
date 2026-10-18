@@ -1,0 +1,515 @@
+{
+  "parent": "block/block",
+  "textures": {
+    "particle": "universe:block/thermal_plant_side",
+    "side": "universe:block/thermal_plant_side",
+    "top": "universe:block/thermal_plant_top",
+    "front": "universe:block/thermal_plant_front",
+    "front_on": "universe:block/thermal_plant_front_on",
+    "chimney": "universe:block/thermal_plant_chimney",
+    "turbine": "universe:block/thermal_plant_turbine",
+    "casing": "universe:block/machine_casing"
+  },
+  "elements": [
+    {
+      "from": [
+        1,
+        0,
+        1
+      ],
+      "to": [
+        15,
+        16,
+        15
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            1,
+            0,
+            15,
+            16
+          ],
+          "texture": "#front"
+        },
+        "south": {
+          "uv": [
+            1,
+            0,
+            15,
+            16
+          ],
+          "texture": "#side"
+        },
+        "west": {
+          "uv": [
+            1,
+            0,
+            15,
+            16
+          ],
+          "texture": "#side"
+        },
+        "east": {
+          "uv": [
+            1,
+            0,
+            15,
+            16
+          ],
+          "texture": "#side"
+        },
+        "up": {
+          "uv": [
+            1,
+            1,
+            15,
+            15
+          ],
+          "texture": "#top"
+        },
+        "down": {
+          "uv": [
+            1,
+            1,
+            15,
+            15
+          ],
+          "texture": "#top",
+          "cullface": "down"
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        2,
+        16
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            14,
+            16,
+            16
+          ],
+          "texture": "#casing",
+          "cullface": "north"
+        },
+        "south": {
+          "uv": [
+            0,
+            14,
+            16,
+            16
+          ],
+          "texture": "#casing",
+          "cullface": "south"
+        },
+        "west": {
+          "uv": [
+            0,
+            14,
+            16,
+            16
+          ],
+          "texture": "#casing",
+          "cullface": "west"
+        },
+        "east": {
+          "uv": [
+            0,
+            14,
+            16,
+            16
+          ],
+          "texture": "#casing",
+          "cullface": "east"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#casing"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#casing",
+          "cullface": "down"
+        }
+      }
+    },
+    {
+      "from": [
+        1,
+        16,
+        1
+      ],
+      "to": [
+        9,
+        23,
+        15
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            7,
+            9,
+            15,
+            16
+          ],
+          "texture": "#turbine"
+        },
+        "south": {
+          "uv": [
+            1,
+            9,
+            9,
+            16
+          ],
+          "texture": "#turbine"
+        },
+        "west": {
+          "uv": [
+            1,
+            9,
+            15,
+            16
+          ],
+          "texture": "#turbine"
+        },
+        "east": {
+          "uv": [
+            1,
+            9,
+            15,
+            16
+          ],
+          "texture": "#turbine"
+        },
+        "up": {
+          "uv": [
+            1,
+            1,
+            9,
+            15
+          ],
+          "texture": "#top"
+        }
+      }
+    },
+    {
+      "from": [
+        2,
+        23,
+        3
+      ],
+      "to": [
+        8,
+        24,
+        13
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            8,
+            8,
+            14,
+            9
+          ],
+          "texture": "#casing"
+        },
+        "south": {
+          "uv": [
+            2,
+            8,
+            8,
+            9
+          ],
+          "texture": "#casing"
+        },
+        "west": {
+          "uv": [
+            3,
+            8,
+            13,
+            9
+          ],
+          "texture": "#casing"
+        },
+        "east": {
+          "uv": [
+            3,
+            8,
+            13,
+            9
+          ],
+          "texture": "#casing"
+        },
+        "up": {
+          "uv": [
+            2,
+            3,
+            8,
+            13
+          ],
+          "texture": "#casing"
+        },
+        "down": {
+          "uv": [
+            2,
+            3,
+            8,
+            13
+          ],
+          "texture": "#casing"
+        }
+      }
+    },
+    {
+      "from": [
+        9,
+        19,
+        11
+      ],
+      "to": [
+        10,
+        21,
+        13
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            6,
+            11,
+            7,
+            13
+          ],
+          "texture": "#casing"
+        },
+        "south": {
+          "uv": [
+            9,
+            11,
+            10,
+            13
+          ],
+          "texture": "#casing"
+        },
+        "west": {
+          "uv": [
+            11,
+            11,
+            13,
+            13
+          ],
+          "texture": "#casing"
+        },
+        "east": {
+          "uv": [
+            3,
+            11,
+            5,
+            13
+          ],
+          "texture": "#casing"
+        },
+        "up": {
+          "uv": [
+            9,
+            11,
+            10,
+            13
+          ],
+          "texture": "#casing"
+        },
+        "down": {
+          "uv": [
+            9,
+            3,
+            10,
+            5
+          ],
+          "texture": "#casing"
+        }
+      }
+    },
+    {
+      "from": [
+        10,
+        16,
+        10
+      ],
+      "to": [
+        14,
+        32,
+        14
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            2,
+            0,
+            6,
+            16
+          ],
+          "texture": "#chimney"
+        },
+        "south": {
+          "uv": [
+            10,
+            0,
+            14,
+            16
+          ],
+          "texture": "#chimney"
+        },
+        "west": {
+          "uv": [
+            10,
+            0,
+            14,
+            16
+          ],
+          "texture": "#chimney"
+        },
+        "east": {
+          "uv": [
+            2,
+            0,
+            6,
+            16
+          ],
+          "texture": "#chimney"
+        },
+        "up": {
+          "uv": [
+            10,
+            10,
+            14,
+            14
+          ],
+          "texture": "#casing"
+        }
+      }
+    }
+  ],
+  "display": {
+    "gui": {
+      "rotation": [
+        30,
+        225,
+        0
+      ],
+      "translation": [
+        0,
+        -3,
+        0
+      ],
+      "scale": [
+        0.36,
+        0.36,
+        0.36
+      ]
+    },
+    "ground": {
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "translation": [
+        0,
+        2,
+        0
+      ],
+      "scale": [
+        0.18,
+        0.18,
+        0.18
+      ]
+    },
+    "fixed": {
+      "rotation": [
+        0,
+        0,
+        0
+      ],
+      "translation": [
+        0,
+        -3,
+        0
+      ],
+      "scale": [
+        0.36,
+        0.36,
+        0.36
+      ]
+    },
+    "thirdperson_righthand": {
+      "rotation": [
+        75,
+        45,
+        0
+      ],
+      "translation": [
+        0,
+        1.5,
+        0
+      ],
+      "scale": [
+        0.24,
+        0.24,
+        0.24
+      ]
+    },
+    "firstperson_righthand": {
+      "rotation": [
+        0,
+        45,
+        0
+      ],
+      "translation": [
+        0,
+        -2,
+        0
+      ],
+      "scale": [
+        0.24,
+        0.24,
+        0.24
+      ]
+    },
+    "firstperson_lefthand": {
+      "rotation": [
+        0,
+        225,
+        0
+      ],
+      "translation": [
+        0,
+        -2,
+        0
+      ],
+      "scale": [
+        0.24,
+        0.24,
+        0.24
+      ]
+    }
+  }
+}

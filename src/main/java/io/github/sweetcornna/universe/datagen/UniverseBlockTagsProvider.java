@@ -1,5 +1,6 @@
 package io.github.sweetcornna.universe.datagen;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import io.github.sweetcornna.universe.Universe;
@@ -87,6 +88,12 @@ final class UniverseBlockTagsProvider extends BlockTagsProvider {
                 UniverseBlocks.IMPULSE_ENGINE.key(),
                 UniverseBlocks.SHIP_SEAT.key());
         UniverseBlocks.HULL_PLATING.values().forEach(block -> this.tag(BlockTags.BLOCKS_MOTION_NO_LEAVES).add(block.key()));
+        // 工业设备：镐子挖；不会被组装进飞船（飞船停在工厂旁边时不会把设备带走）
+        for (var block : List.of(UniverseBlocks.TESLA_TOWER, UniverseBlocks.WIND_TURBINE, UniverseBlocks.THERMAL_PLANT,
+                UniverseBlocks.ACCUMULATOR)) {
+            this.tag(BlockTags.MINEABLE_WITH_PICKAXE).add(block.key());
+            this.tag(ShipParts.EXCLUDED).add(block.key());
+        }
         // 星球矿石：进原版的 ores（它已经在"阻挡移动"里）和通用的 c:ores，按矿种要求镐的等级
         UniverseBlocks.ORES.forEach((kind, block) -> {
             this.tag(BlockTags.MINEABLE_WITH_PICKAXE).add(block.key());

@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "B": "universe:circuit_board",
+    "C": "universe:magnetic_coil",
+    "I": "minecraft:iron_ingot",
+    "R": "minecraft:redstone"
+  },
+  "pattern": [
+    "IRI",
+    "CBC",
+    "IRI"
+  ],
+  "result": {
+    "id": "universe:accumulator"
+  }
+}

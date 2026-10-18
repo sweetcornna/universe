@@ -1,0 +1,6 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "universe:block/wind_turbine_item"
+  }
+}

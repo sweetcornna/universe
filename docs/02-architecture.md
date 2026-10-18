@@ -229,6 +229,13 @@ io.github.sweetcornna.universe
 
 - Minecraft（含 NeoForge 补丁）：`build/moddev/artifacts/minecraft-patched-26.3.0.86-sources.jar`，IDE 里可以直接跳转。
 - NeoForge 自己的类：Gradle 缓存里的 `neoforge-26.3.0.86-sources.jar`（`~/.gradle/caches/modules-2/files-2.1/net.neoforged/neoforge/26.3.0.86/`）。
+| 燃料改成物品组件 `DataComponents.COOKING_FUEL`（`CookingFuel(ResolvableInt burnTime, ResolvableFloat speedMultiplier)`），NeoForge 的 `furnace_fuels` 数据映射没有了；读燃烧时间要 `ResolvableInt.getFromItem(stack, COOKING_FUEL, CookingFuel::burnTime, lootContext, 0)`，常量用 `new ResolvableInt.Constant(n)` | 已确认，火力发电厂在用 |
+| 容器数据（`ContainerData`、`DataSlot`）同步时按 16 位有符号数传，大的数要拆成两格 | 已确认，设备界面在用 |
+| 容器方块实体 `BaseContainerBlockEntity` 实现了 `Container` 时，拆掉方块会在 `preRemoveSideEffects` 里自动掉出物品；对外的物品能力用 `event.registerBlockEntity(Capabilities.Item.BLOCK, type, WorldlyContainerWrapper::new)` | 已确认，设备在用 |
+| 菜单：`IMenuTypeExtension.create((id, inventory, buf) -> ...)`，打开时 `player.openMenu(provider, pos)` 把方块位置写进附加数据；界面在 `RegisterMenuScreensEvent` 里登记，背景画在 `extractBackground`，文字画在 `extractLabels`（坐标相对界面左上角），格子背景要自己画 | 已确认，设备界面在用 |
+| `PoseStack` 转动用 `rotateDegrees(Axis.YP, 角度)`，没有 `mulPose(Quaternionf)` 了；方块实体渲染器分 `extractRenderState` 和 `submit` 两步，单独加载的模型在 `ModelEvent.RegisterStandalone` 里用 `SimpleUnbakedStandaloneModel.simpleModelWrapper(id)` 登记，`getModelManager().getStandaloneModel(key)` 取出后 `collector.submitBlockModel(...)` 画 | 已确认，风力涡轮机在用 |
+| 活塞推不动的是 `PushReaction.IMMOVEABLE`；块元素模型的坐标范围是 -16 到 32，两格高的物品模型可以把上半截叠在 16 以上，但每个面都要写明 UV | 已确认 |
+| 配方不再默认同步到客户端：`OnDatapackSyncEvent#sendRecipes(类型...)` 登记要发的类型，客户端在 `RecipesReceivedEvent` 里收；配方结果是 `ItemStackTemplate`，序列化器是 `RecipeSerializer(MapCodec, StreamCodec)` 记录 | 已确认 |
 
 ## 5. 性能预算（目标）
 

@@ -4,6 +4,10 @@ import java.util.function.Supplier;
 
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.block.ship.FuelTankBlockEntity;
+import io.github.sweetcornna.universe.factory.power.AccumulatorBlockEntity;
+import io.github.sweetcornna.universe.factory.power.TeslaTowerBlockEntity;
+import io.github.sweetcornna.universe.factory.power.ThermalPlantBlockEntity;
+import io.github.sweetcornna.universe.factory.power.WindTurbineBlockEntity;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.neoforged.bus.api.IEventBus;
@@ -15,6 +19,16 @@ public final class UniverseBlockEntities {
 
     public static final Supplier<BlockEntityType<FuelTankBlockEntity>> FUEL_TANK = BLOCK_ENTITIES.register("fuel_tank",
             () -> new BlockEntityType<>(FuelTankBlockEntity::new, UniverseBlocks.FUEL_TANK.get()));
+
+    // ---- 工业
+    public static final Supplier<BlockEntityType<TeslaTowerBlockEntity>> TESLA_TOWER = BLOCK_ENTITIES.register("tesla_tower",
+            () -> new BlockEntityType<>(TeslaTowerBlockEntity::new, UniverseBlocks.TESLA_TOWER.get()));
+    public static final Supplier<BlockEntityType<WindTurbineBlockEntity>> WIND_TURBINE = BLOCK_ENTITIES.register("wind_turbine",
+            () -> new BlockEntityType<>(WindTurbineBlockEntity::new, UniverseBlocks.WIND_TURBINE.get()));
+    public static final Supplier<BlockEntityType<ThermalPlantBlockEntity>> THERMAL_PLANT = BLOCK_ENTITIES.register("thermal_plant",
+            () -> new BlockEntityType<>(ThermalPlantBlockEntity::new, UniverseBlocks.THERMAL_PLANT.get()));
+    public static final Supplier<BlockEntityType<AccumulatorBlockEntity>> ACCUMULATOR = BLOCK_ENTITIES.register("accumulator",
+            () -> new BlockEntityType<>(AccumulatorBlockEntity::new, UniverseBlocks.ACCUMULATOR.get()));
 
     private UniverseBlockEntities() {
     }

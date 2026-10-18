@@ -9,6 +9,9 @@ import io.github.sweetcornna.universe.client.PlanetTints;
 import io.github.sweetcornna.universe.core.ecology.Flora;
 import io.github.sweetcornna.universe.core.ecology.PlantForm;
 import io.github.sweetcornna.universe.core.galaxy.Palette;
+import io.github.sweetcornna.universe.factory.MachineBlock;
+import io.github.sweetcornna.universe.factory.TallMachineBlock;
+import io.github.sweetcornna.universe.factory.power.AccumulatorBlock;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
 import io.github.sweetcornna.universe.registry.UniverseItems;
 import net.minecraft.client.data.models.BlockModelGenerators;
@@ -27,6 +30,7 @@ import net.minecraft.client.resources.model.sprite.Material;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.neoforged.neoforge.registries.DeferredItem;
 
 /** 方块状态、方块模型和物品模型。 */
@@ -91,6 +95,48 @@ final class UniverseModelProvider extends ModelProvider {
         }
         // 多功能工具拿在手里像工具一样斜着
         itemModels.generateFlatItem(UniverseItems.MULTITOOL.get(), ModelTemplates.FLAT_HANDHELD_ITEM);
+        factory(blockModels, itemModels);
+    }
+
+    /** 工业设备：两格高的设备模型由 tools/factory_models.py 生成，这里按上下半截、工作状态、朝向挑模型。 */
+    private static void factory(BlockModelGenerators blockModels, ItemModelGenerators itemModels) {
+        tall(blockModels, itemModels, UniverseBlocks.TESLA_TOWER.get(), "tesla_tower", false, true);
+        tall(blockModels, itemModels, UniverseBlocks.WIND_TURBINE.get(), "wind_turbine", false, false);
+        tall(blockModels, itemModels, UniverseBlocks.THERMAL_PLANT.get(), "thermal_plant", true, false);
+        // 蓄电器：正面四格电量
+        Block accumulator = UniverseBlocks.ACCUMULATOR.get();
+        Identifier[] charges = new Identifier[AccumulatorBlock.MAX_CHARGE + 1];
+        for (int i = 0; i < charges.length; i++) {
+            TextureMapping textures = new TextureMapping()
+                    .put(TextureSlot.FRONT, texture("accumulator_front_" + i))
+                    .put(TextureSlot.SIDE, texture("accumulator_side"))
+                    .put(TextureSlot.TOP, texture("accumulator_top"));
+            charges[i] = ModelTemplates.CUBE_ORIENTABLE.createWithSuffix(accumulator, "_" + i, textures, blockModels.modelOutput);
+        }
+        blockModels.blockStateOutput.accept(MultiVariantGenerator.dispatch(accumulator)
+                .with(PropertyDispatch.initial(AccumulatorBlock.CHARGE).generate(charge -> BlockModelGenerators.plainVariant(charges[charge])))
+                .with(BlockModelGenerators.ROTATION_HORIZONTAL_FACING));
+        blockModels.registerSimpleItemModel(accumulator, charges[0]);
+        for (DeferredItem<?> item : List.of(UniverseItems.GEAR, UniverseItems.MAGNETIC_COIL, UniverseItems.CIRCUIT_BOARD,
+                UniverseItems.ELECTRIC_MOTOR, UniverseItems.STEEL, UniverseItems.PRISM, UniverseItems.PLASMA_EXCITER,
+                UniverseItems.ENERGETIC_GRAPHITE, UniverseItems.WATER, UniverseItems.CRUDE_OIL, UniverseItems.REFINED_OIL,
+                UniverseItems.HYDROGEN, UniverseItems.ELECTROMAGNETIC_MATRIX, UniverseItems.ENERGY_MATRIX)) {
+            itemModels.generateFlatItem(item.get(), ModelTemplates.FLAT_ITEM);
+        }
+    }
+
+    /** 两格高的设备：{@code <名字>_lower/_upper}，工作时发光的那半截另有 {@code _on}；物品用两半叠起来的 {@code _item}。 */
+    private static void tall(BlockModelGenerators blockModels, ItemModelGenerators itemModels, Block block, String name,
+            boolean lowerLit, boolean upperLit) {
+        Identifier lower = Universe.id("block/" + name + "_lower");
+        Identifier upper = Universe.id("block/" + name + "_upper");
+        Identifier lowerOn = lowerLit ? Universe.id("block/" + name + "_lower_on") : lower;
+        Identifier upperOn = upperLit ? Universe.id("block/" + name + "_upper_on") : upper;
+        blockModels.blockStateOutput.accept(MultiVariantGenerator.dispatch(block)
+                .with(PropertyDispatch.initial(TallMachineBlock.HALF, MachineBlock.WORKING).generate((half, working) ->
+                        BlockModelGenerators.plainVariant(half == DoubleBlockHalf.LOWER ? (working ? lowerOn : lower) : (working ? upperOn : upper))))
+                .with(BlockModelGenerators.ROTATION_HORIZONTAL_FACING));
+        itemModels.itemModelOutput.accept(block.asItem(), ItemModelUtils.plainModel(Universe.id("block/" + name + "_item")));
     }
 
     private static void ores(BlockModelGenerators blockModels, ItemModelGenerators itemModels) {

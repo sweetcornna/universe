@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "key": {
+    "C": "universe:magnetic_coil",
+    "G": "universe:gear",
+    "I": "minecraft:iron_ingot"
+  },
+  "pattern": [
+    "IGI",
+    "CIC",
+    "IGI"
+  ],
+  "result": {
+    "id": "universe:wind_turbine"
+  }
+}

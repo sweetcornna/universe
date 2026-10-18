@@ -1,0 +1,131 @@
+{
+  "parent": "block/block",
+  "textures": {
+    "particle": "universe:block/wind_turbine_body",
+    "base": "universe:block/wind_turbine_base",
+    "body": "universe:block/wind_turbine_body",
+    "nacelle": "universe:block/wind_turbine_nacelle",
+    "blade": "universe:block/wind_turbine_blade"
+  },
+  "elements": [
+    {
+      "from": [
+        3,
+        0,
+        3
+      ],
+      "to": [
+        13,
+        3,
+        13
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            3,
+            13,
+            13,
+            16
+          ],
+          "texture": "#base"
+        },
+        "south": {
+          "uv": [
+            3,
+            13,
+            13,
+            16
+          ],
+          "texture": "#base"
+        },
+        "west": {
+          "uv": [
+            3,
+            13,
+            13,
+            16
+          ],
+          "texture": "#base"
+        },
+        "east": {
+          "uv": [
+            3,
+            13,
+            13,
+            16
+          ],
+          "texture": "#base"
+        },
+        "up": {
+          "uv": [
+            3,
+            3,
+            13,
+            13
+          ],
+          "texture": "#base"
+        },
+        "down": {
+          "uv": [
+            3,
+            3,
+            13,
+            13
+          ],
+          "texture": "#base",
+          "cullface": "down"
+        }
+      }
+    },
+    {
+      "from": [
+        5,
+        3,
+        5
+      ],
+      "to": [
+        11,
+        16,
+        11
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            5,
+            0,
+            11,
+            13
+          ],
+          "texture": "#body"
+        },
+        "south": {
+          "uv": [
+            5,
+            0,
+            11,
+            13
+          ],
+          "texture": "#body"
+        },
+        "west": {
+          "uv": [
+            5,
+            0,
+            11,
+            13
+          ],
+          "texture": "#body"
+        },
+        "east": {
+          "uv": [
+            5,
+            0,
+            11,
+            13
+          ],
+          "texture": "#body"
+        }
+      }
+    }
+  ]
+}

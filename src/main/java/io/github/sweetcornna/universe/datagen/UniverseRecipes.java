@@ -41,6 +41,60 @@ final class UniverseRecipes extends RecipeProvider {
         this.ores();
         this.suit();
         this.multitool();
+        this.factory();
+    }
+
+    /** 工业：中间产品一开始就能手工合成（戴森球计划的电磁阶段），设备要研究解锁（M3 后面换成科技门控的配方）。 */
+    private void factory() {
+        // 早期的磁铁：铁锭加红石；以后电弧熔炉直接把粗铁、磁铁矿烧成磁铁
+        this.shapeless(RecipeCategory.MISC, UniverseItems.ORE_SMELTED.get(OreKind.MAGNETIC).get())
+                .requires(Items.IRON_INGOT).requires(Items.REDSTONE)
+                .unlockedBy(getHasName(Items.REDSTONE), this.has(Items.REDSTONE))
+                .save(this.output, "universe:magnet_from_redstone");
+        Item magnet = UniverseItems.ORE_SMELTED.get(OreKind.MAGNETIC).get();
+        this.shapeless(RecipeCategory.MISC, UniverseItems.GEAR.get())
+                .requires(Items.IRON_INGOT)
+                .unlockedBy(getHasName(Items.IRON_INGOT), this.has(Items.IRON_INGOT))
+                .save(this.output);
+        this.shaped(RecipeCategory.MISC, UniverseItems.MAGNETIC_COIL.get(), 2)
+                .pattern("M").pattern("C").pattern("M")
+                .define('M', magnet).define('C', Items.COPPER_INGOT)
+                .unlockedBy(getHasName(magnet), this.has(magnet))
+                .save(this.output);
+        this.shaped(RecipeCategory.MISC, UniverseItems.CIRCUIT_BOARD.get(), 2)
+                .pattern("ICI")
+                .define('I', Items.IRON_INGOT).define('C', Items.COPPER_INGOT)
+                .unlockedBy(getHasName(Items.COPPER_INGOT), this.has(Items.COPPER_INGOT))
+                .save(this.output);
+        this.shaped(RecipeCategory.MISC, UniverseItems.PRISM.get(), 2)
+                .pattern("GG").pattern("G ")
+                .define('G', Items.GLASS)
+                .unlockedBy(getHasName(Items.GLASS), this.has(Items.GLASS))
+                .save(this.output);
+
+        Item coil = UniverseItems.MAGNETIC_COIL.get();
+        Item gear = UniverseItems.GEAR.get();
+        Item board = UniverseItems.CIRCUIT_BOARD.get();
+        this.shaped(RecipeCategory.REDSTONE, UniverseItems.TESLA_TOWER.get())
+                .pattern("C").pattern("I").pattern("I")
+                .define('C', coil).define('I', Items.IRON_INGOT)
+                .unlockedBy(getHasName(coil), this.has(coil))
+                .save(this.output);
+        this.shaped(RecipeCategory.REDSTONE, UniverseItems.WIND_TURBINE.get())
+                .pattern("IGI").pattern("CIC").pattern("IGI")
+                .define('I', Items.IRON_INGOT).define('G', gear).define('C', coil)
+                .unlockedBy(getHasName(coil), this.has(coil))
+                .save(this.output);
+        this.shaped(RecipeCategory.REDSTONE, UniverseItems.THERMAL_PLANT.get())
+                .pattern("BCB").pattern("GFG").pattern("BIB")
+                .define('B', Items.STONE_BRICKS).define('C', coil).define('G', gear).define('F', Items.FURNACE).define('I', Items.IRON_INGOT)
+                .unlockedBy(getHasName(coil), this.has(coil))
+                .save(this.output);
+        this.shaped(RecipeCategory.REDSTONE, UniverseItems.ACCUMULATOR.get())
+                .pattern("IRI").pattern("CBC").pattern("IRI")
+                .define('I', Items.IRON_INGOT).define('R', Items.REDSTONE).define('C', coil).define('B', board)
+                .unlockedBy(getHasName(board), this.has(board))
+                .save(this.output);
     }
 
     /** 多功能工具：修好坠毁点找到的那把，或者用钻石从头造一把（多人游戏里别的玩家用）。 */

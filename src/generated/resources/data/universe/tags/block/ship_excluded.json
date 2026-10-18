@@ -1,5 +1,9 @@
 {
   "values": [
+    "universe:tesla_tower",
+    "universe:wind_turbine",
+    "universe:thermal_plant",
+    "universe:accumulator",
     "#minecraft:substrate_overworld",
     "#minecraft:sand",
     "#minecraft:base_stone_overworld",

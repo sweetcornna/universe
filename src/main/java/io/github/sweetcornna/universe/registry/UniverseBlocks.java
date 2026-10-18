@@ -20,6 +20,11 @@ import io.github.sweetcornna.universe.block.ship.ShipSeatBlock;
 import io.github.sweetcornna.universe.block.ship.ShipThrusterBlock;
 import io.github.sweetcornna.universe.core.ecology.PlantForm;
 import io.github.sweetcornna.universe.core.galaxy.Palette;
+import io.github.sweetcornna.universe.factory.MachineBlock;
+import io.github.sweetcornna.universe.factory.TallMachineBlock;
+import io.github.sweetcornna.universe.factory.power.AccumulatorBlock;
+import io.github.sweetcornna.universe.factory.power.ThermalPlantBlock;
+import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.util.ColorRGBA;
 import net.minecraft.util.valueproviders.UniformInt;
 import net.minecraft.world.item.DyeColor;
@@ -101,6 +106,25 @@ public final class UniverseBlocks {
                     .lightLevel(state -> 7));
     public static final DeferredBlock<ShipSeatBlock> SHIP_SEAT = BLOCKS.registerBlock("ship_seat", ShipSeatBlock::new,
             p -> p.mapColor(MapColor.COLOR_GRAY).strength(1.5F).sound(SoundType.WOOL).noOcclusion());
+    // ---- 工业（ADR-0011）
+    public static final DeferredBlock<TallMachineBlock> TESLA_TOWER = BLOCKS.registerBlock("tesla_tower",
+            p -> new TallMachineBlock(p, UniverseBlockEntities.TESLA_TOWER),
+            p -> machine(p).noOcclusion().lightLevel(state -> state.getValue(MachineBlock.WORKING)
+                    && state.getValue(TallMachineBlock.HALF) == DoubleBlockHalf.UPPER ? 9 : 0));
+    public static final DeferredBlock<TallMachineBlock> WIND_TURBINE = BLOCKS.registerBlock("wind_turbine",
+            p -> new TallMachineBlock(p, UniverseBlockEntities.WIND_TURBINE), p -> machine(p).noOcclusion());
+    public static final DeferredBlock<ThermalPlantBlock> THERMAL_PLANT = BLOCKS.registerBlock("thermal_plant", ThermalPlantBlock::new,
+            p -> machine(p).noOcclusion().lightLevel(state -> state.getValue(MachineBlock.WORKING)
+                    && state.getValue(TallMachineBlock.HALF) == DoubleBlockHalf.LOWER ? 11 : 0));
+    public static final DeferredBlock<AccumulatorBlock> ACCUMULATOR = BLOCKS.registerBlock("accumulator", AccumulatorBlock::new,
+            p -> machine(p).lightLevel(state -> state.getValue(AccumulatorBlock.CHARGE) > 0 ? 4 : 0));
+
+    /** 设备的通用属性：金属、要镐子挖，活塞推不动。 */
+    private static BlockBehaviour.Properties machine(BlockBehaviour.Properties properties) {
+        return properties.mapColor(MapColor.METAL).strength(3.5F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops()
+                .pushReaction(PushReaction.IMMOVEABLE);
+    }
+
     /** 船体板：16 种颜色，比普通方块轻一半，给飞船换外观用。 */
     public static final Map<DyeColor, DeferredBlock<Block>> HULL_PLATING = registerPlating();
     /** 星球矿石：按星球资源生成，底色跟星岩一样按星球染色。 */

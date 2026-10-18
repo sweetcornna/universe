@@ -13,6 +13,10 @@ import io.github.sweetcornna.universe.world.CrashSite;
 import io.github.sweetcornna.universe.registry.UniverseBlockEntities;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
 import io.github.sweetcornna.universe.registry.UniverseCreativeTabs;
+import io.github.sweetcornna.universe.registry.UniverseDataComponents;
+import io.github.sweetcornna.universe.registry.UniverseMenus;
+import io.github.sweetcornna.universe.factory.FactoryCapabilities;
+import io.github.sweetcornna.universe.factory.power.LevelPower;
 import io.github.sweetcornna.universe.registry.UniverseEntities;
 import io.github.sweetcornna.universe.registry.UniverseItems;
 import io.github.sweetcornna.universe.registry.UniverseWorldgen;
@@ -42,6 +46,8 @@ public final class Universe {
         UniverseAttachments.register(modBus);
         UniverseItems.register(modBus);
         UniverseEntities.register(modBus);
+        UniverseMenus.register(modBus);
+        UniverseDataComponents.register(modBus);
         UniverseCreativeTabs.register(modBus);
         UniverseWorldgen.register(modBus);
         UniverseNetwork.registerEvents(modBus);
@@ -53,6 +59,8 @@ public final class Universe {
         ShipTransit.registerEvents(gameBus);
         PlayerSurvival.registerEvents(gameBus);
         CrashSite.registerEvents(gameBus);
+        LevelPower.registerEvents(gameBus);
+        FactoryCapabilities.registerEvents(modBus);
         gameBus.addListener(RegisterCommandsEvent.class, event -> DimensionCommand.register(event.getDispatcher()));
     }
 

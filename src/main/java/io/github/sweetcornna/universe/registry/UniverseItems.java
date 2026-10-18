@@ -21,7 +21,10 @@ import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.item.SpawnEggItem;
+import net.minecraft.world.item.component.CookingFuel;
 import net.minecraft.world.item.component.Tool;
+import net.minecraft.world.level.storage.loot.providers.number.floats.ResolvableFloat;
+import net.minecraft.world.level.storage.loot.providers.number.ints.ResolvableInt;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.item.equipment.ArmorType;
 import net.neoforged.bus.api.IEventBus;
@@ -137,6 +140,37 @@ public final class UniverseItems {
         return kind.vanillaDrop() ? BuiltInRegistries.ITEM.getValue(Identifier.parse(kind.drop())) : ORE_DROPS.get(kind).get();
     }
 
+    // ---- 工业（ADR-0011）
+    public static final DeferredItem<BlockItem> TESLA_TOWER = ITEMS.registerSimpleBlockItem(UniverseBlocks.TESLA_TOWER);
+    public static final DeferredItem<BlockItem> WIND_TURBINE = ITEMS.registerSimpleBlockItem(UniverseBlocks.WIND_TURBINE);
+    public static final DeferredItem<BlockItem> THERMAL_PLANT = ITEMS.registerSimpleBlockItem(UniverseBlocks.THERMAL_PLANT);
+    public static final DeferredItem<BlockItem> ACCUMULATOR = ITEMS.registerSimpleBlockItem(UniverseBlocks.ACCUMULATOR);
+
+    /** 中间产品（戴森球计划的电磁阶段）。 */
+    public static final DeferredItem<Item> GEAR = ITEMS.registerSimpleItem("gear");
+    public static final DeferredItem<Item> MAGNETIC_COIL = ITEMS.registerSimpleItem("magnetic_coil");
+    public static final DeferredItem<Item> CIRCUIT_BOARD = ITEMS.registerSimpleItem("circuit_board");
+    public static final DeferredItem<Item> ELECTRIC_MOTOR = ITEMS.registerSimpleItem("electric_motor");
+    public static final DeferredItem<Item> STEEL = ITEMS.registerSimpleItem("steel");
+    public static final DeferredItem<Item> PRISM = ITEMS.registerSimpleItem("prism");
+    public static final DeferredItem<Item> PLASMA_EXCITER = ITEMS.registerSimpleItem("plasma_exciter");
+    /** 高能石墨：两块煤烧一块，也是好燃料（戴森球计划 6.3 MJ，折合燃烧时间 3700 刻）。 */
+    public static final DeferredItem<Item> ENERGETIC_GRAPHITE = ITEMS.registerSimpleItem("energetic_graphite", properties -> fuel(properties, 3700));
+    /** 液体按物品处理，能放上传送带（ADR-0011）。 */
+    public static final DeferredItem<Item> WATER = ITEMS.registerSimpleItem("water");
+    public static final DeferredItem<Item> CRUDE_OIL = ITEMS.registerSimpleItem("crude_oil");
+    public static final DeferredItem<Item> REFINED_OIL = ITEMS.registerSimpleItem("refined_oil", properties -> fuel(properties, 2600));
+    public static final DeferredItem<Item> HYDROGEN = ITEMS.registerSimpleItem("hydrogen", properties -> fuel(properties, 4700));
+    /** 矩阵：研究站消耗它们推进科技树。 */
+    public static final DeferredItem<Item> ELECTROMAGNETIC_MATRIX = ITEMS.registerSimpleItem("electromagnetic_matrix");
+    public static final DeferredItem<Item> ENERGY_MATRIX = ITEMS.registerSimpleItem("energy_matrix");
+
+    /** 能进火力发电厂和熔炉的燃料，燃烧时间按原版的刻数。 */
+    private static Item.Properties fuel(Item.Properties properties, int burnTime) {
+        return properties.component(DataComponents.COOKING_FUEL,
+                new CookingFuel(new ResolvableInt.Constant(burnTime), new ResolvableFloat.Constant(1.0F)));
+    }
+
     /** 创造模式物品栏里的顺序。 */
     public static final List<DeferredItem<?>> CREATIVE_ORDER = creativeOrder();
 
@@ -154,6 +188,9 @@ public final class UniverseItems {
         order.addAll(ORES.values());
         order.addAll(ORE_DROPS.values());
         order.addAll(ORE_SMELTED.values());
+        order.addAll(List.of(TESLA_TOWER, WIND_TURBINE, THERMAL_PLANT, ACCUMULATOR,
+                GEAR, MAGNETIC_COIL, CIRCUIT_BOARD, ELECTRIC_MOTOR, STEEL, PRISM, PLASMA_EXCITER, ENERGETIC_GRAPHITE,
+                WATER, CRUDE_OIL, REFINED_OIL, HYDROGEN, ELECTROMAGNETIC_MATRIX, ENERGY_MATRIX));
         return List.copyOf(order);
     }
 

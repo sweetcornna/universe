@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_magnet": {
+      "conditions": {
+        "items": [
+          {
+            "items": "universe:magnet"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipes": "universe:magnetic_coil"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_magnet"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "universe:magnetic_coil"
+    ]
+  }
+}
