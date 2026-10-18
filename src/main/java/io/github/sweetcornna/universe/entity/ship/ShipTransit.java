@@ -11,9 +11,12 @@ import org.slf4j.Logger;
 
 import com.mojang.logging.LogUtils;
 
+import io.github.sweetcornna.universe.core.discovery.DiscoveryKey;
 import io.github.sweetcornna.universe.core.galaxy.BodyId;
 import io.github.sweetcornna.universe.core.galaxy.Planet;
+import io.github.sweetcornna.universe.core.procgen.NameGenerator.Name;
 import io.github.sweetcornna.universe.core.space.SpaceLayout;
+import io.github.sweetcornna.universe.discovery.Discoveries;
 import io.github.sweetcornna.universe.registry.UniverseAttachments;
 import io.github.sweetcornna.universe.world.DimensionTemplate;
 import io.github.sweetcornna.universe.world.RuntimeDimensions;
@@ -231,13 +234,16 @@ public final class ShipTransit {
             arrived.flight().restore(calmed.x, 0, calmed.z, yaw);
             arrived.latchVertical();
             if (pending.warp() >= 0) {
-                Planets.galaxy(server).system(pending.warp()).ifPresent(system -> arrived.noticeLater(
-                        Component.translatable("message.universe.warp.arrived", system.name().zh(), system.name().en())));
+                Planets.galaxy(server).system(pending.warp()).ifPresent(system -> {
+                    Name name = Discoveries.resolve(server, DiscoveryKey.system(system.index()), system.name());
+                    arrived.noticeLater(Component.translatable("message.universe.warp.arrived", name.zh(), name.en()));
+                });
                 ShipWarp.arrived(arrived, pending.warp());
                 return;
             }
             Component where = Planets.bodyId(key).flatMap(id -> Planets.galaxy(server).body(id))
-                    .map(planet -> Component.translatable("message.universe.ship.entered_planet", planet.name().zh(), planet.name().en()))
+                    .map(planet -> Discoveries.resolve(server, DiscoveryKey.body(planet.id()), planet.name()))
+                    .map(name -> Component.translatable("message.universe.ship.entered_planet", name.zh(), name.en()))
                     .orElseGet(() -> Component.translatable("message.universe.ship.entered_space"));
             arrived.noticeLater(where);
         }

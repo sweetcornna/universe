@@ -7,10 +7,13 @@ import java.util.OptionalInt;
 
 import org.jspecify.annotations.Nullable;
 
+import io.github.sweetcornna.universe.core.discovery.DiscoveryKey;
 import io.github.sweetcornna.universe.core.galaxy.Galaxy;
 import io.github.sweetcornna.universe.core.galaxy.StarSystem;
+import io.github.sweetcornna.universe.core.procgen.NameGenerator.Name;
 import io.github.sweetcornna.universe.core.space.SpaceLayout;
 import io.github.sweetcornna.universe.core.space.Warp;
+import io.github.sweetcornna.universe.discovery.Discoveries;
 import io.github.sweetcornna.universe.network.WarpPayload;
 import io.github.sweetcornna.universe.network.WarpRequestPayload;
 import io.github.sweetcornna.universe.registry.UniverseItems;
@@ -87,7 +90,8 @@ public final class ShipWarp {
             }
             case NEAR_BODY -> {
                 SpaceLayout.Body body = Warp.blocker(bodies, ship.getX(), ship.getY(), ship.getZ()).orElseThrow();
-                return Component.translatable("message.universe.warp.near_body", body.planet().name().zh(), body.planet().name().en());
+                Name name = Discoveries.resolve(player.level().getServer(), DiscoveryKey.body(body.id()), body.planet().name());
+                return Component.translatable("message.universe.warp.near_body", name.zh(), name.en());
             }
             case OK -> {
             }

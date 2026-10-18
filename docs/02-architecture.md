@@ -258,6 +258,8 @@ io.github.sweetcornna.universe
 | 方块模型的元素超出 0–16（比如 -0.01 到 16.01 的发光外壳）时面要写明 `uv`，自动算的 UV 会越界，烘焙时报"Cannot compute translucency out of bounds"，整个模型丢失 | 已确认，跃迁引擎在用 |
 | 视野：`ViewportEvent.ComputeFov` 的 `getFOV/setFOV`；最上层的 HUD 用 `RegisterGuiLayersEvent#registerAboveAll` | 已确认，跃迁画面在用 |
 | 动作栏消息是 `Player#sendOverlayMessage(Component)`，`displayClientMessage(…, true)` 没有了；`ChunkPos` 是记录，`ChunkPos.pack(BlockPos)`、`unpack(long)`；看得见某个区块的玩家 `chunkMap.getPlayers(ChunkPos, false)` | 已确认 |
+| `BlockPos#getCenter` 没有了，用 `Vec3.atCenterOf(pos)`；`Player#drop(ItemStack, boolean)` 多了 `Prediction` 参数，给玩家物品用 `getInventory().placeItemBackInInventory(stack, Prediction.SERVER_ONLY)`（放不下自动丢在脚下） | 已确认，发现日志在用 |
+| 文本框 `EditBox(font, x, y, w, h, 名字)`、`setHint`、`setMaxLength`；按钮 `Button.builder(文字, 回调).bounds(...).build()`；控件有公开的 `visible`、`active` 字段；带控件的界面在 `extractRenderState` 里最后调 `super` 才会画控件 | 已确认，发现日志在用 |
 
 ## 5. 性能预算（目标）
 

@@ -2,13 +2,16 @@ package io.github.sweetcornna.universe.client.galaxy;
 
 import java.util.Locale;
 
+import io.github.sweetcornna.universe.client.discovery.ClientDiscoveries;
+import io.github.sweetcornna.universe.core.discovery.DiscoveryKey;
 import io.github.sweetcornna.universe.core.galaxy.Planet;
 import io.github.sweetcornna.universe.core.galaxy.StarSystem;
 import io.github.sweetcornna.universe.core.procgen.NameGenerator;
 import net.minecraft.client.Minecraft;
 
 /**
- * 星团里的名字和数值怎么显示：核心层的名字和枚举都带中英两套，中文界面用中文，其他语言用英文。
+ * 星团里的名字和数值怎么显示：核心层的名字和枚举都带中英两套，中文界面用中文，其他语言用英文；
+ * 发现者改过名的恒星系和天体用新名字（ADR-0012）。
  */
 public final class GalaxyText {
     private GalaxyText() {
@@ -27,11 +30,11 @@ public final class GalaxyText {
     }
 
     public static String system(StarSystem system) {
-        return name(system.name());
+        return ClientDiscoveries.name(DiscoveryKey.system(system.index()), system.name());
     }
 
     public static String planet(Planet planet) {
-        return name(planet.name());
+        return ClientDiscoveries.name(DiscoveryKey.body(planet.id()), planet.name());
     }
 
     /** 保留几位小数，小数点固定用"."。 */

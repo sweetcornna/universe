@@ -1,5 +1,6 @@
 package io.github.sweetcornna.universe.network;
 
+import io.github.sweetcornna.universe.discovery.Discoveries;
 import io.github.sweetcornna.universe.entity.ship.ShipWarp;
 import io.github.sweetcornna.universe.factory.research.Research;
 import io.github.sweetcornna.universe.survival.PlayerSurvival;
@@ -16,7 +17,7 @@ import net.neoforged.neoforge.server.ServerLifecycleHooks;
  */
 public final class UniverseNetwork {
     /** 协议版本：任何包的格式改动都要加一，版本不同的客户端和服务端会拒绝连接。 */
-    private static final String PROTOCOL_VERSION = "8";
+    private static final String PROTOCOL_VERSION = "9";
 
     private UniverseNetwork() {
     }
@@ -36,8 +37,11 @@ public final class UniverseNetwork {
                 .playToClient(ResearchStatePayload.TYPE, ResearchStatePayload.STREAM_CODEC)
                 .playToClient(BeltLinesPayload.TYPE, BeltLinesPayload.STREAM_CODEC)
                 .playToClient(WarpPayload.TYPE, WarpPayload.STREAM_CODEC)
+                .playToClient(DiscoveryPayload.TYPE, DiscoveryPayload.STREAM_CODEC)
                 .playToServer(JetpackPayload.TYPE, JetpackPayload.STREAM_CODEC, PlayerSurvival::handleJetpack)
                 .playToServer(ResearchActionPayload.TYPE, ResearchActionPayload.STREAM_CODEC, Research::handleAction)
-                .playToServer(WarpRequestPayload.TYPE, WarpRequestPayload.STREAM_CODEC, ShipWarp::handleRequest);
+                .playToServer(WarpRequestPayload.TYPE, WarpRequestPayload.STREAM_CODEC, ShipWarp::handleRequest)
+                .playToServer(AnalyzePayload.TYPE, AnalyzePayload.STREAM_CODEC, Discoveries::handleAnalyze)
+                .playToServer(RenamePayload.TYPE, RenamePayload.STREAM_CODEC, Discoveries::handleRename);
     }
 }

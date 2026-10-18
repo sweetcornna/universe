@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 
 import com.mojang.logging.LogUtils;
 
+import io.github.sweetcornna.universe.discovery.Discoveries;
 import io.github.sweetcornna.universe.entity.FaunaSpawner;
 import io.github.sweetcornna.universe.entity.ship.ShipTransit;
 import io.github.sweetcornna.universe.network.UniverseNetwork;
@@ -68,6 +69,7 @@ public final class Universe {
         BeltNetwork.registerEvents(gameBus);
         MachineRecipes.registerEvents(gameBus);
         Research.registerEvents(gameBus);
+        Discoveries.registerEvents(gameBus);
         FactoryCapabilities.registerEvents(modBus);
         gameBus.addListener(RegisterCommandsEvent.class, event -> DimensionCommand.register(event.getDispatcher()));
     }

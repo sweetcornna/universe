@@ -40,10 +40,11 @@ class SurvivalProgressionTest {
             "universe:smelting", NS + "arc_smelter",
             "universe:assembling", NS + "assembler",
             "universe:refining", NS + "oil_refinery");
-    /** 不靠配方、由设备从世界里抽出来的东西。 */
+    /** 不靠配方、由设备从世界里抽出来的东西；勘探数据靠多功能工具的分析目镜发现新东西拿到。 */
     private static final Map<String, String> EXTRACTED = Map.of(
             NS + "crude_oil", NS + "oil_extractor",
-            NS + "water", NS + "water_pump");
+            NS + "water", NS + "water_pump",
+            NS + "survey_data", NS + "multitool");
     /** 生存里本来就拿不到的：挖不掉的涌泉、只在坠毁点箱子里的损坏工具。刷怪蛋另算。 */
     private static final Set<String> UNOBTAINABLE = Set.of(NS + "crude_oil_seep", NS + "damaged_multitool");
 

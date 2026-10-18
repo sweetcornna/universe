@@ -14,6 +14,10 @@ public final class UniverseKeys {
     public static final KeyMapping TECH_TREE = new KeyMapping("key.universe.tech_tree", InputConstants.Type.KEYBOARD, InputConstants.KEY_J, CATEGORY);
     /** 星图（默认 M）。 */
     public static final KeyMapping STAR_MAP = new KeyMapping("key.universe.star_map", InputConstants.Type.KEYBOARD, InputConstants.KEY_M, CATEGORY);
+    /** 分析目镜，手持多功能工具时开关（默认 V）。 */
+    public static final KeyMapping ANALYZE = new KeyMapping("key.universe.analyze", InputConstants.Type.KEYBOARD, InputConstants.KEY_V, CATEGORY);
+    /** 发现日志（默认 K）。 */
+    public static final KeyMapping DISCOVERY_LOG = new KeyMapping("key.universe.discovery_log", InputConstants.Type.KEYBOARD, InputConstants.KEY_K, CATEGORY);
 
     private UniverseKeys() {
     }
@@ -23,6 +27,8 @@ public final class UniverseKeys {
             event.registerCategory(CATEGORY);
             event.register(TECH_TREE);
             event.register(STAR_MAP);
+            event.register(ANALYZE);
+            event.register(DISCOVERY_LOG);
         });
     }
 }

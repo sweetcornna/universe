@@ -20,7 +20,7 @@ public final class TechTree {
     /** 研究站认的矩阵，顺序就是研究站格子的顺序。以后加新的矩阵只能往后加，免得存档里的格子对不上。 */
     public static final List<String> MATRICES = List.of(BLUE, RED);
 
-    /** M3 的科技：电磁学阶段上交物品，之后用蓝矩阵、再用蓝红两种矩阵研究。 */
+    /** M3 的科技：电磁学阶段上交物品，之后用蓝矩阵、再用蓝红两种矩阵研究；M4 加了上交勘探数据的科技（ADR-0012）。 */
     public static final TechTree DEFAULT = new TechTree(List.of(
             Tech.handIn("electromagnetism", List.of(),
                     List.of(cost("magnetic_coil", 10), cost("circuit_board", 10)),
@@ -37,6 +37,8 @@ public final class TechTree {
             Tech.handIn("electromagnetic_matrix", List.of("basic_assembling"),
                     List.of(cost("circuit_board", 10), cost("magnetic_coil", 10)),
                     items("matrix_lab", "electromagnetic_matrix")),
+            // 先开着飞船把母星系里的星球跑一遍，攒够勘探数据才能离开母星系
+            Tech.handIn("interstellar_survey", List.of("electromagnetic_matrix"), List.of(cost("survey_data", 12)), items()),
             Tech.lab("fluid_storage", List.of("electromagnetic_matrix"), List.of(BLUE), 20, items("water_pump")),
             Tech.lab("electromagnetic_drive", List.of("electromagnetic_matrix"), List.of(BLUE), 20, items("electric_motor")),
             Tech.lab("thermal_power", List.of("electromagnetic_matrix"), List.of(BLUE), 20, items("thermal_plant")),
@@ -46,8 +48,10 @@ public final class TechTree {
             Tech.lab("energy_matrix", List.of("plasma_refining", "thermal_power"), List.of(BLUE), 60, items("energy_matrix")),
             Tech.lab("energy_storage", List.of("energy_matrix"), List.of(BLUE, RED), 30, items("accumulator")),
             Tech.lab("x_ray_cracking", List.of("energy_matrix"), List.of(BLUE, RED), 30, items("energetic_graphite")),
-            Tech.lab("warp_drive", List.of("energy_storage", "x_ray_cracking"), List.of(BLUE, RED), 60,
-                    items("warp_drive", "space_warper"))));
+            Tech.lab("warp_drive", List.of("energy_storage", "x_ray_cracking", "interstellar_survey"), List.of(BLUE, RED), 60,
+                    items("warp_drive", "space_warper")),
+            // 勘探数据校准了星图，空间翘曲器的配方产量翻倍
+            Tech.handIn("warp_calibration", List.of("warp_drive"), List.of(cost("survey_data", 30)), items("space_warper"))));
 
     private final List<Tech> techs;
     private final Map<String, Tech> byId;

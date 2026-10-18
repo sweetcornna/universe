@@ -332,6 +332,38 @@ def space_warper():
     save(img, ITEM, "space_warper")
 
 
+def survey_data():
+    """勘探数据：深色的数据芯片，青色的电路纹，一角亮着读数灯。"""
+    img = Image.new("RGBA", (N, N), (0, 0, 0, 0))
+    cyan = (90, 226, 240)
+    board = (34, 38, 48)
+    for y in range(3, 13):
+        for x in range(2, 14):
+            # 切掉右上角，像一张存储卡
+            if x - 9 > y - 3 and y < 7:
+                continue
+            edge = x in (2, 13) or y in (3, 12) or x - 9 == y - 3
+            light = 1.2 if (x < 5 or y < 5) else 0.9
+            put(img, x, y, shade((70, 76, 90), light) if edge else board)
+    # 电路：几条线连到焊点
+    trace = mix(cyan, board, 0.35)
+    for x in range(4, 10):
+        put(img, x, 6, trace)
+    for x in range(4, 12):
+        put(img, x, 9, trace)
+    for y in range(6, 10):
+        put(img, 9, y, trace)
+    for x, y in ((4, 6), (4, 9), (11, 9)):
+        put(img, x, y, cyan)
+    # 读数灯
+    put(img, 11, 11, (255, 255, 255))
+    put(img, 10, 11, cyan)
+    # 底边的金手指
+    for x in range(4, 12, 2):
+        put(img, x, 12, (214, 178, 84))
+    save(img, ITEM, "survey_data")
+
+
 def plating():
     for name, color in DYES.items():
         rng = random.Random(sum(ord(ch) for ch in name))
@@ -380,6 +412,7 @@ if __name__ == "__main__":
     impulse_engine()
     warp_drive()
     space_warper()
+    survey_data()
     plating()
     launch_fuel()
     print("ship textures written")

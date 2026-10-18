@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 
 import io.github.sweetcornna.universe.Universe;
+import io.github.sweetcornna.universe.client.galaxy.GalaxyText;
 import io.github.sweetcornna.universe.core.galaxy.Hazard;
 import io.github.sweetcornna.universe.core.galaxy.Planet;
 import io.github.sweetcornna.universe.core.survival.LifeSupport;
@@ -180,7 +181,7 @@ public final class SuitClient {
         y += 11;
         if (planet.isPresent()) {
             Planet p = planet.get();
-            String name = minecraft.options.languageCode.startsWith("zh") ? p.name().zh() : p.name().en();
+            String name = GalaxyText.planet(p);
             graphics.text(font, Component.translatable("hud.universe.suit.planet", name, Math.round(p.temperatureCelsius()),
                     String.format("%.2f", p.gravity())), x, y, 0xFFB0B0B0, false);
             y += 10;

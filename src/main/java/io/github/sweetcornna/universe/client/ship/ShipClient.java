@@ -10,6 +10,7 @@ import org.jspecify.annotations.Nullable;
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.client.ClientGalaxy;
 import io.github.sweetcornna.universe.client.UniverseKeys;
+import io.github.sweetcornna.universe.client.galaxy.GalaxyText;
 import io.github.sweetcornna.universe.core.ship.ShipStats;
 import io.github.sweetcornna.universe.core.space.SpaceLayout;
 import io.github.sweetcornna.universe.core.space.Warp;
@@ -197,7 +198,7 @@ public final class ShipClient {
             float bearing = (float) Math.toDegrees(Math.atan2(-dx, dz));
             float relative = Mth.wrapDegrees(bearing - viewYaw);
             int distance = (int) Math.max(0, body.distanceTo(ship.getX(), ship.getY(), ship.getZ()) - body.radius());
-            String name = Minecraft.getInstance().options.languageCode.startsWith("zh") ? body.planet().name().zh() : body.planet().name().en();
+            String name = GalaxyText.planet(body.planet());
             Component kind = body.planet().landable() ? Component.empty() : Component.translatable("hud.universe.ship.unlandable");
             // 箭头只管水平方向；高度差超过半个大气球时标出来，不然会从星球上方或下方飞过去
             double dy = body.y() - ship.getY();

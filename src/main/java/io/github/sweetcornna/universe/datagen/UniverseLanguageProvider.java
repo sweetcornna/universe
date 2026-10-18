@@ -83,6 +83,7 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         block(UniverseBlocks.IMPULSE_ENGINE.get(), "脉冲引擎", "Impulse Engine");
         block(UniverseBlocks.WARP_DRIVE.get(), "跃迁引擎", "Warp Drive");
         item(UniverseItems.SPACE_WARPER.get(), "空间翘曲器", "Space Warper");
+        item(UniverseItems.SURVEY_DATA.get(), "勘探数据", "Survey Data");
         block(UniverseBlocks.SHIP_SEAT.get(), "乘客座椅", "Passenger Seat");
         String[][] colors = {
                 {"white", "白色"}, {"orange", "橙色"}, {"magenta", "品红色"}, {"light_blue", "淡蓝色"},
@@ -131,6 +132,8 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("key.universe.tech_tree", "打开科技树", "Open Tech Tree");
         both("key.category.universe.universe", "寰宇", "Universe");
         both("key.universe.star_map", "打开星图", "Open Star Map");
+        both("key.universe.analyze", "分析目镜（手持多功能工具）", "Analysis Visor (hold the multitool)");
+        both("key.universe.discovery_log", "打开发现日志", "Open Discovery Log");
         both("gui.universe.star_map", "星图", "Star Map");
         both("gui.universe.star_map.unknown", "还没收到星团的数据", "Galaxy data not received yet");
         both("gui.universe.star_map.hint", "左键拖动旋转 · 右键拖动平移 · 滚轮缩放 · 双击或 F 居中 · H 回到当前恒星系 · %s 关闭",
@@ -395,8 +398,94 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         tech("energy_storage", "能量储存", "Energy Storage");
         tech("x_ray_cracking", "X 射线裂解", "X-Ray Cracking");
         tech("warp_drive", "跃迁引擎", "Warp Drive");
+        tech("interstellar_survey", "星际测绘", "Interstellar Survey");
+        tech("warp_calibration", "跃迁校准", "Warp Calibration");
+        this.discovery();
         both("research.universe.completed", "研究完成：%s", "Research complete: %s");
         both("research.universe.missing_items", "背包里的物品不够，无法完成这项研究", "Not enough items in your inventory for this research");
+    }
+
+    /** 发现日志、分析目镜、勘探数据（ADR-0012）。 */
+    private void discovery() {
+        // 服务端发来的程序生成的名字带中英文两个参数，各取一个
+        both("universe.name", "%1$s", "%2$s");
+        both("discovery.universe.kind.system", "恒星系", "Star system");
+        both("discovery.universe.kind.body", "天体", "Celestial body");
+        both("discovery.universe.kind.creature", "动物", "Creature");
+        both("discovery.universe.kind.plant", "植物", "Plant");
+        both("discovery.universe.kind.tree", "树木", "Tree");
+        both("discovery.universe.kind.mineral", "矿物", "Mineral");
+        both("discovery.universe.charted", "开局已测绘", "Charted from the start");
+        both("discovery.universe.temperament.docile", "温顺", "Docile");
+        both("discovery.universe.temperament.skittish", "易受惊", "Skittish");
+        both("discovery.universe.temperament.territorial", "有领地意识", "Territorial");
+        both("discovery.universe.temperament.predator", "捕食者", "Predator");
+        String[][] plans = {{"quadruped", "四足兽", "Quadruped"}, {"hexapod", "六足虫", "Hexapod"}, {"biped", "两足兽", "Biped"},
+                {"serpent", "节蠕虫", "Serpent"}, {"flyer", "飞兽", "Flyer"}};
+        for (String[] plan : plans) {
+            both("discovery.universe.plan." + plan[0], plan[1], plan[2]);
+        }
+        String[][] shapes = {{"shrub", "灌木", "Shrub"}, {"round", "阔叶树", "Broadleaf tree"}, {"conifer", "针叶树", "Conifer"},
+                {"umbrella", "伞形树", "Umbrella tree"}, {"palm", "棕榈", "Palm"}, {"weeping", "垂枝树", "Weeping tree"},
+                {"mushroom", "巨菌", "Giant fungus"}, {"baobab", "瓶干树", "Bottle tree"}, {"spiral", "螺旋树", "Spiral tree"},
+                {"column", "柱状肉茎", "Fleshy column"}, {"crystal", "晶簇树", "Crystal tree"}};
+        for (String[] shape : shapes) {
+            both("discovery.universe.tree_shape." + shape[0], shape[1], shape[2]);
+        }
+
+        both("message.universe.discovery.new", "新发现 · %1$s：%2$s（勘探数据 +%3$s）", "New discovery · %1$s: %2$s (+%3$s survey data)");
+        both("message.universe.discovery.complete", "%1$s 上的动植物已全部发现（勘探数据 +%2$s）",
+                "Every species on %1$s has been discovered (+%2$s survey data)");
+        both("message.universe.discovery.unknown", "目镜识别不了这个目标", "The visor can't identify that");
+        both("message.universe.discovery.known", "%1$s 已在发现日志里（%2$s）", "%1$s is already in the log (%2$s)");
+        both("message.universe.discovery.renamed", "已改名为 %s", "Renamed to %s");
+        both("message.universe.discovery.rename_unknown", "发现日志里还没有它", "That is not in the discovery log yet");
+        both("message.universe.discovery.rename_not_discoverer", "只有发现者能改名", "Only the discoverer can rename it");
+        both("message.universe.discovery.rename_invalid_name", "名字太长或含有不能用的字符", "That name is too long or has invalid characters");
+
+        both("hud.universe.visor.title", "分析目镜", "Analysis Visor");
+        both("hud.universe.visor.need_tool", "手持多功能工具才能打开分析目镜", "Hold a multitool to open the analysis visor");
+        both("hud.universe.visor.hint", "按住右键分析 · V 关闭", "Hold right-click to analyze · V to close");
+        both("hud.universe.visor.no_target", "对准动物、植物、矿石或天体", "Aim at a creature, plant, ore or celestial body");
+        both("hud.universe.visor.unidentified", "无法识别", "Unidentified");
+        both("hud.universe.visor.new", "未记录 · 分析可得 %s 个勘探数据", "Not logged · analyzing yields %s survey data");
+        both("hud.universe.visor.new_shared", "未记录", "Not logged");
+        both("hud.universe.visor.known", "已记录 · 发现者 %s", "Logged · discovered by %s");
+        both("hud.universe.visor.known_charted", "已记录 · 开局已测绘", "Logged · charted from the start");
+        both("hud.universe.visor.analyzing", "分析中…", "Analyzing…");
+        both("hud.universe.visor.discovered", "新发现", "New discovery");
+        both("hud.universe.visor.reward", "勘探数据 +%s", "Survey data +%s");
+        both("hud.universe.visor.creature", "%1$s · %2$s · 体长 %3$s 米", "%1$s · %2$s · %3$s m long");
+        both("hud.universe.visor.body", "%1$s · %2$s °C · 重力 %3$s g", "%1$s · %2$s °C · %3$s g");
+        both("hud.universe.visor.star", "恒星 · %s", "Star · %s");
+
+        both("gui.universe.discovery.title", "发现日志", "Discovery Log");
+        both("gui.universe.discovery.totals", "恒星系 %1$s · 天体 %2$s · 物种 %3$s · 矿物 %4$s",
+                "Systems %1$s · Bodies %2$s · Species %3$s · Minerals %4$s");
+        both("gui.universe.discovery.systems", "恒星系", "Star systems");
+        both("gui.universe.discovery.bodies", "天体", "Bodies");
+        both("gui.universe.discovery.undiscovered", "未发现的天体", "Undiscovered body");
+        both("gui.universe.discovery.discoverer", "发现者：%s", "Discovered by %s");
+        both("gui.universe.discovery.day", "第 %s 天", "Day %s");
+        both("gui.universe.discovery.rename", "改名", "Rename");
+        both("gui.universe.discovery.save", "保存", "Save");
+        both("gui.universe.discovery.rename_hint", "留空保存恢复原名", "Leave empty for the original");
+        both("gui.universe.discovery.creatures", "动物 %1$s / %2$s", "Creatures %1$s / %2$s");
+        both("gui.universe.discovery.plants", "植物 %1$s / %2$s", "Plants %1$s / %2$s");
+        both("gui.universe.discovery.trees", "树木 %1$s / %2$s", "Trees %1$s / %2$s");
+        both("gui.universe.discovery.minerals", "矿物 %s", "Minerals %s");
+        both("gui.universe.discovery.complete", "动植物已全部发现", "Every species discovered");
+        both("gui.universe.discovery.lifeless", "没有生命", "Lifeless");
+        both("gui.universe.discovery.not_landable", "不能着陆，只能从远处分析", "Cannot be landed on; analyze it from afar");
+        both("gui.universe.discovery.unknown_species", "还有 %s 种没发现", "%s more to find");
+        both("gui.universe.discovery.unknown_bodies", "还有 %s 个天体没发现", "%s bodies not yet found");
+        both("gui.universe.discovery.species_total", "已发现物种 %s", "Species discovered: %s");
+        both("gui.universe.discovery.complete_bodies", "%s 颗星球的动植物已全部发现", "Every species found on %s worlds");
+        both("gui.universe.discovery.undiscovered_hint", "降落到这颗星球，或者在太空里用分析目镜看它",
+                "Land on it, or analyze it with the visor from space");
+        both("gui.universe.discovery.footer", "点选查看 · 发现者可以改名 · K 关闭", "Click to inspect · discoverers can rename · K to close");
+        both("gui.universe.star_map.unexplored", "未探测：跃迁过去才能看到行星", "Unexplored: warp there to chart its planets");
+        both("gui.universe.star_map.discovered_by", "发现者：%s", "Discovered by %s");
     }
 
     private void tech(String id, String zh, String en) {

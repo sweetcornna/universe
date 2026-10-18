@@ -86,7 +86,7 @@ final class UniverseModelProvider extends ModelProvider {
         this.trees(blockModels, itemModels);
         for (DeferredItem<?> item : List.of(UniverseItems.ALIEN_MEAT, UniverseItems.COOKED_ALIEN_MEAT, UniverseItems.ALIEN_HIDE,
                 UniverseItems.ALIEN_CREATURE_SPAWN_EGG, UniverseItems.ALIEN_FLYER_SPAWN_EGG, UniverseItems.LAUNCH_FUEL,
-                UniverseItems.SPACE_WARPER)) {
+                UniverseItems.SPACE_WARPER, UniverseItems.SURVEY_DATA)) {
             itemModels.generateFlatItem(item.get(), ModelTemplates.FLAT_ITEM);
         }
         ships(blockModels);

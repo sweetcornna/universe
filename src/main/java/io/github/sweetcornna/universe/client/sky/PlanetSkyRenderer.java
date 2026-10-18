@@ -33,6 +33,7 @@ import com.mojang.renderpearl.api.vertex.VertexFormat;
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.client.ClientGalaxy;
 import io.github.sweetcornna.universe.client.ClientWeather;
+import io.github.sweetcornna.universe.client.discovery.SkyTargets;
 import io.github.sweetcornna.universe.core.galaxy.Planet;
 import io.github.sweetcornna.universe.core.galaxy.PlanetType;
 import io.github.sweetcornna.universe.core.galaxy.StarSystem;
@@ -176,6 +177,7 @@ public final class PlanetSkyRenderer implements CustomSkyboxRenderer {
         }
         SkyFrame frame = levelState.getRenderData(FRAME);
         if (frame == null) {
+            SkyTargets.clear();
             return false;
         }
         this.ensureBuffers(frame.context().system().seed());
@@ -194,6 +196,7 @@ public final class PlanetSkyRenderer implements CustomSkyboxRenderer {
             if (stars > 0.002F) {
                 this.drawStarField(pass, sky.starAngle, stars);
             }
+            SkyTargets.begin();
             for (SkyBody body : frame.bodies()) {
                 if (body.kind() == SkyBody.Kind.STAR) {
                     this.drawStar(pass, body, sky, colors, look, 1.0F - 0.97F * dayFactor, seconds);
@@ -201,6 +204,7 @@ public final class PlanetSkyRenderer implements CustomSkyboxRenderer {
                     this.drawBody(pass, body, frame.days(), sky, colors, dayFactor);
                 }
             }
+            SkyTargets.end();
             if (sky.shouldRenderDarkDisc) {
                 this.drawDarkDisc(pass);
             }
@@ -232,6 +236,8 @@ public final class PlanetSkyRenderer implements CustomSkyboxRenderer {
             // 由远及近地画，近的盖住远的；恒星按它的距离插在中间，整个躲在恒星背后的星球不画
             List<SpaceLayout.Body> bodies = new ArrayList<>(frame.bodies());
             bodies.sort(Comparator.comparingDouble(body -> -body.distanceTo(camera.x, camera.y, camera.z)));
+            SkyTargets.begin();
+            SkyTargets.add(null, toStar, starAngular);
             for (SpaceLayout.Body body : bodies) {
                 double distance = body.distanceTo(camera.x, camera.y, camera.z);
                 if (distance <= body.radius()) {
@@ -253,10 +259,12 @@ public final class PlanetSkyRenderer implements CustomSkyboxRenderer {
                 }
                 Vector3f light = new Vector3f((float) -body.x(), (float) -body.y(), (float) -body.z()).normalize();
                 this.drawBodyAt(pass, body.planet(), direction, angular, light, frame.days());
+                SkyTargets.add(body.planet(), direction, angular);
             }
             if (!starDrawn) {
                 this.drawStarAt(pass, toStar, starAngular, look, frame.system().star().color(), seconds);
             }
+            SkyTargets.end();
         }
     }
 
@@ -402,6 +410,7 @@ public final class PlanetSkyRenderer implements CustomSkyboxRenderer {
         if (visibility <= 0.001F) {
             return;
         }
+        SkyTargets.add(null, direction, (float) star.angularDiameter());
         this.drawStarLook(pass, celestial, (float) star.angularDiameter(), look, star.color(), visibility, (float) colors.scatter(),
                 haloDegrees, occlusion, seconds);
     }
@@ -422,6 +431,9 @@ public final class PlanetSkyRenderer implements CustomSkyboxRenderer {
         }
         if (visibility <= 0.001F) {
             return;
+        }
+        if (visibility > 0.15F) {
+            SkyTargets.add(planet, direction, (float) body.angularDiameter());
         }
         Vector3f e1 = celestial.transformDirection(new Vector3f(1.0F, 0.0F, 0.0F));
         Vector3f e2 = celestial.transformDirection(new Vector3f(0.0F, 0.0F, 1.0F));

@@ -190,6 +190,8 @@ final class UniverseRecipes extends RecipeProvider {
         Item titanium = UniverseItems.ORE_SMELTED.get(OreKind.TITANIUM).get();
         this.machine(Kind.ASSEMBLING, "space_warper", 200, "warp_drive",
                 in(titanium, 2, prism, 1, UniverseItems.ENERGY_MATRIX.get(), 1), out(UniverseItems.SPACE_WARPER.get(), 1));
+        this.machine(Kind.ASSEMBLING, "space_warper_calibrated", 200, "warp_calibration",
+                in(titanium, 2, prism, 1, UniverseItems.ENERGY_MATRIX.get(), 1), out(UniverseItems.SPACE_WARPER.get(), 2));
         this.machine(Kind.ASSEMBLING, "warp_drive", 120, "warp_drive",
                 in(titanium, 4, UniverseItems.PLASMA_EXCITER.get(), 2, UniverseItems.STEEL.get(), 2, UniverseItems.ACCUMULATOR.get(), 1),
                 out(UniverseItems.WARP_DRIVE.get(), 1));

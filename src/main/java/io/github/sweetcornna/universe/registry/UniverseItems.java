@@ -88,6 +88,8 @@ public final class UniverseItems {
     public static final DeferredItem<Item> LAUNCH_FUEL = ITEMS.registerSimpleItem("launch_fuel", properties -> properties.stacksTo(16));
     /** 空间翘曲器：跃迁一次消耗一个（ADR-0012）。 */
     public static final DeferredItem<Item> SPACE_WARPER = ITEMS.registerSimpleItem("space_warper");
+    /** 勘探数据：第一个发现恒星系、星球、物种、矿物的玩家拿到，上交给部分科技（ADR-0012）。 */
+    public static final DeferredItem<Item> SURVEY_DATA = ITEMS.registerSimpleItem("survey_data");
 
     // ---- 外骨骼
     public static final DeferredItem<Item> EXOSUIT_HELMET = ITEMS.registerSimpleItem("exosuit_helmet",
@@ -195,7 +197,7 @@ public final class UniverseItems {
                 PLANET_LOG, PLANET_LEAVES, PLANET_CAP, PLANET_BLOOM));
         order.addAll(PLANTS.values());
         order.addAll(List.of(ALIEN_MEAT, COOKED_ALIEN_MEAT, ALIEN_HIDE, ALIEN_CREATURE_SPAWN_EGG, ALIEN_FLYER_SPAWN_EGG));
-        order.addAll(List.of(SHIP_HELM, SHIP_THRUSTER, FUEL_TANK, IMPULSE_ENGINE, WARP_DRIVE, SHIP_SEAT, LAUNCH_FUEL, SPACE_WARPER));
+        order.addAll(List.of(SHIP_HELM, SHIP_THRUSTER, FUEL_TANK, IMPULSE_ENGINE, WARP_DRIVE, SHIP_SEAT, LAUNCH_FUEL, SPACE_WARPER, SURVEY_DATA));
         order.addAll(HULL_PLATING.values());
         order.addAll(List.of(EXOSUIT_HELMET, EXOSUIT_CHESTPLATE, EXOSUIT_LEGGINGS, EXOSUIT_BOOTS, OXYGEN_CAPSULE, HAZARD_CELL,
                 MULTITOOL, DAMAGED_MULTITOOL));

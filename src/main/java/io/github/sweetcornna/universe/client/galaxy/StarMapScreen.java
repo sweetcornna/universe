@@ -18,6 +18,9 @@ import com.mojang.blaze3d.platform.InputConstants;
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.client.ClientGalaxy;
 import io.github.sweetcornna.universe.client.UniverseKeys;
+import io.github.sweetcornna.universe.client.discovery.ClientDiscoveries;
+import io.github.sweetcornna.universe.core.discovery.DiscoveryKey;
+import io.github.sweetcornna.universe.core.discovery.DiscoveryLog;
 import io.github.sweetcornna.universe.core.galaxy.Galaxy;
 import io.github.sweetcornna.universe.core.galaxy.GalaxyGenerator;
 import io.github.sweetcornna.universe.core.galaxy.Hazard;
@@ -491,6 +494,19 @@ public class StarMapScreen extends Screen {
         y = graphics.textWithWordWrap(this.font, stats, x, y, width, DIM, false) + 4;
 
         this.hoveredPlanet = -1;
+        DiscoveryLog.Entry discovery = ClientDiscoveries.entry(DiscoveryKey.system(system.index())).orElse(null);
+        if (discovery == null) {
+            // 没去过的恒星系（ADR-0012）：只看得到恒星
+            y = this.smallText(graphics, Component.translatable("gui.universe.star_map.unexplored"), x, y, width, WARN) + 4;
+            graphics.disableScissor();
+            this.panelContentHeight = y + (int) this.panelScroll - top;
+            this.drawWarp(graphics, system, x, bottom + 4, width, mouseX, mouseY);
+            return;
+        }
+        if (discovery.discoverer() != null) {
+            y = this.smallText(graphics, Component.translatable("gui.universe.star_map.discovered_by", discovery.discovererName()), x, y, width,
+                    DIM) + 3;
+        }
         y = this.drawStrip(graphics, system, x, y, width, mouseX, mouseY) + 4;
 
         graphics.text(this.font, Component.translatable("gui.universe.star_map.planets", system.planets().size()), x, y, TEXT, false);
@@ -567,7 +583,8 @@ public class StarMapScreen extends Screen {
             case NEAR_BODY -> {
                 Planet planet = Warp.blocker(this.currentBodies, this.ship.getX(), this.ship.getY(), this.ship.getZ())
                         .orElseThrow().planet();
-                return Component.translatable("message.universe.warp.near_body", planet.name().zh(), planet.name().en());
+                String name = GalaxyText.planet(planet);
+                return Component.translatable("message.universe.warp.near_body", name, name);
             }
             case OK -> {
             }
