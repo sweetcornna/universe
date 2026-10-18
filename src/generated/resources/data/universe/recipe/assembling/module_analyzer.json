@@ -1,0 +1,24 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 2,
+      "ingredient": "universe:circuit_board"
+    },
+    {
+      "count": 3,
+      "ingredient": "universe:survey_data"
+    },
+    {
+      "count": 1,
+      "ingredient": "minecraft:spyglass"
+    }
+  ],
+  "research": "tech_modules",
+  "results": [
+    {
+      "id": "universe:module_analyzer"
+    }
+  ],
+  "time": 100
+}

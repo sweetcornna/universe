@@ -1,0 +1,28 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 2,
+      "ingredient": "universe:circuit_board"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:survey_data"
+    },
+    {
+      "count": 2,
+      "ingredient": "minecraft:redstone"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:magnetic_coil"
+    }
+  ],
+  "research": "tech_modules",
+  "results": [
+    {
+      "id": "universe:module_scanner_array"
+    }
+  ],
+  "time": 100
+}

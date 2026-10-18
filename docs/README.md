@@ -26,6 +26,7 @@
 | [0011](adr/0011-factory-adapters.md) | 工业的游戏适配层：设备、电网、传送带、配方和研究 | 已采纳 |
 | [0012](adr/0012-interstellar-travel.md) | 星际航行与探索：星图、跃迁、发现与兴趣点 | 已采纳 |
 | [0013](adr/0013-dsp-and-nms-core-loops.md) | 先复刻戴森球计划和无人深空的核心玩法 | 已采纳 |
+| [0014](adr/0014-exploration-rewards.md) | 探索的回报：技术模块、兴趣点、武器和守卫机 | 已采纳 |
 
 模板：
 

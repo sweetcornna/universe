@@ -4,6 +4,7 @@ import io.github.sweetcornna.universe.discovery.Discoveries;
 import io.github.sweetcornna.universe.entity.ship.ShipWarp;
 import io.github.sweetcornna.universe.factory.research.Research;
 import io.github.sweetcornna.universe.survival.PlayerSurvival;
+import io.github.sweetcornna.universe.tech.SuitTech;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.network.event.RegisterConfigurationTasksEvent;
 import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
@@ -17,7 +18,7 @@ import net.neoforged.neoforge.server.ServerLifecycleHooks;
  */
 public final class UniverseNetwork {
     /** 协议版本：任何包的格式改动都要加一，版本不同的客户端和服务端会拒绝连接。 */
-    private static final String PROTOCOL_VERSION = "9";
+    private static final String PROTOCOL_VERSION = "10";
 
     private UniverseNetwork() {
     }
@@ -42,6 +43,7 @@ public final class UniverseNetwork {
                 .playToServer(ResearchActionPayload.TYPE, ResearchActionPayload.STREAM_CODEC, Research::handleAction)
                 .playToServer(WarpRequestPayload.TYPE, WarpRequestPayload.STREAM_CODEC, ShipWarp::handleRequest)
                 .playToServer(AnalyzePayload.TYPE, AnalyzePayload.STREAM_CODEC, Discoveries::handleAnalyze)
-                .playToServer(RenamePayload.TYPE, RenamePayload.STREAM_CODEC, Discoveries::handleRename);
+                .playToServer(RenamePayload.TYPE, RenamePayload.STREAM_CODEC, Discoveries::handleRename)
+                .playToServer(OpenTechPayload.TYPE, OpenTechPayload.STREAM_CODEC, SuitTech::handleOpen);
     }
 }

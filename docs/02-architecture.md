@@ -260,6 +260,12 @@ io.github.sweetcornna.universe
 | 动作栏消息是 `Player#sendOverlayMessage(Component)`，`displayClientMessage(…, true)` 没有了；`ChunkPos` 是记录，`ChunkPos.pack(BlockPos)`、`unpack(long)`；看得见某个区块的玩家 `chunkMap.getPlayers(ChunkPos, false)` | 已确认 |
 | `BlockPos#getCenter` 没有了，用 `Vec3.atCenterOf(pos)`；`Player#drop(ItemStack, boolean)` 多了 `Prediction` 参数，给玩家物品用 `getInventory().placeItemBackInInventory(stack, Prediction.SERVER_ONLY)`（放不下自动丢在脚下） | 已确认，发现日志在用 |
 | 文本框 `EditBox(font, x, y, w, h, 名字)`、`setHint`、`setMaxLength`；按钮 `Button.builder(文字, 回调).bounds(...).build()`；控件有公开的 `visible`、`active` 字段；带控件的界面在 `extractRenderState` 里最后调 `super` 才会画控件 | 已确认，发现日志在用 |
+| 物品染色：染色源是带 `MapCodec` 的 `ItemTintSource`，在 `RegisterColorHandlersEvent.ItemTintSources` 里 `register(Identifier, MapCodec)`；数据生成用 `ItemModelGenerators#generateItemWithTintedOverlay(物品, 染色源)`，底图不染色，`<名字>_overlay` 那层染色 | 已确认，技术模块的品级边框在用 |
+| 物品上存一组物品：`ItemContainerContents`（`fromItems(列表)`、`copyInto(NonNullList)`、`nonEmptyItemCopyStream()`），自带 `CODEC`、`STREAM_CODEC` | 已确认，多功能工具的模块在用 |
+| 打开带附加数据的菜单：`player.openMenu(MenuProvider, Consumer<RegistryFriendlyByteBuf>)`，客户端构造函数从缓冲读；`Slot#isActive()` 为假的格子不画也不能点 | 已确认，技术配置界面在用 |
+| 受伤：`LivingIncomingDamageEvent` 在护甲之前，`getAmount/setAmount`；难度缩放在它之前，和平难度下生物攻击已经是 0，`/damage` 会报"目标免疫"。死亡掉落：`LivingDropsEvent#getDrops()` 里加 `player.createItemStackToDrop(物品, true, false)`，墓碑类模组能收到 | 已确认，个人护盾、货舱在用 |
+| 拾取：`ItemEntityPickupEvent.Pre#setCanPickup` 用 `net.minecraft.util.TriState`（NeoForge 自己的 `TriState` 没有了）；`ItemEntity#hasPickUpDelay()`；背包空位 `Inventory#getFreeSlot()`、`getSlotWithRemainingSpace(物品)`，当前格 `getSelectedSlot()` | 已确认，货舱在用 |
+| 十六色的方块和物品收进了记录：`Items.WOOL.white()`、`Items.WOOL.red()` 这样取，没有 `Items.WHITE_WOOL` 了 | 已确认 |
 
 ## 5. 性能预算（目标）
 

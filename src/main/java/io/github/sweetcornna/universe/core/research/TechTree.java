@@ -39,6 +39,11 @@ public final class TechTree {
                     items("matrix_lab", "electromagnetic_matrix")),
             // 先开着飞船把母星系里的星球跑一遍，攒够勘探数据才能离开母星系
             Tech.handIn("interstellar_survey", List.of("electromagnetic_matrix"), List.of(cost("survey_data", 12)), items()),
+            // 技术模块（ADR-0014）：C 级模块能在制造台里做，更好的只能去兴趣点找
+            Tech.handIn("tech_modules", List.of("electromagnetic_matrix"), List.of(cost("survey_data", 6), cost("circuit_board", 10)),
+                    items("module_life_support", "module_cold_lining", "module_heat_lining", "module_toxin_filter",
+                            "module_radiation_shield", "module_jet_booster", "module_servo", "module_shield", "module_beam_focus",
+                            "module_heat_sink", "module_scanner_array", "module_analyzer", "module_weapon_calibrator")),
             Tech.lab("fluid_storage", List.of("electromagnetic_matrix"), List.of(BLUE), 20, items("water_pump")),
             Tech.lab("electromagnetic_drive", List.of("electromagnetic_matrix"), List.of(BLUE), 20, items("electric_motor")),
             Tech.lab("thermal_power", List.of("electromagnetic_matrix"), List.of(BLUE), 20, items("thermal_plant")),

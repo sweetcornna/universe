@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "universe:item/module_scanner_array",
+    "layer1": "universe:item/module_scanner_array_overlay"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:circuit_board"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:survey_data"
+    },
+    {
+      "count": 2,
+      "ingredient": "minecraft:white_wool"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:hazard_cell"
+    }
+  ],
+  "research": "tech_modules",
+  "results": [
+    {
+      "id": "universe:module_cold_lining"
+    }
+  ],
+  "time": 100
+}

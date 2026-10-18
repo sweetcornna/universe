@@ -1,0 +1,28 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:circuit_board"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:survey_data"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:launch_fuel"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:gear"
+    }
+  ],
+  "research": "tech_modules",
+  "results": [
+    {
+      "id": "universe:module_jet_booster"
+    }
+  ],
+  "time": 100
+}

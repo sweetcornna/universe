@@ -6,6 +6,7 @@ import java.util.Optional;
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.block.FloraBlocks;
 import io.github.sweetcornna.universe.client.PlanetTints;
+import io.github.sweetcornna.universe.client.tech.ModuleGradeTint;
 import io.github.sweetcornna.universe.core.ecology.Flora;
 import io.github.sweetcornna.universe.core.ecology.PlantForm;
 import io.github.sweetcornna.universe.core.galaxy.Palette;
@@ -97,6 +98,8 @@ final class UniverseModelProvider extends ModelProvider {
         }
         // 多功能工具拿在手里像工具一样斜着
         itemModels.generateFlatItem(UniverseItems.MULTITOOL.get(), ModelTemplates.FLAT_HANDHELD_ITEM);
+        // 技术模块：芯片加按品级染色的边框（ADR-0014）
+        UniverseItems.MODULES.values().forEach(item -> itemModels.generateItemWithTintedOverlay(item.get(), ModuleGradeTint.INSTANCE));
         factory(blockModels, itemModels);
     }
 

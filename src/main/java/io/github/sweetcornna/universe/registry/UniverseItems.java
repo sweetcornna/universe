@@ -8,9 +8,11 @@ import java.util.Map;
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.block.OreKind;
 import io.github.sweetcornna.universe.core.ecology.PlantForm;
+import io.github.sweetcornna.universe.core.tech.ModuleType;
 import io.github.sweetcornna.universe.survival.Exosuit;
 import io.github.sweetcornna.universe.survival.MultitoolItem;
 import io.github.sweetcornna.universe.survival.SuitRefillItem;
+import io.github.sweetcornna.universe.tech.TechModuleItem;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -188,6 +190,15 @@ public final class UniverseItems {
     }
 
     /** 创造模式物品栏里的顺序。 */
+    // 技术模块（ADR-0014）：每种一个物品，品级和数值在数据组件里
+    public static final Map<ModuleType, DeferredItem<TechModuleItem>> MODULES = new EnumMap<>(ModuleType.class);
+
+    static {
+        for (ModuleType type : ModuleType.values()) {
+            MODULES.put(type, ITEMS.registerItem(type.itemName(), properties -> new TechModuleItem(type, properties)));
+        }
+    }
+
     public static final List<DeferredItem<?>> CREATIVE_ORDER = creativeOrder();
 
     private static List<DeferredItem<?>> creativeOrder() {
@@ -201,6 +212,7 @@ public final class UniverseItems {
         order.addAll(HULL_PLATING.values());
         order.addAll(List.of(EXOSUIT_HELMET, EXOSUIT_CHESTPLATE, EXOSUIT_LEGGINGS, EXOSUIT_BOOTS, OXYGEN_CAPSULE, HAZARD_CELL,
                 MULTITOOL, DAMAGED_MULTITOOL));
+        order.addAll(MODULES.values());
         order.addAll(ORES.values());
         order.addAll(ORE_DROPS.values());
         order.addAll(ORE_SMELTED.values());

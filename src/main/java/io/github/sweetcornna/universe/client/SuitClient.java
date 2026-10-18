@@ -77,14 +77,16 @@ public final class SuitClient {
         }
         jumpWasDown = jumpDown;
 
-        float synced = player.getData(UniverseAttachments.SUIT_HUD).jet();
+        SuitHud hud = player.getData(UniverseAttachments.SUIT_HUD);
+        float synced = hud.jet();
         if (Math.abs(synced - jet) > 15) {
             jet = synced;
         }
         boolean thrust = armed && jumpDown && jet > 0;
         if (thrust) {
-            jet = Math.max(0, jet - LifeSupport.JET_BURN);
-            push(player);
+            // 喷气推进器模块：时长和推力（ADR-0014）
+            jet = Math.max(0, jet - LifeSupport.JET_BURN / Math.max(1, hud.jetTime()));
+            push(player, Math.max(1, hud.jetThrust()));
         } else if (player.onGround() || player.isPassenger()) {
             jet = Math.min(LifeSupport.JET_MAX, jet + LifeSupport.JET_RECHARGE);
         }
@@ -94,10 +96,10 @@ public final class SuitClient {
         }
     }
 
-    private static void push(LocalPlayer player) {
+    private static void push(LocalPlayer player, float boost) {
         Vec3 v = player.getDeltaMovement();
         double gravity = player.getAttributeValue(Attributes.GRAVITY);
-        double vy = Math.min(Math.max(v.y, -0.6) + gravity + THRUST, MAX_RISE);
+        double vy = Math.min(Math.max(v.y, -0.6) + gravity + THRUST * boost, MAX_RISE * boost);
         double vx = v.x;
         double vz = v.z;
         if (player.input.keyPresses.forward()) {
@@ -155,6 +157,10 @@ public final class SuitClient {
                 bars.add(new Bar(Component.translatable("hazard.universe." + hazard.name().toLowerCase(java.util.Locale.ROOT)),
                         hud.protection(hazard), LifeSupport.HAZARD_MAX, hazardColor(hazard), note));
             }
+        }
+        // 护盾没满时总显示；满的时候只在面板因为别的原因已经出来时顺带列上，安全的地方不占屏幕
+        if (hud.shieldMax() > 0 && (hud.shield() < hud.shieldMax() || !bars.isEmpty())) {
+            bars.add(new Bar(Component.translatable("hud.universe.suit.shield"), hud.shield(), hud.shieldMax(), 0xFF7FB8FF, Component.empty()));
         }
         float shownJet = thrusting || jet < LifeSupport.JET_MAX ? jet : hud.jet();
         if (chest && shownJet < LifeSupport.JET_MAX) {

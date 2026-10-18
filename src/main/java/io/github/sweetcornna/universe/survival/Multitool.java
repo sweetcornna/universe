@@ -11,7 +11,10 @@ import org.jspecify.annotations.Nullable;
 
 import io.github.sweetcornna.universe.core.survival.LaserHeat;
 import io.github.sweetcornna.universe.core.survival.VeinClusters;
+import io.github.sweetcornna.universe.core.tech.Stat;
+import io.github.sweetcornna.universe.core.tech.TechBonuses;
 import io.github.sweetcornna.universe.network.ScanResultPayload;
+import io.github.sweetcornna.universe.tech.SuitTech;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
@@ -86,12 +89,13 @@ public final class Multitool {
         }
         boolean trigger = state.trigger && player.getMainHandItem().getItem() instanceof MultitoolItem;
         state.trigger = false;
-        boolean firing = state.heat.tick(trigger);
+        TechBonuses bonuses = trigger ? SuitTech.tool(player.getMainHandItem()) : TechBonuses.NONE;
+        boolean firing = state.heat.tick(trigger, (float) bonuses.reduction(Stat.COOLING));
         if (state.scanCooldown > 0) {
             state.scanCooldown--;
         }
         if (firing) {
-            fire(player, state);
+            fire(player, state, bonuses);
         } else {
             clearTarget(player, state);
         }
@@ -114,7 +118,7 @@ public final class Multitool {
 
     // ---- 采矿激光
 
-    private static void fire(ServerPlayer player, State state) {
+    private static void fire(ServerPlayer player, State state, TechBonuses bonuses) {
         ServerLevel level = player.level();
         HitResult hit = player.pick(RANGE, 1.0F, false);
         Vec3 look = player.getLookAngle();
@@ -143,7 +147,7 @@ public final class Multitool {
             level.sendParticles(ParticleTypes.ELECTRIC_SPARK, to.x, to.y, to.z, 2, 0.05, 0.05, 0.05, 0.02);
             return;
         }
-        state.progress += hardness == 0 ? 1 : tool.getDestroySpeed(block) / hardness / 30F * LASER_SPEED;
+        state.progress += hardness == 0 ? 1 : tool.getDestroySpeed(block) / hardness / 30F * LASER_SPEED * (float) bonuses.boost(Stat.MINING);
         level.sendParticles(ParticleTypes.SMOKE, to.x, to.y, to.z, 1, 0.05, 0.05, 0.05, 0.01);
         if (state.progress >= 1) {
             level.destroyBlockProgress(crackId(player), pos, -1);
@@ -186,9 +190,11 @@ public final class Multitool {
             player.sendOverlayMessage(Component.translatable("message.universe.multitool.charging"));
             return;
         }
-        state.scanCooldown = SCAN_COOLDOWN;
+        TechBonuses bonuses = SuitTech.tool(player.getMainHandItem());
+        state.scanCooldown = (int) Math.round(SCAN_COOLDOWN * bonuses.scanCooldown());
         ServerLevel level = player.level();
-        List<ScanResultPayload.Marker> markers = scanOres(level, player.blockPosition(), SCAN_RADIUS);
+        int radius = (int) Math.round(SCAN_RADIUS * bonuses.boost(Stat.SCAN_RADIUS));
+        List<ScanResultPayload.Marker> markers = scanOres(level, player.blockPosition(), radius);
         PacketDistributor.sendToPlayer(player, new ScanResultPayload(markers));
         level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.BEACON_ACTIVATE, SoundSource.PLAYERS, 0.8F, 1.8F);
         for (int i = 0; i < 48; i++) {

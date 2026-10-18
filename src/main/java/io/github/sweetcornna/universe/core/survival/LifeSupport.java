@@ -4,6 +4,8 @@ import java.util.EnumMap;
 import java.util.Map;
 
 import io.github.sweetcornna.universe.core.galaxy.Hazard;
+import io.github.sweetcornna.universe.core.tech.Stat;
+import io.github.sweetcornna.universe.core.tech.TechBonuses;
 
 /**
  * 外骨骼的生命维持和危害防护（玩法设计 §3.1–3.2）。每个玩家一份，每刻按环境推进一次。
@@ -18,6 +20,7 @@ import io.github.sweetcornna.universe.core.galaxy.Hazard;
  * </ul>
  *
  * <p>消耗品（氧气罐、防护电池）由适配层在数值低时自动使用，调 {@link #addOxygen}、{@link #rechargeHazards}。
+ * 外骨骼的技术模块（ADR-0014）按 {@link TechBonuses} 降低氧气、危害防护和喷气背包的消耗。
  */
 public final class LifeSupport {
     public static final float OXYGEN_MAX = 100;
@@ -77,10 +80,15 @@ public final class LifeSupport {
      * @param onGround 站在地上（喷气背包充电）
      */
     public Damage tick(Environment env, Suit suit, boolean jetting, boolean onGround) {
-        float suffocation = this.tickOxygen(env, suit);
+        return this.tick(env, suit, TechBonuses.NONE, jetting, onGround);
+    }
+
+    /** 推进一刻，带上外骨骼模块的加成。 */
+    public Damage tick(Environment env, Suit suit, TechBonuses bonuses, boolean jetting, boolean onGround) {
+        float suffocation = this.tickOxygen(env, suit, (float) bonuses.reduction(Stat.OXYGEN));
         Map<Hazard, Float> hazardDamage = Map.of();
         for (Hazard hazard : Hazard.values()) {
-            float damage = this.tickHazard(hazard, env, suit);
+            float damage = this.tickHazard(hazard, env, suit, (float) bonuses.reduction(stat(hazard)));
             if (damage > 0) {
                 if (hazardDamage.isEmpty()) {
                     hazardDamage = new EnumMap<>(Hazard.class);
@@ -89,20 +97,30 @@ public final class LifeSupport {
             }
         }
         if (jetting && suit.chest() && this.jet > 0) {
-            this.jet = Math.max(0, this.jet - JET_BURN);
+            this.jet = Math.max(0, this.jet - JET_BURN * (float) bonuses.reduction(Stat.JET_TIME));
         } else if (onGround || env.supplied()) {
             this.jet = Math.min(JET_MAX, this.jet + JET_RECHARGE);
         }
         return suffocation == 0 && hazardDamage.isEmpty() ? Damage.NONE : new Damage(suffocation, hazardDamage);
     }
 
-    private float tickOxygen(Environment env, Suit suit) {
+    /** 危害对应的防护模块加成。 */
+    public static Stat stat(Hazard hazard) {
+        return switch (hazard) {
+            case COLD -> Stat.COLD;
+            case HEAT -> Stat.HEAT;
+            case TOXIC -> Stat.TOXIC;
+            case RADIATION -> Stat.RADIATION;
+        };
+    }
+
+    private float tickOxygen(Environment env, Suit suit, float factor) {
         if (!env.needsOxygen()) {
             this.oxygen = Math.min(OXYGEN_MAX, this.oxygen + OXYGEN_REFILL);
             this.suffocationTimer = 0;
             return 0;
         }
-        this.oxygen = Math.max(0, this.oxygen - (suit.sealed() ? SUIT_OXYGEN_DRAIN : BARE_OXYGEN_DRAIN));
+        this.oxygen = Math.max(0, this.oxygen - (suit.sealed() ? SUIT_OXYGEN_DRAIN * factor : BARE_OXYGEN_DRAIN));
         if (this.oxygen > 0) {
             this.suffocationTimer = 0;
             return 0;
@@ -114,7 +132,7 @@ public final class LifeSupport {
         return 0;
     }
 
-    private float tickHazard(Hazard hazard, Environment env, Suit suit) {
+    private float tickHazard(Hazard hazard, Environment env, Suit suit, float factor) {
         float value = this.protection.get(hazard);
         if (env.supplied()) {
             this.protection.put(hazard, Math.min(HAZARD_MAX, value + HAZARD_REFILL));
@@ -127,7 +145,7 @@ public final class LifeSupport {
             this.hazardTimers.remove(hazard);
             return 0;
         }
-        float drain = (float) (HAZARD_DRAIN * severity * suit.hazardFactor() * modifier(hazard, env));
+        float drain = (float) (HAZARD_DRAIN * severity * suit.hazardFactor() * modifier(hazard, env)) * (suit.pieces() > 0 ? factor : 1);
         value = Math.max(0, value - drain);
         this.protection.put(hazard, value);
         if (value > 0) {

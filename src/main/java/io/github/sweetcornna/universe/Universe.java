@@ -10,6 +10,7 @@ import io.github.sweetcornna.universe.entity.ship.ShipTransit;
 import io.github.sweetcornna.universe.network.UniverseNetwork;
 import io.github.sweetcornna.universe.registry.UniverseAttachments;
 import io.github.sweetcornna.universe.survival.PlayerSurvival;
+import io.github.sweetcornna.universe.tech.SuitTech;
 import io.github.sweetcornna.universe.world.CrashSite;
 import io.github.sweetcornna.universe.registry.UniverseBlockEntities;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
@@ -70,6 +71,7 @@ public final class Universe {
         MachineRecipes.registerEvents(gameBus);
         Research.registerEvents(gameBus);
         Discoveries.registerEvents(gameBus);
+        SuitTech.registerEvents(gameBus);
         FactoryCapabilities.registerEvents(modBus);
         gameBus.addListener(RegisterCommandsEvent.class, event -> DimensionCommand.register(event.getDispatcher()));
     }

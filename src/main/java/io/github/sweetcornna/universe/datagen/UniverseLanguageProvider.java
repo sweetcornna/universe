@@ -3,6 +3,7 @@ package io.github.sweetcornna.universe.datagen;
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.block.OreKind;
 import io.github.sweetcornna.universe.core.terrain.BiomeKind;
+import io.github.sweetcornna.universe.core.tech.ModuleType;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
 import io.github.sweetcornna.universe.registry.UniverseItems;
 import net.minecraft.data.PackOutput;
@@ -134,6 +135,7 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("key.universe.star_map", "打开星图", "Open Star Map");
         both("key.universe.analyze", "分析目镜（手持多功能工具）", "Analysis Visor (hold the multitool)");
         both("key.universe.discovery_log", "打开发现日志", "Open Discovery Log");
+        both("key.universe.tech", "技术配置（模块和货舱）", "Tech Configuration (modules and cargo)");
         both("gui.universe.star_map", "星图", "Star Map");
         both("gui.universe.star_map.unknown", "还没收到星团的数据", "Galaxy data not received yet");
         both("gui.universe.star_map.hint", "左键拖动旋转 · 右键拖动平移 · 滚轮缩放 · 双击或 F 居中 · H 回到当前恒星系 · %s 关闭",
@@ -400,9 +402,54 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         tech("warp_drive", "跃迁引擎", "Warp Drive");
         tech("interstellar_survey", "星际测绘", "Interstellar Survey");
         tech("warp_calibration", "跃迁校准", "Warp Calibration");
+        tech("tech_modules", "技术模块", "Technology Modules");
         this.discovery();
+        this.modules();
         both("research.universe.completed", "研究完成：%s", "Research complete: %s");
         both("research.universe.missing_items", "背包里的物品不够，无法完成这项研究", "Not enough items in your inventory for this research");
+    }
+
+    /** 技术模块和外骨骼的格子（ADR-0014）。 */
+    private void modules() {
+        for (ModuleType type : ModuleType.values()) {
+            item(UniverseItems.MODULES.get(type).get(), type.nameZh() + "模块", type.nameEn() + " Module");
+        }
+        String[][] stats = {
+                {"oxygen", "%s 生命维持", "%s life support"},
+                {"cold", "%s 防寒", "%s cold protection"},
+                {"heat", "%s 隔热", "%s heat protection"},
+                {"toxic", "%s 毒素防护", "%s toxin protection"},
+                {"radiation", "%s 辐射防护", "%s radiation protection"},
+                {"jet_time", "%s 喷气时长", "%s jetpack duration"},
+                {"jet_thrust", "%s 喷气推力", "%s jetpack thrust"},
+                {"speed", "%s 移动速度", "%s movement speed"},
+                {"shield", "%s 护盾", "%s shield"},
+                {"mining", "%s 采矿速度", "%s mining speed"},
+                {"cooling", "%s 散热", "%s cooling"},
+                {"scan_radius", "%s 扫描半径", "%s scan radius"},
+                {"scan_cooldown", "%s 扫描充能", "%s scan recharge"},
+                {"analysis", "%s 分析速度", "%s analysis speed"},
+                {"damage", "%s 武器伤害", "%s weapon damage"},
+                {"fire_rate", "%s 射速", "%s fire rate"}};
+        for (String[] stat : stats) {
+            both("tech.universe.stat." + stat[0], stat[1], stat[2]);
+        }
+        both("tooltip.universe.module.quality", "品质 %s%%", "Quality %s%%");
+        both("tooltip.universe.module.uncalibrated", "未校准：放进背包后确定数值", "Uncalibrated: values are set once it's in your inventory");
+        both("tooltip.universe.module.host.exosuit", "装在外骨骼上（U 键）", "Installs in the exosuit (U)");
+        both("tooltip.universe.module.host.multitool", "装在多功能工具上（U 键）", "Installs in the multitool (U)");
+        both("gui.universe.tech.title", "技术配置", "Tech Configuration");
+        both("gui.universe.tech.exosuit", "外骨骼 %s/%s", "Exosuit %s/%s");
+        both("gui.universe.tech.multitool", "多功能工具", "Multitool");
+        both("gui.universe.tech.cargo", "货舱 %s/%s", "Cargo %s/%s");
+        both("gui.universe.tech.no_tool", "主手拿着多功能工具时可以配置它的模块", "Hold a multitool in your main hand to configure it");
+        both("gui.universe.tech.bonuses", "当前加成", "Bonuses");
+        both("gui.universe.tech.no_bonuses", "还没有装模块。同一种模块最多叠三个；外骨骼模块要穿着胸甲才生效",
+                "No modules installed. Up to three of a kind stack; exosuit modules need the chestplate");
+        both("hud.universe.suit.shield", "护盾", "Shield");
+        both("gui.universe.tech.suit_off", "没穿外骨骼胸甲，外骨骼模块不生效", "Chestplate not worn: exosuit modules inactive");
+        both("gui.universe.tech.more", "……还有 %s 项（鼠标移到这里查看）", "…%s more (hover to see all)");
+        both("hud.universe.cargo.stored", "背包满了，%s ×%s 收进货舱", "Inventory full: %s ×%s stored in cargo");
     }
 
     /** 发现日志、分析目镜、勘探数据（ADR-0012）。 */

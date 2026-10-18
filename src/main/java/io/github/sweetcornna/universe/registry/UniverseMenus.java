@@ -10,6 +10,7 @@ import io.github.sweetcornna.universe.factory.power.TeslaTowerBlockEntity;
 import io.github.sweetcornna.universe.factory.power.ThermalPlantBlockEntity;
 import io.github.sweetcornna.universe.factory.power.WindTurbineBlockEntity;
 import io.github.sweetcornna.universe.factory.research.MatrixLabBlockEntity;
+import io.github.sweetcornna.universe.tech.TechMenu;
 import io.github.sweetcornna.universe.factory.resource.MiningMachineBlockEntity;
 import io.github.sweetcornna.universe.factory.resource.OilExtractorBlockEntity;
 import io.github.sweetcornna.universe.factory.resource.WaterPumpBlockEntity;
@@ -17,6 +18,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.world.inventory.MenuType;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.common.extensions.IMenuTypeExtension;
+import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
 /** 设备界面：每种设备一个菜单类型，格子的布局写在这里。 */
@@ -53,6 +55,10 @@ public final class UniverseMenus {
     // 储物仓：3 行 10 列
     public static final MachineMenu.Type STORAGE_DEPOT = machine("storage_depot",
             new MachineMenu.Type(0, 196, 170, grid(9, 20, 10, 3)));
+
+    /** 技术配置界面（ADR-0014）。 */
+    public static final DeferredHolder<MenuType<?>, MenuType<TechMenu>> TECH = MENUS.register("tech",
+            () -> IMenuTypeExtension.create(TechMenu::new));
 
     private UniverseMenus() {
     }

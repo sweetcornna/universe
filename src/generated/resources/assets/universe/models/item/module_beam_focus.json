@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "universe:item/module_beam_focus",
+    "layer1": "universe:item/module_beam_focus_overlay"
+  }
+}

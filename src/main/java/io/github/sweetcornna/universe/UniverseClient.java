@@ -15,6 +15,7 @@ import io.github.sweetcornna.universe.client.galaxy.StarMapClient;
 import io.github.sweetcornna.universe.client.galaxy.WarpClient;
 import io.github.sweetcornna.universe.client.ship.ShipClient;
 import io.github.sweetcornna.universe.client.sky.PlanetSkyRenderer;
+import io.github.sweetcornna.universe.client.tech.TechClient;
 import io.github.sweetcornna.universe.datagen.UniverseDataGen;
 import io.github.sweetcornna.universe.entity.AlienCreature;
 import io.github.sweetcornna.universe.registry.UniverseEntities;
@@ -48,6 +49,7 @@ public final class UniverseClient {
         WarpClient.registerEvents(modBus, NeoForge.EVENT_BUS);
         ClientDiscoveries.registerEvents(modBus, NeoForge.EVENT_BUS);
         AnalysisVisor.registerEvents(modBus, NeoForge.EVENT_BUS);
+        TechClient.registerEvents(modBus, NeoForge.EVENT_BUS);
         // 客户端世界建立环境属性时，从客户端的星团里查星球
         PlanetEnvironment.setClientGalaxy(dimension -> ClientGalaxy.galaxy());
         // 客户端的动物按当前星球的物种表画

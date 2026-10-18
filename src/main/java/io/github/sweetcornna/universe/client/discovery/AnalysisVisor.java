@@ -32,6 +32,7 @@ import io.github.sweetcornna.universe.discovery.Discoveries;
 import io.github.sweetcornna.universe.entity.AlienCreature;
 import io.github.sweetcornna.universe.network.AnalyzePayload;
 import io.github.sweetcornna.universe.registry.UniverseItems;
+import io.github.sweetcornna.universe.tech.SuitTech;
 import io.github.sweetcornna.universe.world.planet.Planets;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
@@ -154,7 +155,7 @@ public final class AnalysisVisor {
             if (progress % 6 == 1) {
                 player.playSound(SoundEvents.NOTE_BLOCK_HAT.value(), 0.3F, 1.4F + progress * 0.03F);
             }
-            if (progress >= ANALYZE_TICKS) {
+            if (progress >= analyzeTicks(player)) {
                 ClientPacketDistributor.sendToServer(target.payload());
                 progress = 0;
                 cooldown = 20;
@@ -162,6 +163,11 @@ public final class AnalysisVisor {
         } else if (!holding) {
             progress = 0;
         }
+    }
+
+    /** 分析要多少刻：分析处理器模块缩短（ADR-0014）。 */
+    private static int analyzeTicks(LocalPlayer player) {
+        return Math.max(4, (int) Math.round(ANALYZE_TICKS * SuitTech.tool(player.getMainHandItem()).analysisTime()));
     }
 
     private static @Nullable Target find(Minecraft minecraft, LocalPlayer player) {
@@ -365,7 +371,7 @@ public final class AnalysisVisor {
         if (progress > 0) {
             int bar = panelWidth - 6;
             graphics.fill(x, y + 35, x + bar, y + 38, 0x80000000);
-            graphics.fill(x, y + 35, x + bar * progress / ANALYZE_TICKS, y + 38, COLOR);
+            graphics.fill(x, y + 35, x + bar * Math.min(progress, analyzeTicks(minecraft.player)) / analyzeTicks(minecraft.player), y + 38, COLOR);
         }
     }
 

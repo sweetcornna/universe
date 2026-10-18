@@ -1,0 +1,28 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:circuit_board"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:survey_data"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:gear"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:magnetic_coil"
+    }
+  ],
+  "research": "tech_modules",
+  "results": [
+    {
+      "id": "universe:module_weapon_calibrator"
+    }
+  ],
+  "time": 100
+}

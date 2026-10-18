@@ -1,0 +1,28 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:circuit_board"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:survey_data"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:electric_motor"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:gear"
+    }
+  ],
+  "research": "tech_modules",
+  "results": [
+    {
+      "id": "universe:module_servo"
+    }
+  ],
+  "time": 100
+}

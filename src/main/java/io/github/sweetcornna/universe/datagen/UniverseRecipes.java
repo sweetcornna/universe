@@ -9,6 +9,7 @@ import java.util.TreeMap;
 
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.block.OreKind;
+import io.github.sweetcornna.universe.core.tech.ModuleType;
 import io.github.sweetcornna.universe.factory.recipe.MachineRecipe;
 import io.github.sweetcornna.universe.factory.recipe.MachineRecipe.Kind;
 import io.github.sweetcornna.universe.factory.recipe.ResearchShapedRecipe;
@@ -195,6 +196,24 @@ final class UniverseRecipes extends RecipeProvider {
         this.machine(Kind.ASSEMBLING, "warp_drive", 120, "warp_drive",
                 in(titanium, 4, UniverseItems.PLASMA_EXCITER.get(), 2, UniverseItems.STEEL.get(), 2, UniverseItems.ACCUMULATOR.get(), 1),
                 out(UniverseItems.WARP_DRIVE.get(), 1));
+        // 技术模块（ADR-0014）：都要电路板和勘探数据，再加各自的材料；做出来是 C 级，第一次进背包时定下数值
+        Item survey = UniverseItems.SURVEY_DATA.get();
+        Map<ModuleType, List<SizedIngredient>> modules = new LinkedHashMap<>();
+        modules.put(ModuleType.LIFE_SUPPORT, in(board, 1, survey, 2, UniverseItems.OXYGEN_CAPSULE.get(), 2));
+        modules.put(ModuleType.COLD_LINING, in(board, 1, survey, 2, Items.WOOL.white(), 2, UniverseItems.HAZARD_CELL.get(), 1));
+        modules.put(ModuleType.HEAT_LINING, in(board, 1, survey, 2, Items.MAGMA_CREAM, 1, UniverseItems.HAZARD_CELL.get(), 1));
+        modules.put(ModuleType.TOXIN_FILTER, in(board, 1, survey, 2, Items.CHARCOAL, 2, UniverseItems.HAZARD_CELL.get(), 1));
+        modules.put(ModuleType.RADIATION_SHIELD, in(board, 1, survey, 2, UniverseItems.STEEL.get(), 1, UniverseItems.HAZARD_CELL.get(), 1));
+        modules.put(ModuleType.JET_BOOSTER, in(board, 1, survey, 2, UniverseItems.LAUNCH_FUEL.get(), 2, gear, 2));
+        modules.put(ModuleType.SERVO, in(board, 1, survey, 2, UniverseItems.ELECTRIC_MOTOR.get(), 1, gear, 1));
+        modules.put(ModuleType.SHIELD, in(board, 1, survey, 3, coil, 2, prism, 1));
+        modules.put(ModuleType.BEAM_FOCUS, in(board, 1, survey, 2, Items.GLASS, 2, coil, 1));
+        modules.put(ModuleType.HEAT_SINK, in(board, 1, survey, 2, Items.COPPER_INGOT, 3));
+        modules.put(ModuleType.SCANNER_ARRAY, in(board, 2, survey, 2, Items.REDSTONE, 2, coil, 1));
+        modules.put(ModuleType.ANALYZER, in(board, 2, survey, 3, Items.SPYGLASS, 1));
+        modules.put(ModuleType.WEAPON_CALIBRATOR, in(board, 1, survey, 2, gear, 2, coil, 1));
+        modules.forEach((type, ingredients) -> this.machine(Kind.ASSEMBLING, type.itemName(), 100, "tech_modules", ingredients,
+                out(UniverseItems.MODULES.get(type).get(), 1)));
         this.machine(Kind.ASSEMBLING, "matrix_lab", 60, "electromagnetic_matrix",
                 in(Items.IRON_INGOT, 4, Items.GLASS, 2, board, 2, coil, 1), out(UniverseItems.MATRIX_LAB.get(), 1));
         this.machine(Kind.ASSEMBLING, "sorter", 20, "basic_logistics", in(Items.IRON_INGOT, 1, board, 1),

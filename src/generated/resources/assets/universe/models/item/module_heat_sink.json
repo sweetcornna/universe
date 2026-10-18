@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "universe:item/module_heat_sink",
+    "layer1": "universe:item/module_heat_sink_overlay"
+  }
+}

@@ -21,8 +21,17 @@ public final class LaserHeat {
      * @return 这一刻激光真的开火了（没有过热）
      */
     public boolean tick(boolean trigger) {
+        return this.tick(trigger, 1);
+    }
+
+    /**
+     * 推进一刻。
+     *
+     * @param heatFactor 升温的倍数（散热片模块让它小于 1）
+     */
+    public boolean tick(boolean trigger, float heatFactor) {
         if (trigger && !this.overheated) {
-            this.heat = Math.min(MAX, this.heat + HEAT_PER_TICK);
+            this.heat = Math.min(MAX, this.heat + HEAT_PER_TICK * heatFactor);
             this.idle = 0;
             if (this.heat >= MAX) {
                 this.overheated = true;

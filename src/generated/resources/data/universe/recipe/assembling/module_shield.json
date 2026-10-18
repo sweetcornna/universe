@@ -1,0 +1,28 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:circuit_board"
+    },
+    {
+      "count": 3,
+      "ingredient": "universe:survey_data"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:magnetic_coil"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:prism"
+    }
+  ],
+  "research": "tech_modules",
+  "results": [
+    {
+      "id": "universe:module_shield"
+    }
+  ],
+  "time": 100
+}

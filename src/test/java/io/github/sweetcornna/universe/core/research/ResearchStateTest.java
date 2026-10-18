@@ -95,8 +95,9 @@ class ResearchStateTest {
         assertEquals(4, tree.depth("interstellar_survey"));
         assertEquals(8, tree.depth("warp_drive"));
         assertEquals(9, tree.depth("warp_calibration"));
+        assertEquals(4, tree.depth("tech_modules"));
         assertEquals(10, tree.columns());
-        assertEquals(5, tree.rows());
+        assertEquals(6, tree.rows());
         for (Tech tech : tree.techs()) {
             assertTrue(tech.id().matches("[a-z_]+"), tech.id());
             // 研究站只认清单里的矩阵

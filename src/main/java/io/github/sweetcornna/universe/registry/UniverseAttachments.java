@@ -14,6 +14,7 @@ import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.core.galaxy.Hazard;
 import io.github.sweetcornna.universe.core.survival.LifeSupport;
 import io.github.sweetcornna.universe.survival.SuitHud;
+import io.github.sweetcornna.universe.tech.ExosuitData;
 import net.minecraft.resources.Identifier;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.attachment.AttachmentType;
@@ -55,6 +56,10 @@ public final class UniverseAttachments {
     /** 发给玩家自己的外骨骼读数，HUD 用（不存档）。 */
     public static final Supplier<AttachmentType<SuitHud>> SUIT_HUD = ATTACHMENT_TYPES.register("suit_hud",
             () -> AttachmentType.builder(() -> SuitHud.FULL).sync((holder, player) -> holder == player, SuitHud.STREAM_CODEC).build());
+
+    /** 外骨骼的技术槽、货舱和修过的掉落舱（ADR-0014），死亡后保留。 */
+    public static final Supplier<AttachmentType<ExosuitData>> EXOSUIT = ATTACHMENT_TYPES.register("exosuit",
+            () -> AttachmentType.builder(() -> new ExosuitData()).serialize(ExosuitData.CODEC).copyOnDeath().build());
 
     /** 区块里开采过的矿脉节点和原油涌泉：打包坐标 → 开采了多少（ADR-0011）。没碰过的不记。 */
     public static final Supplier<AttachmentType<Map<Long, Integer>>> VEIN_USAGE = ATTACHMENT_TYPES.register("vein_usage",

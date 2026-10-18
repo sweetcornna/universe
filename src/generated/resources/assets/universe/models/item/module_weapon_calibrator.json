@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "universe:item/module_weapon_calibrator",
+    "layer1": "universe:item/module_weapon_calibrator_overlay"
+  }
+}

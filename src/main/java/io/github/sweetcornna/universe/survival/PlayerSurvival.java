@@ -14,10 +14,12 @@ import io.github.sweetcornna.universe.core.survival.Environment;
 import io.github.sweetcornna.universe.core.survival.GravityModel;
 import io.github.sweetcornna.universe.core.survival.LifeSupport;
 import io.github.sweetcornna.universe.core.survival.Suit;
+import io.github.sweetcornna.universe.core.tech.TechBonuses;
 import io.github.sweetcornna.universe.entity.ship.ShipEntity;
 import io.github.sweetcornna.universe.network.JetpackPayload;
 import io.github.sweetcornna.universe.registry.UniverseAttachments;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
+import io.github.sweetcornna.universe.tech.SuitTech;
 import io.github.sweetcornna.universe.world.planet.PlanetWeather;
 import io.github.sweetcornna.universe.world.planet.Planets;
 import io.github.sweetcornna.universe.world.space.SpaceDimensions;
@@ -130,13 +132,15 @@ public final class PlayerSurvival {
     private static void tick(ServerPlayer player) {
         Multitool.tick(player);
         LifeSupport support = player.getData(UniverseAttachments.LIFE_SUPPORT);
+        TechBonuses bonuses = SuitTech.suit(player);
         if (player.isCreative() || player.isSpectator()) {
             support.refill();
             JETTING.remove(player.getUUID());
             if (player.tickCount % HUD_INTERVAL == 0) {
                 SuitHud full = SuitHud.FULL;
                 publish(player, new SuitHud(full.oxygen(), full.cold(), full.heat(), full.toxic(), full.radiation(), full.jet(),
-                        Multitool.heat(player), Multitool.overheated(player) ? SuitHud.OVERHEATED : 0));
+                        Multitool.heat(player), Multitool.overheated(player) ? SuitHud.OVERHEATED : 0, 0, 0, 1, 1)
+                        .withTech(player.getData(UniverseAttachments.EXOSUIT).shield(), bonuses));
             }
             return;
         }
@@ -145,7 +149,7 @@ public final class PlayerSurvival {
         Environment env = environment(player, level, suit);
         boolean jetting = JETTING.contains(player.getUUID()) && suit.chest() && !player.onGround() && !player.isPassenger()
                 && support.canJet();
-        LifeSupport.Damage damage = support.tick(env, suit, jetting, player.onGround());
+        LifeSupport.Damage damage = support.tick(env, suit, bonuses, jetting, player.onGround());
         if (jetting) {
             player.resetFallDistance();
         }
@@ -170,7 +174,8 @@ public final class PlayerSurvival {
             player.hurtServer(level, level.damageSources().source(SurvivalDamage.BY_HAZARD.get(worst)), total);
         }
         if (player.tickCount % HUD_INTERVAL == 0) {
-            publish(player, SuitHud.of(support, env, suit, Multitool.heat(player), Multitool.overheated(player)));
+            publish(player, SuitHud.of(support, env, suit, Multitool.heat(player), Multitool.overheated(player),
+                    player.getData(UniverseAttachments.EXOSUIT).shield(), bonuses));
         }
     }
 
