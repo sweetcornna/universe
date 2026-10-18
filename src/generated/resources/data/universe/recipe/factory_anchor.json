@@ -1,0 +1,19 @@
+{
+  "type": "universe:research_shaped",
+  "category": "redstone",
+  "key": {
+    "C": "universe:particle_container",
+    "P": "universe:processor",
+    "R": "universe:super_magnetic_ring",
+    "T": "universe:titanium_alloy"
+  },
+  "pattern": [
+    "TPT",
+    "RCR",
+    "TPT"
+  ],
+  "research": "interstellar_logistics",
+  "result": {
+    "id": "universe:factory_anchor"
+  }
+}

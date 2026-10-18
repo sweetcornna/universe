@@ -21,23 +21,31 @@ import io.github.sweetcornna.universe.block.poi.SmolderingWreckBlock;
 import io.github.sweetcornna.universe.block.poi.SupplyCrateBlock;
 import io.github.sweetcornna.universe.block.ship.FuelTankBlock;
 import io.github.sweetcornna.universe.block.ship.ImpulseEngineBlock;
-import io.github.sweetcornna.universe.block.ship.WarpDriveBlock;
 import io.github.sweetcornna.universe.block.ship.ShipHelmBlock;
 import io.github.sweetcornna.universe.block.ship.ShipSeatBlock;
 import io.github.sweetcornna.universe.block.ship.ShipThrusterBlock;
+import io.github.sweetcornna.universe.block.ship.WarpDriveBlock;
 import io.github.sweetcornna.universe.core.ecology.PlantForm;
 import io.github.sweetcornna.universe.core.factory.BeltTier;
+import io.github.sweetcornna.universe.core.factory.SorterTier;
 import io.github.sweetcornna.universe.core.galaxy.Palette;
 import io.github.sweetcornna.universe.factory.ArcSmelterBlock;
+import io.github.sweetcornna.universe.factory.FactoryAnchorBlock;
 import io.github.sweetcornna.universe.factory.MachineBlock;
+import io.github.sweetcornna.universe.factory.ProcessingBlocks;
 import io.github.sweetcornna.universe.factory.TallMachineBlock;
 import io.github.sweetcornna.universe.factory.belt.BeltBlock;
 import io.github.sweetcornna.universe.factory.belt.SorterBlock;
+import io.github.sweetcornna.universe.factory.belt.SplitterBlock;
 import io.github.sweetcornna.universe.factory.belt.StorageDepotBlock;
+import io.github.sweetcornna.universe.factory.belt.StorageTankBlock;
+import io.github.sweetcornna.universe.factory.power.AccumulatorBlock;
+import io.github.sweetcornna.universe.factory.power.SolarPanelBlock;
+import io.github.sweetcornna.universe.factory.power.ThermalPlantBlock;
 import io.github.sweetcornna.universe.factory.resource.CrudeOilSeepBlock;
 import io.github.sweetcornna.universe.factory.resource.ResourceMachineBlocks;
-import io.github.sweetcornna.universe.factory.power.AccumulatorBlock;
-import io.github.sweetcornna.universe.factory.power.ThermalPlantBlock;
+import io.github.sweetcornna.universe.logistics.OrbitalCollectorBlock;
+import io.github.sweetcornna.universe.logistics.StationBlock;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.util.ColorRGBA;
 import net.minecraft.util.valueproviders.UniformInt;
@@ -153,6 +161,8 @@ public final class UniverseBlocks {
                     && state.getValue(TallMachineBlock.HALF) == DoubleBlockHalf.UPPER ? 9 : 0));
     public static final DeferredBlock<TallMachineBlock> WIND_TURBINE = BLOCKS.registerBlock("wind_turbine",
             p -> new TallMachineBlock(p, UniverseBlockEntities.WIND_TURBINE), p -> machine(p).noOcclusion());
+    public static final DeferredBlock<SolarPanelBlock> SOLAR_PANEL = BLOCKS.registerBlock("solar_panel",
+            p -> new SolarPanelBlock(p, UniverseBlockEntities.SOLAR_PANEL), p -> machine(p).noOcclusion());
     public static final DeferredBlock<ThermalPlantBlock> THERMAL_PLANT = BLOCKS.registerBlock("thermal_plant", ThermalPlantBlock::new,
             p -> machine(p).noOcclusion().lightLevel(state -> state.getValue(MachineBlock.WORKING)
                     && state.getValue(TallMachineBlock.HALF) == DoubleBlockHalf.LOWER ? 11 : 0));
@@ -175,16 +185,61 @@ public final class UniverseBlocks {
     public static final DeferredBlock<MachineBlock> MATRIX_LAB = BLOCKS.registerBlock("matrix_lab",
             p -> new MachineBlock(p, UniverseBlockEntities.MATRIX_LAB),
             p -> machine(p).noOcclusion().lightLevel(state -> state.getValue(MachineBlock.WORKING) ? 10 : 3));
-    /** 传送带：拆起来很快，不挑工具。 */
+    /** 传送带：拆起来很快，不挑工具。三档只差速度（ADR-0015）。 */
     public static final DeferredBlock<BeltBlock> CONVEYOR_BELT = BLOCKS.registerBlock("conveyor_belt", p -> new BeltBlock(p, BeltTier.MK1),
-            p -> p.mapColor(MapColor.METAL).strength(1.0F, 3.0F).sound(SoundType.METAL).noOcclusion());
-    public static final DeferredBlock<SorterBlock> SORTER = BLOCKS.registerBlock("sorter", SorterBlock::new,
-            p -> p.mapColor(MapColor.METAL).strength(1.0F, 3.0F).sound(SoundType.METAL).noOcclusion());
+            UniverseBlocks::logistics);
+    public static final DeferredBlock<BeltBlock> CONVEYOR_BELT_MK2 = BLOCKS.registerBlock("conveyor_belt_mk2",
+            p -> new BeltBlock(p, BeltTier.MK2), UniverseBlocks::logistics);
+    public static final DeferredBlock<BeltBlock> CONVEYOR_BELT_MK3 = BLOCKS.registerBlock("conveyor_belt_mk3",
+            p -> new BeltBlock(p, BeltTier.MK3), UniverseBlocks::logistics);
+    public static final DeferredBlock<SorterBlock> SORTER = BLOCKS.registerBlock("sorter", p -> new SorterBlock(p, SorterTier.MK1),
+            UniverseBlocks::logistics);
+    public static final DeferredBlock<SorterBlock> SORTER_MK2 = BLOCKS.registerBlock("sorter_mk2", p -> new SorterBlock(p, SorterTier.MK2),
+            UniverseBlocks::logistics);
+    public static final DeferredBlock<SorterBlock> SORTER_MK3 = BLOCKS.registerBlock("sorter_mk3", p -> new SorterBlock(p, SorterTier.MK3),
+            UniverseBlocks::logistics);
+    public static final DeferredBlock<SplitterBlock> SPLITTER = BLOCKS.registerBlock("splitter", SplitterBlock::new, UniverseBlocks::logistics);
     public static final DeferredBlock<StorageDepotBlock> STORAGE_DEPOT = BLOCKS.registerBlock("storage_depot", StorageDepotBlock::new,
             p -> machine(p));
+    public static final DeferredBlock<StorageTankBlock> STORAGE_TANK = BLOCKS.registerBlock("storage_tank", StorageTankBlock::new,
+            p -> machine(p).noOcclusion());
+    // ---- 中期工业（ADR-0015）
+    public static final DeferredBlock<MachineBlock> ASSEMBLER_MK2 = BLOCKS.registerBlock("assembler_mk2",
+            p -> new MachineBlock(p, UniverseBlockEntities.ASSEMBLER_MK2),
+            p -> machine(p).lightLevel(state -> state.getValue(MachineBlock.WORKING) ? 7 : 0));
+    public static final DeferredBlock<MachineBlock> ASSEMBLER_MK3 = BLOCKS.registerBlock("assembler_mk3",
+            p -> new MachineBlock(p, UniverseBlockEntities.ASSEMBLER_MK3),
+            p -> machine(p).lightLevel(state -> state.getValue(MachineBlock.WORKING) ? 8 : 0));
+    public static final DeferredBlock<ProcessingBlocks.PlaneSmelter> PLANE_SMELTER = BLOCKS.registerBlock("plane_smelter",
+            ProcessingBlocks.PlaneSmelter::new, p -> machine(p).lightLevel(state -> state.getValue(MachineBlock.WORKING) ? 13 : 2));
+    public static final DeferredBlock<ProcessingBlocks.ChemicalPlant> CHEMICAL_PLANT = BLOCKS.registerBlock("chemical_plant",
+            ProcessingBlocks.ChemicalPlant::new, p -> machine(p).lightLevel(state -> state.getValue(MachineBlock.WORKING) ? 7 : 0));
+    public static final DeferredBlock<ProcessingBlocks.Fractionator> FRACTIONATOR = BLOCKS.registerBlock("fractionator",
+            ProcessingBlocks.Fractionator::new, p -> machine(p).lightLevel(state -> state.getValue(MachineBlock.WORKING) ? 9 : 0));
+    public static final DeferredBlock<ResourceMachineBlocks.AdvancedMiningMachine> ADVANCED_MINING_MACHINE = BLOCKS.registerBlock(
+            "advanced_mining_machine", ResourceMachineBlocks.AdvancedMiningMachine::new,
+            p -> machine(p).lightLevel(state -> state.getValue(MachineBlock.WORKING) ? 7 : 0));
+    public static final DeferredBlock<FactoryAnchorBlock> FACTORY_ANCHOR = BLOCKS.registerBlock("factory_anchor", FactoryAnchorBlock::new,
+            p -> machine(p).lightLevel(state -> 11));
+    // ---- 物流站（ADR-0015）：上半截是停机坪，工作时亮灯
+    public static final DeferredBlock<StationBlock> PLANETARY_LOGISTICS_STATION = BLOCKS.registerBlock("planetary_logistics_station",
+            p -> new StationBlock(p, UniverseBlockEntities.PLANETARY_LOGISTICS_STATION),
+            p -> machine(p).noOcclusion().lightLevel(state -> state.getValue(TallMachineBlock.HALF) == DoubleBlockHalf.UPPER
+                    && state.getValue(MachineBlock.WORKING) ? 10 : 0));
+    public static final DeferredBlock<StationBlock> INTERSTELLAR_LOGISTICS_STATION = BLOCKS.registerBlock("interstellar_logistics_station",
+            p -> new StationBlock(p, UniverseBlockEntities.INTERSTELLAR_LOGISTICS_STATION),
+            p -> machine(p).noOcclusion().lightLevel(state -> state.getValue(TallMachineBlock.HALF) == DoubleBlockHalf.UPPER
+                    && state.getValue(MachineBlock.WORKING) ? 12 : 0));
+    public static final DeferredBlock<OrbitalCollectorBlock> ORBITAL_COLLECTOR = BLOCKS.registerBlock("orbital_collector",
+            p -> new OrbitalCollectorBlock(p, UniverseBlockEntities.ORBITAL_COLLECTOR), p -> machine(p).noOcclusion().lightLevel(state -> 9));
     /** 原油涌泉：挖不掉，也不掉落。 */
     public static final DeferredBlock<CrudeOilSeepBlock> CRUDE_OIL_SEEP = BLOCKS.registerBlock("crude_oil_seep", CrudeOilSeepBlock::new,
             p -> p.mapColor(MapColor.COLOR_BLACK).strength(-1.0F, 3600000.0F).noLootTable().sound(SoundType.MUD));
+
+    /** 传送带、分拣器、分流器：金属，拆起来很快，不挑工具。 */
+    private static BlockBehaviour.Properties logistics(BlockBehaviour.Properties properties) {
+        return properties.mapColor(MapColor.METAL).strength(1.0F, 3.0F).sound(SoundType.METAL).noOcclusion();
+    }
 
     /** 设备的通用属性：金属、要镐子挖，活塞推不动。 */
     private static BlockBehaviour.Properties machine(BlockBehaviour.Properties properties) {

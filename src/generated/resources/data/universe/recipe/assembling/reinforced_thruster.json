@@ -1,0 +1,20 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 5,
+      "ingredient": "universe:titanium_alloy"
+    },
+    {
+      "count": 5,
+      "ingredient": "universe:electromagnetic_turbine"
+    }
+  ],
+  "research": "interstellar_logistics",
+  "results": [
+    {
+      "id": "universe:reinforced_thruster"
+    }
+  ],
+  "time": 120
+}

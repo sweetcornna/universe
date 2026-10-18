@@ -1,0 +1,16 @@
+{
+  "type": "universe:smelting",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:energetic_graphite"
+    }
+  ],
+  "research": "structure_matrix",
+  "results": [
+    {
+      "id": "universe:synthetic_diamond"
+    }
+  ],
+  "time": 40
+}

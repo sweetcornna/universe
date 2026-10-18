@@ -7,6 +7,7 @@ import org.jspecify.annotations.Nullable;
 
 import io.github.sweetcornna.universe.core.power.PowerDevice;
 import io.github.sweetcornna.universe.core.power.PowerSystem;
+import io.github.sweetcornna.universe.stats.ProductionLog;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.neoforged.bus.api.IEventBus;
@@ -34,6 +35,7 @@ public final class LevelPower {
                 LevelPower power = LEVELS.get(level);
                 if (power != null) {
                     power.system.tick();
+                    ProductionLog.power(level, power.system.grids());
                 }
             }
         });

@@ -1,0 +1,28 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:mining_machine"
+    },
+    {
+      "count": 10,
+      "ingredient": "universe:titanium_alloy"
+    },
+    {
+      "count": 4,
+      "ingredient": "universe:super_magnetic_ring"
+    },
+    {
+      "count": 4,
+      "ingredient": "universe:processor"
+    }
+  ],
+  "research": "advanced_mining",
+  "results": [
+    {
+      "id": "universe:advanced_mining_machine"
+    }
+  ],
+  "time": 400
+}

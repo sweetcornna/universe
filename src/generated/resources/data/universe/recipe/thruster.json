@@ -1,0 +1,15 @@
+{
+  "type": "universe:research_shaped",
+  "key": {
+    "C": "minecraft:copper_ingot",
+    "S": "universe:steel"
+  },
+  "pattern": [
+    "SCS",
+    "CC "
+  ],
+  "research": "thruster",
+  "result": {
+    "id": "universe:thruster"
+  }
+}

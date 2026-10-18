@@ -1,0 +1,28 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 8,
+      "ingredient": "universe:steel"
+    },
+    {
+      "count": 20,
+      "ingredient": "minecraft:stone_bricks"
+    },
+    {
+      "count": 8,
+      "ingredient": "minecraft:glass"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:circuit_board"
+    }
+  ],
+  "research": "basic_chemical",
+  "results": [
+    {
+      "id": "universe:chemical_plant"
+    }
+  ],
+  "time": 100
+}

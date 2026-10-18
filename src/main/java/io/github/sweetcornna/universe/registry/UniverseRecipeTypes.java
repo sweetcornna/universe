@@ -11,7 +11,7 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
-/** 配方类型和序列化器：三种设备配方（冶炼、制造、精炼）和要研究解锁的有序合成。 */
+/** 配方类型和序列化器：四种设备配方（冶炼、制造、精炼、化工）和要研究解锁的有序合成。 */
 public final class UniverseRecipeTypes {
     public static final DeferredRegister<RecipeType<?>> TYPES = DeferredRegister.create(Registries.RECIPE_TYPE, Universe.MOD_ID);
     public static final DeferredRegister<RecipeSerializer<?>> SERIALIZERS = DeferredRegister.create(Registries.RECIPE_SERIALIZER, Universe.MOD_ID);
@@ -21,6 +21,7 @@ public final class UniverseRecipeTypes {
     public static final DeferredHolder<RecipeType<?>, RecipeType<MachineRecipe>> SMELTING = type("smelting");
     public static final DeferredHolder<RecipeType<?>, RecipeType<MachineRecipe>> ASSEMBLING = type("assembling");
     public static final DeferredHolder<RecipeType<?>, RecipeType<MachineRecipe>> REFINING = type("refining");
+    public static final DeferredHolder<RecipeType<?>, RecipeType<MachineRecipe>> CHEMICAL = type("chemical");
 
     public static final DeferredHolder<RecipeSerializer<?>, RecipeSerializer<MachineRecipe>> SMELTING_SERIALIZER =
             SERIALIZERS.register("smelting", () -> MachineRecipe.serializer(MachineRecipe.Kind.SMELTING));
@@ -28,6 +29,8 @@ public final class UniverseRecipeTypes {
             SERIALIZERS.register("assembling", () -> MachineRecipe.serializer(MachineRecipe.Kind.ASSEMBLING));
     public static final DeferredHolder<RecipeSerializer<?>, RecipeSerializer<MachineRecipe>> REFINING_SERIALIZER =
             SERIALIZERS.register("refining", () -> MachineRecipe.serializer(MachineRecipe.Kind.REFINING));
+    public static final DeferredHolder<RecipeSerializer<?>, RecipeSerializer<MachineRecipe>> CHEMICAL_SERIALIZER =
+            SERIALIZERS.register("chemical", () -> MachineRecipe.serializer(MachineRecipe.Kind.CHEMICAL));
     public static final DeferredHolder<RecipeSerializer<?>, RecipeSerializer<ResearchShapedRecipe>> RESEARCH_SHAPED =
             SERIALIZERS.register("research_shaped", () -> ResearchShapedRecipe.SERIALIZER);
 

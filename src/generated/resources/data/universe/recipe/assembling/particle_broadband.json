@@ -1,0 +1,24 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 2,
+      "ingredient": "universe:carbon_nanotube"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:crystal_silicon"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:plastic"
+    }
+  ],
+  "research": "information_matrix",
+  "results": [
+    {
+      "id": "universe:particle_broadband"
+    }
+  ],
+  "time": 160
+}

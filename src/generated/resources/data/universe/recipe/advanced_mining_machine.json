@@ -1,0 +1,19 @@
+{
+  "type": "universe:research_shaped",
+  "category": "redstone",
+  "key": {
+    "M": "universe:mining_machine",
+    "P": "universe:processor",
+    "R": "universe:super_magnetic_ring",
+    "T": "universe:titanium_alloy"
+  },
+  "pattern": [
+    "TRT",
+    "PMP",
+    "TRT"
+  ],
+  "research": "advanced_mining",
+  "result": {
+    "id": "universe:advanced_mining_machine"
+  }
+}

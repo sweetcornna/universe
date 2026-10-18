@@ -1,5 +1,8 @@
 package io.github.sweetcornna.universe.factory;
 
+import java.util.EnumMap;
+import java.util.Map;
+
 import org.jspecify.annotations.Nullable;
 
 import io.github.sweetcornna.universe.core.power.PowerDevice;
@@ -48,8 +51,8 @@ public abstract class MachineBlockEntity extends BaseContainerBlockEntity implem
     protected long stored;
     private int idleTicks = IDLE_GRACE;
     /** 往外推产物的目标，按方向缓存。 */
-    private @Nullable BlockCapabilityCache<ResourceHandler<ItemResource>, @Nullable Direction> output;
-    private @Nullable Direction outputSide;
+    private final Map<Direction, BlockCapabilityCache<ResourceHandler<ItemResource>, @Nullable Direction>> outputs =
+            new EnumMap<>(Direction.class);
     private final ContainerData data = new ContainerData() {
         @Override
         public int get(int index) {
@@ -221,11 +224,10 @@ public abstract class MachineBlockEntity extends BaseContainerBlockEntity implem
         if (stack.isEmpty() || !(this.level instanceof ServerLevel serverLevel)) {
             return 0;
         }
-        if (this.output == null || this.outputSide != side) {
-            this.output = BlockCapabilityCache.create(Capabilities.Item.BLOCK, serverLevel, this.worldPosition.relative(side), side.getOpposite());
-            this.outputSide = side;
-        }
-        ResourceHandler<ItemResource> target = this.output.getCapability();
+        BlockCapabilityCache<ResourceHandler<ItemResource>, @Nullable Direction> cache = this.outputs.computeIfAbsent(side,
+                direction -> BlockCapabilityCache.create(Capabilities.Item.BLOCK, serverLevel, this.worldPosition.relative(direction),
+                        direction.getOpposite()));
+        ResourceHandler<ItemResource> target = cache.getCapability();
         if (target == null) {
             return 0;
         }

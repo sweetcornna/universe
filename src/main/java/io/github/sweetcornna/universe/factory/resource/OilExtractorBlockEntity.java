@@ -7,6 +7,7 @@ import io.github.sweetcornna.universe.registry.UniverseBlockEntities;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
 import io.github.sweetcornna.universe.registry.UniverseItems;
 import io.github.sweetcornna.universe.registry.UniverseMenus;
+import io.github.sweetcornna.universe.stats.ProductionLog;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.ItemStack;
@@ -67,6 +68,7 @@ public class OilExtractorBlockEntity extends MachineBlockEntity {
         if (this.progress >= 1) {
             this.progress -= 1;
             VeinNodes.extractSeep(level, seep);
+            ProductionLog.produced(level, oil.getItem(), 1);
             this.addOutput(OUTPUT, oil);
         }
         this.setChanged();

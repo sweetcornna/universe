@@ -153,6 +153,27 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("key.universe.discovery_log", "打开发现日志", "Open Discovery Log");
         both("key.universe.tech", "技术配置（模块和货舱）", "Tech Configuration (modules and cargo)");
         both("key.universe.tool_mode", "多功能工具：切换采矿/战斗模式", "Multitool: Toggle Mining/Combat Mode");
+        both("key.universe.stats", "生产统计", "Production Statistics");
+        // 生产统计面板（ADR-0015）
+        both("gui.universe.stats.title", "生产统计", "Production Statistics");
+        both("gui.universe.stats.all", "全部星球", "All planets");
+        both("gui.universe.stats.space", "%s 太空", "%s space");
+        both("gui.universe.stats.range.0", "1 分钟", "1 min");
+        both("gui.universe.stats.range.1", "10 分钟", "10 min");
+        both("gui.universe.stats.range.2", "1 小时", "1 hour");
+        both("gui.universe.stats.generation", "发电能力 %s", "Generation %s");
+        both("gui.universe.stats.demand", "用电需求 %s", "Demand %s");
+        both("gui.universe.stats.charging", "给蓄电器和物流站充电 %s", "Charging storage %s");
+        both("gui.universe.stats.satisfaction", "满足率 %s%%", "Satisfaction %s%%");
+        both("gui.universe.stats.no_power", "这里没有电网", "No power grid here");
+        both("gui.universe.stats.item", "物品", "Item");
+        both("gui.universe.stats.produced", "产出/分", "Made/min");
+        both("gui.universe.stats.consumed", "消耗/分", "Used/min");
+        both("gui.universe.stats.net", "净值/分", "Net/min");
+        both("gui.universe.stats.empty", "这段时间没有生产记录", "Nothing was produced in this period");
+        both("gui.universe.stats.empty_hint", "配方设备、采矿机、抽水站、萃取站、分馏塔、轨道采集器开工后，以及火力发电厂烧的燃料会记在这里；物流站搬运的不算",
+                "Machines, miners, pumps, extractors, fractionators, orbital collectors and fuel burned in thermal plants show up here; logistics transfers don't count");
+        both("gui.universe.stats.waiting", "正在向服务器要数据……", "Fetching from the server…");
         both("gui.universe.star_map", "星图", "Star Map");
         both("gui.universe.star_map.unknown", "还没收到星团的数据", "Galaxy data not received yet");
         both("gui.universe.star_map.hint", "左键拖动旋转 · 右键拖动平移 · 滚轮缩放 · 双击或 F 居中 · H 回到当前恒星系 · %s 关闭",
@@ -192,6 +213,77 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("hud.universe.ship.warp", "跃迁射程 %s 光年 · 翘曲器 %s · %s 打开星图", "Warp %s ly · warpers %s · %s for star map");
         both("message.universe.sorter.filter", "分拣器只搬：%s", "Sorter filter: %s");
         both("message.universe.sorter.no_filter", "分拣器不过滤，什么都搬", "Sorter filter cleared: moves anything");
+        both("message.universe.storage_tank.empty", "储液罐是空的（能装 %s 个）", "The tank is empty (holds %s)");
+        both("message.universe.storage_tank.contents", "%s：%s / %s", "%s: %s / %s");
+        both("tooltip.universe.storage_tank.empty", "空的：装一种流体，最多 %s 个", "Empty: holds up to %s of one fluid");
+        both("tooltip.universe.storage_tank.contents", "装着 %s %s 个（最多 %s）", "Contains %2$s %1$s (max %3$s)");
+        both("message.universe.factory_anchor.placed", "工厂锚已启动：周围 %1$s×%1$s 个区块会一直加载", "Factory anchor online: %1$s×%1$s chunks stay loaded");
+        both("message.universe.factory_anchor.info", "周围 %1$s×%1$s 个区块（%2$s 格见方）一直加载，这颗星球不会卸载",
+                "Keeps %1$s×%1$s chunks (%2$s blocks across) loaded; this world stays loaded");
+        // 物流站（ADR-0015）
+        both("message.universe.station.full", "装不下了", "The station is full");
+        both("message.universe.station.drones", "无人机 %s / %s", "Drones %s / %s");
+        both("message.universe.station.vessels", "运输船 %s / %s", "Vessels %s / %s");
+        both("message.universe.station.warpers", "空间翘曲器 %s / %s", "Space warpers %s / %s");
+        both("message.universe.orbital_collector.not_in_space", "轨道采集器只能放在太空里，挨着气态巨行星",
+                "Orbital collectors go in space, next to a gas giant");
+        both("message.universe.orbital_collector.no_giant", "这个星系没有气态巨行星", "This system has no gas giant");
+        both("message.universe.orbital_collector.too_far", "离气态巨行星%1$s还差 %3$s 格（在%4$s方向；要在大气层外 %5$s 格以内）",
+                "%2$s is %3$s blocks too far (to the %4$s; must be within %5$s blocks of its atmosphere)");
+        both("tooltip.universe.station.slot", "%s × %s", "%s × %s");
+        both("tooltip.universe.station.vehicles", "无人机 %s · 运输船 %s · 翘曲器 %s", "Drones %s · Vessels %s · Warpers %s");
+        both("gui.universe.station.energy", "电量 %s / %s", "Energy %s / %s");
+        both("gui.universe.station.full", "已充满", "Full");
+        both("gui.universe.station.no_surplus", "无余电", "No spare");
+        both("gui.universe.station.unpowered", "未接电网", "No grid");
+        both("gui.universe.station.range", "无人机航程 %s 格", "Drone range %s");
+        both("gui.universe.station.range_hint", "无人机只飞往这个距离以内的物流站；点 − / + 每次调 250 格",
+                "Drones only fly to stations within this range; − / + change it by 250");
+        both("gui.universe.station.item", "物品", "Item");
+        both("gui.universe.station.local", "本地", "Local");
+        both("gui.universe.station.remote", "远程", "Remote");
+        both("gui.universe.station.limit", "上限", "Limit");
+        both("gui.universe.station.empty_slot", "未设定", "Not set");
+        both("gui.universe.station.logic.storage", "仓储", "Store");
+        both("gui.universe.station.logic.supply", "供应", "Supply");
+        both("gui.universe.station.logic.demand", "需求", "Demand");
+        both("gui.universe.station.port.drones", "放入物流无人机；空手点击取出空闲的无人机",
+                "Drop logistics drones here; click with an empty hand to take idle ones");
+        both("gui.universe.station.port.vessels", "放入物流运输船；空手点击取出空闲的运输船",
+                "Drop logistics vessels here; click with an empty hand to take idle ones");
+        both("gui.universe.station.port.warpers", "放入空间翘曲器：去别的星系每趟用 2 个；空手点击全部取出",
+                "Drop space warpers here: each interstellar trip uses 2; click with an empty hand to take them all");
+        both("gui.universe.station.set_hint", "手持物品点击：设定这一格的物品", "Click with an item to assign it to this slot");
+        both("gui.universe.station.deposit_hint", "手持同种物品点击：存进去", "Click with the same item to deposit it");
+        both("gui.universe.station.withdraw_hint", "空手点击：取出一组", "Click with an empty hand to take a stack");
+        both("gui.universe.station.stock", "存量 %s / 上限 %s（最多 %s）", "Stock %s / limit %s (max %s)");
+        both("gui.universe.station.incoming", "在途 %s", "Incoming %s");
+        both("gui.universe.station.scroll_hint", "滚轮调整上限", "Scroll to change the limit");
+        both("gui.universe.station.local_title", "本地：同一星球上的物流站，无人机运送", "Local: stations on this planet, served by drones");
+        both("gui.universe.station.remote_title", "远程：其他星球上的星际物流站，运输船运送",
+                "Remote: interstellar stations on other worlds, served by vessels");
+        both("gui.universe.station.logic_hint.local.storage", "仓储：只存放，不派无人机，也不供给别的站",
+                "Storage: just holds items; no drone deliveries in or out");
+        both("gui.universe.station.logic_hint.local.supply", "供应：同一星球上需求这种物品的站会派无人机来取",
+                "Supply: stations on this planet that demand it send drones to fetch it");
+        both("gui.universe.station.logic_hint.local.demand", "需求：派无人机从同一星球的供应站运来，直到上限",
+                "Demand: sends drones to fetch it from supplying stations on this planet, up to the limit");
+        both("gui.universe.station.logic_hint.remote.storage", "仓储：不和其他星球往来", "Storage: no trade with other worlds");
+        both("gui.universe.station.logic_hint.remote.supply", "供应：其他星球需求这种物品的星际物流站会派运输船来取",
+                "Supply: interstellar stations elsewhere that demand it send vessels to fetch it");
+        both("gui.universe.station.logic_hint.remote.demand", "需求：派运输船从其他星球的供应站运来，直到上限",
+                "Demand: sends vessels to fetch it from supplying stations on other worlds, up to the limit");
+        both("gui.universe.station.cycle_hint", "点击切换：仓储 → 供应 → 需求", "Click to cycle: Storage → Supply → Demand");
+        both("gui.universe.station.limit_hint", "上限 −/+ 100，按住 Shift 一次 1000", "Limit −/+ 100 (Shift: 1000)");
+        both("gui.universe.station.clear_hint", "清除这一格的设定（格子空了、也没有在途的货时）",
+                "Clear this slot (only when it's empty and nothing is in transit)");
+        both("gui.universe.orbital_collector.hint", "不用接电网 · 等星际物流站的运输船来取货", "No power needed; vessels collect it");
+        both("gui.universe.orbital_collector.rate", "产量", "Rate");
+        both("gui.universe.fractionator.input", "氢", "H");
+        both("gui.universe.fractionator.idle", "没有氢：用传送带送进来", "No hydrogen: feed it by belt");
+        both("gui.universe.fractionator.rate", "每秒处理 %s 个（最多 %s）", "%s per second (max %s)");
+        both("gui.universe.fractionator.produced", "已分出重氢 %s 个", "Deuterium produced: %s");
+        both("gui.universe.fractionator.hint", "氢从正面出去，重氢往上推", "Hydrogen exits the front, deuterium goes up");
         both("message.universe.fuel_tank.full", "燃料舱已经满了", "The fuel tank is full");
         both("message.universe.fuel_tank.level", "燃料：%s / %s", "Fuel: %s / %s");
         both("message.universe.ship.too_large", "飞船太大了（超过 %s 个方块），或者连到了地面、建筑上",
@@ -336,6 +428,7 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
     private void factory() {
         block(UniverseBlocks.TESLA_TOWER.get(), "电力感应塔", "Tesla Tower");
         block(UniverseBlocks.WIND_TURBINE.get(), "风力涡轮机", "Wind Turbine");
+        block(UniverseBlocks.SOLAR_PANEL.get(), "太阳能板", "Solar Panel");
         block(UniverseBlocks.THERMAL_PLANT.get(), "火力发电厂", "Thermal Power Plant");
         block(UniverseBlocks.ACCUMULATOR.get(), "蓄电器", "Accumulator");
         block(UniverseBlocks.ARC_SMELTER.get(), "电弧熔炉", "Arc Smelter");
@@ -349,6 +442,43 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         block(UniverseBlocks.SORTER.get(), "分拣器 Mk.I", "Sorter Mk.I");
         block(UniverseBlocks.MATRIX_LAB.get(), "矩阵研究站", "Matrix Lab");
         block(UniverseBlocks.STORAGE_DEPOT.get(), "储物仓 Mk.I", "Storage Mk.I");
+        block(UniverseBlocks.CONVEYOR_BELT_MK2.get(), "传送带 Mk.II", "Conveyor Belt Mk.II");
+        block(UniverseBlocks.CONVEYOR_BELT_MK3.get(), "传送带 Mk.III", "Conveyor Belt Mk.III");
+        block(UniverseBlocks.SORTER_MK2.get(), "分拣器 Mk.II", "Sorter Mk.II");
+        block(UniverseBlocks.SORTER_MK3.get(), "分拣器 Mk.III", "Sorter Mk.III");
+        block(UniverseBlocks.SPLITTER.get(), "四向分流器", "Splitter");
+        block(UniverseBlocks.STORAGE_TANK.get(), "储液罐", "Storage Tank");
+        block(UniverseBlocks.PLANETARY_LOGISTICS_STATION.get(), "行星物流站", "Planetary Logistics Station");
+        block(UniverseBlocks.INTERSTELLAR_LOGISTICS_STATION.get(), "星际物流站", "Interstellar Logistics Station");
+        block(UniverseBlocks.ORBITAL_COLLECTOR.get(), "轨道采集器", "Orbital Collector");
+        block(UniverseBlocks.ASSEMBLER_MK2.get(), "制造台 Mk.II", "Assembling Machine Mk.II");
+        block(UniverseBlocks.ASSEMBLER_MK3.get(), "制造台 Mk.III", "Assembling Machine Mk.III");
+        block(UniverseBlocks.PLANE_SMELTER.get(), "位面熔炉", "Plane Smelter");
+        block(UniverseBlocks.CHEMICAL_PLANT.get(), "化工厂", "Chemical Plant");
+        block(UniverseBlocks.FRACTIONATOR.get(), "分馏塔", "Fractionator");
+        block(UniverseBlocks.ADVANCED_MINING_MACHINE.get(), "高级采矿机", "Advanced Mining Machine");
+        block(UniverseBlocks.FACTORY_ANCHOR.get(), "工厂锚", "Factory Anchor");
+        item(UniverseItems.DEUTERIUM.get(), "重氢", "Deuterium");
+        item(UniverseItems.CRYSTAL_SILICON.get(), "晶格硅", "Crystal Silicon");
+        item(UniverseItems.TITANIUM_ALLOY.get(), "钛合金", "Titanium Alloy");
+        item(UniverseItems.SYNTHETIC_DIAMOND.get(), "金刚石", "Synthetic Diamond");
+        item(UniverseItems.PLASTIC.get(), "塑料", "Plastic");
+        item(UniverseItems.SULFURIC_ACID.get(), "硫酸", "Sulfuric Acid");
+        item(UniverseItems.GRAPHENE.get(), "石墨烯", "Graphene");
+        item(UniverseItems.CARBON_NANOTUBE.get(), "碳纳米管", "Carbon Nanotube");
+        item(UniverseItems.TITANIUM_CRYSTAL.get(), "钛晶石", "Titanium Crystal");
+        item(UniverseItems.MICROCRYSTALLINE_COMPONENT.get(), "微晶元件", "Microcrystalline Component");
+        item(UniverseItems.PROCESSOR.get(), "处理器", "Processor");
+        item(UniverseItems.PARTICLE_BROADBAND.get(), "粒子宽带", "Particle Broadband");
+        item(UniverseItems.THRUSTER.get(), "推进器", "Thruster");
+        item(UniverseItems.REINFORCED_THRUSTER.get(), "加力推进器", "Reinforced Thruster");
+        item(UniverseItems.ELECTROMAGNETIC_TURBINE.get(), "电磁涡轮", "Electromagnetic Turbine");
+        item(UniverseItems.SUPER_MAGNETIC_RING.get(), "超级磁场环", "Super-Magnetic Ring");
+        item(UniverseItems.PARTICLE_CONTAINER.get(), "粒子容器", "Particle Container");
+        item(UniverseItems.LOGISTICS_DRONE.get(), "物流无人机", "Logistics Drone");
+        item(UniverseItems.LOGISTICS_VESSEL.get(), "物流运输船", "Logistics Vessel");
+        item(UniverseItems.STRUCTURE_MATRIX.get(), "结构矩阵", "Structure Matrix");
+        item(UniverseItems.INFORMATION_MATRIX.get(), "信息矩阵", "Information Matrix");
         item(UniverseItems.GEAR.get(), "齿轮", "Gear");
         item(UniverseItems.MAGNETIC_COIL.get(), "磁线圈", "Magnetic Coil");
         item(UniverseItems.CIRCUIT_BOARD.get(), "电路板", "Circuit Board");
@@ -364,7 +494,7 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         item(UniverseItems.ELECTROMAGNETIC_MATRIX.get(), "电磁矩阵", "Electromagnetic Matrix");
         item(UniverseItems.ENERGY_MATRIX.get(), "能量矩阵", "Energy Matrix");
 
-        both("gui.universe.machine.unpowered", "未接入电网：放在电力感应塔的覆盖范围里", "No power: place within a tesla tower's range");
+        both("gui.universe.machine.unpowered", "未接入电网：放在电力感应塔的覆盖范围里", "No power: needs a tesla tower nearby");
         both("gui.universe.machine.power", "功率 %s · 满足率 %s%%", "Power %s · %s%% satisfied");
         both("gui.universe.machine.output", "输出 %s · 负荷 %s%%", "Output %s · load %s%%");
         both("gui.universe.machine.standby", "待机：已接入电网", "Standby · connected");
@@ -373,7 +503,7 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("gui.universe.mining_machine.vein", "矿脉：%s · %s 个节点", "Vein: %s · %s nodes");
         both("gui.universe.mining_machine.remaining", "剩余储量 %s", "Reserve %s");
         both("gui.universe.mining_machine.rate", "满电产量 %s 个/分钟", "%s per minute at full power");
-        both("gui.universe.mining_machine.none", "下方 5×5、深 3 格内没有矿", "No ore in the 5×5×3 area below");
+        both("gui.universe.mining_machine.none", "下方 %1$s×%1$s、深 3 格内没有矿", "No ore in the %1$s×%1$s×3 area below");
         both("gui.universe.mining_machine.hint", "放在地表的矿脉露头上", "Place it on a surface vein");
         both("gui.universe.water_pump.ok", "水源正常", "Water source OK");
         both("gui.universe.water_pump.no_water", "要放在水源方块上面", "Must sit on a water source");
@@ -389,6 +519,14 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("gui.universe.tesla_tower.range", "覆盖半径 %s 格，相距 %s 格内的塔自动相连", "Range %s, links towers within %s");
         both("gui.universe.wind_turbine.wind", "风力系数 %s", "Wind factor %s");
         both("gui.universe.wind_turbine.hint", "越高风越大，雨天、雷雨天更大", "Windier up high and in storms");
+        both("gui.universe.solar_panel.ratio", "光照比例 %s", "Solar ratio %s");
+        both("gui.universe.solar_panel.sun", "太阳高度 %s%%", "Sun height %s%%");
+        both("gui.universe.solar_panel.no_sky", "头顶被挡住了，看不见天空", "Blocked: needs a clear view of the sky");
+        both("gui.universe.solar_panel.no_sun", "这里没有阳光", "No sunlight here");
+        both("gui.universe.solar_panel.rain", "下雨了，发电量只有 %s%%", "Rain cuts output to %s%%");
+        both("gui.universe.solar_panel.night", "夜里不发电", "No power at night");
+        both("gui.universe.solar_panel.space", "太空里没有昼夜，离恒星越近越亮", "No night in space; brighter near the star");
+        both("gui.universe.solar_panel.hint", "跟着太阳转，正午发电最多", "Tracks the sun; peaks at noon");
         both("gui.universe.thermal_plant.fuel", "炉膛", "Firebox");
         both("gui.universe.thermal_plant.hint", "只按电网需要烧燃料", "Burns only what the grid needs");
         both("gui.universe.accumulator.charging", "充电中 %s", "Charging %s");
@@ -427,6 +565,26 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         tech("interstellar_survey", "星际测绘", "Interstellar Survey");
         tech("warp_calibration", "跃迁校准", "Warp Calibration");
         tech("tech_modules", "技术模块", "Technology Modules");
+        tech("magnetic_levitation", "磁悬浮技术", "Magnetic Levitation");
+        tech("improved_logistics", "改良物流系统", "Improved Logistics System");
+        tech("basic_chemical", "基础化工", "Basic Chemical Engineering");
+        tech("semiconductor", "半导体材料", "Semiconductor Material");
+        tech("thruster", "推进器", "Thruster");
+        tech("solar_power", "太阳能收集", "Solar Collection");
+        tech("processor", "处理器", "Processor");
+        tech("high_strength_materials", "高强度材料", "High-Strength Material");
+        tech("deuterium_fractionation", "重氢分馏", "Deuterium Fractionation");
+        tech("improved_assembling", "改良制造工艺", "Improved Assembling Processes");
+        tech("planetary_logistics", "行星物流系统", "Planetary Logistics System");
+        tech("structure_matrix", "结构矩阵", "Structure Matrix");
+        tech("efficient_logistics", "高效物流系统", "Efficient Logistics System");
+        tech("titanium_alloy", "钛合金冶炼", "Titanium Alloy Smelting");
+        tech("plane_smelting", "位面冶金", "Plane Smelting");
+        tech("information_matrix", "信息矩阵", "Information Matrix");
+        tech("interstellar_logistics", "星际物流系统", "Interstellar Logistics System");
+        tech("orbital_collection", "轨道采集", "Orbital Collection");
+        tech("advanced_mining", "高级采矿", "Advanced Mining");
+        tech("high_speed_assembling", "高速制造工艺", "High-Speed Assembling Processes");
         this.discovery();
         this.modules();
         this.pois();

@@ -1,0 +1,28 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:assembler_mk2"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:particle_broadband"
+    },
+    {
+      "count": 4,
+      "ingredient": "universe:processor"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:titanium_alloy"
+    }
+  ],
+  "research": "high_speed_assembling",
+  "results": [
+    {
+      "id": "universe:assembler_mk3"
+    }
+  ],
+  "time": 20
+}

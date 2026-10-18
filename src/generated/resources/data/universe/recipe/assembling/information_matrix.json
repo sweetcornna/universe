@@ -1,0 +1,20 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 2,
+      "ingredient": "universe:processor"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:particle_broadband"
+    }
+  ],
+  "research": "information_matrix",
+  "results": [
+    {
+      "id": "universe:information_matrix"
+    }
+  ],
+  "time": 200
+}

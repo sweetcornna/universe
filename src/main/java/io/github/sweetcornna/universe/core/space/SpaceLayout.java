@@ -71,6 +71,11 @@ public final class SpaceLayout {
         return 1500 + 3000 * Math.log(1 + au / 0.25) / Math.log(2);
     }
 
+    /** {@link #orbitDistance} 反过来：离恒星多少格相当于多少 AU。比最内侧的轨道还近时按 0 算。 */
+    public static double auAt(double distance) {
+        return Math.max(0, 0.25 * (Math.pow(2, (distance - 1500) / 3000) - 1));
+    }
+
     /** 大气球的半径：母星大小的星球 110 格，气态巨行星几百格。 */
     public static double sphereRadius(Planet planet) {
         return 60 + 50 * planet.radius();

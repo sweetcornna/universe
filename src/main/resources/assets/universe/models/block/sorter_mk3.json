@@ -1,0 +1,7 @@
+{
+  "parent": "universe:block/sorter",
+  "textures": {
+    "top": "universe:block/sorter_mk3_top",
+    "arm": "universe:block/sorter_arm_mk3"
+  }
+}

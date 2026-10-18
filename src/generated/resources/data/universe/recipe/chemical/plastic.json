@@ -1,0 +1,20 @@
+{
+  "type": "universe:chemical",
+  "ingredients": [
+    {
+      "count": 2,
+      "ingredient": "universe:refined_oil"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:energetic_graphite"
+    }
+  ],
+  "research": "basic_chemical",
+  "results": [
+    {
+      "id": "universe:plastic"
+    }
+  ],
+  "time": 60
+}

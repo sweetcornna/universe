@@ -1,0 +1,21 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 2,
+      "ingredient": "universe:sorter"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:electric_motor"
+    }
+  ],
+  "research": "improved_logistics",
+  "results": [
+    {
+      "count": 2,
+      "id": "universe:sorter_mk2"
+    }
+  ],
+  "time": 20
+}

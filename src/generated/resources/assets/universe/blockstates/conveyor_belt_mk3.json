@@ -1,0 +1,139 @@
+{
+  "variants": {
+    "curve=left,facing=east,slope=down": {
+      "model": "universe:block/conveyor_belt_mk3_down",
+      "y": 90
+    },
+    "curve=left,facing=east,slope=flat": {
+      "model": "universe:block/conveyor_belt_mk3_curve_left",
+      "y": 90
+    },
+    "curve=left,facing=east,slope=up": {
+      "model": "universe:block/conveyor_belt_mk3_up",
+      "y": 90
+    },
+    "curve=left,facing=north,slope=down": {
+      "model": "universe:block/conveyor_belt_mk3_down"
+    },
+    "curve=left,facing=north,slope=flat": {
+      "model": "universe:block/conveyor_belt_mk3_curve_left"
+    },
+    "curve=left,facing=north,slope=up": {
+      "model": "universe:block/conveyor_belt_mk3_up"
+    },
+    "curve=left,facing=south,slope=down": {
+      "model": "universe:block/conveyor_belt_mk3_down",
+      "y": 180
+    },
+    "curve=left,facing=south,slope=flat": {
+      "model": "universe:block/conveyor_belt_mk3_curve_left",
+      "y": 180
+    },
+    "curve=left,facing=south,slope=up": {
+      "model": "universe:block/conveyor_belt_mk3_up",
+      "y": 180
+    },
+    "curve=left,facing=west,slope=down": {
+      "model": "universe:block/conveyor_belt_mk3_down",
+      "y": 270
+    },
+    "curve=left,facing=west,slope=flat": {
+      "model": "universe:block/conveyor_belt_mk3_curve_left",
+      "y": 270
+    },
+    "curve=left,facing=west,slope=up": {
+      "model": "universe:block/conveyor_belt_mk3_up",
+      "y": 270
+    },
+    "curve=none,facing=east,slope=down": {
+      "model": "universe:block/conveyor_belt_mk3_down",
+      "y": 90
+    },
+    "curve=none,facing=east,slope=flat": {
+      "model": "universe:block/conveyor_belt_mk3",
+      "y": 90
+    },
+    "curve=none,facing=east,slope=up": {
+      "model": "universe:block/conveyor_belt_mk3_up",
+      "y": 90
+    },
+    "curve=none,facing=north,slope=down": {
+      "model": "universe:block/conveyor_belt_mk3_down"
+    },
+    "curve=none,facing=north,slope=flat": {
+      "model": "universe:block/conveyor_belt_mk3"
+    },
+    "curve=none,facing=north,slope=up": {
+      "model": "universe:block/conveyor_belt_mk3_up"
+    },
+    "curve=none,facing=south,slope=down": {
+      "model": "universe:block/conveyor_belt_mk3_down",
+      "y": 180
+    },
+    "curve=none,facing=south,slope=flat": {
+      "model": "universe:block/conveyor_belt_mk3",
+      "y": 180
+    },
+    "curve=none,facing=south,slope=up": {
+      "model": "universe:block/conveyor_belt_mk3_up",
+      "y": 180
+    },
+    "curve=none,facing=west,slope=down": {
+      "model": "universe:block/conveyor_belt_mk3_down",
+      "y": 270
+    },
+    "curve=none,facing=west,slope=flat": {
+      "model": "universe:block/conveyor_belt_mk3",
+      "y": 270
+    },
+    "curve=none,facing=west,slope=up": {
+      "model": "universe:block/conveyor_belt_mk3_up",
+      "y": 270
+    },
+    "curve=right,facing=east,slope=down": {
+      "model": "universe:block/conveyor_belt_mk3_down",
+      "y": 90
+    },
+    "curve=right,facing=east,slope=flat": {
+      "model": "universe:block/conveyor_belt_mk3_curve_right",
+      "y": 90
+    },
+    "curve=right,facing=east,slope=up": {
+      "model": "universe:block/conveyor_belt_mk3_up",
+      "y": 90
+    },
+    "curve=right,facing=north,slope=down": {
+      "model": "universe:block/conveyor_belt_mk3_down"
+    },
+    "curve=right,facing=north,slope=flat": {
+      "model": "universe:block/conveyor_belt_mk3_curve_right"
+    },
+    "curve=right,facing=north,slope=up": {
+      "model": "universe:block/conveyor_belt_mk3_up"
+    },
+    "curve=right,facing=south,slope=down": {
+      "model": "universe:block/conveyor_belt_mk3_down",
+      "y": 180
+    },
+    "curve=right,facing=south,slope=flat": {
+      "model": "universe:block/conveyor_belt_mk3_curve_right",
+      "y": 180
+    },
+    "curve=right,facing=south,slope=up": {
+      "model": "universe:block/conveyor_belt_mk3_up",
+      "y": 180
+    },
+    "curve=right,facing=west,slope=down": {
+      "model": "universe:block/conveyor_belt_mk3_down",
+      "y": 270
+    },
+    "curve=right,facing=west,slope=flat": {
+      "model": "universe:block/conveyor_belt_mk3_curve_right",
+      "y": 270
+    },
+    "curve=right,facing=west,slope=up": {
+      "model": "universe:block/conveyor_belt_mk3_up",
+      "y": 270
+    }
+  }
+}

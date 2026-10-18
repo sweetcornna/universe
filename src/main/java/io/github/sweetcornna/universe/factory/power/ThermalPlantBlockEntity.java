@@ -4,6 +4,7 @@ import io.github.sweetcornna.universe.factory.MachineBlockEntity;
 import io.github.sweetcornna.universe.factory.MachineMenu;
 import io.github.sweetcornna.universe.registry.UniverseBlockEntities;
 import io.github.sweetcornna.universe.registry.UniverseMenus;
+import io.github.sweetcornna.universe.stats.ProductionLog;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.server.level.ServerLevel;
@@ -59,6 +60,7 @@ public class ThermalPlantBlockEntity extends MachineBlockEntity {
                 this.energy += value;
                 this.energyTotal = value;
                 ItemStackTemplate remainder = fuel.getCraftingRemainder();
+                ProductionLog.consumed(serverLevel, fuel.getItem(), 1);
                 fuel.shrink(1);
                 if (remainder != null) {
                     if (fuel.isEmpty()) {

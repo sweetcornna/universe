@@ -1,0 +1,21 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 3,
+      "ingredient": "universe:conveyor_belt"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:electromagnetic_turbine"
+    }
+  ],
+  "research": "improved_logistics",
+  "results": [
+    {
+      "count": 3,
+      "id": "universe:conveyor_belt_mk2"
+    }
+  ],
+  "time": 20
+}

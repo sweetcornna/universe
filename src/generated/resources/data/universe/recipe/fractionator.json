@@ -1,0 +1,19 @@
+{
+  "type": "universe:research_shaped",
+  "category": "redstone",
+  "key": {
+    "G": "minecraft:glass",
+    "K": "minecraft:stone_bricks",
+    "P": "universe:processor",
+    "S": "universe:steel"
+  },
+  "pattern": [
+    "SGS",
+    "KPK",
+    "SGS"
+  ],
+  "research": "deuterium_fractionation",
+  "result": {
+    "id": "universe:fractionator"
+  }
+}

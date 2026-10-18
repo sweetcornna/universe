@@ -1,0 +1,16 @@
+{
+  "type": "universe:research_shaped",
+  "key": {
+    "B": "universe:circuit_board",
+    "G": "universe:gear",
+    "I": "minecraft:iron_ingot"
+  },
+  "pattern": [
+    "IGI",
+    "GBI"
+  ],
+  "research": "improved_logistics",
+  "result": {
+    "id": "universe:splitter"
+  }
+}

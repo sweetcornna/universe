@@ -9,6 +9,8 @@ import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.block.OreKind;
 import io.github.sweetcornna.universe.core.ecology.PlantForm;
 import io.github.sweetcornna.universe.core.tech.ModuleType;
+import io.github.sweetcornna.universe.factory.belt.StorageTankItem;
+import io.github.sweetcornna.universe.logistics.StationItem;
 import io.github.sweetcornna.universe.survival.Exosuit;
 import io.github.sweetcornna.universe.survival.MultitoolItem;
 import io.github.sweetcornna.universe.survival.SuitRefillItem;
@@ -167,6 +169,7 @@ public final class UniverseItems {
     // ---- 工业（ADR-0011）
     public static final DeferredItem<BlockItem> TESLA_TOWER = ITEMS.registerSimpleBlockItem(UniverseBlocks.TESLA_TOWER);
     public static final DeferredItem<BlockItem> WIND_TURBINE = ITEMS.registerSimpleBlockItem(UniverseBlocks.WIND_TURBINE);
+    public static final DeferredItem<BlockItem> SOLAR_PANEL = ITEMS.registerSimpleBlockItem(UniverseBlocks.SOLAR_PANEL);
     public static final DeferredItem<BlockItem> THERMAL_PLANT = ITEMS.registerSimpleBlockItem(UniverseBlocks.THERMAL_PLANT);
     public static final DeferredItem<BlockItem> ACCUMULATOR = ITEMS.registerSimpleBlockItem(UniverseBlocks.ACCUMULATOR);
     public static final DeferredItem<BlockItem> ARC_SMELTER = ITEMS.registerSimpleBlockItem(UniverseBlocks.ARC_SMELTER);
@@ -180,6 +183,29 @@ public final class UniverseItems {
     public static final DeferredItem<BlockItem> CONVEYOR_BELT = ITEMS.registerSimpleBlockItem(UniverseBlocks.CONVEYOR_BELT);
     public static final DeferredItem<BlockItem> SORTER = ITEMS.registerSimpleBlockItem(UniverseBlocks.SORTER);
     public static final DeferredItem<BlockItem> STORAGE_DEPOT = ITEMS.registerSimpleBlockItem(UniverseBlocks.STORAGE_DEPOT);
+    // ---- 物流（ADR-0015）
+    public static final DeferredItem<BlockItem> CONVEYOR_BELT_MK2 = ITEMS.registerSimpleBlockItem(UniverseBlocks.CONVEYOR_BELT_MK2);
+    public static final DeferredItem<BlockItem> CONVEYOR_BELT_MK3 = ITEMS.registerSimpleBlockItem(UniverseBlocks.CONVEYOR_BELT_MK3);
+    public static final DeferredItem<BlockItem> SORTER_MK2 = ITEMS.registerSimpleBlockItem(UniverseBlocks.SORTER_MK2);
+    public static final DeferredItem<BlockItem> SORTER_MK3 = ITEMS.registerSimpleBlockItem(UniverseBlocks.SORTER_MK3);
+    public static final DeferredItem<BlockItem> SPLITTER = ITEMS.registerSimpleBlockItem(UniverseBlocks.SPLITTER);
+    public static final DeferredItem<StorageTankItem> STORAGE_TANK = ITEMS.registerItem("storage_tank",
+            properties -> new StorageTankItem(UniverseBlocks.STORAGE_TANK.get(), properties), () -> new Item.Properties().useBlockDescriptionPrefix());
+    public static final DeferredItem<BlockItem> ASSEMBLER_MK2 = ITEMS.registerSimpleBlockItem(UniverseBlocks.ASSEMBLER_MK2);
+    public static final DeferredItem<BlockItem> ASSEMBLER_MK3 = ITEMS.registerSimpleBlockItem(UniverseBlocks.ASSEMBLER_MK3);
+    public static final DeferredItem<BlockItem> PLANE_SMELTER = ITEMS.registerSimpleBlockItem(UniverseBlocks.PLANE_SMELTER);
+    public static final DeferredItem<BlockItem> CHEMICAL_PLANT = ITEMS.registerSimpleBlockItem(UniverseBlocks.CHEMICAL_PLANT);
+    public static final DeferredItem<BlockItem> FRACTIONATOR = ITEMS.registerSimpleBlockItem(UniverseBlocks.FRACTIONATOR);
+    public static final DeferredItem<BlockItem> ADVANCED_MINING_MACHINE = ITEMS.registerSimpleBlockItem(UniverseBlocks.ADVANCED_MINING_MACHINE);
+    public static final DeferredItem<BlockItem> FACTORY_ANCHOR = ITEMS.registerSimpleBlockItem(UniverseBlocks.FACTORY_ANCHOR);
+    public static final DeferredItem<StationItem> PLANETARY_LOGISTICS_STATION = ITEMS.registerItem("planetary_logistics_station",
+            properties -> new StationItem(UniverseBlocks.PLANETARY_LOGISTICS_STATION.get(), properties),
+            () -> new Item.Properties().useBlockDescriptionPrefix());
+    public static final DeferredItem<StationItem> INTERSTELLAR_LOGISTICS_STATION = ITEMS.registerItem("interstellar_logistics_station",
+            properties -> new StationItem(UniverseBlocks.INTERSTELLAR_LOGISTICS_STATION.get(), properties),
+            () -> new Item.Properties().useBlockDescriptionPrefix());
+    public static final DeferredItem<StationItem> ORBITAL_COLLECTOR = ITEMS.registerItem("orbital_collector",
+            properties -> new StationItem(UniverseBlocks.ORBITAL_COLLECTOR.get(), properties), () -> new Item.Properties().useBlockDescriptionPrefix());
 
     /** 中间产品（戴森球计划的电磁阶段）。 */
     public static final DeferredItem<Item> GEAR = ITEMS.registerSimpleItem("gear");
@@ -196,9 +222,32 @@ public final class UniverseItems {
     public static final DeferredItem<Item> CRUDE_OIL = ITEMS.registerSimpleItem("crude_oil");
     public static final DeferredItem<Item> REFINED_OIL = ITEMS.registerSimpleItem("refined_oil", properties -> fuel(properties, 2600));
     public static final DeferredItem<Item> HYDROGEN = ITEMS.registerSimpleItem("hydrogen", properties -> fuel(properties, 4700));
+    /** 重氢：分馏塔从氢里分出来，轨道采集器从气态巨行星采（ADR-0015）。 */
+    public static final DeferredItem<Item> DEUTERIUM = ITEMS.registerSimpleItem("deuterium");
     /** 矩阵：研究站消耗它们推进科技树。 */
     public static final DeferredItem<Item> ELECTROMAGNETIC_MATRIX = ITEMS.registerSimpleItem("electromagnetic_matrix");
     public static final DeferredItem<Item> ENERGY_MATRIX = ITEMS.registerSimpleItem("energy_matrix");
+    /** 中期的中间产品和矩阵（ADR-0015），配方照戴森球计划。有机晶体是 M2 就有的矿石掉落，这里不另加。 */
+    public static final DeferredItem<Item> CRYSTAL_SILICON = ITEMS.registerSimpleItem("crystal_silicon");
+    public static final DeferredItem<Item> TITANIUM_ALLOY = ITEMS.registerSimpleItem("titanium_alloy");
+    public static final DeferredItem<Item> SYNTHETIC_DIAMOND = ITEMS.registerSimpleItem("synthetic_diamond");
+    public static final DeferredItem<Item> PLASTIC = ITEMS.registerSimpleItem("plastic");
+    public static final DeferredItem<Item> SULFURIC_ACID = ITEMS.registerSimpleItem("sulfuric_acid");
+    public static final DeferredItem<Item> GRAPHENE = ITEMS.registerSimpleItem("graphene");
+    public static final DeferredItem<Item> CARBON_NANOTUBE = ITEMS.registerSimpleItem("carbon_nanotube");
+    public static final DeferredItem<Item> TITANIUM_CRYSTAL = ITEMS.registerSimpleItem("titanium_crystal");
+    public static final DeferredItem<Item> MICROCRYSTALLINE_COMPONENT = ITEMS.registerSimpleItem("microcrystalline_component");
+    public static final DeferredItem<Item> PROCESSOR = ITEMS.registerSimpleItem("processor");
+    public static final DeferredItem<Item> PARTICLE_BROADBAND = ITEMS.registerSimpleItem("particle_broadband");
+    public static final DeferredItem<Item> THRUSTER = ITEMS.registerSimpleItem("thruster");
+    public static final DeferredItem<Item> REINFORCED_THRUSTER = ITEMS.registerSimpleItem("reinforced_thruster");
+    public static final DeferredItem<Item> ELECTROMAGNETIC_TURBINE = ITEMS.registerSimpleItem("electromagnetic_turbine");
+    public static final DeferredItem<Item> SUPER_MAGNETIC_RING = ITEMS.registerSimpleItem("super_magnetic_ring");
+    public static final DeferredItem<Item> PARTICLE_CONTAINER = ITEMS.registerSimpleItem("particle_container");
+    public static final DeferredItem<Item> LOGISTICS_DRONE = ITEMS.registerSimpleItem("logistics_drone");
+    public static final DeferredItem<Item> LOGISTICS_VESSEL = ITEMS.registerSimpleItem("logistics_vessel");
+    public static final DeferredItem<Item> STRUCTURE_MATRIX = ITEMS.registerSimpleItem("structure_matrix");
+    public static final DeferredItem<Item> INFORMATION_MATRIX = ITEMS.registerSimpleItem("information_matrix");
 
     /** 能进火力发电厂和熔炉的燃料，燃烧时间按原版的刻数。 */
     private static Item.Properties fuel(Item.Properties properties, int burnTime) {
@@ -235,10 +284,15 @@ public final class UniverseItems {
         order.addAll(ORES.values());
         order.addAll(ORE_DROPS.values());
         order.addAll(ORE_SMELTED.values());
-        order.addAll(List.of(TESLA_TOWER, WIND_TURBINE, THERMAL_PLANT, ACCUMULATOR, MINING_MACHINE, WATER_PUMP, OIL_EXTRACTOR,
-                ARC_SMELTER, ASSEMBLER, OIL_REFINERY, MATRIX_LAB, CONVEYOR_BELT, SORTER, STORAGE_DEPOT, CRUDE_OIL_SEEP,
+        order.addAll(List.of(TESLA_TOWER, WIND_TURBINE, SOLAR_PANEL, THERMAL_PLANT, ACCUMULATOR, MINING_MACHINE, WATER_PUMP, OIL_EXTRACTOR,
+                ARC_SMELTER, ASSEMBLER, OIL_REFINERY, MATRIX_LAB, CONVEYOR_BELT, CONVEYOR_BELT_MK2, CONVEYOR_BELT_MK3,
+                SORTER, SORTER_MK2, SORTER_MK3, SPLITTER, STORAGE_DEPOT, STORAGE_TANK, CRUDE_OIL_SEEP,
+                ASSEMBLER_MK2, ASSEMBLER_MK3, PLANE_SMELTER, CHEMICAL_PLANT, FRACTIONATOR, ADVANCED_MINING_MACHINE, FACTORY_ANCHOR,
+                PLANETARY_LOGISTICS_STATION, INTERSTELLAR_LOGISTICS_STATION, ORBITAL_COLLECTOR,
                 GEAR, MAGNETIC_COIL, CIRCUIT_BOARD, ELECTRIC_MOTOR, STEEL, PRISM, PLASMA_EXCITER, ENERGETIC_GRAPHITE,
-                WATER, CRUDE_OIL, REFINED_OIL, HYDROGEN, ELECTROMAGNETIC_MATRIX, ENERGY_MATRIX));
+                WATER, CRUDE_OIL, REFINED_OIL, HYDROGEN, DEUTERIUM, ELECTROMAGNETIC_MATRIX, ENERGY_MATRIX,
+                CRYSTAL_SILICON, TITANIUM_ALLOY, SYNTHETIC_DIAMOND, PLASTIC, SULFURIC_ACID, GRAPHENE, CARBON_NANOTUBE, TITANIUM_CRYSTAL, MICROCRYSTALLINE_COMPONENT, PROCESSOR,
+                PARTICLE_BROADBAND, THRUSTER, REINFORCED_THRUSTER, ELECTROMAGNETIC_TURBINE, SUPER_MAGNETIC_RING, PARTICLE_CONTAINER, LOGISTICS_DRONE, LOGISTICS_VESSEL, STRUCTURE_MATRIX, INFORMATION_MATRIX));
         return List.copyOf(order);
     }
 

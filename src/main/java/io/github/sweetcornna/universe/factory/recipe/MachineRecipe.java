@@ -26,7 +26,7 @@ import net.neoforged.neoforge.common.crafting.SizedIngredient;
  * 设备的配方（ADR-0011）：几种带数量的原料、一到两种产物、标准时间（刻，速度 1 的设备做一次要多久），
  * 以及可选的解锁科技。设备上由玩家选定配方，第 i 个原料格只放第 i 种原料，所以不需要按输入去找配方。
  *
- * <p>三种类型共用这个类：冶炼（电弧熔炉）、制造（制造台）、精炼（原油精炼厂）。
+ * <p>几种类型共用这个类：冶炼（电弧熔炉、位面熔炉）、制造（制造台）、精炼（原油精炼厂）、化工（化工厂，ADR-0015）。
  */
 public final class MachineRecipe implements Recipe<MachineRecipe.Input> {
     /** 原料、产物最多几种，和设备的格子数一致。 */
@@ -129,6 +129,7 @@ public final class MachineRecipe implements Recipe<MachineRecipe.Input> {
             case SMELTING -> UniverseRecipeTypes.SMELTING_SERIALIZER.get();
             case ASSEMBLING -> UniverseRecipeTypes.ASSEMBLING_SERIALIZER.get();
             case REFINING -> UniverseRecipeTypes.REFINING_SERIALIZER.get();
+            case CHEMICAL -> UniverseRecipeTypes.CHEMICAL_SERIALIZER.get();
         };
     }
 
@@ -151,13 +152,15 @@ public final class MachineRecipe implements Recipe<MachineRecipe.Input> {
     public enum Kind {
         SMELTING,
         ASSEMBLING,
-        REFINING;
+        REFINING,
+        CHEMICAL;
 
         public RecipeType<MachineRecipe> type() {
             return switch (this) {
                 case SMELTING -> UniverseRecipeTypes.SMELTING.get();
                 case ASSEMBLING -> UniverseRecipeTypes.ASSEMBLING.get();
                 case REFINING -> UniverseRecipeTypes.REFINING.get();
+                case CHEMICAL -> UniverseRecipeTypes.CHEMICAL.get();
             };
         }
     }

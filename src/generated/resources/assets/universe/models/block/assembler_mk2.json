@@ -1,0 +1,9 @@
+{
+  "parent": "minecraft:block/orientable_with_bottom",
+  "textures": {
+    "bottom": "universe:block/machine_casing_top",
+    "front": "universe:block/assembler_mk2_front",
+    "side": "universe:block/assembler_mk2_side",
+    "top": "universe:block/assembler_mk2_top"
+  }
+}

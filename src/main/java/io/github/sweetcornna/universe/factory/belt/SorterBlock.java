@@ -2,6 +2,7 @@ package io.github.sweetcornna.universe.factory.belt;
 
 import org.jspecify.annotations.Nullable;
 
+import io.github.sweetcornna.universe.core.factory.SorterTier;
 import io.github.sweetcornna.universe.registry.UniverseBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -37,9 +38,16 @@ public class SorterBlock extends BaseEntityBlock {
     public static final EnumProperty<Direction> FACING = HorizontalDirectionalBlock.FACING;
     private static final VoxelShape SHAPE = Shapes.or(Block.box(2, 0, 2, 14, 4, 14), Block.box(5, 4, 5, 11, 11, 11));
 
-    public SorterBlock(Properties properties) {
+    private final SorterTier tier;
+
+    public SorterBlock(Properties properties, SorterTier tier) {
         super(properties);
+        this.tier = tier;
         this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH));
+    }
+
+    public SorterTier tier() {
+        return this.tier;
     }
 
     @Override
@@ -79,7 +87,8 @@ public class SorterBlock extends BaseEntityBlock {
         }
         // 拿着物流方块照常放置
         if (stack.getItem() instanceof BlockItem blockItem
-                && (blockItem.getBlock() instanceof SorterBlock || blockItem.getBlock() instanceof BeltBlock)) {
+                && (blockItem.getBlock() instanceof SorterBlock || blockItem.getBlock() instanceof BeltBlock
+                        || blockItem.getBlock() instanceof SplitterBlock)) {
             return InteractionResult.PASS;
         }
         if (!level.isClientSide() && level.getBlockEntity(pos) instanceof SorterBlockEntity sorter) {

@@ -1,0 +1,15 @@
+{
+  "type": "universe:research_shaped",
+  "key": {
+    "M": "universe:electric_motor",
+    "S": "universe:sorter"
+  },
+  "pattern": [
+    "SMS"
+  ],
+  "research": "improved_logistics",
+  "result": {
+    "count": 2,
+    "id": "universe:sorter_mk2"
+  }
+}

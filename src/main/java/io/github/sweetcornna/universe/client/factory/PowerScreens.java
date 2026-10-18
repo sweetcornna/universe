@@ -2,16 +2,19 @@ package io.github.sweetcornna.universe.client.factory;
 
 import java.util.Locale;
 
+import io.github.sweetcornna.universe.core.power.Solar;
 import io.github.sweetcornna.universe.factory.MachineMenu;
 import io.github.sweetcornna.universe.factory.power.AccumulatorBlockEntity;
+import io.github.sweetcornna.universe.factory.power.SolarPanelBlockEntity;
 import io.github.sweetcornna.universe.factory.power.TeslaTowerBlockEntity;
 import io.github.sweetcornna.universe.factory.power.WindTurbineBlockEntity;
 import io.github.sweetcornna.universe.factory.power.ThermalPlantBlockEntity;
+import io.github.sweetcornna.universe.world.space.SpaceDimensions;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 
-/** 电网设备的界面：感应塔、风力涡轮机、火力发电厂、蓄电器。 */
+/** 电网设备的界面：感应塔、风力涡轮机、太阳能板、火力发电厂、蓄电器。 */
 public final class PowerScreens {
     private PowerScreens() {
     }
@@ -58,6 +61,43 @@ public final class PowerScreens {
             int barX = 8 + this.font.width(label) + 6;
             bar(graphics, barX, 37, 168 - barX, 6, wind / 2F, wind > 0 ? ACCENT : BAD);
             graphics.text(this.font, Component.translatable("gui.universe.wind_turbine.hint"), 8, 52, DIM, false);
+        }
+    }
+
+    /** 太阳能板：发电量、这颗星球的光照比例、太阳高度，以及为什么发不出电。 */
+    public static final class SolarPanel extends MachineScreen {
+        public SolarPanel(MachineMenu menu, Inventory inventory, Component title) {
+            super(menu, inventory, title);
+        }
+
+        @Override
+        protected void extractInfo(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+            this.powerLine(graphics, 8, 22);
+            float ratio = this.menu.data(SolarPanelBlockEntity.RATIO) / 100F;
+            Component ratioLabel = Component.translatable("gui.universe.solar_panel.ratio", String.format(Locale.ROOT, "%.2f", ratio));
+            graphics.text(this.font, ratioLabel, 8, 36, TEXT, false);
+            int sun = this.menu.data(SolarPanelBlockEntity.SUN);
+            Component sunLabel = Component.translatable("gui.universe.solar_panel.sun", sun);
+            graphics.text(this.font, sunLabel, 8, 50, TEXT, false);
+            int barX = 8 + Math.max(this.font.width(ratioLabel), this.font.width(sunLabel)) + 6;
+            bar(graphics, barX, 37, 168 - barX, 6, ratio / (float) Solar.MAX_RATIO, ratio > 0 ? ACCENT : BAD);
+            bar(graphics, barX, 51, 168 - barX, 6, sun / 100F, 0xFFF2C94C);
+            int weather = this.menu.data(SolarPanelBlockEntity.WEATHER);
+            boolean space = this.minecraft != null && this.minecraft.level != null
+                    && SpaceDimensions.system(this.minecraft.level.dimension()).isPresent();
+            if (this.menu.data(SolarPanelBlockEntity.SKY) == 0) {
+                graphics.text(this.font, Component.translatable("gui.universe.solar_panel.no_sky"), 8, 64, BAD, false);
+            } else if (ratio <= 0) {
+                graphics.text(this.font, Component.translatable("gui.universe.solar_panel.no_sun"), 8, 64, BAD, false);
+            } else if (weather < 100) {
+                graphics.text(this.font, Component.translatable("gui.universe.solar_panel.rain", weather), 8, 64, WARN, false);
+            } else if (space) {
+                graphics.text(this.font, Component.translatable("gui.universe.solar_panel.space"), 8, 64, DIM, false);
+            } else if (sun == 0) {
+                graphics.text(this.font, Component.translatable("gui.universe.solar_panel.night"), 8, 64, DIM, false);
+            } else {
+                graphics.text(this.font, Component.translatable("gui.universe.solar_panel.hint"), 8, 64, DIM, false);
+            }
         }
     }
 

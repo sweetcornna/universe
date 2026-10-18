@@ -7,6 +7,7 @@ import io.github.sweetcornna.universe.factory.MachineMenu;
 import io.github.sweetcornna.universe.registry.UniverseBlockEntities;
 import io.github.sweetcornna.universe.registry.UniverseItems;
 import io.github.sweetcornna.universe.registry.UniverseMenus;
+import io.github.sweetcornna.universe.stats.ProductionLog;
 import io.github.sweetcornna.universe.world.planet.Planets;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -72,6 +73,7 @@ public class WaterPumpBlockEntity extends MachineBlockEntity {
         this.progress += rate;
         if (this.progress >= TICKS_PER_ITEM) {
             this.progress -= TICKS_PER_ITEM;
+            ProductionLog.produced(this.level, water.getItem(), 1);
             this.addOutput(OUTPUT, water);
         }
         this.setChanged();

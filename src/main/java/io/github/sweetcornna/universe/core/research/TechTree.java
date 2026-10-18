@@ -17,10 +17,15 @@ public final class TechTree {
     private static final String NS = "universe:";
     private static final String BLUE = NS + "electromagnetic_matrix";
     private static final String RED = NS + "energy_matrix";
+    private static final String YELLOW = NS + "structure_matrix";
+    private static final String PURPLE = NS + "information_matrix";
     /** 研究站认的矩阵，顺序就是研究站格子的顺序。以后加新的矩阵只能往后加，免得存档里的格子对不上。 */
-    public static final List<String> MATRICES = List.of(BLUE, RED);
+    public static final List<String> MATRICES = List.of(BLUE, RED, YELLOW, PURPLE);
 
-    /** M3 的科技：电磁学阶段上交物品，之后用蓝矩阵、再用蓝红两种矩阵研究；M4 加了上交勘探数据的科技（ADR-0012）。 */
+    /**
+     * M3 的科技：电磁学阶段上交物品，之后用蓝矩阵、再用蓝红两种矩阵研究；M4 加了上交勘探数据的科技（ADR-0012）；
+     * M5 加了物流和中期工业（ADR-0015）：蓝红阶段做到结构矩阵，蓝红黄做到信息矩阵，四种矩阵研究星际物流。
+     */
     public static final TechTree DEFAULT = new TechTree(List.of(
             Tech.handIn("electromagnetism", List.of(),
                     List.of(cost("magnetic_coil", 10), cost("circuit_board", 10)),
@@ -56,7 +61,40 @@ public final class TechTree {
             Tech.lab("warp_drive", List.of("energy_storage", "x_ray_cracking", "interstellar_survey"), List.of(BLUE, RED), 60,
                     items("warp_drive", "space_warper")),
             // 勘探数据校准了星图，空间翘曲器的配方产量翻倍
-            Tech.handIn("warp_calibration", List.of("warp_drive"), List.of(cost("survey_data", 30)), items("space_warper"))));
+            Tech.handIn("warp_calibration", List.of("warp_drive"), List.of(cost("survey_data", 30)), items("space_warper")),
+            // ---- M5：物流和中期工业（ADR-0015）
+            Tech.lab("magnetic_levitation", List.of("energy_matrix"), List.of(BLUE, RED), 40,
+                    items("electromagnetic_turbine", "super_magnetic_ring")),
+            Tech.lab("improved_logistics", List.of("magnetic_levitation"), List.of(BLUE, RED), 40,
+                    items("conveyor_belt_mk2", "sorter_mk2", "splitter", "storage_tank")),
+            Tech.lab("basic_chemical", List.of("energy_matrix"), List.of(BLUE, RED), 50,
+                    items("chemical_plant", "plastic", "sulfuric_acid", "organic_crystal")),
+            Tech.lab("semiconductor", List.of("energy_matrix"), List.of(BLUE, RED), 50, items("crystal_silicon", "microcrystalline_component")),
+            Tech.lab("thruster", List.of("energy_matrix", "steel_smelting"), List.of(BLUE, RED), 40, items("thruster")),
+            Tech.lab("solar_power", List.of("semiconductor"), List.of(BLUE, RED), 40, items("solar_panel")),
+            Tech.lab("processor", List.of("semiconductor"), List.of(BLUE, RED), 60, items("processor")),
+            Tech.lab("high_strength_materials", List.of("basic_chemical"), List.of(BLUE, RED), 60, items("graphene", "carbon_nanotube")),
+            Tech.lab("deuterium_fractionation", List.of("basic_chemical"), List.of(BLUE, RED), 50, items("fractionator", "deuterium")),
+            Tech.lab("improved_assembling", List.of("processor", "high_strength_materials"), List.of(BLUE, RED), 60, items("assembler_mk2")),
+            Tech.lab("planetary_logistics", List.of("improved_logistics", "processor", "thruster", "high_strength_materials"),
+                    List.of(BLUE, RED), 80, items("planetary_logistics_station", "logistics_drone", "particle_container")),
+            Tech.lab("structure_matrix", List.of("high_strength_materials", "processor"), List.of(BLUE, RED), 80,
+                    items("structure_matrix", "synthetic_diamond", "titanium_crystal")),
+            Tech.lab("efficient_logistics", List.of("planetary_logistics", "structure_matrix"), List.of(BLUE, RED, YELLOW), 80,
+                    items("conveyor_belt_mk3", "sorter_mk3")),
+            Tech.lab("titanium_alloy", List.of("structure_matrix"), List.of(BLUE, RED, YELLOW), 80, items("titanium_alloy")),
+            Tech.lab("plane_smelting", List.of("titanium_alloy"), List.of(BLUE, RED, YELLOW), 100, items("plane_smelter")),
+            Tech.lab("information_matrix", List.of("titanium_alloy"), List.of(BLUE, RED, YELLOW), 100,
+                    items("information_matrix", "particle_broadband")),
+            Tech.lab("interstellar_logistics", List.of("efficient_logistics", "information_matrix", "warp_drive"),
+                    List.of(BLUE, RED, YELLOW, PURPLE), 150,
+                    items("interstellar_logistics_station", "logistics_vessel", "reinforced_thruster", "factory_anchor")),
+            Tech.lab("orbital_collection", List.of("interstellar_logistics", "deuterium_fractionation"), List.of(BLUE, RED, YELLOW, PURPLE), 150,
+                    items("orbital_collector")),
+            Tech.lab("advanced_mining", List.of("information_matrix"), List.of(BLUE, RED, YELLOW, PURPLE), 120,
+                    items("advanced_mining_machine")),
+            Tech.lab("high_speed_assembling", List.of("improved_assembling", "information_matrix"), List.of(BLUE, RED, YELLOW, PURPLE), 120,
+                    items("assembler_mk3"))));
 
     private final List<Tech> techs;
     private final Map<String, Tech> byId;

@@ -1,0 +1,24 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 5,
+      "ingredient": "minecraft:iron_ingot"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:processor"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:thruster"
+    }
+  ],
+  "research": "planetary_logistics",
+  "results": [
+    {
+      "id": "universe:logistics_drone"
+    }
+  ],
+  "time": 80
+}

@@ -1,0 +1,19 @@
+{
+  "type": "universe:research_shaped",
+  "category": "redstone",
+  "key": {
+    "A": "universe:arc_smelter",
+    "C": "universe:carbon_nanotube",
+    "P": "universe:processor",
+    "T": "universe:titanium_alloy"
+  },
+  "pattern": [
+    "TCT",
+    "PAP",
+    "TCT"
+  ],
+  "research": "plane_smelting",
+  "result": {
+    "id": "universe:plane_smelter"
+  }
+}

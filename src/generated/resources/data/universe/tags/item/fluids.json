@@ -1,0 +1,10 @@
+{
+  "values": [
+    "universe:water",
+    "universe:crude_oil",
+    "universe:refined_oil",
+    "universe:hydrogen",
+    "universe:deuterium",
+    "universe:sulfuric_acid"
+  ]
+}

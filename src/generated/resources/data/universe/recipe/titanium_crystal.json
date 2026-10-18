@@ -1,0 +1,15 @@
+{
+  "type": "universe:research_shaped",
+  "key": {
+    "O": "universe:organic_crystal",
+    "T": "universe:titanium_ingot"
+  },
+  "pattern": [
+    "TOT",
+    " T "
+  ],
+  "research": "structure_matrix",
+  "result": {
+    "id": "universe:titanium_crystal"
+  }
+}

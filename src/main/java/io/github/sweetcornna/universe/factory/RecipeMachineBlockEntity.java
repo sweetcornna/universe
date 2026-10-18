@@ -8,6 +8,7 @@ import org.jspecify.annotations.Nullable;
 import io.github.sweetcornna.universe.factory.recipe.MachineRecipe;
 import io.github.sweetcornna.universe.factory.recipe.MachineRecipes;
 import io.github.sweetcornna.universe.factory.research.Research;
+import io.github.sweetcornna.universe.stats.ProductionLog;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.Registries;
@@ -212,6 +213,7 @@ public class RecipeMachineBlockEntity extends MachineBlockEntity implements Mach
     private void craft(MachineRecipe recipe) {
         List<SizedIngredient> ingredients = recipe.ingredients();
         for (int i = 0; i < ingredients.size(); i++) {
+            ProductionLog.consumed(this.level, this.getItem(i).getItem(), ingredients.get(i).count());
             this.getItem(i).shrink(ingredients.get(i).count());
         }
         List<ItemStackTemplate> results = recipe.results();
@@ -219,6 +221,7 @@ public class RecipeMachineBlockEntity extends MachineBlockEntity implements Mach
             int slot = this.spec.inputs() + i;
             ItemStack current = this.getItem(slot);
             ItemStack result = results.get(i).create();
+            ProductionLog.produced(this.level, result);
             if (current.isEmpty()) {
                 this.setItem(slot, result);
             } else {

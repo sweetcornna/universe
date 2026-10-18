@@ -21,6 +21,9 @@ public final class UniverseKeys {
     /** 技术配置：外骨骼和多功能工具的模块、货舱（默认 U）。 */
     public static final KeyMapping TECH = new KeyMapping("key.universe.tech", InputConstants.Type.KEYBOARD, InputConstants.KEY_U, CATEGORY);
 
+    /** 生产统计面板（默认 O）。 */
+    public static final KeyMapping STATS = new KeyMapping("key.universe.stats", InputConstants.Type.KEYBOARD, InputConstants.KEY_O, CATEGORY);
+
     /** 多功能工具在采矿和战斗模式之间切换（默认 G）。 */
     public static final KeyMapping TOOL_MODE = new KeyMapping("key.universe.tool_mode", InputConstants.Type.KEYBOARD, InputConstants.KEY_G, CATEGORY);
 
@@ -35,6 +38,7 @@ public final class UniverseKeys {
             event.register(ANALYZE);
             event.register(DISCOVERY_LOG);
             event.register(TECH);
+            event.register(STATS);
             event.register(TOOL_MODE);
         });
     }

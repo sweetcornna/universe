@@ -45,6 +45,7 @@ public final class UniverseDataGen {
         event.createProvider(UniverseLanguageProvider.Chinese::new);
         event.createProvider(UniverseLanguageProvider.English::new);
         event.createProvider(UniverseBlockTagsProvider::new);
+        event.createProvider(UniverseItemTagsProvider::new);
         event.createProvider(UniverseDamageTypeTagsProvider::new);
         event.createProvider(PlanetEnvironmentProvider::new);
     }

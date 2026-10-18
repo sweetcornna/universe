@@ -94,7 +94,12 @@ final class UniverseBlockTagsProvider extends BlockTagsProvider {
         for (var block : List.of(UniverseBlocks.TESLA_TOWER, UniverseBlocks.WIND_TURBINE, UniverseBlocks.THERMAL_PLANT,
                 UniverseBlocks.ACCUMULATOR, UniverseBlocks.ARC_SMELTER, UniverseBlocks.ASSEMBLER, UniverseBlocks.OIL_REFINERY,
                 UniverseBlocks.MINING_MACHINE, UniverseBlocks.WATER_PUMP, UniverseBlocks.OIL_EXTRACTOR, UniverseBlocks.CONVEYOR_BELT,
-                UniverseBlocks.SORTER, UniverseBlocks.STORAGE_DEPOT, UniverseBlocks.MATRIX_LAB)) {
+                UniverseBlocks.SORTER, UniverseBlocks.STORAGE_DEPOT, UniverseBlocks.MATRIX_LAB, UniverseBlocks.CONVEYOR_BELT_MK2,
+                UniverseBlocks.CONVEYOR_BELT_MK3, UniverseBlocks.SORTER_MK2, UniverseBlocks.SORTER_MK3, UniverseBlocks.SPLITTER,
+                UniverseBlocks.STORAGE_TANK, UniverseBlocks.ASSEMBLER_MK2, UniverseBlocks.ASSEMBLER_MK3, UniverseBlocks.PLANE_SMELTER,
+                UniverseBlocks.CHEMICAL_PLANT, UniverseBlocks.FRACTIONATOR, UniverseBlocks.ADVANCED_MINING_MACHINE,
+                UniverseBlocks.FACTORY_ANCHOR, UniverseBlocks.PLANETARY_LOGISTICS_STATION, UniverseBlocks.INTERSTELLAR_LOGISTICS_STATION,
+                UniverseBlocks.ORBITAL_COLLECTOR, UniverseBlocks.SOLAR_PANEL)) {
             this.tag(BlockTags.MINEABLE_WITH_PICKAXE).add(block.key());
             this.tag(ShipParts.EXCLUDED).add(block.key());
         }

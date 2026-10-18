@@ -1,5 +1,7 @@
 package io.github.sweetcornna.universe.client.factory;
 
+import io.github.sweetcornna.universe.client.logistics.LogisticsClient;
+import io.github.sweetcornna.universe.client.logistics.StationScreen;
 import io.github.sweetcornna.universe.factory.MachineMenu;
 import io.github.sweetcornna.universe.factory.RecipeMachineBlockEntity;
 import io.github.sweetcornna.universe.factory.RecipeMachines;
@@ -19,29 +21,42 @@ public final class FactoryClient {
         modBus.addListener(RegisterMenuScreensEvent.class, FactoryClient::registerScreens);
         modBus.addListener(EntityRenderersEvent.RegisterRenderers.class, event -> {
             event.registerBlockEntityRenderer(UniverseBlockEntities.WIND_TURBINE.get(), WindTurbineRenderer::new);
+            event.registerBlockEntityRenderer(UniverseBlockEntities.SOLAR_PANEL.get(), SolarPanelRenderer::new);
             event.registerBlockEntityRenderer(UniverseBlockEntities.CONVEYOR_BELT.get(), BeltRenderer::new);
             event.registerBlockEntityRenderer(UniverseBlockEntities.SORTER.get(), SorterRenderer::new);
             event.registerBlockEntityRenderer(UniverseBlockEntities.MATRIX_LAB.get(), MatrixLabRenderer::new);
+            event.registerBlockEntityRenderer(UniverseBlockEntities.STORAGE_TANK.get(), StorageTankRenderer::new);
         });
         modBus.addListener(ModelEvent.RegisterStandalone.class, WindTurbineRenderer::registerModels);
+        modBus.addListener(ModelEvent.RegisterStandalone.class, SolarPanelRenderer::registerModels);
         modBus.addListener(ModelEvent.RegisterStandalone.class, SorterRenderer::registerModels);
         modBus.addListener(ModelEvent.RegisterStandalone.class, MatrixLabRenderer::registerModels);
         ClientResearch.registerEvents(modBus, gameBus);
+        LogisticsClient.registerEvents(modBus, gameBus);
         BeltClient.registerEvents(modBus);
     }
 
     private static void registerScreens(RegisterMenuScreensEvent event) {
         event.register(UniverseMenus.TESLA_TOWER.menuType(), PowerScreens.TeslaTower::new);
         event.register(UniverseMenus.WIND_TURBINE.menuType(), PowerScreens.WindTurbine::new);
+        event.register(UniverseMenus.SOLAR_PANEL.menuType(), PowerScreens.SolarPanel::new);
         event.register(UniverseMenus.THERMAL_PLANT.menuType(), PowerScreens.ThermalPlant::new);
         event.register(UniverseMenus.ACCUMULATOR.menuType(), PowerScreens.Accumulator::new);
         recipeMachine(event, RecipeMachines.ARC_SMELTER);
         recipeMachine(event, RecipeMachines.ASSEMBLER);
         recipeMachine(event, RecipeMachines.OIL_REFINERY);
+        recipeMachine(event, RecipeMachines.ASSEMBLER_MK2);
+        recipeMachine(event, RecipeMachines.ASSEMBLER_MK3);
+        recipeMachine(event, RecipeMachines.PLANE_SMELTER);
+        recipeMachine(event, RecipeMachines.CHEMICAL_PLANT);
+        event.register(UniverseMenus.FRACTIONATOR.menuType(), ResourceScreens.Fractionator::new);
         event.register(UniverseMenus.MINING_MACHINE.menuType(), ResourceScreens.MiningMachine::new);
         event.register(UniverseMenus.WATER_PUMP.menuType(), ResourceScreens.WaterPump::new);
         event.register(UniverseMenus.OIL_EXTRACTOR.menuType(), ResourceScreens.OilExtractor::new);
         event.register(UniverseMenus.STORAGE_DEPOT.menuType(), StorageDepotScreen::new);
+        event.register(UniverseMenus.PLANETARY_LOGISTICS_STATION.menuType(), StationScreen::new);
+        event.register(UniverseMenus.INTERSTELLAR_LOGISTICS_STATION.menuType(), StationScreen::new);
+        event.register(UniverseMenus.ORBITAL_COLLECTOR.menuType(), StationScreen::new);
         event.register(UniverseMenus.MATRIX_LAB.menuType(), MatrixLabScreen::new);
     }
 

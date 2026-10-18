@@ -1,0 +1,28 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 8,
+      "ingredient": "universe:steel"
+    },
+    {
+      "count": 4,
+      "ingredient": "minecraft:stone_bricks"
+    },
+    {
+      "count": 4,
+      "ingredient": "minecraft:glass"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:processor"
+    }
+  ],
+  "research": "deuterium_fractionation",
+  "results": [
+    {
+      "id": "universe:fractionator"
+    }
+  ],
+  "time": 60
+}

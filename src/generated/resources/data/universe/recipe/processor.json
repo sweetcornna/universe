@@ -1,0 +1,15 @@
+{
+  "type": "universe:research_shaped",
+  "key": {
+    "B": "universe:circuit_board",
+    "M": "universe:microcrystalline_component"
+  },
+  "pattern": [
+    "BM",
+    "MB"
+  ],
+  "research": "processor",
+  "result": {
+    "id": "universe:processor"
+  }
+}

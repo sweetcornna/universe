@@ -1,0 +1,24 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:assembler"
+    },
+    {
+      "count": 8,
+      "ingredient": "universe:graphene"
+    },
+    {
+      "count": 4,
+      "ingredient": "universe:processor"
+    }
+  ],
+  "research": "improved_assembling",
+  "results": [
+    {
+      "id": "universe:assembler_mk2"
+    }
+  ],
+  "time": 20
+}

@@ -1,0 +1,18 @@
+{
+  "type": "universe:research_shaped",
+  "key": {
+    "C": "universe:particle_container",
+    "P": "universe:processor",
+    "S": "universe:steel",
+    "T": "universe:titanium_ingot"
+  },
+  "pattern": [
+    "SPS",
+    "TCT",
+    "SPS"
+  ],
+  "research": "planetary_logistics",
+  "result": {
+    "id": "universe:planetary_logistics_station"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:synthetic_diamond"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:titanium_crystal"
+    }
+  ],
+  "research": "structure_matrix",
+  "results": [
+    {
+      "id": "universe:structure_matrix"
+    }
+  ],
+  "time": 160
+}

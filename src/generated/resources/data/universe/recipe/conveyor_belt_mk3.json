@@ -1,0 +1,17 @@
+{
+  "type": "universe:research_shaped",
+  "key": {
+    "B": "universe:conveyor_belt_mk2",
+    "G": "universe:graphene",
+    "R": "universe:super_magnetic_ring"
+  },
+  "pattern": [
+    "BBB",
+    "RG "
+  ],
+  "research": "efficient_logistics",
+  "result": {
+    "count": 3,
+    "id": "universe:conveyor_belt_mk3"
+  }
+}

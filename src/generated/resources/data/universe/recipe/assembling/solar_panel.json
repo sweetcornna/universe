@@ -1,0 +1,24 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 10,
+      "ingredient": "minecraft:copper_ingot"
+    },
+    {
+      "count": 10,
+      "ingredient": "universe:silicon"
+    },
+    {
+      "count": 15,
+      "ingredient": "universe:circuit_board"
+    }
+  ],
+  "research": "solar_power",
+  "results": [
+    {
+      "id": "universe:solar_panel"
+    }
+  ],
+  "time": 120
+}

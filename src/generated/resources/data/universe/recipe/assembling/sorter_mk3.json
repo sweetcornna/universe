@@ -1,0 +1,21 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 2,
+      "ingredient": "universe:sorter_mk2"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:electromagnetic_turbine"
+    }
+  ],
+  "research": "efficient_logistics",
+  "results": [
+    {
+      "count": 2,
+      "id": "universe:sorter_mk3"
+    }
+  ],
+  "time": 20
+}

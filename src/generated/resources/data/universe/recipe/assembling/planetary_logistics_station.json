@@ -1,0 +1,28 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 10,
+      "ingredient": "universe:steel"
+    },
+    {
+      "count": 10,
+      "ingredient": "universe:titanium_ingot"
+    },
+    {
+      "count": 10,
+      "ingredient": "universe:processor"
+    },
+    {
+      "count": 5,
+      "ingredient": "universe:particle_container"
+    }
+  ],
+  "research": "planetary_logistics",
+  "results": [
+    {
+      "id": "universe:planetary_logistics_station"
+    }
+  ],
+  "time": 400
+}

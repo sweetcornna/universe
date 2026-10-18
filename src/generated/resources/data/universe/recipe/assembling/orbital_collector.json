@@ -1,0 +1,28 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:interstellar_logistics_station"
+    },
+    {
+      "count": 12,
+      "ingredient": "universe:super_magnetic_ring"
+    },
+    {
+      "count": 5,
+      "ingredient": "universe:reinforced_thruster"
+    },
+    {
+      "count": 5,
+      "ingredient": "universe:accumulator"
+    }
+  ],
+  "research": "orbital_collection",
+  "results": [
+    {
+      "id": "universe:orbital_collector"
+    }
+  ],
+  "time": 600
+}

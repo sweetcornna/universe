@@ -275,6 +275,9 @@ io.github.sweetcornna.universe
 | `ParticleTypes.FLASH` 现在是 `ParticleType<ColorParticleOption>`，要给颜色；一部分 `SoundEvents` 常量是 `Holder<SoundEvent>`（`GENERIC_EXPLODE`、`CROSSBOW_LOADING_END`、`NOTE_BLOCK_*`、`UI_BUTTON_CLICK` 等），`level.playSound` 有接 `Holder` 的重载，`Entity#playSound` 要 `.value()` | 已确认 |
 | 物品提示：`Item#appendHoverText(ItemStack, TooltipContext, TooltipDisplay, Consumer<Component>, TooltipFlag)`，往 `Consumer` 里加行；`Component.keybind("key.…")` 显示玩家当前绑定的按键 | 已确认，多功能工具在用 |
 | 界面里换行的文字：`graphics.textWithWordWrap(font, 文字, x, y, 宽, 颜色, 阴影)` 只管画；要按行数排下面的控件，用 `font.split(文字, 宽).size() * font.lineHeight` 算高度（中英文行数不同） | 已确认，信号增强器界面踩过 |
+| 原版漏斗（`HopperBlockEntity.getContainerOrHandlerAt`）只要方块实体是 `Container` 就只走 `Container` 的接口，不查物品能力；同时实现两者的方块实体，`Container` 那一面也得能正常进出货 | 已确认，物流站踩过 |
+| 太阳角度 `EnvironmentAttributes.SUN_ANGLE` 是按位置插值的属性：`environmentAttributes().getDimensionValue(...)` 直接抛异常，要用 `getValue(属性, BlockPos)`。单位是度，0 是正午、180 是午夜，正值时太阳在西边（原版天空先绕 Y 转 -90°，再绕 X 转这个角） | 已确认，太阳能板踩过（崩溃） |
+| 在世界里画不是实体的东西：`ExtractLevelRenderStateEvent` 里用 `state.setRenderData(ContextKey, 数据)` 记下要画的（坐标减去 `event.getCamera().position()`），`SubmitCustomGeometryEvent` 里取出来提交；插值的时间用 `LevelRenderState.gameTime + worldPartialTicks` | 已确认，物流载具在用 |
 
 ## 5. 性能预算（目标）
 

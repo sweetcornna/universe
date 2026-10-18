@@ -1,0 +1,19 @@
+{
+  "type": "universe:research_shaped",
+  "category": "redstone",
+  "key": {
+    "A": "universe:assembler_mk2",
+    "B": "universe:particle_broadband",
+    "P": "universe:processor",
+    "T": "universe:titanium_alloy"
+  },
+  "pattern": [
+    "PBP",
+    "TAT",
+    "PBP"
+  ],
+  "research": "high_speed_assembling",
+  "result": {
+    "id": "universe:assembler_mk3"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:arc_smelter"
+    },
+    {
+      "count": 4,
+      "ingredient": "universe:titanium_alloy"
+    },
+    {
+      "count": 4,
+      "ingredient": "universe:processor"
+    },
+    {
+      "count": 4,
+      "ingredient": "universe:carbon_nanotube"
+    }
+  ],
+  "research": "plane_smelting",
+  "results": [
+    {
+      "id": "universe:plane_smelter"
+    }
+  ],
+  "time": 100
+}

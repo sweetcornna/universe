@@ -1,0 +1,19 @@
+{
+  "type": "universe:research_shaped",
+  "category": "redstone",
+  "key": {
+    "B": "universe:circuit_board",
+    "G": "minecraft:glass",
+    "K": "minecraft:stone_bricks",
+    "S": "universe:steel"
+  },
+  "pattern": [
+    "SGS",
+    "KBK",
+    "SGS"
+  ],
+  "research": "basic_chemical",
+  "result": {
+    "id": "universe:chemical_plant"
+  }
+}

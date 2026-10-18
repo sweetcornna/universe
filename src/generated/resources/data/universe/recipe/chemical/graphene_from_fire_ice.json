@@ -1,0 +1,20 @@
+{
+  "type": "universe:chemical",
+  "ingredients": [
+    {
+      "count": 2,
+      "ingredient": "universe:fire_ice"
+    }
+  ],
+  "research": "high_strength_materials",
+  "results": [
+    {
+      "count": 2,
+      "id": "universe:graphene"
+    },
+    {
+      "id": "universe:hydrogen"
+    }
+  ],
+  "time": 40
+}

@@ -1,0 +1,16 @@
+{
+  "type": "universe:research_shaped",
+  "key": {
+    "B": "universe:conveyor_belt",
+    "T": "universe:electromagnetic_turbine"
+  },
+  "pattern": [
+    "BBB",
+    " T "
+  ],
+  "research": "improved_logistics",
+  "result": {
+    "count": 3,
+    "id": "universe:conveyor_belt_mk2"
+  }
+}

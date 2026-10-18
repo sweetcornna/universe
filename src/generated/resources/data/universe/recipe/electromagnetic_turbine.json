@@ -1,0 +1,15 @@
+{
+  "type": "universe:research_shaped",
+  "key": {
+    "C": "universe:magnetic_coil",
+    "M": "universe:electric_motor"
+  },
+  "pattern": [
+    "MC",
+    "CM"
+  ],
+  "research": "magnetic_levitation",
+  "result": {
+    "id": "universe:electromagnetic_turbine"
+  }
+}

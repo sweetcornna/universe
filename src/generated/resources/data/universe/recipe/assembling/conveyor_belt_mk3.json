@@ -1,0 +1,25 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 3,
+      "ingredient": "universe:conveyor_belt_mk2"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:super_magnetic_ring"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:graphene"
+    }
+  ],
+  "research": "efficient_logistics",
+  "results": [
+    {
+      "count": 3,
+      "id": "universe:conveyor_belt_mk3"
+    }
+  ],
+  "time": 20
+}

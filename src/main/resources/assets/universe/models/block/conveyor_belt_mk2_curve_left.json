@@ -1,0 +1,10 @@
+{
+  "parent": "universe:block/conveyor_belt_curve_left",
+  "textures": {
+    "particle": "universe:block/conveyor_belt_mk2_rail",
+    "surface": "universe:block/conveyor_belt_mk2_surface",
+    "curve_left": "universe:block/conveyor_belt_mk2_curve_left",
+    "curve_right": "universe:block/conveyor_belt_mk2_curve_right",
+    "rail": "universe:block/conveyor_belt_mk2_rail"
+  }
+}

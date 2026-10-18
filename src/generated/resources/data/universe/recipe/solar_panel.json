@@ -1,0 +1,19 @@
+{
+  "type": "universe:research_shaped",
+  "category": "redstone",
+  "key": {
+    "B": "universe:circuit_board",
+    "C": "minecraft:copper_ingot",
+    "I": "minecraft:iron_ingot",
+    "S": "universe:silicon"
+  },
+  "pattern": [
+    "SSS",
+    "BCB",
+    "CIC"
+  ],
+  "research": "solar_power",
+  "result": {
+    "id": "universe:solar_panel"
+  }
+}

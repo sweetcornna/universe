@@ -5,19 +5,25 @@ import java.util.function.Supplier;
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.block.poi.SupplyCrateBlockEntity;
 import io.github.sweetcornna.universe.block.ship.FuelTankBlockEntity;
+import io.github.sweetcornna.universe.factory.FactoryAnchorBlockEntity;
+import io.github.sweetcornna.universe.factory.FractionatorBlockEntity;
 import io.github.sweetcornna.universe.factory.RecipeMachineBlockEntity;
 import io.github.sweetcornna.universe.factory.RecipeMachines;
 import io.github.sweetcornna.universe.factory.belt.BeltBlockEntity;
 import io.github.sweetcornna.universe.factory.belt.SorterBlockEntity;
+import io.github.sweetcornna.universe.factory.belt.SplitterBlockEntity;
 import io.github.sweetcornna.universe.factory.belt.StorageDepotBlockEntity;
+import io.github.sweetcornna.universe.factory.belt.StorageTankBlockEntity;
+import io.github.sweetcornna.universe.factory.power.AccumulatorBlockEntity;
+import io.github.sweetcornna.universe.factory.power.SolarPanelBlockEntity;
+import io.github.sweetcornna.universe.factory.power.TeslaTowerBlockEntity;
+import io.github.sweetcornna.universe.factory.power.ThermalPlantBlockEntity;
+import io.github.sweetcornna.universe.factory.power.WindTurbineBlockEntity;
 import io.github.sweetcornna.universe.factory.research.MatrixLabBlockEntity;
 import io.github.sweetcornna.universe.factory.resource.MiningMachineBlockEntity;
 import io.github.sweetcornna.universe.factory.resource.OilExtractorBlockEntity;
 import io.github.sweetcornna.universe.factory.resource.WaterPumpBlockEntity;
-import io.github.sweetcornna.universe.factory.power.AccumulatorBlockEntity;
-import io.github.sweetcornna.universe.factory.power.TeslaTowerBlockEntity;
-import io.github.sweetcornna.universe.factory.power.ThermalPlantBlockEntity;
-import io.github.sweetcornna.universe.factory.power.WindTurbineBlockEntity;
+import io.github.sweetcornna.universe.logistics.StationBlockEntity;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -39,6 +45,8 @@ public final class UniverseBlockEntities {
             () -> new BlockEntityType<>(TeslaTowerBlockEntity::new, UniverseBlocks.TESLA_TOWER.get()));
     public static final Supplier<BlockEntityType<WindTurbineBlockEntity>> WIND_TURBINE = BLOCK_ENTITIES.register("wind_turbine",
             () -> new BlockEntityType<>(WindTurbineBlockEntity::new, UniverseBlocks.WIND_TURBINE.get()));
+    public static final Supplier<BlockEntityType<SolarPanelBlockEntity>> SOLAR_PANEL = BLOCK_ENTITIES.register("solar_panel",
+            () -> new BlockEntityType<>(SolarPanelBlockEntity::new, UniverseBlocks.SOLAR_PANEL.get()));
     public static final Supplier<BlockEntityType<ThermalPlantBlockEntity>> THERMAL_PLANT = BLOCK_ENTITIES.register("thermal_plant",
             () -> new BlockEntityType<>(ThermalPlantBlockEntity::new, UniverseBlocks.THERMAL_PLANT.get()));
     public static final Supplier<BlockEntityType<AccumulatorBlockEntity>> ACCUMULATOR = BLOCK_ENTITIES.register("accumulator",
@@ -49,6 +57,20 @@ public final class UniverseBlockEntities {
             "assembler", UniverseBlocks.ASSEMBLER, RecipeMachines.ASSEMBLER);
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<RecipeMachineBlockEntity>> OIL_REFINERY = recipeMachine(
             "oil_refinery", UniverseBlocks.OIL_REFINERY, RecipeMachines.OIL_REFINERY);
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<RecipeMachineBlockEntity>> ASSEMBLER_MK2 = recipeMachine(
+            "assembler_mk2", UniverseBlocks.ASSEMBLER_MK2, RecipeMachines.ASSEMBLER_MK2);
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<RecipeMachineBlockEntity>> ASSEMBLER_MK3 = recipeMachine(
+            "assembler_mk3", UniverseBlocks.ASSEMBLER_MK3, RecipeMachines.ASSEMBLER_MK3);
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<RecipeMachineBlockEntity>> PLANE_SMELTER = recipeMachine(
+            "plane_smelter", UniverseBlocks.PLANE_SMELTER, RecipeMachines.PLANE_SMELTER);
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<RecipeMachineBlockEntity>> CHEMICAL_PLANT = recipeMachine(
+            "chemical_plant", UniverseBlocks.CHEMICAL_PLANT, RecipeMachines.CHEMICAL_PLANT);
+    public static final Supplier<BlockEntityType<FractionatorBlockEntity>> FRACTIONATOR = BLOCK_ENTITIES.register("fractionator",
+            () -> new BlockEntityType<>(FractionatorBlockEntity::new, UniverseBlocks.FRACTIONATOR.get()));
+    public static final Supplier<BlockEntityType<MiningMachineBlockEntity>> ADVANCED_MINING_MACHINE = BLOCK_ENTITIES.register(
+            "advanced_mining_machine", () -> new BlockEntityType<>(MiningMachineBlockEntity::advanced, UniverseBlocks.ADVANCED_MINING_MACHINE.get()));
+    public static final Supplier<BlockEntityType<FactoryAnchorBlockEntity>> FACTORY_ANCHOR = BLOCK_ENTITIES.register("factory_anchor",
+            () -> new BlockEntityType<>(FactoryAnchorBlockEntity::new, UniverseBlocks.FACTORY_ANCHOR.get()));
     public static final Supplier<BlockEntityType<MiningMachineBlockEntity>> MINING_MACHINE = BLOCK_ENTITIES.register("mining_machine",
             () -> new BlockEntityType<>(MiningMachineBlockEntity::new, UniverseBlocks.MINING_MACHINE.get()));
     public static final Supplier<BlockEntityType<WaterPumpBlockEntity>> WATER_PUMP = BLOCK_ENTITIES.register("water_pump",
@@ -59,11 +81,26 @@ public final class UniverseBlockEntities {
             () -> new BlockEntityType<>(MatrixLabBlockEntity::new, UniverseBlocks.MATRIX_LAB.get()));
 
     public static final Supplier<BlockEntityType<BeltBlockEntity>> CONVEYOR_BELT = BLOCK_ENTITIES.register("conveyor_belt",
-            () -> new BlockEntityType<>(BeltBlockEntity::new, UniverseBlocks.CONVEYOR_BELT.get()));
+            () -> new BlockEntityType<>(BeltBlockEntity::new, UniverseBlocks.CONVEYOR_BELT.get(), UniverseBlocks.CONVEYOR_BELT_MK2.get(),
+                    UniverseBlocks.CONVEYOR_BELT_MK3.get()));
     public static final Supplier<BlockEntityType<SorterBlockEntity>> SORTER = BLOCK_ENTITIES.register("sorter",
-            () -> new BlockEntityType<>(SorterBlockEntity::new, UniverseBlocks.SORTER.get()));
+            () -> new BlockEntityType<>(SorterBlockEntity::new, UniverseBlocks.SORTER.get(), UniverseBlocks.SORTER_MK2.get(),
+                    UniverseBlocks.SORTER_MK3.get()));
+    public static final Supplier<BlockEntityType<SplitterBlockEntity>> SPLITTER = BLOCK_ENTITIES.register("splitter",
+            () -> new BlockEntityType<>(SplitterBlockEntity::new, UniverseBlocks.SPLITTER.get()));
     public static final Supplier<BlockEntityType<StorageDepotBlockEntity>> STORAGE_DEPOT = BLOCK_ENTITIES.register("storage_depot",
             () -> new BlockEntityType<>(StorageDepotBlockEntity::new, UniverseBlocks.STORAGE_DEPOT.get()));
+    public static final Supplier<BlockEntityType<StorageTankBlockEntity>> STORAGE_TANK = BLOCK_ENTITIES.register("storage_tank",
+            () -> new BlockEntityType<>(StorageTankBlockEntity::new, UniverseBlocks.STORAGE_TANK.get()));
+    // 物流站（ADR-0015）
+    public static final Supplier<BlockEntityType<StationBlockEntity>> PLANETARY_LOGISTICS_STATION = BLOCK_ENTITIES.register(
+            "planetary_logistics_station",
+            () -> new BlockEntityType<>(StationBlockEntity::planetary, UniverseBlocks.PLANETARY_LOGISTICS_STATION.get()));
+    public static final Supplier<BlockEntityType<StationBlockEntity>> INTERSTELLAR_LOGISTICS_STATION = BLOCK_ENTITIES.register(
+            "interstellar_logistics_station",
+            () -> new BlockEntityType<>(StationBlockEntity::interstellar, UniverseBlocks.INTERSTELLAR_LOGISTICS_STATION.get()));
+    public static final Supplier<BlockEntityType<StationBlockEntity>> ORBITAL_COLLECTOR = BLOCK_ENTITIES.register("orbital_collector",
+            () -> new BlockEntityType<>(StationBlockEntity::collector, UniverseBlocks.ORBITAL_COLLECTOR.get()));
 
     private UniverseBlockEntities() {
     }

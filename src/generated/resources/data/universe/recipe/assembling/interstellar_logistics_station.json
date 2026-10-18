@@ -1,0 +1,24 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:planetary_logistics_station"
+    },
+    {
+      "count": 10,
+      "ingredient": "universe:titanium_alloy"
+    },
+    {
+      "count": 5,
+      "ingredient": "universe:particle_container"
+    }
+  ],
+  "research": "interstellar_logistics",
+  "results": [
+    {
+      "id": "universe:interstellar_logistics_station"
+    }
+  ],
+  "time": 600
+}

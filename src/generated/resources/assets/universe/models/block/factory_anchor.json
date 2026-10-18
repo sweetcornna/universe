@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "bottom": "universe:block/machine_casing_top",
+    "side": "universe:block/factory_anchor_side",
+    "top": "universe:block/factory_anchor_top"
+  }
+}

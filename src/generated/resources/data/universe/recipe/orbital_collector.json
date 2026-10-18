@@ -1,0 +1,18 @@
+{
+  "type": "universe:research_shaped",
+  "key": {
+    "A": "universe:accumulator",
+    "I": "universe:interstellar_logistics_station",
+    "R": "universe:super_magnetic_ring",
+    "T": "universe:reinforced_thruster"
+  },
+  "pattern": [
+    "RTR",
+    "AIA",
+    "RTR"
+  ],
+  "research": "orbital_collection",
+  "result": {
+    "id": "universe:orbital_collector"
+  }
+}

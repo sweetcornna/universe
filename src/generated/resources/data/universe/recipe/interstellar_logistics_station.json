@@ -1,0 +1,17 @@
+{
+  "type": "universe:research_shaped",
+  "key": {
+    "A": "universe:titanium_alloy",
+    "C": "universe:particle_container",
+    "L": "universe:planetary_logistics_station"
+  },
+  "pattern": [
+    "ACA",
+    "CLC",
+    "ACA"
+  ],
+  "research": "interstellar_logistics",
+  "result": {
+    "id": "universe:interstellar_logistics_station"
+  }
+}

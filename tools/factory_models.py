@@ -479,6 +479,209 @@ def matrix_lab():
     write("matrix_lab_item", model(textures, block + core))
 
 
+# ---- 物流站（ADR-0015）
+
+STATION_DISPLAY = TALL_DISPLAY
+
+ALL_CULL_DOWN = {"down": "down"}
+
+
+def station_lights(y, texture, light):
+    """停机坪四角的指示灯。"""
+    return [box((x, y, z), (x + 2, y + 1, z + 2), texture, light=light)
+            for (x, z) in ((0.5, 0.5), (13.5, 0.5), (0.5, 13.5), (13.5, 13.5))]
+
+
+def planetary_logistics_station():
+    """行星物流站：方形基座，中间的塔身正面有装卸舱门，顶上是带四角指示灯的停机坪。"""
+    textures = {
+        "particle": "universe:block/planetary_logistics_station_side",
+        "side": "universe:block/planetary_logistics_station_side",
+        "front": "universe:block/planetary_logistics_station_front",
+        "pad": "universe:block/planetary_logistics_station_pad",
+        "pad_side": "universe:block/logistics_station_pad_side",
+        "trim": "universe:block/logistics_station_trim",
+        "base": "universe:block/machine_casing",
+        "plate": "universe:block/machine_casing_top",
+        "light": "universe:block/logistics_station_light",
+        "light_on": "universe:block/logistics_station_light_on",
+    }
+    base = {"north": "base", "south": "base", "west": "base", "east": "base", "up": "plate", "down": "plate"}
+    body = {"north": "front", "south": "side", "west": "side", "east": "side", "up": None, "down": None}
+    lower = [
+        box((0, 0, 0), (16, 3, 16), base, cull={"down": "down", "north": "north", "south": "south", "west": "west", "east": "east"}),
+        box((2, 3, 2), (14, 16, 14), body),
+    ] + [box((x, 3, z), (x + 2, 16, z + 2), "trim") for (x, z) in ((0, 0), (14, 0), (0, 14), (14, 14))]
+
+    def upper(light_texture, light):
+        return [
+            box((3, 0, 3), (13, 9, 13), {"north": "side", "south": "side", "west": "side", "east": "side", "up": None, "down": None}),
+            box((0, 0, 0), (2, 9, 2), "trim"), box((14, 0, 0), (16, 9, 2), "trim"),
+            box((0, 0, 14), (2, 9, 16), "trim"), box((14, 0, 14), (16, 9, 16), "trim"),
+            box((0, 9, 0), (16, 12, 16), {"north": "pad_side", "south": "pad_side", "west": "pad_side", "east": "pad_side",
+                                          "up": "pad", "down": "plate"}),
+        ] + station_lights(12, light_texture, light)
+
+    tall("planetary_logistics_station", textures, lower, upper("light", 0), upper_on=upper("light_on", 15))
+
+
+def interstellar_logistics_station():
+    """星际物流站：更厚重的基座和四道导轨，顶上一圈法兰托着运输船的停机坪，四角是信标塔。"""
+    textures = {
+        "particle": "universe:block/interstellar_logistics_station_side",
+        "side": "universe:block/interstellar_logistics_station_side",
+        "front": "universe:block/interstellar_logistics_station_front",
+        "pad": "universe:block/interstellar_logistics_station_pad",
+        "pad_side": "universe:block/logistics_station_pad_side",
+        "trim": "universe:block/interstellar_logistics_station_trim",
+        "base": "universe:block/machine_casing",
+        "plate": "universe:block/machine_casing_top",
+        "light": "universe:block/logistics_station_light",
+        "light_on": "universe:block/logistics_station_light_on",
+    }
+    base = {"north": "base", "south": "base", "west": "base", "east": "base", "up": "plate", "down": "plate"}
+    body = {"north": "front", "south": "side", "west": "side", "east": "side", "up": None, "down": None}
+    lower = [
+        box((0, 0, 0), (16, 4, 16), base, cull={"down": "down", "north": "north", "south": "south", "west": "west", "east": "east"}),
+        box((1, 4, 1), (15, 16, 15), body),
+        # 四面中间的导轨（正面让出舱门）
+        box((7, 4, 15), (9, 16, 16), "trim"), box((0, 4, 7), (1, 16, 9), "trim"), box((15, 4, 7), (16, 16, 9), "trim"),
+    ]
+
+    def upper(light_texture, light):
+        return [
+            box((2, 0, 2), (14, 8, 14), {"north": "side", "south": "side", "west": "side", "east": "side", "up": None, "down": None}),
+            box((7, 0, 14), (9, 8, 15), "trim"), box((1, 0, 7), (2, 8, 9), "trim"), box((14, 0, 7), (15, 8, 9), "trim"),
+            box((0, 8, 0), (16, 9, 16), {"north": "trim", "south": "trim", "west": "trim", "east": "trim", "up": "plate", "down": "plate"}),
+            box((1, 9, 1), (15, 12, 15), {"north": "pad_side", "south": "pad_side", "west": "pad_side", "east": "pad_side",
+                                          "up": "pad", "down": None}),
+        ] + [box((x, 9, z), (x + 2, 14, z + 2), "trim") for (x, z) in ((0, 0), (14, 0), (0, 14), (14, 14))] \
+          + [box((x, 14, z), (x + 2, 15, z + 2), light_texture, light=light) for (x, z) in ((0, 0), (14, 0), (0, 14), (14, 14))]
+
+    tall("interstellar_logistics_station", textures, lower, upper("light", 0), upper_on=upper("light_on", 15))
+
+
+def orbital_collector():
+    """轨道采集器：一颗圆鼓鼓的储气罐，赤道上套一圈导环，底下是朝着气态巨行星的进气口，顶上是天线。"""
+    textures = {
+        "particle": "universe:block/orbital_collector_core",
+        "core": "universe:block/orbital_collector_core",
+        "ring": "universe:block/orbital_collector_ring",
+        "intake": "universe:block/orbital_collector_intake",
+        "trim": "universe:block/logistics_station_trim",
+        "light": "universe:block/logistics_station_light_on",
+    }
+    core = [
+        box((4, 4, 4), (12, 12, 12), "core"),
+        box((3, 5, 5), (13, 11, 11), "core"),
+        box((5, 3, 5), (11, 13, 11), "core"),
+        box((5, 5, 3), (11, 11, 13), "core"),
+    ]
+    ring = [
+        box((0, 7, 0), (16, 9, 2), "ring"), box((0, 7, 14), (16, 9, 16), "ring"),
+        box((0, 7, 2), (2, 9, 14), "ring"), box((14, 7, 2), (16, 9, 14), "ring"),
+        # 导环和罐体之间的支架
+        box((2, 7.5, 7.5), (3, 8.5, 8.5), "trim"), box((13, 7.5, 7.5), (14, 8.5, 8.5), "trim"),
+        box((7.5, 7.5, 2), (8.5, 8.5, 3), "trim"), box((7.5, 7.5, 13), (8.5, 8.5, 14), "trim"),
+    ]
+    extras = [
+        box((6, 0, 6), (10, 3, 10), {"north": "intake", "south": "intake", "west": "intake", "east": "intake",
+                                     "up": None, "down": "intake"}, cull={"down": "down"}),
+        box((7.5, 13, 7.5), (8.5, 15, 8.5), "trim"),
+        box((7, 15, 7), (9, 16, 9), "light", light=15),
+    ]
+    write("orbital_collector", model(textures, core + ring + extras))
+
+
+def solar_panel():
+    """太阳能板：底座、立柱和轴承座是方块模型；板子连同扭力管另出一个模型，由方块实体渲染器绕南北向的轴
+    （高 10.5 像素）转着追太阳。板面离转轴 1.5 像素，倾斜到 75 度也碰不到立柱和底座。"""
+    textures = {
+        "particle": "universe:block/solar_panel_cells",
+        "cells": "universe:block/solar_panel_cells",
+        "back": "universe:block/solar_panel_back",
+        "frame": "universe:block/solar_panel_frame",
+        "base": "universe:block/solar_panel_base",
+    }
+    base = [
+        box((5, 0, 5), (11, 1.5, 11), "base", cull={"down": "down"}),
+        box((5.75, 1.5, 5.75), (10.25, 2, 10.25), "base"),
+        box((7.25, 2, 7.25), (8.75, 8.4, 8.75), "frame"),
+        box((7, 8.4, 6.5), (9, 9.4, 9.5), "frame"),
+    ]
+    edge = {"north": "frame", "south": "frame", "west": "frame", "east": "frame", "up": "cells", "down": "back"}
+    array = [
+        box((7.25, 9.75, 0.5), (8.75, 11.25, 15.5), "frame"),
+        box((7.5, 11.25, 2), (8.5, 12, 3.5), "frame"),
+        box((7.5, 11.25, 12.5), (8.5, 12, 14), "frame"),
+        box((0, 12, 0), (16, 13, 16), edge, uvs={"up": [0, 0, 16, 16], "down": [0, 0, 16, 16]}),
+    ]
+    write("solar_panel", model(textures, base))
+    write("solar_panel_array", model(textures, array))
+    write("solar_panel_item", model(textures, base + array))
+
+
+CRAFT_DISPLAY = {
+    "gui": {"rotation": [30, 225, 0], "translation": [0, 0, 0], "scale": [0.9, 0.9, 0.9]},
+    "ground": {"rotation": [0, 0, 0], "translation": [0, 2, 0], "scale": [0.5, 0.5, 0.5]},
+    "fixed": {"rotation": [0, 0, 0], "translation": [0, 0, 0], "scale": [1, 1, 1]},
+    "head": {"rotation": [0, 180, 0], "translation": [0, 13, 7], "scale": [1, 1, 1]},
+    "thirdperson_righthand": {"rotation": [75, 45, 0], "translation": [0, 2.5, 0], "scale": [0.5, 0.5, 0.5]},
+    "firstperson_righthand": {"rotation": [0, 45, 0], "translation": [0, 0, 0], "scale": [0.6, 0.6, 0.6]},
+    "firstperson_lefthand": {"rotation": [0, 225, 0], "translation": [0, 0, 0], "scale": [0.6, 0.6, 0.6]},
+}
+
+
+def logistics_drone():
+    """物流无人机的立体模型（飞行时和拿在手里用）：扁平的机身，十字机臂末端四个旋翼，腹部一盏灯。机头朝 +Z。"""
+    textures = {
+        "particle": "universe:block/logistics_drone_body",
+        "body": "universe:block/logistics_drone_body",
+        "arm": "universe:block/logistics_station_trim",
+        "rotor": "universe:block/logistics_drone_rotor",
+        "light": "universe:block/logistics_station_light_on",
+    }
+    elements = [
+        box((5, 7, 5), (11, 9, 11), "body"),
+        box((6, 9, 6), (10, 9.5, 10), "body"),
+        box((2, 7.5, 7.25), (14, 8.5, 8.75), "arm"),
+        box((7.25, 7.5, 2), (8.75, 8.5, 14), "arm"),
+    ]
+    for (x, z) in ((3, 8), (13, 8), (8, 3), (8, 13)):
+        elements.append(box((x - 0.5, 8.5, z - 0.5), (x + 0.5, 9.5, z + 0.5), "arm"))
+        elements.append(box((x - 2, 9.5, z - 2), (x + 2, 9.6, z + 2), {"up": "rotor", "down": "rotor"}, faces=("up", "down"),
+                            uvs={"up": [0, 0, 16, 16], "down": [0, 0, 16, 16]}))
+    elements.append(box((7, 6.5, 7), (9, 7, 9), "light", light=15))
+    elements.append(box((7, 7.5, 11), (9, 8.5, 11.25), "light", light=15))
+    write("logistics_drone_model", model(textures, elements, parent="block/block", display=CRAFT_DISPLAY))
+
+
+def logistics_vessel():
+    """物流运输船的立体模型：长条形船身，两侧短翼，尾部两台发光的引擎。机头朝 +Z。"""
+    textures = {
+        "particle": "universe:block/logistics_vessel_hull",
+        "hull": "universe:block/logistics_vessel_hull",
+        "wing": "universe:block/interstellar_logistics_station_trim",
+        "engine": "universe:block/logistics_vessel_engine",
+        "light": "universe:block/logistics_station_light_on",
+    }
+    engine = {"north": "engine", "south": "wing", "west": "wing", "east": "wing", "up": "wing", "down": "wing"}
+    elements = [
+        box((6, 6, 2), (10, 10, 13), "hull"),
+        box((6.5, 6.5, 13), (9.5, 9.5, 15), "hull"),
+        box((7, 7, 15), (9, 9, 16), "hull"),
+        box((1, 7.5, 4), (15, 8.5, 10), "wing"),
+        box((7.5, 10, 2), (8.5, 13, 6), "wing"),
+        box((4.5, 6.5, 0.5), (6.5, 8.5, 4), engine),
+        box((9.5, 6.5, 0.5), (11.5, 8.5, 4), engine),
+        box((4.75, 6.75, 0.4), (6.25, 8.25, 0.5), "light", faces=("north",), light=15),
+        box((9.75, 6.75, 0.4), (11.25, 8.25, 0.5), "light", faces=("north",), light=15),
+        box((1, 8.5, 4), (2, 9, 5), "light", light=15),
+        box((14, 8.5, 4), (15, 9, 5), "light", light=15),
+    ]
+    write("logistics_vessel_model", model(textures, elements, parent="block/block", display=CRAFT_DISPLAY))
+
+
 def main():
     tesla_tower()
     wind_turbine()
@@ -488,6 +691,12 @@ def main():
     conveyor_belt()
     sorter()
     matrix_lab()
+    planetary_logistics_station()
+    interstellar_logistics_station()
+    orbital_collector()
+    solar_panel()
+    logistics_drone()
+    logistics_vessel()
 
 
 if __name__ == "__main__":

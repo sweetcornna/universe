@@ -1,0 +1,20 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:organic_crystal"
+    },
+    {
+      "count": 3,
+      "ingredient": "universe:titanium_ingot"
+    }
+  ],
+  "research": "structure_matrix",
+  "results": [
+    {
+      "id": "universe:titanium_crystal"
+    }
+  ],
+  "time": 80
+}

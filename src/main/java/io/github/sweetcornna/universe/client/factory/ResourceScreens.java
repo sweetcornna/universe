@@ -2,6 +2,7 @@ package io.github.sweetcornna.universe.client.factory;
 
 import java.util.Locale;
 
+import io.github.sweetcornna.universe.factory.FractionatorBlockEntity;
 import io.github.sweetcornna.universe.factory.MachineMenu;
 import io.github.sweetcornna.universe.factory.resource.MiningMachineBlockEntity;
 import io.github.sweetcornna.universe.factory.resource.OilExtractorBlockEntity;
@@ -50,8 +51,9 @@ public final class ResourceScreens {
             outputLabel(this, graphics);
             int nodes = this.menu.data(MiningMachineBlockEntity.NODES);
             long id = this.menu.wide(MiningMachineBlockEntity.ITEM) - 1;
+            int area = this.menu.data(MiningMachineBlockEntity.AREA);
             if (nodes == 0 || id < 0) {
-                graphics.text(this.font, Component.translatable("gui.universe.mining_machine.none"), 8, 36, BAD, false);
+                graphics.text(this.font, Component.translatable("gui.universe.mining_machine.none", area), 8, 36, BAD, false);
                 graphics.text(this.font, Component.translatable("gui.universe.mining_machine.hint"), 8, 48, DIM, false);
                 return;
             }
@@ -60,7 +62,7 @@ public final class ResourceScreens {
                     8, 36, TEXT, false);
             graphics.text(this.font, Component.translatable("gui.universe.mining_machine.remaining",
                     String.format(Locale.ROOT, "%,d", this.menu.wide(MiningMachineBlockEntity.REMAINING))), 8, 48, TEXT, false);
-            double perMinute = nodes * 1200.0 / MiningMachineBlockEntity.TICKS_PER_ITEM;
+            double perMinute = nodes * 1200.0 / MiningMachineBlockEntity.TICKS_PER_ITEM * this.menu.data(MiningMachineBlockEntity.SPEED) / 100;
             lastLine(this, graphics, Component.translatable("gui.universe.mining_machine.rate",
                     String.format(Locale.ROOT, "%.0f", perMinute)), 60);
         }
@@ -86,6 +88,29 @@ public final class ResourceScreens {
                     source == WaterPumpBlockEntity.WATER ? GOOD : BAD, false);
             lastLine(this, graphics, Component.translatable("gui.universe.water_pump.rate",
                     1200 / WaterPumpBlockEntity.TICKS_PER_ITEM), 48);
+        }
+    }
+
+    /** 分馏塔：每秒处理了多少氢、一共分出多少重氢；右边的格子各标一下。 */
+    public static final class Fractionator extends MachineScreen {
+        public Fractionator(MachineMenu menu, Inventory inventory, Component title) {
+            super(menu, inventory, title);
+        }
+
+        @Override
+        protected void extractInfo(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+            this.powerLine(graphics, 8, 22);
+            Component in = Component.translatable("gui.universe.fractionator.input");
+            graphics.text(this.font, in, 144 - this.font.width(in) / 2, 34, DIM, false);
+            int rate = this.menu.data(FractionatorBlockEntity.RATE);
+            if (this.menu.getSlot(FractionatorBlockEntity.INPUT).getItem().isEmpty() && rate == 0) {
+                graphics.text(this.font, Component.translatable("gui.universe.fractionator.idle"), 8, 36, BAD, false);
+            } else {
+                graphics.text(this.font, Component.translatable("gui.universe.fractionator.rate", rate, 30), 8, 36, TEXT, false);
+            }
+            graphics.text(this.font, Component.translatable("gui.universe.fractionator.produced",
+                    String.format(Locale.ROOT, "%,d", this.menu.wide(FractionatorBlockEntity.PRODUCED))), 8, 48, TEXT, false);
+            graphics.text(this.font, Component.translatable("gui.universe.fractionator.hint"), 8, 60, DIM, false);
         }
     }
 

@@ -1,0 +1,21 @@
+{
+  "type": "universe:chemical",
+  "ingredients": [
+    {
+      "count": 2,
+      "ingredient": "universe:sulfur"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:water"
+    }
+  ],
+  "research": "basic_chemical",
+  "results": [
+    {
+      "count": 2,
+      "id": "universe:sulfuric_acid"
+    }
+  ],
+  "time": 60
+}

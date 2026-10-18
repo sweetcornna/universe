@@ -1,0 +1,14 @@
+{
+  "type": "universe:research_shaped",
+  "key": {
+    "C": "minecraft:copper_ingot",
+    "S": "universe:silicon"
+  },
+  "pattern": [
+    "SCS"
+  ],
+  "research": "semiconductor",
+  "result": {
+    "id": "universe:microcrystalline_component"
+  }
+}

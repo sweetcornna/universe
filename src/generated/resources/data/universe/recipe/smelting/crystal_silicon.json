@@ -1,0 +1,16 @@
+{
+  "type": "universe:smelting",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:silicon"
+    }
+  ],
+  "research": "semiconductor",
+  "results": [
+    {
+      "id": "universe:crystal_silicon"
+    }
+  ],
+  "time": 40
+}

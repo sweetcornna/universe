@@ -46,6 +46,14 @@ class SpaceLayoutTest {
     }
 
     @Test
+    void auAtInvertsOrbitDistance() {
+        for (double au : new double[] {0.3, 1, 5.2, 30}) {
+            assertEquals(au, SpaceLayout.auAt(SpaceLayout.orbitDistance(au)), 1e-9);
+        }
+        assertEquals(0, SpaceLayout.auAt(100));
+    }
+
+    @Test
     void orbitDistanceGrowsButStaysCompact() {
         assertTrue(SpaceLayout.orbitDistance(0.4) < SpaceLayout.orbitDistance(1));
         assertTrue(SpaceLayout.orbitDistance(1) < SpaceLayout.orbitDistance(30));

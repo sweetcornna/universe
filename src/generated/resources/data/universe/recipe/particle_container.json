@@ -1,0 +1,16 @@
+{
+  "type": "universe:research_shaped",
+  "key": {
+    "C": "minecraft:copper_ingot",
+    "G": "universe:graphene",
+    "T": "universe:electromagnetic_turbine"
+  },
+  "pattern": [
+    "TCT",
+    "GCG"
+  ],
+  "research": "planetary_logistics",
+  "result": {
+    "id": "universe:particle_container"
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "type": "universe:research_shaped",
+  "category": "redstone",
+  "key": {
+    "A": "universe:assembler",
+    "G": "universe:graphene",
+    "P": "universe:processor"
+  },
+  "pattern": [
+    "GPG",
+    "PAP",
+    "GPG"
+  ],
+  "research": "improved_assembling",
+  "result": {
+    "id": "universe:assembler_mk2"
+  }
+}

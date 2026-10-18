@@ -1,0 +1,24 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 8,
+      "ingredient": "minecraft:iron_ingot"
+    },
+    {
+      "count": 4,
+      "ingredient": "minecraft:stone_bricks"
+    },
+    {
+      "count": 4,
+      "ingredient": "minecraft:glass"
+    }
+  ],
+  "research": "improved_logistics",
+  "results": [
+    {
+      "id": "universe:storage_tank"
+    }
+  ],
+  "time": 40
+}

@@ -1,0 +1,16 @@
+{
+  "type": "universe:research_shaped",
+  "key": {
+    "G": "universe:energetic_graphite",
+    "N": "universe:magnet",
+    "T": "universe:electromagnetic_turbine"
+  },
+  "pattern": [
+    "NTN",
+    "TGN"
+  ],
+  "research": "magnetic_levitation",
+  "result": {
+    "id": "universe:super_magnetic_ring"
+  }
+}

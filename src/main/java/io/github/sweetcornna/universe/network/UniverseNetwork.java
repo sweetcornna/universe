@@ -1,5 +1,6 @@
 package io.github.sweetcornna.universe.network;
 
+import io.github.sweetcornna.universe.stats.ProductionLog;
 import io.github.sweetcornna.universe.survival.Multitool;
 import io.github.sweetcornna.universe.discovery.Discoveries;
 import io.github.sweetcornna.universe.entity.ship.ShipWarp;
@@ -19,7 +20,7 @@ import net.neoforged.neoforge.server.ServerLifecycleHooks;
  */
 public final class UniverseNetwork {
     /** 协议版本：任何包的格式改动都要加一，版本不同的客户端和服务端会拒绝连接。 */
-    private static final String PROTOCOL_VERSION = "12";
+    private static final String PROTOCOL_VERSION = "14";
 
     private UniverseNetwork() {
     }
@@ -42,6 +43,8 @@ public final class UniverseNetwork {
                 .playToClient(DiscoveryPayload.TYPE, DiscoveryPayload.STREAM_CODEC)
                 .playToClient(PoiTextPayload.TYPE, PoiTextPayload.STREAM_CODEC)
                 .playToClient(OpenSignalBoosterPayload.TYPE, OpenSignalBoosterPayload.STREAM_CODEC)
+                .playToClient(LogisticsFlightsPayload.TYPE, LogisticsFlightsPayload.STREAM_CODEC)
+                .playToClient(StatsSnapshotPayload.TYPE, StatsSnapshotPayload.STREAM_CODEC)
                 .playToServer(JetpackPayload.TYPE, JetpackPayload.STREAM_CODEC, PlayerSurvival::handleJetpack)
                 .playToServer(ResearchActionPayload.TYPE, ResearchActionPayload.STREAM_CODEC, Research::handleAction)
                 .playToServer(WarpRequestPayload.TYPE, WarpRequestPayload.STREAM_CODEC, ShipWarp::handleRequest)
@@ -49,6 +52,7 @@ public final class UniverseNetwork {
                 .playToServer(RenamePayload.TYPE, RenamePayload.STREAM_CODEC, Discoveries::handleRename)
                 .playToServer(OpenTechPayload.TYPE, OpenTechPayload.STREAM_CODEC, SuitTech::handleOpen)
                 .playToServer(LocatePoiPayload.TYPE, LocatePoiPayload.STREAM_CODEC, LocatePoiPayload::handle)
-                .playToServer(ToolModePayload.TYPE, ToolModePayload.STREAM_CODEC, Multitool::handleToggleMode);
+                .playToServer(ToolModePayload.TYPE, ToolModePayload.STREAM_CODEC, Multitool::handleToggleMode)
+                .playToServer(StatsRequestPayload.TYPE, StatsRequestPayload.STREAM_CODEC, ProductionLog::handleRequest);
     }
 }

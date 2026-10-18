@@ -17,6 +17,7 @@ import io.github.sweetcornna.universe.factory.belt.BeltBlock;
 import io.github.sweetcornna.universe.factory.power.AccumulatorBlock;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
 import io.github.sweetcornna.universe.registry.UniverseItems;
+import net.minecraft.client.renderer.item.properties.select.DisplayContext;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.client.data.models.BlockModelGenerators;
 import net.minecraft.client.data.models.ItemModelGenerators;
@@ -33,6 +34,8 @@ import net.minecraft.client.data.models.model.TextureSlot;
 import net.minecraft.client.resources.model.sprite.Material;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.neoforged.neoforge.registries.DeferredItem;
@@ -129,6 +132,32 @@ final class UniverseModelProvider extends ModelProvider {
         recipeMachine(blockModels, UniverseBlocks.ASSEMBLER.get(), "assembler", false, "machine_casing_top");
         recipeMachine(blockModels, UniverseBlocks.MINING_MACHINE.get(), "mining_machine", false, "mining_machine_bottom");
         recipeMachine(blockModels, UniverseBlocks.WATER_PUMP.get(), "water_pump", false, "water_pump_bottom");
+        // 中期工业（ADR-0015）
+        recipeMachine(blockModels, UniverseBlocks.ASSEMBLER_MK2.get(), "assembler_mk2", false, "machine_casing_top");
+        recipeMachine(blockModels, UniverseBlocks.ASSEMBLER_MK3.get(), "assembler_mk3", false, "machine_casing_top");
+        recipeMachine(blockModels, UniverseBlocks.PLANE_SMELTER.get(), "plane_smelter", true, "machine_casing_top");
+        recipeMachine(blockModels, UniverseBlocks.CHEMICAL_PLANT.get(), "chemical_plant", false, "machine_casing_top");
+        recipeMachine(blockModels, UniverseBlocks.FRACTIONATOR.get(), "fractionator", false, "fractionator_top");
+        recipeMachine(blockModels, UniverseBlocks.ADVANCED_MINING_MACHINE.get(), "advanced_mining_machine", false, "mining_machine_bottom");
+        Block anchor = UniverseBlocks.FACTORY_ANCHOR.get();
+        Identifier anchorModel = ModelTemplates.CUBE_BOTTOM_TOP.create(anchor, new TextureMapping()
+                .put(TextureSlot.TOP, texture("factory_anchor_top"))
+                .put(TextureSlot.SIDE, texture("factory_anchor_side"))
+                .put(TextureSlot.BOTTOM, texture("machine_casing_top")), blockModels.modelOutput);
+        blockModels.blockStateOutput.accept(BlockModelGenerators.createSimpleBlock(anchor, BlockModelGenerators.plainVariant(anchorModel)));
+        blockModels.registerSimpleItemModel(anchor, anchorModel);
+        // 物流站（ADR-0015）：停机坪的指示灯工作时亮；采集器不分工作状态
+        tall(blockModels, itemModels, UniverseBlocks.PLANETARY_LOGISTICS_STATION.get(), "planetary_logistics_station", false, true);
+        tall(blockModels, itemModels, UniverseBlocks.INTERSTELLAR_LOGISTICS_STATION.get(), "interstellar_logistics_station", false, true);
+        Block collector = UniverseBlocks.ORBITAL_COLLECTOR.get();
+        Identifier collectorModel = Universe.id("block/orbital_collector");
+        blockModels.blockStateOutput.accept(MultiVariantGenerator.dispatch(collector)
+                .with(PropertyDispatch.initial(MachineBlock.WORKING).generate(on -> BlockModelGenerators.plainVariant(collectorModel)))
+                .with(BlockModelGenerators.ROTATION_HORIZONTAL_FACING));
+        blockModels.registerSimpleItemModel(collector, collectorModel);
+        // 无人机和运输船：物品栏里是平面图标，拿在手里、掉在地上和飞行时是立体模型
+        craft(itemModels, UniverseItems.LOGISTICS_DRONE.get(), "logistics_drone_model");
+        craft(itemModels, UniverseItems.LOGISTICS_VESSEL.get(), "logistics_vessel_model");
         tall(blockModels, itemModels, UniverseBlocks.OIL_EXTRACTOR.get(), "oil_extractor", true, false);
         tall(blockModels, itemModels, UniverseBlocks.OIL_REFINERY.get(), "oil_refinery", true, false);
         // 原油涌泉：顶上是油面，四周是浸了油的土
@@ -140,11 +169,26 @@ final class UniverseModelProvider extends ModelProvider {
         blockModels.blockStateOutput.accept(BlockModelGenerators.createSimpleBlock(seep, BlockModelGenerators.plainVariant(seepModel)));
         blockModels.registerSimpleItemModel(seep, seepModel);
         belt(blockModels, itemModels, UniverseBlocks.CONVEYOR_BELT.get(), "conveyor_belt");
-        // 分拣器：底座和立柱是方块模型，手臂由方块实体渲染器画；物品模型里带一只朝后的手臂
-        Block sorter = UniverseBlocks.SORTER.get();
-        blockModels.blockStateOutput.accept(MultiVariantGenerator.dispatch(sorter, BlockModelGenerators.plainVariant(Universe.id("block/sorter")))
-                .with(BlockModelGenerators.ROTATION_HORIZONTAL_FACING));
-        itemModels.itemModelOutput.accept(sorter.asItem(), ItemModelUtils.plainModel(Universe.id("block/sorter_item")));
+        belt(blockModels, itemModels, UniverseBlocks.CONVEYOR_BELT_MK2.get(), "conveyor_belt_mk2");
+        belt(blockModels, itemModels, UniverseBlocks.CONVEYOR_BELT_MK3.get(), "conveyor_belt_mk3");
+        // 分拣器：底座和立柱是方块模型，手臂由方块实体渲染器画；物品模型里带一只朝后的手臂。三档只换颜色
+        for (Block sorter : List.of(UniverseBlocks.SORTER.get(), UniverseBlocks.SORTER_MK2.get(), UniverseBlocks.SORTER_MK3.get())) {
+            String name = BuiltInRegistries.BLOCK.getKey(sorter).getPath();
+            blockModels.blockStateOutput.accept(MultiVariantGenerator.dispatch(sorter, BlockModelGenerators.plainVariant(Universe.id("block/" + name)))
+                    .with(BlockModelGenerators.ROTATION_HORIZONTAL_FACING));
+            itemModels.itemModelOutput.accept(sorter.asItem(), ItemModelUtils.plainModel(Universe.id("block/" + name + "_item")));
+        }
+        // 分流器、储液罐：模型是手写的
+        for (Block block : List.of(UniverseBlocks.SPLITTER.get(), UniverseBlocks.STORAGE_TANK.get())) {
+            Identifier model = ModelLocationUtils.getModelLocation(block);
+            blockModels.blockStateOutput.accept(BlockModelGenerators.createSimpleBlock(block, BlockModelGenerators.plainVariant(model)));
+            itemModels.itemModelOutput.accept(block.asItem(), ItemModelUtils.plainModel(model));
+        }
+        // 太阳能板：底座和立柱是方块模型，板子由方块实体渲染器画（追着太阳转）；物品模型里板子放平
+        Block solar = UniverseBlocks.SOLAR_PANEL.get();
+        blockModels.blockStateOutput.accept(BlockModelGenerators.createSimpleBlock(solar,
+                BlockModelGenerators.plainVariant(Universe.id("block/solar_panel"))));
+        itemModels.itemModelOutput.accept(solar.asItem(), ItemModelUtils.plainModel(Universe.id("block/solar_panel_item")));
         // 矩阵研究站：模型是手写的，核心由方块实体渲染器画；物品模型里带着核心
         Block lab = UniverseBlocks.MATRIX_LAB.get();
         blockModels.blockStateOutput.accept(MultiVariantGenerator.dispatch(lab, BlockModelGenerators.plainVariant(Universe.id("block/matrix_lab")))
@@ -160,9 +204,22 @@ final class UniverseModelProvider extends ModelProvider {
         for (DeferredItem<?> item : List.of(UniverseItems.GEAR, UniverseItems.MAGNETIC_COIL, UniverseItems.CIRCUIT_BOARD,
                 UniverseItems.ELECTRIC_MOTOR, UniverseItems.STEEL, UniverseItems.PRISM, UniverseItems.PLASMA_EXCITER,
                 UniverseItems.ENERGETIC_GRAPHITE, UniverseItems.WATER, UniverseItems.CRUDE_OIL, UniverseItems.REFINED_OIL,
-                UniverseItems.HYDROGEN, UniverseItems.ELECTROMAGNETIC_MATRIX, UniverseItems.ENERGY_MATRIX)) {
+                UniverseItems.HYDROGEN, UniverseItems.ELECTROMAGNETIC_MATRIX, UniverseItems.ENERGY_MATRIX,
+                UniverseItems.DEUTERIUM, UniverseItems.CRYSTAL_SILICON, UniverseItems.TITANIUM_ALLOY, UniverseItems.SYNTHETIC_DIAMOND,
+                UniverseItems.PLASTIC, UniverseItems.SULFURIC_ACID, UniverseItems.GRAPHENE, UniverseItems.CARBON_NANOTUBE,
+                UniverseItems.TITANIUM_CRYSTAL, UniverseItems.MICROCRYSTALLINE_COMPONENT, UniverseItems.PROCESSOR, UniverseItems.PARTICLE_BROADBAND,
+                UniverseItems.THRUSTER, UniverseItems.REINFORCED_THRUSTER, UniverseItems.ELECTROMAGNETIC_TURBINE, UniverseItems.SUPER_MAGNETIC_RING,
+                UniverseItems.PARTICLE_CONTAINER, UniverseItems.STRUCTURE_MATRIX,
+                UniverseItems.INFORMATION_MATRIX)) {
             itemModels.generateFlatItem(item.get(), ModelTemplates.FLAT_ITEM);
         }
+    }
+
+    /** 载具：界面里用平面图标，其余场合用 {@code models/block/} 下手写的立体模型。 */
+    private static void craft(ItemModelGenerators itemModels, Item item, String model) {
+        Identifier flat = itemModels.createFlatItemModel(item, ModelTemplates.FLAT_ITEM);
+        itemModels.itemModelOutput.accept(item, ItemModelUtils.select(new DisplayContext(), ItemModelUtils.plainModel(Universe.id("block/" + model)),
+                ItemModelUtils.when(ItemDisplayContext.GUI, ItemModelUtils.plainModel(flat))));
     }
 
     /** 一格的设备：正面（和电弧熔炉的顶面）工作时换成发光的贴图。 */

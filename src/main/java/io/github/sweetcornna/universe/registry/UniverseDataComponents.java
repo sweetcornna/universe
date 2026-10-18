@@ -7,11 +7,13 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
-import io.github.sweetcornna.universe.core.survival.ToolMode;
 import io.github.sweetcornna.universe.Universe;
+import io.github.sweetcornna.universe.core.survival.ToolMode;
 import io.github.sweetcornna.universe.core.tech.Grade;
 import io.github.sweetcornna.universe.core.tech.ModuleType;
 import io.github.sweetcornna.universe.core.tech.TechModule;
+import io.github.sweetcornna.universe.factory.belt.StorageTankBlockEntity;
+import io.github.sweetcornna.universe.logistics.StationContents;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
@@ -39,6 +41,13 @@ public final class UniverseDataComponents {
     /** 蓄电器拆下来时带着的电量（焦耳）。 */
     public static final Supplier<DataComponentType<Long>> STORED_ENERGY = COMPONENTS.registerComponentType("stored_energy",
             builder -> builder.persistent(Codec.LONG).networkSynchronized(ByteBufCodecs.VAR_LONG));
+    /** 储液罐拆下来时带着的流体（ADR-0015）。 */
+    public static final Supplier<DataComponentType<StorageTankBlockEntity.Contents>> TANK_CONTENTS = COMPONENTS.registerComponentType(
+            "tank_contents", builder -> builder.persistent(StorageTankBlockEntity.Contents.CODEC)
+                    .networkSynchronized(StorageTankBlockEntity.Contents.STREAM_CODEC));
+    /** 物流站拆下来时带着的物品、载具和设置（ADR-0015）。 */
+    public static final Supplier<DataComponentType<StationContents>> STATION_CONTENTS = COMPONENTS.registerComponentType(
+            "station_contents", builder -> builder.persistent(StationContents.CODEC).networkSynchronized(StationContents.STREAM_CODEC));
     /** 技术模块的种类、品级和数值（ADR-0014）。 */
     public static final Supplier<DataComponentType<TechModule>> TECH_MODULE = COMPONENTS.registerComponentType("tech_module",
             builder -> builder.persistent(TECH_MODULE_CODEC).networkSynchronized(TECH_MODULE_STREAM_CODEC));

@@ -1,0 +1,20 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 2,
+      "ingredient": "universe:silicon"
+    },
+    {
+      "count": 1,
+      "ingredient": "minecraft:copper_ingot"
+    }
+  ],
+  "research": "semiconductor",
+  "results": [
+    {
+      "id": "universe:microcrystalline_component"
+    }
+  ],
+  "time": 40
+}

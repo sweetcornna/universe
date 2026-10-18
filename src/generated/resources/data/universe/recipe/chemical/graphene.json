@@ -1,0 +1,21 @@
+{
+  "type": "universe:chemical",
+  "ingredients": [
+    {
+      "count": 3,
+      "ingredient": "universe:sulfuric_acid"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:energetic_graphite"
+    }
+  ],
+  "research": "high_strength_materials",
+  "results": [
+    {
+      "count": 2,
+      "id": "universe:graphene"
+    }
+  ],
+  "time": 60
+}

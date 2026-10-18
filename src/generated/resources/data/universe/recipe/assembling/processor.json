@@ -1,0 +1,20 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 2,
+      "ingredient": "universe:circuit_board"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:microcrystalline_component"
+    }
+  ],
+  "research": "processor",
+  "results": [
+    {
+      "id": "universe:processor"
+    }
+  ],
+  "time": 60
+}

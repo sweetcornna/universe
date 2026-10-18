@@ -11,6 +11,8 @@ import io.github.sweetcornna.universe.factory.TallMachineBlock;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
 import io.github.sweetcornna.universe.registry.UniverseDataComponents;
 import io.github.sweetcornna.universe.registry.UniverseItems;
+import net.minecraft.advancements.predicates.StatePropertiesPredicate;
+import net.minecraft.world.level.storage.loot.entries.UniformContainerBase;
 import net.minecraft.world.level.storage.loot.predicates.LootItemRandomChanceCondition;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -29,6 +31,7 @@ import net.minecraft.world.level.storage.loot.entries.LootItem;
 import net.minecraft.world.level.storage.loot.entries.LootPoolEntryContainer;
 import net.minecraft.world.level.storage.loot.functions.ApplyBonusCount;
 import net.minecraft.world.level.storage.loot.functions.SetItemCountFunction;
+import net.minecraft.world.level.storage.loot.predicates.MatchBlock;
 import net.minecraft.world.level.storage.loot.providers.number.ints.ContextIntProviders;
 
 /** 方块掉落。 */
@@ -84,6 +87,28 @@ final class UniverseBlockLoot extends BlockLootSubProvider {
         this.dropSelf(UniverseBlocks.SORTER.get());
         this.dropSelf(UniverseBlocks.MATRIX_LAB.get());
         this.dropSelf(UniverseBlocks.STORAGE_DEPOT.get());
+        // 物流（ADR-0015）：储液罐拆下来带着里面的流体
+        this.dropSelf(UniverseBlocks.CONVEYOR_BELT_MK2.get());
+        this.dropSelf(UniverseBlocks.CONVEYOR_BELT_MK3.get());
+        this.dropSelf(UniverseBlocks.SORTER_MK2.get());
+        this.dropSelf(UniverseBlocks.SORTER_MK3.get());
+        this.dropSelf(UniverseBlocks.SPLITTER.get());
+        this.dropSelf(UniverseBlocks.ASSEMBLER_MK2.get());
+        this.dropSelf(UniverseBlocks.ASSEMBLER_MK3.get());
+        this.dropSelf(UniverseBlocks.PLANE_SMELTER.get());
+        this.dropSelf(UniverseBlocks.CHEMICAL_PLANT.get());
+        this.dropSelf(UniverseBlocks.FRACTIONATOR.get());
+        this.dropSelf(UniverseBlocks.SOLAR_PANEL.get());
+        this.dropSelf(UniverseBlocks.ADVANCED_MINING_MACHINE.get());
+        this.dropSelf(UniverseBlocks.FACTORY_ANCHOR.get());
+        this.add(UniverseBlocks.STORAGE_TANK.get(), block -> LootTable.lootTable().withPool(this.applyExplosionCondition(block,
+                LootPool.lootPool().setRolls(ContextIntProviders.exactly(1)).add(LootItem.lootTableItem(block)
+                        .apply(CopyComponentsFunction.copyComponentsFromBlockEntity(LootContextParams.BLOCK_ENTITY)
+                                .include(UniverseDataComponents.TANK_CONTENTS.get()))))));
+        // 物流站：拆下来带着物品、载具和设置（像潜影盒一样）
+        this.station(UniverseBlocks.PLANETARY_LOGISTICS_STATION.get(), true);
+        this.station(UniverseBlocks.INTERSTELLAR_LOGISTICS_STATION.get(), true);
+        this.station(UniverseBlocks.ORBITAL_COLLECTOR.get(), false);
         // 兴趣点（ADR-0014）：掉落舱、石碑挖不掉；科技储藏箱掉一个随机模块，有时多一份勘探数据；冒烟的残骸拆出船体板
         this.dropSelf(UniverseBlocks.DATA_TERMINAL.get());
         this.dropSelf(UniverseBlocks.SIGNAL_BOOSTER.get());
@@ -98,6 +123,18 @@ final class UniverseBlockLoot extends BlockLootSubProvider {
                         .when(LootItemRandomChanceCondition.randomChance(0.35F))));
         // 星球矿石：和原版矿石一样，精准采集掉本体，时运加成掉落
         UniverseBlocks.ORES.forEach((kind, block) -> this.add(block.get(), this.createOreDrops(block.get(), kind)));
+    }
+
+    private void station(Block block, boolean tall) {
+        UniformContainerBase.Builder<?> item = LootItem.lootTableItem(block)
+                .apply(CopyComponentsFunction.copyComponentsFromBlockEntity(LootContextParams.BLOCK_ENTITY)
+                        .include(UniverseDataComponents.STATION_CONTENTS.get()));
+        if (tall) {
+            item.when(MatchBlock.blockMatches(this.blocks, block,
+                    StatePropertiesPredicate.Builder.properties().hasProperty(TallMachineBlock.HALF, DoubleBlockHalf.LOWER)));
+        }
+        this.add(block, LootTable.lootTable().withPool(this.applyExplosionCondition(block,
+                LootPool.lootPool().setRolls(ContextIntProviders.exactly(1)).add(item))));
     }
 
     private LootTable.Builder createOreDrops(Block block, OreKind kind) {

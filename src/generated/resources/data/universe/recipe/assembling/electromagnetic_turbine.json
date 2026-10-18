@@ -1,0 +1,20 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 2,
+      "ingredient": "universe:electric_motor"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:magnetic_coil"
+    }
+  ],
+  "research": "magnetic_levitation",
+  "results": [
+    {
+      "id": "universe:electromagnetic_turbine"
+    }
+  ],
+  "time": 40
+}

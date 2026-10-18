@@ -1,0 +1,17 @@
+{
+  "type": "universe:research_shaped",
+  "key": {
+    "I": "minecraft:iron_ingot",
+    "P": "universe:processor",
+    "T": "universe:thruster"
+  },
+  "pattern": [
+    "IPI",
+    "TIT",
+    "IPI"
+  ],
+  "research": "planetary_logistics",
+  "result": {
+    "id": "universe:logistics_drone"
+  }
+}

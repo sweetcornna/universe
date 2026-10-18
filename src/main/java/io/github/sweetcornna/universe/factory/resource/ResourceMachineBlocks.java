@@ -1,6 +1,9 @@
 package io.github.sweetcornna.universe.factory.resource;
 
+import java.util.function.Supplier;
+
 import io.github.sweetcornna.universe.factory.MachineBlock;
+import io.github.sweetcornna.universe.factory.MachineBlockEntity;
 import io.github.sweetcornna.universe.factory.TallMachineBlock;
 import io.github.sweetcornna.universe.registry.UniverseBlockEntities;
 import net.minecraft.core.BlockPos;
@@ -11,6 +14,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 
@@ -23,6 +27,10 @@ public final class ResourceMachineBlocks {
     public static class MiningMachine extends MachineBlock {
         public MiningMachine(Properties properties) {
             super(properties, UniverseBlockEntities.MINING_MACHINE);
+        }
+
+        protected MiningMachine(Properties properties, Supplier<? extends BlockEntityType<? extends MachineBlockEntity>> type) {
+            super(properties, type);
         }
 
         @Override
@@ -42,6 +50,13 @@ public final class ResourceMachineBlocks {
                 level.playLocalSound(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, below.getSoundType().getHitSound(), SoundSource.BLOCKS,
                         0.5F, 0.6F, false);
             }
+        }
+    }
+
+    /** 高级采矿机（ADR-0015）。 */
+    public static class AdvancedMiningMachine extends MiningMachine {
+        public AdvancedMiningMachine(Properties properties) {
+            super(properties, UniverseBlockEntities.ADVANCED_MINING_MACHINE);
         }
     }
 

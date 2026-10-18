@@ -5,6 +5,7 @@ import java.util.Optional;
 import org.jspecify.annotations.Nullable;
 
 import io.github.sweetcornna.universe.core.factory.BeltLine;
+import io.github.sweetcornna.universe.core.factory.SorterTier;
 import io.github.sweetcornna.universe.core.power.PowerDevice;
 import io.github.sweetcornna.universe.factory.power.LevelPower;
 import io.github.sweetcornna.universe.registry.UniverseBlockEntities;
@@ -33,18 +34,13 @@ import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.neoforged.neoforge.transfer.transaction.Transaction;
 
 /**
- * 分拣器 Mk.I（ADR-0011）：从背后那格拿一个、转过去放到前面那格。两头可以是传送带，也可以是任何有物品能力的方块
+ * 分拣器（ADR-0011）：从背后那格拿一个、转过去放到前面那格。两头可以是传送带，也可以是任何有物品能力的方块
  * （箱子、储物仓、设备）。只拿前面放得下的东西，所以给设备送料时自然只送配方要的原料；可以设一个过滤物品。
  *
- * <p>一个循环 40/3 刻（每秒 1.5 次）：前一半抓着东西转到前面，放下后后一半转回来。电力不足时按满足率变慢。
+ * <p>一个循环的刻数按档位（{@link SorterTier}，Mk.I 每秒 1.5 次）：前一半抓着东西转到前面，放下后后一半转回来。
+ * 电力不足时按满足率变慢。三档共用这个方块实体，档位看方块。
  */
 public class SorterBlockEntity extends BlockEntity implements PowerDevice {
-    /** 戴森球计划的 18 kW。 */
-    public static final long POWER = 1;
-    /** 一次来回的刻数（每秒 1.5 次）。 */
-    public static final double CYCLE = 40.0 / 3;
-    public static final double HALF_CYCLE = CYCLE / 2;
-
     private @Nullable Item filter;
     private ItemStack held = ItemStack.EMPTY;
     /** 循环进度（刻）；-1 是停在背后等着抓。 */
@@ -74,16 +70,21 @@ public class SorterBlockEntity extends BlockEntity implements PowerDevice {
         return this.held;
     }
 
+    public SorterTier tier() {
+        return this.getBlockState().getBlock() instanceof SorterBlock sorter ? sorter.tier() : SorterTier.MK1;
+    }
+
     /** 客户端画手臂用：这一帧的循环进度（刻），停着时是 -1。按满电插值，抓着东西时最多转到前面。 */
     public double displayProgress(float partialTicks) {
         if (this.progress < 0 || this.level == null) {
             return -1;
         }
         double shown = this.progress + (this.level.getGameTime() - this.syncedAt) + partialTicks;
+        SorterTier tier = this.tier();
         if (!this.held.isEmpty()) {
-            return Math.min(shown, HALF_CYCLE);
+            return Math.min(shown, tier.halfCycle());
         }
-        return shown >= CYCLE ? -1 : shown;
+        return shown >= tier.cycle() ? -1 : shown;
     }
 
     // ---- 电网
@@ -109,7 +110,7 @@ public class SorterBlockEntity extends BlockEntity implements PowerDevice {
 
     @Override
     public long demand() {
-        return POWER;
+        return this.tier().power();
     }
 
     @Override
@@ -129,9 +130,10 @@ public class SorterBlockEntity extends BlockEntity implements PowerDevice {
             this.tryGrab();
             return;
         }
+        SorterTier tier = this.tier();
         if (!this.held.isEmpty()) {
             double next = this.progress + rate;
-            if (next < HALF_CYCLE) {
+            if (next < tier.halfCycle()) {
                 this.progress = next;
             } else if (this.drop(this.held)) {
                 this.held = ItemStack.EMPTY;
@@ -140,12 +142,12 @@ public class SorterBlockEntity extends BlockEntity implements PowerDevice {
                 this.sync();
             } else {
                 // 前面放不下，抓着等
-                this.progress = HALF_CYCLE;
+                this.progress = tier.halfCycle();
             }
             return;
         }
         this.progress += rate;
-        if (this.progress >= CYCLE) {
+        if (this.progress >= tier.cycle()) {
             this.progress = -1;
             if (!this.tryGrab()) {
                 this.sync();
