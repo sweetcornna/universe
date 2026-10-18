@@ -21,9 +21,11 @@ public final class FactoryClient {
             event.registerBlockEntityRenderer(UniverseBlockEntities.WIND_TURBINE.get(), WindTurbineRenderer::new);
             event.registerBlockEntityRenderer(UniverseBlockEntities.CONVEYOR_BELT.get(), BeltRenderer::new);
             event.registerBlockEntityRenderer(UniverseBlockEntities.SORTER.get(), SorterRenderer::new);
+            event.registerBlockEntityRenderer(UniverseBlockEntities.MATRIX_LAB.get(), MatrixLabRenderer::new);
         });
         modBus.addListener(ModelEvent.RegisterStandalone.class, WindTurbineRenderer::registerModels);
         modBus.addListener(ModelEvent.RegisterStandalone.class, SorterRenderer::registerModels);
+        modBus.addListener(ModelEvent.RegisterStandalone.class, MatrixLabRenderer::registerModels);
         ClientResearch.registerEvents(modBus, gameBus);
         BeltClient.registerEvents(modBus);
     }
@@ -40,6 +42,7 @@ public final class FactoryClient {
         event.register(UniverseMenus.WATER_PUMP.menuType(), ResourceScreens.WaterPump::new);
         event.register(UniverseMenus.OIL_EXTRACTOR.menuType(), ResourceScreens.OilExtractor::new);
         event.register(UniverseMenus.STORAGE_DEPOT.menuType(), StorageDepotScreen::new);
+        event.register(UniverseMenus.MATRIX_LAB.menuType(), MatrixLabScreen::new);
     }
 
     private static void recipeMachine(RegisterMenuScreensEvent event, RecipeMachineBlockEntity.Spec spec) {

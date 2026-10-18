@@ -139,6 +139,9 @@ public final class UniverseBlocks {
     public static final DeferredBlock<ResourceMachineBlocks.OilRefinery> OIL_REFINERY = BLOCKS.registerBlock("oil_refinery",
             ResourceMachineBlocks.OilRefinery::new, p -> machine(p).noOcclusion().lightLevel(state -> state.getValue(MachineBlock.WORKING)
                     && state.getValue(TallMachineBlock.HALF) == DoubleBlockHalf.LOWER ? 10 : 0));
+    public static final DeferredBlock<MachineBlock> MATRIX_LAB = BLOCKS.registerBlock("matrix_lab",
+            p -> new MachineBlock(p, UniverseBlockEntities.MATRIX_LAB),
+            p -> machine(p).noOcclusion().lightLevel(state -> state.getValue(MachineBlock.WORKING) ? 10 : 3));
     /** 传送带：拆起来很快，不挑工具。 */
     public static final DeferredBlock<BeltBlock> CONVEYOR_BELT = BLOCKS.registerBlock("conveyor_belt", p -> new BeltBlock(p, BeltTier.MK1),
             p -> p.mapColor(MapColor.METAL).strength(1.0F, 3.0F).sound(SoundType.METAL).noOcclusion());

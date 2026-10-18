@@ -1,0 +1,19 @@
+{
+  "type": "universe:research_shaped",
+  "category": "redstone",
+  "key": {
+    "C": "universe:circuit_board",
+    "G": "minecraft:glass",
+    "I": "minecraft:iron_ingot",
+    "M": "universe:magnetic_coil"
+  },
+  "pattern": [
+    "IGI",
+    "CMC",
+    "IGI"
+  ],
+  "research": "electromagnetic_matrix",
+  "result": {
+    "id": "universe:matrix_lab"
+  }
+}

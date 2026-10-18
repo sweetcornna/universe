@@ -1,0 +1,84 @@
+{
+  "parent": "block/block",
+  "textures": {
+    "particle": "universe:block/matrix_lab_side",
+    "side": "universe:block/matrix_lab_side",
+    "front": "universe:block/matrix_lab_front",
+    "top": "universe:block/matrix_lab_top",
+    "frame": "universe:block/matrix_lab_frame",
+    "glass": "universe:block/matrix_lab_glass",
+    "core": "universe:block/matrix_lab_core"
+  },
+  "elements": [
+    {
+      "from": [
+        5.5,
+        7.5,
+        5.5
+      ],
+      "to": [
+        10.5,
+        12.5,
+        10.5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            5.5,
+            3.5,
+            10.5,
+            8.5
+          ],
+          "texture": "#core"
+        },
+        "south": {
+          "uv": [
+            5.5,
+            3.5,
+            10.5,
+            8.5
+          ],
+          "texture": "#core"
+        },
+        "west": {
+          "uv": [
+            5.5,
+            3.5,
+            10.5,
+            8.5
+          ],
+          "texture": "#core"
+        },
+        "east": {
+          "uv": [
+            5.5,
+            3.5,
+            10.5,
+            8.5
+          ],
+          "texture": "#core"
+        },
+        "up": {
+          "uv": [
+            5.5,
+            5.5,
+            10.5,
+            10.5
+          ],
+          "texture": "#core"
+        },
+        "down": {
+          "uv": [
+            5.5,
+            5.5,
+            10.5,
+            10.5
+          ],
+          "texture": "#core"
+        }
+      },
+      "light_emission": 15,
+      "shade": false
+    }
+  ]
+}

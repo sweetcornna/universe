@@ -249,6 +249,10 @@ io.github.sweetcornna.universe
 | 物品传输的事务：`Transaction.openRoot()`、`Transaction.open(父事务)`，`commit()` 才生效，不提交就回滚；自己写 `ResourceHandler` 时用 `SnapshotJournal<T>`（`createSnapshot`、`revertToSnapshot`、`onRootCommit`），改动前调 `updateSnapshots(事务)` | 已确认，传送带的插入在用 |
 | 方块实体：`onLoad`、`onChunkUnloaded`、`setRemoved` 管登记和退出；拆掉方块时掉东西放在 `preRemoveSideEffects(pos, state)`；同步用 `getUpdateTag` 返回 `saveCustomOnly(registries)`，`getUpdatePacket` 返回 `ClientboundBlockEntityDataPacket.create(this)`。存档的 `ValueOutput#store(名字, codec, 值)`、`ValueInput#read(名字, codec)` 返回 `Optional` | 已确认，传送带、分拣器在用 |
 | 方块实体渲染器里画物品：`context.itemModelResolver()` 的 `updateForTopItem(ItemStackRenderState, 物品, ItemDisplayContext.FIXED, level, null, 种子)`，再 `renderState.submit(pose, collector, 光照, OverlayTexture.NO_OVERLAY, 0)` | 已确认，传送带、分拣器在用 |
+| 按键：`KeyMapping.Category` 是记录 `new KeyMapping.Category(Identifier)`，语言键 `key.category.<命名空间>.<路径>`，在 `RegisterKeyMappingsEvent` 里 `registerCategory` 再 `register(按键)`；键盘类型叫 `InputConstants.Type.KEYBOARD`，键码用 `InputConstants.KEY_J` 这类常量（SDL 的值，不是 GLFW 的） | 已确认，科技树按键在用 |
+| 当前界面挪到了 `Minecraft#gui`：`minecraft.gui.screen()`、`minecraft.gui.setScreen(界面)` | 已确认 |
+| 普通界面 `Screen`：画在 `extractRenderState(GuiGraphicsExtractor, 鼠标x, 鼠标y, a)`，背景在 `extractBackground`；裁剪用 `enableScissor/disableScissor`，`nextStratum()` 之后要重新开裁剪；鼠标事件是记录 `MouseButtonEvent(x, y, buttonInfo)`，`button()` 按 SDL 编号 | 已确认，科技树在用 |
+| 块元素模型的元素可以写 `"shade": false`（不按朝向变暗）和 `"light_emission"`，单独加载的模型转起来时用得上 | 已确认，研究站核心在用 |
 | 动作栏消息是 `Player#sendOverlayMessage(Component)`，`displayClientMessage(…, true)` 没有了；`ChunkPos` 是记录，`ChunkPos.pack(BlockPos)`、`unpack(long)`；看得见某个区块的玩家 `chunkMap.getPlayers(ChunkPos, false)` | 已确认 |
 
 ## 5. 性能预算（目标）

@@ -756,6 +756,66 @@ def storage_depot():
     save(top, BLOCK, "storage_depot_top")
 
 
+def matrix_lab():
+    rng = random.Random(150)
+    # 底座侧面：下面五行是机壳，一排青色的灯
+    side = casing(DARK, rng, seam=False)
+    for x in range(1, N - 1):
+        put(side, x, 10, shade(DARK, 1.3))
+    for x in range(2, N - 2, 3):
+        put(side, x, 13, CYAN)
+        put(side, x + 1, 13, CYAN_DIM)
+    save(side, BLOCK, "matrix_lab_side")
+    # 正面多一块小屏幕
+    front = side.copy()
+    rect(front, 4, 11, 11, 14, (14, 30, 38))
+    for x in range(5, 11):
+        put(front, x, 12, CYAN if x % 2 else CYAN_DIM)
+    put(front, 6, 13, CYAN)
+    put(front, 9, 13, (229, 88, 63))
+    save(front, BLOCK, "matrix_lab_front")
+    # 底座顶面：玻璃罩外面一圈，四角是螺栓
+    top = casing(MID, rng, seam=False)
+    rect(top, 2, 2, 13, 13, shade(MID, 0.55))
+    for y in range(3, 13):
+        for x in range(3, 13):
+            put(top, x, y, shade(MID, 0.75) if (x + y) % 2 else shade(MID, 0.6))
+    save(top, BLOCK, "matrix_lab_top")
+    # 立柱和顶盖：钢，边上一道青色
+    frame_tex = new(LIGHT)
+    noise(frame_tex, rng, 0.04)
+    for i in range(N):
+        put(frame_tex, i, 0, shade(LIGHT, 1.2))
+        put(frame_tex, i, 15, shade(LIGHT, 0.6))
+        put(frame_tex, 0, i, CYAN_DIM)
+        put(frame_tex, 15, i, shade(LIGHT, 0.7))
+    for x in range(3, 13):
+        put(frame_tex, x, 7, shade(LIGHT, 0.7))
+        put(frame_tex, x, 8, CYAN)
+    save(frame_tex, BLOCK, "matrix_lab_frame")
+    # 玻璃：淡青色半透明，边上亮一些，斜着一道反光
+    glass = Image.new("RGBA", (N, N), (150, 220, 240, 60))
+    for i in range(N):
+        for (x, y) in ((i, 0), (i, 15), (0, i), (15, i)):
+            put(glass, x, y, (190, 240, 255), 150)
+    for i in range(3, 9):
+        put(glass, i, 11 - i, (235, 252, 255), 120)
+        put(glass, i + 1, 11 - i, (235, 252, 255), 90)
+    save(glass, BLOCK, "matrix_lab_glass")
+    # 核心：亮的能量方块，中间白，往外是青、蓝，四角一点红（两种矩阵的颜色）
+    core = new()
+    for y in range(N):
+        for x in range(N):
+            d = max(abs(x - 7.5), abs(y - 7.5)) / 7.5
+            c = mix((255, 255, 255), CYAN, min(1, d * 1.4))
+            if d > 0.75:
+                c = mix(CYAN, (60, 110, 230), (d - 0.75) * 4)
+            put(core, x, y, c)
+    for (x, y) in ((1, 1), (14, 1), (1, 14), (14, 14)):
+        put(core, x, y, (220, 60, 50))
+    save(core, BLOCK, "matrix_lab_core")
+
+
 # ---- 物品
 
 def gear():
@@ -957,6 +1017,7 @@ def main():
     conveyor_belt()
     sorter()
     storage_depot()
+    matrix_lab()
     gear()
     magnetic_coil()
     circuit_board()

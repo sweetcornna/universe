@@ -17,6 +17,8 @@ public final class TechTree {
     private static final String NS = "universe:";
     private static final String BLUE = NS + "electromagnetic_matrix";
     private static final String RED = NS + "energy_matrix";
+    /** 研究站认的矩阵，顺序就是研究站格子的顺序。以后加新的矩阵只能往后加，免得存档里的格子对不上。 */
+    public static final List<String> MATRICES = List.of(BLUE, RED);
 
     /** M3 的科技：电磁学阶段上交物品，之后用蓝矩阵、再用蓝红两种矩阵研究。 */
     public static final TechTree DEFAULT = new TechTree(List.of(
@@ -101,6 +103,25 @@ public final class TechTree {
             throw new IllegalArgumentException("unknown tech " + id);
         }
         return d;
+    }
+
+    /** 一共几列：最深的科技的深度加一。 */
+    public int columns() {
+        int columns = 0;
+        for (int d : this.depth.values()) {
+            columns = Math.max(columns, d + 1);
+        }
+        return columns;
+    }
+
+    /** 最长的一列有几个科技。 */
+    public int rows() {
+        Map<Integer, Integer> counts = new HashMap<>();
+        int rows = 0;
+        for (int d : this.depth.values()) {
+            rows = Math.max(rows, counts.merge(d, 1, Integer::sum));
+        }
+        return rows;
     }
 
     /** 同一深度里的第几个（按声明顺序），界面排版用。 */

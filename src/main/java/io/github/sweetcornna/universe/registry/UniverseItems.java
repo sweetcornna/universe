@@ -148,6 +148,7 @@ public final class UniverseItems {
     public static final DeferredItem<BlockItem> ARC_SMELTER = ITEMS.registerSimpleBlockItem(UniverseBlocks.ARC_SMELTER);
     public static final DeferredItem<BlockItem> ASSEMBLER = ITEMS.registerSimpleBlockItem(UniverseBlocks.ASSEMBLER);
     public static final DeferredItem<BlockItem> OIL_REFINERY = ITEMS.registerSimpleBlockItem(UniverseBlocks.OIL_REFINERY);
+    public static final DeferredItem<BlockItem> MATRIX_LAB = ITEMS.registerSimpleBlockItem(UniverseBlocks.MATRIX_LAB);
     public static final DeferredItem<BlockItem> MINING_MACHINE = ITEMS.registerSimpleBlockItem(UniverseBlocks.MINING_MACHINE);
     public static final DeferredItem<BlockItem> WATER_PUMP = ITEMS.registerSimpleBlockItem(UniverseBlocks.WATER_PUMP);
     public static final DeferredItem<BlockItem> OIL_EXTRACTOR = ITEMS.registerSimpleBlockItem(UniverseBlocks.OIL_EXTRACTOR);
@@ -199,7 +200,7 @@ public final class UniverseItems {
         order.addAll(ORE_DROPS.values());
         order.addAll(ORE_SMELTED.values());
         order.addAll(List.of(TESLA_TOWER, WIND_TURBINE, THERMAL_PLANT, ACCUMULATOR, MINING_MACHINE, WATER_PUMP, OIL_EXTRACTOR,
-                ARC_SMELTER, ASSEMBLER, OIL_REFINERY, CONVEYOR_BELT, SORTER, STORAGE_DEPOT, CRUDE_OIL_SEEP,
+                ARC_SMELTER, ASSEMBLER, OIL_REFINERY, MATRIX_LAB, CONVEYOR_BELT, SORTER, STORAGE_DEPOT, CRUDE_OIL_SEEP,
                 GEAR, MAGNETIC_COIL, CIRCUIT_BOARD, ELECTRIC_MOTOR, STEEL, PRISM, PLASMA_EXCITER, ENERGETIC_GRAPHITE,
                 WATER, CRUDE_OIL, REFINED_OIL, HYDROGEN, ELECTROMAGNETIC_MATRIX, ENERGY_MATRIX));
         return List.copyOf(order);

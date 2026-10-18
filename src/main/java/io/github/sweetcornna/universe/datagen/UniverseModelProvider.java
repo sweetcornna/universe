@@ -138,6 +138,11 @@ final class UniverseModelProvider extends ModelProvider {
         blockModels.blockStateOutput.accept(MultiVariantGenerator.dispatch(sorter, BlockModelGenerators.plainVariant(Universe.id("block/sorter")))
                 .with(BlockModelGenerators.ROTATION_HORIZONTAL_FACING));
         itemModels.itemModelOutput.accept(sorter.asItem(), ItemModelUtils.plainModel(Universe.id("block/sorter_item")));
+        // 矩阵研究站：模型是手写的，核心由方块实体渲染器画；物品模型里带着核心
+        Block lab = UniverseBlocks.MATRIX_LAB.get();
+        blockModels.blockStateOutput.accept(MultiVariantGenerator.dispatch(lab, BlockModelGenerators.plainVariant(Universe.id("block/matrix_lab")))
+                .with(BlockModelGenerators.ROTATION_HORIZONTAL_FACING));
+        itemModels.itemModelOutput.accept(lab.asItem(), ItemModelUtils.plainModel(Universe.id("block/matrix_lab_item")));
         Block depot = UniverseBlocks.STORAGE_DEPOT.get();
         Identifier depotModel = ModelTemplates.CUBE_BOTTOM_TOP.create(depot, new TextureMapping()
                 .put(TextureSlot.TOP, texture("storage_depot_top"))

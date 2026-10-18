@@ -447,6 +447,38 @@ def sorter():
     write("sorter_item", model(SORTER_TEXTURES, base + turned(arm)))
 
 
+def matrix_lab():
+    textures = {
+        "particle": "universe:block/matrix_lab_side",
+        "side": "universe:block/matrix_lab_side",
+        "front": "universe:block/matrix_lab_front",
+        "top": "universe:block/matrix_lab_top",
+        "frame": "universe:block/matrix_lab_frame",
+        "glass": "universe:block/matrix_lab_glass",
+        "core": "universe:block/matrix_lab_core",
+    }
+    walls = {"north": "glass", "south": "glass", "west": "glass", "east": "glass", "up": None, "down": None}
+    block = [
+        box((0, 0, 0), (16, 5, 16), {"north": "front", "south": "side", "west": "side", "east": "side", "up": "top", "down": "side"},
+            cull={"down": "down", "north": "north", "south": "south", "west": "west", "east": "east"}),
+        # 玻璃罩、四根立柱、顶盖，罩里放核心的小台子
+        box((1.5, 5, 1.5), (14.5, 14.5, 14.5), walls),
+        box((1, 5, 1), (2.5, 15, 2.5), "frame"),
+        box((13.5, 5, 1), (15, 15, 2.5), "frame"),
+        box((1, 5, 13.5), (2.5, 15, 15), "frame"),
+        box((13.5, 5, 13.5), (15, 15, 15), "frame"),
+        box((1, 14.5, 1), (15, 16, 15), "frame"),
+        box((6, 5, 6), (10, 6, 10), "frame"),
+    ]
+    write("matrix_lab", model(textures, block))
+    # 核心由方块实体渲染器转起来，中心在 (8, 10, 8)
+    core = [box((5.5, 7.5, 5.5), (10.5, 12.5, 10.5), "core", light=15)]
+    # 转起来时各个面一样亮，不按朝向变暗
+    core[0]["shade"] = False
+    write("matrix_lab_core", model(textures, core))
+    write("matrix_lab_item", model(textures, block + core))
+
+
 def main():
     tesla_tower()
     wind_turbine()
@@ -455,6 +487,7 @@ def main():
     oil_refinery()
     conveyor_belt()
     sorter()
+    matrix_lab()
 
 
 if __name__ == "__main__":

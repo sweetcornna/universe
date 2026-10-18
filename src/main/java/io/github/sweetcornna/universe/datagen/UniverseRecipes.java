@@ -108,6 +108,8 @@ final class UniverseRecipes extends RecipeProvider {
         // ---- 手工合成：物流
         this.researchShaped("basic_logistics", RecipeCategory.TRANSPORTATION, UniverseItems.CONVEYOR_BELT.get(), 3,
                 List.of("IGI"), Map.of('I', Items.IRON_INGOT, 'G', gear));
+        this.researchShaped("electromagnetic_matrix", RecipeCategory.REDSTONE, UniverseItems.MATRIX_LAB.get(), 1,
+                List.of("IGI", "CMC", "IGI"), Map.of('I', Items.IRON_INGOT, 'G', Items.GLASS, 'C', board, 'M', coil));
         this.researchShaped("basic_logistics", RecipeCategory.TRANSPORTATION, UniverseItems.SORTER.get(), 1,
                 List.of("I", "B"), Map.of('I', Items.IRON_INGOT, 'B', board));
         this.researchShaped("basic_logistics", RecipeCategory.TRANSPORTATION, UniverseItems.STORAGE_DEPOT.get(), 1,
@@ -179,6 +181,8 @@ final class UniverseRecipes extends RecipeProvider {
         // 设备也能在制造台里做，方便自动化
         this.machine(Kind.ASSEMBLING, "conveyor_belt", 20, "basic_logistics", in(Items.IRON_INGOT, 2, gear, 1),
                 out(UniverseItems.CONVEYOR_BELT.get(), 3));
+        this.machine(Kind.ASSEMBLING, "matrix_lab", 60, "electromagnetic_matrix",
+                in(Items.IRON_INGOT, 4, Items.GLASS, 2, board, 2, coil, 1), out(UniverseItems.MATRIX_LAB.get(), 1));
         this.machine(Kind.ASSEMBLING, "sorter", 20, "basic_logistics", in(Items.IRON_INGOT, 1, board, 1),
                 out(UniverseItems.SORTER.get(), 1));
         this.machine(Kind.ASSEMBLING, "storage_depot", 40, "basic_logistics", in(Items.IRON_INGOT, 4, Items.STONE, 4),

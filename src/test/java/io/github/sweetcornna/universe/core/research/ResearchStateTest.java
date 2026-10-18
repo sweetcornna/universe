@@ -92,10 +92,15 @@ class ResearchStateTest {
         assertEquals(2, tree.depth("basic_assembling"));
         assertEquals(5, tree.depth("plasma_refining"));
         assertEquals(6, tree.depth("energy_matrix"));
+        assertEquals(8, tree.columns());
+        assertEquals(4, tree.rows());
         for (Tech tech : tree.techs()) {
             assertTrue(tech.id().matches("[a-z_]+"), tech.id());
-            tech.matrices().forEach(m -> assertTrue(m.startsWith("universe:"), m));
+            // 研究站只认清单里的矩阵
+            tech.matrices().forEach(m -> assertTrue(TechTree.MATRICES.contains(m), m));
         }
+        assertEquals(3, TREE.columns());
+        assertEquals(2, TREE.rows());
     }
 
     @Test

@@ -9,6 +9,7 @@ import io.github.sweetcornna.universe.factory.power.AccumulatorBlockEntity;
 import io.github.sweetcornna.universe.factory.power.TeslaTowerBlockEntity;
 import io.github.sweetcornna.universe.factory.power.ThermalPlantBlockEntity;
 import io.github.sweetcornna.universe.factory.power.WindTurbineBlockEntity;
+import io.github.sweetcornna.universe.factory.research.MatrixLabBlockEntity;
 import io.github.sweetcornna.universe.factory.resource.MiningMachineBlockEntity;
 import io.github.sweetcornna.universe.factory.resource.OilExtractorBlockEntity;
 import io.github.sweetcornna.universe.factory.resource.WaterPumpBlockEntity;
@@ -46,6 +47,9 @@ public final class UniverseMenus {
             new MachineMenu.Type(WaterPumpBlockEntity.DATA_COUNT, RESOURCE_WIDTH, 166, output(172, 46)));
     public static final MachineMenu.Type OIL_EXTRACTOR = machine("oil_extractor",
             new MachineMenu.Type(OilExtractorBlockEntity.DATA_COUNT, RESOURCE_WIDTH, 166, output(172, 46)));
+    // 矩阵研究站：左边研究进度，右边每种矩阵一格
+    public static final MachineMenu.Type MATRIX_LAB = machine("matrix_lab",
+            new MachineMenu.Type(MatrixLabBlockEntity.DATA_COUNT, 176, 180, input(128, 32), input(148, 32)));
     // 储物仓：3 行 10 列
     public static final MachineMenu.Type STORAGE_DEPOT = machine("storage_depot",
             new MachineMenu.Type(0, 196, 170, grid(9, 20, 10, 3)));
