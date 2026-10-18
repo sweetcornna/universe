@@ -61,6 +61,7 @@ public final class ShipTransit {
 
     private static final List<Pending> PENDING = new ArrayList<>();
     private static final Map<Integer, List<SpaceLayout.Body>> LAYOUTS = new HashMap<>();
+    private static final Map<Integer, Double> STAR_RADII = new HashMap<>();
 
     private ShipTransit() {
     }
@@ -70,6 +71,7 @@ public final class ShipTransit {
         gameBus.addListener(ServerStoppedEvent.class, event -> {
             PENDING.clear();
             LAYOUTS.clear();
+            STAR_RADII.clear();
         });
     }
 
@@ -119,8 +121,10 @@ public final class ShipTransit {
     private static void checkSpace(ShipEntity ship, ServerLevel level, int system) {
         // 恒星挡住飞船
         double ds = Math.sqrt(ship.getX() * ship.getX() + ship.getY() * ship.getY() + ship.getZ() * ship.getZ());
-        if (ds < SpaceLayout.STAR_RADIUS) {
-            pushOut(ship, 0, 0, 0, SpaceLayout.STAR_RADIUS, ds);
+        double starRadius = STAR_RADII.computeIfAbsent(system,
+                index -> Planets.galaxy(level.getServer()).system(index).map(SpaceLayout::starRadius).orElse(400.0));
+        if (ds < starRadius) {
+            pushOut(ship, 0, 0, 0, starRadius, ds);
             notifyPilot(ship, Component.translatable("message.universe.ship.too_hot"));
             return;
         }

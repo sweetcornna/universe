@@ -82,8 +82,8 @@ public final class SkyModel {
     private static SkyBody star(Star star, double[] here) {
         double distance = length(here);
         double real = Math.toDegrees(2 * Math.atan(star.radius() * SUN_RADIUS_AU / distance));
-        // 母星看太阳约 0.53 度，显示成 10 度左右，和原版太阳差不多大
-        double shown = clamp(10 * Math.pow(real / 0.533, 0.6), 3, 40);
+        // 母星看太阳约 0.53 度，显示成 10 度左右，和原版太阳差不多大；致密天体和黑洞另算
+        double shown = StarLook.skyDiameter(star, clamp(10 * Math.pow(real / 0.533, 0.6), 3, 40));
         return new SkyBody(SkyBody.Kind.STAR, null, 0, 0, shown, 1, distance, star.color(), star.color(), false);
     }
 

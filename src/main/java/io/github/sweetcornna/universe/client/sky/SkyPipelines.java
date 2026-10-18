@@ -32,12 +32,12 @@ final class SkyPipelines {
             .withPrimitiveTopology(PrimitiveTopology.QUADS)
             .build();
 
-    /** 恒星：圆盘、日冕和光晕，直接加亮。 */
+    /** 恒星：圆盘、日冕和光晕。预乘透明度，发光的部分 alpha 为 0 等于直接加亮，黑洞的阴影挡住后面的星空。 */
     static final RenderPipeline STAR = RenderPipeline.builder(SKY_SNIPPET)
             .withLocation(Universe.id("pipeline/sky_star"))
             .withVertexShader(Universe.id("core/sky_body"))
             .withFragmentShader(Universe.id("core/sky_star"))
-            .withColorTargetState(new ColorTargetState(BlendFunction.ADDITIVE))
+            .withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT_PREMULTIPLIED_ALPHA))
             .withVertexBinding(0, DefaultVertexFormat.POSITION_TEX)
             .withPrimitiveTopology(PrimitiveTopology.QUADS)
             .build();

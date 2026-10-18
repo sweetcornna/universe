@@ -7,6 +7,7 @@ import java.util.Optional;
 import io.github.sweetcornna.universe.core.galaxy.BodyId;
 import io.github.sweetcornna.universe.core.galaxy.Planet;
 import io.github.sweetcornna.universe.core.galaxy.StarSystem;
+import io.github.sweetcornna.universe.core.sky.StarLook;
 
 /**
  * 恒星系在太空维度里的布局（玩法设计 §6）。
@@ -17,10 +18,12 @@ import io.github.sweetcornna.universe.core.galaxy.StarSystem;
  * <p>每颗星球有一个"大气球"，飞船飞进去就切换到这颗星球的维度。
  */
 public final class SpaceLayout {
-    /** 恒星的半径（格）：飞船靠近到这里就会被挡住。 */
-    public static final double STAR_RADIUS = 400;
-
     private SpaceLayout() {
+    }
+
+    /** 恒星的半径（格）：红矮星两三百格，红巨星一千格，白矮星、中子星只有几十格；飞船靠近到这里就会被挡住。 */
+    public static double starRadius(StarSystem system) {
+        return StarLook.of(system).spaceRadius();
     }
 
     /**

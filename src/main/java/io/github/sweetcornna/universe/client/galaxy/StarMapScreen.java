@@ -357,6 +357,18 @@ public class StarMapScreen extends Screen {
             } else {
                 sprite(graphics, GLOW, p.x(), p.y(), size * 2.4, color);
                 sprite(graphics, GLOW, p.x(), p.y(), size * 0.9, 0xFFFFFFFF);
+                if (star.starClass() == StarClass.NEUTRON_STAR) {
+                    // 脉冲星：两道光束慢慢转
+                    double angle = now / 700.0 + i;
+                    double dx = Math.cos(angle) * size * 2.2;
+                    double dy = Math.sin(angle) * size * 2.2;
+                    line(graphics, p.x() - dx, p.y() - dy, p.x() + dx, p.y() + dy, 0.7F, 0xB0B4A0FF);
+                } else if (star.starClass() == StarClass.WHITE_DWARF) {
+                    // 白矮星：衍射星芒
+                    double reach = size * 1.6;
+                    line(graphics, p.x() - reach, p.y(), p.x() + reach, p.y(), 0.5F, 0x90FFFFFF);
+                    line(graphics, p.x(), p.y() - reach, p.x(), p.y() + reach, 0.5F, 0x90FFFFFF);
+                }
             }
         }
         // 标记：当前位置（青色、呼吸）、选中（白色）、鼠标指着的（灰色）

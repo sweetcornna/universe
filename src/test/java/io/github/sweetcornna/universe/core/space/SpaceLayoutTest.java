@@ -23,7 +23,7 @@ class SpaceLayoutTest {
             assertEquals(system.bodies().size(), bodies.size());
             for (SpaceLayout.Body body : bodies) {
                 double d = Math.sqrt(body.x() * body.x() + body.z() * body.z());
-                assertTrue(d - body.radius() > SpaceLayout.STAR_RADIUS, body.id() + " overlaps the star");
+                assertTrue(d - body.radius() > SpaceLayout.starRadius(system), body.id() + " overlaps the star");
                 assertEquals(0, body.y(), 1e-9);
             }
         }

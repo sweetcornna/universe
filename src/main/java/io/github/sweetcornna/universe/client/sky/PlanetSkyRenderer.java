@@ -44,6 +44,7 @@ import io.github.sweetcornna.universe.core.sky.BodyLook;
 import io.github.sweetcornna.universe.core.sky.SkyBody;
 import io.github.sweetcornna.universe.core.sky.SkyColors;
 import io.github.sweetcornna.universe.core.sky.SkyModel;
+import io.github.sweetcornna.universe.core.sky.StarLook;
 import io.github.sweetcornna.universe.core.sky.StarField;
 import io.github.sweetcornna.universe.core.space.SpaceLayout;
 import io.github.sweetcornna.universe.world.planet.PlanetEnvironment;
@@ -111,6 +112,8 @@ public final class PlanetSkyRenderer implements CustomSkyboxRenderer {
     private int spaceSystemIndex = -1;
     private @Nullable StarSystem spaceSystem;
     private List<SpaceLayout.Body> spaceBodies = List.of();
+    private @Nullable StarSystem lookSystem;
+    private @Nullable StarLook look;
 
     public static void registerEvents(IEventBus modBus, IEventBus gameBus) {
         PlanetSkyRenderer renderer = new PlanetSkyRenderer();
@@ -185,13 +188,15 @@ public final class PlanetSkyRenderer implements CustomSkyboxRenderer {
             this.drawSunrise(pass, sky.sunAngle, sky.sunriseAndSunsetColor);
             SkyColors colors = frame.context().colors();
             float dayFactor = dayFactor(sky.skyColor);
+            StarLook look = this.look(frame.context().system());
+            float seconds = seconds(frame.days());
             float stars = Mth.clamp(sky.starBrightness * 2.0F, 0.0F, 1.0F) * sky.rainBrightness;
             if (stars > 0.002F) {
                 this.drawStarField(pass, sky.starAngle, stars);
             }
             for (SkyBody body : frame.bodies()) {
                 if (body.kind() == SkyBody.Kind.STAR) {
-                    this.drawStar(pass, body, sky, colors);
+                    this.drawStar(pass, body, sky, colors, look, 1.0F - 0.97F * dayFactor, seconds);
                 } else {
                     this.drawBody(pass, body, frame.days(), sky, colors, dayFactor);
                 }
@@ -217,10 +222,12 @@ public final class PlanetSkyRenderer implements CustomSkyboxRenderer {
             this.drawSkyDisc(pass, new Vector3f(0.0F, 0.0F, 0.0F));
             this.drawStarField(pass, 0.0F, 1.0F);
             Vec3 camera = frame.camera();
+            StarLook look = this.look(frame.system());
+            float seconds = seconds(frame.days());
             Vector3f toStar = new Vector3f((float) -camera.x, (float) -camera.y, (float) -camera.z);
             double starDistance = toStar.length();
             toStar.normalize();
-            float starAngular = (float) Math.max(0.8, Math.toDegrees(2 * Math.atan(SpaceLayout.STAR_RADIUS / Math.max(starDistance, 1))));
+            float starAngular = (float) Math.max(0.8, Math.toDegrees(2 * Math.atan(look.spaceRadius() / Math.max(starDistance, 1))));
             boolean starDrawn = starDistance <= 1;
             // 由远及近地画，近的盖住远的；恒星按它的距离插在中间，整个躲在恒星背后的星球不画
             List<SpaceLayout.Body> bodies = new ArrayList<>(frame.bodies());
@@ -231,7 +238,7 @@ public final class PlanetSkyRenderer implements CustomSkyboxRenderer {
                     continue;
                 }
                 if (!starDrawn && distance < starDistance) {
-                    this.drawStarAt(pass, toStar, starAngular, frame.system().star().color());
+                    this.drawStarAt(pass, toStar, starAngular, look, frame.system().star().color(), seconds);
                     starDrawn = true;
                 }
                 // 再远也留一个小点，看得出那里有颗星球
@@ -248,22 +255,58 @@ public final class PlanetSkyRenderer implements CustomSkyboxRenderer {
                 this.drawBodyAt(pass, body.planet(), direction, angular, light, frame.days());
             }
             if (!starDrawn) {
-                this.drawStarAt(pass, toStar, starAngular, frame.system().star().color());
+                this.drawStarAt(pass, toStar, starAngular, look, frame.system().star().color(), seconds);
             }
         }
     }
 
-    private void drawStarAt(RenderPass pass, Vector3f direction, float angularDiameter, int color) {
-        Matrix4f celestial = celestialFor(direction);
-        float radius = radiusAtDistance(angularDiameter);
+    private void drawStarAt(RenderPass pass, Vector3f direction, float angularDiameter, StarLook look, int color, float seconds) {
         // 真空里没有散射，只留一圈不大的光晕
-        float extent = Math.max(2.0F, 8.0F / (angularDiameter / 2));
+        this.drawStarLook(pass, celestialFor(direction), angularDiameter, look, color, 1.0F, 0.0F, 8.0F, 1.0F, seconds);
+    }
+
+    /**
+     * 按恒星的样子画（着色器 {@code sky_star}，参数的排法见那里的注释）。
+     *
+     * @param haloDegrees 光晕的半径（度）
+     * @param occlusion   黑洞的阴影挡住天空的程度：白天的天光在它前面，阴影不该是黑的
+     */
+    private void drawStarLook(RenderPass pass, Matrix4f celestial, float angularDiameter, StarLook look, int color, float visibility,
+            float scatter, float haloDegrees, float occlusion, float seconds) {
+        float radius = radiusAtDistance(angularDiameter);
+        float extent = (float) look.extent(haloDegrees / (angularDiameter / 2));
         Matrix4f matrix = bodyMatrix(celestial, radius * extent);
+        StarLook.Style style = look.style();
+        boolean blackHole = style == StarLook.Style.BLACK_HOLE;
+        boolean compact = style == StarLook.Style.WHITE_DWARF || style == StarLook.Style.PULSAR;
+        float first = (float) (blackHole ? occlusion : compact ? look.nebula() : look.granulation());
+        int glow = look.glowColor();
+        int extra = blackHole ? look.diskHot() : look.nebulaColor();
+        Matrix4f parameters = new Matrix4f(
+                Colors.red(glow) / 255.0F, Colors.green(glow) / 255.0F, Colors.blue(glow) / 255.0F, seconds,
+                first, (float) look.activity(), (float) look.spikes(), (float) look.seed(),
+                (float) (blackHole ? look.diskInner() : look.period()), (float) (blackHole ? look.diskOuter() : look.beamTilt()),
+                (float) look.axisTilt(), (float) look.axisRoll(),
+                Colors.red(extra) / 255.0F, Colors.green(extra) / 255.0F, Colors.blue(extra) / 255.0F,
+                (float) (blackHole ? look.spin() : look.nebulaRadius()));
         GpuBufferSlice transform = RenderSystem.getDynamicUniforms().writeTransform(matrix,
-                new Vector4f(Colors.red(color) / 255.0F, Colors.green(color) / 255.0F, Colors.blue(color) / 255.0F, 1.0F),
-                new Vector3f(0.0F, extent, 0.0F),
-                new Matrix4f());
+                new Vector4f(Colors.red(color) / 255.0F, Colors.green(color) / 255.0F, Colors.blue(color) / 255.0F, visibility),
+                new Vector3f(scatter, extent, style.shaderId()),
+                parameters);
         this.drawQuad(pass, SkyPipelines.STAR, transform);
+    }
+
+    private StarLook look(StarSystem system) {
+        if (system != this.lookSystem || this.look == null) {
+            this.lookSystem = system;
+            this.look = StarLook.of(system);
+        }
+        return this.look;
+    }
+
+    /** 着色器里动画用的时间（秒），按游戏刻走；每两小时绕回一次，免得浮点数精度不够。 */
+    private static float seconds(double days) {
+        return (float) ((days * 1200.0) % 7200.0);
     }
 
     private void drawBodyAt(RenderPass pass, Planet planet, Vector3f direction, float angularDiameter, Vector3f lightWorld, double days) {
@@ -349,25 +392,18 @@ public final class PlanetSkyRenderer implements CustomSkyboxRenderer {
         pass.drawIndexed(this.starIndexCount, 1, 0, 0, 0);
     }
 
-    private void drawStar(RenderPass pass, SkyBody star, SkyRenderState sky, SkyColors colors) {
+    private void drawStar(RenderPass pass, SkyBody star, SkyRenderState sky, SkyColors colors, StarLook look, float occlusion, float seconds) {
         Matrix4f celestial = new Matrix4f().rotateY(-HALF_PI).rotateX(sky.sunAngle);
         Vector3f direction = celestial.transformDirection(new Vector3f(0.0F, 1.0F, 0.0F));
-        float radius = radiusAtDistance(star.angularDiameter());
         // 光晕的大小按角度定（有大气时约 25–40 度），不随恒星的视大小放大
         float haloDegrees = colors.scatter() > 0 ? 25.0F + 15.0F * (float) Math.min(colors.scatter(), 1.0) : 8.0F;
-        float extent = Math.max(2.0F, haloDegrees / (float) (star.angularDiameter() / 2));
         // 沙尘里只剩一团暗淡的光
         float visibility = sky.rainBrightness * horizonFade(direction.y(), colors.scatter()) * (1.0F - 0.92F * ClientWeather.intensity());
         if (visibility <= 0.001F) {
             return;
         }
-        Matrix4f matrix = bodyMatrix(celestial, radius * extent);
-        int color = star.color();
-        GpuBufferSlice transform = RenderSystem.getDynamicUniforms().writeTransform(matrix,
-                new Vector4f(Colors.red(color) / 255.0F, Colors.green(color) / 255.0F, Colors.blue(color) / 255.0F, visibility),
-                new Vector3f((float) colors.scatter(), extent, 0.0F),
-                new Matrix4f());
-        this.drawQuad(pass, SkyPipelines.STAR, transform);
+        this.drawStarLook(pass, celestial, (float) star.angularDiameter(), look, star.color(), visibility, (float) colors.scatter(),
+                haloDegrees, occlusion, seconds);
     }
 
     private void drawBody(RenderPass pass, SkyBody body, double days, SkyRenderState sky, SkyColors colors, float dayFactor) {
