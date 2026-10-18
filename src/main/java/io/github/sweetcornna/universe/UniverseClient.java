@@ -1,5 +1,8 @@
 package io.github.sweetcornna.universe;
 
+import io.github.sweetcornna.universe.client.sentinel.SentinelClient;
+import io.github.sweetcornna.universe.client.sentinel.SentinelRenderer;
+import io.github.sweetcornna.universe.client.PlasmaBoltRenderer;
 import io.github.sweetcornna.universe.client.ClientDimensions;
 import io.github.sweetcornna.universe.client.ClientGalaxy;
 import io.github.sweetcornna.universe.client.ClientWeather;
@@ -14,6 +17,7 @@ import io.github.sweetcornna.universe.client.factory.FactoryClient;
 import io.github.sweetcornna.universe.client.galaxy.StarMapClient;
 import io.github.sweetcornna.universe.client.galaxy.WarpClient;
 import io.github.sweetcornna.universe.client.ship.ShipClient;
+import io.github.sweetcornna.universe.client.poi.PoiClient;
 import io.github.sweetcornna.universe.client.sky.PlanetSkyRenderer;
 import io.github.sweetcornna.universe.client.tech.TechClient;
 import io.github.sweetcornna.universe.datagen.UniverseDataGen;
@@ -42,7 +46,7 @@ public final class UniverseClient {
         PlanetSkyRenderer.registerEvents(modBus, NeoForge.EVENT_BUS);
         ShipClient.registerEvents(modBus, NeoForge.EVENT_BUS);
         SuitClient.registerEvents(modBus, NeoForge.EVENT_BUS);
-        MultitoolClient.registerEvents(modBus);
+        MultitoolClient.registerEvents(modBus, NeoForge.EVENT_BUS);
         FactoryClient.registerEvents(modBus, NeoForge.EVENT_BUS);
         UniverseKeys.registerEvents(modBus);
         StarMapClient.registerEvents(NeoForge.EVENT_BUS);
@@ -50,6 +54,8 @@ public final class UniverseClient {
         ClientDiscoveries.registerEvents(modBus, NeoForge.EVENT_BUS);
         AnalysisVisor.registerEvents(modBus, NeoForge.EVENT_BUS);
         TechClient.registerEvents(modBus, NeoForge.EVENT_BUS);
+        PoiClient.registerEvents(modBus);
+        SentinelClient.registerEvents(modBus);
         // 客户端世界建立环境属性时，从客户端的星团里查星球
         PlanetEnvironment.setClientGalaxy(dimension -> ClientGalaxy.galaxy());
         // 客户端的动物按当前星球的物种表画
@@ -57,6 +63,9 @@ public final class UniverseClient {
         modBus.addListener(EntityRenderersEvent.RegisterRenderers.class, event -> {
             event.registerEntityRenderer(UniverseEntities.ALIEN_CREATURE.get(), AlienCreatureRenderer::new);
             event.registerEntityRenderer(UniverseEntities.ALIEN_FLYER.get(), AlienCreatureRenderer::new);
+            event.registerEntityRenderer(UniverseEntities.PLASMA_BOLT.get(), PlasmaBoltRenderer::new);
+            event.registerEntityRenderer(UniverseEntities.SENTINEL.get(), SentinelRenderer::new);
+            event.registerEntityRenderer(UniverseEntities.HEAVY_SENTINEL.get(), SentinelRenderer::new);
         });
         // 数据生成用的是客户端运行配置（clientData），只在客户端入口登记
         UniverseDataGen.registerEvents(modBus);

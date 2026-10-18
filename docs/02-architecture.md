@@ -266,6 +266,15 @@ io.github.sweetcornna.universe
 | 受伤：`LivingIncomingDamageEvent` 在护甲之前，`getAmount/setAmount`；难度缩放在它之前，和平难度下生物攻击已经是 0，`/damage` 会报"目标免疫"。死亡掉落：`LivingDropsEvent#getDrops()` 里加 `player.createItemStackToDrop(物品, true, false)`，墓碑类模组能收到 | 已确认，个人护盾、货舱在用 |
 | 拾取：`ItemEntityPickupEvent.Pre#setCanPickup` 用 `net.minecraft.util.TriState`（NeoForge 自己的 `TriState` 没有了）；`ItemEntity#hasPickUpDelay()`；背包空位 `Inventory#getFreeSlot()`、`getSlotWithRemainingSpace(物品)`，当前格 `getSelectedSlot()` | 已确认，货舱在用 |
 | 十六色的方块和物品收进了记录：`Items.WOOL.white()`、`Items.WOOL.red()` 这样取，没有 `Items.WHITE_WOOL` 了 | 已确认 |
+| 铜制方块和物品也收进了记录，按氧化程度取：`Items.LIGHTNING_ROD.weathering().unaffected()`（`WeatheringCopperCollection`），配方里不能直接写 `Items.LIGHTNING_ROD` | 已确认，信号增强器的配方在用 |
+| 战利品表：`LootItem.lootTableItem(...)` 返回 `UniformContainerBase.Builder<?>`，没有 `LootPoolSingletonContainer` 了。自定义战利品函数继承 `LootItemConditionalFunction`，`simpleBuilder(condition -> ...)` 造 builder，`MapCodec` 登记在 `Registries.LOOT_FUNCTION_TYPE`；带战利品表的箱子方块实体继承 `RandomizableContainerBlockEntity`，世界生成时用 `RandomizableContainer.setBlockEntityLootTable(level, random, pos, 表)` 挂上表，第一次打开才生成物品 | 已确认，兴趣点的物资箱、随机模块在用 |
+| 弹射物：继承 `ThrowableProjectile`，重写 `getDefaultGravity()`（0 就直线飞）和 `getAirDrag()`；`shoot(x, y, z, 速度, 散布)`；`canHitEntity`、`onHitEntity`、`onHit` 处理命中，`handleEntityEvent` 在客户端放命中特效。发射者经生成包同步，客户端的 `getOwner()` 也拿得到 | 已确认，等离子弹在用 |
+| 伤害：`hurtServer(ServerLevel, DamageSource, float)`；`invulnerableTime` 是私有字段，连发武器每发都要算伤害时先 `setInvulnerableTime(0)`。原版击退（`dealDefaultKnockback` → `knockback(0.4, …)`）会把站在地上的目标往上抛，低重力下抛得很远；伤害类型进 `minecraft:no_knockback` 标签就不击退，自己用 `push(Vec3)` 推（`hurtMarked` 改名 `needsSync`，`push` 会自己置上） | 已确认，等离子弹在用 |
+| `EntityType.Builder`：`noSave()`（不存盘）、`eyeHeight(高度)`、`notInPeaceful()`（默认和平难度也能存在）；`EntityType#getSpawnAABB(x, y, z)` 配合 `level.noCollision(AABB)` 找空位 | 已确认，守卫机在用 |
+| `getNearestPlayer(实体, 距离)` 和 `getNearestPlayer(x, y, z, 距离, 是否排除创造)` 都跳过旁观者：用旁观模式看"附近没人就消失"的实体，实体会当着你的面消失 | 已确认，守卫机踩过 |
+| `ParticleTypes.FLASH` 现在是 `ParticleType<ColorParticleOption>`，要给颜色；一部分 `SoundEvents` 常量是 `Holder<SoundEvent>`（`GENERIC_EXPLODE`、`CROSSBOW_LOADING_END`、`NOTE_BLOCK_*`、`UI_BUTTON_CLICK` 等），`level.playSound` 有接 `Holder` 的重载，`Entity#playSound` 要 `.value()` | 已确认 |
+| 物品提示：`Item#appendHoverText(ItemStack, TooltipContext, TooltipDisplay, Consumer<Component>, TooltipFlag)`，往 `Consumer` 里加行；`Component.keybind("key.…")` 显示玩家当前绑定的按键 | 已确认，多功能工具在用 |
+| 界面里换行的文字：`graphics.textWithWordWrap(font, 文字, x, y, 宽, 颜色, 阴影)` 只管画；要按行数排下面的控件，用 `font.split(文字, 宽).size() * font.lineHeight` 算高度（中英文行数不同） | 已确认，信号增强器界面踩过 |
 
 ## 5. 性能预算（目标）
 

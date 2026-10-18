@@ -2,8 +2,8 @@
   "type": "universe:assembling",
   "ingredients": [
     {
-      "count": 1,
-      "ingredient": "universe:circuit_board"
+      "count": 3,
+      "ingredient": "universe:sentinel_scrap"
     },
     {
       "count": 3,

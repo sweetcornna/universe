@@ -1,0 +1,34 @@
+{
+  "variants": {
+    "facing=east,repaired=false": {
+      "model": "universe:block/drop_pod",
+      "y": 90
+    },
+    "facing=east,repaired=true": {
+      "model": "universe:block/drop_pod_repaired",
+      "y": 90
+    },
+    "facing=north,repaired=false": {
+      "model": "universe:block/drop_pod"
+    },
+    "facing=north,repaired=true": {
+      "model": "universe:block/drop_pod_repaired"
+    },
+    "facing=south,repaired=false": {
+      "model": "universe:block/drop_pod",
+      "y": 180
+    },
+    "facing=south,repaired=true": {
+      "model": "universe:block/drop_pod_repaired",
+      "y": 180
+    },
+    "facing=west,repaired=false": {
+      "model": "universe:block/drop_pod",
+      "y": 270
+    },
+    "facing=west,repaired=true": {
+      "model": "universe:block/drop_pod_repaired",
+      "y": 270
+    }
+  }
+}

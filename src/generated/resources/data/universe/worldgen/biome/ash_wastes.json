@@ -36,6 +36,7 @@
       "universe:planet_flora"
     ],
     [
+      "universe:planet_poi",
       "minecraft:freeze_top_layer"
     ]
   ],

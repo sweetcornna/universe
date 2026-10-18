@@ -2,8 +2,8 @@
   "type": "universe:assembling",
   "ingredients": [
     {
-      "count": 1,
-      "ingredient": "universe:circuit_board"
+      "count": 2,
+      "ingredient": "universe:sentinel_scrap"
     },
     {
       "count": 2,
@@ -12,6 +12,10 @@
     {
       "count": 2,
       "ingredient": "universe:oxygen_capsule"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:circuit_board"
     }
   ],
   "research": "tech_modules",

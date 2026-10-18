@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "universe:block/supply_crate",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "universe:block/supply_crate"
+    },
+    "facing=south": {
+      "model": "universe:block/supply_crate",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "universe:block/supply_crate",
+      "y": 270
+    }
+  }
+}

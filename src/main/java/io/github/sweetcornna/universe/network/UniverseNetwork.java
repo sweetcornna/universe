@@ -1,5 +1,6 @@
 package io.github.sweetcornna.universe.network;
 
+import io.github.sweetcornna.universe.survival.Multitool;
 import io.github.sweetcornna.universe.discovery.Discoveries;
 import io.github.sweetcornna.universe.entity.ship.ShipWarp;
 import io.github.sweetcornna.universe.factory.research.Research;
@@ -18,7 +19,7 @@ import net.neoforged.neoforge.server.ServerLifecycleHooks;
  */
 public final class UniverseNetwork {
     /** 协议版本：任何包的格式改动都要加一，版本不同的客户端和服务端会拒绝连接。 */
-    private static final String PROTOCOL_VERSION = "10";
+    private static final String PROTOCOL_VERSION = "12";
 
     private UniverseNetwork() {
     }
@@ -39,11 +40,15 @@ public final class UniverseNetwork {
                 .playToClient(BeltLinesPayload.TYPE, BeltLinesPayload.STREAM_CODEC)
                 .playToClient(WarpPayload.TYPE, WarpPayload.STREAM_CODEC)
                 .playToClient(DiscoveryPayload.TYPE, DiscoveryPayload.STREAM_CODEC)
+                .playToClient(PoiTextPayload.TYPE, PoiTextPayload.STREAM_CODEC)
+                .playToClient(OpenSignalBoosterPayload.TYPE, OpenSignalBoosterPayload.STREAM_CODEC)
                 .playToServer(JetpackPayload.TYPE, JetpackPayload.STREAM_CODEC, PlayerSurvival::handleJetpack)
                 .playToServer(ResearchActionPayload.TYPE, ResearchActionPayload.STREAM_CODEC, Research::handleAction)
                 .playToServer(WarpRequestPayload.TYPE, WarpRequestPayload.STREAM_CODEC, ShipWarp::handleRequest)
                 .playToServer(AnalyzePayload.TYPE, AnalyzePayload.STREAM_CODEC, Discoveries::handleAnalyze)
                 .playToServer(RenamePayload.TYPE, RenamePayload.STREAM_CODEC, Discoveries::handleRename)
-                .playToServer(OpenTechPayload.TYPE, OpenTechPayload.STREAM_CODEC, SuitTech::handleOpen);
+                .playToServer(OpenTechPayload.TYPE, OpenTechPayload.STREAM_CODEC, SuitTech::handleOpen)
+                .playToServer(LocatePoiPayload.TYPE, LocatePoiPayload.STREAM_CODEC, LocatePoiPayload::handle)
+                .playToServer(ToolModePayload.TYPE, ToolModePayload.STREAM_CODEC, Multitool::handleToggleMode);
     }
 }

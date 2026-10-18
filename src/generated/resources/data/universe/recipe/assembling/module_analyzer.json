@@ -3,7 +3,7 @@
   "ingredients": [
     {
       "count": 2,
-      "ingredient": "universe:circuit_board"
+      "ingredient": "universe:sentinel_scrap"
     },
     {
       "count": 3,
@@ -12,6 +12,10 @@
     {
       "count": 1,
       "ingredient": "minecraft:spyglass"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:circuit_board"
     }
   ],
   "research": "tech_modules",

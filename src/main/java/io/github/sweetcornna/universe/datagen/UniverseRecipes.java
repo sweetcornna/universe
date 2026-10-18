@@ -58,6 +58,7 @@ final class UniverseRecipes extends RecipeProvider {
                 .unlockedBy(getHasName(UniverseItems.ALIEN_HIDE.get()), this.has(UniverseItems.ALIEN_HIDE.get()))
                 .save(this.output, "universe:leather_from_alien_hide");
         this.ships();
+        this.pois();
         this.ores();
         this.suit();
         this.multitool();
@@ -196,22 +197,23 @@ final class UniverseRecipes extends RecipeProvider {
         this.machine(Kind.ASSEMBLING, "warp_drive", 120, "warp_drive",
                 in(titanium, 4, UniverseItems.PLASMA_EXCITER.get(), 2, UniverseItems.STEEL.get(), 2, UniverseItems.ACCUMULATOR.get(), 1),
                 out(UniverseItems.WARP_DRIVE.get(), 1));
-        // 技术模块（ADR-0014）：都要电路板和勘探数据，再加各自的材料；做出来是 C 级，第一次进背包时定下数值
+        // 技术模块（ADR-0014）：都要守卫机残骸和勘探数据，再加各自的材料；做出来是 C 级，第一次进背包时定下数值
         Item survey = UniverseItems.SURVEY_DATA.get();
+        Item scrap = UniverseItems.SENTINEL_SCRAP.get();
         Map<ModuleType, List<SizedIngredient>> modules = new LinkedHashMap<>();
-        modules.put(ModuleType.LIFE_SUPPORT, in(board, 1, survey, 2, UniverseItems.OXYGEN_CAPSULE.get(), 2));
-        modules.put(ModuleType.COLD_LINING, in(board, 1, survey, 2, Items.WOOL.white(), 2, UniverseItems.HAZARD_CELL.get(), 1));
-        modules.put(ModuleType.HEAT_LINING, in(board, 1, survey, 2, Items.MAGMA_CREAM, 1, UniverseItems.HAZARD_CELL.get(), 1));
-        modules.put(ModuleType.TOXIN_FILTER, in(board, 1, survey, 2, Items.CHARCOAL, 2, UniverseItems.HAZARD_CELL.get(), 1));
-        modules.put(ModuleType.RADIATION_SHIELD, in(board, 1, survey, 2, UniverseItems.STEEL.get(), 1, UniverseItems.HAZARD_CELL.get(), 1));
-        modules.put(ModuleType.JET_BOOSTER, in(board, 1, survey, 2, UniverseItems.LAUNCH_FUEL.get(), 2, gear, 2));
-        modules.put(ModuleType.SERVO, in(board, 1, survey, 2, UniverseItems.ELECTRIC_MOTOR.get(), 1, gear, 1));
-        modules.put(ModuleType.SHIELD, in(board, 1, survey, 3, coil, 2, prism, 1));
-        modules.put(ModuleType.BEAM_FOCUS, in(board, 1, survey, 2, Items.GLASS, 2, coil, 1));
-        modules.put(ModuleType.HEAT_SINK, in(board, 1, survey, 2, Items.COPPER_INGOT, 3));
-        modules.put(ModuleType.SCANNER_ARRAY, in(board, 2, survey, 2, Items.REDSTONE, 2, coil, 1));
-        modules.put(ModuleType.ANALYZER, in(board, 2, survey, 3, Items.SPYGLASS, 1));
-        modules.put(ModuleType.WEAPON_CALIBRATOR, in(board, 1, survey, 2, gear, 2, coil, 1));
+        modules.put(ModuleType.LIFE_SUPPORT, in(scrap, 2, survey, 2, UniverseItems.OXYGEN_CAPSULE.get(), 2, board, 1));
+        modules.put(ModuleType.COLD_LINING, in(scrap, 2, survey, 2, Items.WOOL.white(), 2, UniverseItems.HAZARD_CELL.get(), 1));
+        modules.put(ModuleType.HEAT_LINING, in(scrap, 2, survey, 2, Items.MAGMA_CREAM, 1, UniverseItems.HAZARD_CELL.get(), 1));
+        modules.put(ModuleType.TOXIN_FILTER, in(scrap, 2, survey, 2, Items.CHARCOAL, 2, UniverseItems.HAZARD_CELL.get(), 1));
+        modules.put(ModuleType.RADIATION_SHIELD, in(scrap, 2, survey, 2, UniverseItems.STEEL.get(), 1, UniverseItems.HAZARD_CELL.get(), 1));
+        modules.put(ModuleType.JET_BOOSTER, in(scrap, 2, survey, 2, UniverseItems.LAUNCH_FUEL.get(), 2, gear, 2));
+        modules.put(ModuleType.SERVO, in(scrap, 2, survey, 2, UniverseItems.ELECTRIC_MOTOR.get(), 1, gear, 1));
+        modules.put(ModuleType.SHIELD, in(scrap, 3, survey, 3, coil, 2, prism, 1));
+        modules.put(ModuleType.BEAM_FOCUS, in(scrap, 2, survey, 2, Items.GLASS, 2, coil, 1));
+        modules.put(ModuleType.HEAT_SINK, in(scrap, 2, survey, 2, Items.COPPER_INGOT, 3, board, 1));
+        modules.put(ModuleType.SCANNER_ARRAY, in(scrap, 2, survey, 2, board, 2, coil, 1));
+        modules.put(ModuleType.ANALYZER, in(scrap, 2, survey, 3, Items.SPYGLASS, 1, board, 2));
+        modules.put(ModuleType.WEAPON_CALIBRATOR, in(scrap, 3, survey, 2, gear, 2, coil, 1));
         modules.forEach((type, ingredients) -> this.machine(Kind.ASSEMBLING, type.itemName(), 100, "tech_modules", ingredients,
                 out(UniverseItems.MODULES.get(type).get(), 1)));
         this.machine(Kind.ASSEMBLING, "matrix_lab", 60, "electromagnetic_matrix",
@@ -361,6 +363,20 @@ final class UniverseRecipes extends RecipeProvider {
     }
 
     /** 飞船部件：前期的铁、铜、熔炉就能造出能飞的船，脉冲引擎要钻石和末影珍珠。 */
+    /** 信号增强器和导航数据（ADR-0014）：电路板做出来就能做，早期探索用得上。 */
+    private void pois() {
+        Item board = UniverseItems.CIRCUIT_BOARD.get();
+        this.shaped(RecipeCategory.TOOLS, UniverseItems.SIGNAL_BOOSTER.get())
+                .pattern(" R ").pattern("CBC").pattern("III")
+                .define('R', Items.LIGHTNING_ROD.weathering().unaffected()).define('C', Items.COPPER_INGOT).define('B', board).define('I', Items.IRON_INGOT)
+                .unlockedBy(getHasName(board), this.has(board))
+                .save(this.output);
+        this.shapeless(RecipeCategory.MISC, UniverseItems.NAVIGATION_DATA.get(), 2)
+                .requires(board).requires(Items.PAPER, 2).requires(Items.REDSTONE)
+                .unlockedBy(getHasName(board), this.has(board))
+                .save(this.output);
+    }
+
     private void ships() {
         this.shaped(RecipeCategory.TRANSPORTATION, UniverseItems.SHIP_HELM.get())
                 .pattern("GGG").pattern("CEC").pattern("III")

@@ -4,10 +4,12 @@ import org.slf4j.Logger;
 
 import com.mojang.logging.LogUtils;
 
+import io.github.sweetcornna.universe.sentinel.Sentinels;
 import io.github.sweetcornna.universe.discovery.Discoveries;
 import io.github.sweetcornna.universe.entity.FaunaSpawner;
 import io.github.sweetcornna.universe.entity.ship.ShipTransit;
 import io.github.sweetcornna.universe.network.UniverseNetwork;
+import io.github.sweetcornna.universe.poi.Pois;
 import io.github.sweetcornna.universe.registry.UniverseAttachments;
 import io.github.sweetcornna.universe.survival.PlayerSurvival;
 import io.github.sweetcornna.universe.tech.SuitTech;
@@ -72,6 +74,8 @@ public final class Universe {
         Research.registerEvents(gameBus);
         Discoveries.registerEvents(gameBus);
         SuitTech.registerEvents(gameBus);
+        Pois.registerEvents(gameBus);
+        Sentinels.registerEvents(gameBus);
         FactoryCapabilities.registerEvents(modBus);
         gameBus.addListener(RegisterCommandsEvent.class, event -> DimensionCommand.register(event.getDispatcher()));
     }

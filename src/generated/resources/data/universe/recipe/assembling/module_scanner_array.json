@@ -3,7 +3,7 @@
   "ingredients": [
     {
       "count": 2,
-      "ingredient": "universe:circuit_board"
+      "ingredient": "universe:sentinel_scrap"
     },
     {
       "count": 2,
@@ -11,7 +11,7 @@
     },
     {
       "count": 2,
-      "ingredient": "minecraft:redstone"
+      "ingredient": "universe:circuit_board"
     },
     {
       "count": 1,

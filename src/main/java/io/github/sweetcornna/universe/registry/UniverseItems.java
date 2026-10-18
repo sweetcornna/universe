@@ -93,6 +93,23 @@ public final class UniverseItems {
     /** 勘探数据：第一个发现恒星系、星球、物种、矿物的玩家拿到，上交给部分科技（ADR-0012）。 */
     public static final DeferredItem<Item> SURVEY_DATA = ITEMS.registerSimpleItem("survey_data");
 
+    /** 导航数据：信号增强器定位兴趣点要消耗一份（ADR-0014）。 */
+    public static final DeferredItem<Item> NAVIGATION_DATA = ITEMS.registerSimpleItem("navigation_data");
+    /** 守卫机残骸：击毁守卫机掉落，用来做 C 级技术模块（ADR-0014）。 */
+    public static final DeferredItem<Item> SENTINEL_SCRAP = ITEMS.registerSimpleItem("sentinel_scrap");
+    public static final DeferredItem<SpawnEggItem> SENTINEL_SPAWN_EGG = ITEMS.registerItem("sentinel_spawn_egg",
+            SpawnEggItem::new, properties -> properties.spawnEgg(UniverseEntities.SENTINEL.get()));
+    public static final DeferredItem<SpawnEggItem> HEAVY_SENTINEL_SPAWN_EGG = ITEMS.registerItem("heavy_sentinel_spawn_egg",
+            SpawnEggItem::new, properties -> properties.spawnEgg(UniverseEntities.HEAVY_SENTINEL.get()));
+    // ---- 兴趣点的方块（ADR-0014）
+    public static final DeferredItem<BlockItem> SIGNAL_BOOSTER = ITEMS.registerSimpleBlockItem(UniverseBlocks.SIGNAL_BOOSTER);
+    public static final DeferredItem<BlockItem> SUPPLY_CRATE = ITEMS.registerSimpleBlockItem(UniverseBlocks.SUPPLY_CRATE);
+    public static final DeferredItem<BlockItem> DROP_POD = ITEMS.registerSimpleBlockItem(UniverseBlocks.DROP_POD);
+    public static final DeferredItem<BlockItem> DATA_TERMINAL = ITEMS.registerSimpleBlockItem(UniverseBlocks.DATA_TERMINAL);
+    public static final DeferredItem<BlockItem> MONOLITH = ITEMS.registerSimpleBlockItem(UniverseBlocks.MONOLITH);
+    public static final DeferredItem<BlockItem> TECH_CACHE = ITEMS.registerSimpleBlockItem(UniverseBlocks.TECH_CACHE);
+    public static final DeferredItem<BlockItem> SMOLDERING_WRECK = ITEMS.registerSimpleBlockItem(UniverseBlocks.SMOLDERING_WRECK);
+
     // ---- 外骨骼
     public static final DeferredItem<Item> EXOSUIT_HELMET = ITEMS.registerSimpleItem("exosuit_helmet",
             properties -> properties.humanoidArmor(Exosuit.MATERIAL, ArmorType.HELMET));
@@ -213,6 +230,8 @@ public final class UniverseItems {
         order.addAll(List.of(EXOSUIT_HELMET, EXOSUIT_CHESTPLATE, EXOSUIT_LEGGINGS, EXOSUIT_BOOTS, OXYGEN_CAPSULE, HAZARD_CELL,
                 MULTITOOL, DAMAGED_MULTITOOL));
         order.addAll(MODULES.values());
+        order.addAll(List.of(NAVIGATION_DATA, SIGNAL_BOOSTER, SUPPLY_CRATE, DROP_POD, DATA_TERMINAL, MONOLITH, TECH_CACHE, SMOLDERING_WRECK));
+        order.addAll(List.of(SENTINEL_SCRAP, SENTINEL_SPAWN_EGG, HEAVY_SENTINEL_SPAWN_EGG));
         order.addAll(ORES.values());
         order.addAll(ORE_DROPS.values());
         order.addAll(ORE_SMELTED.values());

@@ -13,6 +13,12 @@ import io.github.sweetcornna.universe.block.PlanetBloomBlock;
 import io.github.sweetcornna.universe.block.PlanetLeavesBlock;
 import io.github.sweetcornna.universe.block.PlanetLogBlock;
 import io.github.sweetcornna.universe.block.PlanetPlantBlock;
+import io.github.sweetcornna.universe.block.poi.DataTerminalBlock;
+import io.github.sweetcornna.universe.block.poi.DropPodBlock;
+import io.github.sweetcornna.universe.block.poi.MonolithBlock;
+import io.github.sweetcornna.universe.block.poi.SignalBoosterBlock;
+import io.github.sweetcornna.universe.block.poi.SmolderingWreckBlock;
+import io.github.sweetcornna.universe.block.poi.SupplyCrateBlock;
 import io.github.sweetcornna.universe.block.ship.FuelTankBlock;
 import io.github.sweetcornna.universe.block.ship.ImpulseEngineBlock;
 import io.github.sweetcornna.universe.block.ship.WarpDriveBlock;
@@ -117,6 +123,29 @@ public final class UniverseBlocks {
                     .lightLevel(state -> 9));
     public static final DeferredBlock<ShipSeatBlock> SHIP_SEAT = BLOCKS.registerBlock("ship_seat", ShipSeatBlock::new,
             p -> p.mapColor(MapColor.COLOR_GRAY).strength(1.5F).sound(SoundType.WOOL).noOcclusion());
+    // ---- 兴趣点（ADR-0014）
+    /** 掉落舱的控制台：挖不掉，修好一次就亮绿灯。 */
+    public static final DeferredBlock<DropPodBlock> DROP_POD = BLOCKS.registerBlock("drop_pod", DropPodBlock::new,
+            p -> p.mapColor(MapColor.SNOW).strength(-1.0F, 3600000.0F).sound(SoundType.METAL).noLootTable()
+                    .lightLevel(state -> state.getValue(DropPodBlock.REPAIRED) ? 9 : 4).pushReaction(PushReaction.IMMOVEABLE));
+    public static final DeferredBlock<DataTerminalBlock> DATA_TERMINAL = BLOCKS.registerBlock("data_terminal", DataTerminalBlock::new,
+            p -> p.mapColor(MapColor.METAL).strength(3.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().lightLevel(state -> 6));
+    /** 先驱者的石碑：挖不掉。 */
+    public static final DeferredBlock<MonolithBlock> MONOLITH = BLOCKS.registerBlock("monolith", MonolithBlock::new,
+            p -> p.mapColor(MapColor.DEEPSLATE).strength(-1.0F, 3600000.0F).sound(SoundType.DEEPSLATE_TILES).noLootTable()
+                    .lightLevel(state -> 7).pushReaction(PushReaction.IMMOVEABLE));
+    /** 科技储藏箱：埋在地下，挖开掉一个随机模块。 */
+    public static final DeferredBlock<Block> TECH_CACHE = BLOCKS.registerSimpleBlock("tech_cache",
+            p -> p.mapColor(MapColor.COLOR_CYAN).strength(2.5F, 6.0F).sound(SoundType.METAL).lightLevel(state -> 5));
+    public static final DeferredBlock<SignalBoosterBlock> SIGNAL_BOOSTER = BLOCKS.registerBlock("signal_booster", SignalBoosterBlock::new,
+            p -> p.mapColor(MapColor.METAL).strength(3.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()
+                    .lightLevel(state -> 4));
+    public static final DeferredBlock<SupplyCrateBlock> SUPPLY_CRATE = BLOCKS.registerBlock("supply_crate", SupplyCrateBlock::new,
+            p -> p.mapColor(MapColor.COLOR_GRAY).strength(2.5F, 6.0F).sound(SoundType.METAL));
+    /** 坠毁飞船上还在冒烟的残骸，挖掉出船体板。 */
+    public static final DeferredBlock<SmolderingWreckBlock> SMOLDERING_WRECK = BLOCKS.registerBlock("smoldering_wreck",
+            SmolderingWreckBlock::new, p -> p.mapColor(MapColor.COLOR_BLACK).strength(2.0F, 6.0F).sound(SoundType.NETHERITE_BLOCK)
+                    .requiresCorrectToolForDrops().lightLevel(state -> 3));
     // ---- 工业（ADR-0011）
     public static final DeferredBlock<TallMachineBlock> TESLA_TOWER = BLOCKS.registerBlock("tesla_tower",
             p -> new TallMachineBlock(p, UniverseBlockEntities.TESLA_TOWER),

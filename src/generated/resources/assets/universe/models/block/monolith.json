@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column",
+  "textures": {
+    "end": "universe:block/monolith_top",
+    "side": "universe:block/monolith_side"
+  }
+}

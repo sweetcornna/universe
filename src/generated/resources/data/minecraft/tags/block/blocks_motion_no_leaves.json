@@ -35,6 +35,13 @@
     "universe:hull_plating_brown",
     "universe:hull_plating_green",
     "universe:hull_plating_red",
-    "universe:hull_plating_black"
+    "universe:hull_plating_black",
+    "universe:drop_pod",
+    "universe:data_terminal",
+    "universe:monolith",
+    "universe:tech_cache",
+    "universe:signal_booster",
+    "universe:supply_crate",
+    "universe:smoldering_wreck"
   ]
 }

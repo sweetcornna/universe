@@ -4,13 +4,18 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+import io.github.sweetcornna.universe.survival.Multitool;
+import io.github.sweetcornna.universe.network.ToolModePayload;
+import io.github.sweetcornna.universe.core.survival.ToolMode;
 import io.github.sweetcornna.universe.Universe;
+import io.github.sweetcornna.universe.core.poi.PoiType;
 import io.github.sweetcornna.universe.core.survival.LaserHeat;
 import io.github.sweetcornna.universe.network.ScanResultPayload;
 import io.github.sweetcornna.universe.registry.UniverseAttachments;
 import io.github.sweetcornna.universe.survival.MultitoolItem;
 import io.github.sweetcornna.universe.survival.SuitHud;
-import net.minecraft.client.Camera;
+import net.neoforged.neoforge.client.network.ClientPacketDistributor;
+import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -29,7 +34,8 @@ import net.neoforged.neoforge.client.network.event.RegisterClientPayloadHandlers
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 /**
- * 多功能工具的客户端部分：准星下方的激光热量条，以及扫描到的矿脉标记（投影到屏幕上，30 秒后淡出）。
+ * 多功能工具的客户端部分：模式切换键、战斗模式的准星框、准星下方的热量条，以及扫描到的矿脉和兴趣点标记
+ * （投影到屏幕上，30 秒后淡出）。
  */
 public final class MultitoolClient {
     /** 标记显示多久（刻）。 */
@@ -40,15 +46,29 @@ public final class MultitoolClient {
     private record Marker(Vec3 pos, Block block, int count, int color) {
     }
 
+    /** 扫描到的兴趣点（ADR-0014）。 */
+    private record PoiMark(Vec3 pos, PoiType type, boolean visited) {
+    }
+
     private static List<Marker> markers = List.of();
+    private static List<PoiMark> pois = List.of();
     private static long scannedAt;
 
     private MultitoolClient() {
     }
 
-    public static void registerEvents(IEventBus modBus) {
+    public static void registerEvents(IEventBus modBus, IEventBus gameBus) {
         modBus.addListener(RegisterClientPayloadHandlersEvent.class,
                 event -> event.register(ScanResultPayload.TYPE, MultitoolClient::handle));
+        gameBus.addListener(ClientTickEvent.Post.class, event -> {
+            Minecraft minecraft = Minecraft.getInstance();
+            while (UniverseKeys.TOOL_MODE.consumeClick()) {
+                if (minecraft.gui.screen() == null && minecraft.player != null
+                        && minecraft.player.getMainHandItem().getItem() instanceof MultitoolItem) {
+                    ClientPacketDistributor.sendToServer(ToolModePayload.INSTANCE);
+                }
+            }
+        });
         modBus.addListener(RegisterGuiLayersEvent.class, event -> {
             event.registerBelow(VanillaGuiLayers.CROSSHAIR, Universe.id("scan_markers"), MultitoolClient::renderMarkers);
             event.registerAbove(VanillaGuiLayers.CROSSHAIR, Universe.id("laser_heat"), MultitoolClient::renderHeat);
@@ -62,6 +82,8 @@ public final class MultitoolClient {
             list.add(new Marker(Vec3.atCenterOf(marker.pos()), block, marker.count(), color(marker.block())));
         }
         markers = List.copyOf(list);
+        pois = payload.pois().stream().map(poi -> new PoiMark(Vec3.atBottomCenterOf(poi.pos()).add(0, 1.5, 0), poi.type(), poi.visited()))
+                .toList();
         Minecraft minecraft = Minecraft.getInstance();
         scannedAt = minecraft.level == null ? 0 : minecraft.level.getGameTime();
     }
@@ -73,6 +95,9 @@ public final class MultitoolClient {
         LocalPlayer player = minecraft.player;
         if (player == null || minecraft.gui.hud.isHidden() || !(player.getMainHandItem().getItem() instanceof MultitoolItem)) {
             return;
+        }
+        if (Multitool.mode(player.getMainHandItem()) == ToolMode.COMBAT && minecraft.options.getCameraType().isFirstPerson()) {
+            reticle(graphics, graphics.guiWidth() / 2, graphics.guiHeight() / 2);
         }
         SuitHud hud = player.getData(UniverseAttachments.SUIT_HUD);
         if (hud.laser() <= 0) {
@@ -93,56 +118,59 @@ public final class MultitoolClient {
         }
     }
 
+    /** 战斗模式的准星框：准星四角各一个青色的折角。 */
+    private static void reticle(GuiGraphicsExtractor graphics, int cx, int cy) {
+        int color = 0xC06FE3FF;
+        int r = 7;
+        int len = 3;
+        for (int sx = -1; sx <= 1; sx += 2) {
+            for (int sy = -1; sy <= 1; sy += 2) {
+                int x = cx + sx * r;
+                int y = cy + sy * r;
+                // 横的一段和竖的一段，朝准星收拢
+                int x0 = Math.min(x, x - sx * len);
+                int y0 = Math.min(y, y - sy * len);
+                graphics.fill(x0, y, x0 + len + 1, y + 1, color);
+                graphics.fill(x, y0, x + 1, y0 + len + 1, color);
+            }
+        }
+    }
+
     // ---- 矿脉标记
 
     private static void renderMarkers(GuiGraphicsExtractor graphics, DeltaTracker delta) {
         Minecraft minecraft = Minecraft.getInstance();
-        if (markers.isEmpty() || minecraft.level == null || minecraft.player == null || minecraft.gui.hud.isHidden()) {
+        if (markers.isEmpty() && pois.isEmpty() || minecraft.level == null || minecraft.player == null || minecraft.gui.hud.isHidden()) {
             return;
         }
         long age = minecraft.level.getGameTime() - scannedAt;
         if (age > MARKER_TICKS || age < 0) {
             markers = List.of();
+            pois = List.of();
             return;
         }
         int alpha = age > MARKER_TICKS - 100 ? (int) (255 * (MARKER_TICKS - age) / 100F) : 255;
-        Camera camera = minecraft.gameRenderer.mainCamera();
-        Vec3 eye = camera.position();
-        double yaw = Math.toRadians(camera.yRot());
-        double pitch = Math.toRadians(camera.xRot());
-        double sinYaw = Math.sin(yaw);
-        double cosYaw = Math.cos(yaw);
-        double sinPitch = Math.sin(pitch);
-        double cosPitch = Math.cos(pitch);
-        int width = graphics.guiWidth();
-        int height = graphics.guiHeight();
-        double focal = (height / 2.0) / Math.tan(Math.toRadians(minecraft.options.fov().get()) / 2);
+        ScreenProjection projection = ScreenProjection.of(minecraft, graphics.guiWidth(), graphics.guiHeight());
+        Vec3 eye = projection.eye();
+        Font font = minecraft.font;
+        // 兴趣点先占位置写字，矿脉的字避开它们
+        List<int[]> boxes = new ArrayList<>();
+        renderPois(graphics, projection, font, alpha, boxes);
         // 先投影到屏幕上，只留看得见的
         List<OnScreen> visible = new ArrayList<>();
         for (Marker marker : markers) {
-            Vec3 d = marker.pos().subtract(eye);
-            // 绕 Y 轴转到"前方是 +Z"，再绕 X 轴按俯仰转
-            double x1 = d.x * cosYaw + d.z * sinYaw;
-            double z1 = -d.x * sinYaw + d.z * cosYaw;
-            double y2 = d.y * cosPitch + z1 * sinPitch;
-            double z2 = -d.y * sinPitch + z1 * cosPitch;
-            if (z2 < 0.5) {
-                continue;
-            }
-            int sx = (int) Math.round(width / 2.0 - x1 / z2 * focal);
-            int sy = (int) Math.round(height / 2.0 - y2 / z2 * focal);
-            if (sx >= -20 && sx <= width + 20 && sy >= -20 && sy <= height + 20) {
-                visible.add(new OnScreen(marker, sx, sy, Math.sqrt(d.lengthSqr())));
+            int[] point = projection.project(marker.pos());
+            if (projection.onScreen(point, 20)) {
+                visible.add(new OnScreen(marker, point[0], point[1], marker.pos().distanceTo(eye)));
             }
         }
         visible.sort(Comparator.comparingDouble(OnScreen::distance));
-        Font font = minecraft.font;
         // 看得见的里面由近到远挑几条写字，和已经写了的字叠在一起就跳过
         List<Component> texts = new ArrayList<>();
-        List<int[]> boxes = new ArrayList<>();
+        int poiBoxes = boxes.size();
         for (OnScreen on : visible) {
             Component text = null;
-            if (boxes.size() < LABELS) {
+            if (boxes.size() - poiBoxes < LABELS) {
                 Component candidate = Component.translatable("hud.universe.multitool.marker",
                         Component.translatable(on.marker().block().getDescriptionId()), on.marker().count(),
                         (int) Math.round(on.distance()));
@@ -175,8 +203,47 @@ public final class MultitoolClient {
     private record OnScreen(Marker marker, int x, int y, double distance) {
     }
 
+    /** 兴趣点：按种类上色的菱形框，写上名字和距离；去过的画暗一些。 */
+    private static void renderPois(GuiGraphicsExtractor graphics, ScreenProjection projection, Font font, int alpha, List<int[]> boxes) {
+        Vec3 eye = projection.eye();
+        List<PoiMark> sorted = new ArrayList<>(pois);
+        // 近的先占位置写字
+        sorted.sort(Comparator.comparingDouble(poi -> poi.pos().distanceToSqr(eye)));
+        for (PoiMark poi : sorted) {
+            int[] point = projection.project(poi.pos());
+            if (!projection.onScreen(point, 10)) {
+                continue;
+            }
+            int a = poi.visited() ? alpha / 2 : alpha;
+            int color = (a << 24) | poi.type().color();
+            diamond(graphics, point[0], point[1], color, (a * 3 / 4) << 24);
+            Component text = Component.translatable(poi.visited() ? "hud.universe.multitool.poi_visited" : "hud.universe.multitool.poi",
+                    Component.translatable("poi.universe." + poi.type().serializedName()), (int) Math.round(poi.pos().distanceTo(eye)));
+            int[] box = {point[0] + 7, point[1] - 5, point[0] + 7 + font.width(text), point[1] + 5};
+            if (boxes.stream().noneMatch(other -> box[0] < other[2] && other[0] < box[2] && box[1] < other[3] && other[1] < box[3])) {
+                boxes.add(box);
+                graphics.text(font, text, point[0] + 7, point[1] - 4, (a << 24) | lighten(poi.type().color()), true);
+            }
+        }
+    }
+
+    /** 空心菱形，带一圈阴影。 */
+    public static void diamond(GuiGraphicsExtractor graphics, int x, int y, int color, int shadow) {
+        for (int i = -4; i <= 4; i++) {
+            int w = 4 - Math.abs(i);
+            graphics.fill(x - w - 1, y + i, x - w + 1, y + i + 1, shadow);
+            graphics.fill(x + w, y + i, x + w + 2, y + i + 1, shadow);
+        }
+        for (int i = -3; i <= 3; i++) {
+            int w = 3 - Math.abs(i);
+            graphics.fill(x - w, y + i, x - w + 1, y + i + 1, color);
+            graphics.fill(x + w, y + i, x + w + 1, y + i + 1, color);
+        }
+        graphics.fill(x, y, x + 1, y + 1, color);
+    }
+
     /** 文字用标记颜色往白色靠一半，深色的矿也看得清。 */
-    private static int lighten(int rgb) {
+    static int lighten(int rgb) {
         int r = ((rgb >> 16) & 0xFF) + 0xFF >> 1;
         int g = ((rgb >> 8) & 0xFF) + 0xFF >> 1;
         int b = (rgb & 0xFF) + 0xFF >> 1;

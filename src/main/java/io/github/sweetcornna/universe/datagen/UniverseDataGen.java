@@ -3,6 +3,8 @@ package io.github.sweetcornna.universe.datagen;
 import java.util.List;
 import java.util.Set;
 
+import io.github.sweetcornna.universe.entity.PlasmaBolt;
+import io.github.sweetcornna.universe.world.planet.gen.PlanetPoiFeature;
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.survival.SurvivalDamage;
 import io.github.sweetcornna.universe.world.OverworldVeinsFeature;
@@ -50,12 +52,14 @@ public final class UniverseDataGen {
     private static void gatherRegistries(GatherDataRegistryEntriesEvent event) {
         event.add(Registries.LOOT_TABLE, new LootTableProvider(Set.of(),
                 List.of(new LootTableProvider.SubProviderEntry(UniverseBlockLoot::new, LootContextParamSets.BLOCK),
-                        new LootTableProvider.SubProviderEntry(UniverseEntityLoot::new, LootContextParamSets.ENTITY))));
+                        new LootTableProvider.SubProviderEntry(UniverseEntityLoot::new, LootContextParamSets.ENTITY),
+                        new LootTableProvider.SubProviderEntry(UniverseChestLoot::new, LootContextParamSets.CHEST))));
         event.recipe(UniverseRecipes::new);
         event.add(Registries.FEATURE, context -> {
             context.register(PlanetFloraFeature.KEY, new PlanetFloraFeature());
             context.register(PlanetOreFeature.KEY, new PlanetOreFeature());
             context.register(OverworldVeinsFeature.KEY, new OverworldVeinsFeature());
+            context.register(PlanetPoiFeature.KEY, new PlanetPoiFeature());
         });
         event.add(Registries.PLACED_FEATURE, context -> {
             context.register(PlanetFloraFeature.PLACED,
@@ -64,6 +68,8 @@ public final class UniverseDataGen {
                     new PlacedFeature(context.lookup(Registries.FEATURE).getOrThrow(PlanetOreFeature.KEY), List.of(BiomeFilter.biome())));
             context.register(OverworldVeinsFeature.PLACED,
                     new PlacedFeature(context.lookup(Registries.FEATURE).getOrThrow(OverworldVeinsFeature.KEY), List.of(BiomeFilter.biome())));
+            context.register(PlanetPoiFeature.PLACED,
+                    new PlacedFeature(context.lookup(Registries.FEATURE).getOrThrow(PlanetPoiFeature.KEY), List.of(BiomeFilter.biome())));
         });
         // 主世界的矿脉露头和原油涌泉在最后一步放，压在树和草之后
         event.add(NeoForgeRegistries.Keys.BIOME_MODIFIERS, context -> context.register(
@@ -72,6 +78,9 @@ public final class UniverseDataGen {
                         HolderSet.direct(context.lookup(Registries.PLACED_FEATURE).getOrThrow(OverworldVeinsFeature.PLACED)),
                         GenerationStep.Decoration.TOP_LAYER_MODIFICATION)));
         event.add(Registries.BIOME, UniverseBiomes::bootstrap);
-        event.add(Registries.DAMAGE_TYPE, SurvivalDamage::bootstrap);
+        event.add(Registries.DAMAGE_TYPE, context -> {
+            SurvivalDamage.bootstrap(context);
+            PlasmaBolt.bootstrapDamage(context);
+        });
     }
 }

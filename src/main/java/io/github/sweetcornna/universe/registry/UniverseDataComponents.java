@@ -7,6 +7,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
+import io.github.sweetcornna.universe.core.survival.ToolMode;
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.core.tech.Grade;
 import io.github.sweetcornna.universe.core.tech.ModuleType;
@@ -44,6 +45,12 @@ public final class UniverseDataComponents {
     /** 多功能工具上装着的模块（ADR-0014）。 */
     public static final Supplier<DataComponentType<ItemContainerContents>> TOOL_MODULES = COMPONENTS.registerComponentType("tool_modules",
             builder -> builder.persistent(ItemContainerContents.CODEC).networkSynchronized(ItemContainerContents.STREAM_CODEC).cacheEncoding());
+
+    /** 多功能工具的模式：采矿或战斗（ADR-0014）。 */
+    public static final Supplier<DataComponentType<ToolMode>> TOOL_MODE = COMPONENTS.registerComponentType("tool_mode",
+            builder -> builder.persistent(enumCodec(ToolMode.class))
+                    .networkSynchronized(ByteBufCodecs.idMapper(index -> ToolMode.values()[Math.floorMod(index, ToolMode.values().length)],
+                            ToolMode::ordinal)));
 
     private UniverseDataComponents() {
     }

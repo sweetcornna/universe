@@ -20,6 +20,7 @@ import org.jspecify.annotations.Nullable;
 
 import com.mojang.blaze3d.platform.InputConstants;
 
+import io.github.sweetcornna.universe.core.sentinel.SentinelLevel;
 import io.github.sweetcornna.universe.client.ClientGalaxy;
 import io.github.sweetcornna.universe.client.UniverseKeys;
 import io.github.sweetcornna.universe.client.galaxy.GalaxyText;
@@ -503,6 +504,11 @@ public class DiscoveryLogScreen extends Screen {
             }
             y = this.wrap(graphics, Component.translatable("gui.universe.star_map.hazards", String.join(GalaxyText.pick("、", ", "), names)),
                     x, y, width, WARN);
+        }
+        if (planet.landable()) {
+            SentinelLevel sentinels = SentinelLevel.of(planet);
+            y = this.wrap(graphics, Component.translatable("gui.universe.star_map.sentinels", GalaxyText.pick(sentinels.nameZh(), sentinels.nameEn())),
+                    x, y, width, sentinels.ordinal() >= SentinelLevel.NORMAL.ordinal() ? WARN : DIM);
         }
         y += 6;
         if (!planet.landable()) {

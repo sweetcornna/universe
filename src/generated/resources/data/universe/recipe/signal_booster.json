@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "key": {
+    "B": "universe:circuit_board",
+    "C": "minecraft:copper_ingot",
+    "I": "minecraft:iron_ingot",
+    "R": "minecraft:lightning_rod"
+  },
+  "pattern": [
+    " R ",
+    "CBC",
+    "III"
+  ],
+  "result": {
+    "id": "universe:signal_booster"
+  }
+}

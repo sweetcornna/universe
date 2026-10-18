@@ -2,6 +2,7 @@ package io.github.sweetcornna.universe.datagen;
 
 import java.util.List;
 
+import io.github.sweetcornna.universe.world.planet.gen.PlanetPoiFeature;
 import io.github.sweetcornna.universe.core.terrain.BiomeKind;
 import io.github.sweetcornna.universe.world.planet.gen.PlanetBiomes;
 import io.github.sweetcornna.universe.world.planet.gen.PlanetFloraFeature;
@@ -57,6 +58,8 @@ final class UniverseBiomes {
         // 铁、铜、煤和外星矿物按星球的资源表生成，换成星球矿石
         generation.addFeature(GenerationStep.Decoration.UNDERGROUND_ORES, PlanetOreFeature.PLACED);
         generation.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, PlanetFloraFeature.PLACED);
+        // 兴趣点在植物之后放，建筑会清掉占地范围里的植物（ADR-0014）
+        generation.addFeature(GenerationStep.Decoration.TOP_LAYER_MODIFICATION, PlanetPoiFeature.PLACED);
         generation.addFeature(GenerationStep.Decoration.TOP_LAYER_MODIFICATION, MiscOverworldPlacements.FREEZE_TOP_LAYER);
         return new Biome.BiomeBuilder()
                 .hasPrecipitation(kind.precipitation())

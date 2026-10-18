@@ -14,10 +14,12 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 
+import io.github.sweetcornna.universe.sentinel.SentinelCommand;
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.data.RuntimeDimensionsData;
 import io.github.sweetcornna.universe.entity.ship.ShipCommand;
 import io.github.sweetcornna.universe.factory.research.ResearchCommand;
+import io.github.sweetcornna.universe.poi.PoiCommand;
 import io.github.sweetcornna.universe.world.planet.PlanetCommand;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -78,6 +80,8 @@ public final class DimensionCommand {
                 .then(PlanetCommand.build())
                 .then(ShipCommand.build())
                 .then(CrashSite.command())
+                .then(PoiCommand.build())
+                .then(SentinelCommand.build())
                 .then(ResearchCommand.build())
                 .then(Commands.literal("dim")
                         .then(Commands.literal("create")

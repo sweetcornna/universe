@@ -10,9 +10,13 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
+import io.github.sweetcornna.universe.sentinel.SentinelHud;
+import io.github.sweetcornna.universe.sentinel.SentinelAlert;
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.core.galaxy.Hazard;
 import io.github.sweetcornna.universe.core.survival.LifeSupport;
+import io.github.sweetcornna.universe.poi.PoiProgress;
+import io.github.sweetcornna.universe.poi.Waypoint;
 import io.github.sweetcornna.universe.survival.SuitHud;
 import io.github.sweetcornna.universe.tech.ExosuitData;
 import net.minecraft.resources.Identifier;
@@ -60,6 +64,20 @@ public final class UniverseAttachments {
     /** 外骨骼的技术槽、货舱和修过的掉落舱（ADR-0014），死亡后保留。 */
     public static final Supplier<AttachmentType<ExosuitData>> EXOSUIT = ATTACHMENT_TYPES.register("exosuit",
             () -> AttachmentType.builder(() -> new ExosuitData()).serialize(ExosuitData.CODEC).copyOnDeath().build());
+    /** 玩家在兴趣点上的进度：去过哪些、领过哪些奖励、先驱者线索讲到第几段（ADR-0014）。 */
+    public static final Supplier<AttachmentType<PoiProgress>> POI_PROGRESS = ATTACHMENT_TYPES.register("poi_progress",
+            () -> AttachmentType.builder(() -> new PoiProgress()).serialize(PoiProgress.CODEC).copyOnDeath().build());
+    /** 信号增强器定位出来的航点，同步给本人在 HUD 上画（ADR-0014）。 */
+    public static final Supplier<AttachmentType<Waypoint>> WAYPOINT = ATTACHMENT_TYPES.register("waypoint",
+            () -> AttachmentType.builder(() -> Waypoint.NONE).serialize(Waypoint.CODEC).copyOnDeath()
+                    .sync((holder, player) -> holder == player, Waypoint.STREAM_CODEC).build());
+
+    /** 玩家在当前星球上的警戒值和通缉级别（ADR-0014），存档；死亡后清零。 */
+    public static final Supplier<AttachmentType<SentinelAlert>> SENTINEL_ALERT = ATTACHMENT_TYPES.register("sentinel_alert",
+            () -> AttachmentType.builder(() -> new SentinelAlert()).serialize(SentinelAlert.CODEC).build());
+    /** 发给玩家自己的守卫机读数，HUD 用（不存档）。 */
+    public static final Supplier<AttachmentType<SentinelHud>> SENTINEL_HUD = ATTACHMENT_TYPES.register("sentinel_hud",
+            () -> AttachmentType.builder(() -> SentinelHud.NONE).sync((holder, player) -> holder == player, SentinelHud.STREAM_CODEC).build());
 
     /** 区块里开采过的矿脉节点和原油涌泉：打包坐标 → 开采了多少（ADR-0011）。没碰过的不记。 */
     public static final Supplier<AttachmentType<Map<Long, Integer>>> VEIN_USAGE = ATTACHMENT_TYPES.register("vein_usage",

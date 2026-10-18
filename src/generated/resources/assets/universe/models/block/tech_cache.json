@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column",
+  "textures": {
+    "end": "universe:block/tech_cache_top",
+    "side": "universe:block/tech_cache_side"
+  }
+}

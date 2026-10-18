@@ -45,8 +45,12 @@ class SurvivalProgressionTest {
             NS + "crude_oil", NS + "oil_extractor",
             NS + "water", NS + "water_pump",
             NS + "survey_data", NS + "multitool");
-    /** 生存里本来就拿不到的：挖不掉的涌泉、只在坠毁点箱子里的损坏工具。刷怪蛋另算。 */
-    private static final Set<String> UNOBTAINABLE = Set.of(NS + "crude_oil_seep", NS + "damaged_multitool");
+    /** 生存里本来就拿不到的：挖不掉的涌泉、掉落舱和石碑，只在坠毁点箱子里的损坏工具。刷怪蛋另算。 */
+    private static final Set<String> UNOBTAINABLE = Set.of(NS + "crude_oil_seep", NS + "damaged_multitool", NS + "drop_pod",
+            NS + "monolith");
+    /** 兴趣点的建筑里天然放着的方块（ADR-0014），挖了按各自的战利品表掉落。 */
+    private static final Set<String> STRUCTURE_BLOCKS = Set.of(NS + "data_terminal", NS + "supply_crate", NS + "tech_cache",
+            NS + "smoldering_wreck");
 
     private record Recipe(String name, List<List<String>> ingredients, String research) {
     }
@@ -114,12 +118,12 @@ class SurvivalProgressionTest {
         }
     }
 
-    /** 世界里天然有的：星球方块和矿石本身、它们的掉落、生物掉落。 */
+    /** 世界里天然有的：星球方块和矿石本身、兴趣点建筑里的方块、它们的掉落、生物掉落、兴趣点箱子里的东西。 */
     private static Set<String> naturalSources() throws IOException {
         Set<String> natural = new HashSet<>();
         for (String item : items()) {
             String path = item.substring(NS.length());
-            if (path.startsWith("planet_") || path.endsWith("_ore")) {
+            if (path.startsWith("planet_") || path.endsWith("_ore") || STRUCTURE_BLOCKS.contains(item)) {
                 natural.add(item);
                 Path loot = DATA.resolve("loot_table/blocks/" + path + ".json");
                 if (Files.exists(loot)) {
@@ -128,6 +132,9 @@ class SurvivalProgressionTest {
             }
         }
         for (Path loot : jsonFiles(DATA.resolve("loot_table/entities"))) {
+            collectItems(read(loot), natural);
+        }
+        for (Path loot : jsonFiles(DATA.resolve("loot_table/chests"))) {
             collectItems(read(loot), natural);
         }
         return natural;

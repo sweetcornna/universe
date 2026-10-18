@@ -1,5 +1,12 @@
 package io.github.sweetcornna.universe.survival;
 
+import io.github.sweetcornna.universe.core.survival.ToolMode;
+import java.util.function.Consumer;
+import java.util.Locale;
+import net.minecraft.world.item.component.TooltipDisplay;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.ChatFormatting;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -11,7 +18,8 @@ import net.minecraft.world.item.ItemUseAnimation;
 import net.minecraft.world.level.Level;
 
 /**
- * 多功能工具：按住使用键开采矿激光，潜行时按使用键扫描。左键也能像镐、铲、斧一样挖（工具组件）。逻辑在 {@link Multitool}。
+ * 多功能工具：按住使用键开采矿激光（战斗模式下连发等离子弹），潜行时按使用键扫描。左键也能像镐、铲、斧一样挖（工具组件）。
+ * 逻辑在 {@link Multitool}。
  */
 public final class MultitoolItem extends Item {
     public MultitoolItem(Properties properties) {
@@ -48,5 +56,13 @@ public final class MultitoolItem extends Item {
     @Override
     public ItemUseAnimation getUseAnimation(ItemStack stack) {
         return ItemUseAnimation.NONE;
+    }
+
+    @Override
+    public void appendHoverText(ItemStack stack, Item.TooltipContext context, TooltipDisplay display, Consumer<Component> builder, TooltipFlag flag) {
+        ToolMode mode = Multitool.mode(stack);
+        builder.accept(Component.translatable("item.universe.multitool.mode",
+                Component.translatable("hud.universe.multitool.mode." + mode.name().toLowerCase(Locale.ROOT)),
+                Component.keybind("key.universe.tool_mode")).withStyle(mode == ToolMode.COMBAT ? ChatFormatting.AQUA : ChatFormatting.GRAY));
     }
 }

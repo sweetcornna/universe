@@ -3,12 +3,16 @@ package io.github.sweetcornna.universe.datagen;
 import java.util.List;
 import java.util.Set;
 
+import io.github.sweetcornna.universe.poi.RandomModuleFunction;
+import io.github.sweetcornna.universe.core.tech.ModuleType;
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.block.OreKind;
 import io.github.sweetcornna.universe.factory.TallMachineBlock;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
 import io.github.sweetcornna.universe.registry.UniverseDataComponents;
 import io.github.sweetcornna.universe.registry.UniverseItems;
+import net.minecraft.world.level.storage.loot.predicates.LootItemRandomChanceCondition;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.loot.BlockLootSubProvider;
 import net.minecraft.data.loot.LootTableSubProvider;
@@ -80,6 +84,18 @@ final class UniverseBlockLoot extends BlockLootSubProvider {
         this.dropSelf(UniverseBlocks.SORTER.get());
         this.dropSelf(UniverseBlocks.MATRIX_LAB.get());
         this.dropSelf(UniverseBlocks.STORAGE_DEPOT.get());
+        // 兴趣点（ADR-0014）：掉落舱、石碑挖不掉；科技储藏箱掉一个随机模块，有时多一份勘探数据；冒烟的残骸拆出船体板
+        this.dropSelf(UniverseBlocks.DATA_TERMINAL.get());
+        this.dropSelf(UniverseBlocks.SIGNAL_BOOSTER.get());
+        this.dropSelf(UniverseBlocks.SUPPLY_CRATE.get());
+        this.add(UniverseBlocks.SMOLDERING_WRECK.get(), this.createSingleItemTable(UniverseBlocks.HULL_PLATING.get(DyeColor.GRAY).get()));
+        this.add(UniverseBlocks.TECH_CACHE.get(), LootTable.lootTable()
+                .withPool(LootPool.lootPool().setRolls(ContextIntProviders.exactly(1))
+                        .add(LootItem.lootTableItem(UniverseItems.MODULES.get(ModuleType.LIFE_SUPPORT).get())
+                                .apply(RandomModuleFunction.randomModule(0))))
+                .withPool(LootPool.lootPool().setRolls(ContextIntProviders.exactly(1))
+                        .add(LootItem.lootTableItem(UniverseItems.SURVEY_DATA.get()))
+                        .when(LootItemRandomChanceCondition.randomChance(0.35F))));
         // 星球矿石：和原版矿石一样，精准采集掉本体，时运加成掉落
         UniverseBlocks.ORES.forEach((kind, block) -> this.add(block.get(), this.createOreDrops(block.get(), kind)));
     }

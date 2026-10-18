@@ -100,6 +100,27 @@ final class UniverseBlockTagsProvider extends BlockTagsProvider {
         }
         // 原油涌泉不会被组装进飞船
         this.tag(ShipParts.EXCLUDED).add(UniverseBlocks.CRUDE_OIL_SEEP.key());
+        // 兴趣点的方块（ADR-0014）：都是实心的；能挖的用镐子；固定在原地的不会被组装进飞船
+        this.tag(BlockTags.BLOCKS_MOTION_NO_LEAVES).add(
+                UniverseBlocks.DROP_POD.key(),
+                UniverseBlocks.DATA_TERMINAL.key(),
+                UniverseBlocks.MONOLITH.key(),
+                UniverseBlocks.TECH_CACHE.key(),
+                UniverseBlocks.SIGNAL_BOOSTER.key(),
+                UniverseBlocks.SUPPLY_CRATE.key(),
+                UniverseBlocks.SMOLDERING_WRECK.key());
+        this.tag(BlockTags.MINEABLE_WITH_PICKAXE).add(
+                UniverseBlocks.DATA_TERMINAL.key(),
+                UniverseBlocks.TECH_CACHE.key(),
+                UniverseBlocks.SIGNAL_BOOSTER.key(),
+                UniverseBlocks.SUPPLY_CRATE.key(),
+                UniverseBlocks.SMOLDERING_WRECK.key());
+        this.tag(ShipParts.EXCLUDED).add(
+                UniverseBlocks.DROP_POD.key(),
+                UniverseBlocks.MONOLITH.key(),
+                UniverseBlocks.DATA_TERMINAL.key(),
+                UniverseBlocks.TECH_CACHE.key(),
+                UniverseBlocks.SUPPLY_CRATE.key());
         // 星球矿石：进原版的 ores（它已经在"阻挡移动"里）和通用的 c:ores，按矿种要求镐的等级
         UniverseBlocks.ORES.forEach((kind, block) -> {
             this.tag(BlockTags.MINEABLE_WITH_PICKAXE).add(block.key());

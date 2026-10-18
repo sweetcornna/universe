@@ -3,6 +3,7 @@ package io.github.sweetcornna.universe.datagen;
 import java.util.List;
 import java.util.Optional;
 
+import io.github.sweetcornna.universe.block.poi.DropPodBlock;
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.block.FloraBlocks;
 import io.github.sweetcornna.universe.client.PlanetTints;
@@ -16,6 +17,7 @@ import io.github.sweetcornna.universe.factory.belt.BeltBlock;
 import io.github.sweetcornna.universe.factory.power.AccumulatorBlock;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
 import io.github.sweetcornna.universe.registry.UniverseItems;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.client.data.models.BlockModelGenerators;
 import net.minecraft.client.data.models.ItemModelGenerators;
 import net.minecraft.client.data.models.ModelProvider;
@@ -91,6 +93,7 @@ final class UniverseModelProvider extends ModelProvider {
             itemModels.generateFlatItem(item.get(), ModelTemplates.FLAT_ITEM);
         }
         ships(blockModels);
+        pois(blockModels, itemModels);
         ores(blockModels, itemModels);
         for (DeferredItem<?> item : List.of(UniverseItems.EXOSUIT_HELMET, UniverseItems.EXOSUIT_CHESTPLATE, UniverseItems.EXOSUIT_LEGGINGS,
                 UniverseItems.EXOSUIT_BOOTS, UniverseItems.OXYGEN_CAPSULE, UniverseItems.HAZARD_CELL, UniverseItems.DAMAGED_MULTITOOL)) {
@@ -244,6 +247,47 @@ final class UniverseModelProvider extends ModelProvider {
         blockModels.registerSimpleItemModel(thruster, thrusterModel);
         blockModels.createTrivialBlock(UniverseBlocks.FUEL_TANK.get(), TexturedModel.COLUMN);
         UniverseBlocks.HULL_PLATING.values().forEach(block -> blockModels.createTrivialCube(block.get()));
+    }
+
+    /** 兴趣点的方块（ADR-0014）：掉落舱的正面按修没修好换贴图；信号增强器的模型是手写的。 */
+    private static void pois(BlockModelGenerators blockModels, ItemModelGenerators itemModels) {
+        Block pod = UniverseBlocks.DROP_POD.get();
+        Identifier[] podModels = new Identifier[2];
+        for (int repaired = 0; repaired < 2; repaired++) {
+            String suffix = repaired == 1 ? "_repaired" : "";
+            podModels[repaired] = ModelTemplates.CUBE_ORIENTABLE_TOP_BOTTOM.createWithSuffix(pod, suffix, new TextureMapping()
+                    .put(TextureSlot.FRONT, texture("drop_pod_front" + suffix))
+                    .put(TextureSlot.SIDE, texture("drop_pod_side"))
+                    .put(TextureSlot.TOP, texture("drop_pod_top"))
+                    .put(TextureSlot.BOTTOM, texture("drop_pod_top")), blockModels.modelOutput);
+        }
+        blockModels.blockStateOutput.accept(MultiVariantGenerator.dispatch(pod)
+                .with(PropertyDispatch.initial(DropPodBlock.REPAIRED).generate(repaired -> BlockModelGenerators.plainVariant(podModels[repaired ? 1 : 0])))
+                .with(BlockModelGenerators.ROTATION_HORIZONTAL_FACING));
+        blockModels.registerSimpleItemModel(pod, podModels[0]);
+        for (Block block : List.of(UniverseBlocks.DATA_TERMINAL.get(), UniverseBlocks.SUPPLY_CRATE.get())) {
+            String name = BuiltInRegistries.BLOCK.getKey(block).getPath();
+            Identifier model = ModelTemplates.CUBE_ORIENTABLE_TOP_BOTTOM.create(block, new TextureMapping()
+                    .put(TextureSlot.FRONT, texture(name + "_front"))
+                    .put(TextureSlot.SIDE, texture(name + "_side"))
+                    .put(TextureSlot.TOP, texture(name + "_top"))
+                    .put(TextureSlot.BOTTOM, texture(name + "_top")), blockModels.modelOutput);
+            blockModels.blockStateOutput.accept(MultiVariantGenerator.dispatch(block, BlockModelGenerators.plainVariant(model))
+                    .with(BlockModelGenerators.ROTATION_HORIZONTAL_FACING));
+            blockModels.registerSimpleItemModel(block, model);
+        }
+        for (Block block : List.of(UniverseBlocks.MONOLITH.get(), UniverseBlocks.TECH_CACHE.get(), UniverseBlocks.SMOLDERING_WRECK.get())) {
+            blockModels.createTrivialBlock(block, TexturedModel.COLUMN);
+        }
+        Block booster = UniverseBlocks.SIGNAL_BOOSTER.get();
+        Identifier boosterModel = ModelLocationUtils.getModelLocation(booster);
+        blockModels.blockStateOutput.accept(BlockModelGenerators.createSimpleBlock(booster, BlockModelGenerators.plainVariant(boosterModel)));
+        blockModels.registerSimpleItemModel(booster, boosterModel);
+        itemModels.generateFlatItem(UniverseItems.NAVIGATION_DATA.get(), ModelTemplates.FLAT_ITEM);
+        // 守卫机（ADR-0014）
+        itemModels.generateFlatItem(UniverseItems.SENTINEL_SCRAP.get(), ModelTemplates.FLAT_ITEM);
+        itemModels.generateFlatItem(UniverseItems.SENTINEL_SPAWN_EGG.get(), ModelTemplates.FLAT_ITEM);
+        itemModels.generateFlatItem(UniverseItems.HEAVY_SENTINEL_SPAWN_EGG.get(), ModelTemplates.FLAT_ITEM);
     }
 
     /** 地面植物：变体号单双数用两种外形，发光的物种换自发光模型。 */

@@ -3,6 +3,7 @@ package io.github.sweetcornna.universe.datagen;
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.block.OreKind;
 import io.github.sweetcornna.universe.core.terrain.BiomeKind;
+import io.github.sweetcornna.universe.core.poi.PoiType;
 import io.github.sweetcornna.universe.core.tech.ModuleType;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
 import io.github.sweetcornna.universe.registry.UniverseItems;
@@ -99,6 +100,21 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         }
         item(UniverseItems.LAUNCH_FUEL.get(), "发射燃料", "Launch Fuel");
         both("entity.universe.ship", "飞船", "Ship");
+        both("entity.universe.plasma_bolt", "等离子弹", "Plasma Bolt");
+        both("entity.universe.sentinel", "守卫机", "Sentinel");
+        both("entity.universe.heavy_sentinel", "重型守卫机", "Heavy Sentinel");
+        item(UniverseItems.SENTINEL_SCRAP.get(), "守卫机残骸", "Sentinel Scrap");
+        item(UniverseItems.SENTINEL_SPAWN_EGG.get(), "守卫机刷怪蛋", "Sentinel Spawn Egg");
+        item(UniverseItems.HEAVY_SENTINEL_SPAWN_EGG.get(), "重型守卫机刷怪蛋", "Heavy Sentinel Spawn Egg");
+        both("message.universe.sentinel.wanted", "守卫机警报！通缉等级 %s", "Sentinel alert! Wanted level %s");
+        both("message.universe.sentinel.heavy", "通缉等级 %s：重型守卫机正在赶来！", "Wanted level %s: a heavy sentinel is inbound!");
+        both("message.universe.sentinel.escaped", "你甩掉了守卫机", "You shook off the sentinels");
+        both("message.universe.sentinel.left_planet", "离开了星球，守卫机不再追捕你", "You left the planet; the sentinels lost your trail");
+        both("hud.universe.sentinel.wanted", "守卫机通缉", "SENTINELS");
+        both("hud.universe.sentinel.seen", "被守卫机盯上了", "You have been spotted");
+        both("hud.universe.sentinel.escaping", "躲藏中 %s 秒", "Hiding %ss");
+        both("hud.universe.sentinel.alert", "警戒", "Alert");
+        both("gui.universe.star_map.sentinels", "守卫：%s", "Sentinels: %s");
         both("universe.bed.no_sleep_in_space", "太空里不能睡觉", "You can't sleep in space");
 
         both("gui.universe.tech_tree", "科技树", "Tech Tree");
@@ -136,6 +152,7 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("key.universe.analyze", "分析目镜（手持多功能工具）", "Analysis Visor (hold the multitool)");
         both("key.universe.discovery_log", "打开发现日志", "Open Discovery Log");
         both("key.universe.tech", "技术配置（模块和货舱）", "Tech Configuration (modules and cargo)");
+        both("key.universe.tool_mode", "多功能工具：切换采矿/战斗模式", "Multitool: Toggle Mining/Combat Mode");
         both("gui.universe.star_map", "星图", "Star Map");
         both("gui.universe.star_map.unknown", "还没收到星团的数据", "Galaxy data not received yet");
         both("gui.universe.star_map.hint", "左键拖动旋转 · 右键拖动平移 · 滚轮缩放 · 双击或 F 居中 · H 回到当前恒星系 · %s 关闭",
@@ -222,7 +239,12 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
     private void multitool() {
         item(UniverseItems.MULTITOOL.get(), "多功能工具", "Multitool");
         item(UniverseItems.DAMAGED_MULTITOOL.get(), "损坏的多功能工具", "Damaged Multitool");
-        both("message.universe.multitool.overheated", "激光过热！", "Laser overheated!");
+        both("message.universe.multitool.overheated", "多功能工具过热！", "Multitool overheated!");
+        both("message.universe.multitool.mode.mining", "多功能工具：采矿模式", "Multitool: Mining mode");
+        both("message.universe.multitool.mode.combat", "多功能工具：战斗模式", "Multitool: Combat mode");
+        both("hud.universe.multitool.mode.mining", "采矿", "Mining");
+        both("hud.universe.multitool.mode.combat", "战斗", "Combat");
+        both("item.universe.multitool.mode", "模式：%s（%s 切换）", "Mode: %s (%s to switch)");
         both("message.universe.multitool.charging", "扫描仪充能中", "Scanner recharging");
         both("message.universe.multitool.scanned", "扫描完成：%s 条矿脉，共 %s 块", "Scan complete: %s veins, %s blocks");
         both("hud.universe.multitool.overheated", "过热", "OVERHEATED");
@@ -273,6 +295,8 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("message.universe.suit.oxygen_used", "用掉一个氧气罐：氧气 +50%", "Used an oxygen capsule: oxygen +50%");
         both("message.universe.suit.cell_used", "用掉一个防护电池：防护 +50%", "Used a hazard cell: protection +50%");
         both("death.attack.universe.vacuum", "%1$s耗尽了氧气", "%1$s ran out of oxygen");
+        both("death.attack.universe.plasma", "%1$s被%2$s的等离子弹击中", "%1$s was shot down by %2$s's plasma");
+        both("death.attack.universe.plasma.item", "%1$s被%2$s用%3$s打出的等离子弹击中", "%1$s was shot down by %2$s's plasma using %3$s");
         both("death.attack.universe.cold", "%1$s冻僵了", "%1$s froze to death");
         both("death.attack.universe.heat", "%1$s被高温烤熟了", "%1$s was cooked by the heat");
         both("death.attack.universe.toxic", "%1$s吸进了太多毒气", "%1$s breathed too much toxic air");
@@ -405,8 +429,143 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         tech("tech_modules", "技术模块", "Technology Modules");
         this.discovery();
         this.modules();
+        this.pois();
         both("research.universe.completed", "研究完成：%s", "Research complete: %s");
         both("research.universe.missing_items", "背包里的物品不够，无法完成这项研究", "Not enough items in your inventory for this research");
+    }
+
+    /** 兴趣点：方块、消息、界面、数据终端的日志片段、先驱者的线索（ADR-0014）。 */
+    private void pois() {
+        for (PoiType type : PoiType.values()) {
+            both("poi.universe." + type.serializedName(), type.nameZh(), type.nameEn());
+        }
+        block(UniverseBlocks.DROP_POD.get(), "掉落舱", "Drop Pod");
+        block(UniverseBlocks.DATA_TERMINAL.get(), "数据终端", "Data Terminal");
+        block(UniverseBlocks.MONOLITH.get(), "先驱者石碑", "Precursor Monolith");
+        block(UniverseBlocks.TECH_CACHE.get(), "科技储藏箱", "Technology Cache");
+        block(UniverseBlocks.SIGNAL_BOOSTER.get(), "信号增强器", "Signal Booster");
+        block(UniverseBlocks.SUPPLY_CRATE.get(), "补给箱", "Supply Crate");
+        block(UniverseBlocks.SMOLDERING_WRECK.get(), "冒烟的残骸", "Smoldering Wreckage");
+        both("item.universe.navigation_data", "导航数据", "Navigation Data");
+        both("container.universe.supply_crate", "补给箱", "Supply Crate");
+        both("message.universe.poi.found", "发现兴趣点：%s", "Point of interest discovered: %s");
+        both("message.universe.poi.arrived", "到达航点：%s", "Waypoint reached: %s");
+        both("message.universe.poi.no_signal", "这里收不到信号（信号增强器只在能登陆的星球上工作）", "No signal here (Signal Boosters only work on landable planets)");
+        both("message.universe.poi.need_navigation_data", "需要一份导航数据", "Requires one Navigation Data");
+        both("message.universe.poi.none_found", "%2$s 格内没有你没去过的%1$s", "No unvisited %1$s within %2$s blocks");
+        both("message.universe.poi.located", "信号增强器定位到%1$s：在%2$s方约 %3$s 格处，航点已标在 HUD 上", "Signal Booster located a %1$s about %3$s blocks to the %2$s. Waypoint marked on your HUD");
+        both("message.universe.drop_pod.repaired_already", "这个掉落舱已经修好了", "This drop pod has already been repaired");
+        both("message.universe.drop_pod.maxed", "外骨骼的技术槽和货舱都已经到上限了", "Your exosuit's tech slots and cargo are already at maximum");
+        both("message.universe.drop_pod.needs", "修理需要：%s", "Repair requires: %s");
+        both("message.universe.drop_pod.upgraded", "外骨骼升级了：技术槽 %s/%s，货舱 %s/%s", "Exosuit upgraded: tech slots %s/%s, cargo %s/%s");
+        both("message.universe.list_separator", "、", ", ");
+        both("message.universe.item_count", "%2$s ×%1$s", "%2$s ×%1$s");
+        both("message.universe.multitool.scanned_poi", "扫描完成：%s 条矿脉，共 %s 块；附近有 %s 个兴趣点", "Scan complete: %s veins, %s blocks; %s points of interest nearby");
+        both("hud.universe.multitool.poi", "%s  %s 格", "%s  %sm");
+        both("hud.universe.multitool.poi_visited", "%s  %s 格（去过）", "%s  %sm (visited)");
+        both("hud.universe.waypoint", "%s · %s 格", "%s · %sm");
+        both("gui.universe.terminal.title", "据点 %s 的日志", "Outpost %s Log");
+        both("gui.universe.terminal.heading", "数据终端 · %s", "DATA TERMINAL · %s");
+        both("gui.universe.terminal.signature", "—— %s", "— %s");
+        both("gui.universe.terminal.read_before", "（这台终端你读过了）", "(You have read this terminal before)");
+        both("gui.universe.poi.reward", "获得：%s ×%s", "Received: %s ×%s");
+        both("gui.universe.poi.close", "Esc 关闭", "Esc to close");
+        both("gui.universe.monolith.heading", "先驱者石碑 · 第 %s/%s 段", "PRECURSOR MONOLITH · %s of %s");
+        both("gui.universe.monolith.touched_before", "（符文的光暗了下去，这段记忆已经交给你了）", "(The glyphs dim. This memory has already been given to you.)");
+        both("gui.universe.signal_booster.hint", "放进一份导航数据，选一种地点，定位 %s 格内你还没去过的最近一处。", "Feed in one Navigation Data and pick a kind of site to locate the nearest one you haven't visited within %s blocks.");
+        both("gui.universe.signal_booster.data", "导航数据：%s", "Navigation Data: %s");
+        both("gui.universe.signal_booster.data_creative", "导航数据：创造模式不消耗", "Navigation Data: not consumed in Creative");
+        both("gui.universe.signal_booster.no_data", "没有导航数据。坠毁飞船和据点的补给箱里有，读数据终端也会给，还能用电路板和纸合成。", "No Navigation Data. Find it in crashed ship and outpost crates or from data terminals, or craft it from circuit boards and paper.");
+        both("gui.universe.signal_booster.current", "当前航点：%s，%s 格", "Current waypoint: %s, %s blocks");
+        both("gui.universe.signal_booster.no_waypoint", "当前没有航点", "No active waypoint");
+        both("poi.universe.log.opening.1", "据点 %1$s，驻扎第 %2$s 天。记录人：%3$s。",
+                "Outpost %1$s, day %2$s of deployment. Log entry by %3$s.");
+        both("poi.universe.log.opening.2", "%3$s 的个人日志，据点 %1$s，第 %2$s 天。",
+                "Personal log of %3$s, Outpost %1$s, day %2$s.");
+        both("poi.universe.log.opening.3", "自动记录已恢复。据点 %1$s，第 %2$s 天，当班：%3$s。",
+                "Automatic logging restored. Outpost %1$s, day %2$s, on duty: %3$s.");
+        both("poi.universe.log.opening.4", "第 %2$s 天，%1$s 号据点。我是 %3$s。如果有人收到这段记录——",
+                "Day %2$s. Outpost %1$s. This is %3$s. If anyone finds this recording—");
+        both("poi.universe.log.situation.1", "补给船又推迟了。%1$s 把最后一箱氧气胶囊锁进了柜子，说从今天起按天分。",
+                "The supply ship is late again. %1$s locked the last crate of oxygen capsules away and says we ration from today.");
+        both("poi.universe.log.situation.2", "钻机在昨晚的风暴里坏了。%1$s 修了一整夜，还是没能让它重新转起来。",
+                "The drill rig died in last night's storm. %1$s worked on it all night and still couldn't get it turning.");
+        both("poi.universe.log.situation.3", "这里的矿比勘测报告写的还丰富。%1$s 说只要再干一季，我们都能退休。",
+                "The ore here is richer than the survey promised. %1$s says one more season and we can all retire.");
+        both("poi.universe.log.situation.4", "%1$s 坚持说夜里听见地底下有敲击声。我去听了，什么也没有。",
+                "%1$s insists there is knocking under the floor at night. I listened. Nothing.");
+        both("poi.universe.log.situation.5", "通讯阵列只能收到杂音。%1$s 把天线调了三十多遍，信号一点没变。",
+                "The comm array only picks up static. %1$s has realigned the antenna thirty times; the signal hasn't changed.");
+        both("poi.universe.log.situation.6", "温差一天比一天大，外骨骼的危害防护撑不了多久。%1$s 已经开始咳嗽了。",
+                "The temperature swings get worse every day and our suit protection won't hold for long. %1$s has started coughing.");
+        both("poi.universe.log.situation.7", "我们在北边的山脊上发现一块刻满符号的石头。%1$s 拍了照，说那不可能是天然形成的。",
+                "We found a stone covered in symbols on the northern ridge. %1$s took pictures and says it can't be natural.");
+        both("poi.universe.log.situation.8", "今天又发现了一种新动物。%1$s 给它起了个难听的名字，还是登记进了发现日志。",
+                "Found a new creature today. %1$s gave it an awful name and logged it in the discovery log anyway.");
+        both("poi.universe.log.event.1", "下午来了三架守卫机。它们只是盯着采矿机看了一会儿，就飞走了。",
+                "Three Sentinels came this afternoon. They just watched the mining rig for a while, then left.");
+        both("poi.universe.log.event.2", "%1$s 出去巡查管线，到现在还没回来。信标显示信号停在东边的谷地里，一动不动。",
+                "%1$s went out to check the pipeline and hasn't come back. The beacon shows the signal stopped in the eastern valley, not moving.");
+        both("poi.universe.log.event.3", "一颗流星落在附近，冲击波震碎了两扇窗。我们把坠落点的坐标存进了导航数据。",
+                "A meteor came down nearby and the shockwave shattered two windows. We saved the impact coordinates to the navigation data.");
+        both("poi.universe.log.event.4", "储藏室的补给箱被翻过了，可门锁好好的。%1$s 说是我们自己记错了数。",
+                "Someone went through the supply crates in storage, but the lock is untouched. %1$s says we must have miscounted.");
+        both("poi.universe.log.event.5", "反应堆的读数开始乱跳。我们停掉了一半的设备，晚上只留一盏灯。",
+                "The reactor readings have started to jump. We shut down half the equipment and keep a single light on at night.");
+        both("poi.universe.log.event.6", "信号增强器收到一段反复播放的信号，不在我们的任何一个频段上。%1$s 把它录了下来。",
+                "The signal booster caught a repeating transmission, not on any of our frequencies. %1$s recorded it.");
+        both("poi.universe.log.event.7", "地面又塌了一块，露出一条很深的竖井。%1$s 往下扔了一根冷光棒，我们一直没听见它落地。",
+                "Another section of ground collapsed, opening a deep shaft. %1$s dropped a glowstick in. We never heard it land.");
+        both("poi.universe.log.event.8", "公司终于回复了：据点撤销，人员自行撤离。没说怎么撤。",
+                "The company finally answered: outpost decommissioned, personnel to evacuate on their own. It didn't say how.");
+        both("poi.universe.log.ending.1", "我们明早出发去着陆场。终端留着，也许下一个人用得上。",
+                "We leave for the landing site at dawn. I'm leaving the terminal on. Maybe the next person can use it.");
+        both("poi.universe.log.ending.2", "如果你读到这里，箱子里的东西随便拿吧，我们用不上了。",
+                "If you're reading this, take whatever is in the crates. We won't need it anymore.");
+        both("poi.universe.log.ending.3", "记录到此为止。电量只剩百分之四。",
+                "End of entry. Power at four percent.");
+        both("poi.universe.log.ending.4", "我把导航数据拷了一份留在这台终端里。朝有信号的方向走。",
+                "I've left a copy of our navigation data on this terminal. Head toward the signal.");
+        both("poi.universe.log.ending.5", "明天再记。今晚的极光很美，我们都出去看了。",
+                "More tomorrow. The aurora tonight is beautiful. We all went out to watch.");
+        both("poi.universe.log.ending.6", "（日志的其余部分已损坏，无法读取）",
+                "(The rest of this entry is corrupted and cannot be read.)");
+        both("poi.universe.lore.1.title", "回声", "Echo");
+        both("poi.universe.lore.1.text", "旅人，你听得见我们。很久以前，我们也像你一样，从一颗小小的星球出发，抬头看着天，以为星星永远不会熄灭。",
+                "Traveler, you can hear us. Long ago we too set out from one small world, looked up at the sky, and believed the stars would never go dark.");
+        both("poi.universe.lore.2.title", "第一座环", "The First Ring");
+        both("poi.universe.lore.2.text", "我们学会了驯服恒星。第一座环绕恒星的环合拢的那一天，我们的夜晚再也没有黑过。能量多到用不完，于是我们去找更多的恒星。",
+                "We learned to tame stars. The day the first ring closed around our sun, our nights were never dark again. We had more energy than we could ever use, so we went looking for more stars.");
+        both("poi.universe.lore.3.title", "群星之网", "The Web of Stars");
+        both("poi.universe.lore.3.text", "一千颗恒星被我们的球壳包了起来。光沿着我们铺下的路，从一个星系流向另一个星系。我们把这叫做繁荣。",
+                "A thousand stars wrapped in our shells. Light flowed along the roads we laid, from one system to the next. We called it prosperity.");
+        both("poi.universe.lore.4.title", "沉默的星球", "Quiet Worlds");
+        both("poi.universe.lore.4.text", "我们挖空了一颗又一颗星球。森林变成了矿坑，海洋变成了冷却池。星球不会抗议，所以我们什么也没听见。",
+                "We hollowed out world after world. Forests became pits, oceans became coolant pools. Planets do not protest, so we heard nothing.");
+        both("poi.universe.lore.5.title", "守卫", "Sentinels");
+        both("poi.universe.lore.5.text", "后来我们造出了守卫机，让它们看守剩下的星球。它们不认主人，只认伤害。今天你遇到的，就是它们的后代。",
+                "Later we built the Sentinels to watch over the worlds that remained. They know no masters, only harm. The ones you meet today are their descendants.");
+        both("poi.universe.lore.6.title", "裂痕", "Fracture");
+        both("poi.universe.lore.6.text", "我们为了恒星争吵。有人要拆掉球壳，让星光重新照到荒芜的星球上；有人说我们拥有的还远远不够。",
+                "We quarreled over the stars. Some wanted the shells torn down so starlight could reach the barren worlds again. Others said we still did not have nearly enough.");
+        both("poi.universe.lore.7.title", "暗下去的天", "Dimming");
+        both("poi.universe.lore.7.text", "最远的星系开始一个接一个地暗下去。不是熄灭，是被包了起来。我们之中有人在暗中建造，我们始终不知道是谁。",
+                "The farthest systems began to dim, one after another. Not dying — being enclosed. Someone among us was building in secret, and we never learned who.");
+        both("poi.universe.lore.8.title", "寂静", "The Silence");
+        both("poi.universe.lore.8.text", "然后寂静来了。所有的频段同时没了声音，就像有人关上了一扇门。我们始终没弄清楚门的另一边是什么。",
+                "Then came the Silence. Every channel went quiet at once, as if someone had closed a door. We never understood what lay on the other side.");
+        both("poi.universe.lore.9.title", "石碑", "Monoliths");
+        both("poi.universe.lore.9.text", "剩下的人立起了这些石碑。我们把记忆刻进石头，因为石头比我们活得长。你手里的勘探数据，有一部分来自我们。",
+                "Those who remained raised these monoliths. We carved our memories into stone, because stone outlives us. Part of the survey data in your hands came from us.");
+        both("poi.universe.lore.10.title", "中心", "The Center");
+        both("poi.universe.lore.10.text", "星团的中心有一个吞下光的东西。我们最后的舰队朝它飞去。有人说那是逃离，有人说那是回家。",
+                "At the heart of the cluster is something that swallows light. Our last fleet flew toward it. Some called it escape. Some called it going home.");
+        both("poi.universe.lore.11.title", "选择", "Choice");
+        both("poi.universe.lore.11.text", "你也会建起你的环、你的球壳。我们不会阻止你，也阻止不了。我们只想让你知道它的代价。",
+                "You will build your rings and your shells too. We will not stop you; we cannot. We only want you to know what they cost.");
+        both("poi.universe.lore.12.title", "最后的话", "Last Words");
+        both("poi.universe.lore.12.text", "如果有一天，你的星空也开始变暗，记得回到这里，把手放在石头上。我们会听见。",
+                "If one day your sky begins to dim, remember to come back here and lay your hand on the stone. We will hear you.");
     }
 
     /** 技术模块和外骨骼的格子（ADR-0014）。 */

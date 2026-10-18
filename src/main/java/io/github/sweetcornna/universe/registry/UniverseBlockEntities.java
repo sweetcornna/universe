@@ -3,6 +3,7 @@ package io.github.sweetcornna.universe.registry;
 import java.util.function.Supplier;
 
 import io.github.sweetcornna.universe.Universe;
+import io.github.sweetcornna.universe.block.poi.SupplyCrateBlockEntity;
 import io.github.sweetcornna.universe.block.ship.FuelTankBlockEntity;
 import io.github.sweetcornna.universe.factory.RecipeMachineBlockEntity;
 import io.github.sweetcornna.universe.factory.RecipeMachines;
@@ -30,6 +31,8 @@ public final class UniverseBlockEntities {
 
     public static final Supplier<BlockEntityType<FuelTankBlockEntity>> FUEL_TANK = BLOCK_ENTITIES.register("fuel_tank",
             () -> new BlockEntityType<>(FuelTankBlockEntity::new, UniverseBlocks.FUEL_TANK.get()));
+    public static final Supplier<BlockEntityType<SupplyCrateBlockEntity>> SUPPLY_CRATE = BLOCK_ENTITIES.register("supply_crate",
+            () -> new BlockEntityType<>(SupplyCrateBlockEntity::new, UniverseBlocks.SUPPLY_CRATE.get()));
 
     // ---- 工业
     public static final Supplier<BlockEntityType<TeslaTowerBlockEntity>> TESLA_TOWER = BLOCK_ENTITIES.register("tesla_tower",
