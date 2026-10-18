@@ -1,0 +1,20 @@
+{
+  "type": "universe:research_shaped",
+  "category": "redstone",
+  "key": {
+    "B": "universe:circuit_board",
+    "E": "universe:plasma_exciter",
+    "K": "minecraft:stone_bricks",
+    "P": "minecraft:piston",
+    "S": "universe:steel"
+  },
+  "pattern": [
+    "SES",
+    "BPB",
+    "KKK"
+  ],
+  "research": "plasma_refining",
+  "result": {
+    "id": "universe:oil_extractor"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "feature": "universe:overworld_veins",
+  "placement": [
+    {
+      "type": "minecraft:biome"
+    }
+  ]
+}

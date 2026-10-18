@@ -382,6 +382,227 @@ def assembler():
         save(img, BLOCK, name)
 
 
+def hazard(img, y0, y1, a=(214, 172, 46), b=(40, 40, 44)):
+    """黄黑相间的警示条。"""
+    for y in range(y0, y1 + 1):
+        for x in range(N):
+            put(img, x, y, a if ((x + y) // 2) % 2 == 0 else b)
+
+
+def mining_machine():
+    rng = random.Random(108)
+    yellow = (200, 160, 52)
+    side = casing(yellow, rng, seam=False)
+    # 中间一块深色的检修面板，下沿一道警示条
+    rect(side, 3, 3, 12, 10, (64, 66, 72))
+    for y in range(4, 10, 2):
+        for x in range(4, 12):
+            put(side, x, y, (46, 48, 54))
+    hazard(side, 12, 13)
+    save(side, BLOCK, "mining_machine_side")
+
+    top = casing(shade(yellow, 0.9), rng, seam=False)
+    # 俯视的电机：一圈散热片围着转轴
+    for y in range(N):
+        for x in range(N):
+            d = math.hypot(x - 7.5, y - 7.5)
+            if d < 5.5:
+                a = math.atan2(y - 7.5, x - 7.5)
+                fin = math.cos(a * 6) > 0
+                put(top, x, y, shade((84, 88, 96), 1.15 - 0.05 * d) if fin or d < 2.5 else (52, 54, 60))
+    rect(top, 7, 7, 8, 8, (180, 184, 190))
+    save(top, BLOCK, "mining_machine_top")
+
+    bottom = new((60, 60, 64))
+    noise(bottom, rng, 0.05)
+    # 钻头：螺旋的刃
+    for y in range(N):
+        for x in range(N):
+            d = math.hypot(x - 7.5, y - 7.5)
+            a = math.atan2(y - 7.5, x - 7.5)
+            if d < 7 and math.sin(a * 3 + d * 0.9) > 0.3:
+                put(bottom, x, y, shade((170, 172, 178), 1.1 - 0.06 * d))
+    frame(bottom, (90, 90, 96), (40, 40, 44))
+    save(bottom, BLOCK, "mining_machine_bottom")
+
+    for name, lit in (("mining_machine_front", False), ("mining_machine_front_on", True)):
+        img = side.copy()
+        # 出料口：滚筒和一个往外的箭头
+        rect(img, 3, 3, 12, 10, (30, 32, 36))
+        for y in (4, 6, 8):
+            for x in range(4, 12):
+                put(img, x, y, (70, 72, 78))
+        arrow = CYAN if lit else CYAN_DIM
+        for (x, y) in ((7, 5), (8, 5), (6, 6), (9, 6), (5, 7), (10, 7), (7, 6), (8, 6), (7, 7), (8, 7), (7, 8), (8, 8), (7, 9), (8, 9)):
+            put(img, x, y, arrow)
+        save(img, BLOCK, name)
+
+
+def water_pump():
+    rng = random.Random(109)
+    base = (70, 96, 120)
+    side = casing(base, rng, seam=False)
+    # 一根竖直的进水管
+    for y in range(1, 15):
+        put(side, 6, y, (110, 150, 190))
+        put(side, 7, y, (140, 180, 215))
+        put(side, 8, y, (110, 150, 190))
+        put(side, 9, y, (80, 110, 140))
+    for y in (4, 11):
+        rect(side, 5, y, 10, y, (60, 64, 70))
+    save(side, BLOCK, "water_pump_side")
+
+    top = casing(shade(base, 1.1), rng, seam=False)
+    # 电机风扇的格栅
+    for y in range(N):
+        for x in range(N):
+            d = math.hypot(x - 7.5, y - 7.5)
+            if d < 5.5:
+                put(top, x, y, (40, 48, 58) if (x + y) % 2 == 0 else (90, 104, 120))
+    save(top, BLOCK, "water_pump_top")
+
+    bottom = new((50, 58, 66))
+    for y in range(2, 14):
+        for x in range(2, 14):
+            put(bottom, x, y, (30, 36, 42) if y % 2 == 0 else (80, 110, 140))
+    frame(bottom, (90, 100, 110), (30, 34, 40))
+    save(bottom, BLOCK, "water_pump_bottom")
+
+    for name, lit in (("water_pump_front", False), ("water_pump_front_on", True)):
+        img = side.copy()
+        # 水位计和出水口
+        rect(img, 3, 3, 6, 12, (36, 40, 46))
+        level = 10 if lit else 5
+        for y in range(4, 12):
+            if 12 - y <= level - 3:
+                put(img, 4, y, (90, 170, 255) if lit else (50, 90, 130))
+                put(img, 5, y, (60, 140, 230) if lit else (40, 70, 110))
+        rect(img, 9, 6, 13, 10, (36, 40, 46))
+        rect(img, 10, 7, 12, 9, (20, 24, 30))
+        put(img, 11, 8, (120, 200, 255) if lit else (40, 70, 100))
+        save(img, BLOCK, name)
+
+
+def oil_extractor():
+    rng = random.Random(110)
+    steel = (72, 70, 74)
+    side = casing(steel, rng, seam=False)
+    hazard(side, 2, 2, (210, 120, 40), (40, 38, 40))
+    for y in range(5, 13, 3):
+        rect(side, 3, y, 12, y, shade(steel, 0.75))
+    save(side, BLOCK, "oil_extractor_side")
+
+    for name, lit in (("oil_extractor_front", False), ("oil_extractor_front_on", True)):
+        img = side.copy()
+        # 压力表和一排指示灯
+        rect(img, 4, 4, 11, 11, (34, 32, 34))
+        for y in range(5, 11):
+            for x in range(5, 11):
+                d = math.hypot(x - 7.5, y - 7.5)
+                if d < 2.9:
+                    put(img, x, y, (230, 226, 210))
+        put(img, 7, 6, (200, 40, 30))
+        put(img, 7, 7, (60, 60, 60))
+        put(img, 8, 8, (60, 60, 60))
+        for i, x in enumerate((5, 7, 9)):
+            put(img, x, 13, (90, 230, 120) if lit else (40, 60, 48))
+        save(img, BLOCK, name)
+
+    beam = clear()
+    # 井架的钢梁：两条边加斜撑，留空的地方透明
+    for y in range(N):
+        put(beam, 0, y, (150, 60, 40))
+        put(beam, 1, y, (196, 84, 52))
+        put(beam, 14, y, (196, 84, 52))
+        put(beam, 15, y, (150, 60, 40))
+        x = y if y < N else 0
+        put(beam, x, y, (176, 74, 48))
+        put(beam, 15 - x, y, (176, 74, 48))
+    save(beam, BLOCK, "oil_extractor_beam")
+
+    pipe = new((100, 96, 92))
+    noise(pipe, rng, 0.04)
+    for y in range(N):
+        put(pipe, 0, y, (140, 136, 130))
+        put(pipe, 15, y, (60, 58, 56))
+    for y in (3, 11):
+        rect(pipe, 0, y, 15, y, (60, 58, 56))
+    save(pipe, BLOCK, "oil_extractor_pipe")
+
+
+def oil_refinery():
+    rng = random.Random(111)
+    steel = (96, 92, 88)
+    side = casing(steel, rng, seam=False)
+    # 横着的几根油管
+    for y in (4, 9):
+        rect(side, 1, y, 14, y + 1, (150, 80, 50))
+        rect(side, 1, y + 1, 14, y + 1, (110, 56, 36))
+    save(side, BLOCK, "oil_refinery_side")
+
+    top = casing(shade(steel, 1.1), rng, seam=False)
+    save(top, BLOCK, "oil_refinery_top")
+
+    for name, lit in (("oil_refinery_front", False), ("oil_refinery_front_on", True)):
+        img = side.copy()
+        # 加热炉的观察窗
+        rect(img, 4, 3, 11, 11, (40, 38, 38))
+        for y in range(4, 11):
+            for x in range(5, 11):
+                if lit:
+                    t = (y - 4) / 6
+                    put(img, x, y, mix((255, 200, 90), (220, 80, 30), t))
+                else:
+                    put(img, x, y, (30, 26, 24))
+        for x in (6, 8, 10):
+            for y in range(4, 11):
+                put(img, x, y, (64, 60, 58))
+        put(img, 12, 13, (90, 230, 120) if lit else (40, 60, 48))
+        save(img, BLOCK, name)
+
+    column = new((206, 208, 210))
+    noise(column, rng, 0.03)
+    # 分馏塔：保温层的环箍和竖直的接缝
+    for y in range(0, N, 4):
+        rect(column, 0, y, 15, y, (150, 154, 158))
+    for y in range(N):
+        put(column, 0, y, (230, 232, 234))
+        put(column, 15, y, (160, 164, 168))
+        put(column, 7, y, (186, 188, 190))
+    save(column, BLOCK, "oil_refinery_column")
+
+
+def crude_oil_seep():
+    rng = random.Random(112)
+    top = new((20, 16, 16))
+    # 黑油面，带一点彩虹色的油膜和气泡
+    for y in range(N):
+        for x in range(N):
+            d = math.hypot(x - 7.5, y - 7.5)
+            if d > 6.8:
+                put(top, x, y, shade((60, 44, 30), 1 + rng.uniform(-0.15, 0.1)))
+            else:
+                sheen = math.sin(x * 0.9 + y * 0.6) * 0.5 + 0.5
+                if rng.random() < 0.08:
+                    c = mix((90, 60, 140), (40, 120, 110), sheen)
+                else:
+                    c = shade((18, 14, 16), 1 + rng.uniform(-0.2, 0.3))
+                put(top, x, y, c)
+    for (x, y) in ((5, 6), (9, 9), (10, 5)):
+        put(top, x, y, (120, 110, 120))
+        put(top, x + 1, y, (60, 56, 62))
+    save(top, BLOCK, "crude_oil_seep_top")
+
+    side = new((74, 54, 38))
+    noise(side, rng, 0.12)
+    # 往下渗的油迹
+    for x in range(N):
+        depth = 2 + int(abs(math.sin(x * 1.7)) * 6) + rng.randint(0, 2)
+        for y in range(depth):
+            put(side, x, y, shade((22, 18, 18), 1 + rng.uniform(-0.2, 0.2)))
+    save(side, BLOCK, "crude_oil_seep_side")
+
+
 # ---- 物品
 
 def gear():
@@ -575,6 +796,11 @@ def main():
     accumulator()
     arc_smelter()
     assembler()
+    mining_machine()
+    water_pump()
+    oil_extractor()
+    oil_refinery()
+    crude_oil_seep()
     gear()
     magnetic_coil()
     circuit_board()

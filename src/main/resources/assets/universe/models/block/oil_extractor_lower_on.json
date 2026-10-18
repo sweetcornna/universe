@@ -1,0 +1,271 @@
+{
+  "parent": "block/block",
+  "textures": {
+    "particle": "universe:block/oil_extractor_side",
+    "casing": "universe:block/machine_casing",
+    "plate": "universe:block/machine_casing_top",
+    "side": "universe:block/oil_extractor_side",
+    "front": "universe:block/oil_extractor_front",
+    "front_on": "universe:block/oil_extractor_front_on",
+    "beam": "universe:block/oil_extractor_beam",
+    "pipe": "universe:block/oil_extractor_pipe"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        2,
+        16
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            14,
+            16,
+            16
+          ],
+          "texture": "#casing",
+          "cullface": "north"
+        },
+        "south": {
+          "uv": [
+            0,
+            14,
+            16,
+            16
+          ],
+          "texture": "#casing",
+          "cullface": "south"
+        },
+        "west": {
+          "uv": [
+            0,
+            14,
+            16,
+            16
+          ],
+          "texture": "#casing",
+          "cullface": "west"
+        },
+        "east": {
+          "uv": [
+            0,
+            14,
+            16,
+            16
+          ],
+          "texture": "#casing",
+          "cullface": "east"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#plate"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#plate",
+          "cullface": "down"
+        }
+      }
+    },
+    {
+      "from": [
+        2,
+        2,
+        1
+      ],
+      "to": [
+        14,
+        12,
+        13
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            2,
+            4,
+            14,
+            14
+          ],
+          "texture": "#front"
+        },
+        "south": {
+          "uv": [
+            2,
+            4,
+            14,
+            14
+          ],
+          "texture": "#side"
+        },
+        "west": {
+          "uv": [
+            1,
+            4,
+            13,
+            14
+          ],
+          "texture": "#side"
+        },
+        "east": {
+          "uv": [
+            3,
+            4,
+            15,
+            14
+          ],
+          "texture": "#side"
+        },
+        "up": {
+          "uv": [
+            2,
+            1,
+            14,
+            13
+          ],
+          "texture": "#plate"
+        }
+      }
+    },
+    {
+      "from": [
+        6,
+        12,
+        6
+      ],
+      "to": [
+        10,
+        16,
+        10
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            6,
+            0,
+            10,
+            4
+          ],
+          "texture": "#pipe"
+        },
+        "south": {
+          "uv": [
+            6,
+            0,
+            10,
+            4
+          ],
+          "texture": "#pipe"
+        },
+        "west": {
+          "uv": [
+            6,
+            0,
+            10,
+            4
+          ],
+          "texture": "#pipe"
+        },
+        "east": {
+          "uv": [
+            6,
+            0,
+            10,
+            4
+          ],
+          "texture": "#pipe"
+        }
+      }
+    },
+    {
+      "from": [
+        4,
+        2,
+        13
+      ],
+      "to": [
+        12,
+        8,
+        15
+      ],
+      "faces": {
+        "south": {
+          "uv": [
+            4,
+            8,
+            12,
+            14
+          ],
+          "texture": "#side"
+        },
+        "west": {
+          "uv": [
+            13,
+            8,
+            15,
+            14
+          ],
+          "texture": "#side"
+        },
+        "east": {
+          "uv": [
+            1,
+            8,
+            3,
+            14
+          ],
+          "texture": "#side"
+        },
+        "up": {
+          "uv": [
+            4,
+            13,
+            12,
+            15
+          ],
+          "texture": "#plate"
+        }
+      }
+    },
+    {
+      "from": [
+        4,
+        2,
+        0.95
+      ],
+      "to": [
+        12,
+        12,
+        0.95
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            4,
+            4,
+            12,
+            14
+          ],
+          "texture": "#front_on"
+        }
+      },
+      "light_emission": 10
+    }
+  ]
+}

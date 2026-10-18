@@ -63,7 +63,8 @@ final class UniverseBlockLoot extends BlockLootSubProvider {
         this.dropSelf(UniverseBlocks.SHIP_SEAT.get());
         UniverseBlocks.HULL_PLATING.values().forEach(block -> this.dropSelf(block.get()));
         // 工业设备：两格高的只认下半截；蓄电器拆下来带着电量
-        for (Block block : List.of(UniverseBlocks.TESLA_TOWER.get(), UniverseBlocks.WIND_TURBINE.get(), UniverseBlocks.THERMAL_PLANT.get())) {
+        for (Block block : List.of(UniverseBlocks.TESLA_TOWER.get(), UniverseBlocks.WIND_TURBINE.get(), UniverseBlocks.THERMAL_PLANT.get(),
+                UniverseBlocks.OIL_EXTRACTOR.get(), UniverseBlocks.OIL_REFINERY.get())) {
             this.add(block, this.createSinglePropConditionTable(block, TallMachineBlock.HALF, DoubleBlockHalf.LOWER));
         }
         this.add(UniverseBlocks.ACCUMULATOR.get(), block -> LootTable.lootTable().withPool(this.applyExplosionCondition(block,
@@ -72,6 +73,8 @@ final class UniverseBlockLoot extends BlockLootSubProvider {
                                 .include(UniverseDataComponents.STORED_ENERGY.get()))))));
         this.dropSelf(UniverseBlocks.ARC_SMELTER.get());
         this.dropSelf(UniverseBlocks.ASSEMBLER.get());
+        this.dropSelf(UniverseBlocks.MINING_MACHINE.get());
+        this.dropSelf(UniverseBlocks.WATER_PUMP.get());
         // 星球矿石：和原版矿石一样，精准采集掉本体，时运加成掉落
         UniverseBlocks.ORES.forEach((kind, block) -> this.add(block.get(), this.createOreDrops(block.get(), kind)));
     }

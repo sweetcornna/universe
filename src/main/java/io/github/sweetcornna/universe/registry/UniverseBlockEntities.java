@@ -6,6 +6,9 @@ import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.block.ship.FuelTankBlockEntity;
 import io.github.sweetcornna.universe.factory.RecipeMachineBlockEntity;
 import io.github.sweetcornna.universe.factory.RecipeMachines;
+import io.github.sweetcornna.universe.factory.resource.MiningMachineBlockEntity;
+import io.github.sweetcornna.universe.factory.resource.OilExtractorBlockEntity;
+import io.github.sweetcornna.universe.factory.resource.WaterPumpBlockEntity;
 import io.github.sweetcornna.universe.factory.power.AccumulatorBlockEntity;
 import io.github.sweetcornna.universe.factory.power.TeslaTowerBlockEntity;
 import io.github.sweetcornna.universe.factory.power.ThermalPlantBlockEntity;
@@ -37,6 +40,14 @@ public final class UniverseBlockEntities {
             "arc_smelter", UniverseBlocks.ARC_SMELTER, RecipeMachines.ARC_SMELTER);
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<RecipeMachineBlockEntity>> ASSEMBLER = recipeMachine(
             "assembler", UniverseBlocks.ASSEMBLER, RecipeMachines.ASSEMBLER);
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<RecipeMachineBlockEntity>> OIL_REFINERY = recipeMachine(
+            "oil_refinery", UniverseBlocks.OIL_REFINERY, RecipeMachines.OIL_REFINERY);
+    public static final Supplier<BlockEntityType<MiningMachineBlockEntity>> MINING_MACHINE = BLOCK_ENTITIES.register("mining_machine",
+            () -> new BlockEntityType<>(MiningMachineBlockEntity::new, UniverseBlocks.MINING_MACHINE.get()));
+    public static final Supplier<BlockEntityType<WaterPumpBlockEntity>> WATER_PUMP = BLOCK_ENTITIES.register("water_pump",
+            () -> new BlockEntityType<>(WaterPumpBlockEntity::new, UniverseBlocks.WATER_PUMP.get()));
+    public static final Supplier<BlockEntityType<OilExtractorBlockEntity>> OIL_EXTRACTOR = BLOCK_ENTITIES.register("oil_extractor",
+            () -> new BlockEntityType<>(OilExtractorBlockEntity::new, UniverseBlocks.OIL_EXTRACTOR.get()));
 
     private UniverseBlockEntities() {
     }

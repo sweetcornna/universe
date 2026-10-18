@@ -1,0 +1,20 @@
+{
+  "type": "universe:refining",
+  "ingredients": [
+    {
+      "count": 2,
+      "ingredient": "universe:crude_oil"
+    }
+  ],
+  "research": "plasma_refining",
+  "results": [
+    {
+      "count": 2,
+      "id": "universe:refined_oil"
+    },
+    {
+      "id": "universe:hydrogen"
+    }
+  ],
+  "time": 80
+}

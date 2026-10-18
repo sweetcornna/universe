@@ -1,0 +1,20 @@
+{
+  "type": "universe:research_shaped",
+  "category": "redstone",
+  "key": {
+    "B": "universe:circuit_board",
+    "E": "universe:plasma_exciter",
+    "F": "minecraft:blast_furnace",
+    "K": "minecraft:stone_bricks",
+    "S": "universe:steel"
+  },
+  "pattern": [
+    "SES",
+    "BFB",
+    "KKK"
+  ],
+  "research": "plasma_refining",
+  "result": {
+    "id": "universe:oil_refinery"
+  }
+}

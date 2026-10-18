@@ -20,6 +20,11 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import net.neoforged.neoforge.capabilities.BlockCapabilityCache;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.ResourceHandlerUtil;
+import net.neoforged.neoforge.transfer.item.ItemResource;
 
 /**
  * 工业设备的方块实体（ADR-0011）：物品栏、接入电网、"工作中"状态和界面数据。
@@ -42,6 +47,9 @@ public abstract class MachineBlockEntity extends BaseContainerBlockEntity implem
     protected double load;
     protected long stored;
     private int idleTicks = IDLE_GRACE;
+    /** 往外推产物的目标，按方向缓存。 */
+    private @Nullable BlockCapabilityCache<ResourceHandler<ItemResource>, @Nullable Direction> output;
+    private @Nullable Direction outputSide;
     private final ContainerData data = new ContainerData() {
         @Override
         public int get(int index) {
@@ -201,6 +209,58 @@ public abstract class MachineBlockEntity extends BaseContainerBlockEntity implem
     /** 自动化能拿出来的格子。 */
     protected boolean isOutput(int slot) {
         return false;
+    }
+
+    /**
+     * 把一格里的东西推给某个方向的邻居（传送带、箱子、别的设备），用邻居的物品能力。
+     *
+     * @return 推出去的个数
+     */
+    protected int pushOutput(int slot, Direction side, int max) {
+        ItemStack stack = this.getItem(slot);
+        if (stack.isEmpty() || !(this.level instanceof ServerLevel serverLevel)) {
+            return 0;
+        }
+        if (this.output == null || this.outputSide != side) {
+            this.output = BlockCapabilityCache.create(Capabilities.Item.BLOCK, serverLevel, this.worldPosition.relative(side), side.getOpposite());
+            this.outputSide = side;
+        }
+        ResourceHandler<ItemResource> target = this.output.getCapability();
+        if (target == null) {
+            return 0;
+        }
+        int inserted = ResourceHandlerUtil.insertStacking(target, ItemResource.of(stack), Math.min(max, stack.getCount()), null);
+        if (inserted > 0) {
+            stack.shrink(inserted);
+            this.setChanged();
+        }
+        return inserted;
+    }
+
+    /**
+     * 往产物格里加东西。
+     *
+     * @return 放不下的个数
+     */
+    protected int addOutput(int slot, ItemStack stack) {
+        ItemStack current = this.getItem(slot);
+        if (current.isEmpty()) {
+            this.setItem(slot, stack.copy());
+            return 0;
+        }
+        if (!ItemStack.isSameItemSameComponents(current, stack)) {
+            return stack.getCount();
+        }
+        int moved = Math.min(stack.getCount(), current.getMaxStackSize() - current.getCount());
+        current.grow(moved);
+        this.setChanged();
+        return stack.getCount() - moved;
+    }
+
+    /** 产物格还能不能再放一个这种东西。 */
+    protected boolean outputHasRoom(int slot, ItemStack stack) {
+        ItemStack current = this.getItem(slot);
+        return current.isEmpty() || ItemStack.isSameItemSameComponents(current, stack) && current.getCount() < current.getMaxStackSize();
     }
 
     @Override

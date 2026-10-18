@@ -257,10 +257,99 @@ def thermal_plant():
     tall("thermal_plant", textures, lower, upper, lower_on=lower_on)
 
 
+# ---- 原油萃取站
+
+def oil_extractor():
+    textures = {
+        "particle": "universe:block/oil_extractor_side",
+        "casing": "universe:block/machine_casing",
+        "plate": "universe:block/machine_casing_top",
+        "side": "universe:block/oil_extractor_side",
+        "front": "universe:block/oil_extractor_front",
+        "front_on": "universe:block/oil_extractor_front_on",
+        "beam": "universe:block/oil_extractor_beam",
+        "pipe": "universe:block/oil_extractor_pipe",
+    }
+    slab = {"north": "casing", "south": "casing", "west": "casing", "east": "casing", "up": "plate", "down": "plate"}
+    housing = {"north": "front", "south": "side", "west": "side", "east": "side", "up": "plate", "down": None}
+    pipe = {"north": "pipe", "south": "pipe", "west": "pipe", "east": "pipe", "up": None, "down": None}
+    lower = [
+        box((0, 0, 0), (16, 2, 16), slab, cull={"down": "down", "north": "north", "south": "south", "west": "west", "east": "east"}),
+        box((2, 2, 1), (14, 12, 13), housing),
+        # 井口：一根粗管子往上接井架
+        box((6, 12, 6), (10, 16, 10), pipe),
+        # 背后的储油罐
+        box((4, 2, 13), (12, 8, 15), {"north": None, "south": "side", "west": "side", "east": "side", "up": "plate", "down": None}),
+    ]
+    # 工作时压力表和指示灯发光
+    lamp = box((4, 2, 0.95), (12, 12, 0.95), {"north": "front_on"}, faces=("north",), light=10, uvs={"north": [4, 4, 12, 14]})
+    lower_on = lower + [lamp]
+
+    upper = []
+    # 井架：四根角柱、四面桁架、顶上的天车
+    for x0, z0 in ((2, 2), (12.5, 2), (2, 12.5), (12.5, 12.5)):
+        upper.append(box((x0, 0, z0), (x0 + 1.5, 13, z0 + 1.5), "beam", uvs={f: [0, 3, 2, 16] for f in FACES}))
+    # 四面是斜撑交叉的镂空桁架
+    lattice = {f: [0, 0, 16, 16] for f in FACES}
+    upper.append(box((2, 0, 2.75), (14, 13, 2.75), "beam", faces=("north", "south"), uvs=lattice))
+    upper.append(box((2, 0, 13.25), (14, 13, 13.25), "beam", faces=("north", "south"), uvs=lattice))
+    upper.append(box((2.75, 0, 2), (2.75, 13, 14), "beam", faces=("west", "east"), uvs=lattice))
+    upper.append(box((13.25, 0, 2), (13.25, 13, 14), "beam", faces=("west", "east"), uvs=lattice))
+    upper.append(box((7, 0, 7), (9, 13, 9), pipe))
+    upper.append(box((3, 13, 3), (13, 15, 13), slab))
+    upper.append(box((6, 15, 7), (10, 16, 9), "casing", cull={"up": "up"}))
+    tall("oil_extractor", textures, lower, upper, lower_on=lower_on)
+
+
+# ---- 原油精炼厂
+
+def oil_refinery():
+    textures = {
+        "particle": "universe:block/oil_refinery_side",
+        "casing": "universe:block/machine_casing",
+        "plate": "universe:block/machine_casing_top",
+        "side": "universe:block/oil_refinery_side",
+        "top": "universe:block/oil_refinery_top",
+        "front": "universe:block/oil_refinery_front",
+        "front_on": "universe:block/oil_refinery_front_on",
+        "column": "universe:block/oil_refinery_column",
+        "pipe": "universe:block/oil_extractor_pipe",
+    }
+    body = {"north": "front", "south": "side", "west": "side", "east": "side", "up": "top", "down": "top"}
+    column = {"north": "column", "south": "column", "west": "column", "east": "column", "up": "plate", "down": None}
+    pipe = {"north": "pipe", "south": "pipe", "west": "pipe", "east": "pipe", "up": "pipe", "down": "pipe"}
+    lower = [
+        box((1, 0, 1), (15, 13, 15), body, cull={"down": "down"}),
+        box((0, 0, 0), (16, 2, 16), "casing", cull={"down": "down", "north": "north", "south": "south", "west": "west", "east": "east"}),
+        # 两座分馏塔的塔基
+        box((2, 13, 9), (7, 16, 14), {"north": "column", "south": "column", "west": "column", "east": "column", "up": None, "down": None}),
+        box((9, 13, 9), (14, 16, 14), {"north": "column", "south": "column", "west": "column", "east": "column", "up": None, "down": None}),
+        # 托住上面横放储罐的两个鞍座
+        box((4, 13, 2.5), (6, 16, 5.5), "casing"),
+        box((10, 13, 2.5), (12, 16, 5.5), "casing"),
+    ]
+    window = box((4, 5, 0.95), (11, 13, 0.95), {"north": "front_on"}, faces=("north",), light=12, uvs={"north": [4, 3, 11, 11]})
+    lower_on = lower + [window]
+    upper = [
+        # 高塔、矮塔和塔顶的盖
+        box((2, 0, 9), (7, 15, 14), column),
+        box((2.5, 15, 9.5), (6.5, 16, 13.5), "casing", cull={"up": "up"}),
+        box((9, 0, 9), (14, 10, 14), column),
+        box((9.5, 10, 9.5), (13.5, 11, 13.5), "casing"),
+        # 两塔之间的连管
+        box((7, 7, 11), (9, 8, 12), pipe),
+        # 前面横放的储罐
+        box((3, 0, 2), (13, 4, 6), {"north": "column", "south": "column", "west": "plate", "east": "plate", "up": "column", "down": None}),
+    ]
+    tall("oil_refinery", textures, lower, upper, lower_on=lower_on)
+
+
 def main():
     tesla_tower()
     wind_turbine()
     thermal_plant()
+    oil_extractor()
+    oil_refinery()
 
 
 if __name__ == "__main__":

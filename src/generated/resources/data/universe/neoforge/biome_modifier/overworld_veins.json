@@ -1,0 +1,6 @@
+{
+  "type": "neoforge:add_features",
+  "biomes": "#minecraft:is_overworld",
+  "features": "universe:overworld_veins",
+  "step": "top_layer_modification"
+}

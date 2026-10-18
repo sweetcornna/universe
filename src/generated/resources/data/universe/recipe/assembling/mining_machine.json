@@ -1,0 +1,28 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 4,
+      "ingredient": "minecraft:iron_ingot"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:circuit_board"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:magnetic_coil"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:gear"
+    }
+  ],
+  "research": "electromagnetism",
+  "results": [
+    {
+      "id": "universe:mining_machine"
+    }
+  ],
+  "time": 60
+}

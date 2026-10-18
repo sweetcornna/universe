@@ -23,6 +23,8 @@ import io.github.sweetcornna.universe.core.galaxy.Palette;
 import io.github.sweetcornna.universe.factory.ArcSmelterBlock;
 import io.github.sweetcornna.universe.factory.MachineBlock;
 import io.github.sweetcornna.universe.factory.TallMachineBlock;
+import io.github.sweetcornna.universe.factory.resource.CrudeOilSeepBlock;
+import io.github.sweetcornna.universe.factory.resource.ResourceMachineBlocks;
 import io.github.sweetcornna.universe.factory.power.AccumulatorBlock;
 import io.github.sweetcornna.universe.factory.power.ThermalPlantBlock;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
@@ -124,6 +126,18 @@ public final class UniverseBlocks {
     public static final DeferredBlock<MachineBlock> ASSEMBLER = BLOCKS.registerBlock("assembler",
             p -> new MachineBlock(p, UniverseBlockEntities.ASSEMBLER),
             p -> machine(p).lightLevel(state -> state.getValue(MachineBlock.WORKING) ? 6 : 0));
+    public static final DeferredBlock<ResourceMachineBlocks.MiningMachine> MINING_MACHINE = BLOCKS.registerBlock("mining_machine",
+            ResourceMachineBlocks.MiningMachine::new, p -> machine(p).lightLevel(state -> state.getValue(MachineBlock.WORKING) ? 5 : 0));
+    public static final DeferredBlock<ResourceMachineBlocks.WaterPump> WATER_PUMP = BLOCKS.registerBlock("water_pump",
+            ResourceMachineBlocks.WaterPump::new, p -> machine(p).lightLevel(state -> state.getValue(MachineBlock.WORKING) ? 5 : 0));
+    public static final DeferredBlock<ResourceMachineBlocks.OilExtractor> OIL_EXTRACTOR = BLOCKS.registerBlock("oil_extractor",
+            ResourceMachineBlocks.OilExtractor::new, p -> machine(p).noOcclusion());
+    public static final DeferredBlock<ResourceMachineBlocks.OilRefinery> OIL_REFINERY = BLOCKS.registerBlock("oil_refinery",
+            ResourceMachineBlocks.OilRefinery::new, p -> machine(p).noOcclusion().lightLevel(state -> state.getValue(MachineBlock.WORKING)
+                    && state.getValue(TallMachineBlock.HALF) == DoubleBlockHalf.LOWER ? 10 : 0));
+    /** 原油涌泉：挖不掉，也不掉落。 */
+    public static final DeferredBlock<CrudeOilSeepBlock> CRUDE_OIL_SEEP = BLOCKS.registerBlock("crude_oil_seep", CrudeOilSeepBlock::new,
+            p -> p.mapColor(MapColor.COLOR_BLACK).strength(-1.0F, 3600000.0F).noLootTable().sound(SoundType.MUD));
 
     /** 设备的通用属性：金属、要镐子挖，活塞推不动。 */
     private static BlockBehaviour.Properties machine(BlockBehaviour.Properties properties) {

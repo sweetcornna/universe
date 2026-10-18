@@ -1,0 +1,9 @@
+{
+  "parent": "minecraft:block/orientable_with_bottom",
+  "textures": {
+    "bottom": "universe:block/mining_machine_bottom",
+    "front": "universe:block/mining_machine_front_on",
+    "side": "universe:block/mining_machine_side",
+    "top": "universe:block/mining_machine_top"
+  }
+}

@@ -118,6 +118,20 @@ final class UniverseRecipes extends RecipeProvider {
         this.researchShaped("thermal_power", RecipeCategory.REDSTONE, UniverseItems.THERMAL_PLANT.get(), 1,
                 List.of("BCB", "GFG", "BIB"),
                 Map.of('B', Items.STONE_BRICKS, 'C', coil, 'G', gear, 'F', Items.FURNACE, 'I', Items.IRON_INGOT));
+        this.researchShaped("electromagnetism", RecipeCategory.REDSTONE, UniverseItems.MINING_MACHINE.get(), 1,
+                List.of("IGI", "BPB", "IMI"),
+                Map.of('I', Items.IRON_INGOT, 'G', gear, 'B', board, 'P', Items.IRON_PICKAXE, 'M', coil));
+        this.researchShaped("fluid_storage", RecipeCategory.REDSTONE, UniverseItems.WATER_PUMP.get(), 1,
+                List.of("IMI", "BUB", "IMI"),
+                Map.of('I', Items.IRON_INGOT, 'M', UniverseItems.ELECTRIC_MOTOR.get(), 'B', board, 'U', Items.BUCKET));
+        this.researchShaped("plasma_refining", RecipeCategory.REDSTONE, UniverseItems.OIL_EXTRACTOR.get(), 1,
+                List.of("SES", "BPB", "KKK"),
+                Map.of('S', UniverseItems.STEEL.get(), 'E', UniverseItems.PLASMA_EXCITER.get(), 'B', board, 'P', Items.PISTON,
+                        'K', Items.STONE_BRICKS));
+        this.researchShaped("plasma_refining", RecipeCategory.REDSTONE, UniverseItems.OIL_REFINERY.get(), 1,
+                List.of("SES", "BFB", "KKK"),
+                Map.of('S', UniverseItems.STEEL.get(), 'E', UniverseItems.PLASMA_EXCITER.get(), 'B', board, 'F', Items.BLAST_FURNACE,
+                        'K', Items.STONE_BRICKS));
         this.researchShaped("energy_storage", RecipeCategory.REDSTONE, UniverseItems.ACCUMULATOR.get(), 1,
                 List.of("IRI", "CSC", "IRI"),
                 Map.of('I', Items.IRON_INGOT, 'R', Items.REDSTONE, 'C', coil, 'S', silicon));
@@ -167,6 +181,25 @@ final class UniverseRecipes extends RecipeProvider {
                 in(Items.IRON_INGOT, 10, Items.STONE_BRICKS, 4, gear, 4, coil, 4), out(UniverseItems.THERMAL_PLANT.get(), 1));
         this.machine(Kind.ASSEMBLING, "accumulator", 100, "energy_storage", in(Items.IRON_INGOT, 6, coil, 4, silicon, 2),
                 out(UniverseItems.ACCUMULATOR.get(), 1));
+        this.machine(Kind.ASSEMBLING, "mining_machine", 60, "electromagnetism", in(Items.IRON_INGOT, 4, board, 2, coil, 2, gear, 2),
+                out(UniverseItems.MINING_MACHINE.get(), 1));
+        this.machine(Kind.ASSEMBLING, "water_pump", 80, "fluid_storage",
+                in(Items.IRON_INGOT, 3, Items.STONE_BRICKS, 2, UniverseItems.ELECTRIC_MOTOR.get(), 4, board, 2),
+                out(UniverseItems.WATER_PUMP.get(), 1));
+        this.machine(Kind.ASSEMBLING, "oil_extractor", 160, "plasma_refining",
+                in(UniverseItems.STEEL.get(), 12, Items.STONE_BRICKS, 12, board, 6, UniverseItems.PLASMA_EXCITER.get(), 4),
+                out(UniverseItems.OIL_EXTRACTOR.get(), 1));
+        this.machine(Kind.ASSEMBLING, "oil_refinery", 120, "plasma_refining",
+                in(UniverseItems.STEEL.get(), 10, Items.STONE_BRICKS, 10, board, 6, UniverseItems.PLASMA_EXCITER.get(), 6),
+                out(UniverseItems.OIL_REFINERY.get(), 1));
+
+        // ---- 原油精炼厂
+        Item crude = UniverseItems.CRUDE_OIL.get();
+        Item refined = UniverseItems.REFINED_OIL.get();
+        this.machine(Kind.REFINING, "plasma_refining", 80, "plasma_refining", in(crude, 2),
+                List.of(new ItemStackTemplate(refined, 2), new ItemStackTemplate(hydrogen, 1)));
+        this.machine(Kind.REFINING, "x_ray_cracking", 80, "x_ray_cracking", in(refined, 1, hydrogen, 2),
+                List.of(new ItemStackTemplate(hydrogen, 3), new ItemStackTemplate(graphite, 1)));
     }
 
     /** 要研究解锁的有序合成，配方 ID 和原版一样用产物的名字。 */

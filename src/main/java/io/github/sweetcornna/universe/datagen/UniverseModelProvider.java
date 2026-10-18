@@ -117,8 +117,20 @@ final class UniverseModelProvider extends ModelProvider {
                 .with(PropertyDispatch.initial(AccumulatorBlock.CHARGE).generate(charge -> BlockModelGenerators.plainVariant(charges[charge])))
                 .with(BlockModelGenerators.ROTATION_HORIZONTAL_FACING));
         blockModels.registerSimpleItemModel(accumulator, charges[0]);
-        recipeMachine(blockModels, UniverseBlocks.ARC_SMELTER.get(), "arc_smelter", true);
-        recipeMachine(blockModels, UniverseBlocks.ASSEMBLER.get(), "assembler", false);
+        recipeMachine(blockModels, UniverseBlocks.ARC_SMELTER.get(), "arc_smelter", true, "machine_casing_top");
+        recipeMachine(blockModels, UniverseBlocks.ASSEMBLER.get(), "assembler", false, "machine_casing_top");
+        recipeMachine(blockModels, UniverseBlocks.MINING_MACHINE.get(), "mining_machine", false, "mining_machine_bottom");
+        recipeMachine(blockModels, UniverseBlocks.WATER_PUMP.get(), "water_pump", false, "water_pump_bottom");
+        tall(blockModels, itemModels, UniverseBlocks.OIL_EXTRACTOR.get(), "oil_extractor", true, false);
+        tall(blockModels, itemModels, UniverseBlocks.OIL_REFINERY.get(), "oil_refinery", true, false);
+        // 原油涌泉：顶上是油面，四周是浸了油的土
+        Block seep = UniverseBlocks.CRUDE_OIL_SEEP.get();
+        Identifier seepModel = ModelTemplates.CUBE_BOTTOM_TOP.create(seep, new TextureMapping()
+                .put(TextureSlot.TOP, texture("crude_oil_seep_top"))
+                .put(TextureSlot.SIDE, texture("crude_oil_seep_side"))
+                .put(TextureSlot.BOTTOM, texture("crude_oil_seep_side")), blockModels.modelOutput);
+        blockModels.blockStateOutput.accept(BlockModelGenerators.createSimpleBlock(seep, BlockModelGenerators.plainVariant(seepModel)));
+        blockModels.registerSimpleItemModel(seep, seepModel);
         for (DeferredItem<?> item : List.of(UniverseItems.GEAR, UniverseItems.MAGNETIC_COIL, UniverseItems.CIRCUIT_BOARD,
                 UniverseItems.ELECTRIC_MOTOR, UniverseItems.STEEL, UniverseItems.PRISM, UniverseItems.PLASMA_EXCITER,
                 UniverseItems.ENERGETIC_GRAPHITE, UniverseItems.WATER, UniverseItems.CRUDE_OIL, UniverseItems.REFINED_OIL,
@@ -127,8 +139,8 @@ final class UniverseModelProvider extends ModelProvider {
         }
     }
 
-    /** 一格的配方设备：正面（和电弧熔炉的顶面）工作时换成发光的贴图，底面是通用机壳。 */
-    private static void recipeMachine(BlockModelGenerators blockModels, Block block, String name, boolean topLit) {
+    /** 一格的设备：正面（和电弧熔炉的顶面）工作时换成发光的贴图。 */
+    private static void recipeMachine(BlockModelGenerators blockModels, Block block, String name, boolean topLit, String bottom) {
         Identifier[] models = new Identifier[2];
         for (int on = 0; on < 2; on++) {
             String suffix = on == 1 ? "_on" : "";
@@ -136,7 +148,7 @@ final class UniverseModelProvider extends ModelProvider {
                     .put(TextureSlot.FRONT, texture(name + "_front" + suffix))
                     .put(TextureSlot.SIDE, texture(name + "_side"))
                     .put(TextureSlot.TOP, texture(name + "_top" + (topLit ? suffix : "")))
-                    .put(TextureSlot.BOTTOM, texture("machine_casing_top"));
+                    .put(TextureSlot.BOTTOM, texture(bottom));
             models[on] = ModelTemplates.CUBE_ORIENTABLE_TOP_BOTTOM.createWithSuffix(block, suffix, textures, blockModels.modelOutput);
         }
         blockModels.blockStateOutput.accept(MultiVariantGenerator.dispatch(block)

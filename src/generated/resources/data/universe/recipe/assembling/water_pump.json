@@ -1,0 +1,28 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 3,
+      "ingredient": "minecraft:iron_ingot"
+    },
+    {
+      "count": 2,
+      "ingredient": "minecraft:stone_bricks"
+    },
+    {
+      "count": 4,
+      "ingredient": "universe:electric_motor"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:circuit_board"
+    }
+  ],
+  "research": "fluid_storage",
+  "results": [
+    {
+      "id": "universe:water_pump"
+    }
+  ],
+  "time": 80
+}

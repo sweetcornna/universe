@@ -1,0 +1,19 @@
+{
+  "type": "universe:research_shaped",
+  "category": "redstone",
+  "key": {
+    "B": "universe:circuit_board",
+    "I": "minecraft:iron_ingot",
+    "M": "universe:electric_motor",
+    "U": "minecraft:bucket"
+  },
+  "pattern": [
+    "IMI",
+    "BUB",
+    "IMI"
+  ],
+  "research": "fluid_storage",
+  "result": {
+    "id": "universe:water_pump"
+  }
+}

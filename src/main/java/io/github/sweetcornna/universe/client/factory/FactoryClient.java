@@ -31,6 +31,10 @@ public final class FactoryClient {
         event.register(UniverseMenus.ACCUMULATOR.menuType(), PowerScreens.Accumulator::new);
         recipeMachine(event, RecipeMachines.ARC_SMELTER);
         recipeMachine(event, RecipeMachines.ASSEMBLER);
+        recipeMachine(event, RecipeMachines.OIL_REFINERY);
+        event.register(UniverseMenus.MINING_MACHINE.menuType(), ResourceScreens.MiningMachine::new);
+        event.register(UniverseMenus.WATER_PUMP.menuType(), ResourceScreens.WaterPump::new);
+        event.register(UniverseMenus.OIL_EXTRACTOR.menuType(), ResourceScreens.OilExtractor::new);
     }
 
     private static void recipeMachine(RegisterMenuScreensEvent event, RecipeMachineBlockEntity.Spec spec) {

@@ -220,7 +220,7 @@ io.github.sweetcornna.universe
 | 遍历区块里的方块：`LevelChunkSection#hasOnlyAir()`、`maybeHas(谓词)` 先按调色板跳过整段；`getChunkSource().getChunkNow(x, z)` 只取已加载的区块 | 已确认，扫描在用 |
 | 成书：`DataComponents.WRITTEN_BOOK_CONTENT` 是 `new WrittenBookContent(Filterable<String> 标题, 作者, 代数, List<Filterable<Component>> 页, resolved)`，页面可以是可翻译文字，客户端按自己的语言显示；`Filterable.passThrough(...)` | 已确认，探测器日志在用 |
 | 世界出生点：`level.getRespawnData().globalPos().pos()`；信号篝火是 `CampfireBlock.SIGNAL_FIRE` | 已确认，坠毁点在用 |
-| 方块标签 `minecraft:dirt` 只剩泥土、砂土、缠根泥土，不含草方块；草方块、灰化土、菌丝在 `grass_blocks`，几样合起来是 `substrate_overworld`。锁链叫 `Blocks.IRON_CHAIN`。没加载的区块 `Level#getHeight` 返回世界底部，要先 `getChunk` | 已确认，坠毁点踩过 |
+| 方块标签 `minecraft:dirt` 只剩泥土、砂土、缠根泥土，不含草方块；草方块、灰化土、菌丝在 `grass_blocks`，几样合起来是 `substrate_overworld`。锁链叫 `Blocks.IRON_CHAIN`。没加载的区块 `Level#getHeight` 返回世界底部，要先 `getChunk` | 已确认，坠毁点、矿脉露头都踩过 |
 | 登录的配置任务：NeoForge 的 `RegisterConfigurationTasksEvent`（模组总线）登记的任务排在原版 `PrepareSpawnTask` 之前；`ConfigurationTask#start` 可能在网络线程上调用，`tick()` 在服务器处理连接时调用，返回 true 算完成。玩家存档用 `PlayerList#loadPlayerData(NameAndId)` 读，维度在 `ServerPlayer.SavedPosition.MAP_CODEC` 里 | 已确认，运行时维度在用 |
 | 重生：`PlayerList#respawn` 先算 `findRespawnPositionAndUseSpawnBlock`，维度不存在就退回世界出生点；之后触发 NeoForge 的 `PlayerRespawnPositionEvent`，可以换掉 `TeleportTransition` | 已确认，运行时维度在用 |
 | 强制加载的区块：`ServerLevel#getForceLoadedChunks()` 只算原版 `/forceload` 的票据；NeoForge 的方块、实体加载器在 `TicketStorage#getBlockForcedChunks()`、`getEntityForcedChunks()`（`TicketTracker#isEmpty()`），`TicketStorage` 从 `level.getDataStorage().get(TicketStorage.TYPE)` 取 | 已确认 |
@@ -241,6 +241,10 @@ io.github.sweetcornna.universe
 | 菜单按钮：客户端 `gameMode.handleInventoryButtonClick(containerId, 按钮号)` 发包，服务端调 `AbstractContainerMenu.clickMenuButton(player, 按钮号)`，返回 true 时同步菜单 | 已确认，选配方在用 |
 | 界面上要盖在物品图标上面的半透明色块，先调 `GuiGraphicsExtractor.nextStratum()` 再画（之后画的东西在新的一层，盖在之前的物品上） | 已确认，配方设备界面在用 |
 | `Inventory.placeItemBackInInventory` 多了预测参数，服务端用 `Prediction.SERVER_ONLY` | 已确认 |
+| 地物分两层：`Registries.FEATURE_TYPE` 登记 `MapCodec`（代码），`Registries.FEATURE` 是数据包注册表，条目是实现 `Feature` 接口的记录。往原版生物群系加地物用 NeoForge 的 `BiomeModifiers.AddFeaturesBiomeModifier(HolderSet<Biome>, HolderSet<PlacedFeature>, GenerationStep.Decoration)`，注册表键 `NeoForgeRegistries.Keys.BIOME_MODIFIERS`，在数据生成里写出 | 已确认，主世界矿脉在用 |
+| NeoForge 的物品传输：物品能力是 `ResourceHandler<ItemResource>`，相邻方块用 `BlockCapabilityCache.create(Capabilities.Item.BLOCK, level, 位置, 面)` 缓存；塞进去用 `ResourceHandlerUtil.insertStacking(handler, ItemResource.of(stack), 数量, null)`，事务传 null 直接生效 | 已确认，设备出料在用 |
+| 区块附件：`chunk.setData(类型, 值)` 会把区块标成要存盘，原地改了附件里的集合要自己 `chunk.markUnsaved()`；`getExistingDataOrNull` 不会新建 | 已确认，矿脉储量在用 |
+| `/setblock` 末尾加 `strict` 不触发形状更新和邻居更新，测试时能分别放下两格高方块的上下半截 | 已确认 |
 
 ## 5. 性能预算（目标）
 

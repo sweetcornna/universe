@@ -1,10 +1,12 @@
 package io.github.sweetcornna.universe.registry;
 
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.function.Supplier;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
@@ -27,6 +29,14 @@ public final class UniverseAttachments {
             Codec.unboundedMap(HAZARD_CODEC, Codec.FLOAT).fieldOf("protection").forGetter(LifeSupport::protection),
             Codec.FLOAT.fieldOf("jet").forGetter(LifeSupport::jet)
     ).apply(i, LifeSupport::new));
+    /** 打包的方块坐标存成字符串（NBT 复合标签的键只能是字符串）。 */
+    private static final Codec<Long> PACKED_POS = Codec.STRING.comapFlatMap(text -> {
+        try {
+            return DataResult.success(Long.parseLong(text));
+        } catch (NumberFormatException e) {
+            return DataResult.error(() -> "not a packed position: " + text);
+        }
+    }, String::valueOf);
     public static final DeferredRegister<AttachmentType<?>> ATTACHMENT_TYPES = DeferredRegister.create(NeoForgeRegistries.Keys.ATTACHMENT_TYPES, Universe.MOD_ID);
 
     /**
@@ -45,6 +55,12 @@ public final class UniverseAttachments {
     /** 发给玩家自己的外骨骼读数，HUD 用（不存档）。 */
     public static final Supplier<AttachmentType<SuitHud>> SUIT_HUD = ATTACHMENT_TYPES.register("suit_hud",
             () -> AttachmentType.builder(() -> SuitHud.FULL).sync((holder, player) -> holder == player, SuitHud.STREAM_CODEC).build());
+
+    /** 区块里开采过的矿脉节点和原油涌泉：打包坐标 → 开采了多少（ADR-0011）。没碰过的不记。 */
+    public static final Supplier<AttachmentType<Map<Long, Integer>>> VEIN_USAGE = ATTACHMENT_TYPES.register("vein_usage",
+            () -> AttachmentType.<Map<Long, Integer>>builder(() -> new HashMap<>())
+                    .serialize(Codec.unboundedMap(PACKED_POS, Codec.INT).<Map<Long, Integer>>xmap(HashMap::new, map -> map).fieldOf("usage"))
+                    .build());
 
     private UniverseAttachments() {
     }

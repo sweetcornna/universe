@@ -1,0 +1,24 @@
+{
+  "type": "universe:refining",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:refined_oil"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:hydrogen"
+    }
+  ],
+  "research": "x_ray_cracking",
+  "results": [
+    {
+      "count": 3,
+      "id": "universe:hydrogen"
+    },
+    {
+      "id": "universe:energetic_graphite"
+    }
+  ],
+  "time": 80
+}

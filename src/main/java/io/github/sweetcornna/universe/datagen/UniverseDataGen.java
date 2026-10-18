@@ -3,17 +3,25 @@ package io.github.sweetcornna.universe.datagen;
 import java.util.List;
 import java.util.Set;
 
+import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.survival.SurvivalDamage;
+import io.github.sweetcornna.universe.world.OverworldVeinsFeature;
 import io.github.sweetcornna.universe.world.planet.gen.PlanetFloraFeature;
 import io.github.sweetcornna.universe.world.planet.gen.PlanetOreFeature;
+import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.data.loot.LootTableProvider;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.tags.BiomeTags;
+import net.minecraft.world.level.levelgen.GenerationStep;
 import net.minecraft.world.level.levelgen.placement.BiomeFilter;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.common.world.BiomeModifiers;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
 import net.neoforged.neoforge.data.event.GatherDataRegistryEntriesEvent;
+import net.neoforged.neoforge.registries.NeoForgeRegistries;
 
 /**
  * 数据生成（{@code ./gradlew runData}），输出到 {@code src/generated/resources}。
@@ -47,13 +55,22 @@ public final class UniverseDataGen {
         event.add(Registries.FEATURE, context -> {
             context.register(PlanetFloraFeature.KEY, new PlanetFloraFeature());
             context.register(PlanetOreFeature.KEY, new PlanetOreFeature());
+            context.register(OverworldVeinsFeature.KEY, new OverworldVeinsFeature());
         });
         event.add(Registries.PLACED_FEATURE, context -> {
             context.register(PlanetFloraFeature.PLACED,
                     new PlacedFeature(context.lookup(Registries.FEATURE).getOrThrow(PlanetFloraFeature.KEY), List.of(BiomeFilter.biome())));
             context.register(PlanetOreFeature.PLACED,
                     new PlacedFeature(context.lookup(Registries.FEATURE).getOrThrow(PlanetOreFeature.KEY), List.of(BiomeFilter.biome())));
+            context.register(OverworldVeinsFeature.PLACED,
+                    new PlacedFeature(context.lookup(Registries.FEATURE).getOrThrow(OverworldVeinsFeature.KEY), List.of(BiomeFilter.biome())));
         });
+        // 主世界的矿脉露头和原油涌泉在最后一步放，压在树和草之后
+        event.add(NeoForgeRegistries.Keys.BIOME_MODIFIERS, context -> context.register(
+                ResourceKey.create(NeoForgeRegistries.Keys.BIOME_MODIFIERS, Universe.id("overworld_veins")),
+                new BiomeModifiers.AddFeaturesBiomeModifier(context.lookup(Registries.BIOME).getOrThrow(BiomeTags.IS_OVERWORLD),
+                        HolderSet.direct(context.lookup(Registries.PLACED_FEATURE).getOrThrow(OverworldVeinsFeature.PLACED)),
+                        GenerationStep.Decoration.TOP_LAYER_MODIFICATION)));
         event.add(Registries.BIOME, UniverseBiomes::bootstrap);
         event.add(Registries.DAMAGE_TYPE, SurvivalDamage::bootstrap);
     }

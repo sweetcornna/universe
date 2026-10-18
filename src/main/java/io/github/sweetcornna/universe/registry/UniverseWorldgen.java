@@ -3,6 +3,7 @@ package io.github.sweetcornna.universe.registry;
 import com.mojang.serialization.MapCodec;
 
 import io.github.sweetcornna.universe.Universe;
+import io.github.sweetcornna.universe.world.OverworldVeinsFeature;
 import io.github.sweetcornna.universe.world.planet.gen.PlanetBiomeSource;
 import io.github.sweetcornna.universe.world.planet.gen.PlanetCaveRoofFunction;
 import io.github.sweetcornna.universe.world.planet.gen.PlanetFloraFeature;
@@ -39,6 +40,7 @@ public final class UniverseWorldgen {
         MATERIAL_CONDITION_TYPES.register("planet_lava", () -> PlanetLavaCondition.CODEC);
         FEATURE_TYPES.register("planet_flora", () -> PlanetFloraFeature.CODEC);
         FEATURE_TYPES.register("planet_ores", () -> PlanetOreFeature.CODEC);
+        FEATURE_TYPES.register("overworld_veins", () -> OverworldVeinsFeature.CODEC);
     }
 
     private UniverseWorldgen() {

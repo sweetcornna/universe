@@ -9,6 +9,7 @@ import io.github.sweetcornna.universe.block.OreKind;
 import io.github.sweetcornna.universe.core.galaxy.Planet;
 import io.github.sweetcornna.universe.core.galaxy.Resource;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
+import io.github.sweetcornna.universe.world.Outcrops;
 import io.github.sweetcornna.universe.world.planet.Planets;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -28,6 +29,8 @@ import net.minecraft.world.level.levelgen.placement.PlacedFeature;
  *
  * <p>一半矿脉贴着地表往下 3–23 格，峭壁、洞壁上能直接看到；其余散在地表以下的整个岩层里。只替换星岩，
  * 不碰岩层（峡谷、方山的崖壁保持干净的条纹）。
+ *
+ * <p>另外按丰度在地表放成片的露头，采矿机放在上面开采（ADR-0011）；有原油的星球上还有原油涌泉。
  */
 public record PlanetOreFeature() implements Feature {
     public static final MapCodec<PlanetOreFeature> CODEC = MapCodec.unit(PlanetOreFeature::new);
@@ -38,6 +41,10 @@ public record PlanetOreFeature() implements Feature {
     /** 贴近地表的矿脉占比。 */
     private static final double SHALLOW = 0.5;
     private static final Direction[] DIRECTIONS = Direction.values();
+    /** 丰度 1、常见程度 1 的矿每个区块出一片露头的概率。 */
+    static final double OUTCROPS_PER_CHUNK = 0.3;
+    /** 原油丰度 1 时每个区块出一个涌泉的概率。 */
+    static final double SEEPS_PER_CHUNK = 0.12;
 
     @Override
     public MapCodec<PlanetOreFeature> codec() {
@@ -75,8 +82,25 @@ public record PlanetOreFeature() implements Feature {
                         : bottom + random.nextInt(top - bottom);
                 placed |= vein(level, random, new BlockPos(x, y, z), ore, size + random.nextInt(4));
             }
+            if (random.nextDouble() < deposit.abundance() * OUTCROPS_PER_CHUNK * kind.frequency()) {
+                int radius = 2 + random.nextInt(2) + (deposit.abundance() > 0.6 ? 1 : 0);
+                placed |= Outcrops.patch(level, random, x0, z0, radius, ore, PlanetOreFeature::ground) > 0;
+            }
+        }
+        for (Resource.Deposit deposit : found.get().resources()) {
+            if (deposit.resource() == Resource.CRUDE_OIL && random.nextDouble() < deposit.abundance() * SEEPS_PER_CHUNK) {
+                placed |= Outcrops.single(level, random, x0, z0, UniverseBlocks.CRUDE_OIL_SEEP.get().defaultBlockState(),
+                        PlanetOreFeature::ground);
+            }
         }
         return placed;
+    }
+
+    /** 地表可以换成矿的方块：岩石、土、沙、风化层、火山灰。 */
+    private static boolean ground(BlockState state) {
+        return state.is(UniverseBlocks.PLANET_ROCK) || state.is(UniverseBlocks.PLANET_SOIL) || state.is(UniverseBlocks.PLANET_TURF)
+                || state.is(UniverseBlocks.PLANET_REGOLITH) || state.is(UniverseBlocks.PLANET_SAND) || state.is(UniverseBlocks.PLANET_ASH)
+                || state.is(UniverseBlocks.PLANET_STRATA);
     }
 
     /** 随机游走长出一团矿：不时退回起点，团得紧一些，不会拉成细线。 */

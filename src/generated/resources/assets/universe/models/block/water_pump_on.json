@@ -1,0 +1,9 @@
+{
+  "parent": "minecraft:block/orientable_with_bottom",
+  "textures": {
+    "bottom": "universe:block/water_pump_bottom",
+    "front": "universe:block/water_pump_front_on",
+    "side": "universe:block/water_pump_side",
+    "top": "universe:block/water_pump_top"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 12,
+      "ingredient": "universe:steel"
+    },
+    {
+      "count": 12,
+      "ingredient": "minecraft:stone_bricks"
+    },
+    {
+      "count": 6,
+      "ingredient": "universe:circuit_board"
+    },
+    {
+      "count": 4,
+      "ingredient": "universe:plasma_exciter"
+    }
+  ],
+  "research": "plasma_refining",
+  "results": [
+    {
+      "id": "universe:oil_extractor"
+    }
+  ],
+  "time": 160
+}

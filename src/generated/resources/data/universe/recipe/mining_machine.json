@@ -1,0 +1,20 @@
+{
+  "type": "universe:research_shaped",
+  "category": "redstone",
+  "key": {
+    "B": "universe:circuit_board",
+    "G": "universe:gear",
+    "I": "minecraft:iron_ingot",
+    "M": "universe:magnetic_coil",
+    "P": "minecraft:iron_pickaxe"
+  },
+  "pattern": [
+    "IGI",
+    "BPB",
+    "IMI"
+  ],
+  "research": "electromagnetism",
+  "result": {
+    "id": "universe:mining_machine"
+  }
+}

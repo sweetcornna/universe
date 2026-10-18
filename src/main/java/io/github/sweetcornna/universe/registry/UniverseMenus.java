@@ -9,6 +9,9 @@ import io.github.sweetcornna.universe.factory.power.AccumulatorBlockEntity;
 import io.github.sweetcornna.universe.factory.power.TeslaTowerBlockEntity;
 import io.github.sweetcornna.universe.factory.power.ThermalPlantBlockEntity;
 import io.github.sweetcornna.universe.factory.power.WindTurbineBlockEntity;
+import io.github.sweetcornna.universe.factory.resource.MiningMachineBlockEntity;
+import io.github.sweetcornna.universe.factory.resource.OilExtractorBlockEntity;
+import io.github.sweetcornna.universe.factory.resource.WaterPumpBlockEntity;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.inventory.MenuType;
 import net.neoforged.bus.api.IEventBus;
@@ -21,6 +24,8 @@ public final class UniverseMenus {
     /** 配方设备界面的大小。 */
     public static final int RECIPE_WIDTH = 218;
     public static final int RECIPE_HEIGHT = 200;
+    /** 采集设备的界面宽度：左边读数，右边一个产物格。 */
+    public static final int RESOURCE_WIDTH = 200;
 
     public static final MachineMenu.Type TESLA_TOWER = machine("tesla_tower", new MachineMenu.Type(TeslaTowerBlockEntity.DATA_COUNT, 92));
     public static final MachineMenu.Type WIND_TURBINE = machine("wind_turbine", new MachineMenu.Type(WindTurbineBlockEntity.DATA_COUNT, 66));
@@ -32,6 +37,15 @@ public final class UniverseMenus {
             RECIPE_WIDTH, RECIPE_HEIGHT, input(118, 45), input(136, 45), output(190, 45)));
     public static final MachineMenu.Type ASSEMBLER = machine("assembler", new MachineMenu.Type(RecipeMachineBlockEntity.DATA_COUNT,
             RECIPE_WIDTH, RECIPE_HEIGHT, input(118, 36), input(136, 36), input(118, 54), input(136, 54), output(190, 45)));
+    public static final MachineMenu.Type OIL_REFINERY = machine("oil_refinery", new MachineMenu.Type(RecipeMachineBlockEntity.DATA_COUNT,
+            RECIPE_WIDTH, RECIPE_HEIGHT, input(118, 45), input(136, 45), output(190, 36), output(190, 54)));
+    // 采集设备：读数加一个产物格
+    public static final MachineMenu.Type MINING_MACHINE = machine("mining_machine",
+            new MachineMenu.Type(MiningMachineBlockEntity.DATA_COUNT, RESOURCE_WIDTH, 166, output(172, 46)));
+    public static final MachineMenu.Type WATER_PUMP = machine("water_pump",
+            new MachineMenu.Type(WaterPumpBlockEntity.DATA_COUNT, RESOURCE_WIDTH, 166, output(172, 46)));
+    public static final MachineMenu.Type OIL_EXTRACTOR = machine("oil_extractor",
+            new MachineMenu.Type(OilExtractorBlockEntity.DATA_COUNT, RESOURCE_WIDTH, 166, output(172, 46)));
 
     private UniverseMenus() {
     }
