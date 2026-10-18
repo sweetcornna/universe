@@ -29,10 +29,18 @@ import io.github.sweetcornna.universe.core.galaxy.StarMapCamera;
 import io.github.sweetcornna.universe.core.galaxy.StarSystem;
 import io.github.sweetcornna.universe.core.procgen.Rng;
 import io.github.sweetcornna.universe.core.sky.BodyLook;
+import io.github.sweetcornna.universe.core.space.SpaceLayout;
+import io.github.sweetcornna.universe.core.space.Warp;
+import io.github.sweetcornna.universe.entity.ship.ShipEntity;
+import io.github.sweetcornna.universe.network.WarpRequestPayload;
+import io.github.sweetcornna.universe.registry.UniverseItems;
+import io.github.sweetcornna.universe.world.space.SpaceDimensions;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
@@ -40,10 +48,14 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Util;
+import net.minecraft.world.item.ItemStack;
+import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 
 /**
  * 星图（玩法设计 §1.1、§5.1）：星团里的全部恒星系画在三维空间里。左键拖动旋转、右键拖动平移、滚轮缩放，
  * 每颗恒星往银道面（y = 0）拉一条垂线，看得出上下远近。点一个恒星系，右边列出恒星、距离和行星。
+ *
+ * <p>驾驶装了跃迁引擎的飞船在太空里打开时，画出跃迁射程，详情下面有跃迁按钮（ADR-0012）。
  */
 public class StarMapScreen extends Screen {
     private static final Identifier GLOW = Universe.id("textures/gui/star_glow.png");
@@ -63,6 +75,10 @@ public class StarMapScreen extends Screen {
     /** 离焦点多近的恒星系标出名字（光年）。 */
     private static final double LABEL_RANGE = 14;
     private static final int STRIP_HEIGHT = 30;
+    /** 详情底部跃迁那一块的高度。 */
+    private static final int WARP_HEIGHT = 52;
+    private static final int BUTTON_HEIGHT = 16;
+    private static final int WARP = 0xFFB98CFF;
 
     private final StarMapCamera camera = new StarMapCamera();
     private final @Nullable Galaxy galaxy;
@@ -78,6 +94,10 @@ public class StarMapScreen extends Screen {
     private int panelContentHeight;
     private long lastFrame;
     private StarMapCamera.@Nullable Projected[] projected = new StarMapCamera.Projected[0];
+    /** 玩家正在驾驶的飞船；没在驾驶时为空。 */
+    private final @Nullable ShipEntity ship;
+    private List<SpaceLayout.Body> currentBodies = List.of();
+    private boolean warpReady;
 
     public StarMapScreen() {
         super(Component.translatable("gui.universe.star_map"));
@@ -98,6 +118,11 @@ public class StarMapScreen extends Screen {
             this.backdrop[i * 3] = (float) rng.nextDouble();
             this.backdrop[i * 3 + 1] = (float) rng.nextDouble();
             this.backdrop[i * 3 + 2] = (float) Math.pow(rng.nextDouble(), 3);
+        }
+        LocalPlayer player = Minecraft.getInstance().player;
+        this.ship = player != null && player.getVehicle() instanceof ShipEntity vehicle && vehicle.pilot() == player ? vehicle : null;
+        if (this.current.isPresent() && this.galaxy != null) {
+            this.galaxy.system(this.current.getAsInt()).ifPresent(system -> this.currentBodies = SpaceLayout.of(system));
         }
         StarSystem start = this.system(this.selected);
         if (start != null) {
@@ -191,6 +216,7 @@ public class StarMapScreen extends Screen {
 
         graphics.enableScissor(0, HEADER, this.mapRight(), this.height - FOOTER);
         this.drawGrid(graphics);
+        this.drawRange(graphics, systems);
         this.drawDropLines(graphics, systems);
         this.drawRoute(graphics, systems);
         this.drawStars(graphics, systems, now);
@@ -233,6 +259,33 @@ public class StarMapScreen extends Screen {
         }
     }
 
+    /** 飞船的跃迁射程（ly）；没在驾驶带跃迁引擎的船、或者不在太空里时为 0。 */
+    private double warpRange() {
+        if (this.ship == null || this.ship.structure() == null || !SpaceDimensions.isSpace(this.ship.level().dimension())) {
+            return 0;
+        }
+        return Warp.range(this.ship.structure().stats().warpDrives());
+    }
+
+    /** 跃迁射程：以当前恒星系为圆心、在它那一层水平面上画一个圈。 */
+    private void drawRange(GuiGraphicsExtractor graphics, List<StarSystem> systems) {
+        double range = this.warpRange();
+        if (range <= 0 || this.current.isEmpty()) {
+            return;
+        }
+        StarSystem here = systems.get(this.current.getAsInt());
+        int segments = 72;
+        StarMapCamera.Projected last = null;
+        for (int i = 0; i <= segments; i++) {
+            double angle = i * Math.PI * 2 / segments;
+            StarMapCamera.Projected p = this.project(here.x() + Math.cos(angle) * range, here.y(), here.z() + Math.sin(angle) * range);
+            if (last != null && p != null) {
+                line(graphics, last.x(), last.y(), p.x(), p.y(), 0.9F, ARGB.color(0x90, WARP));
+            }
+            last = p;
+        }
+    }
+
     /** 每颗恒星到银道面的垂线和落点。 */
     private void drawDropLines(GuiGraphicsExtractor graphics, List<StarSystem> systems) {
         for (int i = 0; i < systems.size(); i++) {
@@ -245,11 +298,14 @@ public class StarMapScreen extends Screen {
             boolean focused = i == this.selected || i == this.hovered;
             int color = ARGB.color(focused ? 0x90 : 0x40, system.star().color());
             line(graphics, star.x(), star.y(), foot.x(), foot.y(), 0.6F, color);
-            sprite(graphics, DISC, foot.x(), foot.y(), 2.2, color);
+            boolean reachable = this.current.isPresent() && Warp.inRange(systems.get(this.current.getAsInt()), system,
+                    this.ship == null || this.ship.structure() == null ? 0 : this.ship.structure().stats().warpDrives())
+                    && this.warpRange() > 0;
+            sprite(graphics, DISC, foot.x(), foot.y(), reachable ? 3.2 : 2.2, reachable ? WARP : color);
         }
     }
 
-    /** 从当前恒星系到选中的恒星系画一条虚线，中间写上距离。 */
+    /** 从当前恒星系到选中的恒星系画一条虚线，中间偏下写上距离（名字标在恒星右边，同一高度，正中间容易压住）。 */
     private void drawRoute(GuiGraphicsExtractor graphics, List<StarSystem> systems) {
         if (this.current.isEmpty() || this.current.getAsInt() == this.selected) {
             return;
@@ -266,12 +322,16 @@ public class StarMapScreen extends Screen {
                 line(graphics, a.x(), a.y(), b.x(), b.y(), 0.8F, 0xC09FE6FF);
             }
         }
+        StarMapCamera.Projected start = this.projected[from.index()];
+        StarMapCamera.Projected end = this.projected[to.index()];
         StarMapCamera.Projected middle = this.project((from.x() + to.x()) / 2, (from.y() + to.y()) / 2, (from.z() + to.z()) / 2);
-        if (middle != null) {
+        if (middle != null && start != null && end != null && Math.hypot(end.x() - start.x(), end.y() - start.y()) > 48) {
             Component text = Component.translatable("gui.universe.star_map.light_years", GalaxyText.number(from.distanceTo(to), 1));
             int w = this.font.width(text);
-            graphics.fill((int) middle.x() - w / 2 - 2, (int) middle.y() - 6, (int) middle.x() + w / 2 + 2, (int) middle.y() + 5, 0xB0000000);
-            graphics.centeredText(this.font, text, (int) middle.x(), (int) middle.y() - 4, ACCENT);
+            int x = (int) middle.x();
+            int y = (int) middle.y() + 10;
+            graphics.fill(x - w / 2 - 2, y - 6, x + w / 2 + 2, y + 5, 0xB0000000);
+            graphics.centeredText(this.font, text, x, y - 4, ACCENT);
         }
     }
 
@@ -399,7 +459,7 @@ public class StarMapScreen extends Screen {
         int x = left + PADDING;
         int width = PANEL_WIDTH - PADDING * 2;
         int top = HEADER + 6;
-        int bottom = this.height - FOOTER - 4;
+        int bottom = this.height - FOOTER - 4 - WARP_HEIGHT;
         graphics.enableScissor(left + 1, HEADER, this.width, bottom);
         int y = top - (int) this.panelScroll;
 
@@ -445,6 +505,80 @@ public class StarMapScreen extends Screen {
             int barTop = top + (int) ((visible - barHeight) * this.panelScroll / (this.panelContentHeight - visible));
             graphics.fill(this.width - 3, barTop, this.width - 1, barTop + barHeight, 0x804FB4D0);
         }
+        this.drawWarp(graphics, system, x, bottom + 4, width, mouseX, mouseY);
+    }
+
+    /** 跃迁：能不能跳、为什么不能，以及按钮。 */
+    private void drawWarp(GuiGraphicsExtractor graphics, StarSystem target, int x, int y, int width, int mouseX, int mouseY) {
+        graphics.fill(x - 4, y - 3, x + width + 4, y - 2, 0x404FB4D0);
+        Component status = this.warpStatus(target);
+        double range = this.warpRange();
+        if (range > 0) {
+            graphics.text(this.font, Component.translatable("gui.universe.star_map.warp.range", (int) range), x, y, WARP, false);
+        }
+        this.smallText(graphics, status, x, y + 10, width, this.warpReady ? TEXT : (this.ship == null ? DIM : WARN));
+        int buttonY = y + WARP_HEIGHT - BUTTON_HEIGHT - 4;
+        boolean hover = mouseX >= x && mouseX < x + width && mouseY >= buttonY && mouseY < buttonY + BUTTON_HEIGHT;
+        int fill = !this.warpReady ? 0xFF1A1A22 : hover ? 0xFF5A3A8A : 0xFF3E2766;
+        graphics.fill(x, buttonY, x + width, buttonY + BUTTON_HEIGHT, fill);
+        graphics.outline(x, buttonY, width, BUTTON_HEIGHT, this.warpReady ? WARP : 0xFF3A3A48);
+        graphics.centeredText(this.font, Component.translatable("gui.universe.star_map.warp"), x + width / 2, buttonY + 4,
+                this.warpReady ? 0xFFF0E6FF : 0xFF60606C);
+    }
+
+    /** 跃迁按钮上面那行说明；顺便算出按钮能不能按。和服务端的检查一致。 */
+    private Component warpStatus(StarSystem target) {
+        this.warpReady = false;
+        if (this.ship == null || this.ship.structure() == null) {
+            return Component.translatable("message.universe.warp.not_piloting");
+        }
+        OptionalInt here = SpaceDimensions.system(this.ship.level().dimension());
+        if (here.isEmpty()) {
+            return Component.translatable("message.universe.warp.not_in_space");
+        }
+        int drives = this.ship.structure().stats().warpDrives();
+        if (drives == 0) {
+            return Component.translatable("message.universe.warp.no_drive");
+        }
+        if (target.index() == here.getAsInt()) {
+            return Component.translatable("gui.universe.star_map.warp.here");
+        }
+        StarSystem from = this.galaxy.systems().get(here.getAsInt());
+        if (!Warp.inRange(from, target, drives)) {
+            return Component.translatable("message.universe.warp.out_of_range", GalaxyText.number(from.distanceTo(target), 1),
+                    (int) Warp.range(drives));
+        }
+        switch (Warp.check(this.currentBodies, this.ship.getX(), this.ship.getY(), this.ship.getZ())) {
+            case NEAR_STAR -> {
+                return Component.translatable("message.universe.warp.near_star");
+            }
+            case NEAR_BODY -> {
+                Planet planet = Warp.blocker(this.currentBodies, this.ship.getX(), this.ship.getY(), this.ship.getZ())
+                        .orElseThrow().planet();
+                return Component.translatable("message.universe.warp.near_body", planet.name().zh(), planet.name().en());
+            }
+            case OK -> {
+            }
+        }
+        LocalPlayer player = this.minecraft.player;
+        if (player != null && player.hasInfiniteMaterials()) {
+            this.warpReady = true;
+            return Component.translatable("gui.universe.star_map.warp.ready_creative");
+        }
+        int warpers = 0;
+        if (player != null) {
+            for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
+                ItemStack stack = player.getInventory().getItem(i);
+                if (stack.is(UniverseItems.SPACE_WARPER.get())) {
+                    warpers += stack.getCount();
+                }
+            }
+        }
+        if (warpers == 0) {
+            return Component.translatable("message.universe.warp.no_warper");
+        }
+        this.warpReady = true;
+        return Component.translatable("gui.universe.star_map.warp.ready", warpers);
     }
 
     private List<Component> distanceLines(StarSystem system) {
@@ -581,6 +715,14 @@ public class StarMapScreen extends Screen {
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
         double x = event.x();
         double y = event.y();
+        int buttonY = this.height - FOOTER - BUTTON_HEIGHT - 4;
+        if (event.button() == InputConstants.MOUSE_BUTTON_LEFT && this.warpReady && x >= this.mapRight() + PADDING
+                && x < this.width - PADDING && y >= buttonY && y < buttonY + BUTTON_HEIGHT) {
+            ClientPacketDistributor.sendToServer(new WarpRequestPayload(this.selected));
+            this.click();
+            this.onClose();
+            return true;
+        }
         if (!this.inMap(x, y)) {
             return super.mouseClicked(event, doubleClick);
         }
@@ -630,7 +772,7 @@ public class StarMapScreen extends Screen {
     @Override
     public boolean mouseScrolled(double x, double y, double scrollX, double scrollY) {
         if (x >= this.mapRight()) {
-            int visible = this.height - FOOTER - 4 - (HEADER + 6);
+            int visible = this.height - FOOTER - 4 - WARP_HEIGHT - (HEADER + 6);
             this.panelScroll = Math.clamp(this.panelScroll - scrollY * 12, 0, Math.max(0, this.panelContentHeight - visible));
         } else {
             this.camera.zoom(scrollY);

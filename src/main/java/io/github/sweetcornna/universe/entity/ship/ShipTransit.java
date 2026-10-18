@@ -50,7 +50,13 @@ public final class ShipTransit {
     /** 第一次降落时离星球着陆中心的最大距离（格）。 */
     private static final double LANDING_SPREAD = 400;
 
-    private record Pending(ShipEntity ship, ResourceKey<Level> target, Optional<BodyId> landingOn, Vec3 position) {
+    /**
+     * 一次登记好的切换。
+     *
+     * @param yaw  到了以后的船头偏航；NaN 表示保持原来的
+     * @param warp 跃迁的目标恒星系；普通的进出大气是 -1
+     */
+    private record Pending(ShipEntity ship, ResourceKey<Level> target, Optional<BodyId> landingOn, Vec3 position, float yaw, int warp) {
     }
 
     private static final List<Pending> PENDING = new ArrayList<>();
@@ -107,7 +113,7 @@ public final class ShipTransit {
             }
         }
         double[] exit = SpaceLayout.exitPoint(body.get(), ship.getYRot());
-        PENDING.add(new Pending(ship, SpaceDimensions.key(system), Optional.empty(), new Vec3(exit[0], exit[1], exit[2])));
+        PENDING.add(new Pending(ship, SpaceDimensions.key(system), Optional.empty(), new Vec3(exit[0], exit[1], exit[2]), Float.NaN, -1));
     }
 
     private static void checkSpace(ShipEntity ship, ServerLevel level, int system) {
@@ -141,7 +147,13 @@ public final class ShipTransit {
             x = offset[0];
             z = offset[1];
         }
-        PENDING.add(new Pending(ship, target, Optional.of(body.id()), new Vec3(x, Double.NaN, z)));
+        PENDING.add(new Pending(ship, target, Optional.of(body.id()), new Vec3(x, Double.NaN, z), Float.NaN, -1));
+    }
+
+    /** 跃迁充能满了：登记去目标恒星系的太空（ADR-0012）。 */
+    static void warp(ShipEntity ship, int system, Vec3 position, float yaw) {
+        PENDING.removeIf(pending -> pending.ship() == ship);
+        PENDING.add(new Pending(ship, SpaceDimensions.key(system), Optional.empty(), position, yaw, system));
     }
 
     /** 把飞船推回球面外，朝球心的速度清零。 */
@@ -205,13 +217,21 @@ public final class ShipTransit {
             pos = new Vec3(x, target.getMaxY() + 8, z);
         }
         Vec3 velocity = ship.getDeltaMovement();
-        // 进出大气时把速度降下来，免得一头扎进地里或者冲出太远
-        Vec3 calmed = new Vec3(velocity.x * 0.2, 0, velocity.z * 0.2);
-        float yaw = ship.getYRot();
+        float yaw = Float.isNaN(pending.yaw()) ? ship.getYRot() : pending.yaw();
+        // 进出大气时把速度降下来，免得一头扎进地里或者冲出太远；跃迁出来时朝着恒星滑行一段
+        Vec3 calmed = pending.warp() >= 0
+                ? new Vec3(-Math.sin(Math.toRadians(yaw)) * 2.5, 0, Math.cos(Math.toRadians(yaw)) * 2.5)
+                : new Vec3(velocity.x * 0.2, 0, velocity.z * 0.2);
         Entity moved = ship.teleport(new TeleportTransition(target, pos, calmed, yaw, 0, TeleportTransition.DO_NOTHING));
         if (moved instanceof ShipEntity arrived) {
             arrived.flight().restore(calmed.x, 0, calmed.z, yaw);
             arrived.latchVertical();
+            if (pending.warp() >= 0) {
+                Planets.galaxy(server).system(pending.warp()).ifPresent(system -> arrived.noticeLater(
+                        Component.translatable("message.universe.warp.arrived", system.name().zh(), system.name().en())));
+                ShipWarp.arrived(arrived, pending.warp());
+                return;
+            }
             Component where = Planets.bodyId(key).flatMap(id -> Planets.galaxy(server).body(id))
                     .map(planet -> Component.translatable("message.universe.ship.entered_planet", planet.name().zh(), planet.name().en()))
                     .orElseGet(() -> Component.translatable("message.universe.ship.entered_space"));

@@ -81,6 +81,8 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         block(UniverseBlocks.SHIP_THRUSTER.get(), "推进器", "Thruster");
         block(UniverseBlocks.FUEL_TANK.get(), "燃料舱", "Fuel Tank");
         block(UniverseBlocks.IMPULSE_ENGINE.get(), "脉冲引擎", "Impulse Engine");
+        block(UniverseBlocks.WARP_DRIVE.get(), "跃迁引擎", "Warp Drive");
+        item(UniverseItems.SPACE_WARPER.get(), "空间翘曲器", "Space Warper");
         block(UniverseBlocks.SHIP_SEAT.get(), "乘客座椅", "Passenger Seat");
         String[][] colors = {
                 {"white", "白色"}, {"orange", "橙色"}, {"magenta", "品红色"}, {"light_blue", "淡蓝色"},
@@ -146,6 +148,26 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("gui.universe.star_map.gas_giant", "不能登陆 · 半径 %s", "Cannot land · radius %s");
         both("gui.universe.star_map.details", "%s°C · %s g · 大气：%s", "%s°C · %s g · atmosphere: %s");
         both("gui.universe.star_map.hazards", "危害：%s", "Hazards: %s");
+        both("gui.universe.star_map.warp", "跃迁", "Warp");
+        both("gui.universe.star_map.warp.range", "跃迁射程：%s 光年", "Warp range: %s ly");
+        both("gui.universe.star_map.warp.here", "已经在这个恒星系里了", "You are already in this system");
+        both("gui.universe.star_map.warp.ready", "准备就绪：消耗 1 个空间翘曲器（还有 %s 个）", "Ready: uses 1 space warper (%s left)");
+        both("gui.universe.star_map.warp.ready_creative", "准备就绪：创造模式不消耗空间翘曲器", "Ready: no warper needed in creative mode");
+        both("message.universe.warp.not_piloting", "驾驶装有跃迁引擎的飞船进入太空后才能跃迁", "Pilot a ship with a warp drive in space to warp");
+        both("message.universe.warp.not_in_space", "要先飞出大气层进入太空", "Leave the atmosphere first");
+        both("message.universe.warp.busy", "跃迁引擎正在充能", "The warp drive is already spooling");
+        both("message.universe.warp.no_drive", "飞船上没有跃迁引擎", "This ship has no warp drive");
+        both("message.universe.warp.bad_target", "无效的跃迁目标", "Invalid warp destination");
+        both("message.universe.warp.out_of_range", "超出跃迁射程：%s / %s 光年，多装几台跃迁引擎或者分几次跳",
+                "Out of range: %s / %s ly. Add warp drives or jump in stages");
+        both("message.universe.warp.near_star", "离恒星太近，引力井太深，飞远一点再跃迁", "Too deep in the star's gravity well, fly farther out");
+        both("message.universe.warp.near_body", "离%1$s太近，飞远一点再跃迁", "Too close to %2$s, fly farther out");
+        both("message.universe.warp.no_warper", "背包里没有空间翘曲器", "No space warper in your inventory");
+        both("message.universe.warp.cancelled", "跃迁中断", "Warp aborted");
+        both("message.universe.warp.arrived", "已抵达 %1$s 恒星系", "Arrived at the %2$s system");
+        both("hud.universe.warp.spooling", "跃迁引擎充能中，目标：%s", "Warp drive spooling: %s");
+        both("hud.universe.warp.spooling_unknown", "跃迁引擎充能中", "Warp drive spooling");
+        both("hud.universe.ship.warp", "跃迁射程 %s 光年 · 翘曲器 %s · %s 打开星图", "Warp %s ly · warpers %s · %s for star map");
         both("message.universe.sorter.filter", "分拣器只搬：%s", "Sorter filter: %s");
         both("message.universe.sorter.no_filter", "分拣器不过滤，什么都搬", "Sorter filter cleared: moves anything");
         both("message.universe.fuel_tank.full", "燃料舱已经满了", "The fuel tank is full");
@@ -372,6 +394,7 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         tech("energy_matrix", "能量矩阵", "Energy Matrix");
         tech("energy_storage", "能量储存", "Energy Storage");
         tech("x_ray_cracking", "X 射线裂解", "X-Ray Cracking");
+        tech("warp_drive", "跃迁引擎", "Warp Drive");
         both("research.universe.completed", "研究完成：%s", "Research complete: %s");
         both("research.universe.missing_items", "背包里的物品不够，无法完成这项研究", "Not enough items in your inventory for this research");
     }

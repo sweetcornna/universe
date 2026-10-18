@@ -262,6 +262,76 @@ def impulse_engine():
     save(back, BLOCK, "impulse_engine_back")
 
 
+VIOLET = (178, 104, 255)
+VIOLET_DIM = (70, 36, 112)
+
+
+def warp_drive():
+    """跃迁引擎：深紫灰的机壳，侧面是竖着的场线圈（另出一张只有线圈的发光贴图），正面是一圈圈发光的环。"""
+    rng = random.Random(77)
+    side = panel((50, 46, 62), rng, seams=False)
+    glow = Image.new("RGBA", (N, N), (0, 0, 0, 0))
+    for x in (3, 7, 8, 12):
+        for y in range(2, N - 2):
+            put(side, x, y, VIOLET_DIM)
+            put(glow, x, y, VIOLET if y % 4 else (230, 200, 255))
+    for x in range(2, N - 2):
+        put(side, x, 1, (34, 30, 44))
+        put(side, x, N - 2, (34, 30, 44))
+    save(side, BLOCK, "warp_drive_side")
+    save(glow, BLOCK, "warp_drive_glow")
+
+    front = new((30, 26, 40))
+    for y in range(N):
+        for x in range(N):
+            d = math.hypot(x - 7.5, y - 7.5)
+            if d < 1.8:
+                c = (250, 240, 255)
+            elif d < 3.0:
+                c = (214, 170, 255)
+            elif d < 4.0:
+                c = (44, 22, 70)
+            elif d < 5.2:
+                c = VIOLET
+            elif d < 5.9:
+                c = (110, 50, 190)
+            elif d < 6.9:
+                c = (64, 58, 78)
+            else:
+                c = (38, 34, 48)
+            put(front, x, y, c)
+    for x, y in ((1, 1), (14, 1), (1, 14), (14, 14)):
+        put(front, x, y, (120, 116, 132))
+    save(front, BLOCK, "warp_drive_front")
+
+    back = panel((46, 42, 56), rng, seams=False, rivets=False)
+    for y in range(3, 13, 3):
+        for x in range(3, 13):
+            put(back, x, y, (24, 20, 30))
+            put(back, x, y + 1, (70, 40, 100) if x % 3 == 0 else (30, 26, 38))
+    save(back, BLOCK, "warp_drive_back")
+
+
+def space_warper():
+    """空间翘曲器：金属圈里嵌着一块发光的紫色晶体。"""
+    img = Image.new("RGBA", (N, N), (0, 0, 0, 0))
+    for y in range(N):
+        for x in range(N):
+            d = math.hypot(x - 7.5, y - 7.5)
+            if 5.6 <= d < 7.2:
+                light = 1.15 if (x + y) < 13 else 0.8
+                put(img, x, y, shade((168, 172, 182), light))
+            elif d < 5.6 and abs(x - 7.5) + abs(y - 7.5) < 5.2:
+                t = (abs(x - 7.5) + abs(y - 7.5)) / 5.2
+                c = mix((246, 230, 255), VIOLET, t)
+                if x < 7 and y < 7:
+                    c = mix(c, (255, 255, 255), 0.35)
+                put(img, x, y, c)
+    for x, y in ((7, 0), (8, 0), (7, 15), (8, 15), (0, 7), (0, 8), (15, 7), (15, 8)):
+        put(img, x, y, (120, 124, 134))
+    save(img, ITEM, "space_warper")
+
+
 def plating():
     for name, color in DYES.items():
         rng = random.Random(sum(ord(ch) for ch in name))
@@ -308,6 +378,8 @@ if __name__ == "__main__":
     thruster()
     fuel_tank()
     impulse_engine()
+    warp_drive()
+    space_warper()
     plating()
     launch_fuel()
     print("ship textures written")

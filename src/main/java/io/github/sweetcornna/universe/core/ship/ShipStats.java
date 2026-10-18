@@ -13,8 +13,10 @@ import java.util.Map;
  * @param impulse       脉冲引擎数
  * @param thrust        推进器的总推力，用"在 1 g 下能托起多少吨"表示
  * @param fuelCapacity  燃料容量
+ * @param warpDrives    跃迁引擎数
  */
-public record ShipStats(int blocks, double mass, int thrusters, int fuelTanks, int impulse, double thrust, double fuelCapacity) {
+public record ShipStats(int blocks, double mass, int thrusters, int fuelTanks, int impulse, double thrust, double fuelCapacity,
+        int warpDrives) {
     /** 一个推进器在 1 g 下托起的吨数。 */
     public static final double THRUST_PER_THRUSTER = 12;
     /** 一个燃料舱的容量。 */
@@ -30,7 +32,8 @@ public record ShipStats(int blocks, double mass, int thrusters, int fuelTanks, i
         int thrusters = counts.getOrDefault(ShipPart.THRUSTER, 0);
         int tanks = counts.getOrDefault(ShipPart.FUEL_TANK, 0);
         int impulse = counts.getOrDefault(ShipPart.IMPULSE_ENGINE, 0);
-        return new ShipStats(blocks, mass, thrusters, tanks, impulse, thrusters * THRUST_PER_THRUSTER, tanks * FUEL_PER_TANK);
+        int warp = counts.getOrDefault(ShipPart.WARP_DRIVE, 0);
+        return new ShipStats(blocks, mass, thrusters, tanks, impulse, thrusters * THRUST_PER_THRUSTER, tanks * FUEL_PER_TANK, warp);
     }
 
     /** 方便测试和命令：按部件逐个列出数量。 */

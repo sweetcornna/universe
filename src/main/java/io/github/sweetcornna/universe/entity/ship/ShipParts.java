@@ -40,6 +40,8 @@ public final class ShipParts {
             return ShipPart.IMPULSE_ENGINE;
         } else if (block == UniverseBlocks.SHIP_SEAT.get()) {
             return ShipPart.SEAT;
+        } else if (block == UniverseBlocks.WARP_DRIVE.get()) {
+            return ShipPart.WARP_DRIVE;
         }
         if (plating == null) {
             plating = Set.copyOf(UniverseBlocks.HULL_PLATING.values().stream().map(DeferredBlock::get).toList());

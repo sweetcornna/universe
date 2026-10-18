@@ -15,6 +15,7 @@ import io.github.sweetcornna.universe.block.PlanetLogBlock;
 import io.github.sweetcornna.universe.block.PlanetPlantBlock;
 import io.github.sweetcornna.universe.block.ship.FuelTankBlock;
 import io.github.sweetcornna.universe.block.ship.ImpulseEngineBlock;
+import io.github.sweetcornna.universe.block.ship.WarpDriveBlock;
 import io.github.sweetcornna.universe.block.ship.ShipHelmBlock;
 import io.github.sweetcornna.universe.block.ship.ShipSeatBlock;
 import io.github.sweetcornna.universe.block.ship.ShipThrusterBlock;
@@ -111,6 +112,9 @@ public final class UniverseBlocks {
     public static final DeferredBlock<ImpulseEngineBlock> IMPULSE_ENGINE = BLOCKS.registerBlock("impulse_engine", ImpulseEngineBlock::new,
             p -> p.mapColor(MapColor.COLOR_LIGHT_BLUE).strength(4.0F, 8.0F).sound(SoundType.NETHERITE_BLOCK).requiresCorrectToolForDrops()
                     .lightLevel(state -> 7));
+    public static final DeferredBlock<WarpDriveBlock> WARP_DRIVE = BLOCKS.registerBlock("warp_drive", WarpDriveBlock::new,
+            p -> p.mapColor(MapColor.COLOR_PURPLE).strength(4.0F, 8.0F).sound(SoundType.NETHERITE_BLOCK).requiresCorrectToolForDrops()
+                    .lightLevel(state -> 9));
     public static final DeferredBlock<ShipSeatBlock> SHIP_SEAT = BLOCKS.registerBlock("ship_seat", ShipSeatBlock::new,
             p -> p.mapColor(MapColor.COLOR_GRAY).strength(1.5F).sound(SoundType.WOOL).noOcclusion());
     // ---- 工业（ADR-0011）

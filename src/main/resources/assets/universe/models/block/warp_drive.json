@@ -1,0 +1,41 @@
+{
+    "parent": "block/block",
+    "textures": {
+        "particle": "universe:block/warp_drive_side",
+        "side": "universe:block/warp_drive_side",
+        "glow": "universe:block/warp_drive_glow",
+        "back": "universe:block/warp_drive_back",
+        "front": "universe:block/warp_drive_front"
+    },
+    "elements": [
+        {   "from": [ 0, 0, 0 ],
+            "to": [ 16, 16, 16 ],
+            "faces": {
+                "down":  { "texture": "#side", "cullface": "down" },
+                "up":    { "texture": "#side", "cullface": "up" },
+                "south": { "texture": "#back", "cullface": "south" },
+                "west":  { "texture": "#side", "cullface": "west" },
+                "east":  { "texture": "#side", "cullface": "east" }
+            }
+        },
+        {   "from": [ 0, 0, 0 ],
+            "to": [ 16, 16, 0 ],
+            "light_emission": 15,
+            "shade": false,
+            "faces": {
+                "north": { "uv": [ 0, 0, 16, 16 ], "texture": "#front", "cullface": "north" }
+            }
+        },
+        {   "from": [ -0.01, -0.01, -0.01 ],
+            "to": [ 16.01, 16.01, 16.01 ],
+            "light_emission": 12,
+            "shade": false,
+            "faces": {
+                "down":  { "uv": [ 0, 0, 16, 16 ], "texture": "#glow", "cullface": "down" },
+                "up":    { "uv": [ 0, 0, 16, 16 ], "texture": "#glow", "cullface": "up" },
+                "west":  { "uv": [ 0, 0, 16, 16 ], "texture": "#glow", "cullface": "west" },
+                "east":  { "uv": [ 0, 0, 16, 16 ], "texture": "#glow", "cullface": "east" }
+            }
+        }
+    ]
+}

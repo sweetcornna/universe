@@ -77,8 +77,8 @@ public final class ShipCommand {
         ShipEntity ship = ship(context);
         ShipStats s = ship.structure().stats();
         String text = String.format(Locale.ROOT,
-                "%d 个方块，%.1f 吨，推进器 %d，燃料舱 %d，脉冲引擎 %d，推重比(1g) %.2f，燃料 %.0f/%.0f，位置 %.1f %.1f %.1f，偏航 %.1f，速度 %.3f，%s",
-                s.blocks(), s.mass(), s.thrusters(), s.fuelTanks(), s.impulse(), s.thrustToWeight(1), ship.fuelServer(), s.fuelCapacity(),
+                "%d 个方块，%.1f 吨，推进器 %d，燃料舱 %d，脉冲引擎 %d，跃迁引擎 %d，推重比(1g) %.2f，燃料 %.0f/%.0f，位置 %.1f %.1f %.1f，偏航 %.1f，速度 %.3f，%s",
+                s.blocks(), s.mass(), s.thrusters(), s.fuelTanks(), s.impulse(), s.warpDrives(), s.thrustToWeight(1), ship.fuelServer(), s.fuelCapacity(),
                 ship.getX(), ship.getY(), ship.getZ(), ship.getYRot(), ship.flight().speed(), ship.isLanded() ? "着陆" : "飞行");
         context.getSource().sendSuccess(() -> Component.literal(text), false);
         return 1;

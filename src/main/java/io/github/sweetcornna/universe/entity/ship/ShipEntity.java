@@ -13,7 +13,9 @@ import io.github.sweetcornna.universe.core.ship.ShipFlight.Controls;
 import io.github.sweetcornna.universe.core.ship.ShipFlight.Environment;
 import io.github.sweetcornna.universe.core.ship.ShipShape;
 import io.github.sweetcornna.universe.core.ship.ShipStats;
+import io.github.sweetcornna.universe.core.space.Warp;
 import io.github.sweetcornna.universe.registry.UniverseEntities;
+import io.github.sweetcornna.universe.world.space.SpaceDimensions;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleOptions;
@@ -88,6 +90,9 @@ public class ShipEntity extends Entity implements IEntityWithComplexSpawn {
     private int noticeDelay;
     /** 刚穿过大气层：驾驶员松开升降键之前不理会它们。 */
     private boolean verticalLatched;
+    /** 跃迁的目标恒星系；没在跃迁时是 -1（ADR-0012）。 */
+    private int warpTarget = -1;
+    private int warpTicks;
     private @Nullable ShipCollider collider;
     private @Nullable Environment environment;
     private @Nullable Level environmentLevel;
@@ -399,6 +404,35 @@ public class ShipEntity extends Entity implements IEntityWithComplexSpawn {
         this.verticalLatched = true;
     }
 
+    public boolean isWarping() {
+        return this.warpTarget >= 0;
+    }
+
+    /** 开始跃迁充能（服务端已经检查过射程、引力井和翘曲器）。 */
+    public void startWarp(int system) {
+        this.warpTarget = system;
+        this.warpTicks = Warp.SPOOL_TICKS;
+    }
+
+    /** 跃迁充能：驾驶员还在、还在太空里就倒数，船慢慢停下；数到头了起跳。返回这一刻是不是还在充能。 */
+    private boolean tickWarp(ServerLevel level) {
+        if (this.warpTarget < 0) {
+            return false;
+        }
+        if (this.pilot() == null || !SpaceDimensions.isSpace(level.dimension())) {
+            this.warpTarget = -1;
+            ShipWarp.cancel(this, Component.translatable("message.universe.warp.cancelled"));
+            return false;
+        }
+        if (--this.warpTicks <= 0) {
+            int target = this.warpTarget;
+            this.warpTarget = -1;
+            ShipWarp.jump(this, level, target);
+            return false;
+        }
+        return true;
+    }
+
     /** 过几刻把提示发给船上的玩家（见 {@link #NOTICE_DELAY}）。 */
     public void noticeLater(Component message) {
         this.notice = message;
@@ -414,6 +448,7 @@ public class ShipEntity extends Entity implements IEntityWithComplexSpawn {
             }
             this.notice = null;
         }
+        boolean warping = this.tickWarp(level);
         ShipStats stats = this.structure.stats();
         if (this.environmentLevel != level) {
             this.environment = ShipEnvironment.of(level);
@@ -427,7 +462,10 @@ public class ShipEntity extends Entity implements IEntityWithComplexSpawn {
 
         Player pilot = this.pilot();
         Controls controls;
-        if (pilot instanceof ServerPlayer player) {
+        if (warping) {
+            // 充能时不听操纵
+            controls = Controls.NONE;
+        } else if (pilot instanceof ServerPlayer player) {
             Input input = player.getLastClientInput();
             // 刚穿过大气层时还按着的升降键先不算，松开再按才生效：不然一路冲进太空几百格，从星球上方飞过去
             if (this.verticalLatched && !input.jump() && !input.shift()) {
@@ -446,6 +484,10 @@ public class ShipEntity extends Entity implements IEntityWithComplexSpawn {
         double used = this.flight.step(stats, controls, env, infinite || this.fuel > 0, this.landed);
         if (!infinite) {
             this.fuel = Math.max(0, this.fuel - used);
+        }
+        if (warping) {
+            // 充能时把船稳住，免得一路滑进哪颗星球的大气
+            this.flight.restore(this.flight.vx() * 0.9, this.flight.vy() * 0.9, this.flight.vz() * 0.9, this.flight.yaw());
         }
 
         // 转向：转过去会嵌进地形就不转
@@ -508,7 +550,9 @@ public class ShipEntity extends Entity implements IEntityWithComplexSpawn {
         this.entityData.set(DATA_LANDED, this.landed);
         this.entityData.set(DATA_PARKING, this.parkingTicks);
 
-        ShipTransit.check(this, level);
+        if (!warping) {
+            ShipTransit.check(this, level);
+        }
     }
 
     // ---- 存档和同步

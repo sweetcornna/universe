@@ -24,6 +24,7 @@
 | [0009](adr/0009-belts-and-power-core.md) | 工厂模拟的核心：按线路推进的传送带，覆盖式电网 | 已采纳 |
 | [0010](adr/0010-exosuit-and-hazards.md) | 星球生存：外骨骼、环境危害和重力 | 已采纳 |
 | [0011](adr/0011-factory-adapters.md) | 工业的游戏适配层：设备、电网、传送带、配方和研究 | 已采纳 |
+| [0012](adr/0012-interstellar-travel.md) | 星际航行与探索：星图、跃迁、发现与兴趣点 | 已采纳 |
 
 模板：
 

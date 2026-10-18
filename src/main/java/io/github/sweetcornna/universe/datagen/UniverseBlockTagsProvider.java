@@ -78,7 +78,8 @@ final class UniverseBlockTagsProvider extends BlockTagsProvider {
                 UniverseBlocks.SHIP_HELM.key(),
                 UniverseBlocks.SHIP_THRUSTER.key(),
                 UniverseBlocks.FUEL_TANK.key(),
-                UniverseBlocks.IMPULSE_ENGINE.key());
+                UniverseBlocks.IMPULSE_ENGINE.key(),
+                UniverseBlocks.WARP_DRIVE.key());
         UniverseBlocks.HULL_PLATING.values().forEach(block -> this.tag(BlockTags.MINEABLE_WITH_PICKAXE).add(block.key()));
         // 飞船方块也是实心的：不进"阻挡移动"的话水会穿过船体板，高度图也会漏过去
         this.tag(BlockTags.BLOCKS_MOTION_NO_LEAVES).add(
@@ -86,6 +87,7 @@ final class UniverseBlockTagsProvider extends BlockTagsProvider {
                 UniverseBlocks.SHIP_THRUSTER.key(),
                 UniverseBlocks.FUEL_TANK.key(),
                 UniverseBlocks.IMPULSE_ENGINE.key(),
+                UniverseBlocks.WARP_DRIVE.key(),
                 UniverseBlocks.SHIP_SEAT.key());
         UniverseBlocks.HULL_PLATING.values().forEach(block -> this.tag(BlockTags.BLOCKS_MOTION_NO_LEAVES).add(block.key()));
         // 工业设备：镐子挖；不会被组装进飞船（飞船停在工厂旁边时不会把设备带走）

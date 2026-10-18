@@ -108,6 +108,11 @@ final class UniverseRecipes extends RecipeProvider {
         // ---- 手工合成：物流
         this.researchShaped("basic_logistics", RecipeCategory.TRANSPORTATION, UniverseItems.CONVEYOR_BELT.get(), 3,
                 List.of("IGI"), Map.of('I', Items.IRON_INGOT, 'G', gear));
+        // 跃迁引擎：钛合金的壳体、两组等离子激发器、钢框，中间一台蓄电器给场线圈供能
+        this.researchShaped("warp_drive", RecipeCategory.TRANSPORTATION, UniverseItems.WARP_DRIVE.get(), 1,
+                List.of("TPT", "SAS", "TPT"),
+                Map.of('T', UniverseItems.ORE_SMELTED.get(OreKind.TITANIUM).get(), 'P', UniverseItems.PLASMA_EXCITER.get(), 'S', UniverseItems.STEEL.get(),
+                        'A', UniverseItems.ACCUMULATOR.get()));
         this.researchShaped("electromagnetic_matrix", RecipeCategory.REDSTONE, UniverseItems.MATRIX_LAB.get(), 1,
                 List.of("IGI", "CMC", "IGI"), Map.of('I', Items.IRON_INGOT, 'G', Items.GLASS, 'C', board, 'M', coil));
         this.researchShaped("basic_logistics", RecipeCategory.TRANSPORTATION, UniverseItems.SORTER.get(), 1,
@@ -181,6 +186,13 @@ final class UniverseRecipes extends RecipeProvider {
         // 设备也能在制造台里做，方便自动化
         this.machine(Kind.ASSEMBLING, "conveyor_belt", 20, "basic_logistics", in(Items.IRON_INGOT, 2, gear, 1),
                 out(UniverseItems.CONVEYOR_BELT.get(), 3));
+        // 空间翘曲器：一份能量矩阵把钛和棱镜做成能撕开空间的透镜（戴森球计划里是引力透镜，那要到后面的矩阵）
+        Item titanium = UniverseItems.ORE_SMELTED.get(OreKind.TITANIUM).get();
+        this.machine(Kind.ASSEMBLING, "space_warper", 200, "warp_drive",
+                in(titanium, 2, prism, 1, UniverseItems.ENERGY_MATRIX.get(), 1), out(UniverseItems.SPACE_WARPER.get(), 1));
+        this.machine(Kind.ASSEMBLING, "warp_drive", 120, "warp_drive",
+                in(titanium, 4, UniverseItems.PLASMA_EXCITER.get(), 2, UniverseItems.STEEL.get(), 2, UniverseItems.ACCUMULATOR.get(), 1),
+                out(UniverseItems.WARP_DRIVE.get(), 1));
         this.machine(Kind.ASSEMBLING, "matrix_lab", 60, "electromagnetic_matrix",
                 in(Items.IRON_INGOT, 4, Items.GLASS, 2, board, 2, coil, 1), out(UniverseItems.MATRIX_LAB.get(), 1));
         this.machine(Kind.ASSEMBLING, "sorter", 20, "basic_logistics", in(Items.IRON_INGOT, 1, board, 1),

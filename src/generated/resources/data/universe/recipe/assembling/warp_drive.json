@@ -1,0 +1,28 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 4,
+      "ingredient": "universe:titanium_ingot"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:plasma_exciter"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:steel"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:accumulator"
+    }
+  ],
+  "research": "warp_drive",
+  "results": [
+    {
+      "id": "universe:warp_drive"
+    }
+  ],
+  "time": 120
+}

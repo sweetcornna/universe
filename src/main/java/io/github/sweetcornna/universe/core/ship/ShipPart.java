@@ -19,7 +19,9 @@ public enum ShipPart {
     /** 燃料舱：储存燃料。 */
     FUEL_TANK(1.5),
     /** 脉冲引擎：在太空里加速巡航。 */
-    IMPULSE_ENGINE(4.0);
+    IMPULSE_ENGINE(4.0),
+    /** 跃迁引擎：在恒星系之间跃迁，装得越多射程越远。 */
+    WARP_DRIVE(5.0);
 
     private final double mass;
 

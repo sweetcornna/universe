@@ -45,7 +45,9 @@ public final class TechTree {
                     items("oil_extractor", "oil_refinery", "prism", "plasma_exciter")),
             Tech.lab("energy_matrix", List.of("plasma_refining", "thermal_power"), List.of(BLUE), 60, items("energy_matrix")),
             Tech.lab("energy_storage", List.of("energy_matrix"), List.of(BLUE, RED), 30, items("accumulator")),
-            Tech.lab("x_ray_cracking", List.of("energy_matrix"), List.of(BLUE, RED), 30, items("energetic_graphite"))));
+            Tech.lab("x_ray_cracking", List.of("energy_matrix"), List.of(BLUE, RED), 30, items("energetic_graphite")),
+            Tech.lab("warp_drive", List.of("energy_storage", "x_ray_cracking"), List.of(BLUE, RED), 60,
+                    items("warp_drive", "space_warper"))));
 
     private final List<Tech> techs;
     private final Map<String, Tech> byId;

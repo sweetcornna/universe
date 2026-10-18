@@ -92,7 +92,8 @@ class ResearchStateTest {
         assertEquals(2, tree.depth("basic_assembling"));
         assertEquals(5, tree.depth("plasma_refining"));
         assertEquals(6, tree.depth("energy_matrix"));
-        assertEquals(8, tree.columns());
+        assertEquals(8, tree.depth("warp_drive"));
+        assertEquals(9, tree.columns());
         assertEquals(4, tree.rows());
         for (Tech tech : tree.techs()) {
             assertTrue(tech.id().matches("[a-z_]+"), tech.id());

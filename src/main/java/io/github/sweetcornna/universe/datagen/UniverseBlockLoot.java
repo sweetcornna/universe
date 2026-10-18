@@ -60,6 +60,7 @@ final class UniverseBlockLoot extends BlockLootSubProvider {
         this.dropSelf(UniverseBlocks.SHIP_THRUSTER.get());
         this.dropSelf(UniverseBlocks.FUEL_TANK.get());
         this.dropSelf(UniverseBlocks.IMPULSE_ENGINE.get());
+        this.dropSelf(UniverseBlocks.WARP_DRIVE.get());
         this.dropSelf(UniverseBlocks.SHIP_SEAT.get());
         UniverseBlocks.HULL_PLATING.values().forEach(block -> this.dropSelf(block.get()));
         // 工业设备：两格高的只认下半截；蓄电器拆下来带着电量

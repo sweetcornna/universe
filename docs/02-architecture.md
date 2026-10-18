@@ -255,6 +255,8 @@ io.github.sweetcornna.universe
 | 块元素模型的元素可以写 `"shade": false`（不按朝向变暗）和 `"light_emission"`，单独加载的模型转起来时用得上 | 已确认，研究站核心在用 |
 | 数据包的 `pack.mcmeta` 写 `"min_format"`、`"max_format"`（26.3 的数据包版本是 121）；放进存档的 `datapacks` 目录后 `/reload` 就会启用，测试时用函数一次摆好整条产线 | 已确认 |
 | 界面里画任意方向的线、浮点位置的贴图：`graphics.pose()` 是 JOML 的 `Matrix3x2fStack`，`translate`、`rotate`、`scale` 之后 `fill(0, 0, 1, 1, 颜色)` 就是一条斜线；`blit(RenderPipelines.GUI_TEXTURED, 贴图, …, 颜色)` 的最后一个参数给白色贴图上色。`textures/gui/` 下的贴图按路径直接用，不进图集 | 已确认，星图在用 |
+| 方块模型的元素超出 0–16（比如 -0.01 到 16.01 的发光外壳）时面要写明 `uv`，自动算的 UV 会越界，烘焙时报"Cannot compute translucency out of bounds"，整个模型丢失 | 已确认，跃迁引擎在用 |
+| 视野：`ViewportEvent.ComputeFov` 的 `getFOV/setFOV`；最上层的 HUD 用 `RegisterGuiLayersEvent#registerAboveAll` | 已确认，跃迁画面在用 |
 | 动作栏消息是 `Player#sendOverlayMessage(Component)`，`displayClientMessage(…, true)` 没有了；`ChunkPos` 是记录，`ChunkPos.pack(BlockPos)`、`unpack(long)`；看得见某个区块的玩家 `chunkMap.getPlayers(ChunkPos, false)` | 已确认 |
 
 ## 5. 性能预算（目标）

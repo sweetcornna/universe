@@ -9,11 +9,14 @@ import org.jspecify.annotations.Nullable;
 
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.client.ClientGalaxy;
+import io.github.sweetcornna.universe.client.UniverseKeys;
 import io.github.sweetcornna.universe.core.ship.ShipStats;
 import io.github.sweetcornna.universe.core.space.SpaceLayout;
+import io.github.sweetcornna.universe.core.space.Warp;
 import io.github.sweetcornna.universe.entity.ship.ShipEntity;
 import io.github.sweetcornna.universe.entity.ship.ShipStructure;
 import io.github.sweetcornna.universe.registry.UniverseEntities;
+import io.github.sweetcornna.universe.registry.UniverseItems;
 import io.github.sweetcornna.universe.world.space.SpaceDimensions;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.DeltaTracker;
@@ -23,6 +26,7 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
+import net.minecraft.world.item.ItemStack;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.client.event.CalculateDetachedCameraDistanceEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
@@ -112,6 +116,10 @@ public final class ShipClient {
         lines.add(Component.translatable("hud.universe.ship.speed", String.format("%.1f", ship.clientSpeed * 20)));
         if (space) {
             nearest(spaceSystem.getAsInt(), ship, lines);
+            if (stats.warpDrives() > 0) {
+                lines.add(Component.translatable("hud.universe.ship.warp", (int) Warp.range(stats.warpDrives()), warpers(minecraft),
+                        UniverseKeys.STAR_MAP.getTranslatedKeyMessage()));
+            }
         } else {
             lines.add(Component.translatable("hud.universe.ship.altitude", (int) Math.floor(ship.getY()),
                     ship.level().getMaxY() + ShipEntity.SPACE_ALTITUDE));
@@ -198,6 +206,25 @@ public final class ShipClient {
             lines.add(Component.literal(arrow(relative) + " ").append(Component.translatable("hud.universe.ship.target", name, distance))
                     .append(vertical).append(kind));
         }
+    }
+
+    /** 背包里有几个空间翘曲器；创造模式显示 ∞。 */
+    private static String warpers(Minecraft minecraft) {
+        LocalPlayer player = minecraft.player;
+        if (player == null) {
+            return "0";
+        }
+        if (player.hasInfiniteMaterials()) {
+            return "∞";
+        }
+        int count = 0;
+        for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
+            ItemStack stack = player.getInventory().getItem(i);
+            if (stack.is(UniverseItems.SPACE_WARPER.get())) {
+                count += stack.getCount();
+            }
+        }
+        return Integer.toString(count);
     }
 
     /** 相对视线的方位画成八个方向的箭头。 */

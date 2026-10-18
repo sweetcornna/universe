@@ -85,7 +85,8 @@ final class UniverseModelProvider extends ModelProvider {
         UniverseBlocks.PLANTS.forEach((form, block) -> plant(blockModels, itemModels, form, block.get()));
         this.trees(blockModels, itemModels);
         for (DeferredItem<?> item : List.of(UniverseItems.ALIEN_MEAT, UniverseItems.COOKED_ALIEN_MEAT, UniverseItems.ALIEN_HIDE,
-                UniverseItems.ALIEN_CREATURE_SPAWN_EGG, UniverseItems.ALIEN_FLYER_SPAWN_EGG, UniverseItems.LAUNCH_FUEL)) {
+                UniverseItems.ALIEN_CREATURE_SPAWN_EGG, UniverseItems.ALIEN_FLYER_SPAWN_EGG, UniverseItems.LAUNCH_FUEL,
+                UniverseItems.SPACE_WARPER)) {
             itemModels.generateFlatItem(item.get(), ModelTemplates.FLAT_ITEM);
         }
         ships(blockModels);
@@ -224,9 +225,10 @@ final class UniverseModelProvider extends ModelProvider {
         UniverseItems.ORE_SMELTED.values().forEach(item -> itemModels.generateFlatItem(item.get(), ModelTemplates.FLAT_ITEM));
     }
 
-    /** 飞船部件：驾驶台、推进器、脉冲引擎、座椅的模型是手写的（{@code models/block/}），这里只出方块状态。 */
+    /** 飞船部件：驾驶台、推进器、脉冲引擎、跃迁引擎、座椅的模型是手写的（{@code models/block/}），这里只出方块状态。 */
     private static void ships(BlockModelGenerators blockModels) {
-        for (Block block : new Block[] {UniverseBlocks.SHIP_HELM.get(), UniverseBlocks.SHIP_SEAT.get(), UniverseBlocks.IMPULSE_ENGINE.get()}) {
+        for (Block block : new Block[] {UniverseBlocks.SHIP_HELM.get(), UniverseBlocks.SHIP_SEAT.get(), UniverseBlocks.IMPULSE_ENGINE.get(),
+                UniverseBlocks.WARP_DRIVE.get()}) {
             Identifier model = ModelLocationUtils.getModelLocation(block);
             blockModels.blockStateOutput.accept(MultiVariantGenerator.dispatch(block, BlockModelGenerators.plainVariant(model))
                     .with(BlockModelGenerators.ROTATION_HORIZONTAL_FACING));

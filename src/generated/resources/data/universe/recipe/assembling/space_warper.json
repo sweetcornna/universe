@@ -1,0 +1,24 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 2,
+      "ingredient": "universe:titanium_ingot"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:prism"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:energy_matrix"
+    }
+  ],
+  "research": "warp_drive",
+  "results": [
+    {
+      "id": "universe:space_warper"
+    }
+  ],
+  "time": 200
+}

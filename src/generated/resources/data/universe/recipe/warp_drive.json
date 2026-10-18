@@ -1,0 +1,18 @@
+{
+  "type": "universe:research_shaped",
+  "key": {
+    "A": "universe:accumulator",
+    "P": "universe:plasma_exciter",
+    "S": "universe:steel",
+    "T": "universe:titanium_ingot"
+  },
+  "pattern": [
+    "TPT",
+    "SAS",
+    "TPT"
+  ],
+  "research": "warp_drive",
+  "result": {
+    "id": "universe:warp_drive"
+  }
+}
