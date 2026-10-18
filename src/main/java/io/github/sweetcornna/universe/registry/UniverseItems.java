@@ -152,6 +152,9 @@ public final class UniverseItems {
     public static final DeferredItem<BlockItem> WATER_PUMP = ITEMS.registerSimpleBlockItem(UniverseBlocks.WATER_PUMP);
     public static final DeferredItem<BlockItem> OIL_EXTRACTOR = ITEMS.registerSimpleBlockItem(UniverseBlocks.OIL_EXTRACTOR);
     public static final DeferredItem<BlockItem> CRUDE_OIL_SEEP = ITEMS.registerSimpleBlockItem(UniverseBlocks.CRUDE_OIL_SEEP);
+    public static final DeferredItem<BlockItem> CONVEYOR_BELT = ITEMS.registerSimpleBlockItem(UniverseBlocks.CONVEYOR_BELT);
+    public static final DeferredItem<BlockItem> SORTER = ITEMS.registerSimpleBlockItem(UniverseBlocks.SORTER);
+    public static final DeferredItem<BlockItem> STORAGE_DEPOT = ITEMS.registerSimpleBlockItem(UniverseBlocks.STORAGE_DEPOT);
 
     /** 中间产品（戴森球计划的电磁阶段）。 */
     public static final DeferredItem<Item> GEAR = ITEMS.registerSimpleItem("gear");
@@ -196,7 +199,7 @@ public final class UniverseItems {
         order.addAll(ORE_DROPS.values());
         order.addAll(ORE_SMELTED.values());
         order.addAll(List.of(TESLA_TOWER, WIND_TURBINE, THERMAL_PLANT, ACCUMULATOR, MINING_MACHINE, WATER_PUMP, OIL_EXTRACTOR,
-                ARC_SMELTER, ASSEMBLER, OIL_REFINERY, CRUDE_OIL_SEEP,
+                ARC_SMELTER, ASSEMBLER, OIL_REFINERY, CONVEYOR_BELT, SORTER, STORAGE_DEPOT, CRUDE_OIL_SEEP,
                 GEAR, MAGNETIC_COIL, CIRCUIT_BOARD, ELECTRIC_MOTOR, STEEL, PRISM, PLASMA_EXCITER, ENERGETIC_GRAPHITE,
                 WATER, CRUDE_OIL, REFINED_OIL, HYDROGEN, ELECTROMAGNETIC_MATRIX, ENERGY_MATRIX));
         return List.copyOf(order);

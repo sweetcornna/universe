@@ -11,6 +11,7 @@ import io.github.sweetcornna.universe.core.ecology.PlantForm;
 import io.github.sweetcornna.universe.core.galaxy.Palette;
 import io.github.sweetcornna.universe.factory.MachineBlock;
 import io.github.sweetcornna.universe.factory.TallMachineBlock;
+import io.github.sweetcornna.universe.factory.belt.BeltBlock;
 import io.github.sweetcornna.universe.factory.power.AccumulatorBlock;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
 import io.github.sweetcornna.universe.registry.UniverseItems;
@@ -131,6 +132,19 @@ final class UniverseModelProvider extends ModelProvider {
                 .put(TextureSlot.BOTTOM, texture("crude_oil_seep_side")), blockModels.modelOutput);
         blockModels.blockStateOutput.accept(BlockModelGenerators.createSimpleBlock(seep, BlockModelGenerators.plainVariant(seepModel)));
         blockModels.registerSimpleItemModel(seep, seepModel);
+        belt(blockModels, itemModels, UniverseBlocks.CONVEYOR_BELT.get(), "conveyor_belt");
+        // 分拣器：底座和立柱是方块模型，手臂由方块实体渲染器画；物品模型里带一只朝后的手臂
+        Block sorter = UniverseBlocks.SORTER.get();
+        blockModels.blockStateOutput.accept(MultiVariantGenerator.dispatch(sorter, BlockModelGenerators.plainVariant(Universe.id("block/sorter")))
+                .with(BlockModelGenerators.ROTATION_HORIZONTAL_FACING));
+        itemModels.itemModelOutput.accept(sorter.asItem(), ItemModelUtils.plainModel(Universe.id("block/sorter_item")));
+        Block depot = UniverseBlocks.STORAGE_DEPOT.get();
+        Identifier depotModel = ModelTemplates.CUBE_BOTTOM_TOP.create(depot, new TextureMapping()
+                .put(TextureSlot.TOP, texture("storage_depot_top"))
+                .put(TextureSlot.SIDE, texture("storage_depot_side"))
+                .put(TextureSlot.BOTTOM, texture("storage_depot_top")), blockModels.modelOutput);
+        blockModels.blockStateOutput.accept(BlockModelGenerators.createSimpleBlock(depot, BlockModelGenerators.plainVariant(depotModel)));
+        blockModels.registerSimpleItemModel(depot, depotModel);
         for (DeferredItem<?> item : List.of(UniverseItems.GEAR, UniverseItems.MAGNETIC_COIL, UniverseItems.CIRCUIT_BOARD,
                 UniverseItems.ELECTRIC_MOTOR, UniverseItems.STEEL, UniverseItems.PRISM, UniverseItems.PLASMA_EXCITER,
                 UniverseItems.ENERGETIC_GRAPHITE, UniverseItems.WATER, UniverseItems.CRUDE_OIL, UniverseItems.REFINED_OIL,
@@ -155,6 +169,25 @@ final class UniverseModelProvider extends ModelProvider {
                 .with(PropertyDispatch.initial(MachineBlock.WORKING).generate(on -> BlockModelGenerators.plainVariant(models[on ? 1 : 0])))
                 .with(BlockModelGenerators.ROTATION_HORIZONTAL_FACING));
         blockModels.registerSimpleItemModel(block, models[0]);
+    }
+
+    /** 传送带：模型是手写的（平的、左右弯道、上下坡），按坡度和弯道选，再按朝向转。 */
+    private static void belt(BlockModelGenerators blockModels, ItemModelGenerators itemModels, Block block, String name) {
+        blockModels.blockStateOutput.accept(MultiVariantGenerator.dispatch(block)
+                .with(PropertyDispatch.initial(BeltBlock.SLOPE, BeltBlock.CURVE).generate((slope, curve) -> {
+                    String suffix = switch (slope) {
+                        case UP -> "_up";
+                        case DOWN -> "_down";
+                        case FLAT -> switch (curve) {
+                            case LEFT -> "_curve_left";
+                            case RIGHT -> "_curve_right";
+                            case NONE -> "";
+                        };
+                    };
+                    return BlockModelGenerators.plainVariant(Universe.id("block/" + name + suffix));
+                }))
+                .with(BlockModelGenerators.ROTATION_HORIZONTAL_FACING));
+        itemModels.itemModelOutput.accept(block.asItem(), ItemModelUtils.plainModel(Universe.id("block/" + name)));
     }
 
     /** 两格高的设备：{@code <名字>_lower/_upper}，工作时发光的那半截另有 {@code _on}；物品用两半叠起来的 {@code _item}。 */

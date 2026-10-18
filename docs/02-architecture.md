@@ -245,6 +245,11 @@ io.github.sweetcornna.universe
 | NeoForge 的物品传输：物品能力是 `ResourceHandler<ItemResource>`，相邻方块用 `BlockCapabilityCache.create(Capabilities.Item.BLOCK, level, 位置, 面)` 缓存；塞进去用 `ResourceHandlerUtil.insertStacking(handler, ItemResource.of(stack), 数量, null)`，事务传 null 直接生效 | 已确认，设备出料在用 |
 | 区块附件：`chunk.setData(类型, 值)` 会把区块标成要存盘，原地改了附件里的集合要自己 `chunk.markUnsaved()`；`getExistingDataOrNull` 不会新建 | 已确认，矿脉储量在用 |
 | `/setblock` 末尾加 `strict` 不触发形状更新和邻居更新，测试时能分别放下两格高方块的上下半截 | 已确认 |
+| 方块的 `useItemOn` 空手时也会调用（物品是空的）；要走到 `useWithoutItem` 得返回 `InteractionResult.TRY_WITH_EMPTY_HAND`，返回 `PASS` 就到此为止 | 已确认，传送带、分拣器踩过 |
+| 物品传输的事务：`Transaction.openRoot()`、`Transaction.open(父事务)`，`commit()` 才生效，不提交就回滚；自己写 `ResourceHandler` 时用 `SnapshotJournal<T>`（`createSnapshot`、`revertToSnapshot`、`onRootCommit`），改动前调 `updateSnapshots(事务)` | 已确认，传送带的插入在用 |
+| 方块实体：`onLoad`、`onChunkUnloaded`、`setRemoved` 管登记和退出；拆掉方块时掉东西放在 `preRemoveSideEffects(pos, state)`；同步用 `getUpdateTag` 返回 `saveCustomOnly(registries)`，`getUpdatePacket` 返回 `ClientboundBlockEntityDataPacket.create(this)`。存档的 `ValueOutput#store(名字, codec, 值)`、`ValueInput#read(名字, codec)` 返回 `Optional` | 已确认，传送带、分拣器在用 |
+| 方块实体渲染器里画物品：`context.itemModelResolver()` 的 `updateForTopItem(ItemStackRenderState, 物品, ItemDisplayContext.FIXED, level, null, 种子)`，再 `renderState.submit(pose, collector, 光照, OverlayTexture.NO_OVERLAY, 0)` | 已确认，传送带、分拣器在用 |
+| 动作栏消息是 `Player#sendOverlayMessage(Component)`，`displayClientMessage(…, true)` 没有了；`ChunkPos` 是记录，`ChunkPos.pack(BlockPos)`、`unpack(long)`；看得见某个区块的玩家 `chunkMap.getPlayers(ChunkPos, false)` | 已确认 |
 
 ## 5. 性能预算（目标）
 

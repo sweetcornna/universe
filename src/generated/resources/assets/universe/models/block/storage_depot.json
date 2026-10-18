@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "bottom": "universe:block/storage_depot_top",
+    "side": "universe:block/storage_depot_side",
+    "top": "universe:block/storage_depot_top"
+  }
+}

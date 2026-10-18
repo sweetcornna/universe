@@ -1,0 +1,254 @@
+{
+  "parent": "block/block",
+  "textures": {
+    "particle": "universe:block/conveyor_belt_rail",
+    "surface": "universe:block/conveyor_belt_surface",
+    "curve_left": "universe:block/conveyor_belt_curve_left",
+    "curve_right": "universe:block/conveyor_belt_curve_right",
+    "frame": "universe:block/conveyor_belt_frame",
+    "rail": "universe:block/conveyor_belt_rail"
+  },
+  "elements": [
+    {
+      "from": [
+        1,
+        0,
+        0
+      ],
+      "to": [
+        15,
+        2,
+        16
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            1,
+            14,
+            15,
+            16
+          ],
+          "texture": "#frame"
+        },
+        "south": {
+          "uv": [
+            1,
+            14,
+            15,
+            16
+          ],
+          "texture": "#frame"
+        },
+        "west": {
+          "uv": [
+            0,
+            14,
+            16,
+            16
+          ],
+          "texture": "#frame"
+        },
+        "east": {
+          "uv": [
+            0,
+            14,
+            16,
+            16
+          ],
+          "texture": "#frame"
+        },
+        "down": {
+          "uv": [
+            1,
+            0,
+            15,
+            16
+          ],
+          "texture": "#frame",
+          "cullface": "down"
+        }
+      }
+    },
+    {
+      "from": [
+        1,
+        2,
+        0
+      ],
+      "to": [
+        15,
+        3,
+        16
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            1,
+            13,
+            15,
+            14
+          ],
+          "texture": "#frame"
+        },
+        "south": {
+          "uv": [
+            1,
+            13,
+            15,
+            14
+          ],
+          "texture": "#frame"
+        },
+        "up": {
+          "uv": [
+            1,
+            0,
+            15,
+            16
+          ],
+          "texture": "#surface"
+        }
+      }
+    },
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        1,
+        4,
+        16
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            15,
+            12,
+            16,
+            16
+          ],
+          "texture": "#rail"
+        },
+        "south": {
+          "uv": [
+            0,
+            12,
+            1,
+            16
+          ],
+          "texture": "#rail"
+        },
+        "west": {
+          "uv": [
+            0,
+            12,
+            16,
+            16
+          ],
+          "texture": "#rail",
+          "cullface": "west"
+        },
+        "east": {
+          "uv": [
+            0,
+            12,
+            16,
+            16
+          ],
+          "texture": "#rail"
+        },
+        "up": {
+          "uv": [
+            6,
+            0,
+            7,
+            16
+          ],
+          "texture": "#rail"
+        },
+        "down": {
+          "uv": [
+            6,
+            0,
+            7,
+            16
+          ],
+          "texture": "#rail",
+          "cullface": "down"
+        }
+      }
+    },
+    {
+      "from": [
+        15,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        4,
+        16
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            12,
+            1,
+            16
+          ],
+          "texture": "#rail"
+        },
+        "south": {
+          "uv": [
+            15,
+            12,
+            16,
+            16
+          ],
+          "texture": "#rail"
+        },
+        "west": {
+          "uv": [
+            0,
+            12,
+            16,
+            16
+          ],
+          "texture": "#rail"
+        },
+        "east": {
+          "uv": [
+            0,
+            12,
+            16,
+            16
+          ],
+          "texture": "#rail",
+          "cullface": "east"
+        },
+        "up": {
+          "uv": [
+            6,
+            0,
+            7,
+            16
+          ],
+          "texture": "#rail"
+        },
+        "down": {
+          "uv": [
+            6,
+            0,
+            7,
+            16
+          ],
+          "texture": "#rail",
+          "cullface": "down"
+        }
+      }
+    }
+  ]
+}

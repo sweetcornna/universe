@@ -16,6 +16,7 @@ import io.github.sweetcornna.universe.registry.UniverseCreativeTabs;
 import io.github.sweetcornna.universe.registry.UniverseDataComponents;
 import io.github.sweetcornna.universe.registry.UniverseMenus;
 import io.github.sweetcornna.universe.factory.FactoryCapabilities;
+import io.github.sweetcornna.universe.factory.belt.BeltNetwork;
 import io.github.sweetcornna.universe.factory.power.LevelPower;
 import io.github.sweetcornna.universe.factory.recipe.MachineRecipes;
 import io.github.sweetcornna.universe.factory.research.Research;
@@ -64,6 +65,7 @@ public final class Universe {
         PlayerSurvival.registerEvents(gameBus);
         CrashSite.registerEvents(gameBus);
         LevelPower.registerEvents(gameBus);
+        BeltNetwork.registerEvents(gameBus);
         MachineRecipes.registerEvents(gameBus);
         Research.registerEvents(gameBus);
         FactoryCapabilities.registerEvents(modBus);

@@ -603,6 +603,159 @@ def crude_oil_seep():
     save(side, BLOCK, "crude_oil_seep_side")
 
 
+# ---- 物流
+
+BELT_RUBBER = (44, 44, 50)
+BELT_AMBER = (214, 168, 58)
+BELT_STEEL = (112, 116, 124)
+
+
+def belt_tile():
+    """一格带面（朝上为前进方向）：深色橡胶带，琥珀色的人字纹每 8 格一道，周期正好能平铺。"""
+    tile = new(BELT_RUBBER)
+    for y in range(N):
+        for x in range(N):
+            tip = abs(x - 7.5) // 2
+            row = (y - tip) % 8
+            if row == 0:
+                put(tile, x, y, BELT_AMBER)
+            elif row == 1:
+                put(tile, x, y, shade(BELT_AMBER, 0.6))
+            elif (x + y) % 5 == 0:
+                put(tile, x, y, shade(BELT_RUBBER, 1.25))
+        put(tile, 0, y, shade(BELT_RUBBER, 0.7))
+        put(tile, 15, y, shade(BELT_RUBBER, 0.7))
+    return tile
+
+
+def conveyor_belt():
+    tile = belt_tile()
+    # 16 帧动画，每帧往前挪一像素：每秒 20 像素，和 Mk.I 每秒 1.2 格的物品速度差不多
+    sheet = Image.new("RGBA", (N, N * N))
+    for k in range(N):
+        for y in range(N):
+            for x in range(N):
+                sheet.putpixel((x, k * N + y), tile.getpixel((x, (y + k) % N)))
+    save(sheet, BLOCK, "conveyor_belt_surface")
+    with open(os.path.join(BLOCK, "conveyor_belt_surface.png.mcmeta"), "w", encoding="utf-8", newline="\n") as f:
+        f.write('{\n  "animation": {\n    "frametime": 1\n  }\n}\n')
+
+    # 弯道：从西边进来、绕西北角拐向北的四分之一圆环，人字纹变成放射状的条纹
+    curve = new(shade(BELT_STEEL, 0.8))
+    for y in range(N):
+        for x in range(N):
+            d = math.hypot(x + 0.5, y + 0.5)
+            if 1 <= d <= 15:
+                angle = math.degrees(math.atan2(x + 0.5, y + 0.5))
+                stripe = int(angle // 11.25) % 4
+                color = BELT_AMBER if stripe == 0 else BELT_RUBBER
+                if d < 2 or d > 14:
+                    color = shade(BELT_RUBBER, 0.7)
+                put(curve, x, y, color)
+    save(curve, BLOCK, "conveyor_belt_curve_left")
+    save(curve.transpose(Image.FLIP_LEFT_RIGHT), BLOCK, "conveyor_belt_curve_right")
+
+    # 侧栏：钢条，中间一道琥珀色（Mk.I 的颜色），一排螺栓
+    rail = new(BELT_STEEL)
+    noise(rail, random.Random(120), 0.04)
+    for x in range(N):
+        put(rail, x, 12, shade(BELT_STEEL, 1.3))
+        put(rail, x, 13, BELT_AMBER)
+        put(rail, x, 14, shade(BELT_AMBER, 0.75))
+        put(rail, x, 15, shade(BELT_STEEL, 0.6))
+    for x in range(2, N, 4):
+        put(rail, x, 13, shade(BELT_STEEL, 1.4))
+    for y in range(N):
+        put(rail, 6, y, shade(BELT_STEEL, 1.25))
+    save(rail, BLOCK, "conveyor_belt_rail")
+
+    # 底架：深色钢板，侧面看得到一排滚筒
+    frame_tex = new(shade(BELT_STEEL, 0.55))
+    noise(frame_tex, random.Random(121), 0.05)
+    for x in range(N):
+        put(frame_tex, x, 14, (150, 154, 160) if x % 4 in (1, 2) else (60, 62, 68))
+        put(frame_tex, x, 15, (90, 92, 98) if x % 4 in (1, 2) else (40, 42, 46))
+    save(frame_tex, BLOCK, "conveyor_belt_frame")
+
+
+def sorter():
+    rng = random.Random(130)
+    # 底座顶面：深色钢板，四边一圈琥珀色，前后各一个指向前方（贴图上方）的箭头
+    top = new(shade(BELT_STEEL, 0.7))
+    noise(top, rng, 0.04)
+    for i in range(2, 14):
+        for (x, y) in ((i, 2), (i, 13), (2, i), (13, i)):
+            put(top, x, y, shade(BELT_AMBER, 0.85))
+    for row, y in enumerate((3, 4)):
+        for x in range(7 - row - 1, 9 + row + 1):
+            put(top, x, y, BELT_AMBER)
+    for row, y in enumerate((11, 12)):
+        for x in range(7 - row, 9 + row):
+            put(top, x, y, shade(BELT_AMBER, 0.7))
+    save(top, BLOCK, "sorter_top")
+    # 底座侧面：底下四行是黄黑相间的警示条
+    side = new(shade(BELT_STEEL, 0.75))
+    noise(side, rng, 0.04)
+    hazard(side, 12, 15)
+    for x in range(N):
+        put(side, x, 11, shade(BELT_STEEL, 1.2))
+    save(side, BLOCK, "sorter_side")
+    # 立柱：钢管，中间一道青色指示灯
+    pillar = new(BELT_STEEL)
+    noise(pillar, rng, 0.04)
+    for y in range(N):
+        put(pillar, 5, y, shade(BELT_STEEL, 1.3))
+        put(pillar, 10, y, shade(BELT_STEEL, 0.65))
+    for y in range(7, 9):
+        for x in range(7, 9):
+            put(pillar, x, y, CYAN)
+    save(pillar, BLOCK, "sorter_pillar")
+    # 手臂：细条纹的钢，贴图拉伸了也看不出来
+    arm = new(shade(BELT_STEEL, 1.05))
+    for y in range(N):
+        for x in range(N):
+            if y % 4 == 0:
+                put(arm, x, y, BELT_AMBER)
+            elif y % 4 == 1:
+                put(arm, x, y, shade(BELT_AMBER, 0.65))
+            elif (x + y) % 3 == 0:
+                put(arm, x, y, shade(BELT_STEEL, 0.9))
+    save(arm, BLOCK, "sorter_arm")
+
+
+def storage_depot():
+    rng = random.Random(140)
+    side = new(shade(BELT_STEEL, 0.8))
+    noise(side, rng, 0.04)
+    # 竖条加强筋，中间一道琥珀色的 Mk.I 色带
+    for y in range(2, 14):
+        for x in (4, 8, 12):
+            put(side, x - 1, y, shade(BELT_STEEL, 1.15))
+            put(side, x, y, shade(BELT_STEEL, 0.6))
+    for x in range(2, 14):
+        put(side, x, 7, BELT_AMBER)
+        put(side, x, 8, shade(BELT_AMBER, 0.7))
+    rect(side, 0, 0, 15, 1, shade(BELT_STEEL, 0.55))
+    rect(side, 0, 14, 15, 15, shade(BELT_STEEL, 0.55))
+    rect(side, 0, 0, 1, 15, shade(BELT_STEEL, 0.55))
+    rect(side, 14, 0, 15, 15, shade(BELT_STEEL, 0.55))
+    frame(side, shade(BELT_STEEL, 1.1), shade(BELT_STEEL, 0.4))
+    for (x, y) in ((0, 0), (14, 0), (0, 14), (14, 14)):
+        rivet(side, x, y, BELT_STEEL)
+    save(side, BLOCK, "storage_depot_side")
+    # 顶盖：舱门加格栅，一角是青色的指示灯
+    top = new(shade(BELT_STEEL, 0.7))
+    noise(top, rng, 0.04)
+    rect(top, 3, 3, 12, 12, shade(BELT_STEEL, 0.45))
+    for y in range(4, 12):
+        for x in range(4, 12):
+            put(top, x, y, shade(BELT_STEEL, 0.9) if y % 2 == 0 else shade(BELT_STEEL, 0.35))
+    frame(top, shade(BELT_STEEL, 1.1), shade(BELT_STEEL, 0.4))
+    put(top, 13, 2, CYAN)
+    put(top, 2, 13, BELT_AMBER)
+    save(top, BLOCK, "storage_depot_top")
+
+
 # ---- 物品
 
 def gear():
@@ -801,6 +954,9 @@ def main():
     oil_extractor()
     oil_refinery()
     crude_oil_seep()
+    conveyor_belt()
+    sorter()
+    storage_depot()
     gear()
     magnetic_coil()
     circuit_board()

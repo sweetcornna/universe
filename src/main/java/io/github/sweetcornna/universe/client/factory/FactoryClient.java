@@ -19,9 +19,13 @@ public final class FactoryClient {
         modBus.addListener(RegisterMenuScreensEvent.class, FactoryClient::registerScreens);
         modBus.addListener(EntityRenderersEvent.RegisterRenderers.class, event -> {
             event.registerBlockEntityRenderer(UniverseBlockEntities.WIND_TURBINE.get(), WindTurbineRenderer::new);
+            event.registerBlockEntityRenderer(UniverseBlockEntities.CONVEYOR_BELT.get(), BeltRenderer::new);
+            event.registerBlockEntityRenderer(UniverseBlockEntities.SORTER.get(), SorterRenderer::new);
         });
         modBus.addListener(ModelEvent.RegisterStandalone.class, WindTurbineRenderer::registerModels);
+        modBus.addListener(ModelEvent.RegisterStandalone.class, SorterRenderer::registerModels);
         ClientResearch.registerEvents(modBus, gameBus);
+        BeltClient.registerEvents(modBus);
     }
 
     private static void registerScreens(RegisterMenuScreensEvent event) {
@@ -35,6 +39,7 @@ public final class FactoryClient {
         event.register(UniverseMenus.MINING_MACHINE.menuType(), ResourceScreens.MiningMachine::new);
         event.register(UniverseMenus.WATER_PUMP.menuType(), ResourceScreens.WaterPump::new);
         event.register(UniverseMenus.OIL_EXTRACTOR.menuType(), ResourceScreens.OilExtractor::new);
+        event.register(UniverseMenus.STORAGE_DEPOT.menuType(), StorageDepotScreen::new);
     }
 
     private static void recipeMachine(RegisterMenuScreensEvent event, RecipeMachineBlockEntity.Spec spec) {

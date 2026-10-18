@@ -1,0 +1,21 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 2,
+      "ingredient": "minecraft:iron_ingot"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:gear"
+    }
+  ],
+  "research": "basic_logistics",
+  "results": [
+    {
+      "count": 3,
+      "id": "universe:conveyor_belt"
+    }
+  ],
+  "time": 20
+}

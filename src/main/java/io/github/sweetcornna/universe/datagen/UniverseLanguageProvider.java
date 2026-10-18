@@ -97,6 +97,8 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("entity.universe.ship", "飞船", "Ship");
         both("universe.bed.no_sleep_in_space", "太空里不能睡觉", "You can't sleep in space");
 
+        both("message.universe.sorter.filter", "分拣器只搬：%s", "Sorter filter: %s");
+        both("message.universe.sorter.no_filter", "分拣器不过滤，什么都搬", "Sorter filter cleared: moves anything");
         both("message.universe.fuel_tank.full", "燃料舱已经满了", "The fuel tank is full");
         both("message.universe.fuel_tank.level", "燃料：%s / %s", "Fuel: %s / %s");
         both("message.universe.ship.too_large", "飞船太大了（超过 %s 个方块），或者连到了地面、建筑上",
@@ -243,6 +245,9 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         block(UniverseBlocks.WATER_PUMP.get(), "抽水站", "Water Pump");
         block(UniverseBlocks.OIL_EXTRACTOR.get(), "原油萃取站", "Oil Extractor");
         block(UniverseBlocks.CRUDE_OIL_SEEP.get(), "原油涌泉", "Crude Oil Seep");
+        block(UniverseBlocks.CONVEYOR_BELT.get(), "传送带 Mk.I", "Conveyor Belt Mk.I");
+        block(UniverseBlocks.SORTER.get(), "分拣器 Mk.I", "Sorter Mk.I");
+        block(UniverseBlocks.STORAGE_DEPOT.get(), "储物仓 Mk.I", "Storage Mk.I");
         item(UniverseItems.GEAR.get(), "齿轮", "Gear");
         item(UniverseItems.MAGNETIC_COIL.get(), "磁线圈", "Magnetic Coil");
         item(UniverseItems.CIRCUIT_BOARD.get(), "电路板", "Circuit Board");

@@ -75,6 +75,9 @@ final class UniverseBlockLoot extends BlockLootSubProvider {
         this.dropSelf(UniverseBlocks.ASSEMBLER.get());
         this.dropSelf(UniverseBlocks.MINING_MACHINE.get());
         this.dropSelf(UniverseBlocks.WATER_PUMP.get());
+        this.dropSelf(UniverseBlocks.CONVEYOR_BELT.get());
+        this.dropSelf(UniverseBlocks.SORTER.get());
+        this.dropSelf(UniverseBlocks.STORAGE_DEPOT.get());
         // 星球矿石：和原版矿石一样，精准采集掉本体，时运加成掉落
         UniverseBlocks.ORES.forEach((kind, block) -> this.add(block.get(), this.createOreDrops(block.get(), kind)));
     }

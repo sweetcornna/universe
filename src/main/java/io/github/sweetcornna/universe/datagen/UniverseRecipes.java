@@ -105,6 +105,14 @@ final class UniverseRecipes extends RecipeProvider {
         this.researchShaped("plasma_refining", RecipeCategory.MISC, UniverseItems.PLASMA_EXCITER.get(), 1,
                 List.of("CPC", "CPC"), Map.of('C', coil, 'P', prism));
 
+        // ---- 手工合成：物流
+        this.researchShaped("basic_logistics", RecipeCategory.TRANSPORTATION, UniverseItems.CONVEYOR_BELT.get(), 3,
+                List.of("IGI"), Map.of('I', Items.IRON_INGOT, 'G', gear));
+        this.researchShaped("basic_logistics", RecipeCategory.TRANSPORTATION, UniverseItems.SORTER.get(), 1,
+                List.of("I", "B"), Map.of('I', Items.IRON_INGOT, 'B', board));
+        this.researchShaped("basic_logistics", RecipeCategory.TRANSPORTATION, UniverseItems.STORAGE_DEPOT.get(), 1,
+                List.of("ISI", "S S", "ISI"), Map.of('I', Items.IRON_INGOT, 'S', Items.STONE));
+
         // ---- 手工合成：设备
         this.researchShaped("electromagnetism", RecipeCategory.REDSTONE, UniverseItems.TESLA_TOWER.get(), 1,
                 List.of("C", "I", "I"), Map.of('C', coil, 'I', Items.IRON_INGOT));
@@ -169,6 +177,12 @@ final class UniverseRecipes extends RecipeProvider {
         this.machine(Kind.ASSEMBLING, "energy_matrix", 120, "energy_matrix", in(graphite, 2, hydrogen, 2),
                 out(UniverseItems.ENERGY_MATRIX.get(), 1));
         // 设备也能在制造台里做，方便自动化
+        this.machine(Kind.ASSEMBLING, "conveyor_belt", 20, "basic_logistics", in(Items.IRON_INGOT, 2, gear, 1),
+                out(UniverseItems.CONVEYOR_BELT.get(), 3));
+        this.machine(Kind.ASSEMBLING, "sorter", 20, "basic_logistics", in(Items.IRON_INGOT, 1, board, 1),
+                out(UniverseItems.SORTER.get(), 1));
+        this.machine(Kind.ASSEMBLING, "storage_depot", 40, "basic_logistics", in(Items.IRON_INGOT, 4, Items.STONE, 4),
+                out(UniverseItems.STORAGE_DEPOT.get(), 1));
         this.machine(Kind.ASSEMBLING, "tesla_tower", 20, "electromagnetism", in(Items.IRON_INGOT, 2, coil, 1),
                 out(UniverseItems.TESLA_TOWER.get(), 1));
         this.machine(Kind.ASSEMBLING, "wind_turbine", 80, "electromagnetism", in(Items.IRON_INGOT, 6, gear, 1, coil, 3),

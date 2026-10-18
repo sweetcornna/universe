@@ -19,10 +19,14 @@ import io.github.sweetcornna.universe.block.ship.ShipHelmBlock;
 import io.github.sweetcornna.universe.block.ship.ShipSeatBlock;
 import io.github.sweetcornna.universe.block.ship.ShipThrusterBlock;
 import io.github.sweetcornna.universe.core.ecology.PlantForm;
+import io.github.sweetcornna.universe.core.factory.BeltTier;
 import io.github.sweetcornna.universe.core.galaxy.Palette;
 import io.github.sweetcornna.universe.factory.ArcSmelterBlock;
 import io.github.sweetcornna.universe.factory.MachineBlock;
 import io.github.sweetcornna.universe.factory.TallMachineBlock;
+import io.github.sweetcornna.universe.factory.belt.BeltBlock;
+import io.github.sweetcornna.universe.factory.belt.SorterBlock;
+import io.github.sweetcornna.universe.factory.belt.StorageDepotBlock;
 import io.github.sweetcornna.universe.factory.resource.CrudeOilSeepBlock;
 import io.github.sweetcornna.universe.factory.resource.ResourceMachineBlocks;
 import io.github.sweetcornna.universe.factory.power.AccumulatorBlock;
@@ -135,6 +139,13 @@ public final class UniverseBlocks {
     public static final DeferredBlock<ResourceMachineBlocks.OilRefinery> OIL_REFINERY = BLOCKS.registerBlock("oil_refinery",
             ResourceMachineBlocks.OilRefinery::new, p -> machine(p).noOcclusion().lightLevel(state -> state.getValue(MachineBlock.WORKING)
                     && state.getValue(TallMachineBlock.HALF) == DoubleBlockHalf.LOWER ? 10 : 0));
+    /** 传送带：拆起来很快，不挑工具。 */
+    public static final DeferredBlock<BeltBlock> CONVEYOR_BELT = BLOCKS.registerBlock("conveyor_belt", p -> new BeltBlock(p, BeltTier.MK1),
+            p -> p.mapColor(MapColor.METAL).strength(1.0F, 3.0F).sound(SoundType.METAL).noOcclusion());
+    public static final DeferredBlock<SorterBlock> SORTER = BLOCKS.registerBlock("sorter", SorterBlock::new,
+            p -> p.mapColor(MapColor.METAL).strength(1.0F, 3.0F).sound(SoundType.METAL).noOcclusion());
+    public static final DeferredBlock<StorageDepotBlock> STORAGE_DEPOT = BLOCKS.registerBlock("storage_depot", StorageDepotBlock::new,
+            p -> machine(p));
     /** 原油涌泉：挖不掉，也不掉落。 */
     public static final DeferredBlock<CrudeOilSeepBlock> CRUDE_OIL_SEEP = BLOCKS.registerBlock("crude_oil_seep", CrudeOilSeepBlock::new,
             p -> p.mapColor(MapColor.COLOR_BLACK).strength(-1.0F, 3600000.0F).noLootTable().sound(SoundType.MUD));

@@ -1,0 +1,15 @@
+{
+  "type": "universe:research_shaped",
+  "key": {
+    "G": "universe:gear",
+    "I": "minecraft:iron_ingot"
+  },
+  "pattern": [
+    "IGI"
+  ],
+  "research": "basic_logistics",
+  "result": {
+    "count": 3,
+    "id": "universe:conveyor_belt"
+  }
+}

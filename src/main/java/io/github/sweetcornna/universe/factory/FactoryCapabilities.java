@@ -8,6 +8,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
+import net.neoforged.neoforge.transfer.item.VanillaContainerWrapper;
 import net.neoforged.neoforge.transfer.item.WorldlyContainerWrapper;
 
 /** 设备对外提供的能力：有物品栏的设备都提供物品能力，漏斗、分拣器和其他模组的管道都能接（ADR-0011）。 */
@@ -29,5 +30,8 @@ public final class FactoryCapabilities {
         for (Supplier<? extends BlockEntityType<? extends MachineBlockEntity>> type : containers()) {
             event.registerBlockEntity(Capabilities.Item.BLOCK, type.get(), WorldlyContainerWrapper::new);
         }
+        // 传送带只能往上放
+        event.registerBlockEntity(Capabilities.Item.BLOCK, UniverseBlockEntities.CONVEYOR_BELT.get(), (belt, side) -> belt.insertHandler());
+        event.registerBlockEntity(Capabilities.Item.BLOCK, UniverseBlockEntities.STORAGE_DEPOT.get(), (depot, side) -> VanillaContainerWrapper.of(depot));
     }
 }

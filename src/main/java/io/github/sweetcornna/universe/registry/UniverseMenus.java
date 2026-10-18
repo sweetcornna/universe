@@ -46,12 +46,25 @@ public final class UniverseMenus {
             new MachineMenu.Type(WaterPumpBlockEntity.DATA_COUNT, RESOURCE_WIDTH, 166, output(172, 46)));
     public static final MachineMenu.Type OIL_EXTRACTOR = machine("oil_extractor",
             new MachineMenu.Type(OilExtractorBlockEntity.DATA_COUNT, RESOURCE_WIDTH, 166, output(172, 46)));
+    // 储物仓：3 行 10 列
+    public static final MachineMenu.Type STORAGE_DEPOT = machine("storage_depot",
+            new MachineMenu.Type(0, 196, 170, grid(9, 20, 10, 3)));
 
     private UniverseMenus() {
     }
 
     private static SlotSpec input(int x, int y) {
         return new SlotSpec(x, y, Role.INPUT);
+    }
+
+    private static SlotSpec[] grid(int x, int y, int columns, int rows) {
+        SlotSpec[] slots = new SlotSpec[columns * rows];
+        for (int row = 0; row < rows; row++) {
+            for (int column = 0; column < columns; column++) {
+                slots[row * columns + column] = input(x + column * 18, y + row * 18);
+            }
+        }
+        return slots;
     }
 
     private static SlotSpec output(int x, int y) {

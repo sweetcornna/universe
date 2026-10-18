@@ -344,12 +344,117 @@ def oil_refinery():
     tall("oil_refinery", textures, lower, upper, lower_on=lower_on)
 
 
+# ---- 传送带
+
+BELT_TEXTURES = {
+    "particle": "universe:block/conveyor_belt_rail",
+    "surface": "universe:block/conveyor_belt_surface",
+    "curve_left": "universe:block/conveyor_belt_curve_left",
+    "curve_right": "universe:block/conveyor_belt_curve_right",
+    "frame": "universe:block/conveyor_belt_frame",
+    "rail": "universe:block/conveyor_belt_rail",
+}
+
+
+def belt_rail(f, t, cull=None):
+    """侧栏：顶面取贴图里亮的那一列。"""
+    return box(f, t, "rail", cull=cull, uvs={"up": [6, 0, 7, 16], "down": [6, 0, 7, 16]})
+
+
+def conveyor_belt():
+    frame = {"north": "frame", "south": "frame", "west": "frame", "east": "frame", "up": None, "down": "frame"}
+    surface = {"north": "frame", "south": "frame", "west": None, "east": None, "up": "surface", "down": None}
+    # 平的：底架、带面（顶面 3 像素高）、两边的侧栏
+    flat = [
+        box((1, 0, 0), (15, 2, 16), frame, cull={"down": "down"}),
+        box((1, 2, 0), (15, 3, 16), surface),
+        belt_rail((0, 0, 0), (1, 4, 16), cull={"down": "down", "west": "west"}),
+        belt_rail((15, 0, 0), (16, 4, 16), cull={"down": "down", "east": "east"}),
+    ]
+    write("conveyor_belt", model(BELT_TEXTURES, flat))
+
+    # 弯道：带面铺满一格，外侧两边有侧栏，内侧拐角一根立柱
+    full_frame = box((0, 0, 0), (16, 2, 16), frame, cull={"down": "down"})
+    left = [
+        full_frame,
+        box((0, 2, 0), (16, 3, 16), {"up": "curve_left"}, faces=("up",)),
+        belt_rail((15, 0, 0), (16, 4, 16), cull={"down": "down", "east": "east"}),
+        belt_rail((0, 0, 15), (15, 4, 16), cull={"down": "down", "south": "south"}),
+        belt_rail((0, 0, 0), (1, 4, 1), cull={"down": "down"}),
+    ]
+    write("conveyor_belt_curve_left", model(BELT_TEXTURES, left))
+    right = [
+        full_frame,
+        box((0, 2, 0), (16, 3, 16), {"up": "curve_right"}, faces=("up",)),
+        belt_rail((0, 0, 0), (1, 4, 16), cull={"down": "down", "west": "west"}),
+        belt_rail((1, 0, 15), (16, 4, 16), cull={"down": "down", "south": "south"}),
+        belt_rail((15, 0, 0), (16, 4, 1), cull={"down": "down"}),
+    ]
+    write("conveyor_belt_curve_right", model(BELT_TEXTURES, right))
+
+    # 坡道：整组元素绕 x 轴转 45° 并拉长，带面比对角线高出 3 像素，和平的传送带接得上
+    for name, angle in (("conveyor_belt_up", 45), ("conveyor_belt_down", -45)):
+        rotation = {"origin": [8, 8, 8], "axis": "x", "angle": angle, "rescale": True}
+        sloped = [
+            box((1, 6.5, 0), (15, 8.5, 16), frame, rotation=dict(rotation)),
+            box((1, 8.5, 0), (15, 9.5, 16), surface, rotation=dict(rotation)),
+            box((0, 6.5, 0), (1, 10.5, 16), "rail", rotation=dict(rotation), uvs={"up": [6, 0, 7, 16], "down": [6, 0, 7, 16]}),
+            box((15, 6.5, 0), (16, 10.5, 16), "rail", rotation=dict(rotation), uvs={"up": [6, 0, 7, 16], "down": [6, 0, 7, 16]}),
+        ]
+        write(name, model(BELT_TEXTURES, sloped))
+
+
+SORTER_TEXTURES = {
+    "particle": "universe:block/sorter_side",
+    "top": "universe:block/sorter_top",
+    "side": "universe:block/sorter_side",
+    "pillar": "universe:block/sorter_pillar",
+    "arm": "universe:block/sorter_arm",
+}
+
+
+def turned(elements):
+    """绕方块中心转 180°（前后、左右对调）；分拣器的手臂左右对称，物品模型里把它摆成朝后。"""
+    result = []
+    swap = {"north": "south", "south": "north", "west": "east", "east": "west"}
+    for e in elements:
+        e = copy.deepcopy(e)
+        (x0, y0, z0), (x1, y1, z1) = e["from"], e["to"]
+        e["from"] = [16 - x1, y0, 16 - z1]
+        e["to"] = [16 - x0, y1, 16 - z0]
+        e["faces"] = {swap.get(face, face): spec for face, spec in e["faces"].items()}
+        result.append(e)
+    return result
+
+
+def sorter():
+    base = [
+        box((2, 0, 2), (14, 4, 14), {"north": "side", "south": "side", "west": "side", "east": "side", "up": "top", "down": "side"},
+            cull={"down": "down"}),
+        box((5, 4, 5), (11, 10, 11), "pillar"),
+    ]
+    write("sorter", model(SORTER_TEXTURES, base))
+    # 手臂（朝前，也就是朝北）：轮毂、配重、横梁、爪子；方块实体渲染器绕 (8, 8) 转它
+    arm = [
+        box((6, 10, 6), (10, 13, 10), "arm"),
+        box((6.5, 10.5, 10), (9.5, 12.5, 12.5), "arm"),
+        box((7, 11, -3), (9, 12.5, 6), "arm"),
+        box((5, 9.5, -5.5), (11, 11.5, -2.5), "arm"),
+        box((5, 6.5, -5), (5.75, 9.5, -3), "arm"),
+        box((10.25, 6.5, -5), (11, 9.5, -3), "arm"),
+    ]
+    write("sorter_arm", model(SORTER_TEXTURES, arm))
+    write("sorter_item", model(SORTER_TEXTURES, base + turned(arm)))
+
+
 def main():
     tesla_tower()
     wind_turbine()
     thermal_plant()
     oil_extractor()
     oil_refinery()
+    conveyor_belt()
+    sorter()
 
 
 if __name__ == "__main__":

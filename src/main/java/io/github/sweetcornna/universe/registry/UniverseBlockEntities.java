@@ -6,6 +6,9 @@ import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.block.ship.FuelTankBlockEntity;
 import io.github.sweetcornna.universe.factory.RecipeMachineBlockEntity;
 import io.github.sweetcornna.universe.factory.RecipeMachines;
+import io.github.sweetcornna.universe.factory.belt.BeltBlockEntity;
+import io.github.sweetcornna.universe.factory.belt.SorterBlockEntity;
+import io.github.sweetcornna.universe.factory.belt.StorageDepotBlockEntity;
 import io.github.sweetcornna.universe.factory.resource.MiningMachineBlockEntity;
 import io.github.sweetcornna.universe.factory.resource.OilExtractorBlockEntity;
 import io.github.sweetcornna.universe.factory.resource.WaterPumpBlockEntity;
@@ -48,6 +51,13 @@ public final class UniverseBlockEntities {
             () -> new BlockEntityType<>(WaterPumpBlockEntity::new, UniverseBlocks.WATER_PUMP.get()));
     public static final Supplier<BlockEntityType<OilExtractorBlockEntity>> OIL_EXTRACTOR = BLOCK_ENTITIES.register("oil_extractor",
             () -> new BlockEntityType<>(OilExtractorBlockEntity::new, UniverseBlocks.OIL_EXTRACTOR.get()));
+
+    public static final Supplier<BlockEntityType<BeltBlockEntity>> CONVEYOR_BELT = BLOCK_ENTITIES.register("conveyor_belt",
+            () -> new BlockEntityType<>(BeltBlockEntity::new, UniverseBlocks.CONVEYOR_BELT.get()));
+    public static final Supplier<BlockEntityType<SorterBlockEntity>> SORTER = BLOCK_ENTITIES.register("sorter",
+            () -> new BlockEntityType<>(SorterBlockEntity::new, UniverseBlocks.SORTER.get()));
+    public static final Supplier<BlockEntityType<StorageDepotBlockEntity>> STORAGE_DEPOT = BLOCK_ENTITIES.register("storage_depot",
+            () -> new BlockEntityType<>(StorageDepotBlockEntity::new, UniverseBlocks.STORAGE_DEPOT.get()));
 
     private UniverseBlockEntities() {
     }

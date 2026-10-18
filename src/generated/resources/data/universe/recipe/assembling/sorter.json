@@ -1,0 +1,20 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "minecraft:iron_ingot"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:circuit_board"
+    }
+  ],
+  "research": "basic_logistics",
+  "results": [
+    {
+      "id": "universe:sorter"
+    }
+  ],
+  "time": 20
+}

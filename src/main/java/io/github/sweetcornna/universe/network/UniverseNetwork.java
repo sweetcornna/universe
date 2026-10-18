@@ -15,7 +15,7 @@ import net.neoforged.neoforge.server.ServerLifecycleHooks;
  */
 public final class UniverseNetwork {
     /** 协议版本：任何包的格式改动都要加一，版本不同的客户端和服务端会拒绝连接。 */
-    private static final String PROTOCOL_VERSION = "6";
+    private static final String PROTOCOL_VERSION = "7";
 
     private UniverseNetwork() {
     }
@@ -33,6 +33,7 @@ public final class UniverseNetwork {
                 .playToClient(PlanetWeatherPayload.TYPE, PlanetWeatherPayload.STREAM_CODEC)
                 .playToClient(ScanResultPayload.TYPE, ScanResultPayload.STREAM_CODEC)
                 .playToClient(ResearchStatePayload.TYPE, ResearchStatePayload.STREAM_CODEC)
+                .playToClient(BeltLinesPayload.TYPE, BeltLinesPayload.STREAM_CODEC)
                 .playToServer(JetpackPayload.TYPE, JetpackPayload.STREAM_CODEC, PlayerSurvival::handleJetpack)
                 .playToServer(ResearchActionPayload.TYPE, ResearchActionPayload.STREAM_CODEC, Research::handleAction);
     }

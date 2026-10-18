@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "universe:block/sorter",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "universe:block/sorter"
+    },
+    "facing=south": {
+      "model": "universe:block/sorter",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "universe:block/sorter",
+      "y": 270
+    }
+  }
+}

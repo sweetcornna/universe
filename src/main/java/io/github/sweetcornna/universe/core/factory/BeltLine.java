@@ -333,6 +333,55 @@ public final class BeltLine {
         return joined;
     }
 
+    /**
+     * 把 [{@code from}, {@code to}) 里的物品换成给定的（客户端按服务端的快照校正时用）；{@code to} 等于线路长度时
+     * 连停在尽头的一起换。给定的位置不用排好序，范围外的和挤在一起的丢掉。
+     */
+    public void replaceRange(int from, int to, int[] newPositions, int[] newItems) {
+        boolean throughEnd = to >= this.length;
+        int n = 0;
+        int[] p = new int[this.count + newPositions.length];
+        int[] it = new int[p.length];
+        for (int i = 0; i < this.count; i++) {
+            int position = this.position(i);
+            boolean inside = position >= from && (position < to || throughEnd && position == this.length);
+            if (!inside) {
+                p[n] = position;
+                it[n++] = this.item(i);
+            }
+        }
+        for (int i = 0; i < Math.min(newPositions.length, newItems.length); i++) {
+            int position = newPositions[i];
+            if (position >= from && (position < to || throughEnd && position <= this.length)) {
+                p[n] = position;
+                it[n++] = newItems[i];
+            }
+        }
+        // 按位置从大到小排（插入排序，物品不多）
+        for (int i = 1; i < n; i++) {
+            int position = p[i];
+            int item = it[i];
+            int j = i - 1;
+            while (j >= 0 && p[j] < position) {
+                p[j + 1] = p[j];
+                it[j + 1] = it[j];
+                j--;
+            }
+            p[j + 1] = position;
+            it[j + 1] = item;
+        }
+        this.head = 0;
+        this.count = 0;
+        int limit = this.length;
+        for (int i = 0; i < n && this.count < this.positions.length; i++) {
+            if (p[i] < 0 || p[i] > limit) {
+                continue;
+            }
+            this.append(p[i], it[i]);
+            limit = p[i] - SPACING;
+        }
+    }
+
     /** 存档用：从最前面到最后面的位置。 */
     public int[] positions() {
         int[] out = new int[this.count];

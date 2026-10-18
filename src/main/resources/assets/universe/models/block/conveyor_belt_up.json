@@ -1,0 +1,289 @@
+{
+  "parent": "block/block",
+  "textures": {
+    "particle": "universe:block/conveyor_belt_rail",
+    "surface": "universe:block/conveyor_belt_surface",
+    "curve_left": "universe:block/conveyor_belt_curve_left",
+    "curve_right": "universe:block/conveyor_belt_curve_right",
+    "frame": "universe:block/conveyor_belt_frame",
+    "rail": "universe:block/conveyor_belt_rail"
+  },
+  "elements": [
+    {
+      "from": [
+        1,
+        6.5,
+        0
+      ],
+      "to": [
+        15,
+        8.5,
+        16
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            1,
+            7.5,
+            15,
+            9.5
+          ],
+          "texture": "#frame"
+        },
+        "south": {
+          "uv": [
+            1,
+            7.5,
+            15,
+            9.5
+          ],
+          "texture": "#frame"
+        },
+        "west": {
+          "uv": [
+            0,
+            7.5,
+            16,
+            9.5
+          ],
+          "texture": "#frame"
+        },
+        "east": {
+          "uv": [
+            0,
+            7.5,
+            16,
+            9.5
+          ],
+          "texture": "#frame"
+        },
+        "down": {
+          "uv": [
+            1,
+            0,
+            15,
+            16
+          ],
+          "texture": "#frame"
+        }
+      },
+      "rotation": {
+        "origin": [
+          8,
+          8,
+          8
+        ],
+        "axis": "x",
+        "angle": 45,
+        "rescale": true
+      }
+    },
+    {
+      "from": [
+        1,
+        8.5,
+        0
+      ],
+      "to": [
+        15,
+        9.5,
+        16
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            1,
+            6.5,
+            15,
+            7.5
+          ],
+          "texture": "#frame"
+        },
+        "south": {
+          "uv": [
+            1,
+            6.5,
+            15,
+            7.5
+          ],
+          "texture": "#frame"
+        },
+        "up": {
+          "uv": [
+            1,
+            0,
+            15,
+            16
+          ],
+          "texture": "#surface"
+        }
+      },
+      "rotation": {
+        "origin": [
+          8,
+          8,
+          8
+        ],
+        "axis": "x",
+        "angle": 45,
+        "rescale": true
+      }
+    },
+    {
+      "from": [
+        0,
+        6.5,
+        0
+      ],
+      "to": [
+        1,
+        10.5,
+        16
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            15,
+            5.5,
+            16,
+            9.5
+          ],
+          "texture": "#rail"
+        },
+        "south": {
+          "uv": [
+            0,
+            5.5,
+            1,
+            9.5
+          ],
+          "texture": "#rail"
+        },
+        "west": {
+          "uv": [
+            0,
+            5.5,
+            16,
+            9.5
+          ],
+          "texture": "#rail"
+        },
+        "east": {
+          "uv": [
+            0,
+            5.5,
+            16,
+            9.5
+          ],
+          "texture": "#rail"
+        },
+        "up": {
+          "uv": [
+            6,
+            0,
+            7,
+            16
+          ],
+          "texture": "#rail"
+        },
+        "down": {
+          "uv": [
+            6,
+            0,
+            7,
+            16
+          ],
+          "texture": "#rail"
+        }
+      },
+      "rotation": {
+        "origin": [
+          8,
+          8,
+          8
+        ],
+        "axis": "x",
+        "angle": 45,
+        "rescale": true
+      }
+    },
+    {
+      "from": [
+        15,
+        6.5,
+        0
+      ],
+      "to": [
+        16,
+        10.5,
+        16
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            5.5,
+            1,
+            9.5
+          ],
+          "texture": "#rail"
+        },
+        "south": {
+          "uv": [
+            15,
+            5.5,
+            16,
+            9.5
+          ],
+          "texture": "#rail"
+        },
+        "west": {
+          "uv": [
+            0,
+            5.5,
+            16,
+            9.5
+          ],
+          "texture": "#rail"
+        },
+        "east": {
+          "uv": [
+            0,
+            5.5,
+            16,
+            9.5
+          ],
+          "texture": "#rail"
+        },
+        "up": {
+          "uv": [
+            6,
+            0,
+            7,
+            16
+          ],
+          "texture": "#rail"
+        },
+        "down": {
+          "uv": [
+            6,
+            0,
+            7,
+            16
+          ],
+          "texture": "#rail"
+        }
+      },
+      "rotation": {
+        "origin": [
+          8,
+          8,
+          8
+        ],
+        "axis": "x",
+        "angle": 45,
+        "rescale": true
+      }
+    }
+  ]
+}
