@@ -1,13 +1,10 @@
 package io.github.sweetcornna.universe.client.factory;
 
-import com.mojang.blaze3d.platform.InputConstants;
-
-import io.github.sweetcornna.universe.Universe;
+import io.github.sweetcornna.universe.client.UniverseKeys;
 import io.github.sweetcornna.universe.core.research.ResearchState;
 import io.github.sweetcornna.universe.factory.recipe.MachineRecipes;
 import io.github.sweetcornna.universe.factory.research.Research;
 import io.github.sweetcornna.universe.network.ResearchStatePayload;
-import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.sounds.SoundEvents;
@@ -15,7 +12,6 @@ import net.minecraft.world.item.crafting.RecipeMap;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
-import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
 import net.neoforged.neoforge.client.event.RecipesReceivedEvent;
 import net.neoforged.neoforge.client.network.event.RegisterClientPayloadHandlersEvent;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
@@ -25,9 +21,6 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
  * 打开科技树。
  */
 public final class ClientResearch {
-    /** 本模组按键的分类。 */
-    public static final KeyMapping.Category KEYS = new KeyMapping.Category(Universe.id("universe"));
-    public static final KeyMapping TECH_TREE = new KeyMapping("key.universe.tech_tree", InputConstants.Type.KEYBOARD, InputConstants.KEY_J, KEYS);
     private static ResearchState state = new ResearchState();
     private static boolean received;
     private static RecipeMap recipes = RecipeMap.EMPTY;
@@ -44,13 +37,9 @@ public final class ClientResearch {
             received = false;
             recipes = RecipeMap.EMPTY;
         });
-        modBus.addListener(RegisterKeyMappingsEvent.class, event -> {
-            event.registerCategory(KEYS);
-            event.register(TECH_TREE);
-        });
         gameBus.addListener(ClientTickEvent.Post.class, event -> {
             Minecraft minecraft = Minecraft.getInstance();
-            while (TECH_TREE.consumeClick()) {
+            while (UniverseKeys.TECH_TREE.consumeClick()) {
                 if (minecraft.gui.screen() == null && minecraft.player != null) {
                     minecraft.gui.setScreen(new TechTreeScreen());
                 }

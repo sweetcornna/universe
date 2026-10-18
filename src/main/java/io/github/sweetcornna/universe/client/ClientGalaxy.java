@@ -1,12 +1,14 @@
 package io.github.sweetcornna.universe.client;
 
 import java.util.Optional;
+import java.util.OptionalInt;
 
 import org.jspecify.annotations.Nullable;
 
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.core.ecology.Fauna;
 import io.github.sweetcornna.universe.core.ecology.Flora;
+import io.github.sweetcornna.universe.core.galaxy.BodyId;
 import io.github.sweetcornna.universe.core.galaxy.Galaxy;
 import io.github.sweetcornna.universe.core.galaxy.Liquid;
 import io.github.sweetcornna.universe.core.galaxy.GalaxyGenerator;
@@ -15,6 +17,7 @@ import io.github.sweetcornna.universe.core.galaxy.Planet;
 import io.github.sweetcornna.universe.core.terrain.Strata;
 import io.github.sweetcornna.universe.network.GalaxyInfoPayload;
 import io.github.sweetcornna.universe.world.planet.Planets;
+import io.github.sweetcornna.universe.world.space.SpaceDimensions;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.resources.ResourceKey;
@@ -77,6 +80,24 @@ public final class ClientGalaxy {
     public static Optional<Planet> currentPlanet() {
         refresh();
         return Optional.ofNullable(currentPlanet);
+    }
+
+    /** 玩家所在的恒星系：太空和星球维度按编号，主世界是母星系；下界、末地这些不在星团里的维度为空。 */
+    public static OptionalInt currentSystem() {
+        ClientLevel level = Minecraft.getInstance().level;
+        if (level == null) {
+            return OptionalInt.empty();
+        }
+        ResourceKey<Level> dimension = level.dimension();
+        OptionalInt space = SpaceDimensions.system(dimension);
+        if (space.isPresent()) {
+            return space;
+        }
+        Optional<BodyId> body = Planets.bodyId(dimension);
+        if (body.isPresent()) {
+            return OptionalInt.of(body.get().system());
+        }
+        return dimension == Level.OVERWORLD ? OptionalInt.of(GalaxyGenerator.HOME_SYSTEM) : OptionalInt.empty();
     }
 
     /** 当前星球的配色；不在星球上时是中性配色。可以在任意线程调用。 */

@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.mojang.blaze3d.platform.InputConstants;
 
+import io.github.sweetcornna.universe.client.UniverseKeys;
 import io.github.sweetcornna.universe.core.research.ResearchState;
 import io.github.sweetcornna.universe.core.research.Tech;
 import io.github.sweetcornna.universe.factory.MachineMenu;
@@ -80,7 +81,7 @@ public class MatrixLabScreen extends MachineScreen {
         Tech tech = current == null ? null : Research.TREE.get(current).orElse(null);
         if (tech == null) {
             graphics.textWithWordWrap(this.font, Component.translatable("gui.universe.matrix_lab.idle",
-                    ClientResearch.TECH_TREE.getTranslatedKeyMessage()), 8, 34, TEXT_WIDTH, DIM, false);
+                    UniverseKeys.TECH_TREE.getTranslatedKeyMessage()), 8, 34, TEXT_WIDTH, DIM, false);
         } else {
             List<FormattedCharSequence> name = this.font.split(Research.name(tech.id()), TEXT_WIDTH);
             if (!name.isEmpty()) {

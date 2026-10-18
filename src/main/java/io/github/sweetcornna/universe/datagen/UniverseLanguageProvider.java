@@ -128,6 +128,24 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("gui.universe.matrix_lab.tech_tree", "科技树", "Tech Tree");
         both("key.universe.tech_tree", "打开科技树", "Open Tech Tree");
         both("key.category.universe.universe", "寰宇", "Universe");
+        both("key.universe.star_map", "打开星图", "Open Star Map");
+        both("gui.universe.star_map", "星图", "Star Map");
+        both("gui.universe.star_map.unknown", "还没收到星团的数据", "Galaxy data not received yet");
+        both("gui.universe.star_map.hint", "左键拖动旋转 · 右键拖动平移 · 滚轮缩放 · 双击或 F 居中 · H 回到当前恒星系 · %s 关闭",
+                "Drag to rotate · Right-drag to pan · Scroll to zoom · Double-click or F to center · H for current system · %s to close");
+        both("gui.universe.star_map.location", "当前位置：%s", "Location: %s");
+        both("gui.universe.star_map.location_unknown", "当前位置：星团之外", "Location: outside the cluster");
+        both("gui.universe.star_map.systems", "%s 个恒星系", "%s star systems");
+        both("gui.universe.star_map.light_years", "%s 光年", "%s ly");
+        both("gui.universe.star_map.here", "你在这里", "You are here");
+        both("gui.universe.star_map.distance", "距离：%s 光年", "Distance: %s ly");
+        both("gui.universe.star_map.from_home", "距母星系：%s 光年", "From home: %s ly");
+        both("gui.universe.star_map.mass", "质量：%s 个太阳", "Mass: %s suns");
+        both("gui.universe.star_map.star_stats", "光度 %s · 表面 %s K · 质量 %s", "Luminosity %s · %s K · mass %s");
+        both("gui.universe.star_map.planets", "行星（%s）", "Planets (%s)");
+        both("gui.universe.star_map.gas_giant", "不能登陆 · 半径 %s", "Cannot land · radius %s");
+        both("gui.universe.star_map.details", "%s°C · %s g · 大气：%s", "%s°C · %s g · atmosphere: %s");
+        both("gui.universe.star_map.hazards", "危害：%s", "Hazards: %s");
         both("message.universe.sorter.filter", "分拣器只搬：%s", "Sorter filter: %s");
         both("message.universe.sorter.no_filter", "分拣器不过滤，什么都搬", "Sorter filter cleared: moves anything");
         both("message.universe.fuel_tank.full", "燃料舱已经满了", "The fuel tank is full");

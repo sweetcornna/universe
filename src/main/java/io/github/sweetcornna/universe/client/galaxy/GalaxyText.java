@@ -1,0 +1,53 @@
+package io.github.sweetcornna.universe.client.galaxy;
+
+import java.util.Locale;
+
+import io.github.sweetcornna.universe.core.galaxy.Planet;
+import io.github.sweetcornna.universe.core.galaxy.StarSystem;
+import io.github.sweetcornna.universe.core.procgen.NameGenerator;
+import net.minecraft.client.Minecraft;
+
+/**
+ * 星团里的名字和数值怎么显示：核心层的名字和枚举都带中英两套，中文界面用中文，其他语言用英文。
+ */
+public final class GalaxyText {
+    private GalaxyText() {
+    }
+
+    public static boolean chinese() {
+        return Minecraft.getInstance().options.languageCode.startsWith("zh");
+    }
+
+    public static String pick(String zh, String en) {
+        return chinese() ? zh : en;
+    }
+
+    public static String name(NameGenerator.Name name) {
+        return pick(name.zh(), name.en());
+    }
+
+    public static String system(StarSystem system) {
+        return name(system.name());
+    }
+
+    public static String planet(Planet planet) {
+        return name(planet.name());
+    }
+
+    /** 保留几位小数，小数点固定用"."。 */
+    public static String number(double value, int decimals) {
+        return String.format(Locale.ROOT, "%." + decimals + "f", value);
+    }
+
+    /** 光度、质量这类跨好几个数量级的数：大的不带小数，小的保留两位有效数字。 */
+    public static String magnitude(double value) {
+        if (value >= 100) {
+            return String.format(Locale.ROOT, "%,.0f", value);
+        }
+        if (value >= 1) {
+            return number(value, value >= 10 ? 1 : 2);
+        }
+        int decimals = Math.min(6, Math.max(2, 1 - (int) Math.floor(Math.log10(Math.max(value, 1e-9)))));
+        return number(value, decimals);
+    }
+}

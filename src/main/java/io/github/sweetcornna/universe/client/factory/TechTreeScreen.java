@@ -18,6 +18,7 @@ import org.jspecify.annotations.Nullable;
 
 import com.mojang.blaze3d.platform.InputConstants;
 
+import io.github.sweetcornna.universe.client.UniverseKeys;
 import io.github.sweetcornna.universe.core.research.ResearchState;
 import io.github.sweetcornna.universe.core.research.Tech;
 import io.github.sweetcornna.universe.core.research.TechTree;
@@ -284,7 +285,7 @@ public class TechTreeScreen extends Screen {
         Component summary = tech == null ? Component.translatable("gui.universe.tech_tree.idle")
                 : Component.translatable("gui.universe.tech_tree.current", Research.name(tech.id()), state.progress(tech.id()), tech.points());
         graphics.text(this.font, summary, x, 7, tech == null ? DIM : TEXT, false);
-        Component hint = Component.translatable("gui.universe.tech_tree.hint", ClientResearch.TECH_TREE.getTranslatedKeyMessage());
+        Component hint = Component.translatable("gui.universe.tech_tree.hint", UniverseKeys.TECH_TREE.getTranslatedKeyMessage());
         int hintX = this.width - 8 - this.font.width(hint);
         if (hintX > x + this.font.width(summary) + 12) {
             graphics.text(this.font, hint, hintX, 7, DIM, false);
@@ -534,7 +535,7 @@ public class TechTreeScreen extends Screen {
 
     @Override
     public boolean keyPressed(KeyEvent event) {
-        if (ClientResearch.TECH_TREE.matches(event)) {
+        if (UniverseKeys.TECH_TREE.matches(event)) {
             this.onClose();
             return true;
         }
