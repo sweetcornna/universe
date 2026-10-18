@@ -1,0 +1,15 @@
+{
+  "type": "universe:smelting",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:raw_silicon"
+    }
+  ],
+  "results": [
+    {
+      "id": "universe:silicon"
+    }
+  ],
+  "time": 40
+}

@@ -1,5 +1,5 @@
 {
-  "type": "minecraft:crafting_shaped",
+  "type": "universe:research_shaped",
   "category": "redstone",
   "key": {
     "C": "universe:magnetic_coil",
@@ -10,6 +10,7 @@
     "I",
     "I"
   ],
+  "research": "electromagnetism",
   "result": {
     "id": "universe:tesla_tower"
   }

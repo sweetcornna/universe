@@ -29,6 +29,8 @@
     "universe:wind_turbine",
     "universe:thermal_plant",
     "universe:accumulator",
+    "universe:arc_smelter",
+    "universe:assembler",
     "universe:planet_iron_ore",
     "universe:planet_copper_ore",
     "universe:planet_coal_ore",

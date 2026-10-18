@@ -1,0 +1,17 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 3,
+      "ingredient": "minecraft:glass"
+    }
+  ],
+  "research": "plasma_refining",
+  "results": [
+    {
+      "count": 2,
+      "id": "universe:prism"
+    }
+  ],
+  "time": 40
+}

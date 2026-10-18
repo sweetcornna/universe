@@ -1,0 +1,18 @@
+{
+  "type": "universe:smelting",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": [
+        "minecraft:sand",
+        "minecraft:red_sand"
+      ]
+    }
+  ],
+  "results": [
+    {
+      "id": "minecraft:glass"
+    }
+  ],
+  "time": 40
+}

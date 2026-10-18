@@ -1,0 +1,15 @@
+{
+  "type": "universe:smelting",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "minecraft:raw_iron"
+    }
+  ],
+  "results": [
+    {
+      "id": "universe:magnet"
+    }
+  ],
+  "time": 30
+}

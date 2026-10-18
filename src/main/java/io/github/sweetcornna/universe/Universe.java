@@ -17,6 +17,9 @@ import io.github.sweetcornna.universe.registry.UniverseDataComponents;
 import io.github.sweetcornna.universe.registry.UniverseMenus;
 import io.github.sweetcornna.universe.factory.FactoryCapabilities;
 import io.github.sweetcornna.universe.factory.power.LevelPower;
+import io.github.sweetcornna.universe.factory.recipe.MachineRecipes;
+import io.github.sweetcornna.universe.factory.research.Research;
+import io.github.sweetcornna.universe.registry.UniverseRecipeTypes;
 import io.github.sweetcornna.universe.registry.UniverseEntities;
 import io.github.sweetcornna.universe.registry.UniverseItems;
 import io.github.sweetcornna.universe.registry.UniverseWorldgen;
@@ -48,6 +51,7 @@ public final class Universe {
         UniverseEntities.register(modBus);
         UniverseMenus.register(modBus);
         UniverseDataComponents.register(modBus);
+        UniverseRecipeTypes.register(modBus);
         UniverseCreativeTabs.register(modBus);
         UniverseWorldgen.register(modBus);
         UniverseNetwork.registerEvents(modBus);
@@ -60,6 +64,8 @@ public final class Universe {
         PlayerSurvival.registerEvents(gameBus);
         CrashSite.registerEvents(gameBus);
         LevelPower.registerEvents(gameBus);
+        MachineRecipes.registerEvents(gameBus);
+        Research.registerEvents(gameBus);
         FactoryCapabilities.registerEvents(modBus);
         gameBus.addListener(RegisterCommandsEvent.class, event -> DimensionCommand.register(event.getDispatcher()));
     }

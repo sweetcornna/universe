@@ -90,7 +90,7 @@ final class UniverseBlockTagsProvider extends BlockTagsProvider {
         UniverseBlocks.HULL_PLATING.values().forEach(block -> this.tag(BlockTags.BLOCKS_MOTION_NO_LEAVES).add(block.key()));
         // 工业设备：镐子挖；不会被组装进飞船（飞船停在工厂旁边时不会把设备带走）
         for (var block : List.of(UniverseBlocks.TESLA_TOWER, UniverseBlocks.WIND_TURBINE, UniverseBlocks.THERMAL_PLANT,
-                UniverseBlocks.ACCUMULATOR)) {
+                UniverseBlocks.ACCUMULATOR, UniverseBlocks.ARC_SMELTER, UniverseBlocks.ASSEMBLER)) {
             this.tag(BlockTags.MINEABLE_WITH_PICKAXE).add(block.key());
             this.tag(ShipParts.EXCLUDED).add(block.key());
         }

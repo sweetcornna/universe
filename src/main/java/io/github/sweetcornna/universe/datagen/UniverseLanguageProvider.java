@@ -236,6 +236,8 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         block(UniverseBlocks.WIND_TURBINE.get(), "风力涡轮机", "Wind Turbine");
         block(UniverseBlocks.THERMAL_PLANT.get(), "火力发电厂", "Thermal Power Plant");
         block(UniverseBlocks.ACCUMULATOR.get(), "蓄电器", "Accumulator");
+        block(UniverseBlocks.ARC_SMELTER.get(), "电弧熔炉", "Arc Smelter");
+        block(UniverseBlocks.ASSEMBLER.get(), "制造台 Mk.I", "Assembling Machine Mk.I");
         item(UniverseItems.GEAR.get(), "齿轮", "Gear");
         item(UniverseItems.MAGNETIC_COIL.get(), "磁线圈", "Magnetic Coil");
         item(UniverseItems.CIRCUIT_BOARD.get(), "电路板", "Circuit Board");
@@ -254,6 +256,7 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("gui.universe.machine.unpowered", "未接入电网：放在电力感应塔的覆盖范围里", "No power: place within a tesla tower's range");
         both("gui.universe.machine.power", "功率 %s · 满足率 %s%%", "Power %s · %s%% satisfied");
         both("gui.universe.machine.output", "输出 %s · 负荷 %s%%", "Output %s · load %s%%");
+        both("gui.universe.machine.standby", "待机：已接入电网", "Standby · connected");
         both("gui.universe.tesla_tower.grid", "电网：%s 座感应塔，%s 台设备", "Grid: %s towers, %s devices");
         both("gui.universe.tesla_tower.flow", "发电能力 %s · 用电 %s", "Capacity %s · Demand %s");
         both("gui.universe.tesla_tower.satisfaction", "满足率 %s%%", "Satisfied %s%%");
@@ -267,6 +270,40 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("gui.universe.accumulator.discharging", "放电中 %s", "Discharging %s");
         both("gui.universe.accumulator.idle", "待机", "Idle");
         both("gui.universe.accumulator.energy", "电量 %s / %s", "Stored %s / %s");
+        both("gui.universe.recipe_machine.running", "加工中", "Working");
+        both("gui.universe.recipe_machine.no_recipe", "在左边选一个配方", "Select a recipe");
+        both("gui.universe.recipe_machine.no_input", "缺少原料", "Missing ingredients");
+        both("gui.universe.recipe_machine.output_full", "产物已满", "Output full");
+        both("gui.universe.recipe_machine.no_power", "电力不足", "No power");
+        both("gui.universe.recipe_machine.locked", "配方未解锁", "Recipe locked");
+        both("gui.universe.recipe_machine.time", "每次 %s 秒", "%s s per cycle");
+        both("gui.universe.recipe_machine.ingredients", "原料", "Ingredients");
+        both("gui.universe.recipe_machine.results", "产物", "Products");
+        both("gui.universe.recipe_machine.requires", "需要研究：%s", "Requires research: %s");
+        research();
+    }
+
+    /** 科技名称和研究的提示。 */
+    private void research() {
+        tech("electromagnetism", "电磁学", "Electromagnetism");
+        tech("basic_logistics", "基础物流系统", "Basic Logistics System");
+        tech("automatic_metallurgy", "自动化冶金", "Automatic Metallurgy");
+        tech("basic_assembling", "基础制造工艺", "Basic Assembling Processes");
+        tech("electromagnetic_matrix", "电磁矩阵", "Electromagnetic Matrix");
+        tech("fluid_storage", "流体储存封装", "Fluid Storage Encapsulation");
+        tech("electromagnetic_drive", "电磁驱动", "Electromagnetic Drive");
+        tech("thermal_power", "火力发电", "Thermal Power");
+        tech("steel_smelting", "钢材冶炼", "Steel Smelting");
+        tech("plasma_refining", "等离子萃取精炼", "Plasma Extract Refining");
+        tech("energy_matrix", "能量矩阵", "Energy Matrix");
+        tech("energy_storage", "能量储存", "Energy Storage");
+        tech("x_ray_cracking", "X 射线裂解", "X-Ray Cracking");
+        both("research.universe.completed", "研究完成：%s", "Research complete: %s");
+        both("research.universe.missing_items", "背包里的物品不够，无法完成这项研究", "Not enough items in your inventory for this research");
+    }
+
+    private void tech(String id, String zh, String en) {
+        both("tech.universe." + id, zh, en);
     }
 
     private void item(net.minecraft.world.item.Item item, String zh, String en) {

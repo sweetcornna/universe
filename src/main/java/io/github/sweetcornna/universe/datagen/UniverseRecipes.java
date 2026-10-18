@@ -1,9 +1,23 @@
 package io.github.sweetcornna.universe.datagen;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.TreeMap;
+
+import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.block.OreKind;
+import io.github.sweetcornna.universe.factory.recipe.MachineRecipe;
+import io.github.sweetcornna.universe.factory.recipe.MachineRecipe.Kind;
+import io.github.sweetcornna.universe.factory.recipe.ResearchShapedRecipe;
+import io.github.sweetcornna.universe.registry.UniverseBlocks;
 import io.github.sweetcornna.universe.registry.UniverseItems;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.advancements.Advancement;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.data.recipes.RecipeBuilder;
 import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.RecipeProvider;
 import net.minecraft.data.recipes.SimpleCookingRecipeBuilder;
@@ -11,14 +25,19 @@ import net.minecraft.data.worldgen.BootstrapContext;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.item.crafting.AbstractCookingRecipe;
 import net.minecraft.world.item.crafting.CampfireCookingRecipe;
 import net.minecraft.world.item.crafting.CookingBookCategory;
 import net.minecraft.world.item.crafting.Ingredient;
 import net.minecraft.world.item.crafting.Recipe;
+import net.minecraft.world.item.crafting.ShapedRecipePattern;
 import net.minecraft.world.item.crafting.SmeltingRecipe;
 import net.minecraft.world.item.crafting.SmokingRecipe;
+import net.minecraft.world.level.ItemLike;
+import net.minecraft.resources.ResourceKey;
+import net.neoforged.neoforge.common.crafting.SizedIngredient;
 
 /** 配方（26.3 里配方是数据包注册表的条目，走 {@code GatherDataRegistryEntriesEvent}）。 */
 final class UniverseRecipes extends RecipeProvider {
@@ -44,57 +63,143 @@ final class UniverseRecipes extends RecipeProvider {
         this.factory();
     }
 
-    /** 工业：中间产品一开始就能手工合成（戴森球计划的电磁阶段），设备要研究解锁（M3 后面换成科技门控的配方）。 */
+    /**
+     * 工业（ADR-0011）：中间产品一开始就能手工合成（戴森球计划的电磁阶段），设备要研究解锁；设备配方按戴森球计划的
+     * 原料比例和时间来，单位时间是刻（戴森球计划的秒数 × 20）。
+     */
     private void factory() {
-        // 早期的磁铁：铁锭加红石；以后电弧熔炉直接把粗铁、磁铁矿烧成磁铁
-        this.shapeless(RecipeCategory.MISC, UniverseItems.ORE_SMELTED.get(OreKind.MAGNETIC).get())
+        Item magnet = UniverseItems.ORE_SMELTED.get(OreKind.MAGNETIC).get();
+        Item coil = UniverseItems.MAGNETIC_COIL.get();
+        Item gear = UniverseItems.GEAR.get();
+        Item board = UniverseItems.CIRCUIT_BOARD.get();
+        Item prism = UniverseItems.PRISM.get();
+        Item graphite = UniverseItems.ENERGETIC_GRAPHITE.get();
+        Item hydrogen = UniverseItems.HYDROGEN.get();
+        Item silicon = UniverseItems.ORE_SMELTED.get(OreKind.SILICON).get();
+
+        // ---- 手工合成：中间产品
+        // 早期的磁铁：铁锭加红石；电弧熔炉直接把粗铁、粗磁铁烧成磁铁
+        this.shapeless(RecipeCategory.MISC, magnet)
                 .requires(Items.IRON_INGOT).requires(Items.REDSTONE)
                 .unlockedBy(getHasName(Items.REDSTONE), this.has(Items.REDSTONE))
                 .save(this.output, "universe:magnet_from_redstone");
-        Item magnet = UniverseItems.ORE_SMELTED.get(OreKind.MAGNETIC).get();
-        this.shapeless(RecipeCategory.MISC, UniverseItems.GEAR.get())
+        this.shapeless(RecipeCategory.MISC, gear)
                 .requires(Items.IRON_INGOT)
                 .unlockedBy(getHasName(Items.IRON_INGOT), this.has(Items.IRON_INGOT))
                 .save(this.output);
-        this.shaped(RecipeCategory.MISC, UniverseItems.MAGNETIC_COIL.get(), 2)
+        this.shaped(RecipeCategory.MISC, coil, 2)
                 .pattern("M").pattern("C").pattern("M")
                 .define('M', magnet).define('C', Items.COPPER_INGOT)
                 .unlockedBy(getHasName(magnet), this.has(magnet))
                 .save(this.output);
-        this.shaped(RecipeCategory.MISC, UniverseItems.CIRCUIT_BOARD.get(), 2)
+        this.shaped(RecipeCategory.MISC, board, 2)
                 .pattern("ICI")
                 .define('I', Items.IRON_INGOT).define('C', Items.COPPER_INGOT)
                 .unlockedBy(getHasName(Items.COPPER_INGOT), this.has(Items.COPPER_INGOT))
                 .save(this.output);
-        this.shaped(RecipeCategory.MISC, UniverseItems.PRISM.get(), 2)
-                .pattern("GG").pattern("G ")
-                .define('G', Items.GLASS)
-                .unlockedBy(getHasName(Items.GLASS), this.has(Items.GLASS))
-                .save(this.output);
+        // 要研究的中间产品
+        this.researchShaped("electromagnetic_drive", RecipeCategory.MISC, UniverseItems.ELECTRIC_MOTOR.get(), 1,
+                List.of("ICI", " G "), Map.of('I', Items.IRON_INGOT, 'C', coil, 'G', gear));
+        this.researchShaped("plasma_refining", RecipeCategory.MISC, prism, 2,
+                List.of("GG", "G "), Map.of('G', Items.GLASS));
+        this.researchShaped("plasma_refining", RecipeCategory.MISC, UniverseItems.PLASMA_EXCITER.get(), 1,
+                List.of("CPC", "CPC"), Map.of('C', coil, 'P', prism));
 
-        Item coil = UniverseItems.MAGNETIC_COIL.get();
-        Item gear = UniverseItems.GEAR.get();
-        Item board = UniverseItems.CIRCUIT_BOARD.get();
-        this.shaped(RecipeCategory.REDSTONE, UniverseItems.TESLA_TOWER.get())
-                .pattern("C").pattern("I").pattern("I")
-                .define('C', coil).define('I', Items.IRON_INGOT)
-                .unlockedBy(getHasName(coil), this.has(coil))
-                .save(this.output);
-        this.shaped(RecipeCategory.REDSTONE, UniverseItems.WIND_TURBINE.get())
-                .pattern("IGI").pattern("CIC").pattern("IGI")
-                .define('I', Items.IRON_INGOT).define('G', gear).define('C', coil)
-                .unlockedBy(getHasName(coil), this.has(coil))
-                .save(this.output);
-        this.shaped(RecipeCategory.REDSTONE, UniverseItems.THERMAL_PLANT.get())
-                .pattern("BCB").pattern("GFG").pattern("BIB")
-                .define('B', Items.STONE_BRICKS).define('C', coil).define('G', gear).define('F', Items.FURNACE).define('I', Items.IRON_INGOT)
-                .unlockedBy(getHasName(coil), this.has(coil))
-                .save(this.output);
-        this.shaped(RecipeCategory.REDSTONE, UniverseItems.ACCUMULATOR.get())
-                .pattern("IRI").pattern("CBC").pattern("IRI")
-                .define('I', Items.IRON_INGOT).define('R', Items.REDSTONE).define('C', coil).define('B', board)
-                .unlockedBy(getHasName(board), this.has(board))
-                .save(this.output);
+        // ---- 手工合成：设备
+        this.researchShaped("electromagnetism", RecipeCategory.REDSTONE, UniverseItems.TESLA_TOWER.get(), 1,
+                List.of("C", "I", "I"), Map.of('C', coil, 'I', Items.IRON_INGOT));
+        this.researchShaped("electromagnetism", RecipeCategory.REDSTONE, UniverseItems.WIND_TURBINE.get(), 1,
+                List.of("IGI", "CIC", "IGI"), Map.of('I', Items.IRON_INGOT, 'G', gear, 'C', coil));
+        this.researchShaped("automatic_metallurgy", RecipeCategory.REDSTONE, UniverseItems.ARC_SMELTER.get(), 1,
+                List.of("IMI", "CFC", "BBB"),
+                Map.of('I', Items.IRON_INGOT, 'M', coil, 'C', board, 'F', Items.BLAST_FURNACE, 'B', Items.STONE_BRICKS));
+        this.researchShaped("basic_assembling", RecipeCategory.REDSTONE, UniverseItems.ASSEMBLER.get(), 1,
+                List.of("IGI", "CTC", "IGI"), Map.of('I', Items.IRON_INGOT, 'G', gear, 'C', board, 'T', Items.CRAFTING_TABLE));
+        this.researchShaped("thermal_power", RecipeCategory.REDSTONE, UniverseItems.THERMAL_PLANT.get(), 1,
+                List.of("BCB", "GFG", "BIB"),
+                Map.of('B', Items.STONE_BRICKS, 'C', coil, 'G', gear, 'F', Items.FURNACE, 'I', Items.IRON_INGOT));
+        this.researchShaped("energy_storage", RecipeCategory.REDSTONE, UniverseItems.ACCUMULATOR.get(), 1,
+                List.of("IRI", "CSC", "IRI"),
+                Map.of('I', Items.IRON_INGOT, 'R', Items.REDSTONE, 'C', coil, 'S', silicon));
+
+        // ---- 电弧熔炉
+        Ingredient cobblestone = Ingredient.of(Items.COBBLESTONE, UniverseBlocks.PLANET_COBBLESTONE.get());
+        this.machine(Kind.SMELTING, "iron_ingot", 20, "", in(Items.RAW_IRON, 1), out(Items.IRON_INGOT, 1));
+        this.machine(Kind.SMELTING, "copper_ingot", 20, "", in(Items.RAW_COPPER, 1), out(Items.COPPER_INGOT, 1));
+        this.machine(Kind.SMELTING, "gold_ingot", 20, "", in(Items.RAW_GOLD, 1), out(Items.GOLD_INGOT, 1));
+        this.machine(Kind.SMELTING, "magnet", 30, "", in(Items.RAW_IRON, 1), out(magnet, 1));
+        this.machine(Kind.SMELTING, "magnet_from_magnetite", 30, "",
+                in(UniverseItems.oreDrop(OreKind.MAGNETIC), 1), out(magnet, 2));
+        this.machine(Kind.SMELTING, "stone_bricks", 20, "", List.of(new SizedIngredient(cobblestone, 1)), out(Items.STONE_BRICKS, 1));
+        this.machine(Kind.SMELTING, "glass", 40, "", List.of(new SizedIngredient(Ingredient.of(Items.SAND, Items.RED_SAND), 1)),
+                out(Items.GLASS, 1));
+        this.machine(Kind.SMELTING, "energetic_graphite", 40, "", in(Items.COAL, 2), out(graphite, 1));
+        this.machine(Kind.SMELTING, "silicon", 40, "", in(UniverseItems.oreDrop(OreKind.SILICON), 1), out(silicon, 1));
+        this.machine(Kind.SMELTING, "titanium_ingot", 40, "", in(UniverseItems.oreDrop(OreKind.TITANIUM), 1),
+                out(UniverseItems.ORE_SMELTED.get(OreKind.TITANIUM).get(), 1));
+        this.machine(Kind.SMELTING, "uranium_ingot", 40, "", in(UniverseItems.oreDrop(OreKind.URANIUM), 1),
+                out(UniverseItems.ORE_SMELTED.get(OreKind.URANIUM).get(), 1));
+        this.machine(Kind.SMELTING, "steel", 60, "steel_smelting", in(Items.IRON_INGOT, 3), out(UniverseItems.STEEL.get(), 1));
+
+        // ---- 制造台
+        this.machine(Kind.ASSEMBLING, "gear", 20, "", in(Items.IRON_INGOT, 1), out(gear, 1));
+        this.machine(Kind.ASSEMBLING, "magnetic_coil", 20, "", in(magnet, 2, Items.COPPER_INGOT, 1), out(coil, 2));
+        this.machine(Kind.ASSEMBLING, "circuit_board", 20, "", in(Items.IRON_INGOT, 2, Items.COPPER_INGOT, 1), out(board, 2));
+        this.machine(Kind.ASSEMBLING, "electric_motor", 40, "electromagnetic_drive",
+                in(Items.IRON_INGOT, 2, gear, 1, coil, 1), out(UniverseItems.ELECTRIC_MOTOR.get(), 1));
+        this.machine(Kind.ASSEMBLING, "prism", 40, "plasma_refining", in(Items.GLASS, 3), out(prism, 2));
+        this.machine(Kind.ASSEMBLING, "plasma_exciter", 40, "plasma_refining", in(coil, 4, prism, 2),
+                out(UniverseItems.PLASMA_EXCITER.get(), 1));
+        this.machine(Kind.ASSEMBLING, "electromagnetic_matrix", 60, "electromagnetic_matrix", in(coil, 1, board, 1),
+                out(UniverseItems.ELECTROMAGNETIC_MATRIX.get(), 1));
+        this.machine(Kind.ASSEMBLING, "energy_matrix", 120, "energy_matrix", in(graphite, 2, hydrogen, 2),
+                out(UniverseItems.ENERGY_MATRIX.get(), 1));
+        // 设备也能在制造台里做，方便自动化
+        this.machine(Kind.ASSEMBLING, "tesla_tower", 20, "electromagnetism", in(Items.IRON_INGOT, 2, coil, 1),
+                out(UniverseItems.TESLA_TOWER.get(), 1));
+        this.machine(Kind.ASSEMBLING, "wind_turbine", 80, "electromagnetism", in(Items.IRON_INGOT, 6, gear, 1, coil, 3),
+                out(UniverseItems.WIND_TURBINE.get(), 1));
+        this.machine(Kind.ASSEMBLING, "arc_smelter", 60, "automatic_metallurgy",
+                in(Items.IRON_INGOT, 4, Items.STONE_BRICKS, 2, board, 4, coil, 2), out(UniverseItems.ARC_SMELTER.get(), 1));
+        this.machine(Kind.ASSEMBLING, "assembler", 60, "basic_assembling", in(Items.IRON_INGOT, 4, gear, 8, board, 4),
+                out(UniverseItems.ASSEMBLER.get(), 1));
+        this.machine(Kind.ASSEMBLING, "thermal_plant", 100, "thermal_power",
+                in(Items.IRON_INGOT, 10, Items.STONE_BRICKS, 4, gear, 4, coil, 4), out(UniverseItems.THERMAL_PLANT.get(), 1));
+        this.machine(Kind.ASSEMBLING, "accumulator", 100, "energy_storage", in(Items.IRON_INGOT, 6, coil, 4, silicon, 2),
+                out(UniverseItems.ACCUMULATOR.get(), 1));
+    }
+
+    /** 要研究解锁的有序合成，配方 ID 和原版一样用产物的名字。 */
+    private void researchShaped(String research, RecipeCategory category, ItemLike result, int count, List<String> pattern,
+            Map<Character, ? extends ItemLike> key) {
+        // 按字母排，生成的文件每次一样
+        Map<Character, Ingredient> ingredients = new LinkedHashMap<>();
+        new TreeMap<Character, ItemLike>(key).forEach((symbol, item) -> ingredients.put(symbol, Ingredient.of(item)));
+        ResearchShapedRecipe recipe = new ResearchShapedRecipe(RecipeBuilder.createCraftingCommonInfo(true),
+                RecipeBuilder.createCraftingBookInfo(category, null), ShapedRecipePattern.of(ingredients, pattern),
+                new ItemStackTemplate(result.asItem(), count), research);
+        this.output.accept(RecipeBuilder.getDefaultRecipeId(recipe.result()), recipe, null);
+    }
+
+    /** 设备配方，ID 是 {@code universe:<类型>/<名字>}。 */
+    private void machine(Kind kind, String name, int time, String research, List<SizedIngredient> ingredients,
+            List<ItemStackTemplate> results) {
+        String type = kind.name().toLowerCase(Locale.ROOT);
+        this.output.accept(ResourceKey.create(Registries.RECIPE, Universe.id(type + "/" + name)),
+                new MachineRecipe(kind, ingredients, results, time, research), null);
+    }
+
+    /** 原料：物品、数量交替排列。 */
+    private static List<SizedIngredient> in(Object... itemsAndCounts) {
+        List<SizedIngredient> list = new ArrayList<>();
+        for (int i = 0; i < itemsAndCounts.length; i += 2) {
+            list.add(SizedIngredient.of((ItemLike) itemsAndCounts[i], (Integer) itemsAndCounts[i + 1]));
+        }
+        return list;
+    }
+
+    private static List<ItemStackTemplate> out(ItemLike item, int count) {
+        return List.of(new ItemStackTemplate(item.asItem(), count));
     }
 
     /** 多功能工具：修好坠毁点找到的那把，或者用钻石从头造一把（多人游戏里别的玩家用）。 */

@@ -1,0 +1,15 @@
+{
+  "type": "universe:smelting",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:raw_titanium"
+    }
+  ],
+  "results": [
+    {
+      "id": "universe:titanium_ingot"
+    }
+  ],
+  "time": 40
+}

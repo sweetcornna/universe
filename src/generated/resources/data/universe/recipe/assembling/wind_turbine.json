@@ -1,0 +1,24 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 6,
+      "ingredient": "minecraft:iron_ingot"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:gear"
+    },
+    {
+      "count": 3,
+      "ingredient": "universe:magnetic_coil"
+    }
+  ],
+  "research": "electromagnetism",
+  "results": [
+    {
+      "id": "universe:wind_turbine"
+    }
+  ],
+  "time": 80
+}

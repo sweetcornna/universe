@@ -1,17 +1,18 @@
 {
-  "type": "minecraft:crafting_shaped",
+  "type": "universe:research_shaped",
   "category": "redstone",
   "key": {
-    "B": "universe:circuit_board",
     "C": "universe:magnetic_coil",
     "I": "minecraft:iron_ingot",
-    "R": "minecraft:redstone"
+    "R": "minecraft:redstone",
+    "S": "universe:silicon"
   },
   "pattern": [
     "IRI",
-    "CBC",
+    "CSC",
     "IRI"
   ],
+  "research": "energy_storage",
   "result": {
     "id": "universe:accumulator"
   }

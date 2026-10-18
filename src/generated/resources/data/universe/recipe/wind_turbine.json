@@ -1,5 +1,5 @@
 {
-  "type": "minecraft:crafting_shaped",
+  "type": "universe:research_shaped",
   "category": "redstone",
   "key": {
     "C": "universe:magnetic_coil",
@@ -11,6 +11,7 @@
     "CIC",
     "IGI"
   ],
+  "research": "electromagnetism",
   "result": {
     "id": "universe:wind_turbine"
   }

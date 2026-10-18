@@ -1,0 +1,24 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 6,
+      "ingredient": "minecraft:iron_ingot"
+    },
+    {
+      "count": 4,
+      "ingredient": "universe:magnetic_coil"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:silicon"
+    }
+  ],
+  "research": "energy_storage",
+  "results": [
+    {
+      "id": "universe:accumulator"
+    }
+  ],
+  "time": 100
+}

@@ -1,5 +1,5 @@
 {
-  "type": "minecraft:crafting_shaped",
+  "type": "universe:research_shaped",
   "category": "redstone",
   "key": {
     "B": "minecraft:stone_bricks",
@@ -13,6 +13,7 @@
     "GFG",
     "BIB"
   ],
+  "research": "thermal_power",
   "result": {
     "id": "universe:thermal_plant"
   }

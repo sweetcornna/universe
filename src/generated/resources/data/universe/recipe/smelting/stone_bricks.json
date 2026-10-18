@@ -1,0 +1,18 @@
+{
+  "type": "universe:smelting",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": [
+        "minecraft:cobblestone",
+        "universe:planet_cobblestone"
+      ]
+    }
+  ],
+  "results": [
+    {
+      "id": "minecraft:stone_bricks"
+    }
+  ],
+  "time": 20
+}

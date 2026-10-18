@@ -1,0 +1,20 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 2,
+      "ingredient": "minecraft:iron_ingot"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:magnetic_coil"
+    }
+  ],
+  "research": "electromagnetism",
+  "results": [
+    {
+      "id": "universe:tesla_tower"
+    }
+  ],
+  "time": 20
+}

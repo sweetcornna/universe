@@ -1,0 +1,15 @@
+{
+  "type": "universe:smelting",
+  "ingredients": [
+    {
+      "count": 2,
+      "ingredient": "minecraft:coal"
+    }
+  ],
+  "results": [
+    {
+      "id": "universe:energetic_graphite"
+    }
+  ],
+  "time": 40
+}

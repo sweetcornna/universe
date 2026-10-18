@@ -1,0 +1,28 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 10,
+      "ingredient": "minecraft:iron_ingot"
+    },
+    {
+      "count": 4,
+      "ingredient": "minecraft:stone_bricks"
+    },
+    {
+      "count": 4,
+      "ingredient": "universe:gear"
+    },
+    {
+      "count": 4,
+      "ingredient": "universe:magnetic_coil"
+    }
+  ],
+  "research": "thermal_power",
+  "results": [
+    {
+      "id": "universe:thermal_plant"
+    }
+  ],
+  "time": 100
+}

@@ -1,5 +1,8 @@
 package io.github.sweetcornna.universe.client.factory;
 
+import io.github.sweetcornna.universe.factory.MachineMenu;
+import io.github.sweetcornna.universe.factory.RecipeMachineBlockEntity;
+import io.github.sweetcornna.universe.factory.RecipeMachines;
 import io.github.sweetcornna.universe.registry.UniverseBlockEntities;
 import io.github.sweetcornna.universe.registry.UniverseMenus;
 import net.neoforged.bus.api.IEventBus;
@@ -18,6 +21,7 @@ public final class FactoryClient {
             event.registerBlockEntityRenderer(UniverseBlockEntities.WIND_TURBINE.get(), WindTurbineRenderer::new);
         });
         modBus.addListener(ModelEvent.RegisterStandalone.class, WindTurbineRenderer::registerModels);
+        ClientResearch.registerEvents(modBus, gameBus);
     }
 
     private static void registerScreens(RegisterMenuScreensEvent event) {
@@ -25,5 +29,12 @@ public final class FactoryClient {
         event.register(UniverseMenus.WIND_TURBINE.menuType(), PowerScreens.WindTurbine::new);
         event.register(UniverseMenus.THERMAL_PLANT.menuType(), PowerScreens.ThermalPlant::new);
         event.register(UniverseMenus.ACCUMULATOR.menuType(), PowerScreens.Accumulator::new);
+        recipeMachine(event, RecipeMachines.ARC_SMELTER);
+        recipeMachine(event, RecipeMachines.ASSEMBLER);
+    }
+
+    private static void recipeMachine(RegisterMenuScreensEvent event, RecipeMachineBlockEntity.Spec spec) {
+        event.<MachineMenu, RecipeMachineScreen>register(spec.menu().menuType(),
+                (menu, inventory, title) -> new RecipeMachineScreen(menu, inventory, title, spec));
     }
 }

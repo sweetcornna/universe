@@ -1,0 +1,16 @@
+{
+  "type": "universe:smelting",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:raw_magnetite"
+    }
+  ],
+  "results": [
+    {
+      "count": 2,
+      "id": "universe:magnet"
+    }
+  ],
+  "time": 30
+}

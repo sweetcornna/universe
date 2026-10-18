@@ -1,0 +1,20 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 4,
+      "ingredient": "universe:magnetic_coil"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:prism"
+    }
+  ],
+  "research": "plasma_refining",
+  "results": [
+    {
+      "id": "universe:plasma_exciter"
+    }
+  ],
+  "time": 40
+}

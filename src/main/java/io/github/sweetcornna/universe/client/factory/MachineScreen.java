@@ -25,7 +25,8 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
     public static final int BAD = 0xFFE5583F;
 
     public MachineScreen(MachineMenu menu, Inventory inventory, Component title) {
-        super(menu, inventory, title, 176, menu.type().height());
+        super(menu, inventory, title, menu.type().width(), menu.type().height());
+        this.inventoryLabelX = menu.type().inventoryX();
         this.inventoryLabelY = menu.type().inventoryY() - 11;
     }
 
@@ -74,6 +75,11 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
             // 发电机：负荷低只是电网用得少，不算故障
             graphics.text(this.font, Component.translatable("gui.universe.machine.output", watts(this.menu.wide(1)), status / 10), x, y,
                     status > 0 ? GOOD : DIM, false);
+            return;
+        }
+        if ((this.menu.data(3) & 4) == 0) {
+            // 用电设备没在干活：不要电，满足率没有意义
+            graphics.text(this.font, Component.translatable("gui.universe.machine.standby"), x, y, DIM, false);
             return;
         }
         int color = status >= 999 ? GOOD : status >= 500 ? WARN : BAD;

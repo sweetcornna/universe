@@ -70,6 +70,8 @@ final class UniverseBlockLoot extends BlockLootSubProvider {
                 LootPool.lootPool().setRolls(ContextIntProviders.exactly(1)).add(LootItem.lootTableItem(block)
                         .apply(CopyComponentsFunction.copyComponentsFromBlockEntity(LootContextParams.BLOCK_ENTITY)
                                 .include(UniverseDataComponents.STORED_ENERGY.get()))))));
+        this.dropSelf(UniverseBlocks.ARC_SMELTER.get());
+        this.dropSelf(UniverseBlocks.ASSEMBLER.get());
         // 星球矿石：和原版矿石一样，精准采集掉本体，时运加成掉落
         UniverseBlocks.ORES.forEach((kind, block) -> this.add(block.get(), this.createOreDrops(block.get(), kind)));
     }

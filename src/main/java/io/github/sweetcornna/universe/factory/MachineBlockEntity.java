@@ -163,7 +163,7 @@ public abstract class MachineBlockEntity extends BaseContainerBlockEntity implem
      * <ul>
      * <li>0：没接上电网时是 -1，否则是满足率（用电设备）或负荷（发电机）的千分数
      * <li>1、2：这一刻的功率（焦耳/刻 × 10）
-     * <li>3：第 0 位是工作中，第 1 位表示是发电机（界面上显示负荷而不是满足率）
+     * <li>3：第 0 位是工作中，第 1 位表示是发电机（界面上显示负荷而不是满足率），第 2 位表示这一刻在要电
      * </ul>
      */
     protected int dataValue(int index) {
@@ -171,7 +171,7 @@ public abstract class MachineBlockEntity extends BaseContainerBlockEntity implem
             case 0 -> this.connected() ? (int) Math.round((this.demand() > 0 ? this.satisfaction : this.load) * 1000) : -1;
             case 1 -> MachineMenu.low(this.powerFlow() * 10);
             case 2 -> MachineMenu.high(this.powerFlow() * 10);
-            case 3 -> (this.working() ? 1 : 0) | (this.generator() ? 2 : 0);
+            case 3 -> (this.working() ? 1 : 0) | (this.generator() ? 2 : 0) | (this.demand() > 0 ? 4 : 0);
             default -> 0;
         };
     }

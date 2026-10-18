@@ -291,6 +291,97 @@ def accumulator():
         save(img, BLOCK, "accumulator_front_" + str(level))
 
 
+def arc_smelter():
+    rng = random.Random(106)
+    steel = (78, 72, 70)
+    side = casing(steel, rng, seam=False)
+    # 两排散热口，口子里透着一点炉温
+    for y in (5, 10):
+        for x in range(3, 13):
+            put(side, x, y, (34, 28, 26))
+            put(side, x, y + 1, (120, 60, 34) if x % 3 else (90, 46, 30))
+    save(side, BLOCK, "arc_smelter_side")
+
+    for name, hot in (("arc_smelter_top", False), ("arc_smelter_top_on", True)):
+        top = casing(shade(steel, 1.1), rng, seam=False)
+        # 坩埚：一圈耐火砖，中间是金属液
+        for y in range(N):
+            for x in range(N):
+                d = math.hypot(x - 7.5, y - 7.5)
+                if 4.2 <= d < 6.2:
+                    put(top, x, y, shade((150, 120, 100), 1.05 - 0.12 * (d - 4.2) + rng.uniform(-0.06, 0.06)))
+                elif d < 4.2:
+                    if hot:
+                        put(top, x, y, mix((255, 240, 170), (240, 110, 30), d / 4.2))
+                    else:
+                        put(top, x, y, shade((46, 40, 38), 1 + rng.uniform(-0.1, 0.1)))
+        save(top, BLOCK, name)
+
+    for name, arc in (("arc_smelter_front", False), ("arc_smelter_front_on", True)):
+        img = side.copy()
+        # 观察窗：两根石墨电极，通电时中间拉出电弧
+        rect(img, 3, 3, 12, 12, (40, 38, 38))
+        rect(img, 4, 4, 11, 11, (22, 18, 18))
+        if arc:
+            # 电极尖端之间的一团光，底部映着炉膛
+            for y in range(4, 12):
+                for x in range(4, 12):
+                    d = math.hypot(x - 7.5, (y - 9.0) * 1.3)
+                    if d < 4.2:
+                        put(img, x, y, mix((255, 236, 190), (150, 54, 22), d / 4.2))
+        for y in range(4, 9):
+            put(img, 5, y, (70, 70, 76))
+            put(img, 10, y, (70, 70, 76))
+        if arc:
+            # 电弧的折线
+            for (x, y) in ((5, 9), (6, 9), (7, 10), (8, 9), (9, 10), (10, 9)):
+                put(img, x, y, (235, 248, 255))
+        rect(img, 3, 13, 12, 13, (120, 116, 112))
+        put(img, 11, 13, (90, 230, 120) if arc else (40, 60, 48))
+        save(img, BLOCK, name)
+
+
+def assembler():
+    rng = random.Random(107)
+    base = (70, 80, 92)
+    side = casing(base, rng, seam=False)
+    # 一道青色的腰线和检修面板
+    for x in range(1, N - 1):
+        put(side, x, 4, CYAN_DIM)
+    rect(side, 4, 7, 11, 12, shade(base, 0.82))
+    for (x, y) in ((4, 7), (11, 7), (4, 12), (11, 12)):
+        put(side, x, y, shade(base, 1.3))
+    save(side, BLOCK, "assembler_side")
+
+    top = casing(shade(base, 1.15), rng, seam=False)
+    # 俯视的机械臂转台
+    for y in range(N):
+        for x in range(N):
+            d = math.hypot(x - 7.5, y - 7.5)
+            if d < 4.6:
+                put(top, x, y, shade((120, 128, 136), 1.15 - 0.08 * d))
+    rect(top, 7, 2, 8, 7, (230, 170, 40))
+    rect(top, 7, 2, 11, 3, (230, 170, 40))
+    put(top, 7, 7, (40, 44, 50))
+    put(top, 8, 8, (40, 44, 50))
+    save(top, BLOCK, "assembler_top")
+
+    for name, lit in (("assembler_front", False), ("assembler_front_on", True)):
+        img = side.copy()
+        # 舱门：里面是黄色的机械臂，工作时舱内亮灯
+        rect(img, 3, 5, 12, 13, (36, 40, 46))
+        rect(img, 4, 6, 11, 12, (60, 90, 104) if lit else (24, 28, 32))
+        arm = (240, 180, 50) if lit else (130, 100, 40)
+        for (x, y) in ((5, 12), (5, 11), (6, 10), (7, 9), (8, 8), (9, 8), (10, 9)):
+            put(img, x, y, arm)
+        put(img, 10, 10, (200, 200, 210))
+        for x in range(4, 12):
+            put(img, x, 12, (50, 54, 60))
+        for i, x in enumerate((4, 6, 8)):
+            put(img, x, 2, CYAN if lit and i < 2 else CYAN_DIM)
+        save(img, BLOCK, name)
+
+
 # ---- 物品
 
 def gear():
@@ -482,6 +573,8 @@ def main():
     wind_turbine()
     thermal_plant()
     accumulator()
+    arc_smelter()
+    assembler()
     gear()
     magnetic_coil()
     circuit_board()

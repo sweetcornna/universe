@@ -1,0 +1,16 @@
+{
+  "type": "universe:smelting",
+  "ingredients": [
+    {
+      "count": 3,
+      "ingredient": "minecraft:iron_ingot"
+    }
+  ],
+  "research": "steel_smelting",
+  "results": [
+    {
+      "id": "universe:steel"
+    }
+  ],
+  "time": 60
+}

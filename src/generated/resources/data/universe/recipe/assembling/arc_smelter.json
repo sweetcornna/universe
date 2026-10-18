@@ -1,0 +1,28 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 4,
+      "ingredient": "minecraft:iron_ingot"
+    },
+    {
+      "count": 2,
+      "ingredient": "minecraft:stone_bricks"
+    },
+    {
+      "count": 4,
+      "ingredient": "universe:circuit_board"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:magnetic_coil"
+    }
+  ],
+  "research": "automatic_metallurgy",
+  "results": [
+    {
+      "id": "universe:arc_smelter"
+    }
+  ],
+  "time": 60
+}

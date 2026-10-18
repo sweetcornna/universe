@@ -1,0 +1,15 @@
+{
+  "type": "universe:research_shaped",
+  "key": {
+    "C": "universe:magnetic_coil",
+    "P": "universe:prism"
+  },
+  "pattern": [
+    "CPC",
+    "CPC"
+  ],
+  "research": "plasma_refining",
+  "result": {
+    "id": "universe:plasma_exciter"
+  }
+}

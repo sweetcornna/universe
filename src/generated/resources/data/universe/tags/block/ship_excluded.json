@@ -4,6 +4,8 @@
     "universe:wind_turbine",
     "universe:thermal_plant",
     "universe:accumulator",
+    "universe:arc_smelter",
+    "universe:assembler",
     "#minecraft:substrate_overworld",
     "#minecraft:sand",
     "#minecraft:base_stone_overworld",

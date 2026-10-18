@@ -20,7 +20,7 @@ public final class FactoryCapabilities {
     }
 
     private static List<Supplier<? extends BlockEntityType<? extends MachineBlockEntity>>> containers() {
-        return List.of(UniverseBlockEntities.THERMAL_PLANT);
+        return List.of(UniverseBlockEntities.THERMAL_PLANT, UniverseBlockEntities.ARC_SMELTER, UniverseBlockEntities.ASSEMBLER);
     }
 
     private static void register(RegisterCapabilitiesEvent event) {

@@ -1,0 +1,19 @@
+{
+  "type": "universe:research_shaped",
+  "category": "redstone",
+  "key": {
+    "C": "universe:circuit_board",
+    "G": "universe:gear",
+    "I": "minecraft:iron_ingot",
+    "T": "minecraft:crafting_table"
+  },
+  "pattern": [
+    "IGI",
+    "CTC",
+    "IGI"
+  ],
+  "research": "basic_assembling",
+  "result": {
+    "id": "universe:assembler"
+  }
+}

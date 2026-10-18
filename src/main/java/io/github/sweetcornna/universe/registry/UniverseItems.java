@@ -145,6 +145,8 @@ public final class UniverseItems {
     public static final DeferredItem<BlockItem> WIND_TURBINE = ITEMS.registerSimpleBlockItem(UniverseBlocks.WIND_TURBINE);
     public static final DeferredItem<BlockItem> THERMAL_PLANT = ITEMS.registerSimpleBlockItem(UniverseBlocks.THERMAL_PLANT);
     public static final DeferredItem<BlockItem> ACCUMULATOR = ITEMS.registerSimpleBlockItem(UniverseBlocks.ACCUMULATOR);
+    public static final DeferredItem<BlockItem> ARC_SMELTER = ITEMS.registerSimpleBlockItem(UniverseBlocks.ARC_SMELTER);
+    public static final DeferredItem<BlockItem> ASSEMBLER = ITEMS.registerSimpleBlockItem(UniverseBlocks.ASSEMBLER);
 
     /** 中间产品（戴森球计划的电磁阶段）。 */
     public static final DeferredItem<Item> GEAR = ITEMS.registerSimpleItem("gear");
@@ -188,7 +190,7 @@ public final class UniverseItems {
         order.addAll(ORES.values());
         order.addAll(ORE_DROPS.values());
         order.addAll(ORE_SMELTED.values());
-        order.addAll(List.of(TESLA_TOWER, WIND_TURBINE, THERMAL_PLANT, ACCUMULATOR,
+        order.addAll(List.of(TESLA_TOWER, WIND_TURBINE, THERMAL_PLANT, ACCUMULATOR, ARC_SMELTER, ASSEMBLER,
                 GEAR, MAGNETIC_COIL, CIRCUIT_BOARD, ELECTRIC_MOTOR, STEEL, PRISM, PLASMA_EXCITER, ENERGETIC_GRAPHITE,
                 WATER, CRUDE_OIL, REFINED_OIL, HYDROGEN, ELECTROMAGNETIC_MATRIX, ENERGY_MATRIX));
         return List.copyOf(order);

@@ -20,6 +20,7 @@ import io.github.sweetcornna.universe.block.ship.ShipSeatBlock;
 import io.github.sweetcornna.universe.block.ship.ShipThrusterBlock;
 import io.github.sweetcornna.universe.core.ecology.PlantForm;
 import io.github.sweetcornna.universe.core.galaxy.Palette;
+import io.github.sweetcornna.universe.factory.ArcSmelterBlock;
 import io.github.sweetcornna.universe.factory.MachineBlock;
 import io.github.sweetcornna.universe.factory.TallMachineBlock;
 import io.github.sweetcornna.universe.factory.power.AccumulatorBlock;
@@ -118,6 +119,11 @@ public final class UniverseBlocks {
                     && state.getValue(TallMachineBlock.HALF) == DoubleBlockHalf.LOWER ? 11 : 0));
     public static final DeferredBlock<AccumulatorBlock> ACCUMULATOR = BLOCKS.registerBlock("accumulator", AccumulatorBlock::new,
             p -> machine(p).lightLevel(state -> state.getValue(AccumulatorBlock.CHARGE) > 0 ? 4 : 0));
+    public static final DeferredBlock<ArcSmelterBlock> ARC_SMELTER = BLOCKS.registerBlock("arc_smelter", ArcSmelterBlock::new,
+            p -> machine(p).lightLevel(state -> state.getValue(MachineBlock.WORKING) ? 12 : 0));
+    public static final DeferredBlock<MachineBlock> ASSEMBLER = BLOCKS.registerBlock("assembler",
+            p -> new MachineBlock(p, UniverseBlockEntities.ASSEMBLER),
+            p -> machine(p).lightLevel(state -> state.getValue(MachineBlock.WORKING) ? 6 : 0));
 
     /** 设备的通用属性：金属、要镐子挖，活塞推不动。 */
     private static BlockBehaviour.Properties machine(BlockBehaviour.Properties properties) {

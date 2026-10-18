@@ -117,12 +117,32 @@ final class UniverseModelProvider extends ModelProvider {
                 .with(PropertyDispatch.initial(AccumulatorBlock.CHARGE).generate(charge -> BlockModelGenerators.plainVariant(charges[charge])))
                 .with(BlockModelGenerators.ROTATION_HORIZONTAL_FACING));
         blockModels.registerSimpleItemModel(accumulator, charges[0]);
+        recipeMachine(blockModels, UniverseBlocks.ARC_SMELTER.get(), "arc_smelter", true);
+        recipeMachine(blockModels, UniverseBlocks.ASSEMBLER.get(), "assembler", false);
         for (DeferredItem<?> item : List.of(UniverseItems.GEAR, UniverseItems.MAGNETIC_COIL, UniverseItems.CIRCUIT_BOARD,
                 UniverseItems.ELECTRIC_MOTOR, UniverseItems.STEEL, UniverseItems.PRISM, UniverseItems.PLASMA_EXCITER,
                 UniverseItems.ENERGETIC_GRAPHITE, UniverseItems.WATER, UniverseItems.CRUDE_OIL, UniverseItems.REFINED_OIL,
                 UniverseItems.HYDROGEN, UniverseItems.ELECTROMAGNETIC_MATRIX, UniverseItems.ENERGY_MATRIX)) {
             itemModels.generateFlatItem(item.get(), ModelTemplates.FLAT_ITEM);
         }
+    }
+
+    /** 一格的配方设备：正面（和电弧熔炉的顶面）工作时换成发光的贴图，底面是通用机壳。 */
+    private static void recipeMachine(BlockModelGenerators blockModels, Block block, String name, boolean topLit) {
+        Identifier[] models = new Identifier[2];
+        for (int on = 0; on < 2; on++) {
+            String suffix = on == 1 ? "_on" : "";
+            TextureMapping textures = new TextureMapping()
+                    .put(TextureSlot.FRONT, texture(name + "_front" + suffix))
+                    .put(TextureSlot.SIDE, texture(name + "_side"))
+                    .put(TextureSlot.TOP, texture(name + "_top" + (topLit ? suffix : "")))
+                    .put(TextureSlot.BOTTOM, texture("machine_casing_top"));
+            models[on] = ModelTemplates.CUBE_ORIENTABLE_TOP_BOTTOM.createWithSuffix(block, suffix, textures, blockModels.modelOutput);
+        }
+        blockModels.blockStateOutput.accept(MultiVariantGenerator.dispatch(block)
+                .with(PropertyDispatch.initial(MachineBlock.WORKING).generate(on -> BlockModelGenerators.plainVariant(models[on ? 1 : 0])))
+                .with(BlockModelGenerators.ROTATION_HORIZONTAL_FACING));
+        blockModels.registerSimpleItemModel(block, models[0]);
     }
 
     /** 两格高的设备：{@code <名字>_lower/_upper}，工作时发光的那半截另有 {@code _on}；物品用两半叠起来的 {@code _item}。 */

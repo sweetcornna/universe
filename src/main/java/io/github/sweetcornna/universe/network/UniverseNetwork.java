@@ -1,5 +1,6 @@
 package io.github.sweetcornna.universe.network;
 
+import io.github.sweetcornna.universe.factory.research.Research;
 import io.github.sweetcornna.universe.survival.PlayerSurvival;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.network.event.RegisterConfigurationTasksEvent;
@@ -14,7 +15,7 @@ import net.neoforged.neoforge.server.ServerLifecycleHooks;
  */
 public final class UniverseNetwork {
     /** 协议版本：任何包的格式改动都要加一，版本不同的客户端和服务端会拒绝连接。 */
-    private static final String PROTOCOL_VERSION = "5";
+    private static final String PROTOCOL_VERSION = "6";
 
     private UniverseNetwork() {
     }
@@ -31,6 +32,8 @@ public final class UniverseNetwork {
                 .playToClient(DimensionListPayload.TYPE, DimensionListPayload.STREAM_CODEC)
                 .playToClient(PlanetWeatherPayload.TYPE, PlanetWeatherPayload.STREAM_CODEC)
                 .playToClient(ScanResultPayload.TYPE, ScanResultPayload.STREAM_CODEC)
-                .playToServer(JetpackPayload.TYPE, JetpackPayload.STREAM_CODEC, PlayerSurvival::handleJetpack);
+                .playToClient(ResearchStatePayload.TYPE, ResearchStatePayload.STREAM_CODEC)
+                .playToServer(JetpackPayload.TYPE, JetpackPayload.STREAM_CODEC, PlayerSurvival::handleJetpack)
+                .playToServer(ResearchActionPayload.TYPE, ResearchActionPayload.STREAM_CODEC, Research::handleAction);
     }
 }

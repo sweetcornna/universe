@@ -236,6 +236,11 @@ io.github.sweetcornna.universe
 | `PoseStack` 转动用 `rotateDegrees(Axis.YP, 角度)`，没有 `mulPose(Quaternionf)` 了；方块实体渲染器分 `extractRenderState` 和 `submit` 两步，单独加载的模型在 `ModelEvent.RegisterStandalone` 里用 `SimpleUnbakedStandaloneModel.simpleModelWrapper(id)` 登记，`getModelManager().getStandaloneModel(key)` 取出后 `collector.submitBlockModel(...)` 画 | 已确认，风力涡轮机在用 |
 | 活塞推不动的是 `PushReaction.IMMOVEABLE`；块元素模型的坐标范围是 -16 到 32，两格高的物品模型可以把上半截叠在 16 以上，但每个面都要写明 UV | 已确认 |
 | 配方不再默认同步到客户端：`OnDatapackSyncEvent#sendRecipes(类型...)` 登记要发的类型，客户端在 `RecipesReceivedEvent` 里收；配方结果是 `ItemStackTemplate`，序列化器是 `RecipeSerializer(MapCodec, StreamCodec)` 记录 | 已确认 |
+| 配方书类别是注册表 `Registries.RECIPE_BOOK_CATEGORY` 的条目（`new RecipeBookCategory()`），每个配方都要给一个；`isSpecial()` 为真的配方不进配方书，`/recipe give` 也给不了；`ServerPlayer.awardRecipes(配方)` 把配方加进配方书 | 已确认，设备配方和研究配方在用 |
+| 输入换成 SDL 后，`MouseButtonEvent.button()` 的左键是 1、中键 2、右键 3（`InputConstants.MOUSE_BUTTON_LEFT` 等），不再是 GLFW 的 0、2、1；界面的 `mouseClicked(MouseButtonEvent, boolean)` 里按常量判断 | 已确认，配方设备界面在用 |
+| 菜单按钮：客户端 `gameMode.handleInventoryButtonClick(containerId, 按钮号)` 发包，服务端调 `AbstractContainerMenu.clickMenuButton(player, 按钮号)`，返回 true 时同步菜单 | 已确认，选配方在用 |
+| 界面上要盖在物品图标上面的半透明色块，先调 `GuiGraphicsExtractor.nextStratum()` 再画（之后画的东西在新的一层，盖在之前的物品上） | 已确认，配方设备界面在用 |
+| `Inventory.placeItemBackInInventory` 多了预测参数，服务端用 `Prediction.SERVER_ONLY` | 已确认 |
 
 ## 5. 性能预算（目标）
 

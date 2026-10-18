@@ -1,0 +1,15 @@
+{
+  "type": "universe:smelting",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:raw_uranium"
+    }
+  ],
+  "results": [
+    {
+      "id": "universe:uranium_ingot"
+    }
+  ],
+  "time": 40
+}
