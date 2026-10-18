@@ -90,6 +90,8 @@ dependencies {
     testImplementation platform("org.junit:junit-bom:${junit_version}")
     testImplementation 'org.junit.jupiter:junit-jupiter'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    // 读数据生成结果的测试（生存可达性）用；版本和 Minecraft 自带的一致
+    testImplementation 'com.google.code.gson:gson:2.14.0'
 
     // 可选兼容（JEI、Jade 等）在用到时再加，写法参考：
     // compileOnly "mezz.jei:jei-${minecraft_version}-neoforge-api:${jei_version}"
