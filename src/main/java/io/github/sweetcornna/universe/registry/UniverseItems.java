@@ -114,6 +114,8 @@ public final class UniverseItems {
     public static final DeferredItem<Item> NAVIGATION_DATA = ITEMS.registerSimpleItem("navigation_data");
     /** 守卫机残骸：击毁守卫机掉落，用来做 C 级技术模块（ADR-0014）。 */
     public static final DeferredItem<Item> SENTINEL_SCRAP = ITEMS.registerSimpleItem("sentinel_scrap");
+    /** 海盗残骸：打下海盗战机掉的，空间站收（ADR-0017）。 */
+    public static final DeferredItem<Item> PIRATE_SCRAP = ITEMS.registerSimpleItem("pirate_scrap");
     public static final DeferredItem<SpawnEggItem> SENTINEL_SPAWN_EGG = ITEMS.registerItem("sentinel_spawn_egg",
             SpawnEggItem::new, properties -> properties.spawnEgg(UniverseEntities.SENTINEL.get()));
     public static final DeferredItem<SpawnEggItem> HEAVY_SENTINEL_SPAWN_EGG = ITEMS.registerItem("heavy_sentinel_spawn_egg",
@@ -329,7 +331,7 @@ public final class UniverseItems {
         order.addAll(MODULES.values());
         order.addAll(List.of(NAVIGATION_DATA, SIGNAL_BOOSTER, SUPPLY_CRATE, DROP_POD, DATA_TERMINAL, MONOLITH, TECH_CACHE, SMOLDERING_WRECK));
         order.addAll(List.of(TRADE_TERMINAL, SHIP_REPAIR, STATION_HULL, STATION_FLOOR, STATION_GLASS, STATION_LIGHT, STATION_PAD, STATION_TRIM));
-        order.addAll(List.of(SENTINEL_SCRAP, SENTINEL_SPAWN_EGG, HEAVY_SENTINEL_SPAWN_EGG));
+        order.addAll(List.of(SENTINEL_SCRAP, SENTINEL_SPAWN_EGG, HEAVY_SENTINEL_SPAWN_EGG, PIRATE_SCRAP));
         order.addAll(ORES.values());
         order.addAll(ORE_DROPS.values());
         order.addAll(ORE_SMELTED.values());

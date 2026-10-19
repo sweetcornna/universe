@@ -5,17 +5,23 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayDeque;
 import java.util.Deque;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 import org.jspecify.annotations.Nullable;
 
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.client.dyson.ClientDyson;
+import io.github.sweetcornna.universe.client.pirate.PirateClient;
 import io.github.sweetcornna.universe.client.ship.ShipClient;
 import io.github.sweetcornna.universe.dyson.EmRailEjectorBlockEntity;
 import io.github.sweetcornna.universe.dyson.LaunchSiloBlockEntity;
+import io.github.sweetcornna.universe.entity.ship.ShipEntity;
+import io.github.sweetcornna.universe.pirate.PirateFighter;
 import io.github.sweetcornna.universe.registry.UniverseAttachments;
+import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Screenshot;
 import net.minecraft.client.gui.screens.Screen;
@@ -24,6 +30,9 @@ import net.minecraft.client.input.MouseButtonInfo;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.BlockHitResult;
@@ -47,6 +56,9 @@ import net.neoforged.neoforge.client.event.ClientTickEvent;
  * <li>{@code dyson}：打开戴森球编辑器；{@code close}：关掉当前界面
  * <li>{@code hud on|off}：显示、隐藏界面（F1）
  * <li>{@code fly on|off}：创造模式下悬停，好在半空里取景
+ * <li>{@code track on|steer|off}：每刻把视线转向最近的海盗战机（驾驶飞船时测试开炮用）；{@code steer} 还按左右键把船头转过去
+ * <li>{@code key forward|back|left|right|jump|sneak|sprint on|off}：按住、松开一个移动键（每刻重新按下，开飞船用）
+ * <li>{@code near <实体 ID> <距离> [最多等几刻]}：等这种实体进到这么近以内再往下走
  * <li>{@code shot <名字>}：截图存到 {@code screenshots/<名字>.png}
  * <li>{@code log <文字>}：写一行日志（带上鼠标有没有被抓住、信用点、位置和重力）
  * <li>{@code quit}：退出游戏
@@ -62,6 +74,15 @@ public final class DevScript {
     private int waiting = START_DELAY;
     private boolean started;
     private @Nullable Await await;
+    private boolean tracking;
+    private boolean steering;
+    /** 脚本按住的键（每刻重新按下，免得被界面开关之类的复位）。 */
+    private final Set<KeyMapping> held = new HashSet<>();
+    private @Nullable Near near;
+
+    /** 在等某种实体靠近。 */
+    private record Near(Identifier type, double distance, long deadline) {
+    }
 
     /** 在等某台设备动一下：记下开始时的发射时刻，变了就往下走。 */
     private record Await(BlockPos pos, long previous, long deadline) {
@@ -103,6 +124,12 @@ public final class DevScript {
             this.started = true;
             Universe.LOGGER.info("Dev script: player in world, starting in {} ticks", START_DELAY);
         }
+        if (this.tracking) {
+            track(minecraft, player, this.steering);
+        }
+        for (KeyMapping key : this.held) {
+            key.setDown(true);
+        }
         if (--this.waiting > 0) {
             return;
         }
@@ -114,7 +141,17 @@ public final class DevScript {
             Universe.LOGGER.info("Dev script: await done ({})", last == this.await.previous() ? "timeout" : "fired");
             this.await = null;
         }
-        while (!this.lines.isEmpty() && this.waiting <= 0 && this.await == null) {
+        if (this.near != null) {
+            Near n = this.near;
+            boolean close = !minecraft.level.getEntities(player, player.getBoundingBox().inflate(n.distance()),
+                    e -> BuiltInRegistries.ENTITY_TYPE.getKey(e.getType()).equals(n.type()) && e.distanceTo(player) <= n.distance()).isEmpty();
+            if (!close && minecraft.level.getGameTime() < n.deadline()) {
+                return;
+            }
+            Universe.LOGGER.info("Dev script: near done ({})", close ? "close" : "timeout");
+            this.near = null;
+        }
+        while (!this.lines.isEmpty() && this.waiting <= 0 && this.await == null && this.near == null) {
             String line = this.lines.poll().strip();
             if (line.isEmpty() || line.startsWith("#")) {
                 continue;
@@ -127,6 +164,39 @@ public final class DevScript {
         }
     }
 
+    /** 视线转向最近的海盗战机；{@code steer} 时按左右键把船头转向它。 */
+    private static void track(Minecraft minecraft, LocalPlayer player, boolean steer) {
+        PirateFighter nearest = null;
+        double best = Double.MAX_VALUE;
+        for (PirateFighter pirate : PirateClient.nearby(player)) {
+            double d = pirate.distanceToSqr(player);
+            if (d < best) {
+                best = d;
+                nearest = pirate;
+            }
+        }
+        if (nearest == null) {
+            if (steer) {
+                minecraft.options.keyLeft.setDown(false);
+                minecraft.options.keyRight.setDown(false);
+            }
+            return;
+        }
+        Vec3 to = nearest.getBoundingBox().getCenter().subtract(player.getEyePosition());
+        double horizontal = Math.sqrt(to.x * to.x + to.z * to.z);
+        float yaw = (float) Math.toDegrees(Math.atan2(-to.x, to.z));
+        if (steer && player.getVehicle() instanceof ShipEntity ship) {
+            // 偏航变大是向右转
+            float delta = Mth.wrapDegrees(yaw - ship.getYRot());
+            minecraft.options.keyRight.setDown(delta > 6);
+            minecraft.options.keyLeft.setDown(delta < -6);
+        }
+        player.setYRot(yaw);
+        player.setXRot((float) -Math.toDegrees(Math.atan2(to.y, horizontal)));
+        player.yRotO = player.getYRot();
+        player.xRotO = player.getXRot();
+    }
+
     private void run(Minecraft minecraft, LocalPlayer player, String line) {
         int space = line.indexOf(' ');
         String verb = (space < 0 ? line : line.substring(0, space)).toLowerCase(Locale.ROOT);
@@ -136,6 +206,37 @@ public final class DevScript {
         switch (verb) {
             case "wait" -> this.waiting = Integer.parseInt(args[0]);
             case "cmd" -> player.connection.sendCommand(rest.startsWith("/") ? rest.substring(1) : rest);
+            case "track" -> {
+                this.tracking = args.length == 0 || !args[0].equals("off");
+                this.steering = args.length > 0 && args[0].equals("steer");
+                if (!this.steering) {
+                    minecraft.options.keyLeft.setDown(this.held.contains(minecraft.options.keyLeft));
+                    minecraft.options.keyRight.setDown(this.held.contains(minecraft.options.keyRight));
+                }
+            }
+            case "key" -> {
+                KeyMapping key = switch (args[0]) {
+                    case "forward" -> minecraft.options.keyUp;
+                    case "back" -> minecraft.options.keyDown;
+                    case "left" -> minecraft.options.keyLeft;
+                    case "right" -> minecraft.options.keyRight;
+                    case "jump" -> minecraft.options.keyJump;
+                    case "sneak" -> minecraft.options.keyShift;
+                    case "sprint" -> minecraft.options.keySprint;
+                    default -> throw new IllegalArgumentException("unknown key " + args[0]);
+                };
+                boolean down = args.length < 2 || args[1].equals("on");
+                key.setDown(down);
+                if (down) {
+                    this.held.add(key);
+                } else {
+                    this.held.remove(key);
+                }
+            }
+            case "near" -> {
+                int timeout = args.length > 2 ? Integer.parseInt(args[2]) : 1200;
+                this.near = new Near(Identifier.parse(args[0]), Double.parseDouble(args[1]), minecraft.level.getGameTime() + timeout);
+            }
             case "look" -> {
                 player.setYRot(Float.parseFloat(args[0]));
                 player.setXRot(Float.parseFloat(args[1]));

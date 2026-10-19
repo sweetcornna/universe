@@ -12,12 +12,14 @@ import io.github.sweetcornna.universe.client.ClientGalaxy;
 import io.github.sweetcornna.universe.client.ScreenProjection;
 import io.github.sweetcornna.universe.client.UniverseKeys;
 import io.github.sweetcornna.universe.client.galaxy.GalaxyText;
+import io.github.sweetcornna.universe.client.pirate.PirateClient;
 import io.github.sweetcornna.universe.core.ship.ShipStats;
 import io.github.sweetcornna.universe.core.space.SpaceLayout;
 import io.github.sweetcornna.universe.entity.ship.ShipEntity;
 import io.github.sweetcornna.universe.entity.ship.ShipStructure;
 import io.github.sweetcornna.universe.entity.ship.ShipWeapons;
 import io.github.sweetcornna.universe.network.ShipControlPayload;
+import io.github.sweetcornna.universe.pirate.PirateFighter;
 import io.github.sweetcornna.universe.registry.UniverseEntities;
 import io.github.sweetcornna.universe.registry.UniverseItems;
 import io.github.sweetcornna.universe.world.space.SpaceDimensions;
@@ -65,6 +67,7 @@ public final class ShipClient {
     private static final int BOLT_COLOR = 0xFFFFD45A;
     private static final int BEAM_COLOR = 0xFFFF7A4D;
     private static final int LOCK_COLOR = 0xFFFF5A4A;
+    private static final int OUT_OF_ARC_COLOR = 0xFFA0A0A0;
 
     private ShipClient() {
     }
@@ -92,6 +95,12 @@ public final class ShipClient {
 
     private static boolean armedPilot(@Nullable ShipEntity ship) {
         return ship != null && ship.structure() != null && ship.pilot() == Minecraft.getInstance().player && ship.structure().stats().armed();
+    }
+
+    /** 飞船锁定的目标：驾驶有武器的飞船时 HUD 上画着锁定框的那个，没有就是 null。 */
+    public static @Nullable Entity lockedTarget() {
+        ShipEntity ship = currentShip();
+        return armedPilot(ship) ? ShipWeapons.assistTarget(ship, Minecraft.getInstance().player) : null;
     }
 
     /** 开发脚本：切换武器模式。 */
@@ -201,7 +210,7 @@ public final class ShipClient {
             return;
         }
         ScreenProjection projection = ScreenProjection.of(minecraft, graphics.guiWidth(), graphics.guiHeight());
-        // 炮口实际朝的方向（限制在船头的锥形里），投到远处
+        // 炮口实际朝的方向（限制在各门炮的射界里），投到远处
         Vec3 aim = ShipWeapons.aim(ship, minecraft.player);
         int[] point = projection.project(projection.eye().add(aim.scale(256)));
         boolean beam = ship.beamMode();
@@ -213,7 +222,11 @@ public final class ShipClient {
         if (target != null) {
             int[] t = projection.project(target.getBoundingBox().getCenter());
             if (projection.onScreen(t, 0)) {
-                lock(graphics, t[0], t[1], minecraft.font, (int) Math.round(target.distanceTo(ship)));
+                lock(graphics, t[0], t[1], minecraft.font, (int) Math.round(target.distanceTo(ship)),
+                        ShipWeapons.inArc(ship, minecraft.player, target));
+                if (target instanceof PirateFighter pirate) {
+                    PirateClient.bars(graphics, t[0], t[1] + 23, pirate);
+                }
             }
         }
     }
@@ -234,20 +247,25 @@ public final class ShipClient {
         graphics.fill(x, y, x + 1, y + 1, color);
     }
 
-    /** 锁定框：四个红色的折角，下面写距离。 */
-    private static void lock(GuiGraphicsExtractor graphics, int x, int y, Font font, int distance) {
+    /** 锁定框：四个红色的折角，下面写距离；哪门炮都转不过去时画成灰色，写上“射界外”。 */
+    private static void lock(GuiGraphicsExtractor graphics, int x, int y, Font font, int distance, boolean inArc) {
+        int color = inArc ? LOCK_COLOR : OUT_OF_ARC_COLOR;
         int r = 9;
         int len = 4;
         for (int sx = -1; sx <= 1; sx += 2) {
             for (int sy = -1; sy <= 1; sy += 2) {
                 int cx = x + sx * r;
                 int cy = y + sy * r;
-                graphics.fill(Math.min(cx, cx - sx * len), cy, Math.min(cx, cx - sx * len) + len + 1, cy + 1, LOCK_COLOR);
-                graphics.fill(cx, Math.min(cy, cy - sy * len), cx + 1, Math.min(cy, cy - sy * len) + len + 1, LOCK_COLOR);
+                graphics.fill(Math.min(cx, cx - sx * len), cy, Math.min(cx, cx - sx * len) + len + 1, cy + 1, color);
+                graphics.fill(cx, Math.min(cy, cy - sy * len), cx + 1, Math.min(cy, cy - sy * len) + len + 1, color);
             }
         }
         String text = distance + "m";
-        graphics.text(font, text, x - font.width(text) / 2, y + r + 3, LOCK_COLOR, true);
+        graphics.text(font, text, x - font.width(text) / 2, y + r + 3, color, true);
+        if (!inArc) {
+            Component hint = Component.translatable("hud.universe.ship.out_of_arc");
+            graphics.text(font, hint, x - font.width(hint) / 2, y - r - 12, color, true);
+        }
     }
 
     /** 屏幕四边一圈渐隐的颜色。 */

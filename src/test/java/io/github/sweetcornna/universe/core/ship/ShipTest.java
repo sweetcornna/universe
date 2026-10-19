@@ -119,6 +119,18 @@ class ShipTest {
     }
 
     @Test
+    void turnsFasterInSpace() {
+        Controls right = new Controls(false, false, false, true, false, false, false);
+        ShipFlight air = new ShipFlight(0);
+        ShipFlight space = new ShipFlight(0);
+        for (int i = 0; i < 30; i++) {
+            air.step(SMALL, right, Environment.HOMEWORLD, true, false);
+            space.step(SMALL, right, Environment.SPACE, true, false);
+        }
+        assertEquals(ShipFlight.SPACE_TURN, space.yawRate() / air.yawRate(), 1e-6);
+    }
+
+    @Test
     void consumesFuelWhileHovering() {
         ShipFlight flight = new ShipFlight(0);
         double fuel = flight.step(SMALL, Controls.NONE, Environment.HOMEWORLD, true, false);

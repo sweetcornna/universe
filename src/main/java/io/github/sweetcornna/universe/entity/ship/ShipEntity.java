@@ -15,6 +15,7 @@ import io.github.sweetcornna.universe.core.ship.ShipFlight.Environment;
 import io.github.sweetcornna.universe.core.ship.ShipShape;
 import io.github.sweetcornna.universe.core.ship.ShipStats;
 import io.github.sweetcornna.universe.core.space.Warp;
+import io.github.sweetcornna.universe.pirate.Pirates;
 import io.github.sweetcornna.universe.registry.UniverseEntities;
 import io.github.sweetcornna.universe.station.Stations;
 import io.github.sweetcornna.universe.world.space.SpaceDimensions;
@@ -721,6 +722,13 @@ public class ShipEntity extends Entity implements IEntityWithComplexSpawn {
         } else {
             // 没人驾驶的船自己慢慢降落
             controls = new Controls(false, false, false, false, false, true, false);
+        }
+        if (controls.boost() && env.space() && stats.impulse() > 0 && Pirates.jammed(this)) {
+            // 海盗干扰：脉冲引擎开不起来，只能用推进器周旋（ADR-0017）
+            controls = new Controls(controls.forward(), controls.back(), controls.left(), controls.right(), controls.up(), controls.down(), false);
+            if (pilot != null && this.tickCount % 40 == 0) {
+                pilot.sendOverlayMessage(Component.translatable("message.universe.pirate.jammed"));
+            }
         }
         boolean infinite = pilot != null && pilot.hasInfiniteMaterials();
         double used = this.flight.step(stats, controls, env, infinite || this.fuel > 0, this.landed);

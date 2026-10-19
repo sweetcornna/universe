@@ -1,6 +1,7 @@
 package io.github.sweetcornna.universe.core.ship;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
@@ -132,18 +133,45 @@ class ShipCombatTest {
     }
 
     @Test
-    void aimIsClampedToTheNoseCone() {
+    void aimIsClampedToTheFiringArc() {
         double[] forward = ShipCombat.forward(0);
-        double[] side = {1, 0, 0};
-        double[] clamped = ShipCombat.clampToCone(forward, side, ShipCombat.AIM_CONE);
-        assertEquals(ShipCombat.AIM_CONE, ShipCombat.angle(forward, clamped), 1e-6);
-        // 仍然偏向视线那一侧
+        // 正侧面：转到左右的极限，仍然偏向视线那一侧
+        double[] clamped = ShipCombat.clampToArc(0, new double[] {1, 0, 0});
+        assertEquals(ShipCombat.AIM_YAW, ShipCombat.angle(forward, clamped), 1e-6);
         assertTrue(clamped[0] > 0);
+        // 射界以内原样不动
         double[] inside = ShipCombat.normalize(new double[] {0.2, 0.1, 1});
-        double[] kept = ShipCombat.clampToCone(forward, inside, ShipCombat.AIM_CONE);
-        assertEquals(0, ShipCombat.angle(inside, kept), 1e-3);
-        double[] back = {0, 0, -1};
-        assertEquals(ShipCombat.AIM_CONE, ShipCombat.angle(forward, ShipCombat.clampToCone(forward, back, ShipCombat.AIM_CONE)), 1e-6);
+        assertEquals(0, ShipCombat.angle(inside, ShipCombat.clampToArc(0, inside)), 1e-6);
+        // 船头正前方抬高 50°：船不会俯仰，炮可以抬这么高
+        double[] up50 = {0, Math.sin(Math.toRadians(50)), Math.cos(Math.toRadians(50))};
+        assertEquals(0, ShipCombat.angle(up50, ShipCombat.clampToArc(0, up50)), 1e-6);
+        // 正上方：抬到俯仰的极限，方向是船头
+        double[] top = ShipCombat.clampToArc(0, new double[] {0, 1, 0});
+        assertEquals(ShipCombat.AIM_PITCH, Math.toDegrees(Math.asin(top[1])), 1e-6);
+        assertTrue(top[2] > 0);
+        // 正后方：转到一侧的极限
+        assertEquals(ShipCombat.AIM_YAW, ShipCombat.angle(forward, ShipCombat.clampToArc(0, new double[] {0, 0, -1})), 1e-6);
+        // 船头朝西（偏航 90）时射界跟着转
+        double[] west = ShipCombat.forward(90);
+        assertEquals(0, ShipCombat.angle(west, ShipCombat.clampToArc(90, west)), 1e-6);
+        assertEquals(ShipCombat.AIM_YAW, ShipCombat.angle(west, ShipCombat.clampToArc(90, new double[] {0, 0, 1})), 1e-6);
+    }
+
+    @Test
+    void eachWeaponCoversItsOwnArc() {
+        double[] north = {0, 0, -1};
+        double[] south = {0, 0, 1};
+        // 朝南（偏航 0）的炮打不到正北，朝北（偏航 180）的炮打得到
+        assertFalse(ShipCombat.inArc(0, north));
+        assertTrue(ShipCombat.inArc(180, north));
+        assertTrue(ShipCombat.inArc(0, south));
+        // 射界边缘以内一点点算转得过去，以外不算
+        double in = Math.toRadians(ShipCombat.AIM_YAW - 1);
+        double out = Math.toRadians(ShipCombat.AIM_YAW + 2);
+        assertTrue(ShipCombat.inArc(0, new double[] {-Math.sin(in), 0, Math.cos(in)}));
+        assertFalse(ShipCombat.inArc(0, new double[] {-Math.sin(out), 0, Math.cos(out)}));
+        // 抬太高也打不到
+        assertFalse(ShipCombat.inArc(0, new double[] {0, 1, 0.2}));
     }
 
     @Test
@@ -165,5 +193,36 @@ class ShipCombatTest {
         // 追不上就直接瞄准
         double[] fast = ShipCombat.lead(target, new double[] {0, 0, 10}, speed);
         assertEquals(0, ShipCombat.angle(fast, ShipCombat.normalize(target)), 1e-3);
+    }
+
+    @Test
+    void leadWithAccelerationHitsATurningTarget() {
+        // 目标在 50 格外横着飞、同时往上拐；弹速 5 格/刻
+        double[] target = {0, 0, 50};
+        double[] velocity = {2, 0, 0};
+        double[] accel = {0, 0.14, 0};
+        double speed = 5;
+        double plain = miss(ShipCombat.lead(target, velocity, speed), target, velocity, accel, speed);
+        double smart = miss(ShipCombat.lead(target, velocity, accel, speed, 30), target, velocity, accel, speed);
+        assertTrue(smart < 0.5, "带加速度的提前量偏了 " + smart);
+        assertTrue(plain > 3, "匀速的提前量应该偏得多：" + plain);
+        // 没有加速度时和匀速的算法一样
+        double[] a = ShipCombat.lead(target, velocity, speed);
+        double[] b = ShipCombat.lead(target, velocity, new double[] {0, 0, 0}, speed, 30);
+        assertTrue(ShipCombat.angle(a, b) < 0.01);
+    }
+
+    /** 沿 {@code aim} 打出去的弹，和匀加速的目标最近时差几格。 */
+    private static double miss(double[] aim, double[] target, double[] velocity, double[] accel, double speed) {
+        double best = Double.MAX_VALUE;
+        for (int i = 0; i <= 3000; i++) {
+            double t = i * 0.01;
+            double h = 0.5 * t * t;
+            double dx = target[0] + velocity[0] * t + accel[0] * h - aim[0] * speed * t;
+            double dy = target[1] + velocity[1] * t + accel[1] * h - aim[1] * speed * t;
+            double dz = target[2] + velocity[2] * t + accel[2] * h - aim[2] * speed * t;
+            best = Math.min(best, Math.sqrt(dx * dx + dy * dy + dz * dz));
+        }
+        return best;
     }
 }

@@ -182,6 +182,8 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("entity.universe.plasma_bolt", "等离子弹", "Plasma Bolt");
         both("entity.universe.sentinel", "守卫机", "Sentinel");
         both("entity.universe.heavy_sentinel", "重型守卫机", "Heavy Sentinel");
+        both("entity.universe.pirate_fighter", "海盗战机", "Pirate Fighter");
+        item(UniverseItems.PIRATE_SCRAP.get(), "海盗残骸", "Pirate Scrap");
         item(UniverseItems.SENTINEL_SCRAP.get(), "守卫机残骸", "Sentinel Scrap");
         item(UniverseItems.SENTINEL_SPAWN_EGG.get(), "守卫机刷怪蛋", "Sentinel Spawn Egg");
         item(UniverseItems.HEAVY_SENTINEL_SPAWN_EGG.get(), "重型守卫机刷怪蛋", "Heavy Sentinel Spawn Egg");
@@ -388,6 +390,30 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("message.universe.ship.mode_beam", "武器：采矿光束", "Weapon: mining beam");
         both("message.universe.ship.destroyed", "飞船被击毁！拖船把你送回了空间站，船体只剩两成五；货舱里丢了 %s 件东西。",
                 "Your ship was destroyed! A tug hauled you back to the station with 25%% hull; %s items were lost from the cargo hold.");
+        both("message.universe.pirate.scanning", "海盗正在扫描你的货舱……", "Pirates are scanning your cargo hold...");
+        both("message.universe.pirate.incoming", "海盗来袭！%s 架海盗战机正从身后逼近", "Pirate attack! %s fighters closing in from behind");
+        both("message.universe.pirate.destroyed", "击落一架海盗战机：赏金 %s 信用点", "Pirate fighter destroyed: %s credit bounty");
+        both("message.universe.pirate.destroyed_stowed", "击落一架海盗战机：赏金 %s 信用点，残骸收进了货舱",
+                "Pirate fighter destroyed: %s credit bounty, salvage stowed in the cargo hold");
+        both("message.universe.pirate.repelled", "打退了海盗袭击！一共击落 %s 架", "Pirate attack repelled! %s fighters destroyed");
+        both("message.universe.pirate.fled_station", "海盗不敢靠近空间站，撤走了", "The pirates break off rather than approach the station");
+        both("message.universe.pirate.escaped", "你甩掉了海盗", "You escaped the pirates");
+        both("message.universe.pirate.lost", "海盗跟丢了你", "The pirates lost track of you");
+        both("message.universe.pirate.looted", "海盗抢走了货物，扬长而去", "The pirates made off with your cargo");
+        both("message.universe.pirate.jammed", "脉冲引擎被海盗干扰，开不起来", "Pulse engine jammed by the pirates");
+        both("hud.universe.pirate.count", "海盗战机 ×%s", "Pirate fighters ×%s");
+        both("hud.universe.pirate.marker", "海盗 · %s 格", "Pirate · %s m");
+        both("hud.universe.pirate.target", "海盗战机", "Pirate Fighter");
+        both("stat.universe.pirates_destroyed", "击落的海盗战机", "Pirate Fighters Destroyed");
+        both("stat.universe.pirate_raids_repelled", "打退的海盗袭击", "Pirate Attacks Repelled");
+        both("commands.universe.pirates.started", "触发了海盗袭击：%s 架，货舱值 %s 信用点", "Pirate attack started: %s fighters, cargo worth %s credits");
+        both("commands.universe.pirates.cleared", "%s 架海盗战机撤走了", "%s pirate fighters withdrew");
+        both("commands.universe.pirates.info", "货舱值 %s 信用点，下次遭遇海盗的概率 %s%%；再飞 %s 秒掷一次骰子",
+                "Cargo worth %s credits, %s%% chance of pirates at the next roll in %s s");
+        both("commands.universe.pirates.info_idle", "货舱值 %s 信用点，下次遭遇海盗的概率 %s%%；还没开始计时（要在离空间站 600 格外的太空里驾驶飞船）",
+                "Cargo worth %s credits, %s%% chance of pirates at the next roll; not counting yet (fly a ship in space beyond 600 m of the station)");
+        both("commands.universe.pirates.busy", "正在被海盗袭击", "A pirate attack is already under way");
+        both("commands.universe.pirates.not_piloting", "要先驾驶飞船进入太空", "Pilot a ship in space first");
         both("message.universe.ship.towed", "已拖回空间站的机库：停船重新组装，或者在维修台付钱修好船体",
                 "Towed to the station hangar: park and reassemble, or pay at the repair console to fix the hull");
 
@@ -419,6 +445,7 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("hud.universe.ship.weapon.cannon", "光子炮 ×%s", "Photon cannon ×%s");
         both("hud.universe.ship.weapon.beam", "采矿光束 ×%s", "Mining beam ×%s");
         both("hud.universe.ship.weapon.overheated", "（过热）", " (overheated)");
+        both("hud.universe.ship.out_of_arc", "射界外", "Out of arc");
         both("hud.universe.ship.keys.weapons", "%s 开火  %s 切换武器", "%s fire  %s switch weapon");
         tech("ship_weapons", "飞船武器", "Ship Weapons");
         tech("ship_shields", "飞船护盾", "Ship Shields");

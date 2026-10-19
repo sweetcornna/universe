@@ -283,6 +283,14 @@ io.github.sweetcornna.universe
 | `Level#addAlwaysVisibleParticle(...)` 不受粒子设置和距离的限制，几十格外的火箭尾焰和烟也看得见 | 已确认，发射井在用 |
 | `OnDatapackSyncEvent#sendRecipes` 漏登记的配方类型，客户端拿不到，配方界面的清单是空的 | 已确认，M5 的化工厂踩过 |
 | 无头验收用到的客户端接口：`Screenshot.grab(目录, 文件名, minecraft.gameRenderer.mainRenderTarget(), 1, 回调)` 截帧缓冲（窗口在屏幕外也行）；代替玩家右键方块用 `minecraft.gameMode.useItemOn(player, hand, BlockHitResult)`，服务端照样检查距离（约 5 格以内）；执行命令 `player.connection.sendCommand(不带斜杠的命令)`；创造模式悬停是改 `getAbilities().flying` 再 `onUpdateAbilities()` | 已确认，`DevScript` 在用 |
+| 实体模型的提交：`OrderedSubmitNodeCollector.submitModel(model, state, poseStack, RenderType, light, overlay, outlineColor)`（另有带染色和 `UvMapping` 的 9 参数版本）；渲染类型在 `RenderTypes`（`entityCutout(Identifier)`、发光层 `eyes(Identifier)`）；`PoseStack` 转动用 `rotate(Quaternionf)`（没有 `mulPose` 了），配 `com.mojang.math.Axis` | 已确认，海盗战机的渲染器在用 |
+| `ParticleTypes.FLASH` 带颜色参数，要 `ColorParticleOption.create(ParticleTypes.FLASH, argb)`；`SoundEvents.RAID_HORN` 是 `Holder` | 已确认，海盗在用 |
+| 自定义统计：`DeferredRegister.create(Registries.CUSTOM_STAT, 模组ID)` 注册 `Identifier`，通用初始化里 `Stats.CUSTOM.get(id, StatFormatter.DEFAULT)` 一次；语言键是 `stat.<命名空间>.<路径>`，记分项准则写 `minecraft.custom:<命名空间>.<路径>` | 已确认，海盗的击落统计在用 |
+| 代码里掷实体战利品表：`EntityType.getDefaultLootTable()` 返回 `Optional<ResourceKey<LootTable>>`，`server.reloadableRegistries().getLootTable(key)`；参数用 `LootParams.Builder(level).withParameter(THIS_ENTITY/ORIGIN/DAMAGE_SOURCE)`，`withOptionalParameter(ATTACKING_ENTITY/DIRECT_ATTACKING_ENTITY)`，`create(LootContextParamSets.ENTITY)`，再 `table.getRandomItems(params, consumer)` | 已确认，海盗战机的掉落在用 |
+| 非生物实体：`hurtServer(ServerLevel, DamageSource, float)` 是抽象方法；不存档用 `shouldBeSaved()` 返回 false；客户端插值 `createInterpolationHandler()` 返回 `LinearInterpolationHandler.create(this, 刻数)` | 已确认，海盗战机在用 |
+| 结算顺序：服务端按实体加入的先后结算，一刻里新加入的实体（比如刚打出的弹体）下一刻才开始动。所以打移动目标的提前量要多算一刻：目标排在开火者后面时，弹体飞第一步前目标已经又动了一步 | 已确认，飞船炮的提前量踩过 |
+| 无头验收的截图分辨率跟着窗口走，显示器布局一变就可能变成 854×480；`options.txt` 里写 `overrideWidth`、`overrideHeight` 固定窗口大小 | 已确认，`headless.ps1` 在用 |
+| 原版 `/tick freeze`、`/tick unfreeze` 可以冻住实体近看（骑着载具的玩家和载具不冻） | 已确认，海盗验收在用 |
 
 原则：拿不准的 API，先查源码再动手写，核实后把结果补进这张表。源码位置：
 

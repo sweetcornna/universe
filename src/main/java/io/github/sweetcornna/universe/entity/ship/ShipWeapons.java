@@ -5,6 +5,7 @@ import org.jspecify.annotations.Nullable;
 import io.github.sweetcornna.universe.core.ship.ShipCombat;
 import io.github.sweetcornna.universe.entity.PlasmaBolt;
 import io.github.sweetcornna.universe.network.ShipControlPayload;
+import io.github.sweetcornna.universe.pirate.PirateFighter;
 import io.github.sweetcornna.universe.sentinel.Sentinel;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.DustParticleOptions;
@@ -34,7 +35,8 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 /**
  * 飞船武器（ADR-0017）：光子炮开火、采矿光束照射、自动瞄准；船上的人挨的弹射物和爆炸伤害转给飞船。
  *
- * <p>开火方向由服务端按驾驶员的视线算（{@link ShipCombat#clampToCone}），客户端只上报按没按开火键。采矿光束是即时的射线，
+ * <p>开火方向由服务端按驾驶员的视线算，客户端只上报按没按开火键。每门炮（光束）有自己的射界（{@link ShipCombat#clampToArc}，
+ * 按方块的朝向）：轮到的炮转不过去就换一门转得过去的打，都转不过去时朝射界边缘打。采矿光束是即时的射线，
  * 服务端判定打中了什么，客户端按同样的算法画光束。
  */
 public final class ShipWeapons {
@@ -47,6 +49,8 @@ public final class ShipWeapons {
     /** 采矿光束打到生物时每隔几刻伤一次、伤多少。 */
     private static final int BEAM_HURT_INTERVAL = 10;
     private static final float BEAM_HURT = 3.5F;
+    /** 客户端看到的目标大约晚几刻（插值加网络）。 */
+    private static final double VIEW_LAG = 3;
     /** 一艘船最多画几道光束。 */
     private static final int MAX_DRAWN_BEAMS = 3;
 
@@ -89,10 +93,55 @@ public final class ShipWeapons {
         return entity instanceof Enemy || entity instanceof Sentinel;
     }
 
-    /** 炮口朝的方向：驾驶员的视线，限制在船头的锥形里。 */
+    /** 炮口朝的方向：驾驶员的视线；哪门炮（光束）都转不过去时，取射界边缘里离视线最近的方向。 */
     public static Vec3 aim(ShipEntity ship, Entity pilot) {
         Vec3 look = pilot.getViewVector(1);
-        return vec(ShipCombat.clampToCone(ShipCombat.forward(ship.getYRot()), arr(look), ShipCombat.AIM_CONE));
+        ShipStructure structure = ship.structure();
+        if (structure == null) {
+            return look;
+        }
+        double[] wanted = arr(look);
+        double[] best = wanted;
+        double bestAngle = Double.MAX_VALUE;
+        for (int index : weapons(ship, structure)) {
+            double[] clamped = ShipCombat.clampToArc(weaponYaw(ship, structure.block(index)), wanted);
+            double angle = ShipCombat.angle(clamped, wanted);
+            if (angle < bestAngle) {
+                bestAngle = angle;
+                best = clamped;
+            }
+        }
+        return vec(best);
+    }
+
+    /** 有没有哪门炮（光束）转得过去打 {@code target}：客户端把射界外的锁定框画成灰色。 */
+    public static boolean inArc(ShipEntity ship, Entity pilot, Entity target) {
+        ShipStructure structure = ship.structure();
+        if (structure == null) {
+            return false;
+        }
+        double[] to = arr(target.getBoundingBox().getCenter().subtract(pilot.getEyePosition()));
+        for (int index : weapons(ship, structure)) {
+            if (ShipCombat.inArc(weaponYaw(ship, structure.block(index)), to)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** 现在用的那种武器（光子炮或采矿光束）在结构里的下标。 */
+    private static int[] weapons(ShipEntity ship, ShipStructure structure) {
+        return ship.beamMode() ? structure.beams() : structure.cannons();
+    }
+
+    /** 武器方块此刻朝的偏航（度）：方块的朝向跟着船转。 */
+    public static float weaponYaw(ShipEntity ship, ShipStructure.ShipBlock block) {
+        return facing(block).toYRot() + ship.getYRot() - ship.baseYaw();
+    }
+
+    private static Direction facing(ShipStructure.ShipBlock block) {
+        return block.state().hasProperty(BlockStateProperties.HORIZONTAL_FACING)
+                ? block.state().getValue(BlockStateProperties.HORIZONTAL_FACING) : Direction.NORTH;
     }
 
     /** 自动瞄准的目标：驾驶员视线 {@link ShipCombat#ASSIST_CONE}° 以内、最贴近视线的敌人。 */
@@ -108,7 +157,10 @@ public final class ShipWeapons {
             if (distance < 1 || distance > ShipCombat.ASSIST_RANGE) {
                 continue;
             }
-            double angle = ShipCombat.angle(arr(look), arr(to.scale(1 / distance)));
+            // 客户端插值，看到的目标比服务端晚几刻：几刻前的位置也算对准了，不然近处快速飞过的海盗总也锁不上
+            Vec3 seen = to.subtract(entity.getDeltaMovement().scale(VIEW_LAG));
+            double angle = Math.min(ShipCombat.angle(arr(look), arr(to.scale(1 / distance))),
+                    ShipCombat.angle(arr(look), arr(seen.normalize())));
             if (angle < bestAngle) {
                 bestAngle = angle;
                 best = entity;
@@ -119,8 +171,7 @@ public final class ShipWeapons {
 
     /** 武器方块的炮口在世界里的位置：方块中心朝炮口方向挪出去一点。 */
     public static Vec3 muzzle(ShipEntity ship, ShipStructure.ShipBlock block, float relativeYaw) {
-        Direction facing = block.state().hasProperty(BlockStateProperties.HORIZONTAL_FACING)
-                ? block.state().getValue(BlockStateProperties.HORIZONTAL_FACING) : Direction.NORTH;
+        Direction facing = facing(block);
         return ship.toWorld(block.x() + facing.getStepX() * 0.75, block.y() + 0.5, block.z() + facing.getStepZ() * 0.75, relativeYaw);
     }
 
@@ -132,19 +183,32 @@ public final class ShipWeapons {
             return;
         }
         float relative = ship.getYRot() - ship.baseYaw();
-        double[] forward = ShipCombat.forward(ship.getYRot());
-        Vec3 aim = aim(ship, pilot);
+        Vec3 look = pilot.getViewVector(1);
         Entity target = assistTarget(ship, pilot);
         // 光子弹带着飞船的速度：高速飞行时也打得到前面
         Vec3 shipVelocity = ship.getDeltaMovement();
         for (int i = 0; i < shots; i++) {
-            Vec3 muzzle = muzzle(ship, structure.block(cannons[ship.nextCannon(cannons.length)]), relative);
-            Vec3 direction = aim;
-            if (target != null) {
-                Vec3 to = target.getBoundingBox().getCenter().subtract(muzzle);
-                Vec3 relativeVelocity = target.getDeltaMovement().subtract(shipVelocity);
-                direction = vec(ShipCombat.clampToCone(forward, ShipCombat.lead(arr(to), arr(relativeVelocity), ShipCombat.BOLT_SPEED),
-                        ShipCombat.AIM_CONE));
+            // 轮到的炮转不过去就往后找一门转得过去的；一门都转不过去，轮到的那门朝射界边缘打
+            Vec3 muzzle = null;
+            Vec3 direction = null;
+            for (int k = 0; k < cannons.length; k++) {
+                ShipStructure.ShipBlock block = structure.block(cannons[ship.nextCannon(cannons.length)]);
+                Vec3 from = muzzle(ship, block, relative);
+                double[] want = target == null ? arr(look) : lead(target, from, shipVelocity);
+                float yaw = weaponYaw(ship, block);
+                if (ShipCombat.inArc(yaw, want)) {
+                    muzzle = from;
+                    direction = vec(ShipCombat.normalize(want));
+                    break;
+                }
+                if (k == 0) {
+                    muzzle = from;
+                    direction = vec(ShipCombat.clampToArc(yaw, want));
+                }
+                if (k == cannons.length - 1) {
+                    // 转了一圈又回到第一门：下一发从它后面那门轮起
+                    ship.nextCannon(cannons.length);
+                }
             }
             PlasmaBolt bolt = PlasmaBolt.shoot(level, pilot, muzzle, direction, ShipCombat.CANNON_DAMAGE, BOLT_COLOR, ShipCombat.BOLT_SPEED,
                     0.4F, ShipCombat.BOLT_LIFETIME);
@@ -153,6 +217,20 @@ public final class ShipWeapons {
             level.playSound(null, muzzle.x, muzzle.y, muzzle.z, SoundEvents.BLAZE_SHOOT, SoundSource.PLAYERS, 0.35F,
                     1.9F + level.getRandom().nextFloat() * 0.1F);
         }
+    }
+
+    /**
+     * 打 {@code target} 要朝的方向（带提前量）。弹体带着飞船的速度，下一刻才飞第一步，而目标这一刻还要再动一下，
+     * 所以从它这一刻动完的位置算起。转着弯的海盗战机连加速度一起预判（假设它照现在的加速度接着转），不然一直打在它身后：
+     * 按刻累加，目标第 m 步时在 {@code p + (m+1)v + a(m+1)(m+2)/2}，换成从这一刻动完算起就是
+     * {@code (p + v + a) + m(v + 1.5a) + a m²/2}。
+     */
+    private static double[] lead(Entity target, Vec3 muzzle, Vec3 shipVelocity) {
+        Vec3 velocity = target.getDeltaMovement();
+        Vec3 accel = target instanceof PirateFighter pirate ? pirate.acceleration() : Vec3.ZERO;
+        Vec3 to = target.getBoundingBox().getCenter().add(velocity).add(accel).subtract(muzzle);
+        Vec3 relative = velocity.add(accel.scale(1.5)).subtract(shipVelocity);
+        return ShipCombat.lead(arr(to), arr(relative), arr(accel), ShipCombat.BOLT_SPEED, ShipCombat.BOLT_LIFETIME);
     }
 
     /**
@@ -166,16 +244,31 @@ public final class ShipWeapons {
     public record BeamHit(Vec3 from, Vec3 to, @Nullable Entity entity, boolean hit) {
     }
 
-    /** 采矿光束照到哪：瞄准方向同光子炮，有自动瞄准的目标就直接对着它（光束是即时的，不要提前量）。 */
+    /**
+     * 采矿光束照到哪：朝驾驶员的视线，有自动瞄准的目标就直接对着它（光束是即时的，不要提前量）。从第一台转得过去的光束照出去；
+     * 都转不过去就用第一台，朝射界边缘照。
+     */
     public static BeamHit beam(ShipEntity ship, Entity pilot) {
         ShipStructure structure = ship.structure();
         float relative = ship.getYRot() - ship.baseYaw();
-        Vec3 from = muzzle(ship, structure.block(structure.beams()[0]), relative);
-        Vec3 direction = aim(ship, pilot);
+        Vec3 look = pilot.getViewVector(1);
         Entity target = assistTarget(ship, pilot);
-        if (target != null) {
-            direction = vec(ShipCombat.clampToCone(ShipCombat.forward(ship.getYRot()),
-                    arr(target.getBoundingBox().getCenter().subtract(from).normalize()), ShipCombat.AIM_CONE));
+        Vec3 from = null;
+        Vec3 direction = null;
+        for (int index : structure.beams()) {
+            ShipStructure.ShipBlock block = structure.block(index);
+            Vec3 muzzle = muzzle(ship, block, relative);
+            double[] wanted = target == null ? arr(look) : arr(target.getBoundingBox().getCenter().subtract(muzzle));
+            float yaw = weaponYaw(ship, block);
+            if (ShipCombat.inArc(yaw, wanted)) {
+                from = muzzle;
+                direction = vec(ShipCombat.normalize(wanted));
+                break;
+            }
+            if (from == null) {
+                from = muzzle;
+                direction = vec(ShipCombat.clampToArc(yaw, wanted));
+            }
         }
         Level level = ship.level();
         Vec3 end = from.add(direction.scale(ShipCombat.BEAM_RANGE));

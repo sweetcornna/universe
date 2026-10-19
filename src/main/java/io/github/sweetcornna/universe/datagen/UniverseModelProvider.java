@@ -373,6 +373,7 @@ final class UniverseModelProvider extends ModelProvider {
         itemModels.generateFlatItem(UniverseItems.NAVIGATION_DATA.get(), ModelTemplates.FLAT_ITEM);
         // 守卫机（ADR-0014）
         itemModels.generateFlatItem(UniverseItems.SENTINEL_SCRAP.get(), ModelTemplates.FLAT_ITEM);
+        itemModels.generateFlatItem(UniverseItems.PIRATE_SCRAP.get(), ModelTemplates.FLAT_ITEM);
         itemModels.generateFlatItem(UniverseItems.SENTINEL_SPAWN_EGG.get(), ModelTemplates.FLAT_ITEM);
         itemModels.generateFlatItem(UniverseItems.HEAVY_SENTINEL_SPAWN_EGG.get(), ModelTemplates.FLAT_ITEM);
     }

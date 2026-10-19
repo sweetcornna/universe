@@ -49,6 +49,14 @@ final class UniverseEntityLoot extends EntityLootSubProvider {
                         .add(LootItem.lootTableItem(UniverseItems.MODULES.get(ModuleType.WEAPON_CALIBRATOR).get())
                                 .apply(RandomModuleFunction.randomModule(1)))
                         .when(LootItemRandomChanceCondition.randomChance(0.3F))));
+        // 海盗战机：海盗残骸，偶尔有导航数据（ADR-0017）
+        this.add(UniverseEntities.PIRATE_FIGHTER.get(), LootTable.lootTable()
+                .withPool(LootPool.lootPool().setRolls(ContextIntProviders.exactly(1))
+                        .add(LootItem.lootTableItem(UniverseItems.PIRATE_SCRAP.get())
+                                .apply(SetItemCountFunction.setCount(ContextIntProviders.between(1, 3)))))
+                .withPool(LootPool.lootPool().setRolls(ContextIntProviders.exactly(1))
+                        .add(LootItem.lootTableItem(UniverseItems.NAVIGATION_DATA.get()))
+                        .when(LootItemRandomChanceCondition.randomChance(0.2F))));
     }
 
     private LootPool.Builder scrap(int min, int max) {

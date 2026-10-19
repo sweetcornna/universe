@@ -73,6 +73,7 @@ public final class RawValues {
             Map.entry("universe:survey_data", 40.0),
             Map.entry("universe:navigation_data", 30.0),
             Map.entry("universe:sentinel_scrap", 25.0),
+            Map.entry("universe:pirate_scrap", 60.0),
             Map.entry("universe:alien_meat", 3.0),
             Map.entry("universe:alien_hide", 4.0),
             // 只能在空间站买、在坠毁飞船里拆到的 Mk.II 部件（ADR-0017）

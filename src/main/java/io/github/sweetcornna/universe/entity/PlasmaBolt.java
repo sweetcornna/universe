@@ -2,6 +2,7 @@ package io.github.sweetcornna.universe.entity;
 
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.core.survival.PlasmaWeapon;
+import io.github.sweetcornna.universe.pirate.PirateFighter;
 import io.github.sweetcornna.universe.registry.UniverseEntities;
 import io.github.sweetcornna.universe.sentinel.Sentinel;
 import net.minecraft.core.particles.DustParticleOptions;
@@ -65,7 +66,7 @@ public class PlasmaBolt extends ThrowableProjectile {
      * @param inaccuracy 散布，和原版弹射物的含义一样
      * @param lifetime   飞多少刻后消失
      */
-    public static PlasmaBolt shoot(Level level, LivingEntity owner, Vec3 from, Vec3 direction, float damage, int color, double speed,
+    public static PlasmaBolt shoot(Level level, Entity owner, Vec3 from, Vec3 direction, float damage, int color, double speed,
             float inaccuracy, int lifetime) {
         PlasmaBolt bolt = new PlasmaBolt(UniverseEntities.PLASMA_BOLT.get(), level);
         bolt.setOwner(owner);
@@ -144,7 +145,7 @@ public class PlasmaBolt extends ThrowableProjectile {
         if (owner != null && owner.isPassenger() && entity.getRootVehicle() == owner.getRootVehicle()) {
             return false;
         }
-        return super.canHitEntity(entity) && !Sentinel.friendly(owner, entity);
+        return super.canHitEntity(entity) && !Sentinel.friendly(owner, entity) && !(owner instanceof PirateFighter && entity instanceof PirateFighter);
     }
 
     @Override
@@ -169,7 +170,7 @@ public class PlasmaBolt extends ThrowableProjectile {
             }
         }
         level.playSound(null, target.getX(), target.getY(0.5), target.getZ(), SoundEvents.SHULKER_BULLET_HIT,
-                owner instanceof Sentinel ? SoundSource.HOSTILE : SoundSource.PLAYERS, 0.5F, 1.6F);
+                owner instanceof Sentinel || owner instanceof PirateFighter ? SoundSource.HOSTILE : SoundSource.PLAYERS, 0.5F, 1.6F);
     }
 
     @Override

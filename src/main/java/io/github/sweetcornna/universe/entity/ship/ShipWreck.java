@@ -10,6 +10,7 @@ import io.github.sweetcornna.universe.core.ship.ShipShape;
 import io.github.sweetcornna.universe.core.space.StationLayout;
 import io.github.sweetcornna.universe.core.space.StationLayout.Site;
 import io.github.sweetcornna.universe.dyson.Dyson;
+import io.github.sweetcornna.universe.pirate.Pirates;
 import io.github.sweetcornna.universe.station.Stations;
 import io.github.sweetcornna.universe.world.planet.Planets;
 import io.github.sweetcornna.universe.world.space.SpaceDimensions;
@@ -49,6 +50,7 @@ public final class ShipWreck {
         level.playSound(null, center.x, center.y, center.z, SoundEvents.GENERIC_EXPLODE, SoundSource.NEUTRAL, 4.0F, 0.7F);
 
         int lost = loseCargo(ship, level);
+        Pirates.onShipWrecked(ship);
         ship.wrecked();
         Component message = Component.translatable("message.universe.ship.destroyed", lost).withStyle(ChatFormatting.RED);
         for (Entity passenger : ship.getPassengers()) {

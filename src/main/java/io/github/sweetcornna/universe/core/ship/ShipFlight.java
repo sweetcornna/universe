@@ -19,6 +19,8 @@ public final class ShipFlight {
     public static final double MAX_IMPULSE_SPEED = ShipStats.IMPULSE_SPEED;
     /** 装 Mk.II 脉冲引擎时的最高速度（ADR-0017）。 */
     public static final double MAX_IMPULSE_SPEED_MK2 = ShipStats.IMPULSE_SPEED_MK2;
+    /** 太空里转向快几倍：没有空气，姿态推进器放开了用（太空战要跟得上绕圈的海盗，ADR-0017）。 */
+    public static final double SPACE_TURN = 1.5;
 
     private double vx;
     private double vy;
@@ -160,7 +162,8 @@ public final class ShipFlight {
         }
 
         // ---- 偏航
-        double maxRate = clamp(3.0 * clamp(power, 0.3, 1.5) / Math.sqrt(Math.max(1, stats.mass() / 40)), 0.6, 4);
+        double maxRate = clamp(3.0 * clamp(power, 0.3, 1.5) / Math.sqrt(Math.max(1, stats.mass() / 40)), 0.6, 4)
+                * (env.space() ? SPACE_TURN : 1);
         double turn = powered ? ((controls.right() ? 1 : 0) - (controls.left() ? 1 : 0)) * maxRate : 0;
         double rateAccel = powered ? maxRate * 0.2 : 0.3;
         double dr = turn - this.yawRate;

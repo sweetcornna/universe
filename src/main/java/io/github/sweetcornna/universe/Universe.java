@@ -17,6 +17,7 @@ import io.github.sweetcornna.universe.factory.recipe.MachineRecipes;
 import io.github.sweetcornna.universe.factory.research.Research;
 import io.github.sweetcornna.universe.logistics.Logistics;
 import io.github.sweetcornna.universe.network.UniverseNetwork;
+import io.github.sweetcornna.universe.pirate.Pirates;
 import io.github.sweetcornna.universe.poi.Pois;
 import io.github.sweetcornna.universe.registry.UniverseAttachments;
 import io.github.sweetcornna.universe.registry.UniverseBlockEntities;
@@ -27,6 +28,7 @@ import io.github.sweetcornna.universe.registry.UniverseEntities;
 import io.github.sweetcornna.universe.registry.UniverseItems;
 import io.github.sweetcornna.universe.registry.UniverseMenus;
 import io.github.sweetcornna.universe.registry.UniverseRecipeTypes;
+import io.github.sweetcornna.universe.registry.UniverseStats;
 import io.github.sweetcornna.universe.registry.UniverseWorldgen;
 import io.github.sweetcornna.universe.sentinel.Sentinels;
 import io.github.sweetcornna.universe.station.ShipRepair;
@@ -61,6 +63,7 @@ public final class Universe {
         UniverseAttachments.register(modBus);
         UniverseItems.register(modBus);
         UniverseEntities.register(modBus);
+        UniverseStats.register(modBus);
         UniverseMenus.register(modBus);
         UniverseDataComponents.register(modBus);
         UniverseRecipeTypes.register(modBus);
@@ -90,6 +93,7 @@ public final class Universe {
         Dyson.registerEvents(gameBus);
         Trading.registerEvents(gameBus);
         ShipWeapons.registerEvents(gameBus);
+        Pirates.registerEvents(gameBus);
         ShipRepair.registerEvents(gameBus);
         gameBus.addListener(RegisterCommandsEvent.class, event -> DimensionCommand.register(event.getDispatcher()));
     }

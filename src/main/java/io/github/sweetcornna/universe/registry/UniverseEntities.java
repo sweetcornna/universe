@@ -1,5 +1,6 @@
 package io.github.sweetcornna.universe.registry;
 
+import io.github.sweetcornna.universe.pirate.PirateFighter;
 import io.github.sweetcornna.universe.sentinel.Sentinel;
 import io.github.sweetcornna.universe.entity.PlasmaBolt;
 import io.github.sweetcornna.universe.Universe;
@@ -40,6 +41,11 @@ public final class UniverseEntities {
     public static final DeferredHolder<EntityType<?>, EntityType<Sentinel>> HEAVY_SENTINEL = ENTITIES.registerEntityType(
             "heavy_sentinel", Sentinel::new, MobCategory.MISC,
             builder -> builder.sized(1.4F, 1.1F).eyeHeight(0.55F).clientTrackingRange(10).noSave().fireImmune());
+
+    /** 海盗战机（ADR-0017）：由 {@code Pirates} 按袭击生成，不存档；打得远、飞得快，每刻同步位置。 */
+    public static final DeferredHolder<EntityType<?>, EntityType<PirateFighter>> PIRATE_FIGHTER = ENTITIES.registerEntityType(
+            "pirate_fighter", PirateFighter::new, MobCategory.MISC,
+            builder -> builder.sized(2.6F, 1.2F).clientTrackingRange(16).updateInterval(1).noSave().fireImmune());
 
     private UniverseEntities() {
     }

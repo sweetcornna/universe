@@ -9,8 +9,9 @@ import io.github.sweetcornna.universe.core.survival.LaserHeat;
  * 光子炮每门每秒 3 发、每发 6 点伤害，几门炮轮流开火；按住开火键升温，和多功能工具一样连发 5 秒过热，
  * 过热后要冷却到底才能再开。采矿光束升温慢一些。
  *
- * <p>瞄准：炮口朝驾驶员看的方向，但限制在船头 {@link #AIM_CONE}° 的锥形里；视线 {@link #ASSIST_CONE}° 以内有敌人时
- * 瞄准它的提前量。向量都是 {x, y, z} 的 double 数组。
+ * <p>瞄准：炮口朝驾驶员看的方向，但每门炮左右只能偏离自己的朝向 {@link #AIM_YAW}°，上下最多 {@link #AIM_PITCH}°（方块拼的船
+ * 只会转向、不会俯仰，所以炮像炮塔一样能抬高压低）。朝前的炮管船头前方，朝两侧、朝后装的炮守住别的方向。视线
+ * {@link #ASSIST_CONE}° 以内有敌人时瞄准它的提前量。向量都是 {x, y, z} 的 double 数组。
  */
 public final class ShipCombat {
     /** 挨打后这么多刻不回护盾。 */
@@ -27,10 +28,11 @@ public final class ShipCombat {
     /** 采矿光束的射程（格）和每刻对小行星的伤害。 */
     public static final double BEAM_RANGE = 48;
     public static final float BEAM_DAMAGE = 1.0F;
-    /** 炮口能偏离船头多少度。 */
-    public static final double AIM_CONE = 35;
+    /** 炮口左右能偏离炮的朝向多少度、上下能抬高压低多少度。 */
+    public static final double AIM_YAW = 60;
+    public static final double AIM_PITCH = 60;
     /** 视线这么多度以内的敌人会被自动瞄准。 */
-    public static final double ASSIST_CONE = 6;
+    public static final double ASSIST_CONE = 10;
     /** 自动瞄准的最远距离（格）。 */
     public static final double ASSIST_RANGE = 128;
     /** 光子炮和采矿光束的升温倍数（多功能工具的等离子弹是 0.8，连发 5 秒过热）。 */
@@ -132,26 +134,28 @@ public final class ShipCombat {
 
     // ---- 瞄准
 
-    /** 把视线 {@code look} 限制在以 {@code forward} 为轴、半角 {@code coneDegrees} 的锥形里（两个都是单位向量）。 */
-    public static double[] clampToCone(double[] forward, double[] look, double coneDegrees) {
-        double cos = dot(forward, look);
-        double limit = Math.cos(Math.toRadians(coneDegrees));
-        if (cos >= limit) {
-            return look.clone();
-        }
-        // 视线在船头那个平面上的分量，沿着它转到锥面上
-        double[] perp = {look[0] - forward[0] * cos, look[1] - forward[1] * cos, look[2] - forward[2] * cos};
-        double length = length(perp);
-        if (length < 1e-6) {
-            // 正好朝后：随便挑一个和船头垂直的方向
-            perp = Math.abs(forward[1]) < 0.9 ? new double[] {0, 1, 0} : new double[] {1, 0, 0};
-            double along = dot(perp, forward);
-            perp = new double[] {perp[0] - forward[0] * along, perp[1] - forward[1] * along, perp[2] - forward[2] * along};
-            length = length(perp);
-        }
-        double sin = Math.sin(Math.toRadians(coneDegrees));
-        return normalize(new double[] {forward[0] * limit + perp[0] / length * sin, forward[1] * limit + perp[1] / length * sin,
-                forward[2] * limit + perp[2] / length * sin});
+    /** 炮口实际能朝的方向：视线 {@code look} 的偏航限制在炮的朝向 {@code weaponYaw} 左右 {@link #AIM_YAW}° 以内，俯仰限制在 {@link #AIM_PITCH}° 以内。 */
+    public static double[] clampToArc(float weaponYaw, double[] look) {
+        return clampToArc(weaponYaw, look, AIM_YAW, AIM_PITCH);
+    }
+
+    /** 朝向 {@code weaponYaw} 的炮转得过去朝 {@code look} 打。 */
+    public static boolean inArc(float weaponYaw, double[] look) {
+        return angle(clampToArc(weaponYaw, look), normalize(look)) < 0.5;
+    }
+
+    public static double[] clampToArc(float shipYaw, double[] look, double yawLimit, double pitchLimit) {
+        double[] l = normalize(look);
+        double horizontal = Math.sqrt(l[0] * l[0] + l[2] * l[2]);
+        double yaw = horizontal < 1e-9 ? shipYaw : Math.toDegrees(Math.atan2(-l[0], l[2]));
+        double pitch = Math.toDegrees(Math.atan2(l[1], horizontal));
+        double relative = yaw - shipYaw;
+        relative = relative - 360 * Math.floor((relative + 180) / 360);
+        relative = Math.max(-yawLimit, Math.min(yawLimit, relative));
+        pitch = Math.max(-pitchLimit, Math.min(pitchLimit, pitch));
+        double y = Math.toRadians(shipYaw + relative);
+        double p = Math.toRadians(pitch);
+        return new double[] {-Math.sin(y) * Math.cos(p), Math.sin(p), Math.cos(y) * Math.cos(p)};
     }
 
     /**
@@ -182,6 +186,22 @@ public final class ShipCombat {
             return normalize(target);
         }
         return normalize(new double[] {target[0] + velocity[0] * t, target[1] + velocity[1] * t, target[2] + velocity[2] * t});
+    }
+
+    /**
+     * 带加速度的提前量：目标还在按 {@code accel} 加速（比如正在转弯的海盗战机），迭代几次求出命中的时刻再瞄准那里。
+     * 预判最多看 {@code maxTicks} 刻：转弯的加速度方向一直在变，看得太远反而偏。
+     */
+    public static double[] lead(double[] target, double[] velocity, double[] accel, double speed, double maxTicks) {
+        double t = Math.min(maxTicks, length(target) / speed);
+        double[] p = target;
+        for (int i = 0; i < 6; i++) {
+            double h = 0.5 * t * t;
+            p = new double[] {target[0] + velocity[0] * t + accel[0] * h, target[1] + velocity[1] * t + accel[1] * h,
+                    target[2] + velocity[2] * t + accel[2] * h};
+            t = Math.min(maxTicks, length(p) / speed);
+        }
+        return normalize(p);
     }
 
     /** 两个单位向量的夹角（度）。 */

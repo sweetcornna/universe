@@ -1,4 +1,4 @@
-"""生成战斗相关的贴图：等离子弹的光斑、守卫机（普通和重型）的皮肤和发光层、守卫机残骸、刷怪蛋。
+"""生成战斗相关的贴图：等离子弹的光斑、守卫机（普通和重型）的皮肤和发光层、守卫机残骸、刷怪蛋，海盗战机的皮肤和发光层、海盗残骸。
 
 用法：python tools/combat_textures.py [实体贴图目录] [物品贴图目录]
 默认输出到 src/main/resources/assets/universe/textures/entity 和 textures/item。
@@ -6,6 +6,7 @@
 - 等离子弹的贴图是白色的，渲染时按弹体的颜色着色（多功能工具青色，守卫机红色），透明度从中心往外衰减。
 - 守卫机的方块列表和 client/sentinel/SentinelModel.java 一一对应（texOffs 和尺寸），改了模型要同步改这里。
   发光层只有面罩、推进器这些地方不透明，颜色是白的，渲染时按状态着色（巡逻黄、敌对红）。
+- 海盗战机的方块列表和 client/pirate/PirateModel.java 一一对应；发光层是引擎喷口、座舱和炮口，渲染时着成橙红色。
 随机数用固定种子，每次生成的结果一样。
 """
 import math
@@ -329,6 +330,178 @@ def scrap():
     save(img, ITEM, "sentinel_scrap")
 
 
+# ---- 海盗战机
+
+PIRATE_HULL = (74, 72, 80)
+PIRATE_RED = (172, 42, 38)
+PIRATE_YELLOW = (222, 172, 44)
+
+
+def pirate_fighter():
+    """深灰的机身，机翼上是红色的斜条纹，翼尖黄黑警示条；座舱暗红，引擎喷口和炮口在发光层里点亮。"""
+    s = Skin(128, 64, 71)
+    hull = PIRATE_HULL
+    dark = shade(hull, 0.6)
+
+    # 机身：顶上一道脊线和横接缝，侧面一道红条，机头那端一圈红
+    body = s.box(0, 0, 6, 4, 24, hull)
+    x0, y0, w, h = body["top"]
+    for y in range(y0, y0 + h):
+        s.put(x0 + w // 2, y, shade(hull, 0.78))
+    for y in range(y0 + 5, y0 + h, 6):
+        s.hline(x0, x0 + w, y, dark)
+    for y in range(y0, y0 + 3):
+        s.hline(x0, x0 + w, y, shade(PIRATE_RED, 1.0 + 0.05 * (y - y0)))
+    for key in ("left", "right"):
+        x0, y0, w, h = body[key]
+        s.hline(x0, x0 + w, y0 + 1, PIRATE_RED)
+        for x in range(x0 + 4, x0 + w, 6):
+            s.vline(x, y0 + 2, y0 + h, dark)
+    x0, y0, w, h = body["bottom"]
+    for y in range(y0, y0 + h):
+        for x in range(x0, x0 + w):
+            s.put(x, y, shade(s.get(x, y), 0.7))
+    x0, y0, w, h = body["front"]
+    for y in range(y0 + 1, y0 + h - 1):
+        s.hline(x0 + 1, x0 + w - 1, y, (24, 22, 26))
+    x0, y0, w, h = body["back"]
+    for y in range(y0 + 1, y0 + h - 1):
+        s.hline(x0 + 1, x0 + w - 1, y, (36, 34, 40))
+
+    # 机头：红色，尖上更暗
+    nose = s.box(60, 0, 4, 3, 5, PIRATE_RED)
+    x0, y0, w, h = nose["front"]
+    for y in range(y0, y0 + h):
+        s.hline(x0, x0 + w, y, shade(PIRATE_RED, 0.55))
+
+    # 座舱罩：暗红的玻璃，一道高光，发光层微微亮
+    canopy = s.box(80, 0, 4, 2, 7, (34, 20, 24), 0.03)
+    for rect in canopy.values():
+        x0, y0, w, h = rect
+        for y in range(y0, y0 + h):
+            for x in range(x0, x0 + w):
+                s.light(x, y, 0.3)
+    x0, y0, w, h = canopy["top"]
+    for y in range(y0 + 1, y0 + h - 1):
+        s.put(x0 + 1, y, (150, 110, 120))
+
+    # 垂直尾翼：上半截红
+    fin = s.box(104, 0, 1, 6, 7, hull)
+    for key in ("left", "right"):
+        x0, y0, w, h = fin[key]
+        for y in range(y0, y0 + 2):
+            s.hline(x0, x0 + w, y, PIRATE_RED)
+
+    # 机翼内段：红色斜条纹
+    inner = s.box(0, 28, 11, 1, 12, hull)
+    x0, y0, w, h = inner["top"]
+    for y in range(y0, y0 + h):
+        for x in range(x0, x0 + w):
+            if (x - x0 + y - y0) % 6 < 2:
+                s.put(x, y, shade(PIRATE_RED, 1 + s.rng.uniform(-0.05, 0.05)))
+    x0, y0, w, h = inner["bottom"]
+    for y in range(y0, y0 + h):
+        for x in range(x0, x0 + w):
+            s.put(x, y, shade(s.get(x, y), 0.65))
+
+    # 机翼外段：红色，翼尖一道黄黑警示条
+    outer = s.box(46, 28, 7, 1, 7, PIRATE_RED)
+    x0, y0, w, h = outer["top"]
+    for y in range(y0, y0 + h):
+        for x in range(x0, x0 + 2):
+            s.put(x, y, PIRATE_YELLOW if (x + y) % 2 == 0 else (28, 26, 30))
+    x0, y0, w, h = outer["bottom"]
+    for y in range(y0, y0 + h):
+        for x in range(x0, x0 + w):
+            s.put(x, y, shade(s.get(x, y), 0.6))
+
+    # 翼尖炮管：深色，炮口发光
+    gun = s.box(74, 28, 2, 2, 12, (44, 44, 50))
+    for key in ("left", "right", "top", "bottom"):
+        x0, y0, w, h = gun[key]
+        if h > 2:
+            s.hline(x0, x0 + w, y0 + h // 2, (70, 70, 78))
+    x0, y0, w, h = gun["front"]
+    for y in range(y0, y0 + h):
+        for x in range(x0, x0 + w):
+            s.put(x, y, (12, 12, 14))
+            s.light(x, y, 0.9)
+
+    # 引擎：金属外壳上一圈圈散热纹，喷口中心最亮
+    metal = (96, 96, 104)
+    engine = s.box(0, 44, 4, 4, 7, metal)
+    for key in ("left", "right", "top", "bottom"):
+        x0, y0, w, h = engine[key]
+        if w >= h:
+            for x in range(x0 + 1, x0 + w, 2):
+                s.vline(x, y0, y0 + h, shade(metal, 0.65))
+        else:
+            for y in range(y0 + 1, y0 + h, 2):
+                s.hline(x0, x0 + w, y, shade(metal, 0.65))
+    x0, y0, w, h = engine["back"]
+    cx, cy = x0 + (w - 1) / 2, y0 + (h - 1) / 2
+    for y in range(y0, y0 + h):
+        for x in range(x0, x0 + w):
+            d = math.hypot(x - cx, y - cy)
+            edge = x in (x0, x0 + w - 1) or y in (y0, y0 + h - 1)
+            s.put(x, y, (58, 58, 64) if edge else (30, 20, 18))
+            if not edge:
+                s.light(x, y, 1.0)
+            else:
+                s.light(x, y, max(0.0, 0.5 - d * 0.1))
+
+    save(s.img, ENTITY, "pirate_fighter")
+    save(s.glow, ENTITY, "pirate_fighter_glow")
+
+
+def pirate_scrap():
+    """海盗残骸：一片焦黑卷边的深灰外壳，带着半截红色涂装，旁边一截还在冒红光的炮管。"""
+    img = Image.new("RGBA", (N, N), (0, 0, 0, 0))
+    rng = random.Random(79)
+
+    def polygon(points):
+        xs = [p[0] for p in points]
+        ys = [p[1] for p in points]
+        mask = set()
+        for y in range(min(ys), max(ys) + 1):
+            for x in range(min(xs), max(xs) + 1):
+                inside = False
+                j = len(points) - 1
+                for i in range(len(points)):
+                    xi, yi = points[i]
+                    xj, yj = points[j]
+                    if (yi > y) != (yj > y) and x < (xj - xi) * (y - yi) / (yj - yi) + xi:
+                        inside = not inside
+                    j = i
+                if inside:
+                    mask.add((x, y))
+        return mask
+
+    plate = polygon([(2, 4), (10, 2), (13, 7), (11, 12), (4, 13), (1, 9)])
+    edge = outline(plate)
+    for (x, y) in plate:
+        base = PIRATE_RED if x + y * 0.6 < 9 else PIRATE_HULL
+        f = 1.15 - (x + y) * 0.022 + rng.uniform(-0.05, 0.05)
+        c = shade(base, f)
+        if (x, y) in edge:
+            c = shade(c, 0.55)
+        img.putpixel((x, y), tuple(c) + (255,))
+    # 焦痕和裂口
+    for (x, y) in ((6, 8), (7, 8), (7, 9), (8, 10), (9, 6), (10, 6)):
+        if (x, y) in plate:
+            img.putpixel((x, y), (34, 30, 30, 255))
+    # 一截炮管，炮口还红着
+    for i in range(5):
+        x, y = 9 + i, 13 - i // 2
+        if 0 <= x < N and 0 <= y < N:
+            img.putpixel((x, y), (50, 50, 56, 255))
+            if y + 1 < N:
+                img.putpixel((x, y + 1), (36, 36, 40, 255))
+    img.putpixel((14, 11), (255, 110, 80, 255))
+    img.putpixel((14, 12), (255, 170, 130, 255))
+    save(img, ITEM, "pirate_scrap")
+
+
 if __name__ == "__main__":
     plasma_bolt()
     drone()
@@ -336,4 +509,6 @@ if __name__ == "__main__":
     scrap()
     save(egg((206, 210, 216), (232, 176, 58), 61), ITEM, "sentinel_spawn_egg")
     save(egg((96, 100, 110), (210, 60, 46), 67), ITEM, "heavy_sentinel_spawn_egg")
+    pirate_fighter()
+    pirate_scrap()
     print("combat textures written")

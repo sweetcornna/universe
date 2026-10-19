@@ -17,7 +17,8 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 /**
  * 飞船武器（ADR-0017）：光子炮和采矿光束。朝向是炮口的方向，放下时朝着玩家面对的方向（站在船尾朝船头放）。
  *
- * <p>开火的方向跟着驾驶员的视线走（限制在船头 {@link ShipCombat#AIM_CONE}° 以内），朝向只决定炮口在哪、外观怎么摆。
+ * <p>开火的方向跟着驾驶员的视线走，但炮口左右只能偏离方块的朝向 {@link ShipCombat#AIM_YAW}°，上下 {@link ShipCombat#AIM_PITCH}°：
+ * 朝前装的炮管船头前方，朝两侧、朝后装的炮守住别的方向。
  */
 public class ShipWeaponBlock extends HorizontalDirectionalBlock {
     private static final Map<Direction, VoxelShape> SHAPES = Shapes.rotateHorizontal(Shapes.or(
