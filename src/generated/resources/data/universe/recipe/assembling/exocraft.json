@@ -1,0 +1,28 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 6,
+      "ingredient": "universe:steel"
+    },
+    {
+      "count": 4,
+      "ingredient": "universe:electric_motor"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:accumulator"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:plasma_exciter"
+    }
+  ],
+  "research": "exocraft",
+  "results": [
+    {
+      "id": "universe:exocraft"
+    }
+  ],
+  "time": 240
+}

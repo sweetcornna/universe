@@ -293,6 +293,11 @@ io.github.sweetcornna.universe
 | 原版 `/tick freeze`、`/tick unfreeze` 可以冻住实体近看（骑着载具的玩家和载具不冻） | 已确认，海盗验收在用 |
 | 区块卸载时 `PersistentEntitySectionManager` 只把 `shouldBeSaved()` 为真的实体存盘并移出世界；不存档的实体留在区段里，不移除也不更新，区块再加载时又出现。要清就自己按表 `discard()` | 已确认，小行星的生成器踩过 |
 | `ModelBlockRenderer.tesselateBlock(BlockQuadOutput, …)` 按面给出每个四边形，层在 `quad.materialInfo().layer()`（叠在实心面上的贴花是 `CUTOUT`）。实体里用 `submitCustomGeometry` 分层提交时，几种渲染类型谁先画不一定：同一个方块的实心面和贴花分开交，贴花会被盖住，要整块放进镂空那一批 | 已确认，`BlockMesh` 在用 |
+| 载具：控制者是本地玩家时 `isLocalInstanceAuthoritative()` 为真，由驾驶员的客户端算移动，服务端不模拟，收 `ServerboundMoveVehiclePacket` 的位置；`handleMoveVehicle` 在服务端重放一遍移动后，竖直方向的偏差判断写成了 `yDist > -0.5 \|\| yDist < 0.5`（恒真），竖直方向的偏差从不算"移动有误"，爬台阶、下坡都不会被拉回去 | 已确认，探索车在用 |
+| 骑着载具时 `LocalPlayer.applyInput` 照样设 `xxa`（向左为正）、`zza`（向前为正），载具在 `tick` 里读控制者的这两个值；服务端按键状态用 `ServerPlayer.getLastClientInput()` | 已确认，探索车在用 |
+| `VehicleEntity` 带受伤晃动（`setHurtTime`、`setHurtDir`）和累计伤害（`setDamage`），原版的船每刻回 1 点伤害；`destroy(ServerLevel, DamageSource)` 可覆盖，`kill()` 只移除、不掉落 | 已确认，探索车在用 |
+| 第三人称镜头：`Camera.alignWithEntity` 先摆到眼睛，再沿视线往后拉（`CalculateDetachedCameraDistanceEvent` 改距离），准星永远是眼睛的视线，驾驶员的头正挡在准星上；要抬镜头得在往后拉之前 `move(0, 抬高, 0)`（`CameraMixin`），这时准星的视线也抬高了，按准星打东西要从抬高的那一点算 | 已确认，飞船和探索车在用 |
+| 原版第三人称不画准星（`Gui` 只在第一人称画） | 已确认，探索车自己画激光准星 |
 
 原则：拿不准的 API，先查源码再动手写，核实后把结果补进这张表。源码位置：
 

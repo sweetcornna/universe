@@ -37,6 +37,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
@@ -208,6 +209,10 @@ public final class DevScript {
         player.xRotO = player.getXRot();
     }
 
+    private static int coord(String token, int base) {
+        return token.startsWith("~") ? base + (token.length() > 1 ? Integer.parseInt(token.substring(1)) : 0) : Integer.parseInt(token);
+    }
+
     private void run(Minecraft minecraft, LocalPlayer player, String line) {
         int space = line.indexOf(' ');
         String verb = (space < 0 ? line : line.substring(0, space)).toLowerCase(Locale.ROOT);
@@ -262,10 +267,38 @@ public final class DevScript {
                 player.xRotO = player.getXRot();
             }
             case "use" -> {
-                BlockPos pos = new BlockPos(Integer.parseInt(args[0]), Integer.parseInt(args[1]), Integer.parseInt(args[2]));
+                // 坐标可以用 ~ 写成相对玩家脚下方块的
+                BlockPos base = player.blockPosition();
+                BlockPos pos = new BlockPos(coord(args[0], base.getX()), coord(args[1], base.getY()), coord(args[2], base.getZ()));
                 BlockHitResult hit = new BlockHitResult(Vec3.atCenterOf(pos).add(0, 0.5, 0), Direction.UP, pos, false);
                 if (minecraft.gameMode != null) {
                     minecraft.gameMode.useItemOn(player, InteractionHand.MAIN_HAND, hit);
+                }
+            }
+            case "interact", "attack" -> {
+                // interact|attack <实体类型>：对最近的那个实体右键或左键（16 格内）
+                Identifier type = Identifier.parse(args[0]);
+                Entity target = null;
+                double best = 256;
+                for (Entity entity : minecraft.level.entitiesForRendering()) {
+                    double d = entity.distanceToSqr(player);
+                    if (entity != player && d < best && BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType()).equals(type)) {
+                        best = d;
+                        target = entity;
+                    }
+                }
+                if (target != null && minecraft.gameMode != null) {
+                    if (verb.equals("attack")) {
+                        minecraft.gameMode.attack(player, target);
+                    } else {
+                        minecraft.gameMode.interact(player, target, new EntityHitResult(target), InteractionHand.MAIN_HAND);
+                    }
+                }
+            }
+            case "useitem" -> {
+                // 对着空气右键（用手里的东西）
+                if (minecraft.gameMode != null) {
+                    minecraft.gameMode.useItem(player, InteractionHand.MAIN_HAND);
                 }
             }
             case "button" -> {

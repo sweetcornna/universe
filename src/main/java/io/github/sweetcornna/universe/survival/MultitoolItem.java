@@ -1,6 +1,7 @@
 package io.github.sweetcornna.universe.survival;
 
 import io.github.sweetcornna.universe.core.survival.ToolMode;
+import io.github.sweetcornna.universe.exocraft.Exocrafts;
 import java.util.function.Consumer;
 import java.util.Locale;
 import net.minecraft.world.item.component.TooltipDisplay;
@@ -30,6 +31,11 @@ public final class MultitoolItem extends Item {
     public InteractionResult use(Level level, Player player, InteractionHand hand) {
         if (hand != InteractionHand.MAIN_HAND) {
             return InteractionResult.PASS;
+        }
+        // 开着探索车：右键是车载扫描（潜行会下车）
+        InteractionResult vehicle = Exocrafts.multitoolUse(player);
+        if (vehicle != null) {
+            return vehicle;
         }
         if (player.isSecondaryUseActive()) {
             if (player instanceof ServerPlayer serverPlayer) {

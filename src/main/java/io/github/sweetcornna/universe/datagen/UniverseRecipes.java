@@ -465,6 +465,11 @@ final class UniverseRecipes extends RecipeProvider {
                 in(UniverseItems.STEEL.get(), 4, UniverseItems.SYNTHETIC_DIAMOND.get(), 1, UniverseItems.TITANIUM_ALLOY.get(), 2,
                         UniverseItems.PLASMA_EXCITER.get(), 1),
                 out(UniverseItems.MINING_BEAM.get(), 1));
+        // 探索车（ADR-0017）：钢的车架、四台电动机、一块蓄电器，等离子激发器做采矿激光
+        this.machine(Kind.ASSEMBLING, "exocraft", 240, "exocraft",
+                in(UniverseItems.STEEL.get(), 6, UniverseItems.ELECTRIC_MOTOR.get(), 4, UniverseItems.ACCUMULATOR.get(), 1,
+                        UniverseItems.PLASMA_EXCITER.get(), 1),
+                out(UniverseItems.EXOCRAFT.get(), 1));
         this.machine(Kind.ASSEMBLING, "shield_generator", 240, "ship_shields",
                 in(UniverseItems.TITANIUM_ALLOY.get(), 4, UniverseItems.SUPER_MAGNETIC_RING.get(), 2, UniverseItems.PARTICLE_BROADBAND.get(), 2,
                         UniverseItems.ACCUMULATOR.get(), 1),
@@ -691,6 +696,9 @@ final class UniverseRecipes extends RecipeProvider {
                 List.of("SPS", "TCT", "S S"), Map.of('S', steel, 'P', exciter, 'T', alloy, 'C', UniverseItems.PROCESSOR.get()));
         this.researchShaped("ship_weapons", RecipeCategory.TOOLS, UniverseItems.MINING_BEAM.get(), 1,
                 List.of("SDS", "TPT", "S S"), Map.of('S', steel, 'D', UniverseItems.SYNTHETIC_DIAMOND.get(), 'T', alloy, 'P', exciter));
+        this.researchShaped("exocraft", RecipeCategory.TRANSPORTATION, UniverseItems.EXOCRAFT.get(), 1,
+                List.of("SXS", "CAC", "MSM"), Map.of('S', steel, 'X', exciter, 'C', UniverseItems.CIRCUIT_BOARD.get(),
+                        'A', UniverseItems.ACCUMULATOR.get(), 'M', UniverseItems.ELECTRIC_MOTOR.get()));
         this.researchShaped("ship_shields", RecipeCategory.COMBAT, UniverseItems.SHIELD_GENERATOR.get(), 1,
                 List.of("TMT", "BAB", "TMT"), Map.of('T', alloy, 'M', UniverseItems.SUPER_MAGNETIC_RING.get(),
                         'B', UniverseItems.PARTICLE_BROADBAND.get(), 'A', UniverseItems.ACCUMULATOR.get()));

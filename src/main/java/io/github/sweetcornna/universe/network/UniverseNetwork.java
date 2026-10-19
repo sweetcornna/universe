@@ -2,6 +2,7 @@ package io.github.sweetcornna.universe.network;
 
 import io.github.sweetcornna.universe.dyson.Dyson;
 import io.github.sweetcornna.universe.entity.ship.ShipWeapons;
+import io.github.sweetcornna.universe.exocraft.Exocrafts;
 import io.github.sweetcornna.universe.stats.ProductionLog;
 import io.github.sweetcornna.universe.survival.Multitool;
 import io.github.sweetcornna.universe.discovery.Discoveries;
@@ -61,6 +62,7 @@ public final class UniverseNetwork {
                 .playToServer(ToolModePayload.TYPE, ToolModePayload.STREAM_CODEC, Multitool::handleToggleMode)
                 .playToServer(StatsRequestPayload.TYPE, StatsRequestPayload.STREAM_CODEC, ProductionLog::handleRequest)
                 .playToServer(TradeActionPayload.TYPE, TradeActionPayload.STREAM_CODEC, Trading::handleAction)
-                .playToServer(ShipControlPayload.TYPE, ShipControlPayload.STREAM_CODEC, ShipWeapons::handleControl);
+                .playToServer(ShipControlPayload.TYPE, ShipControlPayload.STREAM_CODEC, ShipWeapons::handleControl)
+                .playToServer(ExocraftControlPayload.TYPE, ExocraftControlPayload.STREAM_CODEC, Exocrafts::handleControl);
     }
 }

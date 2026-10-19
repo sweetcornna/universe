@@ -10,6 +10,7 @@ import io.github.sweetcornna.universe.dyson.Dyson;
 import io.github.sweetcornna.universe.entity.FaunaSpawner;
 import io.github.sweetcornna.universe.entity.ship.ShipTransit;
 import io.github.sweetcornna.universe.entity.ship.ShipWeapons;
+import io.github.sweetcornna.universe.exocraft.Exocrafts;
 import io.github.sweetcornna.universe.factory.FactoryAnchorBlock;
 import io.github.sweetcornna.universe.factory.FactoryCapabilities;
 import io.github.sweetcornna.universe.factory.belt.BeltNetwork;
@@ -96,6 +97,7 @@ public final class Universe {
         ShipWeapons.registerEvents(gameBus);
         Pirates.registerEvents(gameBus);
         Asteroids.registerEvents(gameBus);
+        Exocrafts.registerEvents(gameBus);
         ShipRepair.registerEvents(gameBus);
         gameBus.addListener(RegisterCommandsEvent.class, event -> DimensionCommand.register(event.getDispatcher()));
     }

@@ -9,6 +9,7 @@ import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.block.OreKind;
 import io.github.sweetcornna.universe.core.ecology.PlantForm;
 import io.github.sweetcornna.universe.core.tech.ModuleType;
+import io.github.sweetcornna.universe.exocraft.ExocraftItem;
 import io.github.sweetcornna.universe.factory.belt.StorageTankItem;
 import io.github.sweetcornna.universe.logistics.StationItem;
 import io.github.sweetcornna.universe.survival.Exosuit;
@@ -155,6 +156,8 @@ public final class UniverseItems {
     // ---- 多功能工具
     public static final DeferredItem<MultitoolItem> MULTITOOL = ITEMS.registerItem("multitool", MultitoolItem::new,
             properties -> properties.stacksTo(1).component(DataComponents.TOOL, multitoolRules()));
+    /** 探索车（ADR-0017）：对着地面用就放下一辆。 */
+    public static final DeferredItem<ExocraftItem> EXOCRAFT = ITEMS.registerItem("exocraft", ExocraftItem::new, properties -> properties.stacksTo(1));
     /** 坠毁的探测器里找到的，修好才能用。 */
     public static final DeferredItem<Item> DAMAGED_MULTITOOL = ITEMS.registerSimpleItem("damaged_multitool", properties -> properties.stacksTo(1));
 
@@ -324,7 +327,7 @@ public final class UniverseItems {
         order.addAll(List.of(ALIEN_MEAT, COOKED_ALIEN_MEAT, ALIEN_HIDE, ALIEN_CREATURE_SPAWN_EGG, ALIEN_FLYER_SPAWN_EGG));
         order.addAll(List.of(SHIP_HELM, SHIP_THRUSTER, FUEL_TANK, IMPULSE_ENGINE, WARP_DRIVE, SHIP_SEAT, PHOTON_CANNON, MINING_BEAM,
                 SHIELD_GENERATOR, SHIP_THRUSTER_MK2, FUEL_TANK_MK2, IMPULSE_ENGINE_MK2, WARP_DRIVE_MK2, ALLOY_HULL_PLATING,
-                LAUNCH_FUEL, SPACE_WARPER, SURVEY_DATA));
+                LAUNCH_FUEL, SPACE_WARPER, SURVEY_DATA, EXOCRAFT));
         order.addAll(HULL_PLATING.values());
         order.addAll(List.of(EXOSUIT_HELMET, EXOSUIT_CHESTPLATE, EXOSUIT_LEGGINGS, EXOSUIT_BOOTS, OXYGEN_CAPSULE, HAZARD_CELL,
                 MULTITOOL, DAMAGED_MULTITOOL));

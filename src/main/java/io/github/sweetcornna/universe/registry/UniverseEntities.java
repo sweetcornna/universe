@@ -1,6 +1,7 @@
 package io.github.sweetcornna.universe.registry;
 
 import io.github.sweetcornna.universe.asteroid.Asteroid;
+import io.github.sweetcornna.universe.exocraft.Exocraft;
 import io.github.sweetcornna.universe.pirate.PirateFighter;
 import io.github.sweetcornna.universe.sentinel.Sentinel;
 import io.github.sweetcornna.universe.entity.PlasmaBolt;
@@ -42,6 +43,11 @@ public final class UniverseEntities {
     public static final DeferredHolder<EntityType<?>, EntityType<Sentinel>> HEAVY_SENTINEL = ENTITIES.registerEntityType(
             "heavy_sentinel", Sentinel::new, MobCategory.MISC,
             builder -> builder.sized(1.4F, 1.1F).eyeHeight(0.55F).clientTrackingRange(10).noSave().fireImmune());
+
+    /** 探索车（ADR-0017）：驾驶员的客户端算位置，别人看到的每刻同步、插值。 */
+    public static final DeferredHolder<EntityType<?>, EntityType<Exocraft>> EXOCRAFT = ENTITIES.registerEntityType(
+            "exocraft", Exocraft::new, MobCategory.MISC,
+            builder -> builder.sized(2.0F, 1.9F).clientTrackingRange(10).updateInterval(1).fireImmune().noLootTable());
 
     /** 小行星（ADR-0017）：由 {@code Asteroids} 在玩家附近生成，不存档；一动不动（自转只在客户端画），很少同步位置。 */
     public static final DeferredHolder<EntityType<?>, EntityType<Asteroid>> ASTEROID = ENTITIES.registerEntityType(

@@ -48,6 +48,9 @@ public final class UniverseDataComponents {
     /** 物流站拆下来时带着的物品、载具和设置（ADR-0015）。 */
     public static final Supplier<DataComponentType<StationContents>> STATION_CONTENTS = COMPONENTS.registerComponentType(
             "station_contents", builder -> builder.persistent(StationContents.CODEC).networkSynchronized(StationContents.STREAM_CODEC));
+    /** 探索车收起来时油箱里的燃料（ADR-0017）。 */
+    public static final Supplier<DataComponentType<Integer>> EXOCRAFT_FUEL = COMPONENTS.registerComponentType("exocraft_fuel",
+            builder -> builder.persistent(Codec.INT).networkSynchronized(ByteBufCodecs.VAR_INT));
     /** 技术模块的种类、品级和数值（ADR-0014）。 */
     public static final Supplier<DataComponentType<TechModule>> TECH_MODULE = COMPONENTS.registerComponentType("tech_module",
             builder -> builder.persistent(TECH_MODULE_CODEC).networkSynchronized(TECH_MODULE_STREAM_CODEC));

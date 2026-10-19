@@ -183,6 +183,27 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("entity.universe.sentinel", "守卫机", "Sentinel");
         both("entity.universe.heavy_sentinel", "重型守卫机", "Heavy Sentinel");
         both("entity.universe.pirate_fighter", "海盗战机", "Pirate Fighter");
+        // 探索车（ADR-0017）
+        both("entity.universe.exocraft", "探索车", "Exocraft");
+        item(UniverseItems.EXOCRAFT.get(), "探索车", "Exocraft");
+        both("tooltip.universe.exocraft.fuel", "燃料 %s / %s", "Fuel %s / %s");
+        both("tooltip.universe.exocraft.usage", "对着地面用放下；右键上车，潜行右键开货箱，拿镐敲三下收起",
+                "Use on the ground to deploy. Right-click to drive, sneak + right-click for cargo, hit three times with a pickaxe to pack up");
+        both("message.universe.exocraft.no_space", "太空里放不了探索车", "The exocraft can't be deployed in space");
+        both("message.universe.exocraft.no_room", "这里放不下探索车", "Not enough room for the exocraft here");
+        both("message.universe.exocraft.tank_full", "油箱装不下这一份了（%s / %s）", "The fuel tank can't take that much (%s / %s)");
+        both("message.universe.exocraft.fuel", "探索车燃料 %s / %s", "Exocraft fuel %s / %s");
+        both("message.universe.exocraft.need_pickaxe", "拿镐敲才能把探索车收起来", "Hit it with a pickaxe to pack up the exocraft");
+        both("message.universe.exocraft.cargo_full", "探索车的货箱满了", "The exocraft's cargo is full");
+        both("hud.universe.exocraft.speed", "速度 %s 格/秒", "Speed %s blocks/s");
+        both("hud.universe.exocraft.cargo", "货箱 %s / %s 格", "Cargo %s / %s slots");
+        both("hud.universe.exocraft.fuel", "燃料 %s / %s", "Fuel %s / %s");
+        both("hud.universe.exocraft.laser", "采矿激光", "Mining laser");
+        both("hud.universe.exocraft.laser_overheated", "采矿激光（过热）", "Mining laser (overheated)");
+        both("hud.universe.exocraft.keys", "WASD 驾驶  %s 采矿激光  %s 下车", "WASD drive  %s mining laser  %s get out");
+        both("hud.universe.exocraft.keys2", "拿多功能工具按 %1$s 扫描，拿燃料按 %1$s 加油", "Multi-tool + %1$s: scan  Fuel + %1$s: refuel");
+        both("hud.universe.exocraft.no_fuel", "没有燃料了：拿煤之类的燃料右键加油", "Out of fuel: right-click with coal or other fuel");
+        both("hud.universe.exocraft.target", "%s · %s 格", "%s · %s blocks");
         item(UniverseItems.PIRATE_SCRAP.get(), "海盗残骸", "Pirate Scrap");
         item(UniverseItems.SENTINEL_SCRAP.get(), "守卫机残骸", "Sentinel Scrap");
         item(UniverseItems.SENTINEL_SPAWN_EGG.get(), "守卫机刷怪蛋", "Sentinel Spawn Egg");
@@ -469,6 +490,7 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("hud.universe.ship.keys.weapons", "%s 开火  %s 切换武器", "%s fire  %s switch weapon");
         tech("ship_weapons", "飞船武器", "Ship Weapons");
         tech("ship_shields", "飞船护盾", "Ship Shields");
+        tech("exocraft", "探索车", "Exocraft");
     }
 
     private void multitool() {

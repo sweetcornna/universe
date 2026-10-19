@@ -1,0 +1,19 @@
+{
+  "type": "universe:research_shaped",
+  "key": {
+    "A": "universe:accumulator",
+    "C": "universe:circuit_board",
+    "M": "universe:electric_motor",
+    "S": "universe:steel",
+    "X": "universe:plasma_exciter"
+  },
+  "pattern": [
+    "SXS",
+    "CAC",
+    "MSM"
+  ],
+  "research": "exocraft",
+  "result": {
+    "id": "universe:exocraft"
+  }
+}

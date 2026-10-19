@@ -7,12 +7,12 @@ import io.github.sweetcornna.universe.world.space.SpaceDimensions;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.Level;
 
-/** 飞船所在维度的重力和大气：星球维度按星球参数，主世界按母星，太空是真空失重。 */
-final class ShipEnvironment {
+/** 飞船（和探索车）所在维度的重力和大气：星球维度按星球参数，主世界按母星，太空是真空失重。 */
+public final class ShipEnvironment {
     private ShipEnvironment() {
     }
 
-    static Environment of(ServerLevel level) {
+    public static Environment of(ServerLevel level) {
         if (SpaceDimensions.isSpace(level.dimension())) {
             return Environment.SPACE;
         }

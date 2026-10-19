@@ -307,7 +307,7 @@ public final class Multitool {
     }
 
     /** 半径内的兴趣点（ADR-0014）：位置由星球种子算，不用加载区块；已经加载的区块用真实地面的高度。 */
-    static List<ScanResultPayload.PoiMarker> scanPois(ServerPlayer player, int radius) {
+    public static List<ScanResultPayload.PoiMarker> scanPois(ServerPlayer player, int radius) {
         ServerLevel level = player.level();
         PoiProgress progress = player.getData(UniverseAttachments.POI_PROGRESS);
         return Pois.layout(level).map(layout -> layout.within(player.getX(), player.getZ(), radius).stream()
@@ -318,7 +318,7 @@ public final class Multitool {
     }
 
     /** 半径内已加载区块里的矿石，按矿脉合并，由近到远。 */
-    static List<ScanResultPayload.Marker> scanOres(ServerLevel level, BlockPos center, int radius) {
+    public static List<ScanResultPayload.Marker> scanOres(ServerLevel level, BlockPos center, int radius) {
         VeinClusters clusters = new VeinClusters();
         List<Block> kinds = new ArrayList<>();
         Map<Block, Integer> ids = new HashMap<>();

@@ -2,6 +2,7 @@ package io.github.sweetcornna.universe;
 
 import io.github.sweetcornna.universe.client.asteroid.AsteroidClient;
 import io.github.sweetcornna.universe.client.dev.DevScript;
+import io.github.sweetcornna.universe.client.exocraft.ExocraftClient;
 import io.github.sweetcornna.universe.client.pirate.PirateClient;
 import io.github.sweetcornna.universe.client.sentinel.SentinelClient;
 import io.github.sweetcornna.universe.client.sentinel.SentinelRenderer;
@@ -67,6 +68,7 @@ public final class UniverseClient {
         StationClient.registerEvents(modBus, NeoForge.EVENT_BUS);
         PirateClient.registerEvents(modBus);
         AsteroidClient.registerEvents(modBus);
+        ExocraftClient.registerEvents(modBus, NeoForge.EVENT_BUS);
         PoiClient.registerEvents(modBus);
         SentinelClient.registerEvents(modBus);
         // 开发用：带了 -Duniverse.devScript 才启用
