@@ -21,6 +21,7 @@ public final class CreatureAnatomy {
     private int textureHeight;
     private float hitWidth;
     private float hitHeight;
+    private float saddleHeight;
 
     /** 部件在动画里的角色。 */
     public enum Role {
@@ -87,6 +88,11 @@ public final class CreatureAnatomy {
         return this.hitHeight;
     }
 
+    /** 骑在背上时坐的高度（格，未乘大小）：走兽是背的顶面，其余的是碰撞箱顶。 */
+    public float saddleHeight() {
+        return this.saddleHeight;
+    }
+
     public Part part(String name) {
         for (Part part : this.parts) {
             if (part.name().equals(name)) {
@@ -134,6 +140,7 @@ public final class CreatureAnatomy {
         int h = b.height();
         int legLen = b.legLength();
         float bodyY = GROUND - legLen - h / 2f;
+        this.saddleHeight = (legLen + h) / 16f;
         List<Box> bodyBoxes = new ArrayList<>();
         bodyBoxes.add(box(-w / 2f, -h / 2f, -len / 2f, w, h, len));
         this.dorsal(b, bodyBoxes, -h / 2f, len);
@@ -400,5 +407,8 @@ public final class CreatureAnatomy {
         // 原版的碰撞箱是正方形：取宽和（打折的）长里大的一个
         this.hitWidth = Math.max(maxX - minX, (maxZ - minZ) * 0.6f) / 16f;
         this.hitHeight = (GROUND - minY) / 16f;
+        if (this.saddleHeight == 0) {
+            this.saddleHeight = this.hitHeight;
+        }
     }
 }

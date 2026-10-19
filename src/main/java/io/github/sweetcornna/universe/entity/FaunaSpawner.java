@@ -66,7 +66,8 @@ public final class FaunaSpawner implements CustomSpawner {
             if (player.isSpectator()) {
                 continue;
             }
-            List<AlienCreature> around = around(level, player.getX(), player.getZ());
+            // 驯服的动物不占野生动物的名额
+            List<AlienCreature> around = around(level, player.getX(), player.getZ()).stream().filter(c -> !c.isTamed()).toList();
             if (around.size() < cap) {
                 // 飞兽到处乱飞、不会被地形挡住，单独限一个份额，免得天上全是飞兽
                 long flyers = around.stream().filter(c -> c instanceof AlienFlyer).count();

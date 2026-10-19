@@ -76,6 +76,10 @@ public final class RawValues {
             Map.entry("universe:pirate_scrap", 60.0),
             Map.entry("universe:alien_meat", 3.0),
             Map.entry("universe:alien_hide", 4.0),
+            // 喂养动物的产物（ADR-0017）
+            Map.entry("universe:alien_egg", 5.0),
+            Map.entry("universe:alien_fluff", 5.0),
+            Map.entry("universe:bio_gel", 6.0),
             // 只能在空间站买、在坠毁飞船里拆到的 Mk.II 部件（ADR-0017）
             Map.entry("universe:ship_thruster_mk2", 260.0),
             Map.entry("universe:fuel_tank_mk2", 220.0),

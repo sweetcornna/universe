@@ -71,6 +71,5 @@ public class ExocraftItem extends Item {
     public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display, Consumer<Component> builder, TooltipFlag flag) {
         int fuel = stack.getOrDefault(UniverseDataComponents.EXOCRAFT_FUEL.get(), 0);
         builder.accept(Component.translatable("tooltip.universe.exocraft.fuel", fuel, (int) Exocraft.MAX_FUEL).withStyle(ChatFormatting.GRAY));
-        builder.accept(Component.translatable("tooltip.universe.exocraft.usage").withStyle(ChatFormatting.DARK_GRAY));
     }
 }

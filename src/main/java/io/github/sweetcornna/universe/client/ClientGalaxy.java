@@ -1,7 +1,9 @@
 package io.github.sweetcornna.universe.client;
 
+import java.util.Map;
 import java.util.Optional;
 import java.util.OptionalInt;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.jspecify.annotations.Nullable;
 
@@ -43,6 +45,8 @@ public final class ClientGalaxy {
     private static volatile Flora currentFlora = Flora.NEUTRAL;
     private static volatile Fauna currentFauna = Fauna.FALLBACK;
     private static @Nullable ResourceKey<Level> currentDimension;
+    /** 按天体路径查过的动物（驯服的动物按出生的星球算物种），换星团时清掉。 */
+    private static final Map<String, Fauna> HOME_FAUNA = new ConcurrentHashMap<>();
 
     private ClientGalaxy() {
     }
@@ -54,6 +58,7 @@ public final class ClientGalaxy {
             galaxy = null;
             currentPlanet = null;
             currentDimension = null;
+            HOME_FAUNA.clear();
         });
         // 换维度时客户端会新建世界对象，在它开始渲染区块之前就换好配色
         gameBus.addListener(LevelEvent.Load.class, event -> {
@@ -68,6 +73,7 @@ public final class ClientGalaxy {
         long start = System.nanoTime();
         galaxy = GalaxyGenerator.fromGalaxySeed(payload.galaxySeed(), payload.systemCount());
         currentDimension = null;
+        HOME_FAUNA.clear();
         Universe.LOGGER.debug("Client galaxy ready: {} systems, {} bodies, {} ms",
                 payload.systemCount(), galaxy.bodyCount(), (System.nanoTime() - start) / 1_000_000);
     }
@@ -158,6 +164,12 @@ public final class ClientGalaxy {
     public static Flora currentFlora() {
         refresh();
         return currentFlora;
+    }
+
+    /** 这个天体上的动物（还不知道星团、或者那里没有动物时是 {@link Fauna#FALLBACK}）。可以在任意线程调用。 */
+    public static Fauna fauna(String path) {
+        Galaxy known = galaxy;
+        return known == null ? Fauna.FALLBACK : HOME_FAUNA.computeIfAbsent(path, p -> Planets.faunaOf(known, p));
     }
 
     /** 当前星球的动物（不在星球上、或者星球上没有动物时是 {@link Fauna#FALLBACK}）。可以在任意线程调用。 */

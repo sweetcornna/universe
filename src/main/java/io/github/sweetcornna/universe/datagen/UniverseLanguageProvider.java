@@ -69,6 +69,25 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         item(UniverseItems.ALIEN_MEAT.get(), "异兽生肉", "Raw Alien Meat");
         item(UniverseItems.COOKED_ALIEN_MEAT.get(), "熟异兽肉", "Cooked Alien Meat");
         item(UniverseItems.ALIEN_HIDE.get(), "异兽皮", "Alien Hide");
+        // 喂养（ADR-0017）
+        item(UniverseItems.HERBIVORE_FEED.get(), "草食饲料", "Herbivore Feed");
+        item(UniverseItems.CARNIVORE_FEED.get(), "肉食饲料", "Carnivore Feed");
+        item(UniverseItems.ALIEN_EGG.get(), "异星蛋", "Alien Egg");
+        item(UniverseItems.COOKED_ALIEN_EGG.get(), "烤异星蛋", "Roasted Alien Egg");
+        item(UniverseItems.ALIEN_FLUFF.get(), "异星绒毛", "Alien Fluff");
+        item(UniverseItems.BIO_GEL.get(), "生物胶质", "Bio Gel");
+        both("discovery.universe.diet.herbivore", "草食", "Herbivore");
+        both("discovery.universe.diet.carnivore", "肉食", "Carnivore");
+        both("message.universe.creature.wrong_food", "%s不吃这个", "%s won't eat that");
+        both("message.universe.creature.not_hungry", "%1$s还不饿（%2$s秒）", "%1$s isn't hungry (%2$ss)");
+        both("message.universe.creature.tamed", "%s已被驯服", "%s has been tamed");
+        both("message.universe.creature.staying", "%s：待命", "%s: Staying");
+        both("message.universe.creature.following", "%s：跟随", "%s: Following");
+        both("tooltip.universe.herbivore_feed.summary", "温顺、易受惊的动物吃\n喂动物有机会驯服，5 分钟产出一次\n驯服后空手潜行右键：待命 / 跟随\n驯服后空手右键：骑乘（体型较大的走兽）",
+                "Eaten by docile and skittish creatures\nFeeding can tame them; they produce once every 5 minutes\nTamed, sneak + right-click empty-handed: stay / follow\nTamed, right-click empty-handed: ride (larger walkers)");
+        both("tooltip.universe.carnivore_feed.summary", "有领地意识的动物和捕食者吃\n喂动物有机会驯服，5 分钟产出一次\n驯服后空手潜行右键：待命 / 跟随\n驯服后空手右键：骑乘（体型较大的走兽）",
+                "Eaten by territorial creatures and predators\nFeeding can tame them; they produce once every 5 minutes\nTamed, sneak + right-click empty-handed: stay / follow\nTamed, right-click empty-handed: ride (larger walkers)");
+        both("tooltip.universe.hold_shift", "按住 %s 查看说明", "Hold %s for details");
         item(UniverseItems.ALIEN_CREATURE_SPAWN_EGG.get(), "异星生物刷怪蛋", "Alien Creature Spawn Egg");
         item(UniverseItems.ALIEN_FLYER_SPAWN_EGG.get(), "异星飞兽刷怪蛋", "Alien Flyer Spawn Egg");
         this.ships();
@@ -187,22 +206,22 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("entity.universe.exocraft", "探索车", "Exocraft");
         item(UniverseItems.EXOCRAFT.get(), "探索车", "Exocraft");
         both("tooltip.universe.exocraft.fuel", "燃料 %s / %s", "Fuel %s / %s");
-        both("tooltip.universe.exocraft.usage", "对着地面用放下；右键上车，潜行右键开货箱，拿镐敲三下收起",
-                "Use on the ground to deploy. Right-click to drive, sneak + right-click for cargo, hit three times with a pickaxe to pack up");
-        both("message.universe.exocraft.no_space", "太空里放不了探索车", "The exocraft can't be deployed in space");
-        both("message.universe.exocraft.no_room", "这里放不下探索车", "Not enough room for the exocraft here");
-        both("message.universe.exocraft.tank_full", "油箱装不下这一份了（%s / %s）", "The fuel tank can't take that much (%s / %s)");
-        both("message.universe.exocraft.fuel", "探索车燃料 %s / %s", "Exocraft fuel %s / %s");
-        both("message.universe.exocraft.need_pickaxe", "拿镐敲才能把探索车收起来", "Hit it with a pickaxe to pack up the exocraft");
-        both("message.universe.exocraft.cargo_full", "探索车的货箱满了", "The exocraft's cargo is full");
+        both("tooltip.universe.exocraft.summary", "对着地面使用：放置\n右键：驾驶\n潜行右键：打开货箱\n手持燃料右键：加燃料\n驾驶时按攻击键：采矿激光\n驾驶时手持多功能工具右键：扫描\n用镐敲三下：收起，保留燃料和货物",
+                "Use on the ground: deploy\nRight-click: drive\nSneak + right-click: open cargo\nRight-click with fuel: refuel\nAttack while driving: mining laser\nRight-click with a multi-tool while driving: scan\nHit three times with a pickaxe: pack up, keeping fuel and cargo");
+
+        both("message.universe.exocraft.no_space", "不能在太空中放置", "Can't be deployed in space");
+        both("message.universe.exocraft.no_room", "空间不足", "Not enough room");
+        both("message.universe.exocraft.tank_full", "油箱装不下（%s / %s）", "Not enough room in the tank (%s / %s)");
+        both("message.universe.exocraft.fuel", "燃料：%s / %s", "Fuel: %s / %s");
+        both("message.universe.exocraft.need_pickaxe", "需要用镐收起", "Use a pickaxe to pack it up");
+        both("message.universe.exocraft.cargo_full", "货箱已满", "Cargo full");
         both("hud.universe.exocraft.speed", "速度 %s 格/秒", "Speed %s blocks/s");
         both("hud.universe.exocraft.cargo", "货箱 %s / %s 格", "Cargo %s / %s slots");
         both("hud.universe.exocraft.fuel", "燃料 %s / %s", "Fuel %s / %s");
         both("hud.universe.exocraft.laser", "采矿激光", "Mining laser");
         both("hud.universe.exocraft.laser_overheated", "采矿激光（过热）", "Mining laser (overheated)");
-        both("hud.universe.exocraft.keys", "WASD 驾驶  %s 采矿激光  %s 下车", "WASD drive  %s mining laser  %s get out");
-        both("hud.universe.exocraft.keys2", "拿多功能工具按 %1$s 扫描，拿燃料按 %1$s 加油", "Multi-tool + %1$s: scan  Fuel + %1$s: refuel");
-        both("hud.universe.exocraft.no_fuel", "没有燃料了：拿煤之类的燃料右键加油", "Out of fuel: right-click with coal or other fuel");
+        both("hud.universe.exocraft.keys", "%s 采矿激光  %s 下车", "%s Mining laser  %s Dismount");
+        both("hud.universe.exocraft.no_fuel", "没有燃料", "Out of fuel");
         both("hud.universe.exocraft.target", "%s · %s 格", "%s · %s blocks");
         item(UniverseItems.PIRATE_SCRAP.get(), "海盗残骸", "Pirate Scrap");
         item(UniverseItems.SENTINEL_SCRAP.get(), "守卫机残骸", "Sentinel Scrap");
@@ -986,6 +1005,10 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("hud.universe.visor.discovered", "新发现", "New discovery");
         both("hud.universe.visor.reward", "勘探数据 +%s", "Survey data +%s");
         both("hud.universe.visor.creature", "%1$s · %2$s · 体长 %3$s 米", "%1$s · %2$s · %3$s m long");
+        both("hud.universe.visor.husbandry", "%1$s · 产出%2$s", "%1$s · Produces %2$s");
+        both("hud.universe.visor.husbandry_mount", "%1$s · 产出%2$s · 可骑乘", "%1$s · Produces %2$s · Rideable");
+        both("hud.universe.visor.tamed", "主人：%s", "Owner: %s");
+        both("hud.universe.visor.tamed_staying", "主人：%s · 待命", "Owner: %s · Staying");
         both("hud.universe.visor.body", "%1$s · %2$s °C · 重力 %3$s g", "%1$s · %2$s °C · %3$s g");
         both("hud.universe.visor.star", "恒星 · %s", "Star · %s");
 

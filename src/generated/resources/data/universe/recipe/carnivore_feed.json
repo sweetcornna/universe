@@ -1,0 +1,26 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    [
+      "universe:alien_meat",
+      "minecraft:beef",
+      "minecraft:porkchop",
+      "minecraft:mutton",
+      "minecraft:chicken",
+      "minecraft:rabbit"
+    ],
+    [
+      "universe:alien_meat",
+      "minecraft:beef",
+      "minecraft:porkchop",
+      "minecraft:mutton",
+      "minecraft:chicken",
+      "minecraft:rabbit"
+    ],
+    "minecraft:bone_meal"
+  ],
+  "result": {
+    "count": 3,
+    "id": "universe:carnivore_feed"
+  }
+}

@@ -71,6 +71,19 @@ public final class UniverseItems {
             properties -> properties.food(new FoodProperties.Builder().nutrition(7).saturationModifier(0.75F).build()));
     /** 异星兽皮：可以鞣成皮革。 */
     public static final DeferredItem<Item> ALIEN_HIDE = ITEMS.registerSimpleItem("alien_hide");
+    // ---- 喂养（ADR-0017）：两种饲料，喂过的动物产出的三种东西
+    /** 草食饲料：星球植物压成的，温顺、易受惊的动物吃。 */
+    public static final DeferredItem<Item> HERBIVORE_FEED = ITEMS.registerSimpleItem("herbivore_feed");
+    /** 肉食饲料：生肉拌骨粉，有领地意识的和捕食者吃。 */
+    public static final DeferredItem<Item> CARNIVORE_FEED = ITEMS.registerSimpleItem("carnivore_feed");
+    /** 异星蛋：两足兽、飞兽和长甲片的四足兽下的，烤了能吃。 */
+    public static final DeferredItem<Item> ALIEN_EGG = ITEMS.registerSimpleItem("alien_egg", properties -> properties.stacksTo(16));
+    public static final DeferredItem<Item> COOKED_ALIEN_EGG = ITEMS.registerSimpleItem("cooked_alien_egg",
+            properties -> properties.food(new FoodProperties.Builder().nutrition(6).saturationModifier(0.7F).build()));
+    /** 异星绒毛：四足兽身上的，能搓成线、压成羊毛。 */
+    public static final DeferredItem<Item> ALIEN_FLUFF = ITEMS.registerSimpleItem("alien_fluff");
+    /** 生物胶质：六足虫、节蠕虫分泌的，当黏液球用，在化工厂里做有机晶体。 */
+    public static final DeferredItem<Item> BIO_GEL = ITEMS.registerSimpleItem("bio_gel");
     /** 刷怪蛋：按脚下的群系挑一种本星球的动物。 */
     public static final DeferredItem<SpawnEggItem> ALIEN_CREATURE_SPAWN_EGG = ITEMS.registerItem("alien_creature_spawn_egg",
             SpawnEggItem::new, properties -> properties.spawnEgg(UniverseEntities.ALIEN_CREATURE.get()));
@@ -324,7 +337,8 @@ public final class UniverseItems {
                 PLANET_SNOW, PLANET_ICE, PLANET_ASH, PLANET_STRATA, PLANET_CRYSTAL,
                 PLANET_LOG, PLANET_LEAVES, PLANET_CAP, PLANET_BLOOM));
         order.addAll(PLANTS.values());
-        order.addAll(List.of(ALIEN_MEAT, COOKED_ALIEN_MEAT, ALIEN_HIDE, ALIEN_CREATURE_SPAWN_EGG, ALIEN_FLYER_SPAWN_EGG));
+        order.addAll(List.of(ALIEN_MEAT, COOKED_ALIEN_MEAT, ALIEN_HIDE, HERBIVORE_FEED, CARNIVORE_FEED, ALIEN_EGG, COOKED_ALIEN_EGG,
+                ALIEN_FLUFF, BIO_GEL, ALIEN_CREATURE_SPAWN_EGG, ALIEN_FLYER_SPAWN_EGG));
         order.addAll(List.of(SHIP_HELM, SHIP_THRUSTER, FUEL_TANK, IMPULSE_ENGINE, WARP_DRIVE, SHIP_SEAT, PHOTON_CANNON, MINING_BEAM,
                 SHIELD_GENERATOR, SHIP_THRUSTER_MK2, FUEL_TANK_MK2, IMPULSE_ENGINE_MK2, WARP_DRIVE_MK2, ALLOY_HULL_PLATING,
                 LAUNCH_FUEL, SPACE_WARPER, SURVEY_DATA, EXOCRAFT));

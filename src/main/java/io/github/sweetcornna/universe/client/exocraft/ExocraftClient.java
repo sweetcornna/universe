@@ -146,12 +146,11 @@ public final class ExocraftClient {
         Component laserText = Component.translatable(overheated ? "hud.universe.exocraft.laser_overheated" : "hud.universe.exocraft.laser");
         Component keys = Component.translatable("hud.universe.exocraft.keys", minecraft.options.keyAttack.getTranslatedKeyMessage(),
                 minecraft.options.keyShift.getTranslatedKeyMessage());
-        Component keys2 = Component.translatable("hud.universe.exocraft.keys2", minecraft.options.keyUse.getTranslatedKeyMessage());
         Component hint = exocraft.fuel() <= 0 && !infinite ? Component.translatable("hud.universe.exocraft.no_fuel") : null;
 
         Component title = Component.translatable("entity.universe.exocraft");
         int panelWidth = PANEL_WIDTH;
-        for (Component line : List.of(title, fuelText, laserText, keys, keys2)) {
+        for (Component line : List.of(title, fuelText, laserText, keys)) {
             panelWidth = Math.max(panelWidth, font.width(line) + 6);
         }
         for (Component line : lines) {
@@ -161,7 +160,7 @@ public final class ExocraftClient {
             panelWidth = Math.max(panelWidth, font.width(hint) + 6);
         }
         int x = 6;
-        int height = 13 + lines.size() * 10 + 16 + 16 + 20 + (hint != null ? 10 : 0);
+        int height = 13 + lines.size() * 10 + 16 + 16 + 10 + (hint != null ? 10 : 0);
         int y = graphics.guiHeight() / 2 - height / 2;
         graphics.fill(x - 3, y - 3, x + panelWidth, y + height, 0x90000000);
         graphics.text(font, title, x, y, 0xFFFFB866, false);
@@ -176,8 +175,6 @@ public final class ExocraftClient {
         float heat = Mth.clamp(exocraft.heat() / LaserHeat.MAX, 0, 1);
         y = bar(graphics, font, laserText, x, y, barWidth, heat, overheated ? 0xFFE5533D : heat > 0.7F ? 0xFFFF9F43 : 0xFF5AD2FF);
         graphics.text(font, keys, x, y, 0xFF9A9A9A, false);
-        y += 10;
-        graphics.text(font, keys2, x, y, 0xFF9A9A9A, false);
         y += 10;
         if (hint != null) {
             graphics.text(font, hint, x, y, 0xFFFFD27F, false);

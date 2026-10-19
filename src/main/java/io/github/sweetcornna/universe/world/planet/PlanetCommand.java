@@ -14,6 +14,7 @@ import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 
 import io.github.sweetcornna.universe.Universe;
+import io.github.sweetcornna.universe.core.ecology.Husbandry;
 import io.github.sweetcornna.universe.core.galaxy.Galaxy;
 import io.github.sweetcornna.universe.core.galaxy.Hazard;
 import io.github.sweetcornna.universe.core.galaxy.Planet;
@@ -216,6 +217,13 @@ public final class PlanetCommand {
                     s.attack() > 0 ? String.format(Locale.ROOT, "，攻击 %.1f", s.attack()) : "", s.groupMin(), s.groupMax(),
                     s.biotopes(), s.skin().patternType(), s.skin().glowingPattern() ? "（发光）" : "",
                     s.skin().glowingEyes() ? "，眼睛发光" : ""));
+            // 喂养（ADR-0017）
+            text.append(String.format(Locale.ROOT, "；%s，产%s×%d%s", Husbandry.diet(s.temperament()) == Husbandry.Diet.HERBIVORE ? "草食" : "肉食",
+                    switch (Husbandry.product(s)) {
+                        case EGG -> "蛋";
+                        case FLUFF -> "绒毛";
+                        case GEL -> "胶质";
+                    }, Husbandry.productCount(s), Husbandry.rideable(s) ? "，驯服后能骑" : ""));
         }
         source.sendSuccess(() -> Component.literal(text.toString()), false);
         return 1;

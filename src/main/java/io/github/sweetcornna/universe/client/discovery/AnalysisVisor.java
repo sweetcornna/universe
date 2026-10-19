@@ -1,5 +1,7 @@
 package io.github.sweetcornna.universe.client.discovery;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.OptionalInt;
@@ -22,6 +24,7 @@ import io.github.sweetcornna.universe.core.discovery.DiscoveryLog;
 import io.github.sweetcornna.universe.core.discovery.Survey;
 import io.github.sweetcornna.universe.core.ecology.CreatureSpecies;
 import io.github.sweetcornna.universe.core.ecology.Flora;
+import io.github.sweetcornna.universe.core.ecology.Husbandry;
 import io.github.sweetcornna.universe.core.ecology.PlantSpecies;
 import io.github.sweetcornna.universe.core.ecology.TreeSpecies;
 import io.github.sweetcornna.universe.core.galaxy.BodyId;
@@ -30,6 +33,7 @@ import io.github.sweetcornna.universe.core.galaxy.Planet;
 import io.github.sweetcornna.universe.core.galaxy.StarSystem;
 import io.github.sweetcornna.universe.discovery.Discoveries;
 import io.github.sweetcornna.universe.entity.AlienCreature;
+import io.github.sweetcornna.universe.entity.CreatureHusbandry;
 import io.github.sweetcornna.universe.network.AnalyzePayload;
 import io.github.sweetcornna.universe.registry.UniverseItems;
 import io.github.sweetcornna.universe.tech.SuitTech;
@@ -38,6 +42,8 @@ import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -47,6 +53,8 @@ import net.minecraft.tags.TagKey;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Util;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityReference;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -86,7 +94,11 @@ public final class AnalysisVisor {
      * @param key    发现日志里对应的东西；认不出来时为 null
      * @param reward 第一个发现能拿几个勘探数据
      */
-    private record Target(AnalyzePayload payload, @Nullable DiscoveryKey key, String name, Component detail, int reward) {
+    private record Target(AnalyzePayload payload, @Nullable DiscoveryKey key, String name, Component detail, List<Component> extra, int reward) {
+        Target(AnalyzePayload payload, @Nullable DiscoveryKey key, String name, Component detail, int reward) {
+            this(payload, key, name, detail, List.of(), reward);
+        }
+
     }
 
     private AnalysisVisor() {
@@ -221,15 +233,28 @@ public final class AnalysisVisor {
         return best;
     }
 
-    private static Target creature(AlienCreature creature, Optional<BodyId> body, Galaxy galaxy) {
+    private static Target creature(AlienCreature creature, Optional<BodyId> here, Galaxy galaxy) {
         CreatureSpecies species = creature.species();
+        // 驯服的动物按出生的星球记
+        Optional<BodyId> body = creature.homeBody().or(() -> here);
         DiscoveryKey key = body.map(id -> DiscoveryKey.creature(id, species.index())).orElse(null);
         String name = key == null ? GalaxyText.name(species.name()) : ClientDiscoveries.name(key, species.name());
         Component detail = Component.translatable("hud.universe.visor.creature",
                 Component.translatable("discovery.universe.plan." + species.plan().name().toLowerCase(Locale.ROOT)),
                 Component.translatable("discovery.universe.temperament." + species.temperament().name().toLowerCase(Locale.ROOT)),
                 GalaxyText.number(species.size(), 1));
-        return new Target(AnalyzePayload.entity(creature.getId()), key, name, detail, key == null ? 0 : Survey.reward(key, galaxy));
+        // 喂养：吃什么、产出什么、能不能骑；驯服的写上主人
+        List<Component> extra = new ArrayList<>();
+        extra.add(Component.translatable(Husbandry.rideable(species) ? "hud.universe.visor.husbandry_mount" : "hud.universe.visor.husbandry",
+                CreatureHusbandry.dietName(Husbandry.diet(species.temperament())), CreatureHusbandry.product(species).getHoverName()));
+        EntityReference<LivingEntity> owner = creature.getOwnerReference();
+        if (owner != null) {
+            ClientPacketListener connection = Minecraft.getInstance().getConnection();
+            PlayerInfo info = connection == null ? null : connection.getPlayerInfo(owner.getUUID());
+            String ownerName = info == null ? "?" : info.getProfile().name();
+            extra.add(Component.translatable(creature.isStaying() ? "hud.universe.visor.tamed_staying" : "hud.universe.visor.tamed", ownerName));
+        }
+        return new Target(AnalyzePayload.entity(creature.getId()), key, name, detail, extra, key == null ? 0 : Survey.reward(key, galaxy));
     }
 
     private static @Nullable Target block(Level level, BlockPos pos, Optional<BodyId> body, Galaxy galaxy) {
@@ -343,11 +368,20 @@ public final class AnalysisVisor {
         }
         int x = cx + 24;
         int y = cy + 12;
-        int panelWidth = Math.max(Math.max(font.width(shown.name()), font.width(shown.detail())), 150) + 10;
-        graphics.fill(x - 4, y - 4, x + panelWidth, y + 46, 0x90061418);
-        graphics.fill(x - 4, y - 4, x - 3, y + 46, COLOR);
+        int panelWidth = Math.max(Math.max(font.width(shown.name()), font.width(shown.detail())), 150);
+        for (Component line : shown.extra()) {
+            panelWidth = Math.max(panelWidth, font.width(line));
+        }
+        panelWidth += 10;
+        int lines = shown.extra().size() * 11;
+        graphics.fill(x - 4, y - 4, x + panelWidth, y + 46 + lines, 0x90061418);
+        graphics.fill(x - 4, y - 4, x - 3, y + 46 + lines, COLOR);
         graphics.text(font, shown.name(), x, y, 0xFFFFFFFF, true);
         graphics.text(font, shown.detail(), x, y + 11, DIM, false);
+        for (Component line : shown.extra()) {
+            y += 11;
+            graphics.text(font, line, x, y + 11, 0xFFB8E6C8, false);
+        }
         Component status;
         int statusColor;
         if (progress > 0) {

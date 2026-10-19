@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    "universe:bio_gel"
+  ],
+  "result": {
+    "id": "minecraft:slime_ball"
+  }
+}

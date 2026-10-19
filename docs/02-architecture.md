@@ -298,6 +298,10 @@ io.github.sweetcornna.universe
 | `VehicleEntity` 带受伤晃动（`setHurtTime`、`setHurtDir`）和累计伤害（`setDamage`），原版的船每刻回 1 点伤害；`destroy(ServerLevel, DamageSource)` 可覆盖，`kill()` 只移除、不掉落 | 已确认，探索车在用 |
 | 第三人称镜头：`Camera.alignWithEntity` 先摆到眼睛，再沿视线往后拉（`CalculateDetachedCameraDistanceEvent` 改距离），准星永远是眼睛的视线，驾驶员的头正挡在准星上；要抬镜头得在往后拉之前 `move(0, 抬高, 0)`（`CameraMixin`），这时准星的视线也抬高了，按准星打东西要从抬高的那一点算 | 已确认，飞船和探索车在用 |
 | 原版第三人称不画准星（`Gui` 只在第一人称画） | 已确认，探索车自己画激光准星 |
+| 驯服的生物：实现 `OwnableEntity`，主人存成 `EntityReference<LivingEntity>`（`EntityReference.of/read/store`），同步用 `EntityDataSerializers.OPTIONAL_LIVING_ENTITY_REFERENCE`；`isAlliedTo` 两边都问 `considersEntityAsAlly`，它是 protected 的 | 已确认，异星动物在用 |
+| 能骑的生物：`getControllingPassenger` 返回骑手后由 `tickRidden`、`getRiddenInput`、`getRiddenSpeed` 接管移动；蓄力跳实现 `PlayerRideableJumping`；坐的高度是 `getPassengerAttachmentPoint(Entity, EntityDimensions, float)` | 已确认，异星动物在用 |
+| `lastHurtMob` 只在真打中时记下（玩家和生物的近战、箭、风弹），`/damage … by` 不记；按主人的 `lastHurtMob` 帮打的生物，测试时得真打一下 | 已确认 |
+| 数据生成里配方的 `save(output, id)`：id 和默认的一样时直接抛异常，要用 `save(output)` | 已确认 |
 
 原则：拿不准的 API，先查源码再动手写，核实后把结果补进这张表。源码位置：
 

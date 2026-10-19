@@ -1,5 +1,6 @@
 package io.github.sweetcornna.universe.world.planet;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.WeakHashMap;
@@ -29,6 +30,8 @@ public final class Planets {
     private static final Map<ServerLevel, Optional<Planet>> PLANETS = new WeakHashMap<>();
     /** 星球维度上的动物，每个世界算一次。 */
     private static final Map<ServerLevel, Optional<Fauna>> FAUNA = new WeakHashMap<>();
+    /** 按天体路径查的动物（驯服的动物按出生的星球算物种），键是星团种子加天体路径。 */
+    private static final Map<String, Fauna> HOME_FAUNA = new HashMap<>();
 
     private Planets() {
     }
@@ -53,6 +56,25 @@ public final class Planets {
         synchronized (FAUNA) {
             return FAUNA.computeIfAbsent(level, key -> planet(key).map(Fauna::of).filter(fauna -> !fauna.lifeless()));
         }
+    }
+
+    /** 这个天体上的动物（驯服的动物按出生的星球算物种）；不是有动物的星球时是 {@link Fauna#FALLBACK}。 */
+    public static Fauna fauna(MinecraftServer server, String path) {
+        String key = galaxySeed(server) + "/" + path;
+        synchronized (HOME_FAUNA) {
+            Fauna fauna = HOME_FAUNA.get(key);
+            if (fauna == null) {
+                fauna = faunaOf(galaxy(server), path);
+                HOME_FAUNA.put(key, fauna);
+            }
+            return fauna;
+        }
+    }
+
+    /** 星团里这个天体上的动物，客户端和服务端共用；和 {@link #fauna(ServerLevel)} 算出来的物种表一样。 */
+    public static Fauna faunaOf(Galaxy galaxy, String path) {
+        return BodyId.parse(path).flatMap(galaxy::body).filter(Planet::landable).map(Fauna::of).filter(fauna -> !fauna.lifeless())
+                .orElse(Fauna.FALLBACK);
     }
 
     /** 服务端的星团。 */

@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "key": {
+    "F": "universe:alien_fluff"
+  },
+  "pattern": [
+    "FF",
+    "FF"
+  ],
+  "result": {
+    "id": "minecraft:white_wool"
+  }
+}

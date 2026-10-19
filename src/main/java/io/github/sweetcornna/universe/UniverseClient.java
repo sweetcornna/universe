@@ -1,5 +1,6 @@
 package io.github.sweetcornna.universe;
 
+import io.github.sweetcornna.universe.client.ItemSummaries;
 import io.github.sweetcornna.universe.client.asteroid.AsteroidClient;
 import io.github.sweetcornna.universe.client.dev.DevScript;
 import io.github.sweetcornna.universe.client.exocraft.ExocraftClient;
@@ -69,6 +70,7 @@ public final class UniverseClient {
         PirateClient.registerEvents(modBus);
         AsteroidClient.registerEvents(modBus);
         ExocraftClient.registerEvents(modBus, NeoForge.EVENT_BUS);
+        ItemSummaries.registerEvents(NeoForge.EVENT_BUS);
         PoiClient.registerEvents(modBus);
         SentinelClient.registerEvents(modBus);
         // 开发用：带了 -Duniverse.devScript 才启用
@@ -76,7 +78,7 @@ public final class UniverseClient {
         // 客户端世界建立环境属性时，从客户端的星团里查星球
         PlanetEnvironment.setClientGalaxy(dimension -> ClientGalaxy.galaxy());
         // 客户端的动物按当前星球的物种表画
-        AlienCreature.setClientFauna(ClientGalaxy::currentFauna);
+        AlienCreature.setClientFauna(ClientGalaxy::currentFauna, ClientGalaxy::fauna);
         modBus.addListener(EntityRenderersEvent.RegisterRenderers.class, event -> {
             event.registerEntityRenderer(UniverseEntities.ALIEN_CREATURE.get(), AlienCreatureRenderer::new);
             event.registerEntityRenderer(UniverseEntities.ALIEN_FLYER.get(), AlienCreatureRenderer::new);

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
 import java.util.Deque;
 import java.util.HashSet;
 import java.util.List;
@@ -14,6 +15,8 @@ import org.jspecify.annotations.Nullable;
 
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.asteroid.Asteroid;
+import io.github.sweetcornna.universe.client.ItemSummaries;
+import io.github.sweetcornna.universe.client.UniverseKeys;
 import io.github.sweetcornna.universe.client.dyson.ClientDyson;
 import io.github.sweetcornna.universe.client.pirate.PirateClient;
 import io.github.sweetcornna.universe.client.ship.ShipClient;
@@ -31,10 +34,14 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
@@ -294,6 +301,34 @@ public final class DevScript {
                         minecraft.gameMode.interact(player, target, new EntityHitResult(target), InteractionHand.MAIN_HAND);
                     }
                 }
+            }
+            case "tooltip" -> {
+                // tooltip [shift]：把主手物品的说明写进日志；shift 时换成按住 Shift 看到的那几行
+                ItemStack stack = player.getMainHandItem();
+                List<Component> lines = new ArrayList<>(stack.getTooltipLines(Item.TooltipContext.of(minecraft.level, player), player,
+                        TooltipFlag.NORMAL));
+                if (args.length > 0 && args[0].equals("shift") && !lines.isEmpty()) {
+                    // 键盘上的 Shift 没按，事件接上的是提示那一行，换成说明
+                    lines.removeLast();
+                    ItemSummaries.append(stack, lines, true);
+                }
+                for (Component tooltipLine : lines) {
+                    Universe.LOGGER.info("Dev script tooltip: {}", tooltipLine.getString());
+                }
+            }
+            case "respawn" -> {
+                // 上次验收死在存档里时先复活
+                if (player.isDeadOrDying()) {
+                    player.respawn();
+                }
+            }
+            case "press" -> {
+                // press analyze：按一下本模组的键（开关分析目镜）
+                KeyMapping key = switch (args[0]) {
+                    case "analyze" -> UniverseKeys.ANALYZE;
+                    default -> throw new IllegalArgumentException("unknown key " + args[0]);
+                };
+                KeyMapping.click(key.getKey());
             }
             case "useitem" -> {
                 // 对着空气右键（用手里的东西）

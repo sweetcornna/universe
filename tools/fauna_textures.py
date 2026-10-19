@@ -1,4 +1,5 @@
-"""生成动物相关物品的贴图（16×16）：异兽生肉、熟异兽肉、异兽皮、两种刷怪蛋。
+"""生成动物相关物品的贴图（16×16）：异兽生肉、熟异兽肉、异兽皮、两种刷怪蛋，
+喂养的产物（异星蛋、烤异星蛋、异星绒毛、生物胶质）和两种饲料（ADR-0017）。
 
 用法：python tools/fauna_textures.py [输出目录]
 默认输出到 src/main/resources/assets/universe/textures/item。
@@ -147,6 +148,128 @@ def egg(base, spot, seed):
     return img
 
 
+def alien_egg(cooked):
+    """异星蛋：比刷怪蛋小一圈、淡紫带青斑；烤过的壳焦黄，冒一缕热气。"""
+    img = Image.new("RGBA", (N, N), (0, 0, 0, 0))
+    mask = set()
+    for y in range(N):
+        for x in range(N):
+            py = (y + 0.5 - 9.0) / 6.3
+            rx = 4.9 * (1 - 0.2 * max(0, -py))
+            if py * py + ((x + 0.5 - 8) / rx) ** 2 <= 1:
+                mask.add((x, y))
+    if cooked:
+        base, spot = (214, 160, 92), (150, 92, 44)
+    else:
+        base, spot = (206, 196, 236), (78, 176, 168)
+    rnd = random.Random(21 if cooked else 17)
+    spots = [(rnd.uniform(5, 11), rnd.uniform(6, 14), rnd.uniform(0.5, 1.1)) for _ in range(7)]
+    edge = outline(mask)
+    dark = shade(base, 0.42)
+    for (x, y) in mask:
+        c = base
+        if any((x - sx) ** 2 + (y - sy) ** 2 < r * r for sx, sy, r in spots):
+            c = spot
+        c = shade(c, 1.12 - (x * 0.5 + y) * 0.016)
+        if (x, y) in edge:
+            c = dark
+        img.putpixel((x, y), c)
+    for (x, y) in ((6, 7), (6, 8), (7, 6)):
+        if (x, y) in mask and (x, y) not in edge:
+            img.putpixel((x, y), mix(img.getpixel((x, y)), (255, 255, 255), 0.6))
+    if cooked:
+        # 一缕热气
+        for (x, y) in ((9, 3), (10, 2), (9, 1), (6, 2), (7, 1)):
+            img.putpixel((x, y), (236, 236, 236, 150))
+    return img
+
+
+def fluff():
+    """异星绒毛：一团蓬松的毛，粉青两色，亮的一侧有几根细毛翘出来。"""
+    img = Image.new("RGBA", (N, N), (0, 0, 0, 0))
+    # 几个圆叠成的一团毛
+    tufts = ((8, 6.2, 3.6), (4.9, 8.6, 3.2), (11.1, 8.6, 3.2), (6.2, 11.6, 3.0), (9.9, 11.6, 3.0), (8, 9.4, 3.4))
+    mask = {(x, y) for y in range(N) for x in range(N)
+            if any((x + 0.5 - cx) ** 2 + (y + 0.5 - cy) ** 2 <= r * r for cx, cy, r in tufts)}
+    base, light, dark = (150, 214, 210), (236, 206, 232), (58, 104, 112)
+    rnd = random.Random(33)
+    edge = outline(mask)
+    for (x, y) in mask:
+        t = max(0.0, min(1.0, (16 - x - y) / 16 + rnd.uniform(-0.12, 0.12)))
+        c = mix(base, light, t * 0.8)
+        # 一卷一卷的毛：小圈的明暗
+        if (x * 3 + y * 5) % 7 == 0:
+            c = shade(c, 0.86)
+        if (x, y) in edge:
+            c = shade(dark, 1.05)
+        img.putpixel((x, y), c)
+    for (x, y) in ((2, 5), (1, 4), (5, 2), (11, 2)):
+        if (x, y) not in mask:
+            img.putpixel((x, y), shade(light, 0.95))
+    return img
+
+
+def gel():
+    """生物胶质：半透明的绿色一滴，带高光和里面的小气泡。"""
+    img = Image.new("RGBA", (N, N), (0, 0, 0, 0))
+    mask = set()
+    for y in range(N):
+        for x in range(N):
+            px, py = x + 0.5 - 8, y + 0.5 - 9.6
+            # 下面圆、上面收成尖的水滴
+            if py >= 0:
+                inside = px * px + py * py <= 5.2 ** 2
+            else:
+                inside = abs(px) <= 5.2 * (1 + py / 8.6) and py > -8.6
+            if inside:
+                mask.add((x, y))
+    base, deep = (120, 214, 96), (40, 120, 52)
+    edge = outline(mask)
+    for (x, y) in mask:
+        depth = max(0.0, min(1.0, (y - 4) / 11))
+        c = mix(base, deep, depth * 0.7)
+        alpha = 200 if (x, y) not in edge else 255
+        if (x, y) in edge:
+            c = shade(deep, 0.75)
+        img.putpixel((x, y), c[:3] + (alpha,))
+    for (x, y) in ((6, 8), (6, 9), (7, 7)):
+        img.putpixel((x, y), (232, 255, 224, 230))
+    for (x, y) in ((10, 11), (9, 13)):
+        img.putpixel((x, y), (186, 244, 170, 220))
+    return img
+
+
+def feed(herbivore):
+    """饲料：麻布小袋，口上露出一把颗粒；草食是绿色的草籽团，肉食是红褐色的肉干粒。"""
+    img = Image.new("RGBA", (N, N), (0, 0, 0, 0))
+    sack = set()
+    for y in range(5, N - 1):
+        for x in range(N):
+            # 袋子下宽上窄
+            half = 4.2 + (y - 5) * 0.22
+            if abs(x + 0.5 - 8) <= half:
+                sack.add((x, y))
+    cloth, dark = (196, 168, 120), (104, 80, 50)
+    edge = outline(sack)
+    rnd = random.Random(41 if herbivore else 43)
+    for (x, y) in sack:
+        c = shade(cloth, 1.08 - y * 0.014 + rnd.uniform(-0.05, 0.05))
+        # 麻布纹
+        if (x + y) % 3 == 0:
+            c = shade(c, 0.92)
+        if (x, y) in edge:
+            c = dark
+        img.putpixel((x, y), c)
+    # 扎口的绳子
+    for x in range(4, 12):
+        img.putpixel((x, 6), (128, 92, 52, 255))
+    pellet = (112, 178, 64) if herbivore else (156, 64, 44)
+    pellet_dark = shade(pellet, 0.6)
+    for (x, y) in ((5, 4), (6, 3), (7, 4), (8, 3), (9, 4), (10, 3), (7, 2), (9, 2), (8, 1)):
+        img.putpixel((x, y), pellet if (x + y) % 2 else pellet_dark)
+    return img
+
+
 def main():
     os.makedirs(OUT, exist_ok=True)
     meat(False).save(os.path.join(OUT, "alien_meat.png"))
@@ -154,6 +277,12 @@ def main():
     hide().save(os.path.join(OUT, "alien_hide.png"))
     egg((70, 168, 150), (150, 72, 190), 5).save(os.path.join(OUT, "alien_creature_spawn_egg.png"))
     egg((226, 150, 60), (60, 110, 200), 9).save(os.path.join(OUT, "alien_flyer_spawn_egg.png"))
+    alien_egg(False).save(os.path.join(OUT, "alien_egg.png"))
+    alien_egg(True).save(os.path.join(OUT, "cooked_alien_egg.png"))
+    fluff().save(os.path.join(OUT, "alien_fluff.png"))
+    gel().save(os.path.join(OUT, "bio_gel.png"))
+    feed(True).save(os.path.join(OUT, "herbivore_feed.png"))
+    feed(False).save(os.path.join(OUT, "carnivore_feed.png"))
     print("wrote item textures to", os.path.abspath(OUT))
 
 

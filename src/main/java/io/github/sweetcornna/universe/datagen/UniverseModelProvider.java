@@ -91,7 +91,8 @@ final class UniverseModelProvider extends ModelProvider {
         UniverseBlocks.PLANTS.forEach((form, block) -> plant(blockModels, itemModels, form, block.get()));
         this.trees(blockModels, itemModels);
         for (DeferredItem<?> item : List.of(UniverseItems.ALIEN_MEAT, UniverseItems.COOKED_ALIEN_MEAT, UniverseItems.ALIEN_HIDE,
-                UniverseItems.ALIEN_CREATURE_SPAWN_EGG, UniverseItems.ALIEN_FLYER_SPAWN_EGG, UniverseItems.LAUNCH_FUEL,
+                UniverseItems.HERBIVORE_FEED, UniverseItems.CARNIVORE_FEED, UniverseItems.ALIEN_EGG, UniverseItems.COOKED_ALIEN_EGG,
+                UniverseItems.ALIEN_FLUFF, UniverseItems.BIO_GEL, UniverseItems.ALIEN_CREATURE_SPAWN_EGG, UniverseItems.ALIEN_FLYER_SPAWN_EGG, UniverseItems.LAUNCH_FUEL,
                 UniverseItems.SPACE_WARPER, UniverseItems.SURVEY_DATA)) {
             itemModels.generateFlatItem(item.get(), ModelTemplates.FLAT_ITEM);
         }

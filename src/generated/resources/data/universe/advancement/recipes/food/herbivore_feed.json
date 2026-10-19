@@ -1,0 +1,153 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_planet_blades": {
+      "conditions": {
+        "items": [
+          {
+            "items": "universe:planet_blades"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_planet_bulb": {
+      "conditions": {
+        "items": [
+          {
+            "items": "universe:planet_bulb"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_planet_crystal_bloom": {
+      "conditions": {
+        "items": [
+          {
+            "items": "universe:planet_crystal_bloom"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_planet_fern": {
+      "conditions": {
+        "items": [
+          {
+            "items": "universe:planet_fern"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_planet_flower": {
+      "conditions": {
+        "items": [
+          {
+            "items": "universe:planet_flower"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_planet_fungus": {
+      "conditions": {
+        "items": [
+          {
+            "items": "universe:planet_fungus"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_planet_leaves": {
+      "conditions": {
+        "items": [
+          {
+            "items": "universe:planet_leaves"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_planet_lichen": {
+      "conditions": {
+        "items": [
+          {
+            "items": "universe:planet_lichen"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_planet_reed": {
+      "conditions": {
+        "items": [
+          {
+            "items": "universe:planet_reed"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_planet_succulent": {
+      "conditions": {
+        "items": [
+          {
+            "items": "universe:planet_succulent"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_planet_tendril": {
+      "conditions": {
+        "items": [
+          {
+            "items": "universe:planet_tendril"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_planet_tuft": {
+      "conditions": {
+        "items": [
+          {
+            "items": "universe:planet_tuft"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipes": "universe:herbivore_feed"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_planet_tuft",
+      "has_planet_blades",
+      "has_planet_fern",
+      "has_planet_flower",
+      "has_planet_bulb",
+      "has_planet_fungus",
+      "has_planet_tendril",
+      "has_planet_reed",
+      "has_planet_succulent",
+      "has_planet_lichen",
+      "has_planet_crystal_bloom",
+      "has_planet_leaves"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "universe:herbivore_feed"
+    ]
+  }
+}

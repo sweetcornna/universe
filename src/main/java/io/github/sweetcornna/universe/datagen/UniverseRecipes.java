@@ -57,6 +57,7 @@ final class UniverseRecipes extends RecipeProvider {
                 .requires(UniverseItems.ALIEN_HIDE.get(), 2)
                 .unlockedBy(getHasName(UniverseItems.ALIEN_HIDE.get()), this.has(UniverseItems.ALIEN_HIDE.get()))
                 .save(this.output, "universe:leather_from_alien_hide");
+        this.husbandry();
         this.ships();
         this.pois();
         this.ores();
@@ -204,6 +205,9 @@ final class UniverseRecipes extends RecipeProvider {
         this.machine(Kind.CHEMICAL, "sulfuric_acid", 120, "basic_chemical",
                 List.of(SizedIngredient.of(refined, 6), new SizedIngredient(stone, 8), SizedIngredient.of(water, 4)), out(acid, 4));
         this.machine(Kind.CHEMICAL, "organic_crystal", 120, "basic_chemical", in(plastic, 2, refined, 1, water, 1), out(organic, 1));
+        // 喂养动物得到的生物胶质也能做有机晶体（ADR-0017）
+        this.machine(Kind.CHEMICAL, "organic_crystal_from_bio_gel", 120, "basic_chemical", in(UniverseItems.BIO_GEL.get(), 3, water, 1),
+                out(organic, 1));
         this.machine(Kind.CHEMICAL, "graphene", 60, "high_strength_materials", in(acid, 3, graphite, 2), out(graphene, 2));
         this.machine(Kind.CHEMICAL, "carbon_nanotube", 80, "high_strength_materials", in(graphene, 3, titanium, 1), out(nanotube, 2));
         // 星球上的资源：可燃冰直接做石墨烯（顺带出氢），硫磺加水做硫酸
@@ -717,6 +721,50 @@ final class UniverseRecipes extends RecipeProvider {
                 .group("universe:hull_plating")
                 .unlockedBy("has_hull_plating", this.has(lightGray))
                 .save(this.output, "universe:hull_plating_" + color.getSerializedName() + "_from_dye"));
+    }
+
+    /**
+     * 喂养（ADR-0017）：星球植物压成草食饲料，生肉拌骨粉做肉食饲料；异星蛋烤着吃，绒毛搓线、压羊毛，生物胶质当黏液球用。
+     * 生物胶质在化工厂里做有机晶体的配方放在化工那一段。
+     */
+    private void husbandry() {
+        List<Item> plants = new ArrayList<>();
+        UniverseItems.PLANTS.values().forEach(item -> plants.add(item.get()));
+        plants.add(UniverseItems.PLANET_LEAVES.get());
+        var herbivore = this.shapeless(RecipeCategory.FOOD, UniverseItems.HERBIVORE_FEED.get(), 2)
+                .requires(Ingredient.of(plants.stream()), 3);
+        for (Item plant : plants) {
+            herbivore.unlockedBy(getHasName(plant), this.has(plant));
+        }
+        herbivore.save(this.output);
+        this.shapeless(RecipeCategory.FOOD, UniverseItems.CARNIVORE_FEED.get(), 3)
+                .requires(Ingredient.of(UniverseItems.ALIEN_MEAT.get(), Items.BEEF, Items.PORKCHOP, Items.MUTTON, Items.CHICKEN, Items.RABBIT), 2)
+                .requires(Items.BONE_MEAL)
+                .unlockedBy(getHasName(UniverseItems.ALIEN_MEAT.get()), this.has(UniverseItems.ALIEN_MEAT.get()))
+                .save(this.output);
+        this.cook("smelting", SmeltingRecipe::new, 200, UniverseItems.ALIEN_EGG.get(), UniverseItems.COOKED_ALIEN_EGG.get());
+        this.cook("smoking", SmokingRecipe::new, 100, UniverseItems.ALIEN_EGG.get(), UniverseItems.COOKED_ALIEN_EGG.get());
+        this.cook("campfire_cooking", CampfireCookingRecipe::new, 600, UniverseItems.ALIEN_EGG.get(), UniverseItems.COOKED_ALIEN_EGG.get());
+        this.shapeless(RecipeCategory.MISC, Items.STRING, 2)
+                .requires(UniverseItems.ALIEN_FLUFF.get())
+                .unlockedBy(getHasName(UniverseItems.ALIEN_FLUFF.get()), this.has(UniverseItems.ALIEN_FLUFF.get()))
+                .save(this.output, "universe:string_from_alien_fluff");
+        this.shaped(RecipeCategory.BUILDING_BLOCKS, Items.WOOL.white())
+                .pattern("FF").pattern("FF")
+                .define('F', UniverseItems.ALIEN_FLUFF.get())
+                .unlockedBy(getHasName(UniverseItems.ALIEN_FLUFF.get()), this.has(UniverseItems.ALIEN_FLUFF.get()))
+                .save(this.output, "universe:white_wool_from_alien_fluff");
+        this.shapeless(RecipeCategory.MISC, Items.SLIME_BALL)
+                .requires(UniverseItems.BIO_GEL.get())
+                .unlockedBy(getHasName(UniverseItems.BIO_GEL.get()), this.has(UniverseItems.BIO_GEL.get()))
+                .save(this.output, "universe:slime_ball_from_bio_gel");
+    }
+
+    private <T extends AbstractCookingRecipe> void cook(String source, AbstractCookingRecipe.Factory<T> factory, int time, Item input, Item result) {
+        String name = BuiltInRegistries.ITEM.getKey(result).getPath();
+        SimpleCookingRecipeBuilder.generic(Ingredient.of(input), RecipeCategory.FOOD, CookingBookCategory.FOOD, result, 0.35F, time, factory)
+                .unlockedBy(getHasName(input), this.has(input))
+                .save(this.output, "universe:" + name + "_from_" + source);
     }
 
     /** 原版的 simpleCookingRecipe 会把配方存到 minecraft 命名空间下，这里自己指定 ID。 */

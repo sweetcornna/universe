@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_alien_fluff": {
+      "conditions": {
+        "items": [
+          {
+            "items": "universe:alien_fluff"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipes": "universe:string_from_alien_fluff"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_alien_fluff"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "universe:string_from_alien_fluff"
+    ]
+  }
+}

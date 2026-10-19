@@ -5,6 +5,7 @@ import java.util.concurrent.CompletableFuture;
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.block.OreKind;
 import io.github.sweetcornna.universe.core.trade.TradeCategory;
+import io.github.sweetcornna.universe.entity.CreatureHusbandry;
 import io.github.sweetcornna.universe.factory.FluidItems;
 import io.github.sweetcornna.universe.registry.UniverseItems;
 import io.github.sweetcornna.universe.trade.ItemValues;
@@ -31,6 +32,11 @@ final class UniverseItemTagsProvider extends ItemTagsProvider {
                 UniverseItems.HYDROGEN.key(),
                 UniverseItems.DEUTERIUM.key(),
                 UniverseItems.SULFURIC_ACID.key());
+        // 两种食性的食物（ADR-0017）
+        this.tag(CreatureHusbandry.HERBIVORE_FOOD).add(vanilla(Items.WHEAT), vanilla(Items.CARROT), vanilla(Items.APPLE),
+                UniverseItems.HERBIVORE_FEED.key());
+        this.tag(CreatureHusbandry.CARNIVORE_FOOD).add(vanilla(Items.BEEF), vanilla(Items.PORKCHOP), vanilla(Items.MUTTON),
+                vanilla(Items.CHICKEN), vanilla(Items.RABBIT), UniverseItems.ALIEN_MEAT.key(), UniverseItems.CARNIVORE_FEED.key());
         this.trade();
     }
 
@@ -79,6 +85,7 @@ final class UniverseItemTagsProvider extends ItemTagsProvider {
                 UniverseItems.HAZARD_CELL.key());
         this.tag(ItemValues.tag(TradeCategory.BIO)).add(
                 UniverseItems.ALIEN_MEAT.key(), UniverseItems.COOKED_ALIEN_MEAT.key(), UniverseItems.ALIEN_HIDE.key(),
+                UniverseItems.ALIEN_EGG.key(), UniverseItems.COOKED_ALIEN_EGG.key(), UniverseItems.ALIEN_FLUFF.key(), UniverseItems.BIO_GEL.key(),
                 UniverseItems.ORE_DROPS.get(OreKind.ORGANIC_CRYSTAL).key(), vanilla(Items.LEATHER), vanilla(Items.WHEAT), vanilla(Items.STRING),
                 vanilla(Items.EGG), vanilla(Items.FEATHER), vanilla(Items.BONE), vanilla(Items.SLIME_BALL), vanilla(Items.HONEYCOMB));
         this.tag(ItemValues.tag(TradeCategory.TECH)).add(

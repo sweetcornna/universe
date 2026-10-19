@@ -1,0 +1,32 @@
+{
+  "parent": "minecraft:recipes/root",
+  "criteria": {
+    "has_bio_gel": {
+      "conditions": {
+        "items": [
+          {
+            "items": "universe:bio_gel"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "has_the_recipe": {
+      "conditions": {
+        "recipes": "universe:slime_ball_from_bio_gel"
+      },
+      "trigger": "minecraft:recipe_unlocked"
+    }
+  },
+  "requirements": [
+    [
+      "has_the_recipe",
+      "has_bio_gel"
+    ]
+  ],
+  "rewards": {
+    "recipes": [
+      "universe:slime_ball_from_bio_gel"
+    ]
+  }
+}

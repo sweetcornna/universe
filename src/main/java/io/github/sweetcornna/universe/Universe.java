@@ -8,6 +8,7 @@ import io.github.sweetcornna.universe.asteroid.Asteroids;
 import io.github.sweetcornna.universe.discovery.Discoveries;
 import io.github.sweetcornna.universe.dyson.Dyson;
 import io.github.sweetcornna.universe.entity.FaunaSpawner;
+import io.github.sweetcornna.universe.entity.TamedCreatures;
 import io.github.sweetcornna.universe.entity.ship.ShipTransit;
 import io.github.sweetcornna.universe.entity.ship.ShipWeapons;
 import io.github.sweetcornna.universe.exocraft.Exocrafts;
@@ -77,6 +78,7 @@ public final class Universe {
         RuntimeDimensions.registerEvents(modBus, gameBus);
         PlanetWeather.registerEvents(gameBus);
         FaunaSpawner.registerEvents(gameBus);
+        TamedCreatures.registerEvents(gameBus);
         ShipTransit.registerEvents(gameBus);
         PlayerSurvival.registerEvents(gameBus);
         CrashSite.registerEvents(gameBus);
