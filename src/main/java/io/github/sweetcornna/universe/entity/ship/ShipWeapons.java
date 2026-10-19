@@ -2,6 +2,7 @@ package io.github.sweetcornna.universe.entity.ship;
 
 import org.jspecify.annotations.Nullable;
 
+import io.github.sweetcornna.universe.asteroid.Asteroid;
 import io.github.sweetcornna.universe.core.ship.ShipCombat;
 import io.github.sweetcornna.universe.entity.PlasmaBolt;
 import io.github.sweetcornna.universe.network.ShipControlPayload;
@@ -290,7 +291,8 @@ public final class ShipWeapons {
         BeamHit hit = beam(ship, pilot);
         Entity entity = hit.entity();
         if (entity instanceof ShipBeamTarget target) {
-            target.beamed(level, ship, pilot, ShipCombat.BEAM_DAMAGE);
+            // 几台光束照着同一处，伤害叠加
+            target.beamed(level, ship, pilot, ShipCombat.BEAM_DAMAGE * ship.structure().beams().length);
         } else if (entity != null && ship.tickCount % BEAM_HURT_INTERVAL == 0) {
             entity.hurtServer(level, level.damageSources().source(PlasmaBolt.DAMAGE, ship, pilot), BEAM_HURT);
         }
@@ -320,6 +322,9 @@ public final class ShipWeapons {
                 Vec3 p = from.add(path.scale((i + offset) / steps));
                 level.addParticle(i % 2 == 0 ? BEAM_DUST : BEAM_CORE, p.x, p.y, p.z, 0, 0, 0);
             }
+        }
+        if (hit.entity() instanceof Asteroid asteroid && level.getRandom().nextInt(2) == 0) {
+            asteroid.chips(hit.to());
         }
         if (hit.hit()) {
             Vec3 p = hit.to();

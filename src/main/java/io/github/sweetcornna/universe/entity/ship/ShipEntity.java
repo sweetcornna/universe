@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.jspecify.annotations.Nullable;
 
+import io.github.sweetcornna.universe.asteroid.Asteroid;
 import io.github.sweetcornna.universe.block.ship.ShipHelmBlock;
 import io.github.sweetcornna.universe.block.ship.ShipSeatBlock;
 import io.github.sweetcornna.universe.core.ship.ShipCombat;
@@ -14,6 +15,7 @@ import io.github.sweetcornna.universe.core.ship.ShipFlight.Controls;
 import io.github.sweetcornna.universe.core.ship.ShipFlight.Environment;
 import io.github.sweetcornna.universe.core.ship.ShipShape;
 import io.github.sweetcornna.universe.core.ship.ShipStats;
+import io.github.sweetcornna.universe.core.space.AsteroidField;
 import io.github.sweetcornna.universe.core.space.Warp;
 import io.github.sweetcornna.universe.pirate.Pirates;
 import io.github.sweetcornna.universe.registry.UniverseEntities;
@@ -70,6 +72,13 @@ public class ShipEntity extends Entity implements IEntityWithComplexSpawn {
     public static final int SPACE_ALTITUDE = 48;
     /** 太空里离维度底部最近能飞到多少格。 */
     private static final int SPACE_MARGIN = 32;
+    /** 撞上小行星：顺着法线的速度反弹几成；比这么快（格/刻）撞上开始掉船体，每快 1 格/刻掉几点，最多掉几点。 */
+    private static final double BUMP_RESTITUTION = 0.4;
+    public static final double RAM_SPEED = 0.8;
+    private static final double RAM_DAMAGE = 6;
+    public static final double RAM_MAX_DAMAGE = 20;
+    /** 撞上小行星后脉冲引擎停多久（刻）。 */
+    private static final int BUMP_IMPULSE_LOCK = 60;
     /** 提示晚这么多刻再发：上船、穿过大气层时，客户端收到乘坐数据包会用原版的"按 Shift 下船"盖掉之前的提示。 */
     private static final int NOTICE_DELAY = 5;
 
@@ -102,6 +111,8 @@ public class ShipEntity extends Entity implements IEntityWithComplexSpawn {
     private final ShipFlight flight = new ShipFlight(0);
     private boolean landed;
     private int parkingTicks;
+    /** 撞上小行星后还有几刻开不了脉冲引擎。 */
+    private int impulseLock;
     /** 这一刻船转了多少度，乘客跟着转。 */
     private float yawDelta;
     private float lastYaw;
@@ -324,6 +335,63 @@ public class ShipEntity extends Entity implements IEntityWithComplexSpawn {
             return false;
         }
         return this.damageShip(level, damage);
+    }
+
+    /** 服务端：沿着这一刻扫过的线段找小行星撞（脉冲引擎一刻飞几十格，按线段找才不会穿过去）；开着脉冲引擎撞上就熄火一会儿。 */
+    private void bumpAsteroids(ServerLevel level, @Nullable Player pilot, boolean impulse) {
+        Vec3 now = this.position().add(0, this.structure.shape().height() / 2.0, 0);
+        AABB swept = new AABB(now, now.subtract(this.getDeltaMovement())).inflate(AsteroidField.MAX_RADIUS + this.structure.shape().radius());
+        boolean hit = false;
+        for (Asteroid asteroid : level.getEntitiesOfClass(Asteroid.class, swept)) {
+            hit |= this.bump(level, asteroid.center(), asteroid.hitRadius());
+        }
+        if (hit && impulse) {
+            this.impulseLock = BUMP_IMPULSE_LOCK;
+            if (pilot != null) {
+                pilot.sendOverlayMessage(Component.translatable("message.universe.ship.impulse_bumped"));
+            }
+        }
+    }
+
+    /**
+     * 服务端：撞上一个球形的障碍（小行星，ADR-0017）。按这一刻扫过的线段算，高速飞过时也撞得上：把船推回球外，
+     * 顺着法线的速度反弹掉大半；撞得比 {@link #RAM_SPEED} 快时掉船体，最多 {@link #RAM_MAX_DAMAGE}。
+     *
+     * @return 撞上了
+     */
+    public boolean bump(ServerLevel level, Vec3 center, double radius) {
+        if (this.structure == null || this.wreckTicks > 0) {
+            return false;
+        }
+        ShipShape shape = this.structure.shape();
+        Vec3 now = this.position().add(0, shape.height() / 2.0, 0);
+        Vec3 moved = this.getDeltaMovement();
+        Vec3 start = now.subtract(moved);
+        double reach = radius + shape.radius() * 0.8;
+        double[] n = AsteroidField.contact(new double[] {start.x, start.y, start.z}, new double[] {moved.x, moved.y, moved.z},
+                new double[] {center.x, center.y, center.z}, reach);
+        if (n == null) {
+            return false;
+        }
+        Vec3 normal = new Vec3(n[0], n[1], n[2]);
+        // 推回球外接触的那一点
+        Vec3 contact = center.add(normal.scale(reach + 0.05));
+        this.setPos(this.position().add(contact.subtract(now)));
+        Vec3 velocity = new Vec3(this.flight.vx(), this.flight.vy(), this.flight.vz());
+        double along = velocity.dot(normal);
+        if (along < 0) {
+            Vec3 bounced = velocity.subtract(normal.scale(along * (1 + BUMP_RESTITUTION)));
+            this.flight.restore(bounced.x, bounced.y, bounced.z, this.flight.yaw());
+            this.setDeltaMovement(bounced);
+        }
+        double impact = -along;
+        if (impact > RAM_SPEED) {
+            this.damageShip(level, (float) Math.min(RAM_MAX_DAMAGE, (impact - RAM_SPEED) * RAM_DAMAGE));
+            this.playSound(SoundEvents.ANVIL_LAND, 0.8F, 0.6F);
+        } else if (impact > 0.1) {
+            this.playSound(SoundEvents.STONE_HIT, 0.8F, 0.7F);
+        }
+        return true;
     }
 
     /** 服务端：飞船挨一下打（先扣护盾再扣船体），船体打光就被击毁、拖回空间站。 */
@@ -723,6 +791,12 @@ public class ShipEntity extends Entity implements IEntityWithComplexSpawn {
             // 没人驾驶的船自己慢慢降落
             controls = new Controls(false, false, false, false, false, true, false);
         }
+        if (this.impulseLock > 0) {
+            this.impulseLock--;
+            if (controls.boost()) {
+                controls = new Controls(controls.forward(), controls.back(), controls.left(), controls.right(), controls.up(), controls.down(), false);
+            }
+        }
         if (controls.boost() && env.space() && stats.impulse() > 0 && Pirates.jammed(this)) {
             // 海盗干扰：脉冲引擎开不起来，只能用推进器周旋（ADR-0017）
             controls = new Controls(controls.forward(), controls.back(), controls.left(), controls.right(), controls.up(), controls.down(), false);
@@ -765,6 +839,7 @@ public class ShipEntity extends Entity implements IEntityWithComplexSpawn {
                 this.setPos(this.getX(), y, this.getZ());
                 this.flight.restore(this.flight.vx(), 0, this.flight.vz(), this.flight.yaw());
             }
+            this.bumpAsteroids(level, pilot, this.impulseActive());
         }
         boolean wasLanded = this.landed;
         this.landed = !env.space() && collider.onGround(ShipCollider.boxes(this.structure, this.getX(), this.getY(), this.getZ(), relative));

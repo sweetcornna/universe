@@ -8,6 +8,7 @@ import org.jspecify.annotations.Nullable;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 
+import io.github.sweetcornna.universe.client.BlockMesh;
 import io.github.sweetcornna.universe.entity.ship.ShipEntity;
 import io.github.sweetcornna.universe.entity.ship.ShipStructure;
 import net.minecraft.client.Minecraft;
@@ -34,7 +35,7 @@ public class ShipRenderer extends EntityRenderer<ShipEntity, ShipRenderer.State>
 
     /** 一帧的渲染状态。 */
     public static class State extends EntityRenderState {
-        @Nullable ShipMesh mesh;
+        @Nullable BlockMesh mesh;
         float relativeYaw;
         final List<Extracted> blockEntities = new ArrayList<>();
     }
@@ -57,7 +58,7 @@ public class ShipRenderer extends EntityRenderer<ShipEntity, ShipRenderer.State>
         if (state.mesh != null && !state.mesh.blockEntities().isEmpty()) {
             BlockEntityRenderDispatcher dispatcher = Minecraft.getInstance().getBlockEntityRenderDispatcher();
             Vec3 camera = this.entityRenderDispatcher.camera != null ? this.entityRenderDispatcher.camera.position() : ship.position();
-            for (ShipMesh.Placed placed : state.mesh.blockEntities()) {
+            for (BlockMesh.Placed placed : state.mesh.blockEntities()) {
                 BlockEntityRenderState extracted = extract(dispatcher, placed.entity(), partialTicks, camera);
                 if (extracted != null) {
                     // 方块实体在船上，光照跟船走
@@ -79,22 +80,22 @@ public class ShipRenderer extends EntityRenderer<ShipEntity, ShipRenderer.State>
         return state;
     }
 
-    private static @Nullable ShipMesh mesh(ShipEntity ship) {
-        if (ship.renderCache instanceof ShipMesh mesh) {
+    private static @Nullable BlockMesh mesh(ShipEntity ship) {
+        if (ship.renderCache instanceof BlockMesh mesh) {
             return mesh;
         }
         ShipStructure structure = ship.structure();
         if (structure == null || !(ship.level() instanceof ClientLevel level)) {
             return null;
         }
-        ShipMesh mesh = ShipMesh.build(structure, level, BlockPos.containing(ship.position()));
+        BlockMesh mesh = BlockMesh.ship(structure, level, BlockPos.containing(ship.position()));
         ship.renderCache = mesh;
         return mesh;
     }
 
     @Override
     public void submit(State state, PoseStack poseStack, SubmitNodeCollector collector, CameraRenderState camera) {
-        ShipMesh mesh = state.mesh;
+        BlockMesh mesh = state.mesh;
         if (mesh != null) {
             int light = state.lightCoords;
             poseStack.pushPose();

@@ -291,6 +291,8 @@ io.github.sweetcornna.universe
 | 结算顺序：服务端按实体加入的先后结算，一刻里新加入的实体（比如刚打出的弹体）下一刻才开始动。所以打移动目标的提前量要多算一刻：目标排在开火者后面时，弹体飞第一步前目标已经又动了一步 | 已确认，飞船炮的提前量踩过 |
 | 无头验收的截图分辨率跟着窗口走，显示器布局一变就可能变成 854×480；`options.txt` 里写 `overrideWidth`、`overrideHeight` 固定窗口大小 | 已确认，`headless.ps1` 在用 |
 | 原版 `/tick freeze`、`/tick unfreeze` 可以冻住实体近看（骑着载具的玩家和载具不冻） | 已确认，海盗验收在用 |
+| 区块卸载时 `PersistentEntitySectionManager` 只把 `shouldBeSaved()` 为真的实体存盘并移出世界；不存档的实体留在区段里，不移除也不更新，区块再加载时又出现。要清就自己按表 `discard()` | 已确认，小行星的生成器踩过 |
+| `ModelBlockRenderer.tesselateBlock(BlockQuadOutput, …)` 按面给出每个四边形，层在 `quad.materialInfo().layer()`（叠在实心面上的贴花是 `CUTOUT`）。实体里用 `submitCustomGeometry` 分层提交时，几种渲染类型谁先画不一定：同一个方块的实心面和贴花分开交，贴花会被盖住，要整块放进镂空那一批 | 已确认，`BlockMesh` 在用 |
 
 原则：拿不准的 API，先查源码再动手写，核实后把结果补进这张表。源码位置：
 

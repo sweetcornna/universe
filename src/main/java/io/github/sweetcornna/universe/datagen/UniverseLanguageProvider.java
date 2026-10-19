@@ -406,6 +406,24 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("hud.universe.pirate.target", "海盗战机", "Pirate Fighter");
         both("stat.universe.pirates_destroyed", "击落的海盗战机", "Pirate Fighters Destroyed");
         both("stat.universe.pirate_raids_repelled", "打退的海盗袭击", "Pirate Attacks Repelled");
+        both("stat.universe.asteroids_mined", "打碎的小行星", "Asteroids Mined");
+        // 小行星（ADR-0017）
+        both("entity.universe.asteroid", "小行星", "Asteroid");
+        both("hud.universe.asteroid.small", "小型小行星", "Small asteroid");
+        both("hud.universe.asteroid.medium", "中型小行星", "Medium asteroid");
+        both("hud.universe.asteroid.large", "大型小行星", "Large asteroid");
+        both("message.universe.asteroid.mined", "小行星碎了：%s", "Asteroid shattered: %s");
+        both("message.universe.asteroid.mined_stowed", "小行星碎了，收进货舱：%s", "Asteroid shattered, stowed in the hold: %s");
+        both("message.universe.ship.impulse_bumped", "撞上小行星，脉冲引擎熄火了", "Hit an asteroid: impulse drive knocked offline");
+        both("message.universe.asteroid.cargo_full", "货舱满了，%s 件东西漂在外面", "Cargo hold full: %s items left floating");
+        both("commands.universe.asteroids.not_space", "这里不是太空", "This is not space");
+        both("commands.universe.asteroids.belt", "小行星带：离恒星 %s–%s 格，上下 %s 格，离这里 %s 格",
+                "Asteroid belt: %s–%s from the star, ±%s vertically, %s away");
+        both("commands.universe.asteroids.info", "%s 条小行星带；这里的密度 %s，已经生成 %s 颗",
+                "%s asteroid belts; density here %s, %s asteroids spawned");
+        both("commands.universe.asteroids.goto", "传送到小行星带：%s, 0, %s", "Teleported to the asteroid belt: %s, 0, %s");
+        both("commands.universe.asteroids.spawned", "放了一颗%s", "Spawned a %s");
+        both("commands.universe.asteroids.reset", "删掉了 %s 颗小行星，冷却清空", "Removed %s asteroids and cleared regrowth timers");
         both("commands.universe.pirates.started", "触发了海盗袭击：%s 架，货舱值 %s 信用点", "Pirate attack started: %s fighters, cargo worth %s credits");
         both("commands.universe.pirates.cleared", "%s 架海盗战机撤走了", "%s pirate fighters withdrew");
         both("commands.universe.pirates.info", "货舱值 %s 信用点，下次遭遇海盗的概率 %s%%；再飞 %s 秒掷一次骰子",
@@ -446,6 +464,8 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("hud.universe.ship.weapon.beam", "采矿光束 ×%s", "Mining beam ×%s");
         both("hud.universe.ship.weapon.overheated", "（过热）", " (overheated)");
         both("hud.universe.ship.out_of_arc", "射界外", "Out of arc");
+        both("hud.universe.ship.belt", "小行星带", "Asteroid belt");
+        both("hud.universe.ship.in_belt", "◆ 在小行星带里", "◆ Inside an asteroid belt");
         both("hud.universe.ship.keys.weapons", "%s 开火  %s 切换武器", "%s fire  %s switch weapon");
         tech("ship_weapons", "飞船武器", "Ship Weapons");
         tech("ship_shields", "飞船护盾", "Ship Shields");

@@ -13,13 +13,13 @@ import java.util.Set;
 import org.jspecify.annotations.Nullable;
 
 import io.github.sweetcornna.universe.Universe;
+import io.github.sweetcornna.universe.asteroid.Asteroid;
 import io.github.sweetcornna.universe.client.dyson.ClientDyson;
 import io.github.sweetcornna.universe.client.pirate.PirateClient;
 import io.github.sweetcornna.universe.client.ship.ShipClient;
 import io.github.sweetcornna.universe.dyson.EmRailEjectorBlockEntity;
 import io.github.sweetcornna.universe.dyson.LaunchSiloBlockEntity;
 import io.github.sweetcornna.universe.entity.ship.ShipEntity;
-import io.github.sweetcornna.universe.pirate.PirateFighter;
 import io.github.sweetcornna.universe.registry.UniverseAttachments;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
@@ -34,6 +34,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
@@ -76,6 +77,7 @@ public final class DevScript {
     private @Nullable Await await;
     private boolean tracking;
     private boolean steering;
+    private boolean trackAsteroids;
     /** 脚本按住的键（每刻重新按下，免得被界面开关之类的复位）。 */
     private final Set<KeyMapping> held = new HashSet<>();
     private @Nullable Near near;
@@ -125,7 +127,7 @@ public final class DevScript {
             Universe.LOGGER.info("Dev script: player in world, starting in {} ticks", START_DELAY);
         }
         if (this.tracking) {
-            track(minecraft, player, this.steering);
+            track(minecraft, player, this.steering, this.trackAsteroids);
         }
         for (KeyMapping key : this.held) {
             key.setDown(true);
@@ -165,20 +167,25 @@ public final class DevScript {
     }
 
     /** 视线转向最近的海盗战机；{@code steer} 时按左右键把船头转向它。 */
-    private static void track(Minecraft minecraft, LocalPlayer player, boolean steer) {
-        PirateFighter nearest = null;
+    private static void track(Minecraft minecraft, LocalPlayer player, boolean steer, boolean asteroids) {
+        Entity nearest = null;
         double best = Double.MAX_VALUE;
-        for (PirateFighter pirate : PirateClient.nearby(player)) {
-            double d = pirate.distanceToSqr(player);
+        List<? extends Entity> candidates = asteroids
+                ? player.level().getEntitiesOfClass(Asteroid.class, player.getBoundingBox().inflate(160))
+                : PirateClient.nearby(player);
+        for (Entity candidate : candidates) {
+            double d = candidate.distanceToSqr(player);
             if (d < best) {
                 best = d;
-                nearest = pirate;
+                nearest = candidate;
             }
         }
         if (nearest == null) {
             if (steer) {
                 minecraft.options.keyLeft.setDown(false);
                 minecraft.options.keyRight.setDown(false);
+                minecraft.options.keyJump.setDown(false);
+                minecraft.options.keyShift.setDown(false);
             }
             return;
         }
@@ -190,6 +197,10 @@ public final class DevScript {
             float delta = Mth.wrapDegrees(yaw - ship.getYRot());
             minecraft.options.keyRight.setDown(delta > 6);
             minecraft.options.keyLeft.setDown(delta < -6);
+            // 上下也对齐（空格升、Shift 降）
+            double dy = nearest.getBoundingBox().getCenter().y - ship.getBoundingBox().getCenter().y;
+            minecraft.options.keyJump.setDown(dy > 1.5);
+            minecraft.options.keyShift.setDown(dy < -1.5);
         }
         player.setYRot(yaw);
         player.setXRot((float) -Math.toDegrees(Math.atan2(to.y, horizontal)));
@@ -207,11 +218,16 @@ public final class DevScript {
             case "wait" -> this.waiting = Integer.parseInt(args[0]);
             case "cmd" -> player.connection.sendCommand(rest.startsWith("/") ? rest.substring(1) : rest);
             case "track" -> {
-                this.tracking = args.length == 0 || !args[0].equals("off");
-                this.steering = args.length > 0 && args[0].equals("steer");
+                // track [asteroid] [steer] | track off：盯着最近的海盗（或小行星）
+                List<String> options = List.of(args);
+                this.tracking = !options.contains("off");
+                this.steering = options.contains("steer");
+                this.trackAsteroids = options.contains("asteroid");
                 if (!this.steering) {
                     minecraft.options.keyLeft.setDown(this.held.contains(minecraft.options.keyLeft));
                     minecraft.options.keyRight.setDown(this.held.contains(minecraft.options.keyRight));
+                    minecraft.options.keyJump.setDown(this.held.contains(minecraft.options.keyJump));
+                    minecraft.options.keyShift.setDown(this.held.contains(minecraft.options.keyShift));
                 }
             }
             case "key" -> {
@@ -238,8 +254,10 @@ public final class DevScript {
                 this.near = new Near(Identifier.parse(args[0]), Double.parseDouble(args[1]), minecraft.level.getGameTime() + timeout);
             }
             case "look" -> {
-                player.setYRot(Float.parseFloat(args[0]));
-                player.setXRot(Float.parseFloat(args[1]));
+                // look <偏航> <俯仰> | look ship：顺着所乘的飞船的朝向看，水平
+                boolean ship = args[0].equals("ship") && player.getVehicle() != null;
+                player.setYRot(ship ? player.getVehicle().getYRot() : Float.parseFloat(args[0]));
+                player.setXRot(ship ? 0 : Float.parseFloat(args[1]));
                 player.yRotO = player.getYRot();
                 player.xRotO = player.getXRot();
             }

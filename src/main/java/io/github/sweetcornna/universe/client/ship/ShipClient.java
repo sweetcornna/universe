@@ -8,12 +8,15 @@ import java.util.OptionalInt;
 import org.jspecify.annotations.Nullable;
 
 import io.github.sweetcornna.universe.Universe;
+import io.github.sweetcornna.universe.asteroid.Asteroid;
 import io.github.sweetcornna.universe.client.ClientGalaxy;
 import io.github.sweetcornna.universe.client.ScreenProjection;
 import io.github.sweetcornna.universe.client.UniverseKeys;
+import io.github.sweetcornna.universe.client.asteroid.AsteroidClient;
 import io.github.sweetcornna.universe.client.galaxy.GalaxyText;
 import io.github.sweetcornna.universe.client.pirate.PirateClient;
 import io.github.sweetcornna.universe.core.ship.ShipStats;
+import io.github.sweetcornna.universe.core.space.AsteroidField;
 import io.github.sweetcornna.universe.core.space.SpaceLayout;
 import io.github.sweetcornna.universe.entity.ship.ShipEntity;
 import io.github.sweetcornna.universe.entity.ship.ShipStructure;
@@ -57,6 +60,7 @@ public final class ShipClient {
     private static @Nullable ShipEngineSound engineSound;
     private static int layoutSystem = -1;
     private static List<SpaceLayout.Body> layout = List.of();
+    private static List<AsteroidField.Belt> belts = List.of();
     /** 开发脚本：当作一直按着开火键（无头验收用）。 */
     public static boolean forceFire;
     private static boolean sentFiring;
@@ -217,6 +221,14 @@ public final class ShipClient {
         int color = ship.weaponOverheated() ? 0xFFE5533D : beam ? BEAM_COLOR : BOLT_COLOR;
         if (projection.onScreen(point, 0)) {
             reticle(graphics, point[0], point[1], color, beam);
+        }
+        if (beam) {
+            ShipWeapons.BeamHit hit = ShipWeapons.beam(ship, minecraft.player);
+            if (hit.entity() instanceof Asteroid asteroid) {
+                int cx = projection.onScreen(point, 0) ? point[0] : graphics.guiWidth() / 2;
+                int cy = projection.onScreen(point, 0) ? point[1] : graphics.guiHeight() / 2;
+                AsteroidClient.info(graphics, minecraft.font, cx + 16, cy + 8, asteroid);
+            }
         }
         Entity target = ShipWeapons.assistTarget(ship, minecraft.player);
         if (target != null) {
@@ -425,6 +437,7 @@ public final class ShipClient {
     private static void nearest(int system, ShipEntity ship, List<Component> lines) {
         if (system != layoutSystem) {
             layout = ClientGalaxy.galaxy().flatMap(galaxy -> galaxy.system(system)).map(SpaceLayout::of).orElse(List.of());
+            belts = ClientGalaxy.galaxy().flatMap(galaxy -> galaxy.system(system)).map(AsteroidField::belts).orElse(List.of());
             layoutSystem = system;
         }
         LocalPlayer player = Minecraft.getInstance().player;
@@ -446,6 +459,23 @@ public final class ShipClient {
                     : Component.translatable(dy > 0 ? "hud.universe.ship.above" : "hud.universe.ship.below", (int) Math.abs(dy));
             lines.add(Component.literal(arrow(relative) + " ").append(Component.translatable("hud.universe.ship.target", name, distance))
                     .append(vertical).append(kind));
+        }
+        // 最近的小行星带：在带里就写"在小行星带里"，不然指向带里最近的一点
+        AsteroidField.Belt belt = AsteroidField.nearest(belts, ship.getX(), ship.getY(), ship.getZ());
+        if (belt != null) {
+            if (belt.contains(ship.getX(), ship.getY(), ship.getZ())) {
+                lines.add(Component.translatable("hud.universe.ship.in_belt"));
+            } else {
+                double[] p = belt.nearestPoint(ship.getX(), ship.getY(), ship.getZ());
+                float bearing = (float) Math.toDegrees(Math.atan2(-(p[0] - ship.getX()), p[2] - ship.getZ()));
+                float relative = Mth.wrapDegrees(bearing - viewYaw);
+                double dy = p[1] - ship.getY();
+                Component vertical = Math.abs(dy) < 40 ? Component.empty()
+                        : Component.translatable(dy > 0 ? "hud.universe.ship.above" : "hud.universe.ship.below", (int) Math.abs(dy));
+                lines.add(Component.literal(arrow(relative) + " ").append(Component.translatable("hud.universe.ship.target",
+                        Component.translatable("hud.universe.ship.belt"), (int) belt.distanceTo(ship.getX(), ship.getY(), ship.getZ())))
+                        .append(vertical));
+            }
         }
     }
 

@@ -14,6 +14,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 
+import io.github.sweetcornna.universe.asteroid.AsteroidCommand;
 import io.github.sweetcornna.universe.dyson.DysonCommand;
 import io.github.sweetcornna.universe.pirate.PirateCommand;
 import io.github.sweetcornna.universe.sentinel.SentinelCommand;
@@ -91,6 +92,7 @@ public final class DimensionCommand {
                 .then(StationCommand.build())
                 .then(CreditsCommand.build())
                 .then(PirateCommand.build())
+                .then(AsteroidCommand.build())
                 .then(Commands.literal("dim")
                         .then(Commands.literal("create")
                                 .then(Commands.argument("name", StringArgumentType.word())
