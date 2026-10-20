@@ -1,8 +1,10 @@
 package io.github.sweetcornna.universe.factory.resource;
 
+import io.github.sweetcornna.universe.core.research.Upgrades;
 import io.github.sweetcornna.universe.factory.MachineBlock;
 import io.github.sweetcornna.universe.factory.MachineBlockEntity;
 import io.github.sweetcornna.universe.factory.MachineMenu;
+import io.github.sweetcornna.universe.factory.research.Research;
 import io.github.sweetcornna.universe.registry.UniverseBlockEntities;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
 import io.github.sweetcornna.universe.registry.UniverseItems;
@@ -67,7 +69,9 @@ public class OilExtractorBlockEntity extends MachineBlockEntity {
         this.progress += this.seepRate / 20 * rate;
         if (this.progress >= 1) {
             this.progress -= 1;
-            VeinNodes.extractSeep(level, seep);
+            if (level.getRandom().nextDouble() < Upgrades.veinConsumption(Research.level(level, Upgrades.VEIN_UTILIZATION))) {
+                VeinNodes.extractSeep(level, seep);
+            }
             ProductionLog.produced(level, oil.getItem(), 1);
             this.addOutput(OUTPUT, oil);
         }

@@ -122,6 +122,25 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         tech("universe_matrix", "宇宙矩阵", "Universe Matrix");
         tech("mission_complete", "任务完成", "Mission Complete");
         both("tech.universe.mission_complete.effect", "通关。研究完以后可以接着玩", "Finishes the game. You can keep playing afterwards");
+        // 升级科技
+        both("tech.universe.leveled", "%s %s", "%s %s");
+        both("tech.universe.vein_utilization", "矿脉利用", "Vein Utilization");
+        both("tech.universe.research_speed", "研究速度", "Research Speed");
+        both("tech.universe.carrier_engine", "物流载具引擎", "Logistics Carrier Engine");
+        both("tech.universe.carrier_capacity", "物流载具容量", "Logistics Carrier Capacity");
+        both("tech.universe.ray_efficiency", "射线传输效率", "Ray Transmission Efficiency");
+        both("tech.universe.sail_lifetime", "太阳帆寿命", "Solar Sail Life");
+        both("upgrade.universe.vein_utilization.effect", "采矿 +%s%%，矿耗 −%s%%", "Mining +%s%%, vein use −%s%%");
+        both("upgrade.universe.research_speed.effect", "研究速度 +%s%%", "Research speed +%s%%");
+        both("upgrade.universe.carrier_engine.effect", "载具速度 +%s%%", "Carrier speed +%s%%");
+        both("upgrade.universe.carrier_capacity.effect", "无人机装 %s，运输船装 %s", "Drones carry %s, vessels %s");
+        both("upgrade.universe.ray_efficiency.effect", "射线损耗 −%s%%", "Ray loss −%s%%");
+        both("upgrade.universe.sail_lifetime.effect", "太阳帆寿命 %s 分钟", "Sail life %s min");
+        both("gui.universe.tech_tree.upgrades", "升级", "Upgrades");
+        both("gui.universe.tech_tree.card.maxed", "已满级", "Maxed");
+        both("gui.universe.tech_tree.maxed", "已满级", "Max level reached");
+        both("gui.universe.tech_tree.effect", "效果", "Effect");
+        both("gui.universe.tech_tree.none", "无", "None");
     }
 
     /** 空间站任务板（ADR-0017）。 */

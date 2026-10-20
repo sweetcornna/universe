@@ -56,7 +56,9 @@ public final class ClientResearch {
     private static void handle(ResearchStatePayload payload, IPayloadContext context) {
         ResearchState next = payload.toState();
         // 登录时的第一份不算"刚完成"
-        if (received && next.done().stream().anyMatch(id -> !state.isDone(id))) {
+        boolean finished = next.done().stream().anyMatch(id -> !state.isDone(id))
+                || next.levels().entrySet().stream().anyMatch(entry -> entry.getValue() > state.level(entry.getKey()));
+        if (received && finished) {
             Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, 1.0F, 0.6F));
         }
         state = next;

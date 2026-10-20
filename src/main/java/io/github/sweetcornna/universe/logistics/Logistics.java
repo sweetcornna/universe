@@ -19,7 +19,10 @@ import io.github.sweetcornna.universe.core.logistics.Station;
 import io.github.sweetcornna.universe.core.logistics.StationKind;
 import io.github.sweetcornna.universe.core.logistics.Trip;
 import io.github.sweetcornna.universe.core.logistics.Vehicle;
+import io.github.sweetcornna.universe.core.research.ResearchState;
+import io.github.sweetcornna.universe.core.research.Upgrades;
 import io.github.sweetcornna.universe.core.space.SpaceLayout;
+import io.github.sweetcornna.universe.factory.research.ResearchData;
 import io.github.sweetcornna.universe.network.LogisticsFlightsPayload;
 import io.github.sweetcornna.universe.world.planet.Planets;
 import io.github.sweetcornna.universe.world.space.SpaceDimensions;
@@ -64,6 +67,8 @@ public final class Logistics {
             return;
         }
         long now = server.overworld().getGameTime();
+        ResearchState research = ResearchData.get(server).state();
+        network.setUpgrades(Upgrades.carrierSpeed(research.level(Upgrades.CARRIER_ENGINE)), research.level(Upgrades.CARRIER_CAPACITY));
         network.tick(now);
         if (now % LogisticsNetwork.DISPATCH_INTERVAL == 0) {
             data.setDirty();

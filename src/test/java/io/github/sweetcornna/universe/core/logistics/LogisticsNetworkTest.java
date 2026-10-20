@@ -72,6 +72,29 @@ class LogisticsNetworkTest {
     }
 
     @Test
+    void upgradesMakeDronesFasterAndCarryMore() {
+        LogisticsNetwork network = new LogisticsNetwork();
+        network.setUpgrades(2, 6);
+        Station supply = station(StationKind.PLANETARY, "overworld", 0, HOME);
+        Station demand = station(StationKind.PLANETARY, "overworld", 200, HOME);
+        slot(supply, IRON, 500, 5000, Logic.SUPPLY, Logic.STORAGE);
+        slot(demand, IRON, 0, 200, Logic.DEMAND, Logic.STORAGE);
+        supply.addDrones(10);
+        network.add(supply);
+        network.add(demand);
+
+        network.tick(0);
+        Trip trip = network.trips().getFirst();
+        // 容量 6 级：50 → 80；速度翻倍：飞行 12.5 秒，起降还是 2 秒
+        assertEquals(80, trip.cargo());
+        assertEquals(290, trip.arriveAt());
+        assertEquals(LogisticsNetwork.droneLegTicks(200, 2), trip.arriveAt());
+        assertEquals(800, network.vesselCapacity());
+        assertEquals(LogisticsNetwork.vesselLegTicks(HOME, OUTER), Math.round((LogisticsNetwork.VESSEL_BASE + 2 * LogisticsNetwork.VESSEL_PER_AU) * 20));
+        assertEquals(Math.round((LogisticsNetwork.VESSEL_BASE + LogisticsNetwork.VESSEL_PER_AU) * 20), LogisticsNetwork.vesselLegTicks(HOME, OUTER, 2));
+    }
+
+    @Test
     void demandStationFetchesWithItsOwnDronesAndReservesTheGoods() {
         LogisticsNetwork network = new LogisticsNetwork();
         Station supply = station(StationKind.PLANETARY, "overworld", 0, HOME);

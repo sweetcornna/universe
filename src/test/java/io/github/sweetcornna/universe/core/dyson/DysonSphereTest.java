@@ -216,10 +216,10 @@ class DysonSphereTest {
         assertTrue(sphere.shellPower() > 0);
         assertFalse(sphere.complete(99, DysonSphere.LATITUDE_BASE));
         sphere.advance(0);
-        assertTrue(sphere.addSails(orbit, 500, 0));
+        assertTrue(sphere.addSails(orbit, 500, 0, DysonSphere.SAIL_LIFETIME));
         assertEquals(500, sphere.orbit(orbit).sails());
-        assertFalse(sphere.addSails(orbit, 0, 0));
-        assertFalse(sphere.addSails(99, 10, 0));
+        assertFalse(sphere.addSails(orbit, 0, 0, DysonSphere.SAIL_LIFETIME));
+        assertFalse(sphere.addSails(99, 10, 0, DysonSphere.SAIL_LIFETIME));
         // 寿命到了就没了
         sphere.advance(DysonSphere.SAIL_LIFETIME + 1);
         assertEquals(0, sphere.orbit(orbit).sails());

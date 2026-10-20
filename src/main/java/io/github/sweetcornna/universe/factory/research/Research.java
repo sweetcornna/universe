@@ -9,6 +9,7 @@ import java.util.function.Supplier;
 import io.github.sweetcornna.universe.core.research.ResearchState;
 import io.github.sweetcornna.universe.core.research.Tech;
 import io.github.sweetcornna.universe.core.research.TechTree;
+import io.github.sweetcornna.universe.core.research.Upgrades;
 import io.github.sweetcornna.universe.factory.recipe.ResearchShapedRecipe;
 import io.github.sweetcornna.universe.network.ResearchActionPayload;
 import io.github.sweetcornna.universe.network.ResearchStatePayload;
@@ -73,6 +74,21 @@ public final class Research {
         return Component.translatable("tech.universe." + tech);
     }
 
+    /** 升级科技的名字带上级数，比如"矿脉利用 3"。 */
+    public static MutableComponent name(String upgrade, int level) {
+        return Component.translatable("tech.universe.leveled", name(upgrade), level);
+    }
+
+    /** 这一级升级科技的效果说明。 */
+    public static MutableComponent upgradeEffect(String upgrade, int level) {
+        return Component.translatable("upgrade.universe." + upgrade + ".effect", Upgrades.effectArgs(upgrade, level).toArray());
+    }
+
+    /** 升级科技现在的级数（服务端和客户端都能用）。 */
+    public static int level(Level level, String upgrade) {
+        return state(level).level(upgrade);
+    }
+
     // ---- 服务端改进度
 
     /** 完成一个科技：存盘、通知所有玩家、把它解锁的手工配方加进配方书。 */
@@ -102,8 +118,9 @@ public final class Research {
     }
 
     private static void announce(MinecraftServer server, String tech) {
+        MutableComponent name = TREE.upgrade(tech).isPresent() ? name(tech, ResearchData.get(server).state().level(tech)) : name(tech);
         server.getPlayerList().broadcastSystemMessage(
-                Component.translatable("research.universe.completed", name(tech).withStyle(ChatFormatting.AQUA)), false);
+                Component.translatable("research.universe.completed", name.withStyle(ChatFormatting.AQUA)), false);
         awardRecipes(server.getPlayerList().getPlayers(), List.of(tech));
     }
 

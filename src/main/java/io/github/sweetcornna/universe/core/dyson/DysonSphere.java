@@ -226,21 +226,21 @@ public final class DysonSphere {
 
     /** 弹射器射一张帆进 orbit 号轨道；轨道不存在时返回 false。 */
     public boolean launchSail(int orbitId, long now) {
-        SwarmOrbit orbit = this.orbits.get(orbitId);
-        if (orbit == null) {
-            return false;
-        }
-        orbit.add(1, now + SAIL_LIFETIME);
-        return true;
+        return this.addSails(orbitId, 1, now, SAIL_LIFETIME);
     }
 
-    /** 调试用：往轨道里加 count 张刚发射的帆。 */
-    public boolean addSails(int orbitId, int count, long now) {
+    /** 射一张帆，寿命是 lifetime 刻（太阳帆寿命升级过的，ADR-0018）。 */
+    public boolean launchSail(int orbitId, long now, long lifetime) {
+        return this.addSails(orbitId, 1, now, lifetime);
+    }
+
+    /** 往轨道里加 count 张刚发射的帆，各活 lifetime 刻；轨道不存在时返回 false。 */
+    public boolean addSails(int orbitId, int count, long now, long lifetime) {
         SwarmOrbit orbit = this.orbits.get(orbitId);
         if (orbit == null || count <= 0) {
             return false;
         }
-        orbit.add(count, now + SAIL_LIFETIME);
+        orbit.add(count, now + lifetime);
         return true;
     }
 

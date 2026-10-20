@@ -350,9 +350,10 @@ public final class DevScript {
                 }
             }
             case "press" -> {
-                // press analyze：按一下本模组的键（开关分析目镜）
+                // press analyze|techtree：按一下本模组的键（开关分析目镜、打开科技树）
                 KeyMapping key = switch (args[0]) {
                     case "analyze" -> UniverseKeys.ANALYZE;
+                    case "techtree" -> UniverseKeys.TECH_TREE;
                     default -> throw new IllegalArgumentException("unknown key " + args[0]);
                 };
                 KeyMapping.click(key.getKey());
@@ -379,6 +380,13 @@ public final class DevScript {
                     double x = screen.width / 2.0 + Double.parseDouble(args[0]);
                     double y = screen.height / 2.0 + Double.parseDouble(args[1]);
                     screen.mouseClicked(new MouseButtonEvent(x, y, new MouseButtonInfo(InputConstants.MOUSE_BUTTON_LEFT, modifiers)), false);
+                }
+            }
+            case "scroll" -> {
+                // scroll 横 竖：在界面中间转滚轮
+                Screen screen = minecraft.gui.screen();
+                if (screen != null) {
+                    screen.mouseScrolled(screen.width / 2.0, screen.height / 2.0, Double.parseDouble(args[0]), Double.parseDouble(args[1]));
                 }
             }
             case "type" -> {

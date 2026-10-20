@@ -14,6 +14,8 @@ import io.github.sweetcornna.universe.core.dyson.DysonGrid;
 import io.github.sweetcornna.universe.core.dyson.DysonLayer;
 import io.github.sweetcornna.universe.core.dyson.DysonSphere;
 import io.github.sweetcornna.universe.core.dyson.SwarmOrbit;
+import io.github.sweetcornna.universe.core.research.Upgrades;
+import io.github.sweetcornna.universe.factory.research.Research;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
@@ -145,7 +147,9 @@ public final class DysonCommand {
     private static int sails(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         int orbit = IntegerArgumentType.getInteger(context, "orbit");
         int count = IntegerArgumentType.getInteger(context, "count");
-        if (!sphere(context).addSails(orbit, count, context.getSource().getServer().overworld().getGameTime())) {
+        MinecraftServer server = context.getSource().getServer();
+        long lifetime = Upgrades.sailLifetime(Research.level(server.overworld(), Upgrades.SAIL_LIFETIME));
+        if (!sphere(context).addSails(orbit, count, server.overworld().getGameTime(), lifetime)) {
             throw FAILED.create();
         }
         changed(context);

@@ -6,8 +6,10 @@ import java.util.OptionalInt;
 
 import io.github.sweetcornna.universe.core.dyson.DysonSphere;
 import io.github.sweetcornna.universe.core.dyson.SwarmOrbit;
+import io.github.sweetcornna.universe.core.research.Upgrades;
 import io.github.sweetcornna.universe.factory.MachineBlockEntity;
 import io.github.sweetcornna.universe.factory.MachineMenu;
+import io.github.sweetcornna.universe.factory.research.Research;
 import io.github.sweetcornna.universe.registry.UniverseBlockEntities;
 import io.github.sweetcornna.universe.registry.UniverseItems;
 import io.github.sweetcornna.universe.registry.UniverseMenus;
@@ -118,7 +120,8 @@ public class EmRailEjectorBlockEntity extends MachineBlockEntity implements Mach
         if (this.progress >= SHOT_TICKS) {
             this.progress = 0;
             ItemStack sail = this.getItem(SAIL_SLOT);
-            if (sphere.launchSail(this.orbit, level.getServer().overworld().getGameTime())) {
+            long lifetime = Upgrades.sailLifetime(Research.level(level, Upgrades.SAIL_LIFETIME));
+            if (sphere.launchSail(this.orbit, level.getServer().overworld().getGameTime(), lifetime)) {
                 ProductionLog.consumed(level, sail.getItem(), 1);
                 sail.shrink(1);
                 this.lastShot = level.getGameTime();

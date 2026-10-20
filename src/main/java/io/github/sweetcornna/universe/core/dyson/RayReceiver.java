@@ -31,7 +31,12 @@ public final class RayReceiver {
 
     /** 效率：1 − 0.7 × (1 − 0.4 × 连续程度)，30% 到 58%。 */
     public static double efficiency(double continuity) {
-        return 1 - 0.7 * (1 - 0.4 * clamp(continuity));
+        return efficiency(continuity, 1);
+    }
+
+    /** 效率，损耗（1 − 效率）乘上射线传输效率升级的倍数 lossFactor（ADR-0018）。 */
+    public static double efficiency(double continuity, double lossFactor) {
+        return 1 - 0.7 * (1 - 0.4 * clamp(continuity)) * lossFactor;
     }
 
     /** 发电模式的最大输出（焦/刻），装着透镜时翻倍。 */
@@ -41,8 +46,8 @@ public final class RayReceiver {
     }
 
     /** 发电模式输出满时要从戴森球取多少（焦/刻）。 */
-    public static double powerRequest(double continuity, boolean lens) {
-        return maxOutput(continuity, lens) / efficiency(continuity);
+    public static double powerRequest(double continuity, boolean lens, double lossFactor) {
+        return maxOutput(continuity, lens) / efficiency(continuity, lossFactor);
     }
 
     /** 光子模式从戴森球取多少（焦/刻），装着透镜时翻倍。 */

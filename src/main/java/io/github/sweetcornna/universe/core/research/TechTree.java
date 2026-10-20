@@ -8,10 +8,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
+
 import io.github.sweetcornna.universe.core.research.Tech.ItemCost;
+import io.github.sweetcornna.universe.core.research.Upgrade.Infinite;
+import io.github.sweetcornna.universe.core.research.Upgrade.Tier;
 
 /**
  * 科技树（玩法设计 §9.5）：科技和它们的前置关系。界面按"深度"（最长的前置链）分列，同一列按声明顺序排。
+ * 升级科技（ADR-0018）另外放一列，排在最右边。
  */
 public final class TechTree {
     private static final String NS = "universe:";
@@ -144,13 +149,44 @@ public final class TechTree {
             Tech.lab("universe_matrix", List.of("dirac_inversion", "gravity_matrix"), List.of(BLUE, RED, YELLOW, PURPLE, GREEN), 600,
                     items("composite_matrix", "universe_matrix")),
             // 研究完就是通关
-            Tech.lab("mission_complete", List.of("universe_matrix"), List.of(WHITE), 1000, items())));
+            Tech.lab("mission_complete", List.of("universe_matrix"), List.of(WHITE), 1000, items())),
+            // 升级科技：前几级用低档矩阵，之后用白矩阵无限研究
+            List.of(
+                    new Upgrade(Upgrades.VEIN_UTILIZATION, NS + "mining_machine", List.of("electromagnetic_matrix"), List.of(
+                            tier(40, BLUE), tier(80, BLUE, RED), tier(120, BLUE, RED, YELLOW), tier(200, BLUE, RED, YELLOW, PURPLE)),
+                            new Infinite(List.of(WHITE), 300, 100)),
+                    new Upgrade(Upgrades.RESEARCH_SPEED, NS + "matrix_lab", List.of("electromagnetic_matrix"), List.of(
+                            tier(30, BLUE), tier(60, BLUE, RED), tier(150, BLUE, RED, YELLOW, PURPLE)),
+                            new Infinite(List.of(WHITE), 250, 100)),
+                    new Upgrade(Upgrades.CARRIER_ENGINE, NS + "logistics_drone", List.of("planetary_logistics"), List.of(
+                            tier(40, BLUE, RED), tier(60, BLUE, RED), tier(100, BLUE, RED, YELLOW), tier(150, BLUE, RED, YELLOW, PURPLE),
+                            tier(200, BLUE, RED, YELLOW, PURPLE, GREEN)),
+                            new Infinite(List.of(WHITE), 300, 100)),
+                    new Upgrade(Upgrades.CARRIER_CAPACITY, NS + "logistics_vessel", List.of("planetary_logistics"), List.of(
+                            tier(40, BLUE, RED), tier(60, BLUE, RED), tier(100, BLUE, RED, YELLOW), tier(120, BLUE, RED, YELLOW),
+                            tier(150, BLUE, RED, YELLOW, PURPLE), tier(200, BLUE, RED, YELLOW, PURPLE, GREEN)),
+                            null),
+                    new Upgrade(Upgrades.RAY_EFFICIENCY, NS + "ray_receiver", List.of("ray_receiver"), List.of(
+                            tier(100, BLUE, RED, YELLOW, PURPLE), tier(150, BLUE, RED, YELLOW, PURPLE),
+                            tier(200, BLUE, RED, YELLOW, PURPLE, GREEN), tier(300, BLUE, RED, YELLOW, PURPLE, GREEN)),
+                            new Infinite(List.of(WHITE), 400, 150)),
+                    new Upgrade(Upgrades.SAIL_LIFETIME, NS + "solar_sail", List.of("solar_sail_orbit"), List.of(
+                            tier(60, BLUE, RED, YELLOW), tier(90, BLUE, RED, YELLOW), tier(120, BLUE, RED, YELLOW, PURPLE),
+                            tier(160, BLUE, RED, YELLOW, PURPLE), tier(200, BLUE, RED, YELLOW, PURPLE, GREEN),
+                            tier(300, BLUE, RED, YELLOW, PURPLE, GREEN)),
+                            null)));
 
     private final List<Tech> techs;
     private final Map<String, Tech> byId;
     private final Map<String, Integer> depth;
+    private final List<Upgrade> upgrades;
+    private final Map<String, Upgrade> upgradesById;
 
     public TechTree(List<Tech> techs) {
+        this(techs, List.of());
+    }
+
+    public TechTree(List<Tech> techs, List<Upgrade> upgrades) {
         this.techs = List.copyOf(techs);
         Map<String, Tech> byId = new LinkedHashMap<>();
         for (Tech tech : techs) {
@@ -173,6 +209,23 @@ public final class TechTree {
             depth.put(tech.id(), d);
         }
         this.depth = Collections.unmodifiableMap(depth);
+        this.upgrades = List.copyOf(upgrades);
+        Map<String, Upgrade> upgradesById = new LinkedHashMap<>();
+        for (Upgrade upgrade : upgrades) {
+            if (byId.containsKey(upgrade.id()) || upgradesById.put(upgrade.id(), upgrade) != null) {
+                throw new IllegalArgumentException("duplicate tech " + upgrade.id());
+            }
+            for (String required : upgrade.requires()) {
+                if (!byId.containsKey(required)) {
+                    throw new IllegalArgumentException(upgrade.id() + " requires unknown tech " + required);
+                }
+            }
+        }
+        this.upgradesById = Collections.unmodifiableMap(upgradesById);
+    }
+
+    private static Tier tier(int points, String... matrices) {
+        return new Tier(List.of(matrices), points);
     }
 
     private static ItemCost cost(String item, int count) {
@@ -193,6 +246,36 @@ public final class TechTree {
 
     public Optional<Tech> get(String id) {
         return Optional.ofNullable(this.byId.get(id));
+    }
+
+    public List<Upgrade> upgrades() {
+        return this.upgrades;
+    }
+
+    public Optional<Upgrade> upgrade(String id) {
+        return Optional.ofNullable(this.upgradesById.get(id));
+    }
+
+    /** 哪个科技解锁了这个物品（研究站用的矩阵靠它找到"有没有这种矩阵"）；没有时为空。 */
+    public @Nullable String unlockedBy(String item) {
+        for (Tech tech : this.techs) {
+            if (tech.unlocks().contains(item)) {
+                return tech.id();
+            }
+        }
+        return null;
+    }
+
+    /** 研究升级科技的第 level 级之前要完成的科技：这条线的前置，加上这一级用到的矩阵各自的科技。 */
+    public List<String> requirements(Upgrade upgrade, int level) {
+        List<String> ids = new ArrayList<>(upgrade.requires());
+        for (String matrix : upgrade.matrices(level)) {
+            String tech = this.unlockedBy(matrix);
+            if (tech != null && !ids.contains(tech)) {
+                ids.add(tech);
+            }
+        }
+        return ids;
     }
 
     /** 最长的前置链长度：没有前置的是 0。 */

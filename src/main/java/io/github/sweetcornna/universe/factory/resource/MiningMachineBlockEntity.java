@@ -7,9 +7,11 @@ import java.util.Map;
 
 import org.jspecify.annotations.Nullable;
 
+import io.github.sweetcornna.universe.core.research.Upgrades;
 import io.github.sweetcornna.universe.factory.MachineBlock;
 import io.github.sweetcornna.universe.factory.MachineBlockEntity;
 import io.github.sweetcornna.universe.factory.MachineMenu;
+import io.github.sweetcornna.universe.factory.research.Research;
 import io.github.sweetcornna.universe.registry.UniverseBlockEntities;
 import io.github.sweetcornna.universe.registry.UniverseMenus;
 import io.github.sweetcornna.universe.stats.ProductionLog;
@@ -108,7 +110,7 @@ public class MiningMachineBlockEntity extends MachineBlockEntity {
         if (rate <= 0) {
             return false;
         }
-        this.progress += this.nodes.size() * rate * this.speed;
+        this.progress += this.nodes.size() * rate * this.effectiveSpeed();
         while (this.progress >= TICKS_PER_ITEM && this.mined != null && !this.nodes.isEmpty()
                 && this.outputHasRoom(OUTPUT, new ItemStack(this.mined))) {
             this.progress -= TICKS_PER_ITEM;
@@ -127,12 +129,20 @@ public class MiningMachineBlockEntity extends MachineBlockEntity {
             this.scan();
             return;
         }
-        if (VeinNodes.extract(level, pos, node)) {
-            this.nodes.remove(pos);
+        // 矿脉利用：按概率才扣储量，平均下来每个矿扣 0.94^级数
+        if (level.getRandom().nextDouble() < Upgrades.veinConsumption(Research.level(level, Upgrades.VEIN_UTILIZATION))) {
+            if (VeinNodes.extract(level, pos, node)) {
+                this.nodes.remove(pos);
+            }
+            this.remaining = Math.max(0, this.remaining - 1);
         }
-        this.remaining = Math.max(0, this.remaining - 1);
         ProductionLog.produced(level, node.item(), 1);
         this.addOutput(OUTPUT, new ItemStack(node.item()));
+    }
+
+    /** 设备本身的速度乘上矿脉利用的加成。 */
+    private double effectiveSpeed() {
+        return this.level == null ? this.speed : this.speed * Upgrades.miningSpeed(Research.level(this.level, Upgrades.VEIN_UTILIZATION));
     }
 
     /** 找出范围里节点最多的那种矿。 */
@@ -210,7 +220,7 @@ public class MiningMachineBlockEntity extends MachineBlockEntity {
             case REMAINING -> MachineMenu.low(remaining);
             case REMAINING + 1 -> MachineMenu.high(remaining);
             case AREA -> this.radius * 2 + 1;
-            case SPEED -> (int) Math.round(this.speed * 100);
+            case SPEED -> (int) Math.round(this.effectiveSpeed() * 100);
             default -> super.dataValue(index);
         };
     }

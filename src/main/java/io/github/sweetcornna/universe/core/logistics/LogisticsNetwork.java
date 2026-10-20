@@ -1,5 +1,6 @@
 package io.github.sweetcornna.universe.core.logistics;
 
+import io.github.sweetcornna.universe.core.research.Upgrades;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -54,6 +55,9 @@ public final class LogisticsNetwork {
 
     private final Map<UUID, Station> stations = new LinkedHashMap<>();
     private ProductionListener listener = ProductionListener.NONE;
+    /** 升级科技（ADR-0018）：载具速度的倍数、容量升到几级。服务端每刻按研究进度设，不存盘。 */
+    private double speedFactor = 1;
+    private int capacityLevel;
     private final List<Trip> trips = new ArrayList<>();
     /** 行程或站点每变一次加一，服务端据此判断要不要给玩家重发在飞的载具。 */
     private long revision;
@@ -193,7 +197,7 @@ public final class LogisticsNetwork {
         if (slot.local() == Logic.DEMAND && slot.need() > 0) {
             Candidate source = this.nearestDrone(home, slot.item(), Logic.SUPPLY);
             if (source != null) {
-                int amount = Math.min(DRONE_CAPACITY, Math.min(slot.need(), source.slot.available()));
+                int amount = Math.min(this.droneCapacity(), Math.min(slot.need(), source.slot.available()));
                 if (amount >= Math.min(DRONE_MIN_LOAD, slot.need()) && this.payDrone(home, source.distance)) {
                     source.slot.reserveOutgoing(amount);
                     slot.reserveIncoming(amount);
@@ -204,7 +208,7 @@ public final class LogisticsNetwork {
         if (home.idleDrones() > 0 && slot.local() == Logic.SUPPLY && slot.available() > 0) {
             Candidate target = this.nearestDrone(home, slot.item(), Logic.DEMAND);
             if (target != null) {
-                int amount = Math.min(DRONE_CAPACITY, Math.min(slot.available(), target.slot.need()));
+                int amount = Math.min(this.droneCapacity(), Math.min(slot.available(), target.slot.need()));
                 if (amount >= Math.min(DRONE_MIN_LOAD, target.slot.need()) && this.payDrone(home, target.distance)) {
                     int loaded = slot.take(amount);
                     target.slot.reserveIncoming(loaded);
@@ -225,12 +229,31 @@ public final class LogisticsNetwork {
 
     /** 无人机飞一段要几刻。 */
     public static long droneLegTicks(double distance) {
-        return Math.round((DRONE_TAKEOFF + distance / DRONE_SPEED) * 20);
+        return droneLegTicks(distance, 1);
+    }
+
+    /** 无人机飞一段要几刻，飞行速度乘 speed（起降的时间不变）。 */
+    public static long droneLegTicks(double distance, double speed) {
+        return Math.round((DRONE_TAKEOFF + distance / (DRONE_SPEED * speed)) * 20);
+    }
+
+    /** 设升级科技的加成：载具速度的倍数、载具容量的级数。 */
+    public void setUpgrades(double speedFactor, int capacityLevel) {
+        this.speedFactor = speedFactor;
+        this.capacityLevel = capacityLevel;
+    }
+
+    public int droneCapacity() {
+        return Upgrades.carrierCapacity(DRONE_CAPACITY, this.capacityLevel);
+    }
+
+    public int vesselCapacity() {
+        return Upgrades.carrierCapacity(VESSEL_CAPACITY, this.capacityLevel);
     }
 
     private void launchDrone(Station home, int index, Candidate other, int amount, int cargo, boolean delivering, long now) {
         home.launch(Vehicle.DRONE);
-        long leg = droneLegTicks(other.distance);
+        long leg = droneLegTicks(other.distance, this.speedFactor);
         this.revision++;
         this.trips.add(new Trip(Vehicle.DRONE, home.id(), other.station.id(), home.slot(index).item(), index, other.index, amount, cargo,
                 delivering, now, now + leg, now + 2 * leg, false, false));
@@ -266,7 +289,7 @@ public final class LogisticsNetwork {
         if (slot.remote() == Logic.DEMAND && slot.need() > 0) {
             Candidate source = this.nearestVessel(home, slot.item(), Logic.SUPPLY);
             if (source != null) {
-                int amount = Math.min(VESSEL_CAPACITY, Math.min(slot.need(), source.slot.available()));
+                int amount = Math.min(this.vesselCapacity(), Math.min(slot.need(), source.slot.available()));
                 if (amount >= Math.min(VESSEL_MIN_LOAD, slot.need()) && this.payVessel(home, source.station)) {
                     source.slot.reserveOutgoing(amount);
                     slot.reserveIncoming(amount);
@@ -277,7 +300,7 @@ public final class LogisticsNetwork {
         if (home.idleVessels() > 0 && slot.remote() == Logic.SUPPLY && slot.available() > 0) {
             Candidate target = this.nearestVessel(home, slot.item(), Logic.DEMAND);
             if (target != null) {
-                int amount = Math.min(VESSEL_CAPACITY, Math.min(slot.available(), target.slot.need()));
+                int amount = Math.min(this.vesselCapacity(), Math.min(slot.available(), target.slot.need()));
                 if (amount >= Math.min(VESSEL_MIN_LOAD, target.slot.need()) && this.payVessel(home, target.station)) {
                     int loaded = slot.take(amount);
                     target.slot.reserveIncoming(loaded);
@@ -314,15 +337,20 @@ public final class LogisticsNetwork {
 
     /** 运输船飞一段要几刻。 */
     public static long vesselLegTicks(Location from, Location to) {
+        return vesselLegTicks(from, to, 1);
+    }
+
+    /** 运输船飞一段要几刻，航行的部分除以 speed（起降的时间不变）。 */
+    public static long vesselLegTicks(Location from, Location to, double speed) {
         double seconds = from.sameSystem(to)
-                ? VESSEL_BASE + from.auTo(to) * VESSEL_PER_AU
-                : WARP_BASE + from.lightYearsTo(to) * WARP_PER_LY;
+                ? VESSEL_BASE + from.auTo(to) * VESSEL_PER_AU / speed
+                : WARP_BASE + from.lightYearsTo(to) * WARP_PER_LY / speed;
         return Math.round(seconds * 20);
     }
 
     private void launchVessel(Station home, int index, Candidate other, int amount, int cargo, boolean delivering, long now) {
         home.launch(Vehicle.VESSEL);
-        long leg = vesselLegTicks(home.location(), other.station.location());
+        long leg = vesselLegTicks(home.location(), other.station.location(), this.speedFactor);
         boolean warp = !home.location().sameSystem(other.station.location());
         this.revision++;
         this.trips.add(new Trip(Vehicle.VESSEL, home.id(), other.station.id(), home.slot(index).item(), index, other.index, amount, cargo,

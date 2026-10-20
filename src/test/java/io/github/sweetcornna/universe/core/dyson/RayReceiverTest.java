@@ -30,7 +30,9 @@ class RayReceiverTest {
         assertEquals(1500, RayReceiver.maxOutput(1, true), 1e-9);
         assertEquals(0.3, RayReceiver.efficiency(0), 1e-9);
         assertEquals(0.58, RayReceiver.efficiency(1), 1e-9);
-        assertEquals(1000, RayReceiver.powerRequest(0, false), 1e-9);
+        assertEquals(1000, RayReceiver.powerRequest(0, false, 1), 1e-9);
+        // 射线传输效率升 1 级：损耗 70% → 59.5%
+        assertEquals(0.405, RayReceiver.efficiency(0, 0.85), 1e-9);
         // 光子模式满功率每分钟 6 个
         double perMinute = RayReceiver.photonRequest(1, false) * 1200 / RayReceiver.PHOTON_ENERGY;
         assertEquals(6, perMinute, 1e-9);

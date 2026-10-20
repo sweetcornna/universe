@@ -5,6 +5,7 @@ import java.util.List;
 import org.jspecify.annotations.Nullable;
 
 import io.github.sweetcornna.universe.core.research.TechTree;
+import io.github.sweetcornna.universe.core.research.Upgrades;
 import io.github.sweetcornna.universe.factory.MachineBlockEntity;
 import io.github.sweetcornna.universe.factory.MachineMenu;
 import io.github.sweetcornna.universe.registry.UniverseBlockEntities;
@@ -88,7 +89,7 @@ public class MatrixLabBlockEntity extends MachineBlockEntity {
             return false;
         }
         this.status = RUNNING;
-        this.progress += rate;
+        this.progress += rate * Upgrades.researchSpeed(Research.level(serverLevel, Upgrades.RESEARCH_SPEED));
         if (this.progress >= TICKS_PER_POINT) {
             this.progress -= TICKS_PER_POINT;
             for (String id : required) {

@@ -4,8 +4,10 @@ import java.util.OptionalInt;
 
 import io.github.sweetcornna.universe.core.dyson.DysonSphere;
 import io.github.sweetcornna.universe.core.dyson.RayReceiver;
+import io.github.sweetcornna.universe.core.research.Upgrades;
 import io.github.sweetcornna.universe.factory.MachineBlockEntity;
 import io.github.sweetcornna.universe.factory.MachineMenu;
+import io.github.sweetcornna.universe.factory.research.Research;
 import io.github.sweetcornna.universe.registry.UniverseBlockEntities;
 import io.github.sweetcornna.universe.registry.UniverseItems;
 import io.github.sweetcornna.universe.registry.UniverseMenus;
@@ -92,8 +94,13 @@ public class RayReceiverBlockEntity extends MachineBlockEntity implements Machin
     public void settle(double satisfaction, double load, long stored) {
         super.settle(satisfaction, load, stored);
         if (this.output > 0 && !this.photonMode) {
-            this.sphere().ifPresent(sphere -> sphere.draw(this.output * load / RayReceiver.efficiency(this.continuity)));
+            this.sphere().ifPresent(sphere -> sphere.draw(this.output * load / RayReceiver.efficiency(this.continuity, this.lossFactor())));
         }
+    }
+
+    /** 射线传输效率升级之后的损耗倍数。 */
+    private double lossFactor() {
+        return this.level == null ? 1 : Upgrades.rayLoss(Research.level(this.level, Upgrades.RAY_EFFICIENCY));
     }
 
     private java.util.Optional<DysonSphere> sphere() {
@@ -166,7 +173,7 @@ public class RayReceiverBlockEntity extends MachineBlockEntity implements Machin
         } else {
             // 上一刻没发电时按满负荷要，免得一直要不到
             double lastLoad = this.output > 0 ? this.load : 1;
-            sphere.request(RayReceiver.powerRequest(this.continuity, lens) * lastLoad);
+            sphere.request(RayReceiver.powerRequest(this.continuity, lens, this.lossFactor()) * lastLoad);
             double exact = RayReceiver.maxOutput(this.continuity, lens) * this.share + this.carry;
             this.output = (long) Math.floor(exact);
             this.carry = exact - this.output;

@@ -8,11 +8,13 @@ import java.util.Optional;
 import com.mojang.blaze3d.platform.InputConstants;
 
 import io.github.sweetcornna.universe.client.UniverseKeys;
+import io.github.sweetcornna.universe.client.factory.ClientResearch;
 import io.github.sweetcornna.universe.client.factory.MachineScreen;
 import io.github.sweetcornna.universe.core.dyson.DysonLayer;
 import io.github.sweetcornna.universe.core.dyson.DysonSphere;
 import io.github.sweetcornna.universe.core.dyson.RayReceiver;
 import io.github.sweetcornna.universe.core.dyson.SwarmOrbit;
+import io.github.sweetcornna.universe.core.research.Upgrades;
 import io.github.sweetcornna.universe.dyson.EmRailEjectorBlockEntity;
 import io.github.sweetcornna.universe.dyson.LaunchSiloBlockEntity;
 import io.github.sweetcornna.universe.dyson.RayReceiverBlockEntity;
@@ -311,7 +313,8 @@ public final class DysonScreens {
             };
             this.status(graphics, Component.translatable("gui.universe.receiver.status." + status.ordinal()), 44, color);
             graphics.text(this.font, Component.translatable("gui.universe.receiver.continuity", Math.round(continuity * 100),
-                    Math.round(RayReceiver.efficiency(continuity) * 100)), 8, 64, TEXT, false);
+                    Math.round(RayReceiver.efficiency(continuity, Upgrades.rayLoss(ClientResearch.state().level(Upgrades.RAY_EFFICIENCY))) * 100)),
+                    8, 64, TEXT, false);
             bar(graphics, 8, 74, TEXT_WIDTH, 1, (float) continuity, ACCENT);
             if (photon) {
                 int next = this.menu.data(RayReceiverBlockEntity.PHOTON);
