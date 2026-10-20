@@ -53,6 +53,11 @@ public final class MachineRecipes {
         return CLIENT.get(clientRecipes.get(), kind);
     }
 
+    /** 客户端收到的一种设备的全部配方，排序和 {@link #list} 一样（JEI 插件用）。 */
+    public static List<RecipeHolder<MachineRecipe>> clientList(MachineRecipe.Kind kind) {
+        return CLIENT.get(clientRecipes.get(), kind);
+    }
+
     /** 清单里的第几个，不在清单里时为 -1。 */
     public static int indexOf(Level level, MachineRecipe.Kind kind, @Nullable RecipeHolder<MachineRecipe> recipe) {
         return recipe == null ? -1 : list(level, kind).indexOf(recipe);

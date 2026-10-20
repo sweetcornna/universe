@@ -9,6 +9,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.item.crafting.RecipeMap;
+import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
@@ -31,7 +32,8 @@ public final class ClientResearch {
     public static void registerEvents(IEventBus modBus, IEventBus gameBus) {
         modBus.addListener(RegisterClientPayloadHandlersEvent.class,
                 event -> event.register(ResearchStatePayload.TYPE, ClientResearch::handle));
-        gameBus.addListener(RecipesReceivedEvent.class, event -> recipes = event.getRecipeMap());
+        // 先于 JEI 记下配方表：JEI 也在收到配方时重新加载，插件读的是这里
+        gameBus.addListener(EventPriority.HIGHEST, RecipesReceivedEvent.class, event -> recipes = event.getRecipeMap());
         gameBus.addListener(ClientPlayerNetworkEvent.LoggingOut.class, event -> {
             state = new ResearchState();
             received = false;

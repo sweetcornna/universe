@@ -40,6 +40,8 @@ public class RecipeMachineScreen extends MachineScreen {
     private static final int CELL = 18;
     private static final int ARROW_X = 158;
     private static final int ARROW_Y = 50;
+    /** 进度箭头占的地方（相对界面左上角：x、y、宽、高），JEI 在这里放"查看配方"的点击区。 */
+    public static final int[] ARROW_AREA = {ARROW_X, ARROW_Y - 11, 26, 23};
     private static final int INFO_X = 114;
 
     private final RecipeMachineBlockEntity.Spec spec;
@@ -49,6 +51,10 @@ public class RecipeMachineScreen extends MachineScreen {
     public RecipeMachineScreen(MachineMenu menu, Inventory inventory, Component title, RecipeMachineBlockEntity.Spec spec) {
         super(menu, inventory, title);
         this.spec = spec;
+    }
+
+    public RecipeMachineBlockEntity.Spec spec() {
+        return this.spec;
     }
 
     private List<RecipeHolder<MachineRecipe>> recipes() {

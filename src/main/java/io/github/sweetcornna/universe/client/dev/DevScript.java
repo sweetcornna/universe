@@ -7,10 +7,13 @@ import java.nio.file.Path;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Deque;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import org.jspecify.annotations.Nullable;
 
@@ -89,6 +92,8 @@ import net.neoforged.neoforge.client.network.ClientPacketDistributor;
  */
 public final class DevScript {
     private static final String PROPERTY = "universe.devScript";
+    /** 兼容模组的插件加的脚本命令（例如 JEI 插件的 jei &lt;物品&gt;），这里不直接引用那些模组的类。 */
+    public static final Map<String, Consumer<String[]>> EXTRA_VERBS = new HashMap<>();
     private static final boolean ENABLED = !System.getProperty(PROPERTY, "").isBlank();
     /** 进存档以后先等这么久，让区块和同步的数据到齐。 */
     private static final int START_DELAY = 60;
@@ -458,7 +463,14 @@ public final class DevScript {
             }
             case "dysonsky" -> ClientConfig.DYSON_SKY.set(ClientConfig.DysonSky.valueOf(args[0].toUpperCase(java.util.Locale.ROOT)));
             case "quit" -> minecraft.stop();
-            default -> Universe.LOGGER.warn("Dev script: unknown command {}", verb);
+            default -> {
+                Consumer<String[]> extra = EXTRA_VERBS.get(verb);
+                if (extra != null) {
+                    extra.accept(args);
+                } else {
+                    Universe.LOGGER.warn("Dev script: unknown command {}", verb);
+                }
+            }
         }
     }
 

@@ -403,6 +403,29 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("key.universe.tech", "技术配置（模块和货舱）", "Tech Configuration (modules and cargo)");
         both("key.universe.tool_mode", "多功能工具：切换采矿/战斗模式", "Multitool: Toggle Mining/Combat Mode");
         both("key.universe.stats", "生产统计", "Production Statistics");
+        // JEI 分类和说明页（ADR-0019）
+        both("jei.universe.smelting", "冶炼", "Smelting");
+        both("jei.universe.requires", "需要研究：%s", "Research: %s");
+        both("jei.universe.assembling", "制造", "Assembling");
+        both("jei.universe.refining", "精炼", "Refining");
+        both("jei.universe.chemical", "化工", "Chemical");
+        both("jei.universe.particle", "粒子对撞", "Particle Collision");
+        both("jei.universe.info.water", "抽水站放在水源方块上抽水，每分钟 50 个。酸海里的不行。",
+                "A water pump on top of a water source block pumps 50 water a minute. Acid seas don't count.");
+        both("jei.universe.info.crude_oil", "原油萃取站要压在原油涌泉上。涌泉越抽越少，降到一个下限为止。",
+                "An oil extractor has to sit on a crude oil seep. Seeps slow down as you pump them, down to a floor.");
+        both("jei.universe.info.deuterium", "分馏塔把流过的氢分出重氢，每个氢有 1% 的机会变成重氢。氢从正面出，重氢从顶部出。",
+                "A fractionator turns 1% of the hydrogen passing through into deuterium. Hydrogen leaves the front, deuterium the top.");
+        both("jei.universe.info.critical_photon", "射线接收站切到光子模式，用戴森球的能量做临界光子，每个 1.2 GJ。装上引力透镜功率翻倍。",
+                "A ray receiver in photon mode turns Dyson sphere energy into critical photons, 1.2 GJ each. A graviton lens doubles the power.");
+        // Jade 提示（ADR-0019）
+        both("config.jade.plugin_universe.machine", "寰宇：设备", "Universe: Machines");
+        both("jade.universe.power.none", "没接上电网", "Not connected to a power grid");
+        both("jade.universe.power.generating", "发电 %s · 负荷 %s%%", "Generating %s · %s%% load");
+        both("jade.universe.power.using", "用电 %s · 满足率 %s%%", "Using %s · %s%% satisfied");
+        both("jade.universe.making", "在做 %s · %s%%", "Making %s · %s%%");
+        both("jade.universe.station.slot", "%s %s/%s · %s", "%s %s/%s · %s");
+        both("jade.universe.station.slot_remote", "%s %s/%s · 本地%s · 远程%s", "%s %s/%s · local %s · remote %s");
         // 客户端设置（模组列表里的"配置"）
         both("universe.configuration.title", "寰宇设置", "Universe Settings");
         both("universe.configuration.section.universe.client.toml", "客户端设置", "Client Settings");
