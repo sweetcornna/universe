@@ -20,14 +20,14 @@
 
 ## 实现要点（S1 原型）
 
-- **创建**：按模板生成 `LevelStem`，直接构造 `ServerLevel`（世界数据用 `DerivedLevelData` 包一层主世界的，和下界、末地一样），放进 `MinecraftServer.levels`。然后补上原版启动时对每个维度做的事：发 `LevelEvent.Load`、挂世界边界监听、重新激活保存下来的区块票据、设置刷怪；最后给所有玩家发维度清单的增量包。
-- **不注册 `LEVEL_STEM`**：26.3 只在启动时读这个注册表，运行时维度用不到。Infiniverse 解冻注册表、改 `WorldGenSettings` 的做法都可以省掉。
-- **访问转换器**：`MinecraftServer.levels`、`storageSource` 在 26.3 不公开，也没有别的入口，用 `META-INF/accesstransformer.cfg` 改成 public。
-- **卸载**：照原版关服的顺序。先把维度里的玩家送回世界出生点；`deactivateTicketsOnClosing()` 停用票据，每 tick 检查，等区块任务清空（`!chunkMap.hasWork()`，最多等 30 秒）；然后从 `levels` 移除、保存、`close()`，发 `LevelEvent.Unload`（NeoForge 的假玩家等靠它清理），再通知客户端。这些都在 `ServerTickEvent.Post` 里做，避开 `levels` 被遍历的时候。世界出生点所在的维度不允许卸载。
-- **重启恢复**：在 `ServerStartingEvent` 里按清单重建状态为"已加载"的维度。这时 `loadLevel` 已经完成，tick 循环还没开始，玩家也还进不来。其余的维度等有人前往时再加载。
-- **存档**：清单存在 `data/universe/runtime_dimensions.dat`，带格式版本号，每条记录是维度 ID、模板名和是否加载。每个维度的区块、实体、POI 照常存在 `dimensions/<命名空间>/<路径>/`。
-- **客户端**：自定义包 `universe:dimension_list` 增删 `ClientPacketListener.levels()`，这个集合只用于命令补全。传送本身不需要客户端事先知道维度。
-- **调试命令**：`/universe dim create|tp|load|unload|list|stats`，需要 2 级权限。
+- 创建时按模板生成 `LevelStem`，直接构造 `ServerLevel`（世界数据用 `DerivedLevelData` 包一层主世界的，和下界、末地一样），放进 `MinecraftServer.levels`。然后补上原版启动时对每个维度做的事：发 `LevelEvent.Load`、挂世界边界监听、重新激活保存下来的区块票据、设置刷怪。最后给所有玩家发维度清单的增量包。
+- 不注册 `LEVEL_STEM`。26.3 只在启动时读这个注册表，运行时维度用不到，所以 Infiniverse 解冻注册表、改 `WorldGenSettings` 的做法都可以省掉。
+- `MinecraftServer.levels`、`storageSource` 在 26.3 不公开，也没有别的入口，用访问转换器（`META-INF/accesstransformer.cfg`）改成 public。
+- 卸载照原版关服的顺序。先把维度里的玩家送回世界出生点；`deactivateTicketsOnClosing()` 停用票据，每 tick 检查，等区块任务清空（`!chunkMap.hasWork()`，最多等 30 秒）；然后从 `levels` 移除、保存、`close()`，发 `LevelEvent.Unload`（NeoForge 的假玩家等靠它清理），再通知客户端。这些都在 `ServerTickEvent.Post` 里做，避开 `levels` 被遍历的时候。世界出生点所在的维度不允许卸载。
+- 重启时在 `ServerStartingEvent` 里按清单重建状态为"已加载"的维度。这时 `loadLevel` 已经完成，tick 循环还没开始，玩家也还进不来。其余的维度等有人前往时再加载。
+- 维度清单存在 `data/universe/runtime_dimensions.dat`，带格式版本号，每条记录是维度 ID、模板名和是否加载。每个维度的区块、实体、POI 照常存在 `dimensions/<命名空间>/<路径>/`。
+- 客户端靠自定义包 `universe:dimension_list` 增删 `ClientPacketListener.levels()`，这个集合只用于命令补全。传送本身不需要客户端事先知道维度。
+- 调试命令是 `/universe dim create|tp|load|unload|list|stats`，需要 2 级权限。
 
 ## 理由（S1 验证结果）
 
@@ -44,10 +44,10 @@
 
 立项时列出的待验证问题：
 
-- **创建、卸载、重启恢复是否稳定，有没有内存泄漏**：稳定，没发现泄漏（见上表）。
-- **客户端维度列表能否正确同步**：传送、命令补全都正常。重生点没有专门测试：从源码看，重生点所在维度没加载时会退回世界出生点，M2 做床和重生锚时再测。
-- **和地图、小地图类模组的兼容**：没有测，留到 M8 的兼容性测试。
-- **每个维度的内存占用**：见上表。
+- 创建、卸载、重启恢复是否稳定，有没有内存泄漏：稳定，没发现泄漏（见上表）。
+- 客户端维度列表能否正确同步：传送、命令补全都正常。重生点没有专门测试。从源码看，重生点所在维度没加载时会退回世界出生点，M2 做床和重生锚时再测。
+- 和地图、小地图类模组的兼容：没有测，留到 M8 的兼容性测试。
+- 每个维度的内存占用：见上表。
 
 过场画面（NeoForge 的 `RegisterDimensionTransitionScreenEvent`）：
 
@@ -74,11 +74,11 @@
 
 ## M2 的处理（2026-10-17）
 
-- **空闲自动卸载**：每秒检查一次本模组管的已加载维度，没有玩家、没有强制加载区块（原版 `/forceload`，以及 NeoForge 的方块、实体加载器）的连续 5 分钟就申请卸载，走原有的卸载流程。世界出生点所在的维度不卸载。计时逻辑在 `core.dimension.IdleTimer`，有单元测试。以后的工厂要在玩家离开后继续运转，就用强制加载区块（M3 的设备或"星球锚"）。
-- **上线的落点**：在登录的配置阶段、原版 `PrepareSpawnTask` 之前插一个配置任务（NeoForge 的 `RegisterConfigurationTasksEvent`），读玩家存档里的维度，是本模组管的、没加载的就先加载。任务的 `start` 可能在网络线程上调用，所以加载放在 `tick` 里做：它在服务器 tick 末尾处理连接时调用，不在维度的 tick 里。
-- **重生点在已卸载的维度里**：NeoForge 的 `PlayerRespawnPositionEvent` 里先加载那个维度，再调 `findRespawnPositionAndUseSpawnBlock` 重新算重生位置（原版第一次算时找不到维度，没有消耗重生锚）。
-- **`perWorldTickTimes`**：用访问转换器开放，关闭维度时删掉它的记录。
-- **服务器暂停期间的卸载**：不处理。暂停时所有维度都不 tick，加载着也不花 CPU，只占内存；有玩家上线后计时继续，该卸的会卸。
+- 空闲自动卸载：每秒检查一次本模组管的已加载维度，没有玩家、没有强制加载区块（原版 `/forceload`，以及 NeoForge 的方块、实体加载器）的连续 5 分钟就申请卸载，走原有的卸载流程。世界出生点所在的维度不卸载。计时逻辑在 `core.dimension.IdleTimer`，有单元测试。以后的工厂要在玩家离开后继续运转，就用强制加载区块（M3 的设备或"星球锚"）。
+- 上线的落点：在登录的配置阶段、原版 `PrepareSpawnTask` 之前插一个配置任务（NeoForge 的 `RegisterConfigurationTasksEvent`），读玩家存档里的维度，是本模组管的、没加载的就先加载。任务的 `start` 可能在网络线程上调用，所以加载放在 `tick` 里做。`tick` 在服务器 tick 末尾处理连接时调用，不在维度的 tick 里。
+- 重生点在已卸载的维度里时，在 NeoForge 的 `PlayerRespawnPositionEvent` 里先加载那个维度，再调 `findRespawnPositionAndUseSpawnBlock` 重新算重生位置（原版第一次算时找不到维度，没有消耗重生锚）。
+- `perWorldTickTimes` 用访问转换器开放，关闭维度时删掉它的记录。
+- 服务器暂停期间的卸载不处理。暂停时所有维度都不 tick，加载着也不花 CPU，只占内存；有玩家上线后计时继续，该卸的会卸。
 
 ## 参考
 
@@ -86,5 +86,5 @@
 
 ## 备选方案
 
-- **A 预建维度池**：服务器启动时建好 N 个空维度，按需分配给星球。实现简单，但数量有上限，启动开销也大。原定为运行时维度验证失败时的退路；S1 已通过，不再需要。
-- **B 单维度分区**：把多颗星球放进同一个维度的不同区域，从而避开运行时维度。但天空、天气、重力、昼夜要按区域切换，很别扭，也和其他模组对"维度"的假设冲突。
+- A 预建维度池：服务器启动时建好 N 个空维度，按需分配给星球。实现简单，但数量有上限，启动开销也大。原定为运行时维度验证失败时的退路，S1 通过后不再需要。
+- B 单维度分区：把多颗星球放进同一个维度的不同区域，这样用不着运行时维度。但天空、天气、重力、昼夜要按区域切换，很别扭，也和其他模组对"维度"的假设冲突。

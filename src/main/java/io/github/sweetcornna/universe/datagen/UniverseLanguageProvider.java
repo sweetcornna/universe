@@ -38,8 +38,7 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
     @Override
     protected void addTranslations() {
         both("itemGroup.universe", "寰宇", "Universe");
-        both("universe.bed.no_sleep_on_planet", "这颗星球的昼夜和母星不同步，床只能用来设置重生点",
-                "This planet's days don't follow the homeworld's; beds here only set your respawn point");
+        both("universe.bed.no_sleep_on_planet", "不能在这颗星球上睡觉", "You can't sleep on this planet");
         for (BiomeKind kind : BiomeKind.values()) {
             both("biome.universe." + kind.serializedName(), kind.nameZh(), kind.nameEn());
         }
@@ -103,10 +102,10 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         block(UniverseBlocks.TRADE_TERMINAL.get(), "交易终端", "Trade Terminal");
         block(UniverseBlocks.SHIP_REPAIR.get(), "飞船维修台", "Ship Repair Console");
         both("message.universe.repair.no_ship", "机库里没有飞船", "There is no ship in the hangar");
-        both("message.universe.repair.intact", "飞船完好，不用修", "Your ship is in perfect shape");
-        both("message.universe.repair.quote", "修好 %s 点船体要 %s 信用点，再点一次确认", "Repairing %s hull costs %s credits; click again to confirm");
-        both("message.universe.repair.poor", "信用点不够：要 %s，你有 %s", "Not enough credits: %s needed, you have %s");
-        both("message.universe.repair.done", "修好了 %s 点船体，花了 %s 信用点；护盾已充满", "Repaired %s hull for %s credits; shields recharged");
+        both("message.universe.repair.intact", "飞船无需维修", "The ship doesn't need repairs");
+        both("message.universe.repair.quote", "修复 %s 点船体需要 %s 信用点，再次点击确认", "Repairing %s hull costs %s credits. Click again to confirm");
+        both("message.universe.repair.poor", "信用点不足（需要 %s，现有 %s）", "Not enough credits (%s needed, %s held)");
+        both("message.universe.repair.done", "已修复 %s 点船体，花费 %s 信用点，护盾已充满", "Repaired %s hull for %s credits. Shields recharged");
         block(UniverseBlocks.STATION_HULL.get(), "空间站外壳", "Station Hull");
         block(UniverseBlocks.STATION_FLOOR.get(), "空间站地板", "Station Floor");
         block(UniverseBlocks.STATION_GLASS.get(), "空间站玻璃", "Station Glass");
@@ -151,29 +150,32 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("gui.universe.trade.unit", "单价", "Each");
         both("gui.universe.trade.all_total", "全部卖出", "Sell all");
         both("gui.universe.trade.stack_total", "买一组", "Buy stack");
-        both("gui.universe.trade.empty_sell", "背包里没有空间站收购的东西。工厂产品、矿石、探索得到的数据都能卖。",
-                "Nothing in your inventory this station will buy. Factory products, ores and exploration data all sell.");
-        both("gui.universe.trade.empty_buy", "空间站暂时没有货。", "This station has nothing for sale right now.");
+        both("gui.universe.trade.empty_sell", "背包里没有可出售的物品", "Nothing in your inventory sells here");
+        both("gui.universe.trade.empty_buy", "暂无商品", "Nothing for sale");
         both("gui.universe.trade.hint_sell", "单击卖一件 · Shift 卖一组 · Ctrl 全部卖掉", "Click: sell one · Shift: a stack · Ctrl: all of it");
         both("gui.universe.trade.hint_buy", "单击买一件 · Shift 买一组（钱不够就少买几件）", "Click: buy one · Shift: a stack (as many as you can afford)");
         both("gui.universe.trade.quote_sell", "一件 %s · 一组（%s）%s · 全部（%s）%s", "One %s · stack (%s) %s · all (%s) %s");
         both("gui.universe.trade.quote_buy", "一件 %s · 一组（%s）%s", "One %s · stack (%s) %s");
-        both("gui.universe.trade.sold_out", "卖完了，等补货", "Sold out; check back later");
-        both("message.universe.trade.no_signal", "这里收不到空间站的信号", "No station signal here");
-        both("message.universe.trade.sold", "卖出 %s 件%s，得到 %s 信用点", "Sold %s × %s for %s credits");
-        both("message.universe.trade.bought", "买下 %s 件%s，花了 %s 信用点", "Bought %s × %s for %s credits");
-        both("message.universe.trade.nothing_to_sell", "背包里没有这样东西了", "You don't have that any more");
-        both("message.universe.trade.too_cheap", "一件卖不出一个信用点，多卖几件", "Worth less than a credit; sell more at once");
-        both("message.universe.trade.out_of_stock", "卖完了，等补货", "Out of stock; check back later");
-        both("message.universe.trade.not_enough", "信用点不够（一件要 %s）", "Not enough credits (%s each)");
+        both("gui.universe.trade.sold_out", "已售罄", "Sold out");
+        both("message.universe.trade.no_signal", "没有空间站信号", "No station signal");
+        both("message.universe.trade.sold", "卖出 %s 件%s，获得 %s 信用点", "Sold %s × %s for %s credits");
+        both("message.universe.trade.bought", "购买 %s 件%s，花费 %s 信用点", "Bought %s × %s for %s credits");
+        both("message.universe.trade.nothing_to_sell", "背包里没有这件物品", "You don't have that item");
+        both("message.universe.trade.too_cheap", "单件价值不足 1 信用点", "Worth less than 1 credit each");
+        both("message.universe.trade.out_of_stock", "已售罄", "Sold out");
+        both("message.universe.trade.not_enough", "信用点不足（单价 %s）", "Not enough credits (%s each)");
     }
 
     private void ships() {
         block(UniverseBlocks.SHIP_HELM.get(), "驾驶台", "Ship Helm");
         block(UniverseBlocks.SHIP_THRUSTER.get(), "推进器", "Thruster");
+        both("tooltip.universe.ship_thruster.summary", "推力 12：1 g 重力下托起 12 吨\n推重比大于 1 才能起飞",
+                "Thrust 12: lifts 12 t at 1 g\nNeeds thrust-to-weight above 1 to take off");
         block(UniverseBlocks.FUEL_TANK.get(), "燃料舱", "Fuel Tank");
         block(UniverseBlocks.IMPULSE_ENGINE.get(), "脉冲引擎", "Impulse Engine");
         block(UniverseBlocks.WARP_DRIVE.get(), "跃迁引擎", "Warp Drive");
+        both("tooltip.universe.warp_drive.summary", "一台射程 10 光年，每多装一台 +5\n最多算 4 台\n每次跃迁消耗 1 个空间翘曲器",
+                "One drive: 10 ly range, +5 per extra drive\nCounts up to 4 drives\nEach warp uses 1 space warper");
         item(UniverseItems.SPACE_WARPER.get(), "空间翘曲器", "Space Warper");
         item(UniverseItems.SURVEY_DATA.get(), "勘探数据", "Survey Data");
         block(UniverseBlocks.SHIP_SEAT.get(), "乘客座椅", "Passenger Seat");
@@ -181,9 +183,13 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         block(UniverseBlocks.MINING_BEAM.get(), "采矿光束", "Mining Beam");
         block(UniverseBlocks.SHIELD_GENERATOR.get(), "护盾发生器", "Shield Generator");
         block(UniverseBlocks.SHIP_THRUSTER_MK2.get(), "Mk.II 推进器", "Thruster Mk.II");
+        both("tooltip.universe.ship_thruster_mk2.summary", "推力 20：1 g 重力下托起 20 吨\n推重比大于 1 才能起飞",
+                "Thrust 20: lifts 20 t at 1 g\nNeeds thrust-to-weight above 1 to take off");
         block(UniverseBlocks.FUEL_TANK_MK2.get(), "Mk.II 燃料舱", "Fuel Tank Mk.II");
         block(UniverseBlocks.IMPULSE_ENGINE_MK2.get(), "Mk.II 脉冲引擎", "Impulse Engine Mk.II");
         block(UniverseBlocks.WARP_DRIVE_MK2.get(), "Mk.II 跃迁引擎", "Warp Drive Mk.II");
+        both("tooltip.universe.warp_drive_mk2.summary", "每台 +10 光年射程（普通跃迁引擎 +5）\n和普通跃迁引擎合计最多算 4 台",
+                "+10 ly range per drive (+5 for a standard one)\nCounts up to 4 drives, standard ones included");
         block(UniverseBlocks.ALLOY_HULL_PLATING.get(), "合金船体板", "Alloy Hull Plating");
         String[][] colors = {
                 {"white", "白色"}, {"orange", "橙色"}, {"magenta", "品红色"}, {"light_blue", "淡蓝色"},
@@ -227,12 +233,12 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         item(UniverseItems.SENTINEL_SCRAP.get(), "守卫机残骸", "Sentinel Scrap");
         item(UniverseItems.SENTINEL_SPAWN_EGG.get(), "守卫机刷怪蛋", "Sentinel Spawn Egg");
         item(UniverseItems.HEAVY_SENTINEL_SPAWN_EGG.get(), "重型守卫机刷怪蛋", "Heavy Sentinel Spawn Egg");
-        both("message.universe.sentinel.wanted", "守卫机警报！通缉等级 %s", "Sentinel alert! Wanted level %s");
-        both("message.universe.sentinel.heavy", "通缉等级 %s：重型守卫机正在赶来！", "Wanted level %s: a heavy sentinel is inbound!");
-        both("message.universe.sentinel.escaped", "你甩掉了守卫机", "You shook off the sentinels");
-        both("message.universe.sentinel.left_planet", "离开了星球，守卫机不再追捕你", "You left the planet; the sentinels lost your trail");
+        both("message.universe.sentinel.wanted", "通缉等级 %s", "Wanted level %s");
+        both("message.universe.sentinel.heavy", "通缉等级 %s：重型守卫机正在赶来", "Wanted level %s: heavy sentinel inbound");
+        both("message.universe.sentinel.escaped", "已摆脱守卫机", "Escaped the sentinels");
+        both("message.universe.sentinel.left_planet", "已离开星球，守卫机停止追捕", "Left the planet. The sentinels gave up");
         both("hud.universe.sentinel.wanted", "守卫机通缉", "SENTINELS");
-        both("hud.universe.sentinel.seen", "被守卫机盯上了", "You have been spotted");
+        both("hud.universe.sentinel.seen", "已被守卫机发现", "Spotted by sentinels");
         both("hud.universe.sentinel.escaping", "躲藏中 %s 秒", "Hiding %ss");
         both("hud.universe.sentinel.alert", "警戒", "Alert");
         both("gui.universe.star_map.sentinels", "守卫：%s", "Sentinels: %s");
@@ -261,7 +267,7 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("gui.universe.tech_tree.stop", "停止研究", "Stop");
         both("gui.universe.tech_tree.locked_button", "未解锁", "Locked");
         both("gui.universe.tech_tree.click", "点击查看详情", "Click for details");
-        both("gui.universe.matrix_lab.idle", "没有在研究。按 %s 打开科技树，选一个要研究站研究的科技。", "Not researching. Press %s to open the tech tree and pick a lab tech.");
+        both("gui.universe.matrix_lab.idle", "未在研究（按 %s 打开科技树）", "Not researching (press %s for the tech tree)");
         both("gui.universe.matrix_lab.running", "研究中", "Researching");
         both("gui.universe.matrix_lab.no_matrix", "缺少需要的矩阵", "Missing matrices");
         both("gui.universe.matrix_lab.no_power", "电力不足", "Not enough power");
@@ -294,7 +300,7 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("gui.universe.stats.empty", "这段时间没有生产记录", "Nothing was produced in this period");
         both("gui.universe.stats.empty_hint", "配方设备、采矿机、抽水站、萃取站、分馏塔、轨道采集器开工后，以及火力发电厂烧的燃料会记在这里；物流站搬运的不算",
                 "Machines, miners, pumps, extractors, fractionators, orbital collectors and fuel burned in thermal plants show up here; logistics transfers don't count");
-        both("gui.universe.stats.waiting", "正在向服务器要数据……", "Fetching from the server…");
+        both("gui.universe.stats.waiting", "正在获取数据……", "Loading…");
         both("gui.universe.star_map", "星图", "Star Map");
         both("gui.universe.star_map.unknown", "还没收到星团的数据", "Galaxy data not received yet");
         both("gui.universe.star_map.hint", "左键拖动旋转 · 右键拖动平移 · 滚轮缩放 · 双击或 F 居中 · H 回到当前恒星系 · %s 关闭",
@@ -314,43 +320,41 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("gui.universe.star_map.hazards", "危害：%s", "Hazards: %s");
         both("gui.universe.star_map.warp", "跃迁", "Warp");
         both("gui.universe.star_map.warp.range", "跃迁射程：%s 光年", "Warp range: %s ly");
-        both("gui.universe.star_map.warp.here", "已经在这个恒星系里了", "You are already in this system");
-        both("gui.universe.star_map.warp.ready", "准备就绪：消耗 1 个空间翘曲器（还有 %s 个）", "Ready: uses 1 space warper (%s left)");
-        both("gui.universe.star_map.warp.ready_creative", "准备就绪：创造模式不消耗空间翘曲器", "Ready: no warper needed in creative mode");
-        both("message.universe.warp.not_piloting", "驾驶装有跃迁引擎的飞船进入太空后才能跃迁", "Pilot a ship with a warp drive in space to warp");
-        both("message.universe.warp.not_in_space", "要先飞出大气层进入太空", "Leave the atmosphere first");
+        both("gui.universe.star_map.warp.here", "已在此恒星系", "Already in this system");
+        both("gui.universe.star_map.warp.ready", "就绪：消耗 1 个空间翘曲器（剩余 %s）", "Ready: uses 1 space warper (%s left)");
+        both("gui.universe.star_map.warp.ready_creative", "就绪：创造模式不消耗空间翘曲器", "Ready: no warper used in Creative");
+        both("message.universe.warp.not_piloting", "需要在太空中驾驶装有跃迁引擎的飞船", "Requires piloting a ship with a warp drive in space");
+        both("message.universe.warp.not_in_space", "需要先进入太空", "You must be in space");
         both("message.universe.warp.busy", "跃迁引擎正在充能", "The warp drive is already spooling");
         both("message.universe.warp.no_drive", "飞船上没有跃迁引擎", "This ship has no warp drive");
         both("message.universe.warp.bad_target", "无效的跃迁目标", "Invalid warp destination");
-        both("message.universe.warp.out_of_range", "超出跃迁射程：%s / %s 光年，多装几台跃迁引擎或者分几次跳",
-                "Out of range: %s / %s ly. Add warp drives or jump in stages");
-        both("message.universe.warp.near_star", "离恒星太近，引力井太深，飞远一点再跃迁", "Too deep in the star's gravity well, fly farther out");
-        both("message.universe.warp.near_body", "离%1$s太近，飞远一点再跃迁", "Too close to %2$s, fly farther out");
-        both("message.universe.warp.no_warper", "背包里没有空间翘曲器", "No space warper in your inventory");
+        both("message.universe.warp.out_of_range", "超出跃迁射程（%s / %s 光年）", "Out of warp range (%s / %s ly)");
+        both("message.universe.warp.near_star", "离恒星太近，无法跃迁", "Too close to the star to warp");
+        both("message.universe.warp.near_body", "离%1$s太近，无法跃迁", "Too close to %2$s to warp");
+        both("message.universe.warp.no_warper", "需要空间翘曲器", "Requires a space warper");
         both("message.universe.warp.cancelled", "跃迁中断", "Warp aborted");
-        both("message.universe.warp.arrived", "已抵达 %1$s 恒星系", "Arrived at the %2$s system");
+        both("message.universe.warp.arrived", "已抵达%1$s恒星系", "Arrived at the %2$s system");
         both("hud.universe.warp.spooling", "跃迁引擎充能中，目标：%s", "Warp drive spooling: %s");
         both("hud.universe.warp.spooling_unknown", "跃迁引擎充能中", "Warp drive spooling");
         both("hud.universe.ship.warp", "跃迁射程 %s 光年 · 翘曲器 %s · %s 打开星图", "Warp %s ly · warpers %s · %s for star map");
-        both("message.universe.sorter.filter", "分拣器只搬：%s", "Sorter filter: %s");
-        both("message.universe.sorter.no_filter", "分拣器不过滤，什么都搬", "Sorter filter cleared: moves anything");
-        both("message.universe.storage_tank.empty", "储液罐是空的（能装 %s 个）", "The tank is empty (holds %s)");
+        both("message.universe.sorter.filter", "分拣器过滤：%s", "Sorter filter: %s");
+        both("message.universe.sorter.no_filter", "分拣器过滤：无", "Sorter filter: none");
+        both("message.universe.storage_tank.empty", "储液罐：空（容量 %s）", "Tank: empty (capacity %s)");
         both("message.universe.storage_tank.contents", "%s：%s / %s", "%s: %s / %s");
-        both("tooltip.universe.storage_tank.empty", "空的：装一种流体，最多 %s 个", "Empty: holds up to %s of one fluid");
-        both("tooltip.universe.storage_tank.contents", "装着 %s %s 个（最多 %s）", "Contains %2$s %1$s (max %3$s)");
-        both("message.universe.factory_anchor.placed", "工厂锚已启动：周围 %1$s×%1$s 个区块会一直加载", "Factory anchor online: %1$s×%1$s chunks stay loaded");
-        both("message.universe.factory_anchor.info", "周围 %1$s×%1$s 个区块（%2$s 格见方）一直加载，这颗星球不会卸载",
-                "Keeps %1$s×%1$s chunks (%2$s blocks across) loaded; this world stays loaded");
+        both("tooltip.universe.storage_tank.empty", "空（可装一种流体，容量 %s）", "Empty (one fluid, capacity %s)");
+        both("tooltip.universe.storage_tank.contents", "%1$s ×%2$s（容量 %3$s）", "%1$s ×%2$s (capacity %3$s)");
+        both("message.universe.factory_anchor.placed", "工厂锚已启动（%1$s×%1$s 区块常加载）", "Factory anchor active (%1$s×%1$s chunks kept loaded)");
+        both("message.universe.factory_anchor.info", "常加载 %1$s×%1$s 区块（%2$s 格见方），所在世界不会卸载",
+                "Keeps %1$s×%1$s chunks (%2$s blocks across) and this world loaded");
         // 物流站（ADR-0015）
-        both("message.universe.station.full", "装不下了", "The station is full");
+        both("message.universe.station.full", "物流站已满", "Station full");
         both("message.universe.station.drones", "无人机 %s / %s", "Drones %s / %s");
         both("message.universe.station.vessels", "运输船 %s / %s", "Vessels %s / %s");
         both("message.universe.station.warpers", "空间翘曲器 %s / %s", "Space warpers %s / %s");
-        both("message.universe.orbital_collector.not_in_space", "轨道采集器只能放在太空里，挨着气态巨行星",
-                "Orbital collectors go in space, next to a gas giant");
+        both("message.universe.orbital_collector.not_in_space", "只能放在太空中的气态巨行星附近", "Must be placed in space near a gas giant");
         both("message.universe.orbital_collector.no_giant", "这个星系没有气态巨行星", "This system has no gas giant");
-        both("message.universe.orbital_collector.too_far", "离气态巨行星%1$s还差 %3$s 格（在%4$s方向；要在大气层外 %5$s 格以内）",
-                "%2$s is %3$s blocks too far (to the %4$s; must be within %5$s blocks of its atmosphere)");
+        both("message.universe.orbital_collector.too_far", "离%1$s太远：还差 %3$s 格（%4$s方，需在大气层外 %5$s 格内）",
+                "Too far from %2$s: %3$s blocks short (to the %4$s; must be within %5$s blocks of its atmosphere)");
         both("tooltip.universe.station.slot", "%s × %s", "%s × %s");
         both("tooltip.universe.station.vehicles", "无人机 %s · 运输船 %s · 翘曲器 %s", "Drones %s · Vessels %s · Warpers %s");
         both("gui.universe.station.energy", "电量 %s / %s", "Energy %s / %s");
@@ -401,46 +405,43 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("gui.universe.orbital_collector.hint", "不用接电网 · 等星际物流站的运输船来取货", "No power needed; vessels collect it");
         both("gui.universe.orbital_collector.rate", "产量", "Rate");
         both("gui.universe.fractionator.input", "氢", "H");
-        both("gui.universe.fractionator.idle", "没有氢：用传送带送进来", "No hydrogen: feed it by belt");
+        both("gui.universe.fractionator.idle", "缺少氢", "No hydrogen");
         both("gui.universe.fractionator.rate", "每秒处理 %s 个（最多 %s）", "%s per second (max %s)");
         both("gui.universe.fractionator.produced", "已分出重氢 %s 个", "Deuterium produced: %s");
-        both("gui.universe.fractionator.hint", "氢从正面出去，重氢往上推", "Hydrogen exits the front, deuterium goes up");
-        both("message.universe.fuel_tank.full", "燃料舱已经满了", "The fuel tank is full");
+        both("gui.universe.fractionator.hint", "氢从正面输出，重氢从顶部输出", "Hydrogen out the front, deuterium out the top");
+        both("message.universe.fuel_tank.full", "燃料舱已满", "Fuel tank full");
         both("message.universe.fuel_tank.level", "燃料：%s / %s", "Fuel: %s / %s");
-        both("message.universe.ship.too_large", "飞船太大了（超过 %s 个方块），或者连到了地面、建筑上",
-                "Too big for a ship (over %s blocks), or it is attached to the ground or a building");
+        both("message.universe.ship.too_large", "飞船过大（超过 %s 个方块），或与地面相连", "Ship too large (over %s blocks) or attached to the ground");
         both("message.universe.ship.split_multiblock", "%s 只有一部分在船上", "Only part of the %s is on the ship");
         both("message.universe.ship.two_helms", "一艘船只能有一个驾驶台", "A ship can only have one helm");
-        both("message.universe.ship.no_thrusters", "船上没有推进器，飞不起来", "This ship has no thrusters");
+        both("message.universe.ship.no_thrusters", "飞船没有推进器", "The ship has no thrusters");
         both("message.universe.ship.assembled", "飞船就绪：%s 个方块，%s 吨，推重比 %s，燃料 %s/%s",
                 "Ship ready: %s blocks, %s t, thrust-to-weight %s, fuel %s/%s");
-        both("message.universe.ship.too_heavy", "推力不够，这艘船在这里飞不起来：多装推进器，或者换轻一些的船体板。",
-                "Not enough thrust to lift off here. Add thrusters or switch to lighter hull plating.");
-        both("message.universe.ship.blocked", "这里放不下飞船，找块空旷的地方再停", "Not enough room to park here; find an open spot");
-        both("message.universe.ship.too_hot", "离恒星太近了！", "Too close to the star!");
-        both("message.universe.ship.cannot_land", "%1$s 是气态巨行星，没有可以着陆的地面", "%2$s is a gas giant with no ground to land on");
+        both("message.universe.ship.too_heavy", "推力不足，无法在此起飞", "Not enough thrust to take off here");
+        both("message.universe.ship.blocked", "空间不足，无法停船", "Not enough room to park");
+        both("message.universe.ship.too_hot", "离恒星太近", "Too close to the star");
+        both("message.universe.ship.cannot_land", "%1$s是气态巨行星，无法着陆", "%2$s is a gas giant and can't be landed on");
         both("message.universe.ship.entered_planet", "进入 %1$s 的大气层", "Entering the atmosphere of %2$s");
         both("message.universe.ship.entered_space", "进入太空", "Entering space");
-        both("message.universe.ship.boarded_pilot", "空格上升，Shift 下降；着陆后按住 Shift 停船",
-                "Space to climb, Shift to descend; hold Shift after landing to park");
+        both("message.universe.ship.boarded_pilot", "空格上升，Shift 下降，着陆后按住 Shift 停船",
+                "Space to climb, Shift to descend. Hold Shift after landing to park");
         both("message.universe.ship.boarded_passenger", "着陆后按 Shift 下船", "Press Shift after landing to get off");
         both("message.universe.ship.no_beam", "这艘船没有采矿光束", "This ship has no mining beam");
         both("message.universe.ship.no_cannon", "这艘船没有光子炮", "This ship has no photon cannon");
         both("message.universe.ship.mode_cannon", "武器：光子炮", "Weapon: photon cannon");
         both("message.universe.ship.mode_beam", "武器：采矿光束", "Weapon: mining beam");
-        both("message.universe.ship.destroyed", "飞船被击毁！拖船把你送回了空间站，船体只剩两成五；货舱里丢了 %s 件东西。",
-                "Your ship was destroyed! A tug hauled you back to the station with 25%% hull; %s items were lost from the cargo hold.");
-        both("message.universe.pirate.scanning", "海盗正在扫描你的货舱……", "Pirates are scanning your cargo hold...");
-        both("message.universe.pirate.incoming", "海盗来袭！%s 架海盗战机正从身后逼近", "Pirate attack! %s fighters closing in from behind");
-        both("message.universe.pirate.destroyed", "击落一架海盗战机：赏金 %s 信用点", "Pirate fighter destroyed: %s credit bounty");
-        both("message.universe.pirate.destroyed_stowed", "击落一架海盗战机：赏金 %s 信用点，残骸收进了货舱",
-                "Pirate fighter destroyed: %s credit bounty, salvage stowed in the cargo hold");
-        both("message.universe.pirate.repelled", "打退了海盗袭击！一共击落 %s 架", "Pirate attack repelled! %s fighters destroyed");
-        both("message.universe.pirate.fled_station", "海盗不敢靠近空间站，撤走了", "The pirates break off rather than approach the station");
-        both("message.universe.pirate.escaped", "你甩掉了海盗", "You escaped the pirates");
-        both("message.universe.pirate.lost", "海盗跟丢了你", "The pirates lost track of you");
-        both("message.universe.pirate.looted", "海盗抢走了货物，扬长而去", "The pirates made off with your cargo");
-        both("message.universe.pirate.jammed", "脉冲引擎被海盗干扰，开不起来", "Pulse engine jammed by the pirates");
+        both("message.universe.ship.destroyed", "飞船被击毁，已拖回空间站（船体 25%%），损失了 %s 件货物",
+                "Ship destroyed. Towed back to the station at 25%% hull, %s cargo items lost");
+        both("message.universe.pirate.scanning", "海盗正在扫描货舱", "Pirates are scanning your cargo");
+        both("message.universe.pirate.incoming", "海盗来袭：%s 架战机", "Pirate attack: %s fighters");
+        both("message.universe.pirate.destroyed", "击落海盗战机，赏金 %s 信用点", "Pirate fighter destroyed, %s credit bounty");
+        both("message.universe.pirate.destroyed_stowed", "击落海盗战机，赏金 %s 信用点，残骸已收入货舱", "Pirate fighter destroyed, %s credit bounty. Salvage stowed");
+        both("message.universe.pirate.repelled", "已击退海盗（击落 %s 架）", "Pirate attack repelled (%s destroyed)");
+        both("message.universe.pirate.fled_station", "海盗撤退了", "The pirates retreated");
+        both("message.universe.pirate.escaped", "已摆脱海盗", "Escaped the pirates");
+        both("message.universe.pirate.lost", "海盗跟丢了", "The pirates lost track of you");
+        both("message.universe.pirate.looted", "货物被海盗抢走了", "The pirates took your cargo");
+        both("message.universe.pirate.jammed", "脉冲引擎受到干扰", "Impulse drive jammed");
         both("hud.universe.pirate.count", "海盗战机 ×%s", "Pirate fighters ×%s");
         both("hud.universe.pirate.marker", "海盗 · %s 格", "Pirate · %s m");
         both("hud.universe.pirate.target", "海盗战机", "Pirate Fighter");
@@ -454,8 +455,8 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("hud.universe.asteroid.large", "大型小行星", "Large asteroid");
         both("message.universe.asteroid.mined", "小行星碎了：%s", "Asteroid shattered: %s");
         both("message.universe.asteroid.mined_stowed", "小行星碎了，收进货舱：%s", "Asteroid shattered, stowed in the hold: %s");
-        both("message.universe.ship.impulse_bumped", "撞上小行星，脉冲引擎熄火了", "Hit an asteroid: impulse drive knocked offline");
-        both("message.universe.asteroid.cargo_full", "货舱满了，%s 件东西漂在外面", "Cargo hold full: %s items left floating");
+        both("message.universe.ship.impulse_bumped", "撞上小行星，脉冲引擎已关闭", "Hit an asteroid. Impulse drive offline");
+        both("message.universe.asteroid.cargo_full", "货舱已满，%s 件物品留在了太空中", "Cargo hold full, %s items left behind");
         both("commands.universe.asteroids.not_space", "这里不是太空", "This is not space");
         both("commands.universe.asteroids.belt", "小行星带：离恒星 %s–%s 格，上下 %s 格，离这里 %s 格",
                 "Asteroid belt: %s–%s from the star, ±%s vertically, %s away");
@@ -472,8 +473,7 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
                 "Cargo worth %s credits, %s%% chance of pirates at the next roll; not counting yet (fly a ship in space beyond 600 m of the station)");
         both("commands.universe.pirates.busy", "正在被海盗袭击", "A pirate attack is already under way");
         both("commands.universe.pirates.not_piloting", "要先驾驶飞船进入太空", "Pilot a ship in space first");
-        both("message.universe.ship.towed", "已拖回空间站的机库：停船重新组装，或者在维修台付钱修好船体",
-                "Towed to the station hangar: park and reassemble, or pay at the repair console to fix the hull");
+        both("message.universe.ship.towed", "已拖回空间站机库，可在维修台修理", "Towed to the station hangar. Repair it at the repair console");
 
         both("hud.universe.ship.title", "飞船", "Ship");
         both("hud.universe.ship.status.impulse", "脉冲巡航", "Impulse");
@@ -490,9 +490,9 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
                 "WASD move  Space/Shift up/down  Sprint: impulse");
         both("hud.universe.ship.parking", "停船中", "Parking");
         both("hud.universe.ship.hint.park", "按住 Shift 停船", "Hold Shift to park");
-        both("hud.universe.ship.hint.space", "一直往上飞进入太空，按住 Shift 下降着陆", "Climb to reach space, hold Shift to land");
-        both("hud.universe.ship.hint.land", "飞进行星的大气层就会开始降落", "Fly into a planet's atmosphere to land");
-        both("hud.universe.ship.hint.no_fuel", "燃料耗尽：着陆后给燃料舱加燃料", "Out of fuel: land and refuel the tanks");
+        both("hud.universe.ship.hint.space", "向上飞进入太空，按住 Shift 降落", "Climb to reach space, hold Shift to land");
+        both("hud.universe.ship.hint.land", "飞入行星大气层即可降落", "Fly into a planet's atmosphere to land");
+        both("hud.universe.ship.hint.no_fuel", "燃料耗尽", "Out of fuel");
         both("hud.universe.ship.target", "%s  %s 格", "%s  %s m");
         both("hud.universe.ship.unlandable", "（不能着陆）", " (no landing)");
         both("hud.universe.ship.above", "  ▲%s 格", "  ▲%s m");
@@ -515,7 +515,7 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
     private void multitool() {
         item(UniverseItems.MULTITOOL.get(), "多功能工具", "Multitool");
         item(UniverseItems.DAMAGED_MULTITOOL.get(), "损坏的多功能工具", "Damaged Multitool");
-        both("message.universe.multitool.overheated", "多功能工具过热！", "Multitool overheated!");
+        both("message.universe.multitool.overheated", "多功能工具过热", "Multitool overheated");
         both("message.universe.multitool.mode.mining", "多功能工具：采矿模式", "Multitool: Mining mode");
         both("message.universe.multitool.mode.combat", "多功能工具：战斗模式", "Multitool: Combat mode");
         both("hud.universe.multitool.mode.mining", "采矿", "Mining");
@@ -525,8 +525,7 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("message.universe.multitool.scanned", "扫描完成：%s 条矿脉，共 %s 块", "Scan complete: %s veins, %s blocks");
         both("hud.universe.multitool.overheated", "过热", "OVERHEATED");
         both("hud.universe.multitool.marker", "%s ×%s  %s 格", "%s ×%s  %sm");
-        both("message.universe.crash_site.smoke", "远处%s方升起一道烟柱，大约 %s 格远。好像有什么东西坠落了。",
-                "A column of smoke rises to the %s, about %s blocks away. Something has crashed.");
+        both("message.universe.crash_site.smoke", "%s方约 %s 格外升起一道烟柱", "A column of smoke rises to the %s, about %s blocks away");
         both("direction.universe.east", "东", "east");
         both("direction.universe.southeast", "东南", "southeast");
         both("direction.universe.south", "南", "south");
@@ -566,7 +565,7 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("hud.universe.suit.sheltered", "有遮挡", "sheltered");
         both("hud.universe.suit.storm", "风暴", "storm");
         both("hud.universe.suit.warning.oxygen", "氧气即将耗尽", "Oxygen low");
-        both("hud.universe.suit.warning.no_oxygen", "氧气耗尽！", "Out of oxygen!");
+        both("hud.universe.suit.warning.no_oxygen", "氧气耗尽", "Out of oxygen");
         both("hud.universe.suit.warning.hazard", "%s防护即将耗尽", "%s protection low");
         both("message.universe.suit.oxygen_used", "用掉一个氧气罐：氧气 +50%", "Used an oxygen capsule: oxygen +50%");
         both("message.universe.suit.cell_used", "用掉一个防护电池：防护 +50%", "Used a hazard cell: protection +50%");
@@ -679,12 +678,12 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         item(UniverseItems.ENERGY_MATRIX.get(), "能量矩阵", "Energy Matrix");
         this.dyson();
 
-        both("gui.universe.machine.unpowered", "未接入电网：放在电力感应塔的覆盖范围里", "No power: needs a tesla tower nearby");
+        both("gui.universe.machine.unpowered", "未接入电网（需要电力感应塔）", "No power (needs a tesla tower in range)");
         both("gui.universe.machine.power", "功率 %s · 满足率 %s%%", "Power %s · %s%% satisfied");
         both("gui.universe.machine.output", "输出 %s · 负荷 %s%%", "Output %s · load %s%%");
         both("gui.universe.machine.standby", "待机：已接入电网", "Standby · connected");
         both("gui.universe.machine.output_slot", "产物", "Output");
-        both("gui.universe.machine.output_full", "产物格满了，接上传送带或箱子", "Output full: add a belt or chest");
+        both("gui.universe.machine.output_full", "产物已满", "Output full");
         both("gui.universe.mining_machine.vein", "矿脉：%s · %s 个节点", "Vein: %s · %s nodes");
         both("gui.universe.mining_machine.remaining", "剩余储量 %s", "Reserve %s");
         both("gui.universe.mining_machine.rate", "满电产量 %s 个/分钟", "%s per minute at full power");
@@ -692,25 +691,25 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("gui.universe.mining_machine.hint", "放在地表的矿脉露头上", "Place it on a surface vein");
         both("gui.universe.water_pump.ok", "水源正常", "Water source OK");
         both("gui.universe.water_pump.no_water", "要放在水源方块上面", "Must sit on a water source");
-        both("gui.universe.water_pump.acid", "这里的液体是酸液，抽不了", "This liquid is acid");
+        both("gui.universe.water_pump.acid", "无法抽取酸液", "Can't pump acid");
         both("gui.universe.water_pump.rate", "满电产量 %s 个/分钟", "%s per minute at full power");
         both("gui.universe.oil_extractor.rate", "涌泉产量 %s 个/秒", "Seep yield %s/s");
         both("gui.universe.oil_extractor.none", "要放在原油涌泉上面", "Must sit on a crude oil seep");
-        both("gui.universe.oil_extractor.hint", "越抽越少，最低降到三成", "Drops as you pump, down to 30%");
+        both("gui.universe.oil_extractor.hint", "产量逐渐下降，最低 30%", "Yield declines over time, down to 30%");
         both("gui.universe.tesla_tower.grid", "电网：%s 座感应塔，%s 台设备", "Grid: %s towers, %s devices");
         both("gui.universe.tesla_tower.flow", "发电能力 %s · 用电 %s", "Capacity %s · Demand %s");
         both("gui.universe.tesla_tower.satisfaction", "满足率 %s%%", "Satisfied %s%%");
         both("gui.universe.tesla_tower.storage", "蓄电器 充 %s · 放 %s", "Accumulators: in %s · out %s");
         both("gui.universe.tesla_tower.range", "覆盖半径 %s 格，相距 %s 格内的塔自动相连", "Range %s, links towers within %s");
         both("gui.universe.wind_turbine.wind", "风力系数 %s", "Wind factor %s");
-        both("gui.universe.wind_turbine.hint", "越高风越大，雨天、雷雨天更大", "Windier up high and in storms");
+        both("gui.universe.wind_turbine.hint", "高处和雨天风力更大", "Stronger wind up high and in rain");
         both("gui.universe.solar_panel.ratio", "光照比例 %s", "Solar ratio %s");
         both("gui.universe.solar_panel.sun", "太阳高度 %s%%", "Sun height %s%%");
-        both("gui.universe.solar_panel.no_sky", "头顶被挡住了，看不见天空", "Blocked: needs a clear view of the sky");
+        both("gui.universe.solar_panel.no_sky", "上方有遮挡", "Sky blocked");
         both("gui.universe.solar_panel.no_sun", "这里没有阳光", "No sunlight here");
-        both("gui.universe.solar_panel.rain", "下雨了，发电量只有 %s%%", "Rain cuts output to %s%%");
+        both("gui.universe.solar_panel.rain", "雨天：发电 %s%%", "Rain: %s%% output");
         both("gui.universe.solar_panel.night", "夜里不发电", "No power at night");
-        both("gui.universe.solar_panel.space", "太空里没有昼夜，离恒星越近越亮", "No night in space; brighter near the star");
+        both("gui.universe.solar_panel.space", "太空中没有昼夜，离恒星越近发电越多", "No night in space; more power closer to the star");
         both("gui.universe.solar_panel.hint", "跟着太阳转，正午发电最多", "Tracks the sun; peaks at noon");
         both("gui.universe.thermal_plant.fuel", "炉膛", "Firebox");
         both("gui.universe.thermal_plant.hint", "只按电网需要烧燃料", "Burns only what the grid needs");
@@ -719,7 +718,7 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("gui.universe.accumulator.idle", "待机", "Idle");
         both("gui.universe.accumulator.energy", "电量 %s / %s", "Stored %s / %s");
         both("gui.universe.recipe_machine.running", "加工中", "Working");
-        both("gui.universe.recipe_machine.no_recipe", "在左边选一个配方", "Select a recipe");
+        both("gui.universe.recipe_machine.no_recipe", "选择配方", "Select a recipe");
         both("gui.universe.recipe_machine.no_input", "缺少原料", "Missing ingredients");
         both("gui.universe.recipe_machine.output_full", "产物已满", "Output full");
         both("gui.universe.recipe_machine.no_power", "电力不足", "No power");
@@ -774,7 +773,7 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         this.modules();
         this.pois();
         both("research.universe.completed", "研究完成：%s", "Research complete: %s");
-        both("research.universe.missing_items", "背包里的物品不够，无法完成这项研究", "Not enough items in your inventory for this research");
+        both("research.universe.missing_items", "物品不足", "Not enough items");
     }
 
     /** 兴趣点：方块、消息、界面、数据终端的日志片段、先驱者的线索（ADR-0014）。 */
@@ -790,15 +789,17 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         block(UniverseBlocks.SUPPLY_CRATE.get(), "补给箱", "Supply Crate");
         block(UniverseBlocks.SMOLDERING_WRECK.get(), "冒烟的残骸", "Smoldering Wreckage");
         both("item.universe.navigation_data", "导航数据", "Navigation Data");
+        both("tooltip.universe.navigation_data.summary", "坠毁飞船和据点的补给箱里有，读数据终端也会给\n也能用电路板和纸合成\n放进信号增强器，定位附近没去过的兴趣点",
+                "Found in crashed ship and outpost crates, and given by data terminals\nAlso crafted from circuit boards and paper\nFeed it to a Signal Booster to find unvisited sites nearby");
         both("container.universe.supply_crate", "补给箱", "Supply Crate");
         both("message.universe.poi.found", "发现兴趣点：%s", "Point of interest discovered: %s");
         both("message.universe.poi.arrived", "到达航点：%s", "Waypoint reached: %s");
-        both("message.universe.poi.no_signal", "这里收不到信号（信号增强器只在能登陆的星球上工作）", "No signal here (Signal Boosters only work on landable planets)");
+        both("message.universe.poi.no_signal", "没有信号：信号增强器只能在可着陆的星球上使用", "No signal: Signal Boosters only work on landable planets");
         both("message.universe.poi.need_navigation_data", "需要一份导航数据", "Requires one Navigation Data");
-        both("message.universe.poi.none_found", "%2$s 格内没有你没去过的%1$s", "No unvisited %1$s within %2$s blocks");
-        both("message.universe.poi.located", "信号增强器定位到%1$s：在%2$s方约 %3$s 格处，航点已标在 HUD 上", "Signal Booster located a %1$s about %3$s blocks to the %2$s. Waypoint marked on your HUD");
-        both("message.universe.drop_pod.repaired_already", "这个掉落舱已经修好了", "This drop pod has already been repaired");
-        both("message.universe.drop_pod.maxed", "外骨骼的技术槽和货舱都已经到上限了", "Your exosuit's tech slots and cargo are already at maximum");
+        both("message.universe.poi.none_found", "%2$s 格内没有未去过的%1$s", "No unvisited %1$s within %2$s blocks");
+        both("message.universe.poi.located", "已定位%1$s：%2$s方约 %3$s 格，已设为航点", "Located a %1$s about %3$s blocks to the %2$s. Waypoint set");
+        both("message.universe.drop_pod.repaired_already", "掉落舱已修复", "Already repaired");
+        both("message.universe.drop_pod.maxed", "外骨骼已升级到上限", "Exosuit fully upgraded");
         both("message.universe.drop_pod.needs", "修理需要：%s", "Repair requires: %s");
         both("message.universe.drop_pod.upgraded", "外骨骼升级了：技术槽 %s/%s，货舱 %s/%s", "Exosuit upgraded: tech slots %s/%s, cargo %s/%s");
         both("message.universe.list_separator", "、", ", ");
@@ -810,15 +811,16 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("gui.universe.terminal.title", "据点 %s 的日志", "Outpost %s Log");
         both("gui.universe.terminal.heading", "数据终端 · %s", "DATA TERMINAL · %s");
         both("gui.universe.terminal.signature", "—— %s", "— %s");
-        both("gui.universe.terminal.read_before", "（这台终端你读过了）", "(You have read this terminal before)");
+        both("gui.universe.terminal.read_before", "（已读过）", "(Already read)");
         both("gui.universe.poi.reward", "获得：%s ×%s", "Received: %s ×%s");
         both("gui.universe.poi.close", "Esc 关闭", "Esc to close");
         both("gui.universe.monolith.heading", "先驱者石碑 · 第 %s/%s 段", "PRECURSOR MONOLITH · %s of %s");
-        both("gui.universe.monolith.touched_before", "（符文的光暗了下去，这段记忆已经交给你了）", "(The glyphs dim. This memory has already been given to you.)");
-        both("gui.universe.signal_booster.hint", "放进一份导航数据，选一种地点，定位 %s 格内你还没去过的最近一处。", "Feed in one Navigation Data and pick a kind of site to locate the nearest one you haven't visited within %s blocks.");
+        both("gui.universe.monolith.touched_before", "（符文暗了下去，这一段你已经读过）", "(The glyphs dim. You have read this before.)");
+        both("gui.universe.signal_booster.hint", "消耗一份导航数据，定位 %s 格内最近的未去过的地点",
+                "Uses one Navigation Data to find the nearest unvisited site within %s blocks");
         both("gui.universe.signal_booster.data", "导航数据：%s", "Navigation Data: %s");
         both("gui.universe.signal_booster.data_creative", "导航数据：创造模式不消耗", "Navigation Data: not consumed in Creative");
-        both("gui.universe.signal_booster.no_data", "没有导航数据。坠毁飞船和据点的补给箱里有，读数据终端也会给，还能用电路板和纸合成。", "No Navigation Data. Find it in crashed ship and outpost crates or from data terminals, or craft it from circuit boards and paper.");
+        both("gui.universe.signal_booster.no_data", "没有导航数据", "No Navigation Data");
         both("gui.universe.signal_booster.current", "当前航点：%s，%s 格", "Current waypoint: %s, %s blocks");
         both("gui.universe.signal_booster.no_waypoint", "当前没有航点", "No active waypoint");
         both("poi.universe.log.opening.1", "据点 %1$s，驻扎第 %2$s 天。记录人：%3$s。",
@@ -892,8 +894,8 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("poi.universe.lore.6.text", "我们为了恒星争吵。有人要拆掉球壳，让星光重新照到荒芜的星球上；有人说我们拥有的还远远不够。",
                 "We quarreled over the stars. Some wanted the shells torn down so starlight could reach the barren worlds again. Others said we still did not have nearly enough.");
         both("poi.universe.lore.7.title", "暗下去的天", "Dimming");
-        both("poi.universe.lore.7.text", "最远的星系开始一个接一个地暗下去。不是熄灭，是被包了起来。我们之中有人在暗中建造，我们始终不知道是谁。",
-                "The farthest systems began to dim, one after another. Not dying — being enclosed. Someone among us was building in secret, and we never learned who.");
+        both("poi.universe.lore.7.text", "最远的星系开始一个接一个地暗下去。它们没有熄灭，是被包了起来。我们之中有人在暗中建造，我们始终不知道是谁。",
+                "The farthest systems began to dim, one after another. They were not dying; they were being enclosed. Someone among us was building in secret, and we never learned who.");
         both("poi.universe.lore.8.title", "寂静", "The Silence");
         both("poi.universe.lore.8.text", "然后寂静来了。所有的频段同时没了声音，就像有人关上了一扇门。我们始终没弄清楚门的另一边是什么。",
                 "Then came the Silence. Every channel went quiet at once, as if someone had closed a door. We never understood what lay on the other side.");
@@ -944,10 +946,9 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("gui.universe.tech.exosuit", "外骨骼 %s/%s", "Exosuit %s/%s");
         both("gui.universe.tech.multitool", "多功能工具", "Multitool");
         both("gui.universe.tech.cargo", "货舱 %s/%s", "Cargo %s/%s");
-        both("gui.universe.tech.no_tool", "主手拿着多功能工具时可以配置它的模块", "Hold a multitool in your main hand to configure it");
+        both("gui.universe.tech.no_tool", "主手持多功能工具时可配置其模块", "Hold a multitool in your main hand to configure it");
         both("gui.universe.tech.bonuses", "当前加成", "Bonuses");
-        both("gui.universe.tech.no_bonuses", "还没有装模块。同一种模块最多叠三个；外骨骼模块要穿着胸甲才生效",
-                "No modules installed. Up to three of a kind stack; exosuit modules need the chestplate");
+        both("gui.universe.tech.no_bonuses", "未安装模块（同种最多叠加 3 个）", "No modules installed (up to 3 of a kind stack)");
         both("hud.universe.suit.shield", "护盾", "Shield");
         both("gui.universe.tech.suit_off", "没穿外骨骼胸甲，外骨骼模块不生效", "Chestplate not worn: exosuit modules inactive");
         both("gui.universe.tech.more", "……还有 %s 项（鼠标移到这里查看）", "…%s more (hover to see all)");
@@ -985,15 +986,15 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("message.universe.discovery.new", "新发现 · %1$s：%2$s（勘探数据 +%3$s）", "New discovery · %1$s: %2$s (+%3$s survey data)");
         both("message.universe.discovery.complete", "%1$s 上的动植物已全部发现（勘探数据 +%2$s）",
                 "Every species on %1$s has been discovered (+%2$s survey data)");
-        both("message.universe.discovery.unknown", "目镜识别不了这个目标", "The visor can't identify that");
+        both("message.universe.discovery.unknown", "无法识别", "Can't identify that");
         both("message.universe.discovery.known", "%1$s 已在发现日志里（%2$s）", "%1$s is already in the log (%2$s)");
         both("message.universe.discovery.renamed", "已改名为 %s", "Renamed to %s");
-        both("message.universe.discovery.rename_unknown", "发现日志里还没有它", "That is not in the discovery log yet");
+        both("message.universe.discovery.rename_unknown", "发现日志中没有此项", "Not in the discovery log");
         both("message.universe.discovery.rename_not_discoverer", "只有发现者能改名", "Only the discoverer can rename it");
         both("message.universe.discovery.rename_invalid_name", "名字太长或含有不能用的字符", "That name is too long or has invalid characters");
 
         both("hud.universe.visor.title", "分析目镜", "Analysis Visor");
-        both("hud.universe.visor.need_tool", "手持多功能工具才能打开分析目镜", "Hold a multitool to open the analysis visor");
+        both("hud.universe.visor.need_tool", "需要手持多功能工具", "Requires a multitool in hand");
         both("hud.universe.visor.hint", "按住右键分析 · V 关闭", "Hold right-click to analyze · V to close");
         both("hud.universe.visor.no_target", "对准动物、植物、矿石或天体", "Aim at a creature, plant, ore or celestial body");
         both("hud.universe.visor.unidentified", "无法识别", "Unidentified");
@@ -1034,10 +1035,9 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("gui.universe.discovery.unknown_bodies", "还有 %s 个天体没发现", "%s bodies not yet found");
         both("gui.universe.discovery.species_total", "已发现物种 %s", "Species discovered: %s");
         both("gui.universe.discovery.complete_bodies", "%s 颗星球的动植物已全部发现", "Every species found on %s worlds");
-        both("gui.universe.discovery.undiscovered_hint", "降落到这颗星球，或者在太空里用分析目镜看它",
-                "Land on it, or analyze it with the visor from space");
+        both("gui.universe.discovery.undiscovered_hint", "着陆，或在太空中用分析目镜分析", "Land on it, or analyze it with the visor from space");
         both("gui.universe.discovery.footer", "点选查看 · 发现者可以改名 · K 关闭", "Click to inspect · discoverers can rename · K to close");
-        both("gui.universe.star_map.unexplored", "未探测：跃迁过去才能看到行星", "Unexplored: warp there to chart its planets");
+        both("gui.universe.star_map.unexplored", "未探测（跃迁到此处后显示行星）", "Unexplored (warp here to chart its planets)");
         both("gui.universe.star_map.discovered_by", "发现者：%s", "Discovered by %s");
     }
 
@@ -1082,9 +1082,9 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("gui.universe.ejector.progress", "下一张 %s%%", "Next sail %s%%");
         both("gui.universe.ejector.status.0", "正在弹射太阳帆", "Launching solar sails");
         both("gui.universe.ejector.status.1", "放入太阳帆", "Insert solar sails");
-        both("gui.universe.ejector.status.2", "没有这条轨道：在戴森球编辑器里新建，或换一条", "No such orbit: create one in the Dyson editor or pick another");
-        both("gui.universe.ejector.status.3", "恒星不在地平线 5° 以上，等它升起来", "The star is below 5° elevation; wait for it to rise");
-        both("gui.universe.ejector.status.4", "头顶被挡住了，看不见天空", "Blocked: needs a clear view of the sky");
+        both("gui.universe.ejector.status.2", "轨道不存在（在戴森球编辑器中新建）", "No such orbit (create one in the Dyson editor)");
+        both("gui.universe.ejector.status.3", "恒星高度低于 5°", "Star below 5° elevation");
+        both("gui.universe.ejector.status.4", "上方有遮挡", "Sky blocked");
         both("gui.universe.ejector.status.5", "这里没有恒星", "There is no star here");
         both("gui.universe.ejector.status.6", "电力不足", "Not enough power");
         // 发射井
@@ -1093,9 +1093,8 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("gui.universe.silo.target", "下一枚去第 %s 层", "Next rocket: layer %s");
         both("gui.universe.silo.status.0", "正在发射运载火箭", "Launching carrier rockets");
         both("gui.universe.silo.status.1", "放入小型运载火箭", "Insert small carrier rockets");
-        both("gui.universe.silo.status.2", "戴森球还没有层：在编辑器里加一层", "The Dyson sphere has no layers: add one in the editor");
-        both("gui.universe.silo.status.3", "能建的结构都建完了（研究应力系统能建到更高的纬度）",
-                "Everything buildable is built (Stress System research opens higher latitudes)");
+        both("gui.universe.silo.status.2", "戴森球没有壳层（在编辑器中添加）", "The Dyson sphere has no layers (add one in the editor)");
+        both("gui.universe.silo.status.3", "可建结构已全部完成", "All buildable structures complete");
         both("gui.universe.silo.status.4", "井口上方被挡住了", "The silo mouth is blocked");
         both("gui.universe.silo.status.5", "这里没有恒星", "There is no star here");
         both("gui.universe.silo.status.6", "电力不足", "Not enough power");
@@ -1111,12 +1110,12 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("gui.universe.receiver.no_lens", "没有引力透镜", "No graviton lens");
         both("gui.universe.receiver.lens_hint", "功率翻倍；有大气的星球上不用看见恒星", "Doubles power; no line of sight needed under an atmosphere");
         both("gui.universe.receiver.status.0", "正在接收", "Receiving");
-        both("gui.universe.receiver.status.1", "戴森球还没有发电：先用弹射器发射太阳帆", "The Dyson sphere produces nothing yet: launch solar sails first");
+        both("gui.universe.receiver.status.1", "戴森球没有发电", "The Dyson sphere generates no power");
         both("gui.universe.receiver.status.2", "恒星在地平线以下", "The star is below the horizon");
-        both("gui.universe.receiver.status.3", "头顶被挡住了，看不见天空", "Blocked: needs a clear view of the sky");
+        both("gui.universe.receiver.status.3", "上方有遮挡", "Sky blocked");
         both("gui.universe.receiver.status.4", "这里没有恒星", "There is no star here");
-        both("gui.universe.receiver.status.5", "没有接入电网：放在电力感应塔的覆盖范围里", "No grid: place it within a tesla tower's range");
-        both("gui.universe.receiver.status.6", "临界光子满了，取走一些", "Critical photons are full; take some out");
+        both("gui.universe.receiver.status.5", "未接入电网（需要电力感应塔）", "No power (needs a tesla tower in range)");
+        both("gui.universe.receiver.status.6", "临界光子已满", "Critical photons full");
         both("gui.universe.receiver.sphere", "戴森球 %s · 接收站共取走 %s", "Dyson sphere %s · receivers draw %s");
         // 编辑器
         both("key.universe.dyson_editor", "戴森球编辑器", "Dyson Sphere Editor");
@@ -1151,9 +1150,8 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("gui.universe.dyson.latitude", "能建的纬度 ±%s°", "Buildable latitude ±%s°");
         both("gui.universe.dyson.rockets", "在飞的火箭 %s", "%s rockets in flight");
         both("gui.universe.dyson.light", "恒星光照系数 %s · 半径上限 %s AU", "Star light factor %s · max radius %s AU");
-        both("gui.universe.dyson.empty", "这个恒星系的戴森球还是空的：新建一条戴森云轨道或一层戴森壳",
-                "This system's Dyson sphere is empty: add a swarm orbit or a shell layer");
-        both("gui.universe.dyson.no_system", "这里看不到恒星", "No star in sight here");
+        both("gui.universe.dyson.empty", "戴森球是空的：新建一条戴森云轨道或一层戴森壳", "This Dyson sphere is empty: add a swarm orbit or a shell layer");
+        both("gui.universe.dyson.no_system", "看不到恒星", "No star in sight");
         both("gui.universe.dyson.waiting", "正在接收戴森球的数据……", "Waiting for Dyson sphere data…");
         both("gui.universe.dyson.hint", "拖动旋转 · 滚轮缩放 · Y 关闭", "Drag to rotate · scroll to zoom · Y to close");
         both("gui.universe.dyson.full", "满了：最多 %s 个", "Full: at most %s");

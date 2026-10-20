@@ -19,8 +19,8 @@
 
 ## 决定
 
-- **代码**：GNU LGPL 3.0，仅此版本（LGPL-3.0-only），全文见 `LICENSE`。LGPL 建立在 GPL-3.0 之上，GPL 全文附在 `licenses/GPL-3.0.txt`。
-- **美术资源**：`src/main/resources/assets/` 下的贴图、模型、音效、结构文件等非代码资源，使用 CC BY-NC-SA 4.0，全文见 `LICENSE_ASSETS`。
+- 代码用 GNU LGPL 3.0，仅此版本（LGPL-3.0-only），全文见 `LICENSE`。LGPL 建立在 GPL-3.0 之上，GPL 全文附在 `licenses/GPL-3.0.txt`。
+- 美术资源用 CC BY-NC-SA 4.0，全文见 `LICENSE_ASSETS`。范围是 `src/main/resources/assets/` 下的贴图、模型、音效、结构文件等非代码资源。
 - 以后给附属模组用的公开 API 包可以改用 MIT，到时另写 ADR。
 
 ## 理由
@@ -39,7 +39,7 @@
 
 ## 备选方案
 
-- **MIT**：最宽松，但别人可以闭源修改和商用，不符合上面的诉求。
-- **All Rights Reserved**：保护最强，但无法接受贡献，整合包和第三方分发也受限。
-- **GPL-3.0**：和链接 Minecraft 存在冲突，社区不推荐。
-- **MPL-2.0**：文件级 copyleft，同样可行；LGPL 在 MC 社区更常见，所以没有选。
+- MIT：最宽松，但别人可以闭源修改和商用，不符合上面的要求。
+- All Rights Reserved：保护最强，但无法接受贡献，整合包和第三方分发也受限。
+- GPL-3.0：和链接 Minecraft 存在冲突，社区不推荐。
+- MPL-2.0：文件级 copyleft，也可行。LGPL 在 MC 社区更常见，所以没有选它。
