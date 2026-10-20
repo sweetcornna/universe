@@ -145,6 +145,17 @@ public final class DysonLayer {
         return this.cells[shell] >= this.shellCost[shell];
     }
 
+    /** 铺满了几片球壳。 */
+    public int fullShells() {
+        int full = 0;
+        for (int shell = 0; shell < this.cells.length; shell++) {
+            if (this.shellFull(shell)) {
+                full++;
+            }
+        }
+        return full;
+    }
+
     /** 一点都还没建（可以换半径和模板）。 */
     public boolean empty() {
         return Arrays.stream(this.nodeSp).allMatch(sp -> sp == 0) && Arrays.stream(this.frameSp).allMatch(sp -> sp == 0)

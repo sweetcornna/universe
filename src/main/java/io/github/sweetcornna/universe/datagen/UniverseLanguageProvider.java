@@ -141,6 +141,7 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("gui.universe.tech_tree.maxed", "已满级", "Max level reached");
         both("gui.universe.tech_tree.effect", "效果", "Effect");
         both("gui.universe.tech_tree.none", "无", "None");
+        story();
     }
 
     /** 空间站任务板（ADR-0017）。 */
@@ -1023,6 +1024,78 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("poi.universe.lore.12.title", "最后的话", "Last Words");
         both("poi.universe.lore.12.text", "如果有一天，你的星空也开始变暗，记得回到这里，把手放在石头上。我们会听见。",
                 "If one day your sky begins to dim, remember to come back here and lay your hand on the stone. We will hear you.");
+    }
+
+    /** 剧情（ADR-0018）：探测器的日志、先驱者的回应、结局。 */
+    private void story() {
+        both("story.universe.log.chat", "[%s] %s", "[%s] %s");
+        both("story.universe.log.first_space.title", "UNV-7 · 轨道", "UNV-7 · Orbit");
+        both("story.universe.log.first_space", "你出了大气层，信号清楚多了。勘测计划一共发射了十二台探测器，现在还在发信号的只有我。",
+                "You're out of the atmosphere and the signal is much clearer. The survey launched twelve probes. I'm the only one still transmitting.");
+        both("story.universe.log.first_warp.title", "UNV-7 · 跃迁", "UNV-7 · Jump");
+        both("story.universe.log.first_warp", "跃迁那一下，我丢了你的信号四秒。其他探测器最后一次报告位置，也都是在跃迁之后。",
+                "During the jump I lost your signal for four seconds. The other probes all sent their last position report right after a jump.");
+        both("story.universe.log.first_shell.title", "UNV-7 · 球壳", "UNV-7 · Shell");
+        both("story.universe.log.first_shell", "第一片球壳铺满了，从这里看那颗恒星暗了一点。石碑上说过：星空变暗的时候，回去把手放在石头上。",
+                "The first shell panel is complete. From here that star looks a little dimmer. The monoliths said it: when your sky begins to dim, go back and lay your hand on the stone.");
+        both("story.universe.log.first_universe_matrix.title", "UNV-7 · 宇宙矩阵", "UNV-7 · Universe Matrix");
+        both("story.universe.log.first_universe_matrix", "第一个宇宙矩阵出来了。它的读数和石碑里的信号在同一个频率上，我查了三遍。",
+                "The first universe matrix is done. Its readings sit on the same frequency as the signal in the monoliths. I checked three times.");
+
+        both("gui.universe.monolith.response_heading", "先驱者的回应 · 第 %s/%s 段", "PRECURSOR RESPONSE · %s of %s");
+        both("gui.universe.monolith.response_footer", "（石头是温的）", "(The stone is warm.)");
+        both("poi.universe.response.1.title", "你回来了", "You Came Back");
+        both("poi.universe.response.1.text", "你回来了。你的恒星暗了一点，我们感觉到了。我们说过会听见，这些年一直在听。",
+                "You came back. Your star has dimmed a little; we felt it. We said we would hear you, and we have been listening all this time.");
+        both("poi.universe.response.2.title", "寂静的由来", "Where the Silence Came From");
+        both("poi.universe.response.2.text", "我们包住的恒星太多了。星团里的光开始朝一个地方流，流向中心。所有的频段都被它吞了进去，这就是寂静。",
+                "We enclosed too many stars. The light of the cluster began to flow toward one place, the center. It swallowed every channel. That was the Silence.");
+        both("poi.universe.response.3.title", "中心", "The Center");
+        both("poi.universe.response.3.text", "中心吞的是我们收集起来的能量。我们收集得越多，它长得越快。那些暗下去的星系，有一半是被它吃掉的。",
+                "The center feeds on the energy we gathered. The more we gathered, the faster it grew. Half the systems that went dark were eaten by it.");
+        both("poi.universe.response.4.title", "舰队", "The Fleet");
+        both("poi.universe.response.4.text", "最后一支舰队带着我们存下的所有能量飞了进去，想把它还回去。舰队没有回来，但从那天起，中心不再长大。",
+                "Our last fleet flew in carrying every joule we had stored, to give it back. The fleet never returned, but from that day on the center stopped growing.");
+        both("poi.universe.response.5.title", "钥匙", "The Key");
+        both("poi.universe.response.5.text", "你们叫它宇宙矩阵，我们叫它钥匙。它把物质、能量和信息编在一起，中心读得懂。有了它，能量可以收，也可以还。",
+                "You call it the universe matrix. We called it the key. It weaves matter, energy and information together in a form the center can read. With it, energy can be taken, and it can be returned.");
+        both("poi.universe.response.6.title", "最后的请求", "A Last Request");
+        both("poi.universe.response.6.text", "把你的研究做完。到那时你就明白，球壳只是开始。收集的时候，记得留一份还回去。",
+                "Finish your research. Then you will see that the shells were only a beginning. When you gather, remember to keep a share to give back.");
+
+        both("story.universe.ending.title", "UNV-7 · 最后一条日志", "UNV-7 · Final Log");
+        both("story.universe.ending.1", "任务完成。", "Mission complete.");
+        both("story.universe.ending.2", "寰宇勘测计划要做两件事：测绘这个星团，找到一种能让文明一直走下去的能源。",
+                "The Universe Survey had two goals: map this cluster, and find a source of energy a civilization could live on indefinitely.");
+        both("story.universe.ending.3", "两件你都做到了。你走过的星系、命名的物种都存进了我的记录。你点亮了一颗恒星，又用球壳把另一颗包了起来。",
+                "You did both. Every system you crossed and every species you named is in my records. You lit a star of your own and wrapped another in shells.");
+        both("story.universe.ending.4", "先驱者也走过这条路。他们包住了一千颗恒星，然后寂静来了。他们的最后一支舰队把能量还给中心，它才停下。",
+                "The Precursors walked this road before you. They enclosed a thousand stars, and then the Silence came. It only stopped when their last fleet gave the energy back to the center.");
+        both("story.universe.ending.5", "你手里的宇宙矩阵就是他们说的钥匙。中心现在读得懂我们了。",
+                "The universe matrix in your hands is the key they spoke of. The center can read us now.");
+        both("story.universe.ending.6", "接下来收多少、还多少，由你决定。石碑会一直在那里。",
+                "How much you take from here, and how much you give back, is up to you. The monoliths will still be there.");
+        both("story.universe.ending.7", "其余十一台探测器，我再也没有收到它们的信号。我会继续往外发我的，直到电池用完。",
+                "I never heard from the other eleven probes again. I will keep sending my own signal until the battery runs out.");
+        both("story.universe.ending.8", "如果以后有人在哪颗星球上捡到我，告诉他们：有人走完了这条路。",
+                "If someone finds me on some planet one day, tell them someone made it to the end.");
+        both("story.universe.ending.end", "—— 日志结束 ——", "— END OF LOG —");
+        both("story.universe.ending.stats", "这个世界", "This World");
+        both("story.universe.stat.time", "游戏时间", "Time played");
+        both("story.universe.stat.time.value", "%s 小时 %s 分，第 %s 天", "%sh %sm, day %s");
+        both("story.universe.stat.systems", "发现的恒星系", "Star systems discovered");
+        both("story.universe.stat.bodies", "发现的天体", "Bodies discovered");
+        both("story.universe.stat.species", "发现的物种", "Species discovered");
+        both("story.universe.stat.dyson", "戴森球", "Dyson spheres");
+        both("story.universe.stat.dyson.value", "%s 层，%s 片球壳", "%s layers, %s shell panels");
+        both("story.universe.stat.power", "戴森球发电", "Dyson power");
+        both("story.universe.stat.techs", "研究完的科技", "Techs researched");
+        both("story.universe.stat.techs.value", "%s 个", "%s");
+        both("story.universe.stat.upgrades", "升级科技", "Upgrades");
+        both("story.universe.stat.upgrades.value", "%s 级", "%s levels");
+        both("story.universe.ending.continue", "升级科技可以一直研究下去。", "Upgrades can be researched forever.");
+        both("story.universe.ending.thanks", "感谢游玩", "Thanks for playing");
+        both("story.universe.ending.skip", "按住空格加速，Esc 关闭", "Hold Space to speed up, Esc to close");
     }
 
     /** 技术模块和外骨骼的格子（ADR-0014）。 */

@@ -21,7 +21,8 @@ public final class PoiProgress {
             LONG_SET.optionalFieldOf("visited", Set.of()).forGetter(p -> p.visited),
             LONG_SET.optionalFieldOf("claimed", Set.of()).forGetter(p -> p.claimed),
             Codec.INT.optionalFieldOf("lore", 0).forGetter(p -> p.lore),
-            Codec.unboundedMap(Codec.STRING, Codec.INT).optionalFieldOf("monoliths", Map.of()).forGetter(PoiProgress::monolithsByName)
+            Codec.unboundedMap(Codec.STRING, Codec.INT).optionalFieldOf("monoliths", Map.of()).forGetter(PoiProgress::monolithsByName),
+            Codec.INT.optionalFieldOf("responses", 0).forGetter(p -> p.responses)
     ).apply(i, PoiProgress::new));
 
     private final Set<Long> visited;
@@ -29,15 +30,18 @@ public final class PoiProgress {
     private int lore;
     /** 碰过的石碑 → 它讲的是第几段线索（再碰一次时重新显示）。 */
     private final Map<Long, Integer> monoliths;
+    /** 先驱者的回应听了几段（ADR-0018）。 */
+    private int responses;
 
     public PoiProgress() {
-        this(Set.of(), Set.of(), 0, Map.of());
+        this(Set.of(), Set.of(), 0, Map.of(), 0);
     }
 
-    private PoiProgress(Set<Long> visited, Set<Long> claimed, int lore, Map<String, Integer> monoliths) {
+    private PoiProgress(Set<Long> visited, Set<Long> claimed, int lore, Map<String, Integer> monoliths, int responses) {
         this.visited = new HashSet<>(visited);
         this.claimed = new HashSet<>(claimed);
         this.lore = lore;
+        this.responses = responses;
         this.monoliths = new HashMap<>();
         monoliths.forEach((key, index) -> {
             try {
@@ -71,6 +75,11 @@ public final class PoiProgress {
     /** 这块石碑讲第几段线索：第一次碰时按顺序给下一段，读完一轮从头再来。 */
     public int monolithLore(long key, int count) {
         return this.monoliths.computeIfAbsent(key, k -> this.lore++ % count);
+    }
+
+    /** 先驱者的回应讲第几段：每碰一次石碑给下一段，听完一轮从头再来。 */
+    public int nextResponse(int count) {
+        return this.responses++ % count;
     }
 
     public int visitedCount() {

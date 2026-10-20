@@ -7,9 +7,12 @@ import java.util.WeakHashMap;
 
 import io.github.sweetcornna.universe.core.power.PowerSystem;
 import io.github.sweetcornna.universe.core.stats.ProductionStats;
+import io.github.sweetcornna.universe.core.story.Milestone;
 import io.github.sweetcornna.universe.logistics.Logistics;
 import io.github.sweetcornna.universe.network.StatsRequestPayload;
 import io.github.sweetcornna.universe.network.StatsSnapshotPayload;
+import io.github.sweetcornna.universe.registry.UniverseItems;
+import io.github.sweetcornna.universe.story.Story;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -67,6 +70,9 @@ public final class ProductionLog {
     public static void produced(Level level, Item item, int count) {
         if (level instanceof ServerLevel serverLevel && count > 0) {
             record(serverLevel.getServer(), key(level), BuiltInRegistries.ITEM.getKey(item).toString(), count, true);
+            if (item == UniverseItems.UNIVERSE_MATRIX.get()) {
+                Story.reach(serverLevel.getServer(), Milestone.FIRST_UNIVERSE_MATRIX);
+            }
         }
     }
 

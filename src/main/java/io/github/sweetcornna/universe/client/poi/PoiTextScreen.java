@@ -71,6 +71,17 @@ public class PoiTextScreen extends Screen {
                 0xFFC79BFF, 0xFFE6DAFF, 0xFF6A4A9C);
     }
 
+    /** 先驱者的回应：铺满第一片戴森球壳以后碰石碑（ADR-0018），金色的光。 */
+    public static PoiTextScreen response(int index, boolean rewarded) {
+        int number = Math.floorMod(index, PoiInteractions.RESPONSE_COUNT) + 1;
+        List<Component> paragraphs = List.of(Component.translatable("poi.universe.response." + number + ".text"));
+        Component footer = rewarded ? Component.translatable("gui.universe.poi.reward", Component.translatable("item.universe.survey_data"), 3)
+                : Component.translatable("gui.universe.monolith.response_footer");
+        return new PoiTextScreen(Component.translatable("poi.universe.response." + number + ".title"),
+                Component.translatable("gui.universe.monolith.response_heading", number, PoiInteractions.RESPONSE_COUNT), paragraphs, footer,
+                0xFFFFCF73, 0xFFFFF1D6, 0xFF9C7430);
+    }
+
     @Override
     public boolean isPauseScreen() {
         return false;

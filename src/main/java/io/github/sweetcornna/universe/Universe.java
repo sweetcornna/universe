@@ -37,6 +37,7 @@ import io.github.sweetcornna.universe.registry.UniverseWorldgen;
 import io.github.sweetcornna.universe.sentinel.Sentinels;
 import io.github.sweetcornna.universe.station.ShipRepair;
 import io.github.sweetcornna.universe.stats.ProductionLog;
+import io.github.sweetcornna.universe.story.Story;
 import io.github.sweetcornna.universe.survival.PlayerSurvival;
 import io.github.sweetcornna.universe.tech.SuitTech;
 import io.github.sweetcornna.universe.teleport.Teleporters;
@@ -105,6 +106,7 @@ public final class Universe {
         Asteroids.registerEvents(gameBus);
         Exocrafts.registerEvents(gameBus);
         ShipRepair.registerEvents(gameBus);
+        Story.registerEvents(gameBus);
         gameBus.addListener(RegisterCommandsEvent.class, event -> DimensionCommand.register(event.getDispatcher()));
     }
 

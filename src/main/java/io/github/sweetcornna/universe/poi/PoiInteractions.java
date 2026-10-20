@@ -5,10 +5,12 @@ import java.util.List;
 
 import io.github.sweetcornna.universe.block.poi.DropPodBlock;
 import io.github.sweetcornna.universe.core.research.Tech;
+import io.github.sweetcornna.universe.core.story.Milestone;
 import io.github.sweetcornna.universe.core.tech.SuitSlots;
 import io.github.sweetcornna.universe.network.PoiTextPayload;
 import io.github.sweetcornna.universe.registry.UniverseAttachments;
 import io.github.sweetcornna.universe.registry.UniverseItems;
+import io.github.sweetcornna.universe.story.Story;
 import io.github.sweetcornna.universe.tech.ExosuitData;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
@@ -31,6 +33,8 @@ import net.neoforged.neoforge.network.PacketDistributor;
 public final class PoiInteractions {
     /** 先驱者线索的段数（语言文件里 poi.universe.lore.1…）。 */
     public static final int LORE_COUNT = 12;
+    /** 先驱者的回应有几段（ADR-0018）。 */
+    public static final int RESPONSE_COUNT = 6;
     /** 第一次碰石碑得到的勘探数据。 */
     static final int MONOLITH_SURVEY_DATA = 3;
 
@@ -87,12 +91,16 @@ public final class PoiInteractions {
         PacketDistributor.sendToPlayer(player, new PoiTextPayload(PoiTextPayload.Kind.TERMINAL, key, 0, first));
     }
 
-    /** 碰石碑：第一次碰给勘探数据和下一段先驱者的线索，以后再碰重新显示同一段。 */
+    /**
+     * 碰石碑：第一次碰给勘探数据和下一段先驱者的线索，以后再碰重新显示同一段。铺满第一片戴森球壳以后，每碰一次
+     * 听一段先驱者的回应。
+     */
     public static void touchMonolith(ServerPlayer player, ServerLevel level, BlockPos pos) {
         long key = Pois.claimKey(level, pos);
         PoiProgress progress = player.getData(UniverseAttachments.POI_PROGRESS);
         boolean first = progress.claim(key);
-        int lore = progress.monolithLore(key, LORE_COUNT);
+        boolean answered = Story.reached(level.getServer(), Milestone.FIRST_SHELL);
+        int lore = answered ? progress.nextResponse(RESPONSE_COUNT) : progress.monolithLore(key, LORE_COUNT);
         if (first) {
             give(player, new ItemStack(UniverseItems.SURVEY_DATA.get(), MONOLITH_SURVEY_DATA));
             level.playSound(null, pos, SoundEvents.AMETHYST_BLOCK_RESONATE, SoundSource.BLOCKS, 1.0F, 0.6F);
@@ -100,7 +108,11 @@ public final class PoiInteractions {
         } else {
             level.playSound(null, pos, SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.BLOCKS, 0.8F, 0.6F);
         }
-        PacketDistributor.sendToPlayer(player, new PoiTextPayload(PoiTextPayload.Kind.MONOLITH, key, lore, first));
+        if (answered) {
+            level.sendParticles(ParticleTypes.END_ROD, pos.getX() + 0.5, pos.getY() + 1.4, pos.getZ() + 0.5, 30, 0.4, 0.9, 0.4, 0.04);
+        }
+        PacketDistributor.sendToPlayer(player,
+                new PoiTextPayload(answered ? PoiTextPayload.Kind.RESPONSE : PoiTextPayload.Kind.MONOLITH, key, lore, first));
     }
 
     private static void give(ServerPlayer player, ItemStack stack) {

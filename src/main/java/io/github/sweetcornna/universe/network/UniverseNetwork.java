@@ -56,6 +56,8 @@ public final class UniverseNetwork {
                 .playToClient(OpenTeleporterPayload.TYPE, OpenTeleporterPayload.STREAM_CODEC)
                 .playToClient(OpenMissionBoardPayload.TYPE, OpenMissionBoardPayload.STREAM_CODEC)
                 .playToClient(OpenBaseBeaconPayload.TYPE, OpenBaseBeaconPayload.STREAM_CODEC)
+                .playToClient(StoryStatePayload.TYPE, StoryStatePayload.STREAM_CODEC)
+                .playToClient(EndingPayload.TYPE, EndingPayload.STREAM_CODEC)
                 .playToServer(DysonEditPayload.TYPE, DysonEditPayload.STREAM_CODEC, Dyson::handleEdit)
                 .playToServer(JetpackPayload.TYPE, JetpackPayload.STREAM_CODEC, PlayerSurvival::handleJetpack)
                 .playToServer(ResearchActionPayload.TYPE, ResearchActionPayload.STREAM_CODEC, Research::handleAction)

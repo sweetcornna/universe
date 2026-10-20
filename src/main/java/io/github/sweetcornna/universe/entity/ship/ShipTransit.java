@@ -16,8 +16,10 @@ import io.github.sweetcornna.universe.core.galaxy.BodyId;
 import io.github.sweetcornna.universe.core.galaxy.Planet;
 import io.github.sweetcornna.universe.core.procgen.NameGenerator.Name;
 import io.github.sweetcornna.universe.core.space.SpaceLayout;
+import io.github.sweetcornna.universe.core.story.Milestone;
 import io.github.sweetcornna.universe.discovery.Discoveries;
 import io.github.sweetcornna.universe.registry.UniverseAttachments;
+import io.github.sweetcornna.universe.story.Story;
 import io.github.sweetcornna.universe.world.DimensionTemplate;
 import io.github.sweetcornna.universe.world.RuntimeDimensions;
 import io.github.sweetcornna.universe.world.planet.PlanetCommand;
@@ -252,6 +254,7 @@ public final class ShipTransit {
                     arrived.noticeLater(Component.translatable("message.universe.warp.arrived", name.zh(), name.en()));
                 });
                 ShipWarp.arrived(arrived, pending.warp());
+                Story.reach(server, Milestone.FIRST_WARP);
                 return;
             }
             Component where = Planets.bodyId(key).flatMap(id -> Planets.galaxy(server).body(id))

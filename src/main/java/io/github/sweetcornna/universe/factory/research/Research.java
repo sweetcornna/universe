@@ -10,9 +10,11 @@ import io.github.sweetcornna.universe.core.research.ResearchState;
 import io.github.sweetcornna.universe.core.research.Tech;
 import io.github.sweetcornna.universe.core.research.TechTree;
 import io.github.sweetcornna.universe.core.research.Upgrades;
+import io.github.sweetcornna.universe.core.story.Milestone;
 import io.github.sweetcornna.universe.factory.recipe.ResearchShapedRecipe;
 import io.github.sweetcornna.universe.network.ResearchActionPayload;
 import io.github.sweetcornna.universe.network.ResearchStatePayload;
+import io.github.sweetcornna.universe.story.Story;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
@@ -122,6 +124,9 @@ public final class Research {
         server.getPlayerList().broadcastSystemMessage(
                 Component.translatable("research.universe.completed", name.withStyle(ChatFormatting.AQUA)), false);
         awardRecipes(server.getPlayerList().getPlayers(), List.of(tech));
+        if (tech.equals(Story.FINAL_TECH)) {
+            Story.reach(server, Milestone.MISSION_COMPLETE);
+        }
     }
 
     /** 收回科技或清空进度之后调用（命令用）。 */

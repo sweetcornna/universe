@@ -205,7 +205,11 @@ class DysonSphereTest {
         int layer = sphere.addLayer(0.2, 0, 0, DysonGrid.Template.GEODESIC, 1);
         int orbit = sphere.addOrbit(0.3, 0, 0);
         long revision = sphere.revision();
+        assertEquals(0, sphere.fullShells());
+        assertEquals(0, sphere.builtLayers());
         assertTrue(sphere.complete(layer, DysonSphere.LATITUDE_BASE));
+        assertTrue(sphere.fullShells() > 0);
+        assertEquals(1, sphere.builtLayers());
         assertTrue(sphere.revision() > revision);
         DysonLayer built = sphere.layer(layer);
         assertEquals(built.structureCapacity(DysonSphere.LATITUDE_BASE), built.structurePoints());

@@ -360,6 +360,26 @@ public final class DysonSphere {
         return taken;
     }
 
+    /** 铺满的球壳片数（所有层加起来）。 */
+    public int fullShells() {
+        int full = 0;
+        for (DysonLayer layer : this.layers.values()) {
+            full += layer.fullShells();
+        }
+        return full;
+    }
+
+    /** 已经建了东西的层数。 */
+    public int builtLayers() {
+        int built = 0;
+        for (DysonLayer layer : this.layers.values()) {
+            if (!layer.empty()) {
+                built++;
+            }
+        }
+        return built;
+    }
+
     // ---- 功率 ----
 
     public long sails() {

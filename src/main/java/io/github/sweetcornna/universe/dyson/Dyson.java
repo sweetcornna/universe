@@ -13,6 +13,7 @@ import io.github.sweetcornna.universe.core.galaxy.StarSystem;
 import io.github.sweetcornna.universe.factory.research.Research;
 import io.github.sweetcornna.universe.network.DysonEditPayload;
 import io.github.sweetcornna.universe.network.DysonSyncPayload;
+import io.github.sweetcornna.universe.story.Story;
 import io.github.sweetcornna.universe.world.planet.Planets;
 import io.github.sweetcornna.universe.world.space.SpaceDimensions;
 import net.minecraft.resources.ResourceKey;
@@ -65,6 +66,7 @@ public final class Dyson {
                 sphere.advance(now);
             }
             data.setDirty();
+            Story.checkShells(server);
         }
         sync(server, now, false);
     }

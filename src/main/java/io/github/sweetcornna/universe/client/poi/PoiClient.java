@@ -28,8 +28,11 @@ public final class PoiClient {
     public static void registerEvents(IEventBus modBus) {
         modBus.addListener(RegisterClientPayloadHandlersEvent.class, event -> {
             event.register(PoiTextPayload.TYPE, (payload, context) -> context.enqueueWork(() -> Minecraft.getInstance().gui.setScreen(
-                    payload.kind() == PoiTextPayload.Kind.TERMINAL ? PoiTextScreen.terminal(payload.seed(), payload.rewarded())
-                            : PoiTextScreen.monolith(payload.lore(), payload.rewarded()))));
+                    switch (payload.kind()) {
+                        case TERMINAL -> PoiTextScreen.terminal(payload.seed(), payload.rewarded());
+                        case MONOLITH -> PoiTextScreen.monolith(payload.lore(), payload.rewarded());
+                        case RESPONSE -> PoiTextScreen.response(payload.lore(), payload.rewarded());
+                    })));
             event.register(OpenSignalBoosterPayload.TYPE, (payload, context) -> context.enqueueWork(
                     () -> Minecraft.getInstance().gui.setScreen(new SignalBoosterScreen(payload.pos()))));
         });

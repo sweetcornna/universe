@@ -25,6 +25,7 @@ import io.github.sweetcornna.universe.entity.ship.ShipCommand;
 import io.github.sweetcornna.universe.factory.research.ResearchCommand;
 import io.github.sweetcornna.universe.poi.PoiCommand;
 import io.github.sweetcornna.universe.station.StationCommand;
+import io.github.sweetcornna.universe.story.StoryCommand;
 import io.github.sweetcornna.universe.trade.CreditsCommand;
 import io.github.sweetcornna.universe.world.planet.PlanetCommand;
 import net.minecraft.commands.CommandSourceStack;
@@ -95,6 +96,7 @@ public final class DimensionCommand {
                 .then(CreditsCommand.build())
                 .then(PirateCommand.build())
                 .then(AsteroidCommand.build())
+                .then(StoryCommand.build())
                 .then(Commands.literal("dim")
                         .then(Commands.literal("create")
                                 .then(Commands.argument("name", StringArgumentType.word())
