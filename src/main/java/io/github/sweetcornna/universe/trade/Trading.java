@@ -13,6 +13,7 @@ import java.util.function.Supplier;
 
 import org.jspecify.annotations.Nullable;
 
+import io.github.sweetcornna.universe.advancement.MilestoneTrigger;
 import io.github.sweetcornna.universe.core.galaxy.StarSystem;
 import io.github.sweetcornna.universe.core.trade.Economy;
 import io.github.sweetcornna.universe.core.trade.Goods;
@@ -232,6 +233,7 @@ public final class Trading {
         }
         long credits = (long) Math.floor(total);
         Credits.add(player, credits);
+        MilestoneTrigger.reach(player, MilestoneTrigger.TRADE);
         player.getInventory().setChanged();
         TradeData.get(server).setDirty();
         return ok("message.universe.trade.sold", count, name, credits);
@@ -279,6 +281,7 @@ public final class Trading {
         }
         market.buy(listing, count, now);
         Credits.spend(player, cost);
+        MilestoneTrigger.reach(player, MilestoneTrigger.TRADE);
         ItemStack bought = new ItemStack(item.get(), count);
         Component name = bought.getHoverName();
         player.getInventory().placeItemBackInInventory(bought, Prediction.SERVER_ONLY);

@@ -1,0 +1,31 @@
+{
+  "parent": "universe:mining",
+  "criteria": {
+    "placed": {
+      "conditions": {
+        "location": {
+          "type": "minecraft:match_block",
+          "blocks": "universe:arc_smelter"
+        }
+      },
+      "trigger": "minecraft:placed_block"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.universe.smelting.description"
+    },
+    "icon": {
+      "id": "universe:arc_smelter"
+    },
+    "title": {
+      "translate": "advancements.universe.smelting.title"
+    }
+  },
+  "requirements": [
+    [
+      "placed"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

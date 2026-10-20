@@ -1,0 +1,28 @@
+{
+  "parent": "universe:ship",
+  "criteria": {
+    "milestone": {
+      "conditions": {
+        "milestone": "space"
+      },
+      "trigger": "universe:milestone"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.universe.space.description"
+    },
+    "icon": {
+      "id": "universe:exosuit_helmet"
+    },
+    "title": {
+      "translate": "advancements.universe.space.title"
+    }
+  },
+  "requirements": [
+    [
+      "milestone"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

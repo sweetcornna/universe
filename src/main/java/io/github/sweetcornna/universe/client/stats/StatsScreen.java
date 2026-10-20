@@ -8,6 +8,7 @@ import java.util.Optional;
 import java.util.OptionalInt;
 
 import io.github.sweetcornna.universe.client.ClientGalaxy;
+import io.github.sweetcornna.universe.client.TextWrap;
 import io.github.sweetcornna.universe.client.UniverseKeys;
 import io.github.sweetcornna.universe.client.factory.MachineScreen;
 import io.github.sweetcornna.universe.client.galaxy.GalaxyText;
@@ -256,7 +257,7 @@ public class StatsScreen extends net.minecraft.client.gui.screens.Screen {
         if (rows.isEmpty()) {
             graphics.centeredText(this.font, Component.translatable("gui.universe.stats.empty"), x + WIDTH / 2, y + TABLE_Y + 20, MachineScreen.TEXT);
             int lineY = y + TABLE_Y + 34;
-            for (var line : this.font.split(Component.translatable("gui.universe.stats.empty_hint"), WIDTH - 40)) {
+            for (var line : TextWrap.split(this.font, Component.translatable("gui.universe.stats.empty_hint"), WIDTH - 40)) {
                 graphics.centeredText(this.font, line, x + WIDTH / 2, lineY, MachineScreen.DIM);
                 lineY += 10;
             }

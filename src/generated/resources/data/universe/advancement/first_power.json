@@ -1,0 +1,51 @@
+{
+  "parent": "universe:repair_multitool",
+  "criteria": {
+    "solar_panel": {
+      "conditions": {
+        "location": {
+          "type": "minecraft:match_block",
+          "blocks": "universe:solar_panel"
+        }
+      },
+      "trigger": "minecraft:placed_block"
+    },
+    "thermal_plant": {
+      "conditions": {
+        "location": {
+          "type": "minecraft:match_block",
+          "blocks": "universe:thermal_plant"
+        }
+      },
+      "trigger": "minecraft:placed_block"
+    },
+    "wind_turbine": {
+      "conditions": {
+        "location": {
+          "type": "minecraft:match_block",
+          "blocks": "universe:wind_turbine"
+        }
+      },
+      "trigger": "minecraft:placed_block"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.universe.first_power.description"
+    },
+    "icon": {
+      "id": "universe:wind_turbine"
+    },
+    "title": {
+      "translate": "advancements.universe.first_power.title"
+    }
+  },
+  "requirements": [
+    [
+      "wind_turbine",
+      "thermal_plant",
+      "solar_panel"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

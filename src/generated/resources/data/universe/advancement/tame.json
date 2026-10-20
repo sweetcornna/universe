@@ -1,0 +1,28 @@
+{
+  "parent": "universe:species",
+  "criteria": {
+    "milestone": {
+      "conditions": {
+        "milestone": "tame"
+      },
+      "trigger": "universe:milestone"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.universe.tame.description"
+    },
+    "icon": {
+      "id": "universe:herbivore_feed"
+    },
+    "title": {
+      "translate": "advancements.universe.tame.title"
+    }
+  },
+  "requirements": [
+    [
+      "milestone"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

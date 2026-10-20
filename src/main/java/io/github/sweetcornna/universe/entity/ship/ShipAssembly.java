@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 
 import com.mojang.logging.LogUtils;
 
+import io.github.sweetcornna.universe.advancement.MilestoneTrigger;
 import io.github.sweetcornna.universe.block.ship.FuelTankBlockEntity;
 import io.github.sweetcornna.universe.block.ship.ShipHelmBlock;
 import io.github.sweetcornna.universe.block.ship.ShipSeatBlock;
@@ -113,6 +114,7 @@ public final class ShipAssembly {
         ship.departures().putAll(player.getData(UniverseAttachments.DEPARTURES));
         level.addFreshEntity(ship);
         player.startRiding(ship);
+        MilestoneTrigger.reach(player, MilestoneTrigger.SHIP);
         level.playSound(null, helmPos, SoundEvents.BEACON_ACTIVATE, SoundSource.BLOCKS, 0.8F, 1.6F);
         double twr = stats.thrustToWeight(ShipEnvironment.of(level).space() ? 0 : ShipEnvironment.of(level).gravity());
         ship.noticeLater(Component.translatable("message.universe.ship.assembled",

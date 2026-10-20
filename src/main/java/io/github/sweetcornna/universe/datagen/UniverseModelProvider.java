@@ -231,7 +231,8 @@ final class UniverseModelProvider extends ModelProvider {
         recipeMachine(blockModels, UniverseBlocks.MINI_FUSION_POWER_PLANT.get(), "mini_fusion_power_plant", false, "machine_casing_top");
         tall(blockModels, itemModels, UniverseBlocks.ARTIFICIAL_STAR.get(), "artificial_star", true, false);
         for (DeferredItem<?> item : List.of(UniverseItems.ANTIMATTER, UniverseItems.ANNIHILATION_CONSTRAINT_SPHERE,
-                UniverseItems.ANTIMATTER_FUEL_ROD, UniverseItems.COMPOSITE_MATRIX, UniverseItems.UNIVERSE_MATRIX, UniverseItems.BLUEPRINT)) {
+                UniverseItems.ANTIMATTER_FUEL_ROD, UniverseItems.COMPOSITE_MATRIX, UniverseItems.UNIVERSE_MATRIX, UniverseItems.BLUEPRINT,
+                UniverseItems.GUIDE)) {
             itemModels.generateFlatItem(item.get(), ModelTemplates.FLAT_ITEM);
         }
     }

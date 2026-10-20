@@ -1,0 +1,28 @@
+{
+  "parent": "universe:repair_multitool",
+  "criteria": {
+    "milestone": {
+      "conditions": {
+        "milestone": "ship"
+      },
+      "trigger": "universe:milestone"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.universe.ship.description"
+    },
+    "icon": {
+      "id": "universe:ship_helm"
+    },
+    "title": {
+      "translate": "advancements.universe.ship.title"
+    }
+  },
+  "requirements": [
+    [
+      "milestone"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

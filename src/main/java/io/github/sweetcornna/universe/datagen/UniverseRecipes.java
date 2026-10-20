@@ -618,6 +618,11 @@ final class UniverseRecipes extends RecipeProvider {
                 .requires(Items.REDSTONE).requires(Items.REDSTONE).requires(Items.IRON_INGOT)
                 .unlockedBy(getHasName(UniverseItems.DAMAGED_MULTITOOL.get()), this.has(UniverseItems.DAMAGED_MULTITOOL.get()))
                 .save(this.output, "universe:multitool_from_repair");
+        // 手册：坠毁点的箱子里有一本，多人游戏里别的玩家自己做
+        this.shapeless(RecipeCategory.MISC, UniverseItems.GUIDE.get())
+                .requires(Items.BOOK).requires(UniverseItems.CIRCUIT_BOARD.get())
+                .unlockedBy(getHasName(UniverseItems.CIRCUIT_BOARD.get()), this.has(UniverseItems.CIRCUIT_BOARD.get()))
+                .save(this.output);
         this.shaped(RecipeCategory.TOOLS, UniverseItems.MULTITOOL.get())
                 .pattern(" GD").pattern("CRC").pattern("I  ")
                 .define('G', Items.GLASS_PANE).define('D', Items.DIAMOND).define('C', Items.COPPER_INGOT)

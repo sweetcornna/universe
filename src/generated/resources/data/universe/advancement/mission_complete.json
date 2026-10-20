@@ -1,0 +1,29 @@
+{
+  "parent": "universe:universe_matrix",
+  "criteria": {
+    "milestone": {
+      "conditions": {
+        "milestone": "story/mission_complete"
+      },
+      "trigger": "universe:milestone"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.universe.mission_complete.description"
+    },
+    "frame": "challenge",
+    "icon": {
+      "id": "universe:composite_matrix"
+    },
+    "title": {
+      "translate": "advancements.universe.mission_complete.title"
+    }
+  },
+  "requirements": [
+    [
+      "milestone"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

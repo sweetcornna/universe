@@ -5,6 +5,7 @@ import io.github.sweetcornna.universe.client.asteroid.AsteroidClient;
 import io.github.sweetcornna.universe.client.blueprint.BlueprintClient;
 import io.github.sweetcornna.universe.client.dev.DevScript;
 import io.github.sweetcornna.universe.client.exocraft.ExocraftClient;
+import io.github.sweetcornna.universe.client.guide.GuideScreen;
 import io.github.sweetcornna.universe.client.pirate.PirateClient;
 import io.github.sweetcornna.universe.client.sentinel.SentinelClient;
 import io.github.sweetcornna.universe.client.sentinel.SentinelRenderer;
@@ -35,8 +36,10 @@ import io.github.sweetcornna.universe.client.tech.TechClient;
 import io.github.sweetcornna.universe.client.trade.TradeClient;
 import io.github.sweetcornna.universe.datagen.UniverseDataGen;
 import io.github.sweetcornna.universe.entity.AlienCreature;
+import io.github.sweetcornna.universe.guide.GuideItem;
 import io.github.sweetcornna.universe.registry.UniverseEntities;
 import io.github.sweetcornna.universe.world.planet.PlanetEnvironment;
+import net.minecraft.client.Minecraft;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
@@ -80,6 +83,7 @@ public final class UniverseClient {
         TeleportClient.registerEvents(modBus);
         MissionClient.registerEvents(modBus);
         ClientStory.registerEvents(modBus, NeoForge.EVENT_BUS);
+        GuideItem.opener = () -> Minecraft.getInstance().gui.setScreen(new GuideScreen());
         BlueprintClient.registerEvents(modBus, NeoForge.EVENT_BUS);
         // 开发用：带了 -Duniverse.devScript 才启用
         DevScript.registerEvents(NeoForge.EVENT_BUS);

@@ -15,6 +15,7 @@ import io.github.sweetcornna.universe.registry.UniverseRecipeTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeMap;
+import net.minecraft.world.item.crafting.RecipeType;
 import net.minecraft.world.level.Level;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.event.OnDatapackSyncEvent;
@@ -34,10 +35,10 @@ public final class MachineRecipes {
     }
 
     public static void registerEvents(IEventBus gameBus) {
-        // 每种设备配方都要发给客户端，界面左边的配方清单读的是客户端的副本
+        // 每种设备配方都要发给客户端，界面左边的配方清单读的是客户端的副本；工作台配方给手册画配方用
         gameBus.addListener(OnDatapackSyncEvent.class, event -> event.sendRecipes(
                 UniverseRecipeTypes.SMELTING.get(), UniverseRecipeTypes.ASSEMBLING.get(), UniverseRecipeTypes.REFINING.get(),
-                UniverseRecipeTypes.CHEMICAL.get(), UniverseRecipeTypes.PARTICLE.get()));
+                UniverseRecipeTypes.CHEMICAL.get(), UniverseRecipeTypes.PARTICLE.get(), RecipeType.CRAFTING));
     }
 
     public static void setClientRecipes(Supplier<RecipeMap> recipes) {

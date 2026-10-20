@@ -1,0 +1,33 @@
+{
+  "parent": "universe:purple_matrix",
+  "criteria": {
+    "has_item": {
+      "conditions": {
+        "items": [
+          {
+            "items": "universe:gravity_matrix"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.universe.green_matrix.description"
+    },
+    "frame": "goal",
+    "icon": {
+      "id": "universe:gravity_matrix"
+    },
+    "title": {
+      "translate": "advancements.universe.green_matrix.title"
+    }
+  },
+  "requirements": [
+    [
+      "has_item"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

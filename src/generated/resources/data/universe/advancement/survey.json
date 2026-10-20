@@ -1,0 +1,29 @@
+{
+  "parent": "universe:species",
+  "criteria": {
+    "milestone": {
+      "conditions": {
+        "milestone": "survey"
+      },
+      "trigger": "universe:milestone"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.universe.survey.description"
+    },
+    "frame": "goal",
+    "icon": {
+      "id": "universe:survey_data"
+    },
+    "title": {
+      "translate": "advancements.universe.survey.title"
+    }
+  },
+  "requirements": [
+    [
+      "milestone"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

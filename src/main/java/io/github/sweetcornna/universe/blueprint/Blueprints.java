@@ -12,6 +12,7 @@ import java.util.UUID;
 
 import org.jspecify.annotations.Nullable;
 
+import io.github.sweetcornna.universe.advancement.MilestoneTrigger;
 import io.github.sweetcornna.universe.core.blueprint.BlueprintGeometry;
 import io.github.sweetcornna.universe.network.BlueprintPayloads;
 import io.github.sweetcornna.universe.registry.UniverseAttachments;
@@ -175,6 +176,7 @@ public final class Blueprints {
         stack.remove(UniverseDataComponents.BLUEPRINT_SELECTION.get());
         stack.set(UniverseDataComponents.BLUEPRINT.get(), info(id, stored));
         player.sendSystemMessage(Component.translatable("message.universe.blueprint.saved", name, stored.blocks()));
+        MilestoneTrigger.reach(player, MilestoneTrigger.BLUEPRINT);
         player.level().playSound(null, player.blockPosition(), net.minecraft.sounds.SoundEvents.BOOK_PAGE_TURN, SoundSource.PLAYERS, 1, 1);
     }
 

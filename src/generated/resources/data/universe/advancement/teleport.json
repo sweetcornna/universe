@@ -1,0 +1,28 @@
+{
+  "parent": "universe:exocraft",
+  "criteria": {
+    "milestone": {
+      "conditions": {
+        "milestone": "teleport"
+      },
+      "trigger": "universe:milestone"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.universe.teleport.description"
+    },
+    "icon": {
+      "id": "universe:teleporter"
+    },
+    "title": {
+      "translate": "advancements.universe.teleport.title"
+    }
+  },
+  "requirements": [
+    [
+      "milestone"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

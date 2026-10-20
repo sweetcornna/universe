@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.OptionalInt;
 
+import io.github.sweetcornna.universe.advancement.MilestoneTrigger;
 import io.github.sweetcornna.universe.block.FloraBlocks;
 import io.github.sweetcornna.universe.block.PlanetBloomBlock;
 import io.github.sweetcornna.universe.block.PlanetLeavesBlock;
@@ -137,10 +138,12 @@ public final class Discoveries {
                 .withStyle(ChatFormatting.GRAY));
         // 一颗星球上的动植物全部发现了
         if (key.kind() == DiscoveryKey.Kind.CREATURE || key.kind() == DiscoveryKey.Kind.PLANT || key.kind() == DiscoveryKey.Kind.TREE) {
+            MilestoneTrigger.reach(player, MilestoneTrigger.SPECIES);
             DiscoveryKey body = DiscoveryKey.body(key.body());
             Survey.Census census = Catalog.planet(key, galaxy).map(Survey::census).orElse(Survey.Census.NONE);
             if (Survey.complete(data.log(), body, census)) {
                 reward += Survey.COMPLETION_BONUS;
+                MilestoneTrigger.reach(player, MilestoneTrigger.SURVEY);
                 player.sendSystemMessage(Component.translatable("message.universe.discovery.complete", name(server, body),
                         Survey.COMPLETION_BONUS).withStyle(ChatFormatting.GOLD));
             }

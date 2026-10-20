@@ -12,6 +12,7 @@ import java.util.function.Supplier;
 
 import org.jspecify.annotations.Nullable;
 
+import io.github.sweetcornna.universe.advancement.MilestoneTrigger;
 import io.github.sweetcornna.universe.core.ecology.BodyPlan;
 import io.github.sweetcornna.universe.core.ecology.CreatureAnatomy;
 import io.github.sweetcornna.universe.core.ecology.CreatureSpecies;
@@ -492,6 +493,9 @@ public class AlienCreature extends PathfinderMob implements OwnableEntity, Playe
         this.particles(level, ParticleTypes.HEART, 9);
         this.playSound(SoundEvents.PLAYER_LEVELUP, 0.6F, 1.4F);
         player.sendOverlayMessage(Component.translatable("message.universe.creature.tamed", this.getDisplayName()));
+        if (player instanceof ServerPlayer serverPlayer) {
+            MilestoneTrigger.reach(serverPlayer, MilestoneTrigger.TAME);
+        }
     }
 
     /** 在这个世界驯服的动物记哪颗星球：本模组的星球记天体路径，别处（主世界、命令召唤的）记后备动物表。 */

@@ -1,0 +1,31 @@
+{
+  "parent": "universe:smelting",
+  "criteria": {
+    "placed": {
+      "conditions": {
+        "location": {
+          "type": "minecraft:match_block",
+          "blocks": "universe:assembler"
+        }
+      },
+      "trigger": "minecraft:placed_block"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.universe.assembling.description"
+    },
+    "icon": {
+      "id": "universe:assembler"
+    },
+    "title": {
+      "translate": "advancements.universe.assembling.title"
+    }
+  },
+  "requirements": [
+    [
+      "placed"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

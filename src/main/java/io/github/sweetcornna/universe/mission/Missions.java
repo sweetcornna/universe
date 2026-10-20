@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.OptionalInt;
 
+import io.github.sweetcornna.universe.advancement.MilestoneTrigger;
 import io.github.sweetcornna.universe.core.discovery.DiscoveryKey;
 import io.github.sweetcornna.universe.core.discovery.Survey;
 import io.github.sweetcornna.universe.core.galaxy.Planet;
@@ -225,6 +226,7 @@ public final class Missions {
             }
         }
         Credits.add(player, mission.reward());
+        MilestoneTrigger.reach(player, MilestoneTrigger.MISSION);
         player.sendSystemMessage(Component.translatable("message.universe.mission.complete", Credits.format(mission.reward()))
                 .withStyle(ChatFormatting.GOLD));
         giveBonus(player, mission);

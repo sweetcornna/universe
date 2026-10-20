@@ -10,6 +10,7 @@ import java.util.UUID;
 
 import org.jspecify.annotations.Nullable;
 
+import io.github.sweetcornna.universe.advancement.MilestoneTrigger;
 import io.github.sweetcornna.universe.core.ship.PirateFlight;
 import io.github.sweetcornna.universe.core.ship.PirateRaid;
 import io.github.sweetcornna.universe.core.space.StationLayout.Site;
@@ -238,6 +239,7 @@ public final class Pirates {
         if (raid.fighters.isEmpty()) {
             if (raid.destroyed > 0) {
                 player.awardStat(UniverseStats.PIRATE_RAIDS_REPELLED.get());
+                MilestoneTrigger.reach(player, MilestoneTrigger.PIRATES);
                 player.sendSystemMessage(Component.translatable("message.universe.pirate.repelled", raid.destroyed).withStyle(ChatFormatting.GREEN));
                 player.sendOverlayMessage(Component.translatable("message.universe.pirate.repelled", raid.destroyed).withStyle(ChatFormatting.GREEN));
                 level.playSound(null, target.getX(), target.getY(), target.getZ(), SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 0.8F, 1.2F);

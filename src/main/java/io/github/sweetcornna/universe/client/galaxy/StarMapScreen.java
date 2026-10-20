@@ -15,6 +15,7 @@ import org.jspecify.annotations.Nullable;
 
 import com.mojang.blaze3d.platform.InputConstants;
 
+import io.github.sweetcornna.universe.client.TextWrap;
 import io.github.sweetcornna.universe.core.sentinel.SentinelLevel;
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.client.ClientGalaxy;
@@ -492,7 +493,7 @@ public class StarMapScreen extends Screen {
                 ? Component.translatable("gui.universe.star_map.mass", GalaxyText.magnitude(star.mass()))
                 : Component.translatable("gui.universe.star_map.star_stats", GalaxyText.magnitude(star.luminosity()),
                         Math.round(star.temperature()), GalaxyText.magnitude(star.mass()));
-        y = graphics.textWithWordWrap(this.font, stats, x, y, width, DIM, false) + 4;
+        y = TextWrap.draw(graphics, this.font, stats, x, y, width, DIM, false) + 4;
 
         this.hoveredPlanet = -1;
         DiscoveryLog.Entry discovery = ClientDiscoveries.entry(DiscoveryKey.system(system.index())).orElse(null);
@@ -721,7 +722,7 @@ public class StarMapScreen extends Screen {
         pose.pushMatrix();
         pose.translate(x, y);
         pose.scale(scale);
-        int end = graphics.textWithWordWrap(this.font, text, 0, 0, (int) (width / scale), color, false);
+        int end = TextWrap.draw(graphics, this.font, text, 0, 0, (int) (width / scale), color, false);
         pose.popMatrix();
         return y + (int) Math.ceil(end * scale);
     }

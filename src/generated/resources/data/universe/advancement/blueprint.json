@@ -1,0 +1,28 @@
+{
+  "parent": "universe:assembling",
+  "criteria": {
+    "saved": {
+      "conditions": {
+        "milestone": "blueprint"
+      },
+      "trigger": "universe:milestone"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.universe.blueprint.description"
+    },
+    "icon": {
+      "id": "universe:blueprint"
+    },
+    "title": {
+      "translate": "advancements.universe.blueprint.title"
+    }
+  },
+  "requirements": [
+    [
+      "saved"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

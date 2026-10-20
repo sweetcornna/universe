@@ -1,0 +1,32 @@
+{
+  "parent": "universe:assembling",
+  "criteria": {
+    "has_item": {
+      "conditions": {
+        "items": [
+          {
+            "items": "universe:electromagnetic_matrix"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.universe.blue_matrix.description"
+    },
+    "icon": {
+      "id": "universe:electromagnetic_matrix"
+    },
+    "title": {
+      "translate": "advancements.universe.blue_matrix.title"
+    }
+  },
+  "requirements": [
+    [
+      "has_item"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

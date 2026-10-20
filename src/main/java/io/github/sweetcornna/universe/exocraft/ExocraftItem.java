@@ -2,6 +2,7 @@ package io.github.sweetcornna.universe.exocraft;
 
 import java.util.function.Consumer;
 
+import io.github.sweetcornna.universe.advancement.MilestoneTrigger;
 import io.github.sweetcornna.universe.registry.UniverseDataComponents;
 import io.github.sweetcornna.universe.registry.UniverseEntities;
 import io.github.sweetcornna.universe.world.space.SpaceDimensions;
@@ -10,6 +11,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
@@ -63,6 +65,9 @@ public class ExocraftItem extends Item {
             server.playSound(null, at.x, at.y, at.z, SoundEvents.ANVIL_PLACE, SoundSource.NEUTRAL, 0.5F, 1.3F);
             server.gameEvent(player, GameEvent.ENTITY_PLACE, at);
             stack.consume(1, player);
+            if (player instanceof ServerPlayer serverPlayer) {
+                MilestoneTrigger.reach(serverPlayer, MilestoneTrigger.EXOCRAFT);
+            }
         }
         return InteractionResult.SUCCESS;
     }

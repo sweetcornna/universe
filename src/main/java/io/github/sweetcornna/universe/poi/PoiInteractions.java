@@ -3,6 +3,7 @@ package io.github.sweetcornna.universe.poi;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.github.sweetcornna.universe.advancement.MilestoneTrigger;
 import io.github.sweetcornna.universe.block.poi.DropPodBlock;
 import io.github.sweetcornna.universe.core.research.Tech;
 import io.github.sweetcornna.universe.core.story.Milestone;
@@ -100,6 +101,7 @@ public final class PoiInteractions {
         PoiProgress progress = player.getData(UniverseAttachments.POI_PROGRESS);
         boolean first = progress.claim(key);
         boolean answered = Story.reached(level.getServer(), Milestone.FIRST_SHELL);
+        MilestoneTrigger.reach(player, MilestoneTrigger.MONOLITH);
         int lore = answered ? progress.nextResponse(RESPONSE_COUNT) : progress.monolithLore(key, LORE_COUNT);
         if (first) {
             give(player, new ItemStack(UniverseItems.SURVEY_DATA.get(), MONOLITH_SURVEY_DATA));

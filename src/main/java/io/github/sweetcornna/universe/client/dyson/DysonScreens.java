@@ -7,6 +7,7 @@ import java.util.Optional;
 
 import com.mojang.blaze3d.platform.InputConstants;
 
+import io.github.sweetcornna.universe.client.TextWrap;
 import io.github.sweetcornna.universe.client.UniverseKeys;
 import io.github.sweetcornna.universe.client.factory.ClientResearch;
 import io.github.sweetcornna.universe.client.factory.MachineScreen;
@@ -122,8 +123,8 @@ public final class DysonScreens {
 
         /** 状态一行（可能折成两行），返回占了几行。 */
         protected int status(GuiGraphicsExtractor graphics, Component text, int y, int color) {
-            graphics.textWithWordWrap(this.font, text, 8, y, TEXT_WIDTH, color, false);
-            return this.font.split(text, TEXT_WIDTH).size();
+            TextWrap.draw(graphics, this.font, text, 8, y, TEXT_WIDTH, color, false);
+            return TextWrap.split(this.font, text, TEXT_WIDTH).size();
         }
 
         private void openEditor() {

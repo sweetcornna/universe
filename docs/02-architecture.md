@@ -311,6 +311,10 @@ io.github.sweetcornna.universe
 | 玩家放下方块后调 `Block.setPlacedBy(Level, BlockPos, BlockState, @Nullable LivingEntity, ItemStack)`；按 UUID 查玩家名用 `server.services().nameToIdCache().get(UUID)`，返回 `Optional<NameAndId>` | 已确认，基地信标在用 |
 | `Item.getName` 要传 `ItemStack`；只有 `Item` 时用 `new ItemStack(item).getHoverName()` | 已确认 |
 | 界面输入事件是记录：`CharacterEvent(int codepoint)`、`KeyEvent(key, keycode, modifiers)`；按钮的悬停说明 `Button.Builder.tooltip(Tooltip.create(Component))` | 已确认，传送器界面在用 |
+| 进度的数据生成：进度是数据包注册表，在 `GatherDataRegistryEntriesEvent` 里 `event.add(Registries.ADVANCEMENT, new AdvancementProvider(List.of(工厂)))`；子类继承 `AdvancementSubProvider`，构造参数是 `BootstrapContext<Advancement>`，查方块用 `output.lookup(Registries.BLOCK)`，`Advancement.Builder.save(output, "命名空间:路径")`。`display` 只收 `ItemLike` 的物品版本，方块要 `.asItem()`；根进度的背景图写 `Identifier`，指向 `textures/<路径>.png` | 已确认，"寰宇"进度在用 |
+| 自定义进度触发器：继承 `net.minecraft.advancements.triggers.SimpleCriterionTrigger`，在 `Registries.TRIGGER_TYPE` 上注册；`ContextAwarePredicate` 没了，条件里的玩家谓词是 `Optional<Holder<LootItemCondition>>`，编解码用 `LootItemCondition.CODEC.optionalFieldOf("player")` | 已确认，`universe:milestone` 在用 |
+| 工作台配方也不同步：要在客户端显示合成表，`sendRecipes` 里得加上 `RecipeType.CRAFTING`；`Ingredient.items()` 返回 `Stream<Holder<Item>>` | 已确认，手册的配方在用 |
+| 原版自动换行（`StringSplitter.LineBreakFinder`）只在空格处断，一行里有过空格就退回到最后一个空格，中文夹空格时提前换行；本模组界面统一用 `client.TextWrap` | 已确认 |
 
 拿不准的 API 先查源码再写，核实后把结果补进这张表。源码在：
 

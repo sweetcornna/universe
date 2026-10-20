@@ -18,6 +18,7 @@ import org.jspecify.annotations.Nullable;
 
 import com.mojang.blaze3d.platform.InputConstants;
 
+import io.github.sweetcornna.universe.client.TextWrap;
 import io.github.sweetcornna.universe.client.UniverseKeys;
 import io.github.sweetcornna.universe.core.research.ResearchState;
 import io.github.sweetcornna.universe.core.research.Tech;
@@ -323,7 +324,7 @@ public class TechTreeScreen extends Screen {
             badges.add(new int[] {x + 5, iconY, state.level(id)});
         }
         // 名字最多两行，下面一行状态，整块上下居中
-        List<FormattedCharSequence> name = this.font.split(Research.name(id), CARD_WIDTH - 30);
+        List<FormattedCharSequence> name = TextWrap.split(this.font, Research.name(id), CARD_WIDTH - 30);
         int lines = Math.min(2, name.size());
         int top = y + (CARD_HEIGHT - (lines * 9 + 11)) / 2;
         for (int i = 0; i < lines; i++) {

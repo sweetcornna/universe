@@ -13,6 +13,7 @@ import java.util.Optional;
 
 import org.joml.Matrix3x2fStack;
 
+import io.github.sweetcornna.universe.client.TextWrap;
 import io.github.sweetcornna.universe.client.factory.MachineScreen;
 import io.github.sweetcornna.universe.core.tech.ModuleHost;
 import io.github.sweetcornna.universe.core.tech.Stat;
@@ -173,7 +174,7 @@ public class TechScreen extends AbstractContainerScreen<TechMenu> {
 
     /** 一段小字占的高度（和 {@link #small} 一致）。 */
     private int height(Component text) {
-        return (int) Math.ceil(this.font.split(text, (int) (TEXT_WIDTH / SCALE)).size() * this.font.lineHeight * SCALE) + 1;
+        return (int) Math.ceil(TextWrap.split(this.font, text, (int) (TEXT_WIDTH / SCALE)).size() * this.font.lineHeight * SCALE) + 1;
     }
 
     private int small(GuiGraphicsExtractor graphics, Component text, int x, int y, int width, int color) {
@@ -182,7 +183,7 @@ public class TechScreen extends AbstractContainerScreen<TechMenu> {
         pose.pushMatrix();
         pose.translate(x, y);
         pose.scale(scale);
-        int end = graphics.textWithWordWrap(this.font, text, 0, 0, (int) (width / scale), color, false);
+        int end = TextWrap.draw(graphics, this.font, text, 0, 0, (int) (width / scale), color, false);
         pose.popMatrix();
         return y + (int) Math.ceil(end * scale) + 1;
     }

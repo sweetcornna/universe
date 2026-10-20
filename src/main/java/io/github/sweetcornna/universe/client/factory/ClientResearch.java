@@ -49,6 +49,11 @@ public final class ClientResearch {
         MachineRecipes.setClientRecipes(() -> recipes);
     }
 
+    /** 服务端发来的配方（设备配方和工作台配方）。 */
+    public static RecipeMap recipes() {
+        return recipes;
+    }
+
     public static ResearchState state() {
         return state;
     }

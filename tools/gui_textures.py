@@ -52,7 +52,24 @@ def disc(x, y):
     return max(0.0, min(1.0, (0.95 - r) * N / 2))
 
 
+def advancement_background():
+    """进度界面"寰宇"一页的背景：16×16 平铺的深蓝夜空，几颗星。固定种子，每次一样。"""
+    import random
+    rng = random.Random(7)
+    image = Image.new("RGBA", (16, 16))
+    for y in range(16):
+        for x in range(16):
+            n = rng.random() * 6
+            image.putpixel((x, y), (int(8 + n), int(12 + n), int(28 + n * 2), 255))
+    for x, y, b in ((3, 2, 210), (11, 5, 150), (6, 10, 120), (14, 13, 190), (1, 14, 100), (9, 1, 90)):
+        image.putpixel((x, y), (b, b, min(255, b + 30), 255))
+    path = os.path.join(OUT, "advancements", "backgrounds")
+    os.makedirs(path, exist_ok=True)
+    image.save(os.path.join(path, "universe.png"))
+
+
 os.makedirs(OUT, exist_ok=True)
+advancement_background()
 save("star_glow.png", star_glow)
 save("ring.png", ring)
 save("disc.png", disc)

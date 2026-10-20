@@ -1,0 +1,31 @@
+{
+  "parent": "universe:red_matrix",
+  "criteria": {
+    "placed": {
+      "conditions": {
+        "location": {
+          "type": "minecraft:match_block",
+          "blocks": "universe:em_rail_ejector"
+        }
+      },
+      "trigger": "minecraft:placed_block"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.universe.ejector.description"
+    },
+    "icon": {
+      "id": "universe:em_rail_ejector"
+    },
+    "title": {
+      "translate": "advancements.universe.ejector.title"
+    }
+  },
+  "requirements": [
+    [
+      "placed"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

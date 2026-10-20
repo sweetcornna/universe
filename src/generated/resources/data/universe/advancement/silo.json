@@ -1,0 +1,31 @@
+{
+  "parent": "universe:ejector",
+  "criteria": {
+    "placed": {
+      "conditions": {
+        "location": {
+          "type": "minecraft:match_block",
+          "blocks": "universe:vertical_launching_silo"
+        }
+      },
+      "trigger": "minecraft:placed_block"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.universe.silo.description"
+    },
+    "icon": {
+      "id": "universe:vertical_launching_silo"
+    },
+    "title": {
+      "translate": "advancements.universe.silo.title"
+    }
+  },
+  "requirements": [
+    [
+      "placed"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

@@ -3,6 +3,7 @@ package io.github.sweetcornna.universe.story;
 import java.util.Collection;
 import java.util.List;
 
+import io.github.sweetcornna.universe.advancement.MilestoneTrigger;
 import io.github.sweetcornna.universe.core.discovery.DiscoveryKey;
 import io.github.sweetcornna.universe.core.discovery.DiscoveryLog;
 import io.github.sweetcornna.universe.core.dyson.DysonSphere;
@@ -12,6 +13,7 @@ import io.github.sweetcornna.universe.discovery.DiscoveryData;
 import io.github.sweetcornna.universe.dyson.DysonData;
 import io.github.sweetcornna.universe.factory.research.ResearchData;
 import io.github.sweetcornna.universe.network.EndingPayload;
+import io.github.sweetcornna.universe.network.EndingRequestPayload;
 import io.github.sweetcornna.universe.network.StoryStatePayload;
 import io.github.sweetcornna.universe.world.space.SpaceDimensions;
 import net.minecraft.ChatFormatting;
@@ -21,6 +23,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
+import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 /**
  * 剧情的服务端入口（ADR-0018）：整个世界第一次进入太空、第一次跃迁、铺满第一片球壳、做出第一个宇宙矩阵时，
@@ -37,10 +40,18 @@ public final class Story {
         gameBus.addListener(PlayerEvent.PlayerLoggedInEvent.class, event -> {
             if (event.getEntity() instanceof ServerPlayer player) {
                 PacketDistributor.sendToPlayer(player, state(player.level().getServer()));
+                // 不在线时到达的剧情节点，进度补上
+                StoryData data = StoryData.get(player.level().getServer());
+                for (Milestone milestone : Milestone.values()) {
+                    if (data.reached(milestone)) {
+                        MilestoneTrigger.reach(player, MilestoneTrigger.story(milestone));
+                    }
+                }
             }
         });
         gameBus.addListener(PlayerEvent.PlayerChangedDimensionEvent.class, event -> {
             if (event.getEntity() instanceof ServerPlayer player && SpaceDimensions.isSpace(event.getTo())) {
+                MilestoneTrigger.reach(player, MilestoneTrigger.SPACE);
                 reach(player.level().getServer(), Milestone.FIRST_SPACE);
             }
         });
@@ -57,6 +68,9 @@ public final class Story {
             return;
         }
         data.setDirty();
+        for (ServerPlayer player : server.getPlayerList().getPlayers()) {
+            MilestoneTrigger.reach(player, MilestoneTrigger.story(milestone));
+        }
         if (milestone.hasLog()) {
             server.getPlayerList().broadcastSystemMessage(logMessage(milestone), false);
         }
@@ -71,6 +85,13 @@ public final class Story {
         return Component.translatable("story.universe.log.chat",
                 Component.translatable("story.universe.log." + milestone.id() + ".title").withStyle(ChatFormatting.AQUA),
                 Component.translatable("story.universe.log." + milestone.id()).withStyle(ChatFormatting.GRAY));
+    }
+
+    /** 手册里重看结局：研究完"任务完成"才给。 */
+    public static void handleEndingRequest(EndingRequestPayload payload, IPayloadContext context) {
+        if (context.player() instanceof ServerPlayer player && reached(player.level().getServer(), Milestone.MISSION_COMPLETE)) {
+            showEnding(player.level().getServer(), List.of(player));
+        }
     }
 
     /** 给这些玩家放结局画面。 */

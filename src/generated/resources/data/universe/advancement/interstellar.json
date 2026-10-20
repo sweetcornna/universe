@@ -1,0 +1,31 @@
+{
+  "parent": "universe:logistics",
+  "criteria": {
+    "placed": {
+      "conditions": {
+        "location": {
+          "type": "minecraft:match_block",
+          "blocks": "universe:interstellar_logistics_station"
+        }
+      },
+      "trigger": "minecraft:placed_block"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.universe.interstellar.description"
+    },
+    "icon": {
+      "id": "universe:interstellar_logistics_station"
+    },
+    "title": {
+      "translate": "advancements.universe.interstellar.title"
+    }
+  },
+  "requirements": [
+    [
+      "placed"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

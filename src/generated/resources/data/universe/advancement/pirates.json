@@ -1,0 +1,29 @@
+{
+  "parent": "universe:trade",
+  "criteria": {
+    "milestone": {
+      "conditions": {
+        "milestone": "pirates"
+      },
+      "trigger": "universe:milestone"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.universe.pirates.description"
+    },
+    "frame": "goal",
+    "icon": {
+      "id": "universe:photon_cannon"
+    },
+    "title": {
+      "translate": "advancements.universe.pirates.title"
+    }
+  },
+  "requirements": [
+    [
+      "milestone"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

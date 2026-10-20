@@ -12,6 +12,7 @@ import io.github.sweetcornna.universe.world.planet.gen.PlanetFloraFeature;
 import io.github.sweetcornna.universe.world.planet.gen.PlanetOreFeature;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.data.advancements.AdvancementProvider;
 import net.minecraft.data.loot.LootTableProvider;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.BiomeTags;
@@ -56,6 +57,7 @@ public final class UniverseDataGen {
                         new LootTableProvider.SubProviderEntry(UniverseEntityLoot::new, LootContextParamSets.ENTITY),
                         new LootTableProvider.SubProviderEntry(UniverseChestLoot::new, LootContextParamSets.CHEST))));
         event.recipe(UniverseRecipes::new);
+        event.add(Registries.ADVANCEMENT, new AdvancementProvider(List.of(UniverseAdvancements::new)));
         event.add(Registries.FEATURE, context -> {
             context.register(PlanetFloraFeature.KEY, new PlanetFloraFeature());
             context.register(PlanetOreFeature.KEY, new PlanetOreFeature());

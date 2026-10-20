@@ -1,0 +1,45 @@
+{
+  "criteria": {
+    "damaged_multitool": {
+      "conditions": {
+        "items": [
+          {
+            "items": "universe:damaged_multitool"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    },
+    "multitool": {
+      "conditions": {
+        "items": [
+          {
+            "items": "universe:multitool"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "display": {
+    "announce_to_chat": false,
+    "background": "universe:gui/advancements/backgrounds/universe",
+    "description": {
+      "translate": "advancements.universe.root.description"
+    },
+    "icon": {
+      "id": "universe:damaged_multitool"
+    },
+    "show_toast": false,
+    "title": {
+      "translate": "advancements.universe.root.title"
+    }
+  },
+  "requirements": [
+    [
+      "damaged_multitool",
+      "multitool"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

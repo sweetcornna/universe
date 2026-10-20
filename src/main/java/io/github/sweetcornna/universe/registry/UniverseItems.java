@@ -12,6 +12,7 @@ import io.github.sweetcornna.universe.core.ecology.PlantForm;
 import io.github.sweetcornna.universe.core.tech.ModuleType;
 import io.github.sweetcornna.universe.exocraft.ExocraftItem;
 import io.github.sweetcornna.universe.factory.belt.StorageTankItem;
+import io.github.sweetcornna.universe.guide.GuideItem;
 import io.github.sweetcornna.universe.logistics.StationItem;
 import io.github.sweetcornna.universe.survival.Exosuit;
 import io.github.sweetcornna.universe.survival.MultitoolItem;
@@ -327,6 +328,8 @@ public final class UniverseItems {
     public static final DeferredItem<Item> UNIVERSE_MATRIX = ITEMS.registerSimpleItem("universe_matrix");
     /** 蓝图（ADR-0018）。 */
     public static final DeferredItem<BlueprintItem> BLUEPRINT = ITEMS.registerItem("blueprint", BlueprintItem::new);
+    /** 手册（ADR-0018）。 */
+    public static final DeferredItem<GuideItem> GUIDE = ITEMS.registerItem("guide", GuideItem::new, properties -> properties.stacksTo(1));
 
     /** 能进火力发电厂和熔炉的燃料，燃烧时间按原版的刻数。 */
     private static Item.Properties fuel(Item.Properties properties, int burnTime) {
@@ -356,7 +359,7 @@ public final class UniverseItems {
                 ALIEN_FLUFF, BIO_GEL, ALIEN_CREATURE_SPAWN_EGG, ALIEN_FLYER_SPAWN_EGG));
         order.addAll(List.of(SHIP_HELM, SHIP_THRUSTER, FUEL_TANK, IMPULSE_ENGINE, WARP_DRIVE, SHIP_SEAT, PHOTON_CANNON, MINING_BEAM,
                 SHIELD_GENERATOR, SHIP_THRUSTER_MK2, FUEL_TANK_MK2, IMPULSE_ENGINE_MK2, WARP_DRIVE_MK2, ALLOY_HULL_PLATING,
-                LAUNCH_FUEL, SPACE_WARPER, SURVEY_DATA, EXOCRAFT, BLUEPRINT));
+                LAUNCH_FUEL, SPACE_WARPER, SURVEY_DATA, EXOCRAFT, BLUEPRINT, GUIDE));
         order.addAll(HULL_PLATING.values());
         order.addAll(List.of(EXOSUIT_HELMET, EXOSUIT_CHESTPLATE, EXOSUIT_LEGGINGS, EXOSUIT_BOOTS, OXYGEN_CAPSULE, HAZARD_CELL,
                 MULTITOOL, DAMAGED_MULTITOOL));

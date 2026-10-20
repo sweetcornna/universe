@@ -6,6 +6,7 @@ import io.github.sweetcornna.universe.entity.ship.ShipWeapons;
 import io.github.sweetcornna.universe.exocraft.Exocrafts;
 import io.github.sweetcornna.universe.mission.Missions;
 import io.github.sweetcornna.universe.stats.ProductionLog;
+import io.github.sweetcornna.universe.story.Story;
 import io.github.sweetcornna.universe.survival.Multitool;
 import io.github.sweetcornna.universe.discovery.Discoveries;
 import io.github.sweetcornna.universe.entity.ship.ShipWarp;
@@ -59,6 +60,7 @@ public final class UniverseNetwork {
                 .playToClient(OpenBaseBeaconPayload.TYPE, OpenBaseBeaconPayload.STREAM_CODEC)
                 .playToClient(StoryStatePayload.TYPE, StoryStatePayload.STREAM_CODEC)
                 .playToClient(EndingPayload.TYPE, EndingPayload.STREAM_CODEC)
+                .playToServer(EndingRequestPayload.TYPE, EndingRequestPayload.STREAM_CODEC, Story::handleEndingRequest)
                 .playToClient(BlueprintPayloads.OpenSave.TYPE, BlueprintPayloads.OpenSave.STREAM_CODEC)
                 .playToClient(BlueprintPayloads.Content.TYPE, BlueprintPayloads.Content.STREAM_CODEC)
                 .playToServer(BlueprintPayloads.Save.TYPE, BlueprintPayloads.Save.STREAM_CODEC, Blueprints::handleSave)

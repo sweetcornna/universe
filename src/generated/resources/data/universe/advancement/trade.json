@@ -1,0 +1,28 @@
+{
+  "parent": "universe:space",
+  "criteria": {
+    "milestone": {
+      "conditions": {
+        "milestone": "trade"
+      },
+      "trigger": "universe:milestone"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.universe.trade.description"
+    },
+    "icon": {
+      "id": "universe:circuit_board"
+    },
+    "title": {
+      "translate": "advancements.universe.trade.title"
+    }
+  },
+  "requirements": [
+    [
+      "milestone"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

@@ -1,0 +1,31 @@
+{
+  "parent": "universe:first_power",
+  "criteria": {
+    "placed": {
+      "conditions": {
+        "location": {
+          "type": "minecraft:match_block",
+          "blocks": "universe:tesla_tower"
+        }
+      },
+      "trigger": "minecraft:placed_block"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.universe.tesla.description"
+    },
+    "icon": {
+      "id": "universe:tesla_tower"
+    },
+    "title": {
+      "translate": "advancements.universe.tesla.title"
+    }
+  },
+  "requirements": [
+    [
+      "placed"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

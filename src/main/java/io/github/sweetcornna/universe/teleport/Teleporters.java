@@ -6,6 +6,7 @@ import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.UUID;
 
+import io.github.sweetcornna.universe.advancement.MilestoneTrigger;
 import io.github.sweetcornna.universe.core.discovery.DiscoveryKey;
 import io.github.sweetcornna.universe.core.discovery.DiscoveryLog;
 import io.github.sweetcornna.universe.core.galaxy.BodyId;
@@ -274,6 +275,7 @@ public final class Teleporters {
         to.level().playSound(null, to.pos().x, to.pos().y, to.pos().z, SoundEvents.PLAYER_TELEPORT, SoundSource.PLAYERS, 1, 1);
         to.level().sendParticles(ParticleTypes.REVERSE_PORTAL, to.pos().x, to.pos().y + 1, to.pos().z, 40, 0.4, 0.8, 0.4, 0.05);
         player.sendOverlayMessage(Component.translatable("message.universe.teleport.arrived", to.name()));
+        MilestoneTrigger.reach(player, MilestoneTrigger.TELEPORT);
     }
 
     private static Optional<Arrival> station(MinecraftServer server, ServerPlayer player, String id) {

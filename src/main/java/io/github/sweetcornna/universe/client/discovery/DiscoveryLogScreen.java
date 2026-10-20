@@ -20,6 +20,7 @@ import org.jspecify.annotations.Nullable;
 
 import com.mojang.blaze3d.platform.InputConstants;
 
+import io.github.sweetcornna.universe.client.TextWrap;
 import io.github.sweetcornna.universe.core.sentinel.SentinelLevel;
 import io.github.sweetcornna.universe.client.ClientGalaxy;
 import io.github.sweetcornna.universe.client.UniverseKeys;
@@ -650,7 +651,7 @@ public class DiscoveryLogScreen extends Screen {
     }
 
     private int wrap(GuiGraphicsExtractor graphics, Component text, int x, int y, int width, int color) {
-        return graphics.textWithWordWrap(this.font, text, x, y, width, color, false) + 1;
+        return TextWrap.draw(graphics, this.font, text, x, y, width, color, false) + 1;
     }
 
     private int smallWrap(GuiGraphicsExtractor graphics, Component text, int x, int y, int width, int color) {
@@ -659,7 +660,7 @@ public class DiscoveryLogScreen extends Screen {
         pose.pushMatrix();
         pose.translate(x, y);
         pose.scale(scale);
-        int end = graphics.textWithWordWrap(this.font, text, 0, 0, (int) (width / scale), color, false);
+        int end = TextWrap.draw(graphics, this.font, text, 0, 0, (int) (width / scale), color, false);
         pose.popMatrix();
         return y + (int) Math.ceil(end * scale) + 1;
     }

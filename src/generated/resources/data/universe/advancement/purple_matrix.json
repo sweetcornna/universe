@@ -1,0 +1,32 @@
+{
+  "parent": "universe:yellow_matrix",
+  "criteria": {
+    "has_item": {
+      "conditions": {
+        "items": [
+          {
+            "items": "universe:information_matrix"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.universe.purple_matrix.description"
+    },
+    "icon": {
+      "id": "universe:information_matrix"
+    },
+    "title": {
+      "translate": "advancements.universe.purple_matrix.title"
+    }
+  },
+  "requirements": [
+    [
+      "has_item"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 
 import com.mojang.logging.LogUtils;
 
+import io.github.sweetcornna.universe.advancement.MilestoneTrigger;
 import io.github.sweetcornna.universe.core.discovery.DiscoveryKey;
 import io.github.sweetcornna.universe.core.galaxy.BodyId;
 import io.github.sweetcornna.universe.core.galaxy.Planet;
@@ -31,6 +32,7 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
@@ -255,6 +257,11 @@ public final class ShipTransit {
                 });
                 ShipWarp.arrived(arrived, pending.warp());
                 Story.reach(server, Milestone.FIRST_WARP);
+                for (Entity passenger : arrived.getPassengers()) {
+                    if (passenger instanceof ServerPlayer player) {
+                        MilestoneTrigger.reach(player, MilestoneTrigger.WARP);
+                    }
+                }
                 return;
             }
             Component where = Planets.bodyId(key).flatMap(id -> Planets.galaxy(server).body(id))

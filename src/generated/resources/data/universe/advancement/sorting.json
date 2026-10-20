@@ -1,0 +1,31 @@
+{
+  "parent": "universe:assembling",
+  "criteria": {
+    "placed": {
+      "conditions": {
+        "location": {
+          "type": "minecraft:match_block",
+          "blocks": "universe:sorter"
+        }
+      },
+      "trigger": "minecraft:placed_block"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.universe.sorting.description"
+    },
+    "icon": {
+      "id": "universe:sorter"
+    },
+    "title": {
+      "translate": "advancements.universe.sorting.title"
+    }
+  },
+  "requirements": [
+    [
+      "placed"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

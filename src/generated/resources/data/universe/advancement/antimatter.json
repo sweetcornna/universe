@@ -1,0 +1,32 @@
+{
+  "parent": "universe:green_matrix",
+  "criteria": {
+    "has_item": {
+      "conditions": {
+        "items": [
+          {
+            "items": "universe:antimatter"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.universe.antimatter.description"
+    },
+    "icon": {
+      "id": "universe:antimatter"
+    },
+    "title": {
+      "translate": "advancements.universe.antimatter.title"
+    }
+  },
+  "requirements": [
+    [
+      "has_item"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

@@ -1,0 +1,28 @@
+{
+  "parent": "universe:species",
+  "criteria": {
+    "milestone": {
+      "conditions": {
+        "milestone": "monolith"
+      },
+      "trigger": "universe:milestone"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.universe.monolith.description"
+    },
+    "icon": {
+      "id": "universe:monolith"
+    },
+    "title": {
+      "translate": "advancements.universe.monolith.title"
+    }
+  },
+  "requirements": [
+    [
+      "milestone"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

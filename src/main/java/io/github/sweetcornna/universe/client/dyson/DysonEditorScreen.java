@@ -11,6 +11,7 @@ import java.util.Set;
 import org.jspecify.annotations.Nullable;
 
 import io.github.sweetcornna.universe.client.ClientGalaxy;
+import io.github.sweetcornna.universe.client.TextWrap;
 import io.github.sweetcornna.universe.client.UniverseKeys;
 import io.github.sweetcornna.universe.client.factory.MachineScreen;
 import io.github.sweetcornna.universe.client.galaxy.GalaxyText;
@@ -573,8 +574,8 @@ public class DysonEditorScreen extends Screen {
     }
 
     private int wrapped(GuiGraphicsExtractor graphics, Component text, int x, int y, int width, int color, boolean shadow) {
-        graphics.textWithWordWrap(this.font, text, x, y, width, color, shadow);
-        return this.font.split(text, width).size() * this.font.lineHeight;
+        TextWrap.draw(graphics, this.font, text, x, y, width, color, shadow);
+        return TextWrap.split(this.font, text, width).size() * this.font.lineHeight;
     }
 
     private void footer(GuiGraphicsExtractor graphics, DysonSphere sphere, double limit, int x0, int y, int x1) {

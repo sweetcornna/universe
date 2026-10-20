@@ -1,0 +1,31 @@
+{
+  "parent": "universe:first_shell",
+  "criteria": {
+    "placed": {
+      "conditions": {
+        "location": {
+          "type": "minecraft:match_block",
+          "blocks": "universe:ray_receiver"
+        }
+      },
+      "trigger": "minecraft:placed_block"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.universe.ray.description"
+    },
+    "icon": {
+      "id": "universe:ray_receiver"
+    },
+    "title": {
+      "translate": "advancements.universe.ray.title"
+    }
+  },
+  "requirements": [
+    [
+      "placed"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

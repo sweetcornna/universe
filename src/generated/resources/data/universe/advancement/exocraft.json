@@ -1,0 +1,28 @@
+{
+  "parent": "universe:species",
+  "criteria": {
+    "milestone": {
+      "conditions": {
+        "milestone": "exocraft"
+      },
+      "trigger": "universe:milestone"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.universe.exocraft.description"
+    },
+    "icon": {
+      "id": "universe:exocraft"
+    },
+    "title": {
+      "translate": "advancements.universe.exocraft.title"
+    }
+  },
+  "requirements": [
+    [
+      "milestone"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

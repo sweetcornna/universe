@@ -188,6 +188,34 @@ def blueprint():
     save(img, ITEM, "blueprint")
 
 
+def guide():
+    """手册：深蓝封面的书，书脊和页边，封面中间一个青色的圆环。"""
+    img = clear()
+    cover = (28, 52, 96)
+    for y in range(2, 14):
+        for x in range(3, 13):
+            put(img, x, y, shade(cover, 0.85) if x == 3 or y == 13 else cover)
+    # 书脊
+    for y in range(2, 14):
+        put(img, 3, y, (18, 34, 66))
+        put(img, 4, y, (40, 72, 128))
+    # 右边和下边露出的纸页
+    for y in range(3, 14):
+        put(img, 13, y, (232, 226, 206))
+    for x in range(5, 13):
+        put(img, x, 14, (214, 206, 184))
+    # 青色圆环
+    for y in range(4, 12):
+        for x in range(6, 12):
+            d = math.hypot(x - 8.5, y - 7.5)
+            if 1.6 <= d <= 2.7:
+                put(img, x, y, (110, 220, 255))
+    put(img, 8, 7, (200, 245, 255))
+    put(img, 9, 8, (200, 245, 255))
+    outline(img, (10, 18, 36))
+    save(img, ITEM, "guide")
+
+
 # ---- 微型聚变发电站
 
 def mini_fusion_power_plant():
@@ -299,6 +327,7 @@ def main():
     composite_matrix()
     universe_matrix()
     blueprint()
+    guide()
     mini_fusion_power_plant()
     artificial_star()
 

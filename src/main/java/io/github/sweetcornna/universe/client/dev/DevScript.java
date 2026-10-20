@@ -19,6 +19,7 @@ import io.github.sweetcornna.universe.asteroid.Asteroid;
 import io.github.sweetcornna.universe.client.ItemSummaries;
 import io.github.sweetcornna.universe.client.UniverseKeys;
 import io.github.sweetcornna.universe.client.dyson.ClientDyson;
+import io.github.sweetcornna.universe.client.guide.GuideScreen;
 import io.github.sweetcornna.universe.client.pirate.PirateClient;
 import io.github.sweetcornna.universe.client.ship.ShipClient;
 import io.github.sweetcornna.universe.dyson.EmRailEjectorBlockEntity;
@@ -29,6 +30,7 @@ import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Screenshot;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.advancements.AdvancementsScreen;
 import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -360,6 +362,17 @@ public final class DevScript {
                 KeyMapping.click(key.getKey());
             }
             case "rightclick" -> KeyMapping.click(minecraft.options.keyUse.getKey()); // 按一下右键，走原版的完整流程
+            case "advancements" -> minecraft.gui.setScreen(new AdvancementsScreen(player.connection.getAdvancements()));
+            case "guide" -> {
+                // guide check：把接到下一页的正文写进日志；guide <章> <页>：打开手册翻到那一页（从 0 数）
+                if (args[0].equals("check")) {
+                    List<String> report = GuideScreen.continued(minecraft.font, minecraft.level);
+                    Universe.LOGGER.info("Dev script guide check: {} continued pages", report.size());
+                    report.forEach(entry -> Universe.LOGGER.info("Dev script guide continued: {}", entry));
+                } else {
+                    minecraft.gui.setScreen(GuideScreen.at(Integer.parseInt(args[0]), Integer.parseInt(args[1])));
+                }
+            }
             case "useitem" -> {
                 // 对着空气右键（用手里的东西）
                 if (minecraft.gameMode != null) {

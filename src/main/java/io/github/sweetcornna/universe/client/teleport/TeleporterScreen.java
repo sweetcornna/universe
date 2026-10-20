@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Locale;
 
 import io.github.sweetcornna.universe.client.ClientGalaxy;
+import io.github.sweetcornna.universe.client.TextWrap;
 import io.github.sweetcornna.universe.client.galaxy.GalaxyText;
 import io.github.sweetcornna.universe.core.galaxy.BodyId;
 import io.github.sweetcornna.universe.core.teleport.TeleportRules;
@@ -156,7 +157,7 @@ public class TeleporterScreen extends Screen {
             graphics.fill(this.left + 12, this.top + 35, this.left + 12 + filled, this.top + 37, color);
         }
         if (this.payload.destinations().isEmpty()) {
-            graphics.textWithWordWrap(this.font, Component.translatable("gui.universe.teleporter.empty"), this.left + 12, this.top + 42,
+            TextWrap.draw(graphics, this.font, Component.translatable("gui.universe.teleporter.empty"), this.left + 12, this.top + 42,
                     WIDTH - 24, 0xFF9AA8AE, false);
         }
         if (this.pages() > 1) {

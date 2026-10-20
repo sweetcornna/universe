@@ -1,0 +1,33 @@
+{
+  "parent": "universe:antimatter",
+  "criteria": {
+    "has_item": {
+      "conditions": {
+        "items": [
+          {
+            "items": "universe:universe_matrix"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.universe.universe_matrix.description"
+    },
+    "frame": "goal",
+    "icon": {
+      "id": "universe:universe_matrix"
+    },
+    "title": {
+      "translate": "advancements.universe.universe_matrix.title"
+    }
+  },
+  "requirements": [
+    [
+      "has_item"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

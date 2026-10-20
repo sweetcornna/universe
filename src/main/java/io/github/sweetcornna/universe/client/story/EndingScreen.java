@@ -8,6 +8,7 @@ import org.jspecify.annotations.Nullable;
 
 import com.mojang.blaze3d.platform.InputConstants;
 
+import io.github.sweetcornna.universe.client.TextWrap;
 import io.github.sweetcornna.universe.client.factory.MachineScreen;
 import io.github.sweetcornna.universe.network.EndingPayload;
 import net.minecraft.ChatFormatting;
@@ -64,7 +65,7 @@ public class EndingScreen extends Screen {
         this.centered(this.title.copy().withStyle(ChatFormatting.BOLD), TITLE);
         this.blank(2);
         for (int i = 1; i <= PARAGRAPHS; i++) {
-            for (FormattedCharSequence line : this.font.split(Component.translatable("story.universe.ending." + i), width)) {
+            for (FormattedCharSequence line : TextWrap.split(this.font, Component.translatable("story.universe.ending." + i), width)) {
                 this.lines.add(new Line(line, null, false, BODY));
             }
             this.blank(1);

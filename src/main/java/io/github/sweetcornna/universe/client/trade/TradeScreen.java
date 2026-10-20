@@ -6,6 +6,7 @@ import java.util.Locale;
 import java.util.StringJoiner;
 
 import io.github.sweetcornna.universe.client.ClientGalaxy;
+import io.github.sweetcornna.universe.client.TextWrap;
 import io.github.sweetcornna.universe.client.factory.MachineScreen;
 import io.github.sweetcornna.universe.client.galaxy.GalaxyText;
 import io.github.sweetcornna.universe.core.trade.Economy;
@@ -214,7 +215,7 @@ public class TradeScreen extends Screen {
         if (rows.isEmpty()) {
             Component empty = Component.translatable(this.buyTab ? "gui.universe.trade.empty_buy" : "gui.universe.trade.empty_sell");
             int lineY = y + TABLE_Y + 24;
-            for (var line : this.font.split(empty, WIDTH - 40)) {
+            for (var line : TextWrap.split(this.font, empty, WIDTH - 40)) {
                 graphics.centeredText(this.font, line, x + WIDTH / 2, lineY, MachineScreen.DIM);
                 lineY += 10;
             }

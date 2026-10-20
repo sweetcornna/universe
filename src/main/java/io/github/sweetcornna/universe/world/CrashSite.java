@@ -350,6 +350,7 @@ public final class CrashSite extends SavedData {
         List<ItemStack> loot = new ArrayList<>();
         loot.add(new ItemStack(UniverseItems.DAMAGED_MULTITOOL.get()));
         loot.add(journal());
+        loot.add(new ItemStack(UniverseItems.GUIDE.get()));
         loot.add(new ItemStack(Items.COPPER_INGOT, 6));
         loot.add(new ItemStack(Items.IRON_INGOT, 4));
         loot.add(new ItemStack(Items.REDSTONE, 4));

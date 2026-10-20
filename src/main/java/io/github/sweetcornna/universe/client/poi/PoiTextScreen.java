@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.mojang.blaze3d.platform.InputConstants;
 
+import io.github.sweetcornna.universe.client.TextWrap;
 import io.github.sweetcornna.universe.client.galaxy.GalaxyText;
 import io.github.sweetcornna.universe.core.poi.OutpostLog;
 import io.github.sweetcornna.universe.poi.PoiInteractions;
@@ -96,7 +97,7 @@ public class PoiTextScreen extends Screen {
             if (i > 0) {
                 wrapped.add(FormattedCharSequence.EMPTY);
             }
-            wrapped.addAll(this.font.split(this.paragraphs.get(i), wrap));
+            wrapped.addAll(TextWrap.split(this.font, this.paragraphs.get(i), wrap));
         }
         this.lines = wrapped;
     }

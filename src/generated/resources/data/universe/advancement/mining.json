@@ -1,0 +1,31 @@
+{
+  "parent": "universe:first_power",
+  "criteria": {
+    "placed": {
+      "conditions": {
+        "location": {
+          "type": "minecraft:match_block",
+          "blocks": "universe:mining_machine"
+        }
+      },
+      "trigger": "minecraft:placed_block"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.universe.mining.description"
+    },
+    "icon": {
+      "id": "universe:mining_machine"
+    },
+    "title": {
+      "translate": "advancements.universe.mining.title"
+    }
+  },
+  "requirements": [
+    [
+      "placed"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

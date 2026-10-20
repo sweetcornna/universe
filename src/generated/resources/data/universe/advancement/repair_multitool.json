@@ -1,0 +1,32 @@
+{
+  "parent": "universe:root",
+  "criteria": {
+    "multitool": {
+      "conditions": {
+        "items": [
+          {
+            "items": "universe:multitool"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.universe.repair_multitool.description"
+    },
+    "icon": {
+      "id": "universe:multitool"
+    },
+    "title": {
+      "translate": "advancements.universe.repair_multitool.title"
+    }
+  },
+  "requirements": [
+    [
+      "multitool"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

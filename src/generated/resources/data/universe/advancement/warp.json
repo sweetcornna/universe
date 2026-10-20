@@ -1,0 +1,29 @@
+{
+  "parent": "universe:space",
+  "criteria": {
+    "milestone": {
+      "conditions": {
+        "milestone": "warp"
+      },
+      "trigger": "universe:milestone"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.universe.warp.description"
+    },
+    "frame": "goal",
+    "icon": {
+      "id": "universe:space_warper"
+    },
+    "title": {
+      "translate": "advancements.universe.warp.title"
+    }
+  },
+  "requirements": [
+    [
+      "milestone"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

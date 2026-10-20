@@ -1,0 +1,29 @@
+{
+  "parent": "universe:silo",
+  "criteria": {
+    "milestone": {
+      "conditions": {
+        "milestone": "story/first_shell"
+      },
+      "trigger": "universe:milestone"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.universe.first_shell.description"
+    },
+    "frame": "goal",
+    "icon": {
+      "id": "universe:dyson_sphere_component"
+    },
+    "title": {
+      "translate": "advancements.universe.first_shell.title"
+    }
+  },
+  "requirements": [
+    [
+      "milestone"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

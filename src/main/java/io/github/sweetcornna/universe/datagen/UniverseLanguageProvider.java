@@ -2,13 +2,19 @@ package io.github.sweetcornna.universe.datagen;
 
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.block.OreKind;
+import io.github.sweetcornna.universe.core.guide.Guide;
 import io.github.sweetcornna.universe.core.terrain.BiomeKind;
 import io.github.sweetcornna.universe.core.poi.PoiType;
 import io.github.sweetcornna.universe.core.tech.ModuleType;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
 import io.github.sweetcornna.universe.registry.UniverseItems;
+import java.util.HashSet;
+import java.util.Set;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.PackOutput;
+import net.minecraft.resources.Identifier;
 import net.neoforged.neoforge.common.data.LanguageProvider;
+import org.jspecify.annotations.Nullable;
 
 /** 语言文件。中英文放在一起写，免得漏翻（项目约定同时维护 zh_cn 和 en_us）。 */
 abstract class UniverseLanguageProvider extends LanguageProvider {
@@ -143,6 +149,8 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("gui.universe.tech_tree.none", "无", "None");
         story();
         blueprint();
+        advancements();
+        guide();
     }
 
     /** 空间站任务板（ADR-0017）。 */
@@ -1025,6 +1033,280 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("poi.universe.lore.12.title", "最后的话", "Last Words");
         both("poi.universe.lore.12.text", "如果有一天，你的星空也开始变暗，记得回到这里，把手放在石头上。我们会听见。",
                 "If one day your sky begins to dim, remember to come back here and lay your hand on the stone. We will hear you.");
+    }
+
+    /** 手册（ADR-0018）：章名、每页的标题和正文。页里嵌的物品在这里查一遍注册名。 */
+    private void guide() {
+        both("guide.universe.start", "开局", "Getting Started");
+        both("guide.universe.power", "电力", "Power");
+        both("guide.universe.gathering", "采集和冶炼", "Mining");
+        both("guide.universe.research", "研究", "Research");
+        both("guide.universe.logistics", "传送带和物流", "Logistics");
+        both("guide.universe.ship", "飞船", "Ships");
+        both("guide.universe.survival", "星球生存", "Planet Survival");
+        both("guide.universe.exploration", "探索", "Exploration");
+        both("guide.universe.trade", "太空和贸易", "Space & Trade");
+        both("guide.universe.husbandry", "驯养和探索车", "Creatures");
+        both("guide.universe.dyson", "戴森球", "Dyson Sphere");
+        both("guide.universe.endgame", "终局", "Endgame");
+        both("guide.universe.log", "日志", "Logs");
+        both("guide.universe.ending", "结局", "Ending");
+        both("guide.universe.start.crash.title", "坠毁点", "The Crash Site");
+        both("guide.universe.start.crash",
+                "坠毁点在出生点 60 到 110 格外，第一次进入世界时生成，聊天栏会提示烟柱的方向。\n\n箱子里有：\n损坏的多功能工具\n探测器日志和这本手册\n铜锭、铁锭、红石\n氧气罐、防护电池各 2 个",
+                "The crash site is 60 to 110 blocks from spawn and appears the first time the world loads. Chat tells you which way the smoke is.\n\nThe chest holds:\nDamaged multitool\nProbe log and this guide\nCopper, iron and redstone\n2 oxygen capsules, 2 hazard cells");
+        both("guide.universe.start.multitool.title", "多功能工具", "The Multitool");
+        both("guide.universe.start.multitool",
+                "多功能工具是开局的主要工具，能当镐、锹、斧用。损坏的那把加铜锭、红石和铁锭就能修好，箱子里的材料正好够。\n没有坠毁点的玩家可以用钻石从头做一把。\n\n挖掘等级：铁\n挖掘速度：6",
+                "The multitool is your main early tool: pickaxe, shovel and axe in one. Repair the damaged one with copper, redstone and iron; the crash chest has exactly enough.\nWithout a crash site, craft one from scratch with a diamond.\n\nMining tier: iron\nDig speed: 6");
+        both("guide.universe.start.laser.title", "激光和扫描", "Laser and Scanner");
+        both("guide.universe.start.laser",
+                "多功能工具还带采矿激光、扫描器和等离子枪。\n\n按住右键：采矿激光\n潜行右键：扫描\nG：切换采矿和战斗模式\n\n激光：射程 10 格，比手挖快一半\n过热：连续 4 秒，冷却 2 秒\n扫描：矿脉 32 格，兴趣点 200 格，冷却 5 秒\n等离子弹：每发 5 点伤害\n\n在星球上开激光会引来哨兵。",
+                "The multitool also carries a mining laser, a scanner and a plasma gun.\n\nHold right-click: mining laser\nSneak + right-click: scan\nG: switch mining and combat mode\n\nLaser: 10 blocks, 1.5x dig speed\nOverheat: after 4 s, cools for 2 s\nScan: veins 32, points of interest 200, 5 s cooldown\nPlasma bolt: 5 damage\n\nLasering on planets draws Sentinels.");
+        both("guide.universe.start.suit.title", "外骨骼", "The Exosuit");
+        both("guide.universe.start.suit",
+                "外骨骼四件都用铁和铜做。头盔加胸甲才算密封。\n件数越少防护掉得越快：三件 ×2，两件 ×3.5，一件 ×6。\n\n氧气：密封 10 分钟，不密封 15 秒\n危害防护：全套 5 分钟\n主世界、空间站、飞船里不消耗",
+                "All four pieces use iron and copper. Helmet plus chestplate seals the suit.\nFewer pieces drain faster: x2 with three, x3.5 with two, x6 with one.\n\nOxygen: 10 min sealed, 15 s unsealed\nHazard protection: 5 min, full set\nNo drain in the Overworld, stations or ships");
+        both("guide.universe.power.grid.title", "电网", "The Grid");
+        both("guide.universe.power.grid",
+                "电力感应塔给周围的设备供电，塔和塔之间自动连成电网，不用拉线。\n发电不够时先用蓄电器里的电，还不够就所有设备一起按比例减速。\n\n供电半径：6 格\n连接距离：12 格\n右键电塔看发电、用电和满足率，O 键的生产统计里也有电力一栏。",
+                "Tesla towers power nearby devices and link to each other into a grid. No wires.\nWhen power runs short, accumulators discharge first, then all machines slow down evenly.\n\nPower radius: 6 blocks\nLink distance: 12 blocks\nRight-click a tower to see its numbers. The stats screen (O) has a power panel.");
+        both("guide.universe.power.generators.title", "发电", "Generators");
+        both("guide.universe.power.generators",
+                "风力涡轮机\n300 W × 风力系数。越高风越大，下雨 ×1.2，打雷 ×1.5，没有大气不转。\n\n太阳能板\n360 W，要露天。按太阳高度和恒星亮度算，晚上为 0。\n\n火力发电厂\n最多 2.16 kW，烧原版燃料，用多少烧多少。一块煤满负荷烧 11 秒。",
+                "Wind Turbine\n300 W x wind factor. Higher is windier; rain x1.2, thunder x1.5. Nothing on airless planets.\n\nSolar Panel\n360 W with open sky, scaled by sun height and star brightness. Zero at night.\n\nThermal Power Plant\nUp to 2.16 kW from vanilla fuel, burning only what the grid draws. Coal lasts 11 s at full load.");
+        both("guide.universe.power.storage.title", "蓄电器", "Accumulators");
+        both("guide.universe.power.storage",
+                "蓄电器在电网有富余时充电，发电不够时放电。拆下来电量还在。\n\n容量：180 kJ\n充放电：最多 2.7 kW\n研究：能量储存",
+                "Accumulators charge from surplus and discharge when generation falls short. They keep their charge when broken.\n\nCapacity: 180 kJ\nRate: up to 2.7 kW\nResearch: Energy Storage");
+        both("guide.universe.gathering.mining.title", "采矿机", "Mining Machine");
+        both("guide.universe.gathering.mining",
+                "采矿机开采下方的矿，从正面出货。范围里有几种矿时，只挖数量最多的那种。\n\n范围：5×5，深 3 层\n产量：每块矿 40 秒 1 个\n耗电：420 W\n研究：电磁学",
+                "The mining machine mines ore below it and outputs from its front. With several ores in range it mines only the most common one.\n\nArea: 5x5, 3 layers deep\nRate: 1 item per ore block every 40 s\nPower: 420 W\nResearch: Electromagnetism");
+        both("guide.universe.gathering.veins.title", "矿脉", "Ore Veins");
+        both("guide.universe.gathering.veins",
+                "每块矿有一定储量，挖完变回石头。\n\n储量：400 到 1200，再乘星球丰度 0.5 到 1.5\n主世界：地表有铁、铜、煤的露头，少量金矿和原油涌泉\n其他星球：钛、硅、硫、可燃冰、光学晶体、铀等，看星球类型\n\n用多功能工具扫描找矿最快。",
+                "Each ore block holds a set amount and turns back into stone when empty.\n\nReserve: 400 to 1200, times planet abundance 0.5 to 1.5\nOverworld: surface outcrops of iron, copper and coal, some gold and crude oil seeps\nOther planets: titanium, silicon, sulfur, fire ice, optical crystal, uranium and more, by planet type\n\nA multitool scan finds veins fastest.");
+        both("guide.universe.gathering.smelting.title", "电弧熔炉", "Arc Smelter");
+        both("guide.universe.gathering.smelting",
+                "电弧熔炉用电炼东西，有三个原料格。粗矿炼成锭，铁锭炼成钢，石墨、高纯硅、钛锭和玻璃也在这里炼。\n用分拣器送料时只会送配方要的东西。\n\n耗电：360 W\n粗矿 → 锭：1 秒\n3 铁锭 → 钢：3 秒（研究钢材冶炼）",
+                "The arc smelter smelts with electricity and has three input slots: ingots, steel, graphite, silicon, titanium and glass.\nSorters feeding it only insert what the recipe needs.\n\nPower: 360 W\nRaw ore to ingot: 1 s\n3 iron ingots to steel: 3 s (Steel Smelting)");
+        both("guide.universe.gathering.fluids.title", "原油和水", "Oil and Water");
+        both("guide.universe.gathering.fluids",
+                "原油萃取站\n两格高，下半截放在原油涌泉上。每秒 0.5 到 1.5 原油，越抽越慢，最低三成。耗电 840 W。\n\n抽水站\n放在水源上，每分钟 50 水，耗电 300 W。酸海星球上不能用。",
+                "Oil Extractor\nTwo blocks tall, lower half on a crude oil seep. 0.5 to 1.5 crude oil per second, slowing as it drains, down to 30%. Power 840 W.\n\nWater Pump\nSits on a water source. 50 water a minute for 300 W. Not on acid-ocean planets.");
+        both("guide.universe.research.hand_in.title", "上交科技", "Hand-in Research");
+        both("guide.universe.research.hand_in",
+                "J 键打开科技树。开头几项不用研究站，在科技树里直接上交材料。研究是全服共用的。\n\n电磁学：10 磁线圈、10 电路板，解锁电力感应塔、风力涡轮机、采矿机\n自动化冶金：20 铁锭、10 磁线圈，解锁电弧熔炉\n基础制造工艺：20 电路板、20 齿轮，解锁制造台\n电磁矩阵：10 电路板、10 磁线圈，解锁研究站",
+                "Press J for the tech tree. Early techs take a hand-in instead of a lab. Research is shared server-wide.\n\nElectromagnetism: 10 coils, 10 boards. Tesla tower, wind turbine, mining machine\nAutomatic Metallurgy: 20 iron, 10 coils. Arc smelter\nBasic Assembling: 20 boards, 20 gears. Assembler\nElectromagnetic Matrix: 10 boards, 10 coils. Matrix lab");
+        both("guide.universe.research.lab.title", "研究站", "Matrix Lab");
+        both("guide.universe.research.lab",
+                "矩阵研究站消耗矩阵产生研究点数。在科技树里选当前研究，研究站每 5 秒消耗所需的每种矩阵各一个，算一点。几台研究站的进度叠加。\n\n耗电：480 W\n自动送料：每格最多 10 个\n研究：电磁矩阵",
+                "Matrix labs turn matrices into research points. Pick a current research in the tech tree; every 5 s a lab uses one of each required matrix for one point. Labs add up.\n\nPower: 480 W\nAutomation: up to 10 per slot\nResearch: Electromagnetic Matrix");
+        both("guide.universe.research.matrices.title", "六种矩阵", "The Six Matrices");
+        both("guide.universe.research.matrices",
+                "六种矩阵都在制造台里做，越往后的科技要的种类越多。\n\n蓝：磁线圈 + 电路板\n红：2 高能石墨 + 2 氢\n黄：金刚石 + 钛晶石\n紫：2 处理器 + 粒子宽带\n绿：引力透镜 + 量子芯片，出 2 个\n白：复合矩阵 + 紫 + 绿 + 反物质",
+                "All six matrices are made in assemblers; later techs need more colors.\n\nBlue: coil + circuit board\nRed: 2 energetic graphite + 2 hydrogen\nYellow: diamond + titanium crystal\nPurple: 2 processors + particle broadband\nGreen: graviton lens + quantum chip, makes 2\nWhite: composite + purple + green + antimatter");
+        both("guide.universe.research.upgrades.title", "升级科技", "Upgrades");
+        both("guide.universe.research.upgrades",
+                "科技树最右边一列是升级科技。前几级用低档矩阵；下一级要的矩阵和这一级相同时，研究会自动接着做。\n\n矿脉利用：采矿 +10%，矿耗 ×0.94\n研究速度：+25%\n物流载具引擎：+25%\n射线传输效率：损耗 ×0.85\n物流载具容量：+10%\n太阳帆寿命：+15 分钟\n（都是每级）\n\n前四条最后用白矩阵研究，没有上限；容量和寿命各 6 级。",
+                "The rightmost column of the tech tree holds the upgrades. Early levels use lower matrices; research continues by itself while the next level needs the same ones.\n\nVein Utilization: mining +10%, drain x0.94\nResearch Speed: +25%\nCarrier Engine: +25%\nRay Transmission: loss x0.85\nCarrier Capacity: +10%\nSolar Sail Life: +15 min\n(all per level)\n\nThe first four end in white-matrix levels with no cap; capacity and sail life have 6 levels each.");
+        both("guide.universe.logistics.belts.title", "传送带", "Conveyor Belts");
+        both("guide.universe.logistics.belts",
+                "传送带沿你放置时面对的方向运东西。站在上面的生物和掉落物也会被带走。\n\n空手潜行右键：平、上坡、下坡\n空手右键：拿下物品\n速度：每秒 6 / 12 / 30 个",
+                "Belts carry items the way you faced when placing them. Mobs and dropped items ride along.\n\nSneak + empty hand: flat, up, down\nEmpty hand: take items off\nSpeed: 6, 12 or 30 items/s by tier");
+        both("guide.universe.logistics.sorters.title", "分拣器", "Sorters");
+        both("guide.universe.logistics.sorters",
+                "分拣器从背后的方块拿东西，放进前面的方块，只拿前面装得下的。\n\n拿着物品右键：设过滤\n空手右键：清除过滤\n速度：每秒 1.5 / 3 / 6 次\n四向分流器轮流分给各个出口，储物仓有 30 格。",
+                "Sorters move items from the block behind to the block in front, only what fits.\n\nRight-click with item: set filter\nEmpty hand: clear filter\nSpeed: 1.5, 3 or 6 moves/s\nSplitters alternate between outputs. Storage Mk.I has 30 slots.");
+        both("guide.universe.logistics.assembler.title", "制造台", "Assemblers");
+        both("guide.universe.logistics.assembler",
+                "制造台按选好的配方做东西。在界面里选配方；每个原料格只收对应的原料，换配方会退回原料。自动送料最多装 4 次的量。\n\nMk.I：速度 0.75，260 W\nMk.II：速度 1.0，540 W\nMk.III：速度 1.5，1.08 kW",
+                "Assemblers craft the recipe picked in their screen. Each slot takes only its own ingredient, and automation fills up to 4 crafts.\n\nMk.I: speed 0.75, 260 W\nMk.II: speed 1.0, 540 W\nMk.III: speed 1.5, 1.08 kW");
+        both("guide.universe.logistics.stations.title", "物流站", "Logistics Stations");
+        both("guide.universe.logistics.stations",
+                "物流站按每格的设置自动收发货。本地用无人机，在同一个维度里送；远程用运输船，在星球之间送。\n在界面里给每格设物品和上限，本地、远程各选仓储、供应或需求。站只用电网富余的电充电。\n\n行星物流站：4 格 × 5000，无人机范围默认 1000 格\n星际物流站：5 格 × 10000，加运输船；去别的星系每趟 2 个空间翘曲器",
+                "Stations send and receive by each slot's settings. Drones serve one dimension; vessels travel between planets.\nSet each slot's item and limit, then storage, supply or demand for local and remote. Stations charge only from grid surplus.\n\nPlanetary: 4 slots x 5,000, drone range 1,000 by default\nInterstellar: 5 slots x 10,000 plus vessels; other systems cost 2 space warpers a trip");
+        both("guide.universe.logistics.blueprint.title", "蓝图", "Blueprints");
+        both("guide.universe.logistics.blueprint",
+                "蓝图把一片建筑存下来，在别处照着放。配方、分拣器过滤和物流站设置一起复制，库存不复制。\n\n空白：右键两个方块框选（每边最多 32），潜行右键保存\n画好的：右键放下，R 转 90°，潜行右键清空\n放置距离：64 格\n材料从背包和外骨骼货舱扣，缺的会列出来；补齐后对着原处再右键。",
+                "Blueprints copy builds with recipes, filters and station settings.\n\nBlank: mark two corners (32 max per side), sneak + right-click to save\nSaved: right-click to build, R rotates, sneak + right-click clears\nRange: 64 blocks\nMaterials come from inventory and cargo; right-click again to fill gaps.");
+        both("guide.universe.ship.build.title", "造船", "Building a Ship");
+        both("guide.universe.ship.build",
+                "飞船由方块拼成。右键驾驶台组装：和它连在一起的方块都算船上的，地形不算。\n\n必需：一个驾驶台（朝向是船头）、至少一个推进器\n可选：燃料舱、脉冲引擎、跃迁引擎、护盾、武器、座椅、船体板\n上限：4096 个方块\n起飞条件：推重比大于 1；一个推进器在 1 倍重力下推 12 吨",
+                "Ships are built from blocks. Right-click the helm to assemble everything connected to it; terrain is left out.\n\nRequired: one helm (its facing is the bow), at least one thruster\nOptional: fuel tanks, impulse engines, warp drives, shields, weapons, seats, hull plating\nLimit: 4,096 blocks\nLift-off: thrust-to-weight above 1; one thruster lifts 12 t at 1 g");
+        both("guide.universe.ship.fly.title", "驾驶", "Flying");
+        both("guide.universe.ship.fly",
+                "拿着燃料右键燃料舱加油，再右键驾驶台组装，组装好你就在驾驶位上。\n\nWASD：推进和转向\n空格 / 潜行：上升 / 下降\n疾跑：脉冲引擎（只在太空）\n左键：开火，G 换武器\n落地后按住潜行 1 秒：停船，变回方块\n\n进入太空：飞出世界顶部 48 格\n降落：飞进星球的大气层\n燃料：煤 200，煤块 1800，发射燃料 1000\n驾驶舱有氧气，防护会充满。",
+                "Right-click a fuel tank with fuel, then assemble at the helm; you start in the pilot seat.\n\nWASD: thrust and turn\nSpace / Sneak: up / down\nSprint: impulse engine (space only)\nLeft-click: fire, G: switch weapon\nHold Sneak 1 s after landing: park as blocks\n\nTo space: 48 blocks above the world's top\nTo land: fly into a planet's atmosphere\nFuel: coal 200, coal block 1,800, launch fuel 1,000\nThe cabin has air and refills protection.");
+        both("guide.universe.ship.warp.title", "跃迁", "Warping");
+        both("guide.universe.ship.warp",
+                "M 键打开星图，选一个星系，点跃迁。\n\n条件：在太空里开船，船上有跃迁引擎，背包里有空间翘曲器\n位置：离恒星 1200 格以外，离星球大气 150 格以外\n充能：3.5 秒，用掉 1 个空间翘曲器\n航程：5 光年，每台跃迁引擎 +5（Mk.II +10），最多算 4 台\n\n空间翘曲器在制造台里做，空间站也卖。",
+                "Press M for the star map, pick a system and press Warp.\n\nNeeds: piloting in space, a warp drive aboard, a space warper in your inventory\nPosition: 1,200 blocks from the star, 150 from any atmosphere\nCharge: 3.5 s, uses 1 warper\nRange: 5 ly, +5 per warp drive (+10 for Mk.II), up to 4 drives\n\nSpace warpers come from assemblers or station shops.");
+        both("guide.universe.survival.hazards.title", "危害", "Hazards");
+        both("guide.universe.survival.hazards",
+                "星球最多两种危害：寒冷、高温、毒性、辐射。HUD 上每种一条防护。\n\n全套外骨骼：撑 5 分钟，离开 25 秒充满\n用完：防护每 2 秒掉 1 血，氧气每秒掉 2 血\n室内 ×1/3，风暴 ×2，火或冰挡相反的危害\n氧气罐、防护电池：各回 50%，低于 20% 自动用",
+                "Up to two hazards per planet: cold, heat, toxicity, radiation.\n\nFull suit: 5 min, refills 25 s after\nEmpty: -1 HP/2 s; no oxygen -2 HP/s\nIndoors x1/3, storms x2\nFire or ice blocks the opposite hazard\nCapsules and cells: +50%, auto below 20%");
+        both("guide.universe.survival.modules.title", "技术模块", "Tech Modules");
+        both("guide.universe.survival.modules",
+                "U 键打开技术配置，在这里装模块、整理货舱。\n\n外骨骼：开始 4 个技术槽、9 格货舱，每修好一个掉落舱 +1 槽、+9 格，最多 12 槽、54 格\n多功能工具：6 个技术槽\n品质：C、B、A、S，同一种最多三个生效\n来源：制造台做 C 档，更好的从兴趣点和空间站拿\n\n喷气背包：空中再按一次跳跃，喷 2.5 秒，落地 2 秒充满",
+                "Press U for tech configuration to fit modules and sort cargo.\n\nExosuit: starts with 4 tech slots and 9 cargo; each repaired drop pod adds 1 slot and 9 cargo, up to 12 and 54\nMultitool: 6 tech slots\nGrades: C, B, A, S; up to three of one kind count\nSources: assemblers make C, better ones come from points of interest and stations\n\nJetpack: jump again in mid-air for 2.5 s of thrust, recharges in 2 s on the ground");
+        both("guide.universe.exploration.visor.title", "分析目镜", "Analysis Visor");
+        both("guide.universe.exploration.visor",
+                "分析目镜用来鉴定动物、植物、矿石、恒星和星球。拿着多功能工具按 V 打开，对准目标按住右键 1.2 秒。\n对着动物还会显示它吃什么、产什么、能不能骑。\n\n第一个发现的人得勘探数据：\n动物：2\n植物、树、矿物：1\n一颗星球的动植物全部发现：+5",
+                "The analysis visor identifies creatures, plants, ores, stars and planets. Hold the multitool, press V, aim and hold right-click for 1.2 s.\nOn creatures it also shows diet, produce and whether you can ride them.\n\nFirst discoverer gets survey data:\nCreature: 2\nPlant, tree, mineral: 1\nWhole planet's wildlife: +5");
+        both("guide.universe.exploration.discoveries.title", "发现日志", "Discovery Log");
+        both("guide.universe.exploration.discoveries",
+                "K 键打开发现日志。进入太空时记下星系，降落时记下星球。\n发现者可以给星系和星球改名，最多 24 个字，留空恢复原名。\n\n第一次发现星系：5 到 20 个勘探数据（黑洞最多）\n第一次发现星球：3 到 4 个\n\n勘探数据用来上交科技（星际测绘、技术模块、跃迁校准）、做 C 档模块，也能卖。",
+                "Press K for the discovery log. Systems are logged when you enter space, planets when you land.\nDiscoverers can rename them, up to 24 characters.\n\nNew system: 5 to 20 survey data (black holes the most)\nNew planet: 3 or 4\n\nSurvey data goes into hand-in research (Interstellar Survey, Technology Modules, Warp Calibration) and grade C modules, and it sells.");
+        both("guide.universe.exploration.poi.title", "兴趣点", "Points of Interest");
+        both("guide.universe.exploration.poi",
+                "扫描能标出附近的兴趣点。\n\n掉落舱：右键修理，外骨骼扩容\n先驱者石碑：第一次碰给 3 个勘探数据\n科技储藏箱：挖开掉模块\n信号增强器：1 份导航数据找 2000 格内的兴趣点",
+                "Scans mark nearby points of interest.\n\nDrop pod: repair to expand your exosuit\nMonolith: 3 survey data the first time\nTech cache: break it for a module\nSignal booster: finds one within 2,000 blocks");
+        both("guide.universe.exploration.bases.title", "基地和传送", "Bases and Teleporters");
+        both("guide.universe.exploration.bases",
+                "基地信标放下就登记成你的基地，右键改名，不用研究。\n\n传送器能去你的基地和进去过的空间站。\n每次传送：12 kJ，10 秒充满\n使用距离：6 格内\n宠物：24 格内的一起过去\n研究：传送网络",
+                "Place a base beacon to register a base; right-click to rename. No research.\n\nTeleporters reach your bases and stations you've visited.\nCost: 12 kJ per jump, 10 s to recharge\nRange: stand within 6 blocks\nPets within 24 blocks come along\nResearch: Teleport Network");
+        both("guide.universe.trade.stations.title", "空间站", "Space Stations");
+        both("guide.universe.trade.stations",
+                "每个星系有一座空间站，在第一颗能降落的星球外 700 格。从机库口飞进去，停在起降台上。\n\n交易终端：买卖\n任务板：接任务\n飞船维修台：修船，每点船体 2 信用点\n空间站传送器：不用电\n\n站内有重力和空气。站外失重：跳跃上升，潜行下降。",
+                "Every system has one space station, 700 blocks outside the first landable planet. Fly in through the hangar and set down on the pad.\n\nTrade terminal: buy and sell\nMission board: take missions\nShip repair console: 2 credits per hull point\nStation teleporter: no power needed\n\nInside there is gravity and air. Outside you float: jump to rise, sneak to sink.");
+        both("guide.universe.trade.trading.title", "买卖", "Trading");
+        both("guide.universe.trade.trading",
+                "交易终端在空间站里。信用点死了不掉。\n\n卖：点击 1 个，Shift 一组，Ctrl 全部\n买：点击 1 个，Shift 一组\n\n同一样东西卖得越多价格越低，每 2 天回升一半。\n星系缺的那类东西：多给 30%\n本地产的东西：少给 25%\n\n每个站都卖翘曲器、燃料、推进器和武器；富裕的站有 Mk.II 部件。",
+                "Trade terminals are in space stations. Credits are kept on death.\n\nSell: click 1, Shift a stack, Ctrl all\nBuy: click 1, Shift a stack\n\nPrices drop as you sell the same thing and recover by half every 2 days.\nCategories the system lacks: +30%\nLocal products: -25%\n\nEvery station sells warpers, fuel, thrusters and weapons; wealthy ones stock Mk.II parts.");
+        both("guide.universe.trade.missions.title", "任务板", "Missions");
+        both("guide.universe.trade.missions",
+                "任务板每天有 3 个任务，同时只能接一个，回到接任务的站交。\n\n送货：报酬是货值的 1.6 倍\n赏金：每架海盗 220\n采矿：每颗小行星 70\n勘测：每个物种 150\n\n报酬按站的富裕程度浮动，有时附带导航数据或模块。",
+                "Mission boards post 3 missions a day. Hold one at a time and hand it in where you took it.\n\nDelivery: 1.6x the cargo value\nBounty: 220 per pirate\nMining: 70 per asteroid\nSurvey: 150 per species\n\nRewards scale with the station's wealth and sometimes include navigation data or a module.");
+        both("guide.universe.trade.pirates.title", "海盗", "Pirates");
+        both("guide.universe.trade.pirates",
+                "在太空里开船、离空间站 600 格以外时可能遇上海盗。每 6 到 10 分钟判定一次，货越值钱越容易遇上。警告后 5 秒，2 到 4 架战机出现在身后。\n\n左键：开火\nG：光子炮 / 采矿光束\n脱身：跃迁、降落、靠近空间站或跑出 400 格\n奖励：每架给赏金，残骸进货舱\n\n船被打爆会拖回空间站，每组货丢 30%。",
+                "Pirates can appear while you pilot in space more than 600 blocks from a station. A roll every 6 to 10 minutes, likelier with valuable cargo. 5 s after the warning, 2 to 4 fighters show up behind you.\n\nLeft-click: fire\nG: photon cannon / mining beam\nEscape: warp, land, reach a station or get 400 blocks away\nReward: a bounty per kill, scrap in your hold\n\nA destroyed ship is towed to the station and each cargo stack loses 30%.");
+        both("guide.universe.husbandry.taming.title", "驯养", "Taming");
+        both("guide.universe.husbandry.taming",
+                "用分析目镜看动物吃什么，拿对的食物右键喂。每秒能喂一口，每口有概率驯服。\n\n草食：小麦、胡萝卜、苹果、草食饲料\n肉食：生肉、肉食饲料\n概率：温顺 35%，易受惊 25%，有领地意识 15%，捕食者 8%",
+                "The visor shows what a creature eats. Feed it once a second; each bite may tame it.\n\nHerbivores: wheat, carrots, apples, feed\nCarnivores: raw meat, carnivore feed\nChance: docile 35%, skittish 25%, territorial 15%, predator 8%");
+        both("guide.universe.husbandry.produce.title", "产物和骑乘", "Produce and Riding");
+        both("guide.universe.husbandry.produce",
+                "驯服的动物会产东西、跟着你，体型大的能骑。\n\n产物：饿了喂一口，30 秒后产出，5 分钟后再饿\n跟随：10 格外跟上，超过 12 格直接传送过来\n空手潜行右键：跟随 / 待命\n骑乘：体型大的四足、六足、两足动物，空手右键上去，按住跳跃蓄力",
+                "Tamed creatures produce items, follow you, and the big ones can be ridden.\n\nProduce: feed when hungry, drops after 30 s, hungry again after 5 min\nFollow: from 10 blocks, teleports past 12\nSneak + empty hand: follow / stay\nRiding: large quadrupeds, hexapods and bipeds; right-click with an empty hand, hold jump to charge");
+        both("guide.universe.husbandry.exocraft.title", "探索车", "Exocraft");
+        both("guide.universe.husbandry.exocraft",
+                "探索车是能开的采矿车。对着地面使用物品放下，拿镐敲三下收回，燃料和货物留在物品里。\n\n右键上车，潜行下车\nW / S：油门，A / D：转向\n按住左键：采矿激光，射程 12 格\n车上拿多功能工具右键：扫描 64 格内的矿脉\n\n油箱 1000（和飞船燃料通用），货箱 27 格",
+                "A drivable mining vehicle. Use it on the ground to deploy; three pickaxe hits pack it up with its fuel and cargo.\n\nRight-click to get in, sneak to get out\nW / S: throttle, A / D: steer\nHold left-click: mining laser, 12 blocks\nVein scan: multitool right-click, 64 blocks\n\nTank: 1,000 (ship fuel), hold: 27 slots");
+        both("guide.universe.dyson.sails.title", "太阳帆", "Solar Sails");
+        both("guide.universe.dyson.sails",
+                "电磁轨道弹射器把太阳帆射进戴森云，在界面里选轨道。\n\n射速：每 3 秒一张\n条件：露天，恒星在地平线 5° 以上；太空里随时能射\n寿命：90 分钟\n每张帆：36 W × 恒星光度系数\n\n射线接收站把电送到地面。",
+                "The EM-Rail Ejector fires solar sails into the swarm; pick the orbit in its screen.\n\nRate: one sail every 3 s\nNeeds: star 5° above horizon, or in space\nLifetime: 90 min\nPer sail: 36 W x star luminosity factor");
+        both("guide.universe.dyson.editor.title", "戴森球编辑器", "Dyson Sphere Editor");
+        both("guide.universe.dyson.editor",
+                "Y 键打开戴森球编辑器，也能从弹射器、发射井和接收站的界面打开。\n\n戴森云：最多 20 条轨道\n戴森壳：最多 10 层，每层选网格（测地、蜂窝、经纬），先建节点和框架，再铺球壳\n纬度：开始只能在 ±30° 内建，应力系统 I、II 放宽到 ±60°、±90°\n材料：建好的节点每分钟从戴森云吸 10 张帆",
+                "Press Y for the Dyson sphere editor, or open it from an ejector, silo or receiver.\n\nSwarm: up to 20 orbits\nShell: up to 10 layers; pick a grid (geodesic, honeycomb, lat-long), build nodes and frames, then shells\nLatitude: within 30 degrees at first; Dyson Stress I and II raise it to 60 and 90\nMaterial: each built node pulls 10 sails a minute from the swarm");
+        both("guide.universe.dyson.rockets.title", "火箭", "Rockets");
+        both("guide.universe.dyson.rockets",
+                "节点和框架靠火箭送上去，垂直发射井负责发射。\n\n射速：每 12 秒一枚\n条件：露天\n耗电：18 kW\n火箭：飞 20 秒到达，加 1 个结构点\n每个结构点：96 W",
+                "Nodes and frames are built with rockets from a vertical launching silo.\n\nRate: one rocket every 12 s\nNeeds: open sky\nPower: 18 kW\nRocket: lands in 20 s, +1 structure point\nPer structure point: 96 W");
+        both("guide.universe.dyson.receiver.title", "射线接收站", "Ray Receiver");
+        both("guide.universe.dyson.receiver",
+                "射线接收站把戴森球的电送到地面。连续接收 20 分钟达到满效率，中断 2 分钟清零。\n\n发电模式：6 到 15 kW\n光子模式：改出临界光子，满功率每分钟 6 个\n引力透镜：功率翻倍，每 10 分钟耗一个",
+                "Ray receivers bring the sphere's power down. Full efficiency after 20 min of steady reception; 2 min off resets it.\n\nPower mode: 6 to 15 kW\nPhoton mode: critical photons, 6/min max\nGraviton lens: doubles power, one per 10 min");
+        both("guide.universe.endgame.antimatter.title", "反物质", "Antimatter");
+        both("guide.universe.endgame.antimatter",
+                "微型粒子对撞机用临界光子造反物质。\n\n耗电：12 kW\n研究：狄拉克逆变机制\n\n反物质用来做宇宙矩阵和反物质燃料棒。12 反物质、12 氢、1 个湮灭约束球、1 个钛合金做 2 根燃料棒。",
+                "The miniature particle collider turns critical photons into antimatter.\n\nPower: 12 kW\nResearch: Dirac Inversion Mechanism\n\nAntimatter goes into universe matrices and fuel rods. 12 antimatter, 12 hydrogen, a constraint sphere and a titanium alloy make 2 rods.");
+        both("guide.universe.endgame.power.title", "聚变和人造恒星", "Fusion and Artificial Stars");
+        both("guide.universe.endgame.power",
+                "微型聚变发电站\n15 kW，烧氘核燃料棒，一根满负荷 6 分钟\n\n人造恒星\n72 kW，烧反物质燃料棒，一根满负荷 15 分钟",
+                "Mini Fusion Power Plant\n15 kW from deuteron fuel rods, 6 min per rod at full load\n\nArtificial Star\n72 kW from antimatter fuel rods, 15 min per rod at full load");
+        both("guide.universe.endgame.white.title", "宇宙矩阵", "Universe Matrix");
+        both("guide.universe.endgame.white",
+                "宇宙矩阵（白）用来研究「任务完成」和四条没有上限的升级线。\n\n宇宙矩阵：复合矩阵 + 信息矩阵 + 引力矩阵 + 反物质\n复合矩阵：蓝 + 红 + 黄",
+                "Universe matrices (white) fund Mission Complete and the four uncapped upgrade lines.\n\nUniverse matrix: composite + information + gravity + antimatter\nComposite matrix: blue + red + yellow");
+        both("guide.universe.endgame.finale.title", "任务完成", "Mission Complete");
+        both("guide.universe.endgame.finale",
+                "「任务完成」是科技树的最后一项：1000 点，只用白矩阵。\n研究完会放结局，之后可以接着玩，升级科技还能继续研究。\n结局可以在「结局」一章重看。",
+                "Mission Complete is the last tech: 1,000 points of white matrices only.\nFinishing it plays the ending. The game carries on afterwards and upgrades stay open.\nReplay the ending from the Ending chapter.");
+        both("item.universe.guide", "手册", "Guide");
+        both("tooltip.universe.guide", "右键翻开", "Right-click to read");
+        both("gui.universe.guide.title", "手册", "Guide");
+        both("gui.universe.guide.page", "%s/%s", "%s/%s");
+        both("gui.universe.guide.replay", "重看结局", "Replay Ending");
+        both("gui.universe.guide.crafting", "工作台", "Crafting Table");
+        both("gui.universe.guide.machine", "%s · %s 秒", "%s · %s s");
+        both("gui.universe.guide.machine.smelting", "熔炉", "Smelter");
+        both("gui.universe.guide.machine.assembling", "制造台", "Assembler");
+        both("gui.universe.guide.machine.refining", "原油精炼厂", "Oil Refinery");
+        both("gui.universe.guide.machine.chemical", "化工厂", "Chemical Plant");
+        both("gui.universe.guide.machine.particle", "微型粒子对撞机", "Miniature Particle Collider");
+        both("gui.universe.guide.log.day", "第 %s 天", "Day %s");
+        both("guide.universe.log.empty", "还没有收到探测器的日志。", "No probe logs yet.");
+        both("guide.universe.ending.locked", "研究完「任务完成」以后，可以在这里重看结局。", "Finish Mission Complete to replay the ending here.");
+        both("guide.universe.ending.done", "点下面的按钮重看结局和这个世界的统计。", "Press the button below to replay the ending and this world's statistics.");
+        for (Guide.Chapter chapter : Guide.CHAPTERS) {
+            for (Guide.Page page : chapter.pages()) {
+                for (String item : page.items()) {
+                    if (!BuiltInRegistries.ITEM.containsKey(Identifier.parse(item))) {
+                        throw new IllegalStateException("手册 " + chapter.id() + "." + page.id() + " 里的物品不存在：" + item);
+                    }
+                }
+            }
+        }
+    }
+
+    /** "寰宇"进度树（ADR-0018），和 UniverseAdvancements.NAMES 一一对应。 */
+    private void advancements() {
+        Set<String> written = new HashSet<>();
+        this.advancementNames = written;
+        advancement("root", "寰宇", "工业、星海和戴森球", "Universe", "Industry, the stars and a Dyson sphere");
+        advancement("repair_multitool", "还能用", "修好损坏的多功能工具", "Good as New", "Repair the damaged multitool");
+        advancement("first_power", "通电", "放下风力涡轮机、太阳能板或火力发电厂", "Power On", "Place a wind turbine, solar panel or thermal power plant");
+        advancement("tesla", "拉电线", "放下电力感应塔", "Grid Expansion", "Place a tesla tower");
+        advancement("mining", "自动开采", "放下采矿机", "Automated Mining", "Place a mining machine");
+        advancement("smelting", "高温", "放下电弧熔炉", "Hot Stuff", "Place an arc smelter");
+        advancement("assembling", "流水线", "放下制造台", "Assembly Line", "Place an assembler");
+        advancement("sorting", "抓取", "放下分拣器", "Pick and Place", "Place a sorter");
+        advancement("blue_matrix", "蓝", "做出电磁矩阵", "Blue", "Make an electromagnetic matrix");
+        advancement("red_matrix", "红", "做出能量矩阵", "Red", "Make an energy matrix");
+        advancement("yellow_matrix", "黄", "做出结构矩阵", "Yellow", "Make a structure matrix");
+        advancement("purple_matrix", "紫", "做出信息矩阵", "Purple", "Make an information matrix");
+        advancement("green_matrix", "绿", "做出引力矩阵", "Green", "Make a gravity matrix");
+        advancement("logistics", "无人机送货", "放下行星物流站", "Drone Delivery", "Place a planetary logistics station");
+        advancement("interstellar", "跨星送货", "放下星际物流站", "Interstellar Shipping", "Place an interstellar logistics station");
+        advancement("blueprint", "照图施工", "保存一张蓝图", "Copy That", "Save a blueprint");
+        advancement("species", "新物种", "用分析目镜发现一个新物种", "New Species", "Discover a new species with the analysis visor");
+        advancement("survey", "全部登记", "发现一颗星球上的全部动植物", "Catalogued", "Discover every creature and plant on a planet");
+        advancement("monolith", "有人来过", "碰一下先驱者的石碑", "Someone Was Here", "Touch a Precursor monolith");
+        advancement("tame", "新朋友", "驯服一只外星生物", "New Friend", "Tame an alien creature");
+        advancement("exocraft", "上车", "放下一辆探索车", "Hop In", "Deploy an exocraft");
+        advancement("teleport", "一步到位", "用传送器传送一次", "Blink", "Use a teleporter");
+        advancement("ship", "造船", "在舵前组装一艘飞船", "Shipwright", "Assemble a ship at its helm");
+        advancement("space", "离开大气层", "飞进太空", "Liftoff", "Fly into space");
+        advancement("warp", "跃迁", "跃迁到另一个星系", "Jump", "Warp to another star system");
+        advancement("trade", "第一笔生意", "在空间站买或卖一次东西", "First Deal", "Buy or sell something at a space station");
+        advancement("mission", "接活", "完成任务板上的一项任务", "Odd Jobs", "Complete a mission from a mission board");
+        advancement("pirates", "不速之客", "打退一次海盗袭击", "Uninvited Guests", "Fight off a pirate raid");
+        advancement("ejector", "发射", "放下电磁轨道弹射器", "Launch", "Place an EM-Rail Ejector");
+        advancement("silo", "垂直发射", "放下垂直发射井", "Vertical Launch", "Place a vertical launching silo");
+        advancement("first_shell", "第一片球壳", "戴森球铺满一片球壳", "First Shell", "Complete a shell of a Dyson sphere");
+        advancement("ray", "接收", "放下射线接收站", "Receiving", "Place a ray receiver");
+        advancement("antimatter", "反物质", "做出反物质", "Antimatter", "Make antimatter");
+        advancement("universe_matrix", "白", "做出宇宙矩阵", "White", "Make a universe matrix");
+        advancement("artificial_star", "造一颗星", "放下人造恒星", "Star Maker", "Place an artificial star");
+        advancement("mission_complete", "任务完成", "研究完最后一项科技", "Mission Complete", "Finish the final research");
+        if (!written.equals(Set.of(UniverseAdvancements.NAMES))) {
+            throw new IllegalStateException("进度的语言条目和 UniverseAdvancements.NAMES 对不上");
+        }
+    }
+
+    private @Nullable Set<String> advancementNames;
+
+    private void advancement(String name, String zhTitle, String zhDescription, String enTitle, String enDescription) {
+        both("advancements.universe." + name + ".title", zhTitle, enTitle);
+        both("advancements.universe." + name + ".description", zhDescription, enDescription);
+        if (this.advancementNames != null) {
+            this.advancementNames.add(name);
+        }
     }
 
     /** 蓝图（ADR-0018）。 */

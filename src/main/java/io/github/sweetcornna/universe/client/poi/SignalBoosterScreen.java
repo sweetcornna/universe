@@ -2,6 +2,7 @@ package io.github.sweetcornna.universe.client.poi;
 
 import java.util.List;
 
+import io.github.sweetcornna.universe.client.TextWrap;
 import io.github.sweetcornna.universe.core.poi.PoiType;
 import io.github.sweetcornna.universe.network.LocatePoiPayload;
 import io.github.sweetcornna.universe.poi.Pois;
@@ -64,7 +65,7 @@ public class SignalBoosterScreen extends Screen {
     @Override
     protected void init() {
         List<PoiType> types = Pois.locatable();
-        int hintHeight = this.font.split(this.hint(), WIDTH - 24).size() * this.font.lineHeight;
+        int hintHeight = TextWrap.split(this.font, this.hint(), WIDTH - 24).size() * this.font.lineHeight;
         this.dataY = 24 + hintHeight + 6;
         this.buttonsY = this.dataY + 16;
         this.panelHeight = this.buttonsY + types.size() * 24 + 30;
@@ -100,14 +101,14 @@ public class SignalBoosterScreen extends Screen {
         graphics.fill(this.left - 1, this.top - 1, this.left + WIDTH + 1, this.top + height + 1, 0xFF8C3A55);
         graphics.fill(this.left, this.top, this.left + WIDTH, this.top + height, 0xF00A0709);
         graphics.text(this.font, this.title, this.left + 12, this.top + 10, ACCENT, false);
-        graphics.textWithWordWrap(this.font, this.hint(), this.left + 12, this.top + 24, WIDTH - 24, 0xFFD8C8CE, false);
+        TextWrap.draw(graphics, this.font, this.hint(), this.left + 12, this.top + 24, WIDTH - 24, 0xFFD8C8CE, false);
         int count = this.navigationData();
         Component data = this.creative() ? Component.translatable("gui.universe.signal_booster.data_creative")
                 : Component.translatable("gui.universe.signal_booster.data", count);
         graphics.text(this.font, data, this.left + 12, this.top + this.dataY, count > 0 || this.creative() ? 0xFFFFE08A : 0xFFFF6A5A, false);
         int bottom = this.top + this.buttonsY + Pois.locatable().size() * 24 + 6;
         if (count == 0 && !this.creative()) {
-            graphics.textWithWordWrap(this.font, Component.translatable("gui.universe.signal_booster.no_data"), this.left + 12, bottom,
+            TextWrap.draw(graphics, this.font, Component.translatable("gui.universe.signal_booster.no_data"), this.left + 12, bottom,
                     WIDTH - 24, 0xFF9A8A90, false);
         } else if (this.minecraft.player != null) {
             Waypoint waypoint = this.minecraft.player.getData(UniverseAttachments.WAYPOINT);

@@ -34,6 +34,7 @@ import io.github.sweetcornna.universe.registry.UniverseItems;
 import io.github.sweetcornna.universe.registry.UniverseMenus;
 import io.github.sweetcornna.universe.registry.UniverseRecipeTypes;
 import io.github.sweetcornna.universe.registry.UniverseStats;
+import io.github.sweetcornna.universe.registry.UniverseTriggers;
 import io.github.sweetcornna.universe.registry.UniverseWorldgen;
 import io.github.sweetcornna.universe.sentinel.Sentinels;
 import io.github.sweetcornna.universe.station.ShipRepair;
@@ -71,6 +72,7 @@ public final class Universe {
         UniverseItems.register(modBus);
         UniverseEntities.register(modBus);
         UniverseStats.register(modBus);
+        UniverseTriggers.register(modBus);
         UniverseMenus.register(modBus);
         UniverseDataComponents.register(modBus);
         UniverseRecipeTypes.register(modBus);

@@ -1,0 +1,31 @@
+{
+  "parent": "universe:antimatter",
+  "criteria": {
+    "placed": {
+      "conditions": {
+        "location": {
+          "type": "minecraft:match_block",
+          "blocks": "universe:artificial_star"
+        }
+      },
+      "trigger": "minecraft:placed_block"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.universe.artificial_star.description"
+    },
+    "icon": {
+      "id": "universe:artificial_star"
+    },
+    "title": {
+      "translate": "advancements.universe.artificial_star.title"
+    }
+  },
+  "requirements": [
+    [
+      "placed"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

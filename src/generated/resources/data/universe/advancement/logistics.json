@@ -1,0 +1,31 @@
+{
+  "parent": "universe:sorting",
+  "criteria": {
+    "placed": {
+      "conditions": {
+        "location": {
+          "type": "minecraft:match_block",
+          "blocks": "universe:planetary_logistics_station"
+        }
+      },
+      "trigger": "minecraft:placed_block"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.universe.logistics.description"
+    },
+    "icon": {
+      "id": "universe:planetary_logistics_station"
+    },
+    "title": {
+      "translate": "advancements.universe.logistics.title"
+    }
+  },
+  "requirements": [
+    [
+      "placed"
+    ]
+  ],
+  "sends_telemetry_event": true
+}
