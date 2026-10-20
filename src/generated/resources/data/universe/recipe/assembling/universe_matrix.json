@@ -1,0 +1,28 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:composite_matrix"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:information_matrix"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:gravity_matrix"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:antimatter"
+    }
+  ],
+  "research": "universe_matrix",
+  "results": [
+    {
+      "id": "universe:universe_matrix"
+    }
+  ],
+  "time": 300
+}

@@ -1,0 +1,9 @@
+{
+  "parent": "minecraft:block/orientable_with_bottom",
+  "textures": {
+    "bottom": "universe:block/machine_casing_top",
+    "front": "universe:block/mini_fusion_power_plant_front",
+    "side": "universe:block/mini_fusion_power_plant_side",
+    "top": "universe:block/mini_fusion_power_plant_top"
+  }
+}

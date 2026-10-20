@@ -256,6 +256,8 @@ public final class UniverseItems {
     public static final DeferredItem<BlockItem> RAY_RECEIVER = ITEMS.registerSimpleBlockItem(UniverseBlocks.RAY_RECEIVER);
     public static final DeferredItem<BlockItem> MINIATURE_PARTICLE_COLLIDER = ITEMS.registerSimpleBlockItem(
             UniverseBlocks.MINIATURE_PARTICLE_COLLIDER);
+    public static final DeferredItem<BlockItem> MINI_FUSION_POWER_PLANT = ITEMS.registerSimpleBlockItem(UniverseBlocks.MINI_FUSION_POWER_PLANT);
+    public static final DeferredItem<BlockItem> ARTIFICIAL_STAR = ITEMS.registerSimpleBlockItem(UniverseBlocks.ARTIFICIAL_STAR);
     public static final DeferredItem<StationItem> ORBITAL_COLLECTOR = ITEMS.registerItem("orbital_collector",
             properties -> new StationItem(UniverseBlocks.ORBITAL_COLLECTOR.get(), properties), () -> new Item.Properties().useBlockDescriptionPrefix());
 
@@ -316,6 +318,12 @@ public final class UniverseItems {
     public static final DeferredItem<Item> GRAVITON_LENS = ITEMS.registerSimpleItem("graviton_lens");
     public static final DeferredItem<Item> CRITICAL_PHOTON = ITEMS.registerSimpleItem("critical_photon");
     public static final DeferredItem<Item> GRAVITY_MATRIX = ITEMS.registerSimpleItem("gravity_matrix");
+    /** 终局的物品（ADR-0018），配方照戴森球计划；宇宙矩阵分两步做，先做复合矩阵。 */
+    public static final DeferredItem<Item> ANTIMATTER = ITEMS.registerSimpleItem("antimatter");
+    public static final DeferredItem<Item> ANNIHILATION_CONSTRAINT_SPHERE = ITEMS.registerSimpleItem("annihilation_constraint_sphere");
+    public static final DeferredItem<Item> ANTIMATTER_FUEL_ROD = ITEMS.registerSimpleItem("antimatter_fuel_rod", properties -> properties.stacksTo(32));
+    public static final DeferredItem<Item> COMPOSITE_MATRIX = ITEMS.registerSimpleItem("composite_matrix");
+    public static final DeferredItem<Item> UNIVERSE_MATRIX = ITEMS.registerSimpleItem("universe_matrix");
 
     /** 能进火力发电厂和熔炉的燃料，燃烧时间按原版的刻数。 */
     private static Item.Properties fuel(Item.Properties properties, int burnTime) {
@@ -362,13 +370,14 @@ public final class UniverseItems {
                 SORTER, SORTER_MK2, SORTER_MK3, SPLITTER, STORAGE_DEPOT, STORAGE_TANK, CRUDE_OIL_SEEP,
                 ASSEMBLER_MK2, ASSEMBLER_MK3, PLANE_SMELTER, CHEMICAL_PLANT, FRACTIONATOR, ADVANCED_MINING_MACHINE, FACTORY_ANCHOR,
                 PLANETARY_LOGISTICS_STATION, INTERSTELLAR_LOGISTICS_STATION, ORBITAL_COLLECTOR,
-                EM_RAIL_EJECTOR, VERTICAL_LAUNCHING_SILO, RAY_RECEIVER, MINIATURE_PARTICLE_COLLIDER,
+                EM_RAIL_EJECTOR, VERTICAL_LAUNCHING_SILO, RAY_RECEIVER, MINIATURE_PARTICLE_COLLIDER, MINI_FUSION_POWER_PLANT, ARTIFICIAL_STAR,
                 GEAR, MAGNETIC_COIL, CIRCUIT_BOARD, ELECTRIC_MOTOR, STEEL, PRISM, PLASMA_EXCITER, ENERGETIC_GRAPHITE,
                 WATER, CRUDE_OIL, REFINED_OIL, HYDROGEN, DEUTERIUM, ELECTROMAGNETIC_MATRIX, ENERGY_MATRIX,
                 CRYSTAL_SILICON, TITANIUM_ALLOY, SYNTHETIC_DIAMOND, PLASTIC, SULFURIC_ACID, GRAPHENE, CARBON_NANOTUBE, TITANIUM_CRYSTAL, MICROCRYSTALLINE_COMPONENT, PROCESSOR,
                 PARTICLE_BROADBAND, THRUSTER, REINFORCED_THRUSTER, ELECTROMAGNETIC_TURBINE, SUPER_MAGNETIC_RING, PARTICLE_CONTAINER, LOGISTICS_DRONE, LOGISTICS_VESSEL, STRUCTURE_MATRIX, INFORMATION_MATRIX,
                 PHOTON_COMBINER, SOLAR_SAIL, FRAME_MATERIAL, DYSON_SPHERE_COMPONENT, SMALL_CARRIER_ROCKET, DEUTERON_FUEL_ROD, TITANIUM_GLASS,
-                CASIMIR_CRYSTAL, PLANE_FILTER, QUANTUM_CHIP, GRAVITON_LENS, CRITICAL_PHOTON, GRAVITY_MATRIX));
+                CASIMIR_CRYSTAL, PLANE_FILTER, QUANTUM_CHIP, GRAVITON_LENS, CRITICAL_PHOTON, GRAVITY_MATRIX,
+                ANTIMATTER, ANNIHILATION_CONSTRAINT_SPHERE, ANTIMATTER_FUEL_ROD, COMPOSITE_MATRIX, UNIVERSE_MATRIX));
         return List.copyOf(order);
     }
 

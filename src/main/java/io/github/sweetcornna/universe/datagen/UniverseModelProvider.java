@@ -227,6 +227,13 @@ final class UniverseModelProvider extends ModelProvider {
         tall(blockModels, itemModels, UniverseBlocks.VERTICAL_LAUNCHING_SILO.get(), "vertical_launching_silo", false, true);
         recipeMachine(blockModels, UniverseBlocks.MINIATURE_PARTICLE_COLLIDER.get(), "miniature_particle_collider", false,
                 "machine_casing_top");
+        // 终局（ADR-0018）：人造恒星的模型由 tools/endgame_models.py 生成，上半截的恒星由方块实体渲染器画
+        recipeMachine(blockModels, UniverseBlocks.MINI_FUSION_POWER_PLANT.get(), "mini_fusion_power_plant", false, "machine_casing_top");
+        tall(blockModels, itemModels, UniverseBlocks.ARTIFICIAL_STAR.get(), "artificial_star", true, false);
+        for (DeferredItem<?> item : List.of(UniverseItems.ANTIMATTER, UniverseItems.ANNIHILATION_CONSTRAINT_SPHERE,
+                UniverseItems.ANTIMATTER_FUEL_ROD, UniverseItems.COMPOSITE_MATRIX, UniverseItems.UNIVERSE_MATRIX)) {
+            itemModels.generateFlatItem(item.get(), ModelTemplates.FLAT_ITEM);
+        }
     }
 
     /** 载具：界面里用平面图标，其余场合用 {@code models/block/} 下手写的立体模型。 */

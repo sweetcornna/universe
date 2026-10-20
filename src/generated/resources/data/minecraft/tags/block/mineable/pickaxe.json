@@ -69,6 +69,8 @@
     "universe:vertical_launching_silo",
     "universe:ray_receiver",
     "universe:miniature_particle_collider",
+    "universe:mini_fusion_power_plant",
+    "universe:artificial_star",
     "universe:teleporter",
     "universe:base_beacon",
     "universe:data_terminal",

@@ -5,6 +5,7 @@ import java.util.Locale;
 import io.github.sweetcornna.universe.core.power.Solar;
 import io.github.sweetcornna.universe.factory.MachineMenu;
 import io.github.sweetcornna.universe.factory.power.AccumulatorBlockEntity;
+import io.github.sweetcornna.universe.factory.power.FuelGeneratorBlockEntity;
 import io.github.sweetcornna.universe.factory.power.SolarPanelBlockEntity;
 import io.github.sweetcornna.universe.factory.power.TeslaTowerBlockEntity;
 import io.github.sweetcornna.universe.factory.power.WindTurbineBlockEntity;
@@ -14,7 +15,7 @@ import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 
-/** 电网设备的界面：感应塔、风力涡轮机、太阳能板、火力发电厂、蓄电器。 */
+/** 电网设备的界面：感应塔、风力涡轮机、太阳能板、火力发电厂、烧燃料棒的发电设备、蓄电器。 */
 public final class PowerScreens {
     private PowerScreens() {
     }
@@ -113,6 +114,22 @@ public final class PowerScreens {
             float fuel = this.menu.data(ThermalPlantBlockEntity.FUEL) / 1000F;
             graphics.text(this.font, Component.translatable("gui.universe.thermal_plant.fuel"), 32, 37, TEXT, false);
             bar(graphics, 32, 49, 136, 5, fuel, fuel > 0.2F ? 0xFFF0943A : BAD);
+            graphics.text(this.font, Component.translatable("gui.universe.thermal_plant.hint"), 8, 60, DIM, false);
+        }
+    }
+
+    /** 微型聚变发电站、人造恒星：燃料棒格和剩下的能量。 */
+    public static final class FuelGenerator extends MachineScreen {
+        public FuelGenerator(MachineMenu menu, Inventory inventory, Component title) {
+            super(menu, inventory, title);
+        }
+
+        @Override
+        protected void extractInfo(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+            this.powerLine(graphics, 8, 22);
+            float fuel = this.menu.data(FuelGeneratorBlockEntity.FUEL) / 1000F;
+            graphics.text(this.font, Component.translatable("gui.universe.fuel_generator.fuel"), 32, 37, TEXT, false);
+            bar(graphics, 32, 49, 136, 5, fuel, fuel > 0.2F ? ACCENT : BAD);
             graphics.text(this.font, Component.translatable("gui.universe.thermal_plant.hint"), 8, 60, DIM, false);
         }
     }

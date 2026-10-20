@@ -1,0 +1,19 @@
+{
+  "type": "universe:research_shaped",
+  "category": "redstone",
+  "key": {
+    "A": "universe:titanium_alloy",
+    "N": "universe:carbon_nanotube",
+    "P": "universe:processor",
+    "R": "universe:super_magnetic_ring"
+  },
+  "pattern": [
+    "ARA",
+    "NPN",
+    "ARA"
+  ],
+  "research": "mini_fusion_power",
+  "result": {
+    "id": "universe:mini_fusion_power_plant"
+  }
+}

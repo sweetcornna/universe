@@ -1,0 +1,19 @@
+{
+  "type": "universe:research_shaped",
+  "category": "redstone",
+  "key": {
+    "A": "universe:titanium_alloy",
+    "F": "universe:frame_material",
+    "Q": "universe:quantum_chip",
+    "S": "universe:annihilation_constraint_sphere"
+  },
+  "pattern": [
+    "FSF",
+    "AQA",
+    "FSF"
+  ],
+  "research": "artificial_star",
+  "result": {
+    "id": "universe:artificial_star"
+  }
+}

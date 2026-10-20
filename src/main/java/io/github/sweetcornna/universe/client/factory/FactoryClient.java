@@ -26,11 +26,13 @@ public final class FactoryClient {
             event.registerBlockEntityRenderer(UniverseBlockEntities.SORTER.get(), SorterRenderer::new);
             event.registerBlockEntityRenderer(UniverseBlockEntities.MATRIX_LAB.get(), MatrixLabRenderer::new);
             event.registerBlockEntityRenderer(UniverseBlockEntities.STORAGE_TANK.get(), StorageTankRenderer::new);
+            event.registerBlockEntityRenderer(UniverseBlockEntities.ARTIFICIAL_STAR.get(), ArtificialStarRenderer::new);
         });
         modBus.addListener(ModelEvent.RegisterStandalone.class, WindTurbineRenderer::registerModels);
         modBus.addListener(ModelEvent.RegisterStandalone.class, SolarPanelRenderer::registerModels);
         modBus.addListener(ModelEvent.RegisterStandalone.class, SorterRenderer::registerModels);
         modBus.addListener(ModelEvent.RegisterStandalone.class, MatrixLabRenderer::registerModels);
+        modBus.addListener(ModelEvent.RegisterStandalone.class, ArtificialStarRenderer::registerModels);
         ClientResearch.registerEvents(modBus, gameBus);
         LogisticsClient.registerEvents(modBus, gameBus);
         BeltClient.registerEvents(modBus);
@@ -42,6 +44,8 @@ public final class FactoryClient {
         event.register(UniverseMenus.SOLAR_PANEL.menuType(), PowerScreens.SolarPanel::new);
         event.register(UniverseMenus.THERMAL_PLANT.menuType(), PowerScreens.ThermalPlant::new);
         event.register(UniverseMenus.ACCUMULATOR.menuType(), PowerScreens.Accumulator::new);
+        event.register(UniverseMenus.MINI_FUSION_POWER_PLANT.menuType(), PowerScreens.FuelGenerator::new);
+        event.register(UniverseMenus.ARTIFICIAL_STAR.menuType(), PowerScreens.FuelGenerator::new);
         recipeMachine(event, RecipeMachines.ARC_SMELTER);
         recipeMachine(event, RecipeMachines.ASSEMBLER);
         recipeMachine(event, RecipeMachines.OIL_REFINERY);

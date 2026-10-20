@@ -97,6 +97,31 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         this.trade();
         this.teleport();
         this.missions();
+        this.endgame();
+    }
+
+    /** 终局（ADR-0018）：反物质、宇宙矩阵、两种发电设备和它们的科技。 */
+    private void endgame() {
+        item(UniverseItems.ANTIMATTER.get(), "反物质", "Antimatter");
+        item(UniverseItems.ANNIHILATION_CONSTRAINT_SPHERE.get(), "湮灭约束球", "Annihilation Constraint Sphere");
+        item(UniverseItems.ANTIMATTER_FUEL_ROD.get(), "反物质燃料棒", "Antimatter Fuel Rod");
+        item(UniverseItems.COMPOSITE_MATRIX.get(), "复合矩阵", "Composite Matrix");
+        item(UniverseItems.UNIVERSE_MATRIX.get(), "宇宙矩阵", "Universe Matrix");
+        block(UniverseBlocks.MINI_FUSION_POWER_PLANT.get(), "微型聚变发电站", "Mini Fusion Power Plant");
+        block(UniverseBlocks.ARTIFICIAL_STAR.get(), "人造恒星", "Artificial Star");
+        both("tooltip.universe.mini_fusion_power_plant.summary", "最大 15 kW，烧氘核燃料棒\n一根满负荷烧 6 分钟，只按电网需要烧",
+                "Up to 15 kW, burns deuteron fuel rods\nOne rod lasts 6 minutes at full load; burns only what the grid needs");
+        both("tooltip.universe.artificial_star.summary", "最大 72 kW，烧反物质燃料棒\n一根满负荷烧 15 分钟，只按电网需要烧",
+                "Up to 72 kW, burns antimatter fuel rods\nOne rod lasts 15 minutes at full load; burns only what the grid needs");
+        both("tooltip.universe.composite_matrix.summary", "做宇宙矩阵的半成品\n蓝、红、黄矩阵各一个", "Intermediate for universe matrices\nOne each of blue, red and yellow matrix");
+        both("gui.universe.fuel_generator.fuel", "燃料棒", "Fuel rod");
+        tech("mini_fusion_power", "微型聚变发电", "Mini Fusion Power Generation");
+        tech("dirac_inversion", "狄拉克逆变机制", "Dirac Inversion Mechanism");
+        tech("controlled_annihilation", "可控湮灭反应", "Controlled Annihilation Reaction");
+        tech("artificial_star", "人造恒星", "Artificial Star");
+        tech("universe_matrix", "宇宙矩阵", "Universe Matrix");
+        tech("mission_complete", "任务完成", "Mission Complete");
+        both("tech.universe.mission_complete.effect", "通关。研究完以后可以接着玩", "Finishes the game. You can keep playing afterwards");
     }
 
     /** 空间站任务板（ADR-0017）。 */

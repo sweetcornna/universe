@@ -1,0 +1,28 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 12,
+      "ingredient": "universe:titanium_alloy"
+    },
+    {
+      "count": 10,
+      "ingredient": "universe:super_magnetic_ring"
+    },
+    {
+      "count": 8,
+      "ingredient": "universe:carbon_nanotube"
+    },
+    {
+      "count": 4,
+      "ingredient": "universe:processor"
+    }
+  ],
+  "research": "mini_fusion_power",
+  "results": [
+    {
+      "id": "universe:mini_fusion_power_plant"
+    }
+  ],
+  "time": 200
+}

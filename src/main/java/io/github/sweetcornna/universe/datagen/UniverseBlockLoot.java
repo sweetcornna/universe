@@ -77,7 +77,8 @@ final class UniverseBlockLoot extends BlockLootSubProvider {
         UniverseBlocks.HULL_PLATING.values().forEach(block -> this.dropSelf(block.get()));
         // 工业设备：两格高的只认下半截；蓄电器拆下来带着电量
         for (Block block : List.of(UniverseBlocks.TESLA_TOWER.get(), UniverseBlocks.WIND_TURBINE.get(), UniverseBlocks.THERMAL_PLANT.get(),
-                UniverseBlocks.OIL_EXTRACTOR.get(), UniverseBlocks.OIL_REFINERY.get(), UniverseBlocks.VERTICAL_LAUNCHING_SILO.get())) {
+                UniverseBlocks.OIL_EXTRACTOR.get(), UniverseBlocks.OIL_REFINERY.get(), UniverseBlocks.VERTICAL_LAUNCHING_SILO.get(),
+                UniverseBlocks.ARTIFICIAL_STAR.get())) {
             this.add(block, this.createSinglePropConditionTable(block, TallMachineBlock.HALF, DoubleBlockHalf.LOWER));
         }
         this.add(UniverseBlocks.ACCUMULATOR.get(), block -> LootTable.lootTable().withPool(this.applyExplosionCondition(block,
@@ -110,6 +111,7 @@ final class UniverseBlockLoot extends BlockLootSubProvider {
         this.dropSelf(UniverseBlocks.EM_RAIL_EJECTOR.get());
         this.dropSelf(UniverseBlocks.RAY_RECEIVER.get());
         this.dropSelf(UniverseBlocks.MINIATURE_PARTICLE_COLLIDER.get());
+        this.dropSelf(UniverseBlocks.MINI_FUSION_POWER_PLANT.get());
         this.add(UniverseBlocks.STORAGE_TANK.get(), block -> LootTable.lootTable().withPool(this.applyExplosionCondition(block,
                 LootPool.lootPool().setRolls(ContextIntProviders.exactly(1)).add(LootItem.lootTableItem(block)
                         .apply(CopyComponentsFunction.copyComponentsFromBlockEntity(LootContextParams.BLOCK_ENTITY)

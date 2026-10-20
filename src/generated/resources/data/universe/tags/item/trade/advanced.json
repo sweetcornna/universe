@@ -12,6 +12,7 @@
     "universe:solar_sail",
     "universe:small_carrier_rocket",
     "universe:logistics_vessel",
-    "universe:strange_matter"
+    "universe:strange_matter",
+    "universe:annihilation_constraint_sphere"
   ]
 }

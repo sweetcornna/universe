@@ -1,0 +1,28 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 20,
+      "ingredient": "universe:titanium_alloy"
+    },
+    {
+      "count": 20,
+      "ingredient": "universe:frame_material"
+    },
+    {
+      "count": 10,
+      "ingredient": "universe:annihilation_constraint_sphere"
+    },
+    {
+      "count": 10,
+      "ingredient": "universe:quantum_chip"
+    }
+  ],
+  "research": "artificial_star",
+  "results": [
+    {
+      "id": "universe:artificial_star"
+    }
+  ],
+  "time": 600
+}

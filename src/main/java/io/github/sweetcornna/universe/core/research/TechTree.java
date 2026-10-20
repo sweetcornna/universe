@@ -20,15 +20,17 @@ public final class TechTree {
     private static final String YELLOW = NS + "structure_matrix";
     private static final String PURPLE = NS + "information_matrix";
     private static final String GREEN = NS + "gravity_matrix";
+    private static final String WHITE = NS + "universe_matrix";
     /** 研究站认的矩阵，顺序就是研究站格子的顺序。以后加新的矩阵只能往后加，免得存档里的格子对不上。 */
-    public static final List<String> MATRICES = List.of(BLUE, RED, YELLOW, PURPLE, GREEN);
+    public static final List<String> MATRICES = List.of(BLUE, RED, YELLOW, PURPLE, GREEN, WHITE);
 
     /**
      * M3 的科技：电磁学阶段上交物品，之后用蓝矩阵、再用蓝红两种矩阵研究；M4 加了上交勘探数据的科技（ADR-0012）；
      * M5 加了物流和中期工业（ADR-0015）：蓝红阶段做到结构矩阵，蓝红黄做到信息矩阵，四种矩阵研究星际物流。
      * M6 加了戴森球（ADR-0016）：蓝红黄研究太阳帆和弹射器，四种矩阵研究射线接收站、量子芯片、对撞机和引力矩阵，
      * 有了绿矩阵才能研究垂直发射井和应力系统。M7 加了飞船武器和护盾（ADR-0017）：蓝红黄研究光子炮和采矿光束，
-     * 四种矩阵研究护盾发生器。
+     * 四种矩阵研究护盾发生器。M8 加了终局（ADR-0018）：四种矩阵研究微型聚变，五种矩阵研究反物质、人造恒星和宇宙矩阵，
+     * 最后的"任务完成"只要白矩阵。
      */
     public static final TechTree DEFAULT = new TechTree(List.of(
             Tech.handIn("electromagnetism", List.of(),
@@ -129,7 +131,20 @@ public final class TechTree {
             // ---- M7：探索车（ADR-0017）
             Tech.lab("exocraft", List.of("energy_storage", "processor"), List.of(BLUE, RED), 40, items("exocraft")),
             // ---- M7：传送网络（ADR-0017）。基地信标不用研究
-            Tech.lab("teleport_network", List.of("warp_drive"), List.of(BLUE, RED), 80, items("teleporter"))));
+            Tech.lab("teleport_network", List.of("warp_drive"), List.of(BLUE, RED), 80, items("teleporter")),
+            // ---- M8：终局（ADR-0018）
+            Tech.lab("mini_fusion_power", List.of("deuterium_fractionation", "information_matrix"), List.of(BLUE, RED, YELLOW, PURPLE), 150,
+                    items("mini_fusion_power_plant")),
+            Tech.lab("dirac_inversion", List.of("ray_receiver", "miniature_collider"), List.of(BLUE, RED, YELLOW, PURPLE, GREEN), 300,
+                    items("antimatter")),
+            Tech.lab("controlled_annihilation", List.of("dirac_inversion"), List.of(BLUE, RED, YELLOW, PURPLE, GREEN), 400,
+                    items("annihilation_constraint_sphere", "antimatter_fuel_rod")),
+            Tech.lab("artificial_star", List.of("controlled_annihilation", "mini_fusion_power"), List.of(BLUE, RED, YELLOW, PURPLE, GREEN), 600,
+                    items("artificial_star")),
+            Tech.lab("universe_matrix", List.of("dirac_inversion", "gravity_matrix"), List.of(BLUE, RED, YELLOW, PURPLE, GREEN), 600,
+                    items("composite_matrix", "universe_matrix")),
+            // 研究完就是通关
+            Tech.lab("mission_complete", List.of("universe_matrix"), List.of(WHITE), 1000, items())));
 
     private final List<Tech> techs;
     private final Map<String, Tech> byId;

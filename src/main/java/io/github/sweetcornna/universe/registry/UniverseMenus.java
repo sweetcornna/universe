@@ -11,6 +11,7 @@ import io.github.sweetcornna.universe.factory.MachineMenu.SlotSpec;
 import io.github.sweetcornna.universe.factory.MachineMenu;
 import io.github.sweetcornna.universe.factory.RecipeMachineBlockEntity;
 import io.github.sweetcornna.universe.factory.power.AccumulatorBlockEntity;
+import io.github.sweetcornna.universe.factory.power.FuelGeneratorBlockEntity;
 import io.github.sweetcornna.universe.factory.power.SolarPanelBlockEntity;
 import io.github.sweetcornna.universe.factory.power.TeslaTowerBlockEntity;
 import io.github.sweetcornna.universe.factory.power.ThermalPlantBlockEntity;
@@ -43,9 +44,14 @@ public final class UniverseMenus {
     public static final MachineMenu.Type THERMAL_PLANT = machine("thermal_plant", new MachineMenu.Type(ThermalPlantBlockEntity.DATA_COUNT, 166,
             new SlotSpec(9, 38, Role.FUEL)));
     public static final MachineMenu.Type ACCUMULATOR = machine("accumulator", new MachineMenu.Type(AccumulatorBlockEntity.DATA_COUNT, 64));
+    // 烧燃料棒的发电设备（ADR-0018）：和火力发电厂一样一个燃料格
+    public static final MachineMenu.Type MINI_FUSION_POWER_PLANT = machine("mini_fusion_power_plant",
+            new MachineMenu.Type(FuelGeneratorBlockEntity.DATA_COUNT, 166, new SlotSpec(9, 38, Role.FUEL)));
+    public static final MachineMenu.Type ARTIFICIAL_STAR = machine("artificial_star",
+            new MachineMenu.Type(FuelGeneratorBlockEntity.DATA_COUNT, 166, new SlotSpec(9, 38, Role.FUEL)));
     // 配方设备：左边是配方清单，右边原料、进度、产物
     public static final MachineMenu.Type ARC_SMELTER = machine("arc_smelter", new MachineMenu.Type(RecipeMachineBlockEntity.DATA_COUNT,
-            RECIPE_WIDTH, RECIPE_HEIGHT, input(118, 45), input(136, 45), output(190, 45)));
+            RECIPE_WIDTH, RECIPE_HEIGHT, input(118, 36), input(136, 36), input(118, 54), output(190, 45)));
     public static final MachineMenu.Type ASSEMBLER = machine("assembler", new MachineMenu.Type(RecipeMachineBlockEntity.DATA_COUNT,
             RECIPE_WIDTH, RECIPE_HEIGHT, input(118, 36), input(136, 36), input(118, 54), input(136, 54), output(190, 45)));
     public static final MachineMenu.Type OIL_REFINERY = machine("oil_refinery", new MachineMenu.Type(RecipeMachineBlockEntity.DATA_COUNT,
@@ -55,12 +61,12 @@ public final class UniverseMenus {
     public static final MachineMenu.Type ASSEMBLER_MK3 = machine("assembler_mk3", new MachineMenu.Type(RecipeMachineBlockEntity.DATA_COUNT,
             RECIPE_WIDTH, RECIPE_HEIGHT, input(118, 36), input(136, 36), input(118, 54), input(136, 54), output(190, 45)));
     public static final MachineMenu.Type PLANE_SMELTER = machine("plane_smelter", new MachineMenu.Type(RecipeMachineBlockEntity.DATA_COUNT,
-            RECIPE_WIDTH, RECIPE_HEIGHT, input(118, 45), input(136, 45), output(190, 45)));
+            RECIPE_WIDTH, RECIPE_HEIGHT, input(118, 36), input(136, 36), input(118, 54), output(190, 45)));
     public static final MachineMenu.Type CHEMICAL_PLANT = machine("chemical_plant", new MachineMenu.Type(RecipeMachineBlockEntity.DATA_COUNT,
             RECIPE_WIDTH, RECIPE_HEIGHT, input(118, 36), input(136, 36), input(118, 54), output(190, 36), output(190, 54)));
     public static final MachineMenu.Type MINIATURE_PARTICLE_COLLIDER = machine("miniature_particle_collider",
             new MachineMenu.Type(RecipeMachineBlockEntity.DATA_COUNT, RECIPE_WIDTH, RECIPE_HEIGHT, input(118, 36), input(136, 36), input(118, 54),
-                    output(190, 45)));
+                    output(190, 36), output(190, 54)));
     // 戴森球的设备（ADR-0016）：左边读数，右边一两个格子，格子下面是打开戴森球编辑器的按钮
     public static final MachineMenu.Type EM_RAIL_EJECTOR = machine("em_rail_ejector",
             new MachineMenu.Type(EmRailEjectorBlockEntity.DATA_COUNT, RESOURCE_WIDTH, 192, input(172, 30)));
@@ -78,10 +84,10 @@ public final class UniverseMenus {
     // 分馏塔：左边读数，右边原料格（氢）和两个产物格（氢、重氢）
     public static final MachineMenu.Type FRACTIONATOR = machine("fractionator",
             new MachineMenu.Type(FractionatorBlockEntity.DATA_COUNT, RESOURCE_WIDTH, 166, input(136, 46), output(172, 36), output(172, 56)));
-    // 矩阵研究站：左边研究进度，右边每种矩阵一格（上面一排三格，下面一排两格），再下面是打开科技树的按钮
+    // 矩阵研究站：左边研究进度，右边每种矩阵一格（两排各三格，最后一格是白矩阵），再下面是打开科技树的按钮
     public static final MachineMenu.Type MATRIX_LAB = machine("matrix_lab",
-            new MachineMenu.Type(MatrixLabBlockEntity.DATA_COUNT, 176, 180, input(112, 30), input(130, 30), input(148, 30), input(121, 48),
-                    input(139, 48)));
+            new MachineMenu.Type(MatrixLabBlockEntity.DATA_COUNT, 176, 180, input(112, 30), input(130, 30), input(148, 30), input(112, 48),
+                    input(130, 48), input(148, 48)));
     // 物流站（ADR-0015）：布局见 StationBlockEntity#layout
     public static final MachineMenu.Type PLANETARY_LOGISTICS_STATION = machine("planetary_logistics_station",
             StationBlockEntity.layout(StationKind.PLANETARY));

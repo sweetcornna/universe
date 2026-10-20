@@ -63,6 +63,13 @@ class SurvivalProgressionTest {
             NS + "ship_repair", NS + "station_teleporter", NS + "mission_board",
             // Mk.II 部件只能在空间站买、在坠毁飞船里拆到（ADR-0017）
             NS + "ship_thruster_mk2", NS + "fuel_tank_mk2", NS + "impulse_engine_mk2", NS + "warp_drive_mk2", NS + "alloy_hull_plating");
+    /** 每类设备配方最多几种原料、几种产物：同类设备里格子最多的那台（{@code RecipeMachines}）。 */
+    private static final Map<String, int[]> SLOTS = Map.of(
+            "universe:smelting", new int[] {3, 1},
+            "universe:assembling", new int[] {4, 1},
+            "universe:refining", new int[] {2, 2},
+            "universe:chemical", new int[] {3, 2},
+            "universe:particle", new int[] {3, 2});
     /** 兴趣点的建筑里天然放着的方块（ADR-0014），挖了按各自的战利品表掉落。 */
     private static final Set<String> STRUCTURE_BLOCKS = Set.of(NS + "data_terminal", NS + "supply_crate", NS + "tech_cache",
             NS + "smoldering_wreck");
@@ -119,6 +126,25 @@ class SurvivalProgressionTest {
             }
         }
         assertEquals(Set.of(), missing, "生存里拿不到的物品");
+    }
+
+    /** 配方的原料、产物种数不能多于设备的格子，否则设备永远开不了工（M8 以前钛合金就是这样）。 */
+    @Test
+    void machineRecipesFitTheirMachines() throws IOException {
+        List<String> tooBig = new ArrayList<>();
+        for (Path file : jsonFiles(DATA.resolve("recipe"))) {
+            JsonObject json = read(file).getAsJsonObject();
+            int[] slots = SLOTS.get(json.get("type").getAsString());
+            if (slots == null) {
+                continue;
+            }
+            int inputs = json.getAsJsonArray("ingredients").size();
+            int outputs = json.getAsJsonArray("results").size();
+            if (inputs > slots[0] || outputs > slots[1]) {
+                tooBig.add(file.getFileName() + "：" + inputs + " 种原料、" + outputs + " 种产物");
+            }
+        }
+        assertEquals(List.of(), tooBig, "设备放不下的配方");
     }
 
     private static boolean available(String item, Set<String> have) {

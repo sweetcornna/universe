@@ -76,13 +76,14 @@ final class UniverseItemTagsProvider extends ItemTagsProvider {
                 UniverseItems.FRAME_MATERIAL.key(), UniverseItems.DYSON_SPHERE_COMPONENT.key(), UniverseItems.CASIMIR_CRYSTAL.key(),
                 UniverseItems.PLANE_FILTER.key(), UniverseItems.GRAVITON_LENS.key(), UniverseItems.PHOTON_COMBINER.key(),
                 UniverseItems.SOLAR_SAIL.key(), UniverseItems.SMALL_CARRIER_ROCKET.key(), UniverseItems.LOGISTICS_VESSEL.key(),
-                UniverseItems.STRANGE_MATTER.key());
+                UniverseItems.STRANGE_MATTER.key(), UniverseItems.ANNIHILATION_CONSTRAINT_SPHERE.key());
         this.tag(ItemValues.tag(TradeCategory.ENERGY)).add(
                 UniverseItems.HYDROGEN.key(), UniverseItems.DEUTERIUM.key(), UniverseItems.REFINED_OIL.key(), UniverseItems.LAUNCH_FUEL.key(),
                 UniverseItems.SPACE_WARPER.key(), UniverseItems.DEUTERON_FUEL_ROD.key(), UniverseItems.CRITICAL_PHOTON.key(),
                 UniverseItems.ELECTROMAGNETIC_MATRIX.key(), UniverseItems.ENERGY_MATRIX.key(), UniverseItems.STRUCTURE_MATRIX.key(),
                 UniverseItems.INFORMATION_MATRIX.key(), UniverseItems.GRAVITY_MATRIX.key(), UniverseItems.OXYGEN_CAPSULE.key(),
-                UniverseItems.HAZARD_CELL.key());
+                UniverseItems.HAZARD_CELL.key(), UniverseItems.ANTIMATTER.key(), UniverseItems.ANTIMATTER_FUEL_ROD.key(),
+                UniverseItems.COMPOSITE_MATRIX.key(), UniverseItems.UNIVERSE_MATRIX.key());
         this.tag(ItemValues.tag(TradeCategory.BIO)).add(
                 UniverseItems.ALIEN_MEAT.key(), UniverseItems.COOKED_ALIEN_MEAT.key(), UniverseItems.ALIEN_HIDE.key(),
                 UniverseItems.ALIEN_EGG.key(), UniverseItems.COOKED_ALIEN_EGG.key(), UniverseItems.ALIEN_FLUFF.key(), UniverseItems.BIO_GEL.key(),

@@ -13,6 +13,10 @@
     "universe:information_matrix",
     "universe:gravity_matrix",
     "universe:oxygen_capsule",
-    "universe:hazard_cell"
+    "universe:hazard_cell",
+    "universe:antimatter",
+    "universe:antimatter_fuel_rod",
+    "universe:composite_matrix",
+    "universe:universe_matrix"
   ]
 }

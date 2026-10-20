@@ -1,0 +1,21 @@
+{
+  "type": "universe:particle",
+  "ingredients": [
+    {
+      "count": 2,
+      "ingredient": "universe:critical_photon"
+    }
+  ],
+  "research": "dirac_inversion",
+  "results": [
+    {
+      "count": 2,
+      "id": "universe:antimatter"
+    },
+    {
+      "count": 2,
+      "id": "universe:hydrogen"
+    }
+  ],
+  "time": 40
+}

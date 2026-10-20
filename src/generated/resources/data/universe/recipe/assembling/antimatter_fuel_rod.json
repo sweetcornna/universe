@@ -1,0 +1,29 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 12,
+      "ingredient": "universe:antimatter"
+    },
+    {
+      "count": 12,
+      "ingredient": "universe:hydrogen"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:annihilation_constraint_sphere"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:titanium_alloy"
+    }
+  ],
+  "research": "controlled_annihilation",
+  "results": [
+    {
+      "count": 2,
+      "id": "universe:antimatter_fuel_rod"
+    }
+  ],
+  "time": 480
+}

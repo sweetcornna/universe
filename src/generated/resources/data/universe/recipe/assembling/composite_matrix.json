@@ -1,0 +1,24 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:electromagnetic_matrix"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:energy_matrix"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:structure_matrix"
+    }
+  ],
+  "research": "universe_matrix",
+  "results": [
+    {
+      "id": "universe:composite_matrix"
+    }
+  ],
+  "time": 100
+}

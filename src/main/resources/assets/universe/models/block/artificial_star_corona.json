@@ -1,0 +1,86 @@
+{
+  "parent": "block/block",
+  "textures": {
+    "particle": "universe:block/artificial_star_base",
+    "base": "universe:block/artificial_star_base",
+    "top": "universe:block/artificial_star_top",
+    "coil": "universe:block/artificial_star_coil",
+    "coil_on": "universe:block/artificial_star_coil_on",
+    "pillar": "universe:block/artificial_star_pillar",
+    "frame": "universe:block/artificial_star_frame",
+    "core": "universe:block/artificial_star_core",
+    "corona": "universe:block/artificial_star_corona"
+  },
+  "elements": [
+    {
+      "from": [
+        4,
+        3,
+        4
+      ],
+      "to": [
+        12,
+        11,
+        12
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            4,
+            5,
+            12,
+            13
+          ],
+          "texture": "#corona"
+        },
+        "south": {
+          "uv": [
+            4,
+            5,
+            12,
+            13
+          ],
+          "texture": "#corona"
+        },
+        "west": {
+          "uv": [
+            4,
+            5,
+            12,
+            13
+          ],
+          "texture": "#corona"
+        },
+        "east": {
+          "uv": [
+            4,
+            5,
+            12,
+            13
+          ],
+          "texture": "#corona"
+        },
+        "up": {
+          "uv": [
+            4,
+            4,
+            12,
+            12
+          ],
+          "texture": "#corona"
+        },
+        "down": {
+          "uv": [
+            4,
+            4,
+            12,
+            12
+          ],
+          "texture": "#corona"
+        }
+      },
+      "light_emission": 15,
+      "shade": false
+    }
+  ]
+}

@@ -66,6 +66,7 @@ final class UniverseRecipes extends RecipeProvider {
         this.factory();
         this.midgame();
         this.dyson();
+        this.endgame();
     }
 
     /**
@@ -119,9 +120,9 @@ final class UniverseRecipes extends RecipeProvider {
                 out(UniverseItems.GRAVITY_MATRIX.get(), 2));
         this.machine(Kind.ASSEMBLING, "casimir_crystal", 80, "quantum_printing", in(titaniumCrystal, 1, graphene, 2, hydrogen, 12),
                 out(casimir, 1));
-        // ---- 冶炼、对撞
-        this.machine(Kind.SMELTING, "titanium_glass", 100, "quantum_printing",
-                List.of(SizedIngredient.of(Items.GLASS, 2), SizedIngredient.of(titanium, 2), SizedIngredient.of(water, 2)), out(titaniumGlass, 2));
+        // 钛化玻璃照戴森球计划在制造台里做
+        this.machine(Kind.ASSEMBLING, "titanium_glass", 100, "quantum_printing", in(Items.GLASS, 2, titanium, 2, water, 2), out(titaniumGlass, 2));
+        // ---- 对撞
         this.machine(Kind.PARTICLE, "strange_matter", 160, "miniature_collider", in(container, 2, Items.IRON_INGOT, 2, deuterium, 10),
                 out(strange, 1));
 
@@ -158,6 +159,41 @@ final class UniverseRecipes extends RecipeProvider {
                 List.of("AFA", "LQL", "AFA"), Map.of('A', alloy, 'F', frame, 'L', lens, 'Q', quantum));
         this.researchShaped("miniature_collider", RecipeCategory.REDSTONE, UniverseItems.MINIATURE_PARTICLE_COLLIDER.get(), 1,
                 List.of("ARA", "FPF", "ARA"), Map.of('A', alloy, 'R', ring, 'F', frame, 'P', processor));
+    }
+
+    /**
+     * 终局（ADR-0018）：配方照戴森球计划。宇宙矩阵要五种矩阵加反物质，制造台只有 4 个原料格，先把蓝红黄合成复合矩阵。
+     * 两种发电设备也能手工合成。
+     */
+    private void endgame() {
+        Item alloy = UniverseItems.TITANIUM_ALLOY.get();
+        Item frame = UniverseItems.FRAME_MATERIAL.get();
+        Item processor = UniverseItems.PROCESSOR.get();
+        Item ring = UniverseItems.SUPER_MAGNETIC_RING.get();
+        Item nanotube = UniverseItems.CARBON_NANOTUBE.get();
+        Item quantum = UniverseItems.QUANTUM_CHIP.get();
+        Item hydrogen = UniverseItems.HYDROGEN.get();
+        Item antimatter = UniverseItems.ANTIMATTER.get();
+        Item sphere = UniverseItems.ANNIHILATION_CONSTRAINT_SPHERE.get();
+        Item composite = UniverseItems.COMPOSITE_MATRIX.get();
+        this.machine(Kind.PARTICLE, "antimatter", 40, "dirac_inversion", in(UniverseItems.CRITICAL_PHOTON.get(), 2),
+                List.of(new ItemStackTemplate(antimatter, 2), new ItemStackTemplate(hydrogen, 2)));
+        this.machine(Kind.ASSEMBLING, "annihilation_constraint_sphere", 400, "controlled_annihilation",
+                in(UniverseItems.PARTICLE_CONTAINER.get(), 1, processor, 1), out(sphere, 1));
+        this.machine(Kind.ASSEMBLING, "antimatter_fuel_rod", 480, "controlled_annihilation", in(antimatter, 12, hydrogen, 12, sphere, 1, alloy, 1),
+                out(UniverseItems.ANTIMATTER_FUEL_ROD.get(), 2));
+        this.machine(Kind.ASSEMBLING, "composite_matrix", 100, "universe_matrix", in(UniverseItems.ELECTROMAGNETIC_MATRIX.get(), 1,
+                UniverseItems.ENERGY_MATRIX.get(), 1, UniverseItems.STRUCTURE_MATRIX.get(), 1), out(composite, 1));
+        this.machine(Kind.ASSEMBLING, "universe_matrix", 300, "universe_matrix", in(composite, 1, UniverseItems.INFORMATION_MATRIX.get(), 1,
+                UniverseItems.GRAVITY_MATRIX.get(), 1, antimatter, 1), out(UniverseItems.UNIVERSE_MATRIX.get(), 1));
+        this.machine(Kind.ASSEMBLING, "mini_fusion_power_plant", 200, "mini_fusion_power", in(alloy, 12, ring, 10, nanotube, 8, processor, 4),
+                out(UniverseItems.MINI_FUSION_POWER_PLANT.get(), 1));
+        this.machine(Kind.ASSEMBLING, "artificial_star", 600, "artificial_star", in(alloy, 20, frame, 20, sphere, 10, quantum, 10),
+                out(UniverseItems.ARTIFICIAL_STAR.get(), 1));
+        this.researchShaped("mini_fusion_power", RecipeCategory.REDSTONE, UniverseItems.MINI_FUSION_POWER_PLANT.get(), 1,
+                List.of("ARA", "NPN", "ARA"), Map.of('A', alloy, 'R', ring, 'N', nanotube, 'P', processor));
+        this.researchShaped("artificial_star", RecipeCategory.REDSTONE, UniverseItems.ARTIFICIAL_STAR.get(), 1,
+                List.of("FSF", "AQA", "FSF"), Map.of('F', frame, 'S', sphere, 'A', alloy, 'Q', quantum));
     }
 
     /**

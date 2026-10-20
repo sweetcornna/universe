@@ -1,0 +1,20 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:particle_container"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:processor"
+    }
+  ],
+  "research": "controlled_annihilation",
+  "results": [
+    {
+      "id": "universe:annihilation_constraint_sphere"
+    }
+  ],
+  "time": 400
+}

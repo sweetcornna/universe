@@ -107,6 +107,7 @@ final class UniverseBlockTagsProvider extends BlockTagsProvider {
                 UniverseBlocks.FACTORY_ANCHOR, UniverseBlocks.PLANETARY_LOGISTICS_STATION, UniverseBlocks.INTERSTELLAR_LOGISTICS_STATION,
                 UniverseBlocks.ORBITAL_COLLECTOR, UniverseBlocks.SOLAR_PANEL, UniverseBlocks.EM_RAIL_EJECTOR,
                 UniverseBlocks.VERTICAL_LAUNCHING_SILO, UniverseBlocks.RAY_RECEIVER, UniverseBlocks.MINIATURE_PARTICLE_COLLIDER,
+                UniverseBlocks.MINI_FUSION_POWER_PLANT, UniverseBlocks.ARTIFICIAL_STAR,
                 UniverseBlocks.TELEPORTER, UniverseBlocks.BASE_BEACON)) {
             this.tag(BlockTags.MINEABLE_WITH_PICKAXE).add(block.key());
             this.tag(ShipParts.EXCLUDED).add(block.key());

@@ -31,7 +31,8 @@ import net.neoforged.neoforge.common.crafting.SizedIngredient;
  * 按选定配方加工的设备（ADR-0011）：电弧熔炉、制造台、精炼厂共用。玩家在界面上选配方，第 i 个原料格只放第 i 种原料；
  * 原料够、产物放得下时向电网要电，按 速度 × 满足率 推进，做完一次扣原料、出产物。
  *
- * <p>格子：前 {@link Spec#inputs()} 个是原料，后面是产物。
+ * <p>格子：前 {@link Spec#inputs()} 个是原料，后面是产物。存档里记下原料格数；原料格变多了（M8 把熔炉改成三格），
+ * 读档时把产物挪到新的位置。
  */
 public class RecipeMachineBlockEntity extends MachineBlockEntity implements MachineMenu.ButtonTarget {
     public static final int SELECTED = BASE_DATA;
@@ -305,6 +306,23 @@ public class RecipeMachineBlockEntity extends MachineBlockEntity implements Mach
         Identifier id = recipe.isEmpty() ? null : Identifier.tryParse(recipe);
         this.selected = id == null ? null : ResourceKey.create(Registries.RECIPE, id);
         this.progress = input.getDoubleOr("Progress", 0);
+        // M8 以前没记格数，那时熔炉是两个原料格，别的设备和现在一样
+        int saved = input.getIntOr("InputSlots", this.spec.kind() == MachineRecipe.Kind.SMELTING ? 2 : this.spec.inputs());
+        if (saved < this.spec.inputs()) {
+            this.shiftOutputs(saved);
+        }
+    }
+
+    /** 原料格从 {@code saved} 个变多了：老位置上的产物往后挪，空出来的原料格清空。 */
+    private void shiftOutputs(int saved) {
+        int shift = this.spec.inputs() - saved;
+        var items = this.getItems();
+        for (int slot = items.size() - 1; slot >= saved + shift; slot--) {
+            items.set(slot, items.get(slot - shift));
+        }
+        for (int slot = saved; slot < saved + shift; slot++) {
+            items.set(slot, ItemStack.EMPTY);
+        }
     }
 
     @Override
@@ -314,5 +332,6 @@ public class RecipeMachineBlockEntity extends MachineBlockEntity implements Mach
             output.putString("Recipe", this.selected.identifier().toString());
         }
         output.putDouble("Progress", this.progress);
+        output.putInt("InputSlots", this.spec.inputs());
     }
 }

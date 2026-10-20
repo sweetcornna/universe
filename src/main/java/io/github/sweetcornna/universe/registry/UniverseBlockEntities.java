@@ -18,6 +18,8 @@ import io.github.sweetcornna.universe.factory.belt.SplitterBlockEntity;
 import io.github.sweetcornna.universe.factory.belt.StorageDepotBlockEntity;
 import io.github.sweetcornna.universe.factory.belt.StorageTankBlockEntity;
 import io.github.sweetcornna.universe.factory.power.AccumulatorBlockEntity;
+import io.github.sweetcornna.universe.factory.power.ArtificialStarBlockEntity;
+import io.github.sweetcornna.universe.factory.power.FusionPlantBlockEntity;
 import io.github.sweetcornna.universe.factory.power.SolarPanelBlockEntity;
 import io.github.sweetcornna.universe.factory.power.TeslaTowerBlockEntity;
 import io.github.sweetcornna.universe.factory.power.ThermalPlantBlockEntity;
@@ -53,6 +55,10 @@ public final class UniverseBlockEntities {
             () -> new BlockEntityType<>(SolarPanelBlockEntity::new, UniverseBlocks.SOLAR_PANEL.get()));
     public static final Supplier<BlockEntityType<ThermalPlantBlockEntity>> THERMAL_PLANT = BLOCK_ENTITIES.register("thermal_plant",
             () -> new BlockEntityType<>(ThermalPlantBlockEntity::new, UniverseBlocks.THERMAL_PLANT.get()));
+    public static final Supplier<BlockEntityType<FusionPlantBlockEntity>> MINI_FUSION_POWER_PLANT = BLOCK_ENTITIES.register(
+            "mini_fusion_power_plant", () -> new BlockEntityType<>(FusionPlantBlockEntity::new, UniverseBlocks.MINI_FUSION_POWER_PLANT.get()));
+    public static final Supplier<BlockEntityType<ArtificialStarBlockEntity>> ARTIFICIAL_STAR = BLOCK_ENTITIES.register("artificial_star",
+            () -> new BlockEntityType<>(ArtificialStarBlockEntity::new, UniverseBlocks.ARTIFICIAL_STAR.get()));
     public static final Supplier<BlockEntityType<TeleporterBlockEntity>> TELEPORTER = BLOCK_ENTITIES.register("teleporter",
             () -> new BlockEntityType<>(TeleporterBlockEntity::new, UniverseBlocks.TELEPORTER.get(), UniverseBlocks.STATION_TELEPORTER.get()));
     public static final Supplier<BlockEntityType<AccumulatorBlockEntity>> ACCUMULATOR = BLOCK_ENTITIES.register("accumulator",

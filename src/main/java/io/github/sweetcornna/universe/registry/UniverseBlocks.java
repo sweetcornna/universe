@@ -47,6 +47,8 @@ import io.github.sweetcornna.universe.factory.belt.SplitterBlock;
 import io.github.sweetcornna.universe.factory.belt.StorageDepotBlock;
 import io.github.sweetcornna.universe.factory.belt.StorageTankBlock;
 import io.github.sweetcornna.universe.factory.power.AccumulatorBlock;
+import io.github.sweetcornna.universe.factory.power.ArtificialStarBlock;
+import io.github.sweetcornna.universe.factory.power.FusionPlantBlock;
 import io.github.sweetcornna.universe.factory.power.SolarPanelBlock;
 import io.github.sweetcornna.universe.factory.power.ThermalPlantBlock;
 import io.github.sweetcornna.universe.factory.resource.CrudeOilSeepBlock;
@@ -311,6 +313,12 @@ public final class UniverseBlocks {
             p -> machine(p).noOcclusion().lightLevel(state -> state.getValue(MachineBlock.WORKING) ? 10 : 0));
     public static final DeferredBlock<DysonBlocks.Collider> MINIATURE_PARTICLE_COLLIDER = BLOCKS.registerBlock("miniature_particle_collider",
             DysonBlocks.Collider::new, p -> machine(p).lightLevel(state -> state.getValue(MachineBlock.WORKING) ? 11 : 2));
+    /** 终局的发电设备（ADR-0018）。 */
+    public static final DeferredBlock<FusionPlantBlock> MINI_FUSION_POWER_PLANT = BLOCKS.registerBlock("mini_fusion_power_plant",
+            FusionPlantBlock::new, p -> machine(p).lightLevel(state -> state.getValue(MachineBlock.WORKING) ? 12 : 2));
+    public static final DeferredBlock<ArtificialStarBlock> ARTIFICIAL_STAR = BLOCKS.registerBlock("artificial_star", ArtificialStarBlock::new,
+            p -> machine(p).noOcclusion().lightLevel(state -> !state.getValue(MachineBlock.WORKING) ? 0
+                    : state.getValue(TallMachineBlock.HALF) == DoubleBlockHalf.UPPER ? 15 : 9));
     /** 原油涌泉：挖不掉，也不掉落。 */
     public static final DeferredBlock<CrudeOilSeepBlock> CRUDE_OIL_SEEP = BLOCKS.registerBlock("crude_oil_seep", CrudeOilSeepBlock::new,
             p -> p.mapColor(MapColor.COLOR_BLACK).strength(-1.0F, 3600000.0F).noLootTable().sound(SoundType.MUD));
