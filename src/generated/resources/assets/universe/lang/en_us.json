@@ -691,7 +691,7 @@
   "guide.universe.endgame": "Endgame",
   "guide.universe.endgame.antimatter": "The miniature particle collider turns critical photons into antimatter.\n\nPower: 12 kW\nResearch: Dirac Inversion Mechanism\n\nAntimatter goes into universe matrices and fuel rods. 12 antimatter, 12 hydrogen, a constraint sphere and a titanium alloy make 2 rods.",
   "guide.universe.endgame.antimatter.title": "Antimatter",
-  "guide.universe.endgame.finale": "Mission Complete is the last tech: 1,000 points of white matrices only.\nFinishing it plays the ending. The game carries on afterwards and upgrades stay open.\nReplay the ending from the Ending chapter.",
+  "guide.universe.endgame.finale": "Mission Complete is the last tech: 3,000 points of white matrices only.\nFinishing it plays the ending. The game carries on afterwards and upgrades stay open.\nReplay the ending from the Ending chapter.",
   "guide.universe.endgame.finale.title": "Mission Complete",
   "guide.universe.endgame.power": "Mini Fusion Power Plant\n15 kW from deuteron fuel rods, 6 min per rod at full load\n\nArtificial Star\n72 kW from antimatter fuel rods, 15 min per rod at full load",
   "guide.universe.endgame.power.title": "Fusion and Artificial Stars",

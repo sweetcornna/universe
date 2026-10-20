@@ -63,12 +63,13 @@ public final class RawValues {
             Map.entry("universe:organic_crystal", 12.0),
             Map.entry("universe:salt", 3.0),
             Map.entry("universe:strange_matter", 120.0),
-            // 设备抽出来的
-            Map.entry("universe:crude_oil", 6.0),
+            // 设备抽出来的，按平衡模型（core.balance.Progression）折合的矿定价：一台原油萃取站的产量顶五台采矿机，涌泉又少，
+            // 原油按半个铁矿；重氢是一个氢加上分馏塔的工时；一个临界光子要六张多太阳帆发的电
+            Map.entry("universe:crude_oil", 2.0),
             Map.entry("universe:water", 0.5),
-            Map.entry("universe:hydrogen", 3.0),
-            Map.entry("universe:deuterium", 8.0),
-            Map.entry("universe:critical_photon", 300.0),
+            Map.entry("universe:hydrogen", 1.5),
+            Map.entry("universe:deuterium", 4.0),
+            Map.entry("universe:critical_photon", 100.0),
             // 探索和战斗得到的
             Map.entry("universe:survey_data", 40.0),
             Map.entry("universe:navigation_data", 30.0),

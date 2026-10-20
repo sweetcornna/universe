@@ -7,6 +7,7 @@ import java.util.Map;
 
 import org.jspecify.annotations.Nullable;
 
+import io.github.sweetcornna.universe.core.factory.Throughput;
 import io.github.sweetcornna.universe.core.research.Upgrades;
 import io.github.sweetcornna.universe.factory.MachineBlock;
 import io.github.sweetcornna.universe.factory.MachineBlockEntity;
@@ -36,7 +37,7 @@ public class MiningMachineBlockEntity extends MachineBlockEntity {
     /** 戴森球计划的 420 kW。 */
     public static final long POWER = 21;
     /** 每个节点多少刻出一个。 */
-    public static final int TICKS_PER_ITEM = 800;
+    public static final int TICKS_PER_ITEM = Throughput.MINER_TICKS_PER_ITEM;
     public static final int RADIUS = 2;
     public static final int DEPTH = 3;
     /** 高级采矿机：戴森球计划的 2.94 MW，范围 7×7，速度两倍。 */

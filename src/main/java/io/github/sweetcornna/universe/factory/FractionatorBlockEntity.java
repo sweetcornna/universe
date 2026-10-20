@@ -1,5 +1,6 @@
 package io.github.sweetcornna.universe.factory;
 
+import io.github.sweetcornna.universe.core.factory.Throughput;
 import io.github.sweetcornna.universe.factory.belt.BeltNetwork;
 import io.github.sweetcornna.universe.factory.belt.BeltReceiver;
 import io.github.sweetcornna.universe.registry.UniverseBlockEntities;
@@ -22,9 +23,9 @@ public class FractionatorBlockEntity extends MachineBlockEntity implements BeltR
     /** 戴森球计划的 720 kW。 */
     public static final long POWER = 36;
     /** 每刻最多处理几个（每秒 30 个）。 */
-    public static final double PER_TICK = 1.5;
+    public static final double PER_TICK = Throughput.FRACTIONATOR_PER_TICK;
     /** 每个氢变成重氢的概率。 */
-    public static final double CHANCE = 0.01;
+    public static final double CHANCE = Throughput.FRACTIONATOR_CHANCE;
     /** 原料格最多攒多少氢。 */
     private static final int BUFFER = 40;
 

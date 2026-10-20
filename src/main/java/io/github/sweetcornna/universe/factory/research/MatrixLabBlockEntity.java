@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.jspecify.annotations.Nullable;
 
+import io.github.sweetcornna.universe.core.factory.Throughput;
 import io.github.sweetcornna.universe.core.research.TechTree;
 import io.github.sweetcornna.universe.core.research.Upgrades;
 import io.github.sweetcornna.universe.factory.MachineBlockEntity;
@@ -26,7 +27,7 @@ public class MatrixLabBlockEntity extends MachineBlockEntity {
     /** 戴森球计划的 480 kW。 */
     public static final long POWER = 24;
     /** 满电时攒一点的刻数。 */
-    public static final int TICKS_PER_POINT = 100;
+    public static final int TICKS_PER_POINT = Throughput.LAB_TICKS_PER_POINT;
     /** 自动化（分拣器、漏斗）每格最多塞到这么多，手动放不限。 */
     public static final int AUTOMATION_LIMIT = 10;
 

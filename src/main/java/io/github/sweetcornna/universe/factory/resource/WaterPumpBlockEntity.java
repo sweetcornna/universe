@@ -1,5 +1,6 @@
 package io.github.sweetcornna.universe.factory.resource;
 
+import io.github.sweetcornna.universe.core.factory.Throughput;
 import io.github.sweetcornna.universe.core.galaxy.Liquid;
 import io.github.sweetcornna.universe.factory.MachineBlock;
 import io.github.sweetcornna.universe.factory.MachineBlockEntity;
@@ -25,7 +26,7 @@ public class WaterPumpBlockEntity extends MachineBlockEntity {
     /** 戴森球计划的 300 kW。 */
     public static final long POWER = 15;
     /** 每分钟 50 个。 */
-    public static final int TICKS_PER_ITEM = 24;
+    public static final int TICKS_PER_ITEM = Throughput.PUMP_TICKS_PER_ITEM;
     public static final int OUTPUT = 0;
 
     /** 下面的液体：0 没有水，1 有水，2 是酸液。 */

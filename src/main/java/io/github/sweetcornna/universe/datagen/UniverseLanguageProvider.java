@@ -1225,8 +1225,8 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
                 "Universe matrices (white) fund Mission Complete and the four uncapped upgrade lines.\n\nUniverse matrix: composite + information + gravity + antimatter\nComposite matrix: blue + red + yellow");
         both("guide.universe.endgame.finale.title", "任务完成", "Mission Complete");
         both("guide.universe.endgame.finale",
-                "「任务完成」是科技树的最后一项：1000 点，只用白矩阵。\n研究完会放结局，之后可以接着玩，升级科技还能继续研究。\n结局可以在「结局」一章重看。",
-                "Mission Complete is the last tech: 1,000 points of white matrices only.\nFinishing it plays the ending. The game carries on afterwards and upgrades stay open.\nReplay the ending from the Ending chapter.");
+                "「任务完成」是科技树的最后一项：3000 点，只用白矩阵。\n研究完会放结局，之后可以接着玩，升级科技还能继续研究。\n结局可以在「结局」一章重看。",
+                "Mission Complete is the last tech: 3,000 points of white matrices only.\nFinishing it plays the ending. The game carries on afterwards and upgrades stay open.\nReplay the ending from the Ending chapter.");
         both("item.universe.guide", "手册", "Guide");
         both("tooltip.universe.guide", "右键翻开", "Right-click to read");
         both("gui.universe.guide.title", "手册", "Guide");

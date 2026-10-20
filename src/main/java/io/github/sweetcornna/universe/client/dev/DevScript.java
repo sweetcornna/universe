@@ -25,6 +25,7 @@ import io.github.sweetcornna.universe.client.ship.ShipClient;
 import io.github.sweetcornna.universe.dyson.EmRailEjectorBlockEntity;
 import io.github.sweetcornna.universe.dyson.LaunchSiloBlockEntity;
 import io.github.sweetcornna.universe.entity.ship.ShipEntity;
+import io.github.sweetcornna.universe.network.ResearchActionPayload;
 import io.github.sweetcornna.universe.registry.UniverseAttachments;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
@@ -55,6 +56,7 @@ import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
+import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 
 /**
  * 开发用的客户端脚本：启动时带了 {@code -Duniverse.devScript=<文件>}（{@code ./gradlew runClient -PdevScript=<文件>}）
@@ -363,6 +365,8 @@ public final class DevScript {
             }
             case "rightclick" -> KeyMapping.click(minecraft.options.keyUse.getKey()); // 按一下右键，走原版的完整流程
             case "advancements" -> minecraft.gui.setScreen(new AdvancementsScreen(player.connection.getAdvancements()));
+            // 和科技树上"研究"按钮发的一样，服务端照样检查前置
+            case "research" -> ClientPacketDistributor.sendToServer(new ResearchActionPayload(ResearchActionPayload.Action.START, args[0]));
             case "guide" -> {
                 // guide check：把接到下一页的正文写进日志；guide <章> <页>：打开手册翻到那一页（从 0 数）
                 if (args[0].equals("check")) {

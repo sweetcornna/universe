@@ -49,11 +49,21 @@ public final class ValueGraph {
      * @return 原料和所有推得出来的东西的价钱；推不出来的不在里面
      */
     public static Map<String, Double> compute(Map<String, Double> raw, List<Recipe> recipes) {
+        return compute(raw, recipes, SECOND_VALUE, MARKUP);
+    }
+
+    /**
+     * 同上，工钱和利润另给。平衡模型（{@code core.balance.Progression}）用工钱 0、利润 0 算每样东西折合几个矿。
+     *
+     * @param secondValue 每秒加工时间值多少
+     * @param markup      每道加工的利润
+     */
+    public static Map<String, Double> compute(Map<String, Double> raw, List<Recipe> recipes, double secondValue, double markup) {
         Map<String, Double> values = new HashMap<>(raw);
         for (int pass = 0; pass < MAX_PASSES; pass++) {
             boolean changed = false;
             for (Recipe recipe : recipes) {
-                double cost = recipe.seconds() * SECOND_VALUE;
+                double cost = recipe.seconds() * secondValue;
                 boolean known = true;
                 for (Input input : recipe.inputs()) {
                     double cheapest = Double.POSITIVE_INFINITY;
@@ -73,7 +83,7 @@ public final class ValueGraph {
                 if (!known || pieces <= 0) {
                     continue;
                 }
-                double each = cost * (1 + MARKUP) / pieces;
+                double each = cost * (1 + markup) / pieces;
                 for (Output output : recipe.outputs()) {
                     if (raw.containsKey(output.item())) {
                         continue;

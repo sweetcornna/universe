@@ -330,7 +330,7 @@ io.github.sweetcornna.universe
 ## 6. 测试
 
 - core：JUnit 6 单元测试，随 `gradlew build` 运行，CI 上也跑。
-- 数据：`SurvivalProgressionTest` 读 `src/generated/resources`，检查科技树和配方在生存里走得通（ADR-0011）；改了数据生成要先跑 `runData`。
+- 数据：`SurvivalProgressionTest` 读 `src/generated/resources`，检查科技树和配方在生存里走得通（ADR-0011）；`BalanceTest` 拿同样的配方跑进度模型（`core.balance.Progression`），检查每档研究时间没有断崖（ADR-0018）。改了数据生成要先跑 `runData`。
 - 游戏内行为：NeoForge GameTest（`gameTestServer` 运行配置），覆盖设备、传送带、维度切换等。
 - 脚本验收：`./gradlew runClient -PdevScript=<脚本>` 启动时，`client.dev.DevScript` 进存档后逐行执行脚本：执行命令、转视角、悬停、右键设备、按界面按钮、等设备动作一次、截图、退出，不碰键盘鼠标。截的是帧缓冲，窗口可以一直放在屏幕外；要在 `options.txt` 里关掉 `pauseOnLostFocus`，否则窗口没有焦点时游戏会暂停。
 - 性能：core 层做基准测试（M1 定方案），游戏内用 Spark 剖析。
