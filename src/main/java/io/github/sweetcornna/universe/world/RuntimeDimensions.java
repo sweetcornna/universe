@@ -16,6 +16,7 @@ import com.mojang.logging.LogUtils;
 import io.github.sweetcornna.universe.core.dimension.IdleTimer;
 import io.github.sweetcornna.universe.data.RuntimeDimensionsData;
 import io.github.sweetcornna.universe.network.DimensionListPayload;
+import io.github.sweetcornna.universe.perf.ServerPerf;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
@@ -90,8 +91,10 @@ public final class RuntimeDimensions {
         // ServerStartingEvent 在原版维度建好之后、第一个 tick 之前，玩家还连不进来
         gameBus.addListener(ServerStartingEvent.class, event -> restore(event.getServer()));
         gameBus.addListener(EventPriority.LOWEST, ServerTickEvent.Post.class, event -> {
+            long start = ServerPerf.begin();
             checkIdle(event.getServer());
             processUnloads(event.getServer());
+            ServerPerf.end("runtime_dimensions", start);
         });
         gameBus.addListener(ServerStoppedEvent.class, event -> {
             // 单人游戏退出存档后 JVM 还在，下次进入别的存档前要清空

@@ -16,9 +16,11 @@ import org.jspecify.annotations.Nullable;
 
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.asteroid.Asteroid;
+import io.github.sweetcornna.universe.client.ClientConfig;
 import io.github.sweetcornna.universe.client.ItemSummaries;
 import io.github.sweetcornna.universe.client.UniverseKeys;
 import io.github.sweetcornna.universe.client.dyson.ClientDyson;
+import io.github.sweetcornna.universe.client.dyson.DysonSkyRenderer;
 import io.github.sweetcornna.universe.client.guide.GuideScreen;
 import io.github.sweetcornna.universe.client.pirate.PirateClient;
 import io.github.sweetcornna.universe.client.ship.ShipClient;
@@ -443,10 +445,18 @@ public final class DevScript {
             }
             case "shot" -> Screenshot.grab(minecraft.gameDirectory, name(args), minecraft.gameRenderer.mainRenderTarget(), 1,
                     message -> Universe.LOGGER.info("Dev script screenshot: {}", message.getString()));
-            case "log" -> Universe.LOGGER.info("Dev script note: {} (mouse grabbed: {}, credits: {}, pos: {} {} {}, gravity: {})", rest,
+            case "log" -> Universe.LOGGER.info("Dev script note: {} (mouse grabbed: {}, credits: {}, pos: {} {} {}, gravity: {}, fps: {})", rest,
                     minecraft.mouseHandler.isMouseGrabbed(), player.getData(UniverseAttachments.CREDITS), String.format("%.2f", player.getX()),
                     String.format("%.2f", player.getY()), String.format("%.2f", player.getZ()),
-                    player.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.GRAVITY));
+                    player.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.GRAVITY), minecraft.getFps()
+                            + ", dyson sky " + DysonSkyRenderer.takeStats());
+            // 测帧率：不限帧、关垂直同步（无头验收结束后 options.txt 会还原）
+            case "unlimitedfps" -> {
+                minecraft.options.framerateLimit().set(260);
+                minecraft.options.enableVsync().set(false);
+                minecraft.options.inactivityFpsLimit().set(net.minecraft.client.InactivityFpsLimit.MINIMIZED);
+            }
+            case "dysonsky" -> ClientConfig.DYSON_SKY.set(ClientConfig.DysonSky.valueOf(args[0].toUpperCase(java.util.Locale.ROOT)));
             case "quit" -> minecraft.stop();
             default -> Universe.LOGGER.warn("Dev script: unknown command {}", verb);
         }

@@ -7,6 +7,7 @@ import java.util.UUID;
 
 import org.jspecify.annotations.Nullable;
 
+import io.github.sweetcornna.universe.perf.ServerPerf;
 import io.github.sweetcornna.universe.world.space.SpaceDimensions;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceKey;
@@ -42,7 +43,9 @@ public final class TamedCreatures {
     public static void registerEvents(IEventBus gameBus) {
         gameBus.addListener(PlayerTickEvent.Post.class, event -> {
             if (event.getEntity() instanceof ServerPlayer player) {
+                long start = ServerPerf.begin();
                 track(player);
+                ServerPerf.end("player/tamed", start);
             }
         });
         gameBus.addListener(PlayerEvent.PlayerLoggedOutEvent.class, event -> LAST_SEEN.remove(event.getEntity().getUUID()));

@@ -21,6 +21,7 @@ import io.github.sweetcornna.universe.core.factory.BeltOutput;
 import io.github.sweetcornna.universe.core.factory.BeltSystem;
 import io.github.sweetcornna.universe.core.factory.BeltTier;
 import io.github.sweetcornna.universe.network.BeltLinesPayload;
+import io.github.sweetcornna.universe.perf.ServerPerf;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
@@ -85,7 +86,9 @@ public final class BeltNetwork {
             if (level.tickRateManager().runsNormally()) {
                 BeltNetwork network = LEVELS.get(level);
                 if (network != null) {
+                    long start = ServerPerf.begin();
                     network.tick();
+                    ServerPerf.end("belts", start);
                 }
             }
         });

@@ -12,6 +12,7 @@ import io.github.sweetcornna.universe.core.poi.PoiLayout;
 import io.github.sweetcornna.universe.core.poi.PoiType;
 import io.github.sweetcornna.universe.core.procgen.Seeds;
 import io.github.sweetcornna.universe.core.tech.ModuleLoot;
+import io.github.sweetcornna.universe.perf.ServerPerf;
 import io.github.sweetcornna.universe.registry.UniverseAttachments;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
 import io.github.sweetcornna.universe.registry.UniverseItems;
@@ -52,7 +53,9 @@ public final class Pois {
     public static void registerEvents(IEventBus gameBus) {
         gameBus.addListener(PlayerTickEvent.Post.class, event -> {
             if (event.getEntity() instanceof ServerPlayer player && player.tickCount % 20 == 7) {
+                long start = ServerPerf.begin();
                 tick(player);
+                ServerPerf.end("player/poi", start);
             }
         });
     }

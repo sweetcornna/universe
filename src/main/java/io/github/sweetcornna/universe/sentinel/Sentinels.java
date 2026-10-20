@@ -11,6 +11,7 @@ import io.github.sweetcornna.universe.core.sentinel.Offense;
 import io.github.sweetcornna.universe.core.sentinel.SentinelLevel;
 import io.github.sweetcornna.universe.core.sentinel.Wanted;
 import io.github.sweetcornna.universe.entity.AlienCreature;
+import io.github.sweetcornna.universe.perf.ServerPerf;
 import io.github.sweetcornna.universe.registry.UniverseAttachments;
 import io.github.sweetcornna.universe.registry.UniverseEntities;
 import io.github.sweetcornna.universe.world.planet.Planets;
@@ -71,7 +72,9 @@ public final class Sentinels {
     public static void registerEvents(IEventBus gameBus) {
         gameBus.addListener(PlayerTickEvent.Post.class, event -> {
             if (event.getEntity() instanceof ServerPlayer player) {
+                long start = ServerPerf.begin();
                 tick(player);
+                ServerPerf.end("player/sentinels", start);
             }
         });
         gameBus.addListener(LivingDeathEvent.class, Sentinels::onDeath);

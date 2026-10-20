@@ -2,6 +2,7 @@ package io.github.sweetcornna.universe.factory.belt;
 
 import org.jspecify.annotations.Nullable;
 
+import io.github.sweetcornna.universe.perf.ServerPerf;
 import io.github.sweetcornna.universe.registry.UniverseBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.BlockGetter;
@@ -33,7 +34,11 @@ public class SplitterBlock extends BaseEntityBlock {
         if (level.isClientSide() || type != UniverseBlockEntities.SPLITTER.get()) {
             return null;
         }
-        return (tickLevel, pos, tickState, blockEntity) -> ((SplitterBlockEntity) blockEntity).serverTick();
+        return (tickLevel, pos, tickState, blockEntity) -> {
+            long start = ServerPerf.begin();
+            ((SplitterBlockEntity) blockEntity).serverTick();
+            ServerPerf.end("block/splitter", start);
+        };
     }
 
     @Override

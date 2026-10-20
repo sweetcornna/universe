@@ -2,6 +2,7 @@ package io.github.sweetcornna.universe.factory.belt;
 
 import org.jspecify.annotations.Nullable;
 
+import io.github.sweetcornna.universe.perf.ServerPerf;
 import io.github.sweetcornna.universe.registry.UniverseBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -42,7 +43,11 @@ public class StorageTankBlock extends BaseEntityBlock {
         if (level.isClientSide() || type != UniverseBlockEntities.STORAGE_TANK.get()) {
             return null;
         }
-        return (tickLevel, pos, tickState, blockEntity) -> ((StorageTankBlockEntity) blockEntity).serverTick();
+        return (tickLevel, pos, tickState, blockEntity) -> {
+            long start = ServerPerf.begin();
+            ((StorageTankBlockEntity) blockEntity).serverTick();
+            ServerPerf.end("block/storage_tank", start);
+        };
     }
 
     @Override

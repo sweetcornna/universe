@@ -17,6 +17,8 @@ import com.mojang.brigadier.suggestion.SuggestionProvider;
 import io.github.sweetcornna.universe.asteroid.AsteroidCommand;
 import io.github.sweetcornna.universe.dyson.DysonCommand;
 import io.github.sweetcornna.universe.mission.MissionCommand;
+import io.github.sweetcornna.universe.perf.BenchCommand;
+import io.github.sweetcornna.universe.perf.PerfCommand;
 import io.github.sweetcornna.universe.pirate.PirateCommand;
 import io.github.sweetcornna.universe.sentinel.SentinelCommand;
 import io.github.sweetcornna.universe.Universe;
@@ -94,6 +96,8 @@ public final class DimensionCommand {
                 .then(StationCommand.build())
                 .then(MissionCommand.build())
                 .then(CreditsCommand.build())
+                .then(PerfCommand.build())
+                .then(BenchCommand.build())
                 .then(PirateCommand.build())
                 .then(AsteroidCommand.build())
                 .then(StoryCommand.build())

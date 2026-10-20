@@ -10,6 +10,7 @@ import io.github.sweetcornna.universe.core.tech.Stat;
 import io.github.sweetcornna.universe.core.tech.TechBonuses;
 import io.github.sweetcornna.universe.core.tech.TechModule;
 import io.github.sweetcornna.universe.network.OpenTechPayload;
+import io.github.sweetcornna.universe.perf.ServerPerf;
 import io.github.sweetcornna.universe.registry.UniverseAttachments;
 import io.github.sweetcornna.universe.registry.UniverseDataComponents;
 import io.github.sweetcornna.universe.registry.UniverseItems;
@@ -56,7 +57,9 @@ public final class SuitTech {
     public static void registerEvents(IEventBus gameBus) {
         gameBus.addListener(PlayerTickEvent.Post.class, event -> {
             if (event.getEntity() instanceof ServerPlayer player) {
+                long start = ServerPerf.begin();
                 tick(player);
+                ServerPerf.end("player/suit", start);
             }
         });
         gameBus.addListener(EventPriority.HIGH, LivingIncomingDamageEvent.class, event -> {

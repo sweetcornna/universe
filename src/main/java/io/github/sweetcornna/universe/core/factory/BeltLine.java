@@ -100,6 +100,21 @@ public final class BeltLine {
         return this.items[this.slot(i)];
     }
 
+    /** 第一个位置小于 {@code position} 的物品是第几个，没有就是 count。位置从前往后递减，二分查找。 */
+    private int firstBelow(int position) {
+        int low = 0;
+        int high = this.count;
+        while (low < high) {
+            int mid = (low + high) >>> 1;
+            if (this.position(mid) < position) {
+                high = mid;
+            } else {
+                low = mid + 1;
+            }
+        }
+        return low;
+    }
+
     private int slot(int i) {
         int s = this.head + i;
         return s >= this.positions.length ? s - this.positions.length : s;
@@ -206,11 +221,7 @@ public final class BeltLine {
         if (position < 0 || position > this.length || this.count >= this.positions.length) {
             return -1;
         }
-        // 多半放在靠近起点的地方，从后往前找
-        int k = this.count;
-        while (k > 0 && this.position(k - 1) < position) {
-            k--;
-        }
+        int k = this.firstBelow(position);
         if (k > 0 && this.position(k - 1) - position < SPACING) {
             return -1;
         }
@@ -228,7 +239,7 @@ public final class BeltLine {
     public int take(int position, int window, IntPredicate filter) {
         int best = -1;
         int bestDistance = window + 1;
-        for (int i = 0; i < this.count; i++) {
+        for (int i = this.firstBelow(position + window + 1); i < this.count; i++) {
             int p = this.position(i);
             if (p < position - window) {
                 break;

@@ -3,6 +3,7 @@ package io.github.sweetcornna.universe.factory.belt;
 import org.jspecify.annotations.Nullable;
 
 import io.github.sweetcornna.universe.core.factory.SorterTier;
+import io.github.sweetcornna.universe.perf.ServerPerf;
 import io.github.sweetcornna.universe.registry.UniverseBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -70,7 +71,11 @@ public class SorterBlock extends BaseEntityBlock {
         if (level.isClientSide() || type != UniverseBlockEntities.SORTER.get()) {
             return null;
         }
-        return (tickLevel, pos, tickState, blockEntity) -> ((SorterBlockEntity) blockEntity).serverTick();
+        return (tickLevel, pos, tickState, blockEntity) -> {
+            long start = ServerPerf.begin();
+            ((SorterBlockEntity) blockEntity).serverTick();
+            ServerPerf.end("block/sorter", start);
+        };
     }
 
     @Override

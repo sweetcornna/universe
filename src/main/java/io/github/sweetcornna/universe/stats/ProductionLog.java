@@ -11,6 +11,7 @@ import io.github.sweetcornna.universe.core.story.Milestone;
 import io.github.sweetcornna.universe.logistics.Logistics;
 import io.github.sweetcornna.universe.network.StatsRequestPayload;
 import io.github.sweetcornna.universe.network.StatsSnapshotPayload;
+import io.github.sweetcornna.universe.perf.ServerPerf;
 import io.github.sweetcornna.universe.registry.UniverseItems;
 import io.github.sweetcornna.universe.story.Story;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -53,7 +54,9 @@ public final class ProductionLog {
             MinecraftServer server = event.getServer();
             long now = now(server);
             if (now % ProductionStats.LONG_TICKS == 0) {
+                long start = ServerPerf.begin();
                 ProductionData.get(server).stats().prune(now);
+                ServerPerf.end("production_log", start);
             }
         });
         gameBus.addListener(ServerStoppedEvent.class, event -> POWER.clear());

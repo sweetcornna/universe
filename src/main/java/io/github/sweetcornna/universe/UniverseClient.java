@@ -1,5 +1,6 @@
 package io.github.sweetcornna.universe;
 
+import io.github.sweetcornna.universe.client.ClientConfig;
 import io.github.sweetcornna.universe.client.ItemSummaries;
 import io.github.sweetcornna.universe.client.asteroid.AsteroidClient;
 import io.github.sweetcornna.universe.client.blueprint.BlueprintClient;
@@ -54,6 +55,7 @@ import net.neoforged.neoforge.common.NeoForge;
 @Mod(value = Universe.MOD_ID, dist = Dist.CLIENT)
 public final class UniverseClient {
     public UniverseClient(IEventBus modBus, ModContainer container) {
+        ClientConfig.register(container);
         modBus.addListener(this::clientSetup);
         ClientDimensions.registerEvents(modBus, NeoForge.EVENT_BUS);
         ClientGalaxy.registerEvents(modBus, NeoForge.EVENT_BUS);

@@ -178,6 +178,42 @@ class BeltTest {
         assertValid(line);
     }
 
+    /** 长线路上按二分查找的抓取、放置和逐个比较的结果一样。 */
+    @Test
+    void lookupsOnLongLinesMatchALinearScan() {
+        java.util.Random random = new java.util.Random(19);
+        for (int round = 0; round < 50; round++) {
+            BeltLine line = new BeltLine(100, BeltTier.MK1);
+            for (int i = 0; i < 400; i++) {
+                line.insert(random.nextInt(line.length() + 1), 1 + random.nextInt(3));
+            }
+            for (int probe = 0; probe < 20; probe++) {
+                int position = random.nextInt(line.length() + 1);
+                int window = random.nextInt(U);
+                int wanted = 1 + random.nextInt(3);
+                int expected = BeltLine.EMPTY;
+                int bestDistance = window + 1;
+                for (int i = 0; i < line.count(); i++) {
+                    int distance = Math.abs(line.position(i) - position);
+                    if (distance < bestDistance && line.item(i) == wanted) {
+                        expected = line.item(i);
+                        bestDistance = distance;
+                    }
+                }
+                int count = line.count();
+                assertEquals(expected, line.take(position, window, item -> item == wanted));
+                assertEquals(expected == BeltLine.EMPTY ? count : count - 1, line.count());
+
+                boolean free = true;
+                for (int i = 0; i < line.count(); i++) {
+                    free &= Math.abs(line.position(i) - position) >= BeltLine.SPACING;
+                }
+                assertEquals(free, line.canInsert(position), "canInsert(" + position + ")");
+                assertValid(line);
+            }
+        }
+    }
+
     @Test
     void splitAndConcatKeepEveryItem() {
         BeltLine line = new BeltLine(10, BeltTier.MK2);

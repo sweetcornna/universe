@@ -43,6 +43,9 @@ import net.neoforged.neoforge.transfer.transaction.Transaction;
  * 电力不足时按满足率变慢。三档共用这个方块实体，档位看方块。
  */
 public class SorterBlockEntity extends BlockEntity implements PowerDevice, BlueprintSettings {
+    /** 前面的容器放不下时隔几刻再试。设备的原料格留着几次配方的量，晚几刻送到不影响产量。 */
+    private static final int BLOCKED_RETRY = 4;
+
     private @Nullable Item filter;
     private ItemStack held = ItemStack.EMPTY;
     /** 循环进度（刻）；-1 是停在背后等着抓。 */
@@ -53,6 +56,11 @@ public class SorterBlockEntity extends BlockEntity implements PowerDevice, Bluep
     private @Nullable Direction cachedFacing;
     /** 客户端：收到同步时的游戏刻，用来插值。 */
     private long syncedAt;
+    private int retryIn;
+    // 一次抓取里：前面的容器有没有拒收过，上一个问过的物品和答案（同一种只问一次）
+    private boolean blocked;
+    private int askedItem = BeltLine.EMPTY;
+    private boolean askedFits;
 
     public SorterBlockEntity(BlockPos pos, BlockState state) {
         super(UniverseBlockEntities.SORTER.get(), pos, state);
@@ -146,7 +154,11 @@ public class SorterBlockEntity extends BlockEntity implements PowerDevice, Bluep
             return;
         }
         if (this.progress < 0) {
-            this.tryGrab();
+            if (this.retryIn > 0) {
+                this.retryIn--;
+            } else {
+                this.tryGrab();
+            }
             return;
         }
         SorterTier tier = this.tier();
@@ -177,6 +189,9 @@ public class SorterBlockEntity extends BlockEntity implements PowerDevice, Bluep
     private boolean tryGrab() {
         ItemStack grabbed = this.grab();
         if (grabbed.isEmpty()) {
+            if (this.blocked) {
+                this.retryIn = BLOCKED_RETRY;
+            }
             return false;
         }
         this.held = grabbed;
@@ -196,11 +211,13 @@ public class SorterBlockEntity extends BlockEntity implements PowerDevice, Bluep
 
     /** 从背后拿一个前面放得下的东西。 */
     private ItemStack grab() {
+        this.blocked = false;
+        this.askedItem = BeltLine.EMPTY;
         Direction facing = this.facing();
         BlockPos from = this.worldPosition.relative(facing.getOpposite());
         BeltNetwork network = BeltNetwork.of(this.level);
         if (network.segment(from) != null) {
-            int id = network.take(from, item -> this.matches(BeltNetwork.item(item)) && this.canDrop(new ItemStack(BeltNetwork.item(item))));
+            int id = network.take(from, this::wants);
             return id == BeltLine.EMPTY ? ItemStack.EMPTY : new ItemStack(BeltNetwork.item(id));
         }
         ResourceHandler<ItemResource> source = this.source(facing);
@@ -222,6 +239,16 @@ public class SorterBlockEntity extends BlockEntity implements PowerDevice, Bluep
         return ItemStack.EMPTY;
     }
 
+    /** 传送带上的这个物品要不要抓。 */
+    private boolean wants(int item) {
+        if (item != this.askedItem) {
+            Item type = BeltNetwork.item(item);
+            this.askedItem = item;
+            this.askedFits = this.matches(type) && this.canDrop(new ItemStack(type));
+        }
+        return this.askedFits;
+    }
+
     /** 前面放不放得下（不真的放）。 */
     private boolean canDrop(ItemStack stack) {
         Direction facing = this.facing();
@@ -232,10 +259,13 @@ public class SorterBlockEntity extends BlockEntity implements PowerDevice, Bluep
         }
         ResourceHandler<ItemResource> target = this.target(facing);
         if (target == null) {
+            this.blocked = true;
             return false;
         }
         try (Transaction transaction = Transaction.openRoot()) {
-            return ResourceHandlerUtil.insertStacking(target, ItemResource.of(stack), 1, transaction) == 1;
+            boolean fits = ResourceHandlerUtil.insertStacking(target, ItemResource.of(stack), 1, transaction) == 1;
+            this.blocked |= !fits;
+            return fits;
         }
     }
 

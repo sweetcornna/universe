@@ -17,6 +17,7 @@ import io.github.sweetcornna.universe.core.survival.Suit;
 import io.github.sweetcornna.universe.core.tech.TechBonuses;
 import io.github.sweetcornna.universe.entity.ship.ShipEntity;
 import io.github.sweetcornna.universe.network.JetpackPayload;
+import io.github.sweetcornna.universe.perf.ServerPerf;
 import io.github.sweetcornna.universe.registry.UniverseAttachments;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
 import io.github.sweetcornna.universe.station.Stations;
@@ -80,7 +81,9 @@ public final class PlayerSurvival {
     public static void registerEvents(IEventBus gameBus) {
         gameBus.addListener(PlayerTickEvent.Post.class, event -> {
             if (event.getEntity() instanceof ServerPlayer player) {
+                long start = ServerPerf.begin();
                 tick(player);
+                ServerPerf.end("player/survival", start);
             }
         });
         gameBus.addListener(EntityJoinLevelEvent.class, event -> {

@@ -24,6 +24,7 @@ import io.github.sweetcornna.universe.core.research.Upgrades;
 import io.github.sweetcornna.universe.core.space.SpaceLayout;
 import io.github.sweetcornna.universe.factory.research.ResearchData;
 import io.github.sweetcornna.universe.network.LogisticsFlightsPayload;
+import io.github.sweetcornna.universe.perf.ServerPerf;
 import io.github.sweetcornna.universe.world.planet.Planets;
 import io.github.sweetcornna.universe.world.space.SpaceDimensions;
 import net.minecraft.core.BlockPos;
@@ -52,7 +53,7 @@ public final class Logistics {
     }
 
     public static void registerEvents(IEventBus gameBus) {
-        gameBus.addListener(ServerTickEvent.Post.class, event -> tick(event.getServer()));
+        gameBus.addListener(ServerTickEvent.Post.class, event -> ServerPerf.time("logistics", () -> tick(event.getServer())));
         gameBus.addListener(ServerStoppedEvent.class, event -> SENT.clear());
     }
 

@@ -13,6 +13,7 @@ import io.github.sweetcornna.universe.core.galaxy.StarSystem;
 import io.github.sweetcornna.universe.factory.research.Research;
 import io.github.sweetcornna.universe.network.DysonEditPayload;
 import io.github.sweetcornna.universe.network.DysonSyncPayload;
+import io.github.sweetcornna.universe.perf.ServerPerf;
 import io.github.sweetcornna.universe.story.Story;
 import io.github.sweetcornna.universe.world.planet.Planets;
 import io.github.sweetcornna.universe.world.space.SpaceDimensions;
@@ -47,11 +48,13 @@ public final class Dyson {
 
     public static void registerEvents(IEventBus gameBus) {
         gameBus.addListener(ServerTickEvent.Pre.class, event -> {
+            long start = ServerPerf.begin();
             for (DysonSphere sphere : DysonData.get(event.getServer()).spheres().values()) {
                 sphere.roll();
             }
+            ServerPerf.end("dyson", start);
         });
-        gameBus.addListener(ServerTickEvent.Post.class, event -> tick(event.getServer()));
+        gameBus.addListener(ServerTickEvent.Post.class, event -> ServerPerf.time("dyson", () -> tick(event.getServer())));
         gameBus.addListener(ServerStoppedEvent.class, event -> SENT.clear());
     }
 

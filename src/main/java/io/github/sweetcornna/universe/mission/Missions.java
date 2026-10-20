@@ -22,6 +22,7 @@ import io.github.sweetcornna.universe.core.trade.Economy;
 import io.github.sweetcornna.universe.discovery.Discoveries;
 import io.github.sweetcornna.universe.network.MissionActionPayload;
 import io.github.sweetcornna.universe.network.OpenMissionBoardPayload;
+import io.github.sweetcornna.universe.perf.ServerPerf;
 import io.github.sweetcornna.universe.registry.UniverseAttachments;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
 import io.github.sweetcornna.universe.registry.UniverseDataComponents;
@@ -66,7 +67,9 @@ public final class Missions {
     public static void registerEvents(IEventBus gameBus) {
         gameBus.addListener(PlayerTickEvent.Post.class, event -> {
             if (event.getEntity() instanceof ServerPlayer player && player.tickCount % 20 == 7) {
+                long start = ServerPerf.begin();
                 update(player);
+                ServerPerf.end("player/missions", start);
             }
         });
     }

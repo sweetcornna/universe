@@ -19,6 +19,7 @@ import io.github.sweetcornna.universe.core.procgen.NameGenerator.Name;
 import io.github.sweetcornna.universe.core.space.SpaceLayout;
 import io.github.sweetcornna.universe.core.story.Milestone;
 import io.github.sweetcornna.universe.discovery.Discoveries;
+import io.github.sweetcornna.universe.perf.ServerPerf;
 import io.github.sweetcornna.universe.registry.UniverseAttachments;
 import io.github.sweetcornna.universe.story.Story;
 import io.github.sweetcornna.universe.world.DimensionTemplate;
@@ -76,7 +77,7 @@ public final class ShipTransit {
     }
 
     public static void registerEvents(IEventBus gameBus) {
-        gameBus.addListener(EventPriority.HIGH, ServerTickEvent.Post.class, event -> process(event.getServer()));
+        gameBus.addListener(EventPriority.HIGH, ServerTickEvent.Post.class, event -> ServerPerf.time("ship_transit", () -> process(event.getServer())));
         gameBus.addListener(ServerStoppedEvent.class, event -> {
             PENDING.clear();
             LAYOUTS.clear();

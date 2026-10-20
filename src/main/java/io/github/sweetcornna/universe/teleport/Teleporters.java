@@ -21,6 +21,7 @@ import io.github.sweetcornna.universe.network.OpenTeleporterPayload;
 import io.github.sweetcornna.universe.network.OpenTeleporterPayload.Destination;
 import io.github.sweetcornna.universe.network.RenameBasePayload;
 import io.github.sweetcornna.universe.network.TeleportRequestPayload;
+import io.github.sweetcornna.universe.perf.ServerPerf;
 import io.github.sweetcornna.universe.registry.UniverseAttachments;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
 import io.github.sweetcornna.universe.station.Stations;
@@ -64,10 +65,12 @@ public final class Teleporters {
     }
 
     public static void registerEvents(IEventBus gameBus) {
-        gameBus.addListener(ServerTickEvent.Post.class, event -> process(event.getServer()));
+        gameBus.addListener(ServerTickEvent.Post.class, event -> ServerPerf.time("teleporters", () -> process(event.getServer())));
         gameBus.addListener(PlayerTickEvent.Post.class, event -> {
             if (event.getEntity() instanceof ServerPlayer player && player.tickCount % 20 == 0) {
+                long start = ServerPerf.begin();
                 visit(player);
+                ServerPerf.end("player/teleporters", start);
             }
         });
         gameBus.addListener(ServerStoppedEvent.class, event -> QUEUE.clear());

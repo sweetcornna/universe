@@ -22,6 +22,8 @@ import io.github.sweetcornna.universe.factory.research.Research;
 import io.github.sweetcornna.universe.logistics.Logistics;
 import io.github.sweetcornna.universe.mission.Missions;
 import io.github.sweetcornna.universe.network.UniverseNetwork;
+import io.github.sweetcornna.universe.perf.BenchCommand;
+import io.github.sweetcornna.universe.perf.ServerPerf;
 import io.github.sweetcornna.universe.pirate.Pirates;
 import io.github.sweetcornna.universe.poi.Pois;
 import io.github.sweetcornna.universe.registry.UniverseAttachments;
@@ -111,6 +113,8 @@ public final class Universe {
         ShipRepair.registerEvents(gameBus);
         Story.registerEvents(gameBus);
         Blueprints.registerEvents(gameBus);
+        ServerPerf.registerEvents(gameBus);
+        BenchCommand.registerEvents(gameBus);
         gameBus.addListener(RegisterCommandsEvent.class, event -> DimensionCommand.register(event.getDispatcher()));
     }
 

@@ -2,6 +2,7 @@ package io.github.sweetcornna.universe.client.dyson;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
+import java.util.Locale;
 import java.util.Optional;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
@@ -26,6 +27,7 @@ import com.mojang.renderpearl.api.pipeline.PrimitiveTopology;
 import com.mojang.renderpearl.api.pipeline.RenderPipeline;
 
 import io.github.sweetcornna.universe.Universe;
+import io.github.sweetcornna.universe.client.ClientConfig;
 import io.github.sweetcornna.universe.client.ClientGalaxy;
 import io.github.sweetcornna.universe.client.ClientWeather;
 import io.github.sweetcornna.universe.client.sky.PlanetSkyRenderer;
@@ -48,8 +50,10 @@ import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.renderer.state.level.LevelRenderState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.attribute.EnvironmentAttributes;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.client.event.ExtractLevelRenderStateEvent;
@@ -89,11 +93,13 @@ public final class DysonSkyRenderer {
             .build();
 
     private static final double FRAME_STEP = Math.toRadians(6);
+    private static final double FRAME_STEP_LOW = Math.toRadians(15);
     private static final double SHELL_STEP = Math.toRadians(8);
     private static final float FRAME_WIDTH = 0.075F;
     private static final float NODE_SIZE = 0.24F;
     private static final float SAIL_SIZE = 0.09F;
     private static final int MAX_SAIL_DOTS = 700;
+    private static final int MAX_SAIL_DOTS_LOW = 200;
     /** 原版太阳的亮方块：边长 30 的贴图中间一半，离观察者 100 格；戴森球从它的角外面开始画。 */
     private static final double VANILLA_SUN_CORNER = Math.atan(7.5 * Math.sqrt(2) / 100);
     /** 亮的天空里发光部分改用的颜色：深一些的金色，蓝天上看得出来。 */
@@ -110,6 +116,22 @@ public final class DysonSkyRenderer {
     private final Frame frame = new Frame(this.batches);
     /** 天空有多亮：0 是黑的（夜里、太空、没有大气），1 是晴天的蓝天。 */
     private double bright;
+    /** 这一帧按简化画质画（设置里的戴森球画质）。 */
+    private boolean low;
+    // 顶点每刻只算一次（天上的东西转得慢，最快的帆一刻也挪不到两三个像素），同一刻里的后几帧直接画上次上传的
+    private long builtTick = Long.MIN_VALUE;
+    private @Nullable ResourceKey<Level> builtDimension;
+    private ClientConfig.@Nullable DysonSky builtDetail;
+    private int builtSystem = -1;
+    private Vec3 builtCamera = Vec3.ZERO;
+    /** 顶点重算一次加一；和上传时记下的不一样才重新上传。 */
+    private int version;
+    private int uploadedVersion = -1;
+    private final long[] offsets = new long[5];
+    // 开发脚本测帧率用：累计的 CPU 耗时（算顶点和上传）、帧数、上一帧的顶点数
+    private static long cpuNanos;
+    private static int cpuFrames;
+    private static int lastVertices;
     private @Nullable GpuBuffer buffer;
     private @Nullable ByteBufferBuilder bytes;
 
@@ -192,14 +214,31 @@ public final class DysonSkyRenderer {
         }
     }
 
+    /** 开发脚本用：上次调用以来平均每帧的 CPU 耗时（毫秒）和上一帧的顶点数，读完清零。 */
+    public static String takeStats() {
+        String stats = String.format(Locale.ROOT, "%.3f ms/frame, %d vertices", cpuFrames == 0 ? 0 : cpuNanos / 1e6 / cpuFrames, lastVertices);
+        cpuNanos = 0;
+        cpuFrames = 0;
+        return stats;
+    }
+
     public static void registerEvents(IEventBus modBus, IEventBus gameBus) {
         DysonSkyRenderer renderer = new DysonSkyRenderer();
         modBus.addListener(RegisterRenderPipelinesEvent.class, event -> {
             event.registerPipeline(GLOW);
             event.registerPipeline(SHELL);
         });
-        gameBus.addListener(ExtractLevelRenderStateEvent.class, renderer::extract);
-        gameBus.addListener(RenderLevelStageEvent.AfterSky.class, renderer::render);
+        gameBus.addListener(ExtractLevelRenderStateEvent.class, event -> {
+            long start = System.nanoTime();
+            renderer.extract(event);
+            cpuNanos += System.nanoTime() - start;
+            cpuFrames++;
+        });
+        gameBus.addListener(RenderLevelStageEvent.AfterSky.class, event -> {
+            long start = System.nanoTime();
+            renderer.render(event);
+            cpuNanos += System.nanoTime() - start;
+        });
     }
 
     // ---- 提取：算出天球上的位置
@@ -215,18 +254,24 @@ public final class DysonSkyRenderer {
     private void extract(ExtractLevelRenderStateEvent event) {
         LevelRenderState state = event.getRenderState();
         state.setRenderData(FRAME, null);
+        lastVertices = 0;
         ClientLevel level = event.getLevel();
         OptionalInt systemIndex = ClientDyson.currentSystem();
         Optional<Galaxy> galaxy = ClientGalaxy.galaxy();
         if (systemIndex.isEmpty() || galaxy.isEmpty()) {
             return;
         }
+        ClientConfig.DysonSky detail = ClientConfig.dysonSky();
+        if (detail == ClientConfig.DysonSky.OFF) {
+            return;
+        }
+        this.low = detail == ClientConfig.DysonSky.LOW;
         DysonSphere sphere = ClientDyson.sphere(systemIndex.getAsInt()).orElse(null);
         StarSystem system = galaxy.get().system(systemIndex.getAsInt()).orElse(null);
         if (sphere == null || system == null || sphere.orbits().isEmpty() && sphere.layers().isEmpty()) {
             return;
         }
-        double time = state.gameTime + state.worldPartialTicks;
+        double time = state.gameTime;
         Vec3 camera = event.getCamera().position();
         Projector projector;
         float visibility;
@@ -257,6 +302,19 @@ public final class DysonSkyRenderer {
         if (visibility <= 0.01F) {
             return;
         }
+        if (state.gameTime == this.builtTick && level.dimension() == this.builtDimension && detail == this.builtDetail
+                && systemIndex.getAsInt() == this.builtSystem && camera.distanceToSqr(this.builtCamera) < 16) {
+            if (!this.frame.isEmpty()) {
+                state.setRenderData(FRAME, this.frame);
+            }
+            return;
+        }
+        this.builtTick = state.gameTime;
+        this.builtDimension = level.dimension();
+        this.builtDetail = detail;
+        this.builtSystem = systemIndex.getAsInt();
+        this.builtCamera = camera;
+        this.version++;
         for (Batch batch : this.batches) {
             batch.clear();
         }
@@ -359,7 +417,7 @@ public final class DysonSkyRenderer {
             double[] a = units[ends[0]];
             double[] b = units[ends[1]];
             double arc = Math.acos(Math.max(-1, Math.min(1, a[0] * b[0] + a[1] * b[1] + a[2] * b[2])));
-            int steps = Math.max(1, (int) Math.ceil(arc / FRAME_STEP));
+            int steps = Math.max(1, (int) Math.ceil(arc / (this.low ? FRAME_STEP_LOW : FRAME_STEP)));
             double[] previous = a;
             double[] previousSky = projector.project(a, radius);
             for (int k = 1; k <= steps; k++) {
@@ -367,7 +425,9 @@ public final class DysonSkyRenderer {
                 double[] next = DysonSky.slerp(a, b, t);
                 double[] nextSky = projector.project(next, radius);
                 boolean facing = projector.facing(normalize(new double[] {previous[0] + next[0], previous[1] + next[1], previous[2] + next[2]}));
-                this.glowLine(facing, previousSky, nextSky, (facing ? 210 : 70) * visibility, 0xFFC86E);
+                if (facing || !this.low) {
+                    this.glowLine(facing, previousSky, nextSky, (facing ? 210 : 70) * visibility, 0xFFC86E);
+                }
                 if (t >= progress) {
                     break;
                 }
@@ -381,14 +441,16 @@ public final class DysonSkyRenderer {
                 continue;
             }
             boolean facing = projector.facing(units[i]);
-            this.glowDot(facing, projector.project(units[i], radius), NODE_SIZE, (facing ? 235 : 90) * visibility, 0xFFEFC8);
+            if (facing || !this.low) {
+                this.glowDot(facing, projector.project(units[i], radius), NODE_SIZE, (facing ? 235 : 90) * visibility, 0xFFEFC8);
+            }
         }
     }
 
     /** 球壳的一片扇形（中心和一条边），在球面上细分成小三角形，贴着球面弯。 */
     private void fan(Projector projector, double radius, double[] center, double[] a, double[] b, int color) {
         double arc = Math.max(angle(center, a), angle(center, b));
-        int n = Math.max(1, Math.min(6, (int) Math.ceil(arc / SHELL_STEP)));
+        int n = this.low ? 1 : Math.max(1, Math.min(6, (int) Math.ceil(arc / SHELL_STEP)));
         double[][][] grid = new double[n + 1][][];
         for (int i = 0; i <= n; i++) {
             grid[i] = new double[i + 1][];
@@ -416,7 +478,7 @@ public final class DysonSkyRenderer {
         if (orbit.sails() <= 0) {
             return;
         }
-        int dots = (int) Math.min(MAX_SAIL_DOTS, 6 + Math.sqrt(orbit.sails()) * 7);
+        int dots = (int) Math.min(this.low ? MAX_SAIL_DOTS_LOW : MAX_SAIL_DOTS, 6 + Math.sqrt(orbit.sails()) * 7);
         double phase = time / DysonSphere.sailPeriod(orbit.radius()) * Math.PI * 2;
         for (int i = 0; i < dots; i++) {
             // 每张帆的速度略有不同，慢慢散开；有的在闪
@@ -484,39 +546,45 @@ public final class DysonSkyRenderer {
         for (Batch batch : batches) {
             total += batch.vertices;
         }
-        long size = (long) total * stride;
-        if (this.buffer == null || this.buffer.size() < size) {
-            if (this.buffer != null) {
-                this.buffer.close();
-            }
-            this.buffer = RenderSystem.getDevice().createBuffer(() -> "Universe Dyson sky", GpuBuffer.USAGE_VERTEX | GpuBuffer.USAGE_COPY_DST,
-                    Math.max(size, 64 * 1024) * 2);
-        }
-        if (this.bytes == null) {
-            this.bytes = new ByteBufferBuilder(256 * 1024);
-        }
-        long[] offsets = new long[batches.length];
-        long offset = 0;
-        var encoder = RenderSystem.getDevice().createCommandEncoder();
+        lastVertices = total;
         int maxVertices = 0;
-        for (int i = 0; i < batches.length; i++) {
-            offsets[i] = offset;
-            Batch batch = batches[i];
-            if (batch.vertices == 0) {
-                continue;
-            }
+        for (Batch batch : batches) {
             maxVertices = Math.max(maxVertices, batch.vertices);
-            BufferBuilder builder = new BufferBuilder(this.bytes, PrimitiveTopology.QUADS, DefaultVertexFormat.POSITION_COLOR);
-            for (int v = 0; v < batch.vertices; v++) {
-                builder.addVertex(batch.xyz[v * 3], batch.xyz[v * 3 + 1], batch.xyz[v * 3 + 2]).setColor(batch.colors[v]);
-            }
-            try (MeshData mesh = builder.buildOrThrow()) {
-                ByteBuffer data = mesh.vertexBuffer();
-                int length = data.remaining();
-                encoder.writeToBuffer(this.buffer.slice(offset, length), data);
-                offset += length;
-            }
         }
+        var encoder = RenderSystem.getDevice().createCommandEncoder();
+        if (this.uploadedVersion != this.version || this.buffer == null) {
+            long size = (long) total * stride;
+            if (this.buffer == null || this.buffer.size() < size) {
+                if (this.buffer != null) {
+                    this.buffer.close();
+                }
+                this.buffer = RenderSystem.getDevice().createBuffer(() -> "Universe Dyson sky", GpuBuffer.USAGE_VERTEX | GpuBuffer.USAGE_COPY_DST,
+                        Math.max(size, 64 * 1024) * 2);
+            }
+            if (this.bytes == null) {
+                this.bytes = new ByteBufferBuilder(256 * 1024);
+            }
+            long offset = 0;
+            for (int i = 0; i < batches.length; i++) {
+                this.offsets[i] = offset;
+                Batch batch = batches[i];
+                if (batch.vertices == 0) {
+                    continue;
+                }
+                BufferBuilder builder = new BufferBuilder(this.bytes, PrimitiveTopology.QUADS, DefaultVertexFormat.POSITION_COLOR);
+                for (int v = 0; v < batch.vertices; v++) {
+                    builder.addVertex(batch.xyz[v * 3], batch.xyz[v * 3 + 1], batch.xyz[v * 3 + 2]).setColor(batch.colors[v]);
+                }
+                try (MeshData mesh = builder.buildOrThrow()) {
+                    ByteBuffer data = mesh.vertexBuffer();
+                    int length = data.remaining();
+                    encoder.writeToBuffer(this.buffer.slice(offset, length), data);
+                    offset += length;
+                }
+            }
+            this.uploadedVersion = this.version;
+        }
+        long[] offsets = this.offsets;
         RenderSystem.AutoStorageIndexBuffer indices = RenderSystem.getSequentialBuffer(PrimitiveTopology.QUADS);
         GpuBuffer indexBuffer = indices.getBuffer(maxVertices / 4 * 6);
         GpuBufferSlice transform = RenderSystem.getDynamicUniforms().writeTransform(new Matrix4f(RenderSystem.getModelViewStack()),

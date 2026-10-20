@@ -17,6 +17,7 @@ import io.github.sweetcornna.universe.core.space.StationLayout.Site;
 import io.github.sweetcornna.universe.core.trade.Economy;
 import io.github.sweetcornna.universe.entity.ship.ShipCargo;
 import io.github.sweetcornna.universe.entity.ship.ShipEntity;
+import io.github.sweetcornna.universe.perf.ServerPerf;
 import io.github.sweetcornna.universe.registry.UniverseStats;
 import io.github.sweetcornna.universe.station.Stations;
 import io.github.sweetcornna.universe.trade.Credits;
@@ -86,7 +87,7 @@ public final class Pirates {
     }
 
     public static void registerEvents(IEventBus gameBus) {
-        gameBus.addListener(ServerTickEvent.Post.class, event -> tick(event.getServer()));
+        gameBus.addListener(ServerTickEvent.Post.class, event -> ServerPerf.time("pirates", () -> tick(event.getServer())));
         gameBus.addListener(PlayerEvent.PlayerLoggedOutEvent.class, event -> {
             Raid raid = RAIDS.remove(event.getEntity().getUUID());
             if (raid != null) {

@@ -7,6 +7,7 @@ import org.jspecify.annotations.Nullable;
 
 import io.github.sweetcornna.universe.core.power.PowerDevice;
 import io.github.sweetcornna.universe.core.power.PowerSystem;
+import io.github.sweetcornna.universe.perf.ServerPerf;
 import io.github.sweetcornna.universe.stats.ProductionLog;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -34,8 +35,10 @@ public final class LevelPower {
             if (event.getLevel() instanceof ServerLevel level && level.tickRateManager().runsNormally()) {
                 LevelPower power = LEVELS.get(level);
                 if (power != null) {
+                    long start = ServerPerf.begin();
                     power.system.tick();
                     ProductionLog.power(level, power.system.grids());
+                    ServerPerf.end("power", start);
                 }
             }
         });

@@ -15,6 +15,7 @@ import org.jspecify.annotations.Nullable;
 import io.github.sweetcornna.universe.advancement.MilestoneTrigger;
 import io.github.sweetcornna.universe.core.blueprint.BlueprintGeometry;
 import io.github.sweetcornna.universe.network.BlueprintPayloads;
+import io.github.sweetcornna.universe.perf.ServerPerf;
 import io.github.sweetcornna.universe.registry.UniverseAttachments;
 import io.github.sweetcornna.universe.registry.UniverseDataComponents;
 import io.github.sweetcornna.universe.tech.ExosuitData;
@@ -86,7 +87,7 @@ public final class Blueprints {
     }
 
     public static void registerEvents(IEventBus gameBus) {
-        gameBus.addListener(ServerTickEvent.Post.class, event -> tick(event.getServer()));
+        gameBus.addListener(ServerTickEvent.Post.class, event -> ServerPerf.time("blueprints", () -> tick(event.getServer())));
         gameBus.addListener(ServerStoppedEvent.class, event -> JOBS.clear());
     }
 

@@ -403,6 +403,16 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("key.universe.tech", "技术配置（模块和货舱）", "Tech Configuration (modules and cargo)");
         both("key.universe.tool_mode", "多功能工具：切换采矿/战斗模式", "Multitool: Toggle Mining/Combat Mode");
         both("key.universe.stats", "生产统计", "Production Statistics");
+        // 客户端设置（模组列表里的"配置"）
+        both("universe.configuration.title", "寰宇设置", "Universe Settings");
+        both("universe.configuration.section.universe.client.toml", "客户端设置", "Client Settings");
+        both("universe.configuration.section.universe.client.toml.title", "寰宇：客户端设置", "Universe: Client Settings");
+        both("universe.configuration.dysonSky", "天空中的戴森球", "Dyson Sphere in the Sky");
+        both("universe.configuration.dysonSky.tooltip", "简化：球壳和框架分段少，不画背面的框架和节点，帆点少一些。帧率低时调低。",
+                "Low: fewer shell and frame segments, no far-side frames or nodes, fewer sail dots. Lower it if the frame rate drops.");
+        both("universe.configuration.dysonSky.high", "完整", "High");
+        both("universe.configuration.dysonSky.low", "简化", "Low");
+        both("universe.configuration.dysonSky.off", "不显示", "Off");
         // 生产统计面板（ADR-0015）
         both("gui.universe.stats.title", "生产统计", "Production Statistics");
         both("gui.universe.stats.all", "全部星球", "All planets");
