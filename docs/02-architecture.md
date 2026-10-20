@@ -315,6 +315,11 @@ io.github.sweetcornna.universe
 | 自定义进度触发器：继承 `net.minecraft.advancements.triggers.SimpleCriterionTrigger`，在 `Registries.TRIGGER_TYPE` 上注册；`ContextAwarePredicate` 没了，条件里的玩家谓词是 `Optional<Holder<LootItemCondition>>`，编解码用 `LootItemCondition.CODEC.optionalFieldOf("player")` | 已确认，`universe:milestone` 在用 |
 | 工作台配方也不同步：要在客户端显示合成表，`sendRecipes` 里得加上 `RecipeType.CRAFTING`；`Ingredient.items()` 返回 `Stream<Holder<Item>>` | 已确认，手册的配方在用 |
 | 原版自动换行（`StringSplitter.LineBreakFinder`）只在空格处断，一行里有过空格就退回到最后一个空格，中文夹空格时提前换行；本模组界面统一用 `client.TextWrap` | 已确认 |
+| GameTest 是注册表条目：mod 总线的 `RegisterGameTestsEvent` 里 `registerEnvironment(Identifier)`、`registerTest(Identifier, new FunctionGameTestInstance(函数键, new TestData<>(环境, 结构, 最长刻数, 准备刻数, 必须通过)))`；测试函数注册在 `Registries.TEST_FUNCTION`（`Consumer<GameTestHelper>`）。只有 `GameTestHooks.isGametestEnabled()` 时才触发。结构从 `data/<命名空间>/structure/*.nbt` 读，原版的 `minecraft:empty` 只有 1×1×1。`gameTestServer` 不走 EULA，有失败时退出码非零 | 已确认，`gametest.UniverseGameTests` |
+| 对局域网开放：`IntegratedServer.publishServer(MultiplayerScope.LAN, 允许命令, 端口)`，监听所有网卡（`startTcpServerListener(null, 端口)`）；内置服务器默认 `setUsesAuthentication(true)`，离线的开发客户端连不进来，主机先 `setUsesAuthentication(false)` | 已确认，开发脚本的 `lan` |
+| 游戏规则：`level.getGameRules().get(GameRules.X)`、`set(GameRules.X, 值, server)`，`server` 传 null 时不触发 `onGameRuleChanged`；进度的聊天播报是 `GameRules.SHOW_ADVANCEMENT_MESSAGES` | 已确认，剧情补进度时用 |
+| `neoforge.mods.toml` 的图标：方形图标用 `iconFile`（模组列表左边），横幅用 `bannerFile`；`logoFile` 已弃用，还写着会在启动时弹"模组加载警告"界面，挡住 `--quickPlay` | 已确认 |
+| 客户端配置界面：`container.registerConfig(ModConfig.Type.CLIENT, SPEC)`，`container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new)`；枚举项实现 `TranslatableEnum` 给出显示名，语言键 `<模组>.configuration.<键>`、`.tooltip`，分节标题 `<模组>.configuration.section.<模组>.client.toml` | 已确认，`client.ClientConfig` |
 
 拿不准的 API 先查源码再写，核实后把结果补进这张表。源码在：
 
@@ -327,13 +332,16 @@ io.github.sweetcornna.universe
 - 客户端：完整显示戴森球时，中端显卡在 1080p 下帧率下降不超过 10%。
 - 首次前往一颗星球（含创建维度）的等待时间低于 5 秒。
 
+M9 实测（2026-10-20，本机，ADR-0019）：主世界 5,000 段传送带、500 台设备，另有三颗星球各 1,000 段、100 台，本模组每刻 1.16 ms（服务器每刻 6.25 ms）；戴森球天空在 1600×900 下折算到 60 fps，常见的四层球壳完整画质约多 2.5%，十层壳加十八条轨道的上限约多 10%（简化画质约 4%）；第一次去一颗星球，建维度 4 ms，命令到落地约 2 秒。
+
 ## 6. 测试
 
 - core：JUnit 6 单元测试，随 `gradlew build` 运行，CI 上也跑。
 - 数据：`SurvivalProgressionTest` 读 `src/generated/resources`，检查科技树和配方在生存里走得通（ADR-0011）；`BalanceTest` 拿同样的配方跑进度模型（`core.balance.Progression`），检查每档研究时间没有断崖（ADR-0018）。改了数据生成要先跑 `runData`。
-- 游戏内行为：NeoForge GameTest（`gameTestServer` 运行配置），覆盖设备、传送带、维度切换等。
+- 游戏内行为：NeoForge GameTest，`./gradlew runGameTestServer` 跑完退出。现有：通电的制造台做出齿轮、没电的制造台停在缺电、传送带把物品送进储物仓、研究站攒点数（`gametest.UniverseGameTests`）。这也顺带验证了服务端不加载客户端的类。
 - 脚本验收：`./gradlew runClient -PdevScript=<脚本>` 启动时，`client.dev.DevScript` 进存档后逐行执行脚本：执行命令、转视角、悬停、右键设备、按界面按钮、等设备动作一次、截图、退出，不碰键盘鼠标。截的是帧缓冲，窗口可以一直放在屏幕外；要在 `options.txt` 里关掉 `pauseOnLostFocus`，否则窗口没有焦点时游戏会暂停。
-- 性能：core 层做基准测试（M1 定方案），游戏内用 Spark 剖析。
+- 性能：core 层做基准测试（M1 定方案）。游戏内 `/universe perf` 按子系统计时，`/universe bench <传送带> <设备>` 搭参照基地；要看方法栈时再装 Spark。
+- 多人：`runClient2`（游戏目录 `run2`，用户名 Dev2）。两个客户端都带开发脚本无头启动：主机用 `lan <端口>` 开放（只监听回环地址），`waitplayers <人数>` 等客人连上、退出；客人用 `-PjoinServer=localhost:<端口>` 直接连。
 - 回归：保留几个固定种子的测试世界，每次升级 MC 版本后手动走一遍。
 
 ## 7. 版本跟进

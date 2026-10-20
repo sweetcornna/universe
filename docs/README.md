@@ -6,6 +6,7 @@
 | [玩法设计](01-game-design.md) | 宇宙、星球、生存、飞船、工业、戴森球 |
 | [技术架构](02-architecture.md) | 分层、包结构、技术方案、26.x 注意事项 |
 | [路线图](03-roadmap.md) | 里程碑任务和时间表 |
+| [发布](release/page.md) | Modrinth、CurseForge 的页面文字，图标和截图在 `release/` 目录 |
 
 ## 架构决策记录
 
@@ -31,6 +32,7 @@
 | [0016](adr/0016-dyson-sphere.md) | 戴森球 | 已采纳 |
 | [0017](adr/0017-space-and-trade.md) | 太空与贸易：空间站、信用点、小行星、飞船战斗、探索车、驯养和传送 | 已采纳 |
 | [0018](adr/0018-endgame-and-content.md) | 终局与内容：反物质、宇宙矩阵、人造恒星、升级科技、通关、蓝图、指南 | 已采纳 |
+| [0019](adr/0019-alpha.md) | Alpha：性能、兼容、多人和发布 | 已采纳 |
 
 模板：
 

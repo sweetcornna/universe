@@ -8,6 +8,8 @@ modId="${mod_id}"
 version="${mod_version}"
 displayName="${mod_name}"
 authors="${mod_authors}"
+# 模组列表里的方形图标，由 tools/logo.py 生成（26.x 起 logoFile 已弃用，改用 iconFile / bannerFile）
+iconFile="universe_logo.png"
 description='''
 从方块世界出发，驾驶飞船探索程序生成的星系，建设跨星球的自动化工业，最终在恒星周围建造戴森球。
 Set out from the blocky world, fly your starship across procedurally generated star systems, build interplanetary factories and raise a Dyson sphere around a star.
