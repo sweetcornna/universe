@@ -5,6 +5,7 @@ import java.util.Objects;
 
 import org.jspecify.annotations.Nullable;
 
+import io.github.sweetcornna.universe.blueprint.BlueprintSettings;
 import io.github.sweetcornna.universe.factory.recipe.MachineRecipe;
 import io.github.sweetcornna.universe.factory.recipe.MachineRecipes;
 import io.github.sweetcornna.universe.factory.research.Research;
@@ -12,6 +13,7 @@ import io.github.sweetcornna.universe.stats.ProductionLog;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
@@ -34,7 +36,7 @@ import net.neoforged.neoforge.common.crafting.SizedIngredient;
  * <p>格子：前 {@link Spec#inputs()} 个是原料，后面是产物。存档里记下原料格数；原料格变多了（M8 把熔炉改成三格），
  * 读档时把产物挪到新的位置。
  */
-public class RecipeMachineBlockEntity extends MachineBlockEntity implements MachineMenu.ButtonTarget {
+public class RecipeMachineBlockEntity extends MachineBlockEntity implements MachineMenu.ButtonTarget, BlueprintSettings {
     public static final int SELECTED = BASE_DATA;
     public static final int PROGRESS = BASE_DATA + 1;
     public static final int STATUS = BASE_DATA + 2;
@@ -86,6 +88,23 @@ public class RecipeMachineBlockEntity extends MachineBlockEntity implements Mach
     // ---- 配方
 
     /** 选定的配方；没选、配方已不存在或类型不对时为空。只在服务端可用。 */
+    @Override
+    public @Nullable CompoundTag blueprintSettings() {
+        if (this.selected == null) {
+            return null;
+        }
+        CompoundTag tag = new CompoundTag();
+        tag.putString("Recipe", this.selected.identifier().toString());
+        return tag;
+    }
+
+    @Override
+    public void applyBlueprintSettings(CompoundTag settings) {
+        Identifier id = Identifier.tryParse(settings.getStringOr("Recipe", ""));
+        this.selected = id == null ? null : ResourceKey.create(Registries.RECIPE, id);
+        this.setChanged();
+    }
+
     public @Nullable RecipeHolder<MachineRecipe> recipe() {
         if (this.selected == null || !(this.level instanceof ServerLevel serverLevel)) {
             return null;

@@ -750,6 +750,9 @@ final class UniverseRecipes extends RecipeProvider {
         this.researchShaped("exocraft", RecipeCategory.TRANSPORTATION, UniverseItems.EXOCRAFT.get(), 1,
                 List.of("SXS", "CAC", "MSM"), Map.of('S', steel, 'X', exciter, 'C', UniverseItems.CIRCUIT_BOARD.get(),
                         'A', UniverseItems.ACCUMULATOR.get(), 'M', UniverseItems.ELECTRIC_MOTOR.get()));
+        // 蓝图（ADR-0018）：四张纸围着一块电路板，一次出两张
+        this.researchShaped("blueprint", RecipeCategory.TOOLS, UniverseItems.BLUEPRINT.get(), 2, List.of(" P ", "PCP", " P "),
+                Map.of('P', Items.PAPER, 'C', UniverseItems.CIRCUIT_BOARD.get()));
         this.researchShaped("teleport_network", RecipeCategory.TRANSPORTATION, UniverseItems.TELEPORTER.get(), 1,
                 List.of("TPT", "SWS", "TCT"), Map.of('T', UniverseItems.ORE_SMELTED.get(OreKind.TITANIUM).get(), 'P', exciter, 'S', steel,
                         'W', UniverseItems.SPACE_WARPER.get(), 'C', UniverseItems.CIRCUIT_BOARD.get()));

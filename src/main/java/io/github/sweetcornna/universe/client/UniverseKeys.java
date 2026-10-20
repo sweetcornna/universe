@@ -30,6 +30,10 @@ public final class UniverseKeys {
     /** 多功能工具在采矿和战斗模式之间切换（默认 G）。 */
     public static final KeyMapping TOOL_MODE = new KeyMapping("key.universe.tool_mode", InputConstants.Type.KEYBOARD, InputConstants.KEY_G, CATEGORY);
 
+    /** 拿着画好的蓝图时转 90°（默认 R，ADR-0018）。 */
+    public static final KeyMapping ROTATE_BLUEPRINT = new KeyMapping("key.universe.rotate_blueprint", InputConstants.Type.KEYBOARD,
+            InputConstants.KEY_R, CATEGORY);
+
     private UniverseKeys() {
     }
 
@@ -44,6 +48,7 @@ public final class UniverseKeys {
             event.register(STATS);
             event.register(DYSON_EDITOR);
             event.register(TOOL_MODE);
+            event.register(ROTATE_BLUEPRINT);
         });
     }
 }

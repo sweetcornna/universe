@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.OptionalInt;
 
+import io.github.sweetcornna.universe.blueprint.BlueprintSettings;
 import io.github.sweetcornna.universe.core.dyson.DysonSphere;
 import io.github.sweetcornna.universe.core.dyson.SwarmOrbit;
 import io.github.sweetcornna.universe.core.research.Upgrades;
@@ -33,7 +34,7 @@ import net.minecraft.world.level.storage.ValueOutput;
  * 电磁轨道弹射器（ADR-0016）：每 60 刻把一张太阳帆射进选定的戴森云轨道，工作 90 焦/刻、待机 3 焦/刻（戴森球计划
  * 1.8 MW、60 kW）。星球上要看得见天空、恒星在地平线 5° 以上；太空里一直能射。
  */
-public class EmRailEjectorBlockEntity extends MachineBlockEntity implements MachineMenu.ButtonTarget {
+public class EmRailEjectorBlockEntity extends MachineBlockEntity implements MachineMenu.ButtonTarget, BlueprintSettings {
     public static final long WORK_POWER = 90;
     public static final long IDLE_POWER = 3;
     public static final int SHOT_TICKS = 60;
@@ -73,6 +74,19 @@ public class EmRailEjectorBlockEntity extends MachineBlockEntity implements Mach
     /** 选定的戴森云轨道编号。 */
     public int orbit() {
         return this.orbit;
+    }
+
+    @Override
+    public CompoundTag blueprintSettings() {
+        CompoundTag tag = new CompoundTag();
+        tag.putInt("Orbit", this.orbit);
+        return tag;
+    }
+
+    @Override
+    public void applyBlueprintSettings(CompoundTag settings) {
+        this.orbit = settings.getIntOr("Orbit", this.orbit);
+        this.setChanged();
     }
 
     @Override

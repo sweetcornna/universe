@@ -2,6 +2,7 @@ package io.github.sweetcornna.universe.dyson;
 
 import java.util.OptionalInt;
 
+import io.github.sweetcornna.universe.blueprint.BlueprintSettings;
 import io.github.sweetcornna.universe.core.dyson.DysonSphere;
 import io.github.sweetcornna.universe.core.dyson.RayReceiver;
 import io.github.sweetcornna.universe.core.research.Upgrades;
@@ -32,7 +33,7 @@ import net.minecraft.world.level.storage.ValueOutput;
  * <p>发电模式下每刻向戴森球要"满负荷时要取的电 × 上一刻的负荷"，戴森球不够分时大家按比例少拿；电网用多少才从戴森球
  * 取多少（除以效率）。
  */
-public class RayReceiverBlockEntity extends MachineBlockEntity implements MachineMenu.ButtonTarget {
+public class RayReceiverBlockEntity extends MachineBlockEntity implements MachineMenu.ButtonTarget, BlueprintSettings {
     public static final int LENS_SLOT = 0;
     public static final int PHOTON_SLOT = 1;
     public static final int MODE = BASE_DATA;
@@ -96,6 +97,19 @@ public class RayReceiverBlockEntity extends MachineBlockEntity implements Machin
         if (this.output > 0 && !this.photonMode) {
             this.sphere().ifPresent(sphere -> sphere.draw(this.output * load / RayReceiver.efficiency(this.continuity, this.lossFactor())));
         }
+    }
+
+    @Override
+    public CompoundTag blueprintSettings() {
+        CompoundTag tag = new CompoundTag();
+        tag.putBoolean("PhotonMode", this.photonMode);
+        return tag;
+    }
+
+    @Override
+    public void applyBlueprintSettings(CompoundTag settings) {
+        this.photonMode = settings.getBooleanOr("PhotonMode", false);
+        this.setChanged();
     }
 
     /** 射线传输效率升级之后的损耗倍数。 */

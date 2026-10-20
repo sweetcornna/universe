@@ -8,6 +8,8 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import io.github.sweetcornna.universe.Universe;
+import io.github.sweetcornna.universe.blueprint.BlueprintInfo;
+import io.github.sweetcornna.universe.blueprint.BlueprintSelection;
 import io.github.sweetcornna.universe.core.survival.ToolMode;
 import io.github.sweetcornna.universe.core.tech.Grade;
 import io.github.sweetcornna.universe.core.tech.ModuleType;
@@ -63,6 +65,16 @@ public final class UniverseDataComponents {
             builder -> builder.persistent(enumCodec(ToolMode.class))
                     .networkSynchronized(ByteBufCodecs.idMapper(index -> ToolMode.values()[Math.floorMod(index, ToolMode.values().length)],
                             ToolMode::ordinal)));
+
+    /** 空白蓝图框的选区（ADR-0018）。 */
+    public static final Supplier<DataComponentType<BlueprintSelection>> BLUEPRINT_SELECTION = COMPONENTS.registerComponentType(
+            "blueprint_selection", builder -> builder.persistent(BlueprintSelection.CODEC).networkSynchronized(BlueprintSelection.STREAM_CODEC));
+    /** 画好的蓝图：编号、名字、大小和材料（ADR-0018）。 */
+    public static final Supplier<DataComponentType<BlueprintInfo>> BLUEPRINT = COMPONENTS.registerComponentType("blueprint",
+            builder -> builder.persistent(BlueprintInfo.CODEC).networkSynchronized(BlueprintInfo.STREAM_CODEC).cacheEncoding());
+    /** 蓝图转了几个 90°（ADR-0018）。 */
+    public static final Supplier<DataComponentType<Integer>> BLUEPRINT_ROTATION = COMPONENTS.registerComponentType("blueprint_rotation",
+            builder -> builder.persistent(Codec.INT).networkSynchronized(ByteBufCodecs.VAR_INT));
 
     private UniverseDataComponents() {
     }

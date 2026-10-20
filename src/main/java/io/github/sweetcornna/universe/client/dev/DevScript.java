@@ -350,14 +350,16 @@ public final class DevScript {
                 }
             }
             case "press" -> {
-                // press analyze|techtree：按一下本模组的键（开关分析目镜、打开科技树）
+                // press analyze|techtree|rotate：按一下本模组的键（开关分析目镜、打开科技树、转蓝图）
                 KeyMapping key = switch (args[0]) {
                     case "analyze" -> UniverseKeys.ANALYZE;
                     case "techtree" -> UniverseKeys.TECH_TREE;
+                    case "rotate" -> UniverseKeys.ROTATE_BLUEPRINT;
                     default -> throw new IllegalArgumentException("unknown key " + args[0]);
                 };
                 KeyMapping.click(key.getKey());
             }
+            case "rightclick" -> KeyMapping.click(minecraft.options.keyUse.getKey()); // 按一下右键，走原版的完整流程
             case "useitem" -> {
                 // 对着空气右键（用手里的东西）
                 if (minecraft.gameMode != null) {

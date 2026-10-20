@@ -1,5 +1,6 @@
 package io.github.sweetcornna.universe.network;
 
+import io.github.sweetcornna.universe.blueprint.Blueprints;
 import io.github.sweetcornna.universe.dyson.Dyson;
 import io.github.sweetcornna.universe.entity.ship.ShipWeapons;
 import io.github.sweetcornna.universe.exocraft.Exocrafts;
@@ -58,6 +59,12 @@ public final class UniverseNetwork {
                 .playToClient(OpenBaseBeaconPayload.TYPE, OpenBaseBeaconPayload.STREAM_CODEC)
                 .playToClient(StoryStatePayload.TYPE, StoryStatePayload.STREAM_CODEC)
                 .playToClient(EndingPayload.TYPE, EndingPayload.STREAM_CODEC)
+                .playToClient(BlueprintPayloads.OpenSave.TYPE, BlueprintPayloads.OpenSave.STREAM_CODEC)
+                .playToClient(BlueprintPayloads.Content.TYPE, BlueprintPayloads.Content.STREAM_CODEC)
+                .playToServer(BlueprintPayloads.Save.TYPE, BlueprintPayloads.Save.STREAM_CODEC, Blueprints::handleSave)
+                .playToServer(BlueprintPayloads.Rotate.TYPE, BlueprintPayloads.Rotate.STREAM_CODEC, Blueprints::handleRotate)
+                .playToServer(BlueprintPayloads.Click.TYPE, BlueprintPayloads.Click.STREAM_CODEC, Blueprints::handleClick)
+                .playToServer(BlueprintPayloads.Request.TYPE, BlueprintPayloads.Request.STREAM_CODEC, Blueprints::handleRequest)
                 .playToServer(DysonEditPayload.TYPE, DysonEditPayload.STREAM_CODEC, Dyson::handleEdit)
                 .playToServer(JetpackPayload.TYPE, JetpackPayload.STREAM_CODEC, PlayerSurvival::handleJetpack)
                 .playToServer(ResearchActionPayload.TYPE, ResearchActionPayload.STREAM_CODEC, Research::handleAction)

@@ -64,6 +64,15 @@ public record StationContents(List<Slot> slots, int drones, int vessels, int war
         return new StationContents(slots, station.drones(), station.vessels(), station.warpers(), station.energy(), station.droneRange());
     }
 
+    /** 只留每格的物品、上限、供需和无人机范围（蓝图用，ADR-0018）。 */
+    public StationContents settingsOnly() {
+        List<Slot> settings = new ArrayList<>();
+        for (Slot slot : this.slots) {
+            settings.add(new Slot(slot.item, 0, slot.max, slot.local, slot.remote));
+        }
+        return new StationContents(settings, 0, 0, 0, 0, this.range);
+    }
+
     /** 什么都没有（没设物品、没有载具），不用存进物品里。 */
     public boolean isEmpty() {
         return this.drones == 0 && this.vessels == 0 && this.warpers == 0 && this.slots.stream().allMatch(slot -> slot.item.isEmpty());

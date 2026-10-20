@@ -1,0 +1,18 @@
+{
+  "type": "universe:research_shaped",
+  "category": "equipment",
+  "key": {
+    "C": "universe:circuit_board",
+    "P": "minecraft:paper"
+  },
+  "pattern": [
+    " P ",
+    "PCP",
+    " P "
+  ],
+  "research": "blueprint",
+  "result": {
+    "count": 2,
+    "id": "universe:blueprint"
+  }
+}

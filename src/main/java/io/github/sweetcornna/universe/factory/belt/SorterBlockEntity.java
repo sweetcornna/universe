@@ -4,6 +4,7 @@ import java.util.Optional;
 
 import org.jspecify.annotations.Nullable;
 
+import io.github.sweetcornna.universe.blueprint.BlueprintSettings;
 import io.github.sweetcornna.universe.core.factory.BeltLine;
 import io.github.sweetcornna.universe.core.factory.SorterTier;
 import io.github.sweetcornna.universe.core.power.PowerDevice;
@@ -17,6 +18,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Containers;
 import net.minecraft.world.item.Item;
@@ -40,7 +42,7 @@ import net.neoforged.neoforge.transfer.transaction.Transaction;
  * <p>一个循环的刻数按档位（{@link SorterTier}，Mk.I 每秒 1.5 次）：前一半抓着东西转到前面，放下后后一半转回来。
  * 电力不足时按满足率变慢。三档共用这个方块实体，档位看方块。
  */
-public class SorterBlockEntity extends BlockEntity implements PowerDevice {
+public class SorterBlockEntity extends BlockEntity implements PowerDevice, BlueprintSettings {
     private @Nullable Item filter;
     private ItemStack held = ItemStack.EMPTY;
     /** 循环进度（刻）；-1 是停在背后等着抓。 */
@@ -58,6 +60,23 @@ public class SorterBlockEntity extends BlockEntity implements PowerDevice {
 
     public @Nullable Item filter() {
         return this.filter;
+    }
+
+    @Override
+    public @Nullable CompoundTag blueprintSettings() {
+        if (this.filter == null) {
+            return null;
+        }
+        CompoundTag tag = new CompoundTag();
+        tag.putString("Filter", BuiltInRegistries.ITEM.getKey(this.filter).toString());
+        return tag;
+    }
+
+    @Override
+    public void applyBlueprintSettings(CompoundTag settings) {
+        Identifier id = Identifier.tryParse(settings.getStringOr("Filter", ""));
+        this.setFilter(id == null ? null : BuiltInRegistries.ITEM.getValue(id));
+        this.setChanged();
     }
 
     public void setFilter(@Nullable Item filter) {

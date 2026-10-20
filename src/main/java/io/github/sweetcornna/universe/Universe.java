@@ -5,6 +5,7 @@ import org.slf4j.Logger;
 import com.mojang.logging.LogUtils;
 
 import io.github.sweetcornna.universe.asteroid.Asteroids;
+import io.github.sweetcornna.universe.blueprint.Blueprints;
 import io.github.sweetcornna.universe.discovery.Discoveries;
 import io.github.sweetcornna.universe.dyson.Dyson;
 import io.github.sweetcornna.universe.entity.FaunaSpawner;
@@ -107,6 +108,7 @@ public final class Universe {
         Exocrafts.registerEvents(gameBus);
         ShipRepair.registerEvents(gameBus);
         Story.registerEvents(gameBus);
+        Blueprints.registerEvents(gameBus);
         gameBus.addListener(RegisterCommandsEvent.class, event -> DimensionCommand.register(event.getDispatcher()));
     }
 

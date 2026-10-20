@@ -137,6 +137,8 @@ public final class TechTree {
             Tech.lab("exocraft", List.of("energy_storage", "processor"), List.of(BLUE, RED), 40, items("exocraft")),
             // ---- M7：传送网络（ADR-0017）。基地信标不用研究
             Tech.lab("teleport_network", List.of("warp_drive"), List.of(BLUE, RED), 80, items("teleporter")),
+            // ---- M8：蓝图（ADR-0018），蓝矩阵阶段就能研究
+            Tech.lab("blueprint", List.of("basic_assembling", "electromagnetic_drive"), List.of(BLUE), 30, items("blueprint")),
             // ---- M8：终局（ADR-0018）
             Tech.lab("mini_fusion_power", List.of("deuterium_fractionation", "information_matrix"), List.of(BLUE, RED, YELLOW, PURPLE), 150,
                     items("mini_fusion_power_plant")),

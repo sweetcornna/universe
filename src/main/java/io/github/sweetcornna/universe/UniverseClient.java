@@ -2,6 +2,7 @@ package io.github.sweetcornna.universe;
 
 import io.github.sweetcornna.universe.client.ItemSummaries;
 import io.github.sweetcornna.universe.client.asteroid.AsteroidClient;
+import io.github.sweetcornna.universe.client.blueprint.BlueprintClient;
 import io.github.sweetcornna.universe.client.dev.DevScript;
 import io.github.sweetcornna.universe.client.exocraft.ExocraftClient;
 import io.github.sweetcornna.universe.client.pirate.PirateClient;
@@ -79,6 +80,7 @@ public final class UniverseClient {
         TeleportClient.registerEvents(modBus);
         MissionClient.registerEvents(modBus);
         ClientStory.registerEvents(modBus, NeoForge.EVENT_BUS);
+        BlueprintClient.registerEvents(modBus, NeoForge.EVENT_BUS);
         // 开发用：带了 -Duniverse.devScript 才启用
         DevScript.registerEvents(NeoForge.EVENT_BUS);
         // 客户端世界建立环境属性时，从客户端的星团里查星球

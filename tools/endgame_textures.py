@@ -153,6 +153,41 @@ def universe_matrix():
     save(img, ITEM, "universe_matrix")
 
 
+def blueprint():
+    """蓝图：一张蓝色的图纸，白色网格，中间画着一个白框机器，右上角卷起来。"""
+    img = clear()
+    paper = (40, 96, 176)
+    dark = (24, 62, 124)
+    grid = (88, 146, 214)
+    for y in range(2, 14):
+        for x in range(2, 14):
+            c = grid if (x - 2) % 3 == 0 or (y - 2) % 3 == 0 else paper
+            put(img, x, y, shade(c, 0.88) if x + y > 22 else c)
+    # 白框机器和一条传送带
+    for x in range(5, 11):
+        put(img, x, 5, (236, 244, 255))
+        put(img, x, 9, (236, 244, 255))
+    for y in range(5, 10):
+        put(img, 5, y, (236, 244, 255))
+        put(img, 10, y, (236, 244, 255))
+    put(img, 7, 7, (255, 220, 120))
+    put(img, 8, 7, (255, 220, 120))
+    for x in range(3, 13):
+        put(img, x, 11, (196, 220, 250))
+    # 右上角卷起来
+    for i in range(3):
+        for j in range(3 - i):
+            img.putpixel((13 - j, 2 + i), (0, 0, 0, 0))
+    put(img, 11, 2, (206, 226, 250))
+    put(img, 12, 3, (206, 226, 250))
+    put(img, 13, 4, (206, 226, 250))
+    put(img, 11, 3, (150, 186, 230))
+    put(img, 12, 4, (150, 186, 230))
+    put(img, 11, 4, (150, 186, 230))
+    outline(img, dark)
+    save(img, ITEM, "blueprint")
+
+
 # ---- 微型聚变发电站
 
 def mini_fusion_power_plant():
@@ -263,6 +298,7 @@ def main():
     antimatter_fuel_rod()
     composite_matrix()
     universe_matrix()
+    blueprint()
     mini_fusion_power_plant()
     artificial_star()
 

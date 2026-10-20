@@ -142,6 +142,7 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("gui.universe.tech_tree.effect", "效果", "Effect");
         both("gui.universe.tech_tree.none", "无", "None");
         story();
+        blueprint();
     }
 
     /** 空间站任务板（ADR-0017）。 */
@@ -1024,6 +1025,45 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("poi.universe.lore.12.title", "最后的话", "Last Words");
         both("poi.universe.lore.12.text", "如果有一天，你的星空也开始变暗，记得回到这里，把手放在石头上。我们会听见。",
                 "If one day your sky begins to dim, remember to come back here and lay your hand on the stone. We will hear you.");
+    }
+
+    /** 蓝图（ADR-0018）。 */
+    private void blueprint() {
+        item(UniverseItems.BLUEPRINT.get(), "蓝图", "Blueprint");
+        both("item.universe.blueprint.named", "蓝图：%s", "Blueprint: %s");
+        both("item.universe.blueprint.unnamed", "未命名", "Untitled");
+        both("tech.universe.blueprint", "蓝图", "Blueprints");
+        both("key.universe.rotate_blueprint", "旋转蓝图", "Rotate Blueprint");
+        both("tooltip.universe.blueprint.summary",
+                "空白：右键两个方块框出选区，每边最多 32 格\n空白：潜行右键起名保存\n画好的：右键放下，R 键转向\n画好的：潜行右键清空\n材料从背包和外骨骼货舱里扣",
+                "Blank: right-click two blocks to mark a region, up to 32 per side\nBlank: sneak + right-click to name and save\nSaved: right-click to build, R to rotate\nSaved: sneak + right-click to clear\nMaterials come from your inventory and exosuit cargo");
+        both("tooltip.universe.blueprint.blank", "空白", "Blank");
+        both("tooltip.universe.blueprint.first", "第一个角：%s, %s, %s", "First corner: %s, %s, %s");
+        both("tooltip.universe.blueprint.selection", "选区 %s×%s×%s，潜行右键保存", "Region %s×%s×%s, sneak + right-click to save");
+        both("tooltip.universe.blueprint.size", "%s×%s×%s，%s 个方块", "%s×%s×%s, %s blocks");
+        both("tooltip.universe.blueprint.material", "  %s ×%s", "  %s ×%s");
+        both("tooltip.universe.blueprint.more", "  还有 %s 种", "  and %s more");
+        both("message.universe.blueprint.first", "第一个角：%s, %s, %s", "First corner: %s, %s, %s");
+        both("message.universe.blueprint.second", "选区 %s×%s×%s，潜行右键保存", "Region %s×%s×%s. Sneak + right-click to save");
+        both("message.universe.blueprint.too_big", "选区太大，每边最多 %s 格", "Region too large: %s blocks per side at most");
+        both("message.universe.blueprint.need_selection", "先右键两个方块框出选区", "Right-click two blocks to mark a region first");
+        both("message.universe.blueprint.other_dimension", "选区不在这个维度", "The region is in another dimension");
+        both("message.universe.blueprint.empty_selection", "选区里没有能存的方块", "Nothing in the region to save");
+        both("message.universe.blueprint.saved", "蓝图「%s」已保存，%s 个方块", "Saved blueprint \"%s\" with %s blocks");
+        both("message.universe.blueprint.rotated", "转到 %s°", "Rotated to %s°");
+        both("message.universe.blueprint.cleared", "蓝图已清空", "Blueprint cleared");
+        both("message.universe.blueprint.busy", "上一张蓝图还没放完", "Still building the last blueprint");
+        both("message.universe.blueprint.missing_data", "找不到这张蓝图的内容", "This blueprint's contents are missing");
+        both("message.universe.blueprint.done", "蓝图放好了，放了 %s 个方块", "Blueprint built: %s blocks placed");
+        both("message.universe.blueprint.missing", "缺材料：%s", "Missing materials: %s");
+        both("message.universe.blueprint.count", "%s ×%s", "%s ×%s");
+        both("message.universe.blueprint.more", "，还有 %s 种", ", and %s more");
+        both("message.universe.blueprint.blocked", "%s 个位置被占着，跳过了", "%s positions were occupied and skipped");
+        both("gui.universe.blueprint.save.title", "保存蓝图", "Save Blueprint");
+        both("gui.universe.blueprint.save.size", "选区 %s×%s×%s", "Region %s×%s×%s");
+        both("gui.universe.blueprint.save.name", "名字", "Name");
+        both("gui.universe.blueprint.save.save", "保存", "Save");
+        both("gui.universe.blueprint.save.cancel", "取消", "Cancel");
     }
 
     /** 剧情（ADR-0018）：探测器的日志、先驱者的回应、结局。 */

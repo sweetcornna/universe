@@ -4,6 +4,7 @@ import java.util.UUID;
 
 import org.jspecify.annotations.Nullable;
 
+import io.github.sweetcornna.universe.blueprint.BlueprintSettings;
 import io.github.sweetcornna.universe.core.logistics.LogisticsNetwork;
 import io.github.sweetcornna.universe.core.logistics.Station;
 import io.github.sweetcornna.universe.core.logistics.StationKind;
@@ -21,6 +22,8 @@ import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -40,7 +43,7 @@ import net.minecraft.world.level.storage.ValueOutput;
  * <p>容器格子只是投放口：放进去的无人机、运输船、翘曲器每刻收进账本，界面上的按钮再把空闲的取出来。电池只用电网
  * 富余的电充（和蓄电器一样），不会跟设备抢电。
  */
-public class StationBlockEntity extends MachineBlockEntity implements MachineMenu.ButtonTarget, BeltReceiver {
+public class StationBlockEntity extends MachineBlockEntity implements MachineMenu.ButtonTarget, BeltReceiver, BlueprintSettings {
     public static final int DRONE_SLOT = 0;
     public static final int VESSEL_SLOT = 1;
     public static final int WARPER_SLOT = 2;
@@ -118,6 +121,24 @@ public class StationBlockEntity extends MachineBlockEntity implements MachineMen
 
     public static StationBlockEntity collector(BlockPos pos, BlockState state) {
         return new StationBlockEntity(UniverseBlockEntities.ORBITAL_COLLECTOR.get(), pos, state, StationKind.COLLECTOR);
+    }
+
+    /** 蓝图只记每格的物品、上限和供需，不记存货、载具和电量。 */
+    @Override
+    public @Nullable CompoundTag blueprintSettings() {
+        Station station = this.station();
+        if (station == null) {
+            return null;
+        }
+        StationContents settings = StationContents.of(station).settingsOnly();
+        return StationContents.CODEC.encodeStart(NbtOps.INSTANCE, settings).result()
+                .filter(CompoundTag.class::isInstance).map(CompoundTag.class::cast).orElse(null);
+    }
+
+    @Override
+    public void applyBlueprintSettings(CompoundTag settings) {
+        StationContents.CODEC.parse(NbtOps.INSTANCE, settings).result().ifPresent(contents -> this.pending = contents);
+        this.setChanged();
     }
 
     public StationKind kind() {
