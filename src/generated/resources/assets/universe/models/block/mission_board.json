@@ -1,0 +1,9 @@
+{
+  "parent": "minecraft:block/orientable_with_bottom",
+  "textures": {
+    "bottom": "universe:block/mission_board_top",
+    "front": "universe:block/mission_board_front",
+    "side": "universe:block/mission_board_side",
+    "top": "universe:block/mission_board_top"
+  }
+}

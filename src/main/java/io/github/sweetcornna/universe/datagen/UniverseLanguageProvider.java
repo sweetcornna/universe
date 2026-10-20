@@ -96,6 +96,45 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         this.factory();
         this.trade();
         this.teleport();
+        this.missions();
+    }
+
+    /** 空间站任务板（ADR-0017）。 */
+    private void missions() {
+        block(UniverseBlocks.MISSION_BOARD.get(), "任务板", "Mission Board");
+        both("gui.universe.mission.kind.delivery", "送货", "Delivery");
+        both("gui.universe.mission.kind.bounty", "清剿", "Bounty");
+        both("gui.universe.mission.kind.mining", "采矿", "Mining");
+        both("gui.universe.mission.kind.survey", "测绘", "Survey");
+        both("gui.universe.mission.goal.delivery", "送来 %2$s 个%1$s", "Deliver %2$s × %1$s");
+        both("gui.universe.mission.goal.bounty", "击落 %s 架海盗战机", "Destroy %s pirate fighters");
+        both("gui.universe.mission.goal.mining", "打碎 %s 颗小行星", "Break up %s asteroids");
+        both("gui.universe.mission.goal.survey", "在%1$s星系分析 %2$s 种动植物", "Analyze %2$s species in the %1$s system");
+        both("gui.universe.mission.reward", "报酬 %s 信用点", "Reward: %s credits");
+        both("gui.universe.mission.bonus.navigation_data", "，外加 %s 份导航数据", " + %s Navigation Data");
+        both("gui.universe.mission.bonus.module", "，外加一个技术模块", " + a tech module");
+        both("gui.universe.mission.accept", "接受", "Accept");
+        both("gui.universe.mission.in_progress", "进行中", "Active");
+        both("gui.universe.mission.done", "已完成", "Done");
+        both("gui.universe.mission.busy_hint", "先交付或放弃手上的任务", "Hand in or abandon your current mission first");
+        both("gui.universe.mission.active", "手上的任务", "Current mission");
+        both("gui.universe.mission.none", "没有任务", "None");
+        both("gui.universe.mission.progress", "进度 %s / %s", "Progress: %s / %s");
+        both("gui.universe.mission.from", "已完成，回%s交付", "Done. Hand in at %s");
+        both("gui.universe.mission.hand_in", "交付", "Hand In");
+        both("gui.universe.mission.abandon", "放弃", "Abandon");
+        both("gui.universe.mission.refresh", "每个游戏日换一批任务", "New missions every in-game day");
+        both("hud.universe.mission.ready", "回%s交付", "Return to %s");
+        both("message.universe.mission.busy", "手上已经有任务了", "You already have a mission");
+        both("message.universe.mission.done_today", "今天已经做过这个任务", "You've already done this one today");
+        both("message.universe.mission.accepted", "已接受任务", "Mission accepted");
+        both("message.universe.mission.abandoned", "已放弃任务", "Mission abandoned");
+        both("message.universe.mission.wrong_station", "这个任务要回%s交付", "Hand this mission in at %s");
+        both("message.universe.mission.missing", "还差 %s 个%s", "%s more %s needed");
+        both("message.universe.mission.unfinished", "还没完成（%s/%s）", "Not finished yet (%s/%s)");
+        both("message.universe.mission.ready", "任务目标完成，回%s交付", "Objective complete. Return to %s");
+        both("message.universe.mission.complete", "任务完成，获得 %s 信用点", "Mission complete: %s credits");
+        both("message.universe.mission.bonus", "另外获得：%2$s ×%1$s", "Bonus: %2$s ×%1$s");
     }
 
     /** 基地信标和传送（ADR-0017）。 */

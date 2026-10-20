@@ -158,7 +158,7 @@ public final class Teleporters {
 
     // ---------------------------------------------------------------- 空间站
 
-    /** 每秒看一眼玩家是不是在空间站里：记下来，顺手给老存档的空间站补上传送器。 */
+    /** 每秒看一眼玩家是不是在空间站里：记下来，顺手给老存档的空间站补上传送器和任务板。 */
     private static void visit(ServerPlayer player) {
         ServerLevel level = player.level();
         OptionalInt system = SpaceDimensions.system(level.dimension());
@@ -171,7 +171,7 @@ public final class Teleporters {
             updated.add(system.getAsInt());
             player.setData(UniverseAttachments.VISITED_STATIONS, List.copyOf(updated));
         }
-        Stations.site(level.getServer(), level.dimension()).ifPresent(site -> Stations.ensureTeleporter(level, site));
+        Stations.site(level.getServer(), level.dimension()).ifPresent(site -> Stations.ensureFixtures(level, site));
     }
 
     // ---------------------------------------------------------------- 传送器
@@ -291,9 +291,9 @@ public final class Teleporters {
             return Optional.empty();
         }
         ServerLevel level = SpaceDimensions.getOrCreate(server, system);
-        // 区块读进来（第一次去时会在这里生成），老存档的空间站补上传送器
+        // 区块读进来（第一次去时会在这里生成），老存档的空间站补上传送器和任务板
         level.getChunk(Stations.teleporter(site.get()));
-        Stations.ensureTeleporter(level, site.get());
+        Stations.ensureFixtures(level, site.get());
         Component name = Component.translatable("gui.universe.trade.station", Discoveries.name(server, DiscoveryKey.system(system)));
         return Optional.of(new Arrival(level, Stations.arrival(site.get()), Stations.arrivalYaw(site.get()), name));
     }

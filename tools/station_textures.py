@@ -304,6 +304,67 @@ def station_trim():
     return img
 
 
+# ---- 任务板：同一个机壳，屏幕上三行任务，每行前面一个彩色的小方块，最后一行打了勾
+
+RED = (255, 106, 90)
+MINT = (124, 242, 176)
+
+
+def mission_board_front():
+    rng = random.Random(191)
+    img = terminal_casing(rng)
+    for y in range(2, 13):
+        for x in range(2, 14):
+            put(img, x, y, SCREEN)
+    for x in range(2, 14):
+        put(img, x, 1, shade(INTERIOR, 0.45))
+        put(img, x, 13, shade(INTERIOR, 1.25))
+    # 三行任务：彩色标记 + 一行字
+    for row, (color, length) in enumerate(((GOLD, 7), (RED, 5), (MINT, 6))):
+        y = 3 + row * 3
+        put(img, 3, y, color)
+        put(img, 3, y + 1, shade(color, 0.7))
+        for x in range(5, 5 + length):
+            put(img, x, y, mix(SCREEN, (210, 225, 232), 0.75 if x % 3 else 0.5))
+    # 右下角的勾
+    for x, y in ((10, 10), (11, 11), (12, 10), (13, 9)):
+        put(img, x - 1, y, MINT)
+    for x in range(2, 14):
+        put(img, x, 2, mix(SCREEN, CYAN, 0.25))
+    return img
+
+
+def mission_board_side():
+    rng = random.Random(192)
+    img = terminal_casing(rng)
+    # 一摞文件夹的侧面：几道彩色的边
+    for y, color in ((4, GOLD), (7, RED), (10, MINT)):
+        for x in range(3, 13):
+            put(img, x, y, shade(color, 0.75))
+            put(img, x, y + 1, shade(INTERIOR, 0.6))
+    for x, y in ((1, 1), (13, 1), (1, 13), (13, 13)):
+        rivet(img, x, y, INTERIOR)
+    return img
+
+
+def mission_board_top():
+    rng = random.Random(193)
+    img = terminal_casing(rng)
+    # 青色的星图标记：一个圈加十字
+    for y in range(N):
+        for x in range(N):
+            d = math.hypot(x - 7.5, y - 7.5)
+            if 3.4 < d < 4.6:
+                put(img, x, y, shade(CYAN, 0.85))
+    for i in range(3, 13):
+        put(img, i, 7, shade(CYAN, 0.6))
+        put(img, 7, i, shade(CYAN, 0.6))
+    put(img, 7, 7, CYAN)
+    for x, y in ((1, 1), (13, 1), (1, 13), (13, 13)):
+        rivet(img, x, y, INTERIOR)
+    return img
+
+
 def main():
     save(station_hull(), "station_hull")
     save(station_floor(), "station_floor")
@@ -317,6 +378,9 @@ def main():
     save(ship_repair_front(), "ship_repair_front")
     save(ship_repair_side(), "ship_repair_side")
     save(ship_repair_top(), "ship_repair_top")
+    save(mission_board_front(), "mission_board_front")
+    save(mission_board_side(), "mission_board_side")
+    save(mission_board_top(), "mission_board_top")
 
 
 if __name__ == "__main__":

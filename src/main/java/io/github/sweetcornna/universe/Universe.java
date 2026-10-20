@@ -19,6 +19,7 @@ import io.github.sweetcornna.universe.factory.power.LevelPower;
 import io.github.sweetcornna.universe.factory.recipe.MachineRecipes;
 import io.github.sweetcornna.universe.factory.research.Research;
 import io.github.sweetcornna.universe.logistics.Logistics;
+import io.github.sweetcornna.universe.mission.Missions;
 import io.github.sweetcornna.universe.network.UniverseNetwork;
 import io.github.sweetcornna.universe.pirate.Pirates;
 import io.github.sweetcornna.universe.poi.Pois;
@@ -81,6 +82,7 @@ public final class Universe {
         FaunaSpawner.registerEvents(gameBus);
         TamedCreatures.registerEvents(gameBus);
         Teleporters.registerEvents(gameBus);
+        Missions.registerEvents(gameBus);
         ShipTransit.registerEvents(gameBus);
         PlayerSurvival.registerEvents(gameBus);
         CrashSite.registerEvents(gameBus);

@@ -11,6 +11,7 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
+import io.github.sweetcornna.universe.mission.MissionState;
 import io.github.sweetcornna.universe.sentinel.SentinelHud;
 import io.github.sweetcornna.universe.sentinel.SentinelAlert;
 import io.github.sweetcornna.universe.Universe;
@@ -89,6 +90,11 @@ public final class UniverseAttachments {
     /** 进过的空间站（恒星系序号，ADR-0017）：传送器能传过去。死亡不丢。 */
     public static final Supplier<AttachmentType<List<Integer>>> VISITED_STATIONS = ATTACHMENT_TYPES.register("visited_stations",
             () -> AttachmentType.builder(() -> List.<Integer>of()).serialize(Codec.INT.listOf().fieldOf("systems")).copyOnDeath().build());
+
+    /** 空间站任务（ADR-0017）：接了的任务和今天做完的，死亡不丢，同步给本人画 HUD。 */
+    public static final Supplier<AttachmentType<MissionState>> MISSIONS = ATTACHMENT_TYPES.register("missions",
+            () -> AttachmentType.builder(() -> MissionState.NONE).serialize(MissionState.CODEC).copyOnDeath()
+                    .sync((holder, player) -> holder == player, MissionState.STREAM_CODEC).build());
 
     /** 太空维度的区块存过盘（有过方块，ADR-0017）：以后方块拆光了也要再存一次。 */
     public static final Supplier<AttachmentType<Boolean>> SPACE_BUILT = ATTACHMENT_TYPES.register("space_built",

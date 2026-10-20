@@ -23,6 +23,7 @@ import io.github.sweetcornna.universe.core.galaxy.Planet;
 import io.github.sweetcornna.universe.core.galaxy.StarSystem;
 import io.github.sweetcornna.universe.core.procgen.NameGenerator.Name;
 import io.github.sweetcornna.universe.entity.AlienCreature;
+import io.github.sweetcornna.universe.mission.Missions;
 import io.github.sweetcornna.universe.network.AnalyzePayload;
 import io.github.sweetcornna.universe.network.DiscoveryPayload;
 import io.github.sweetcornna.universe.network.RenamePayload;
@@ -207,6 +208,7 @@ public final class Discoveries {
             player.sendOverlayMessage(Component.translatable("message.universe.discovery.unknown"));
             return;
         }
+        Missions.onAnalyzed(player, key.get());
         if (!discover(player, key.get())) {
             DiscoveryLog.Entry entry = log(level.getServer()).get(key.get()).orElse(null);
             Component by = entry == null || entry.discoverer() == null

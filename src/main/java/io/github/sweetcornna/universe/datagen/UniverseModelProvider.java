@@ -348,7 +348,7 @@ final class UniverseModelProvider extends ModelProvider {
                 .with(BlockModelGenerators.ROTATION_HORIZONTAL_FACING));
         blockModels.registerSimpleItemModel(pod, podModels[0]);
         for (Block block : List.of(UniverseBlocks.DATA_TERMINAL.get(), UniverseBlocks.SUPPLY_CRATE.get(), UniverseBlocks.TRADE_TERMINAL.get(),
-                UniverseBlocks.SHIP_REPAIR.get())) {
+                UniverseBlocks.SHIP_REPAIR.get(), UniverseBlocks.MISSION_BOARD.get())) {
             String name = BuiltInRegistries.BLOCK.getKey(block).getPath();
             Identifier model = ModelTemplates.CUBE_ORIENTABLE_TOP_BOTTOM.create(block, new TextureMapping()
                     .put(TextureSlot.FRONT, texture(name + "_front"))

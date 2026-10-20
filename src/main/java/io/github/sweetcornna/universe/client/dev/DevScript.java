@@ -46,6 +46,8 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
@@ -63,6 +65,7 @@ import net.neoforged.neoforge.client.event.ClientTickEvent;
  * <li>{@code look <偏航> <俯仰>}：转视角
  * <li>{@code use <x> <y> <z>}：右键点方块的顶面（打开设备界面）
  * <li>{@code usenear <方块 ID>}：右键点 8 格内最近的这种方块的顶面
+ * <li>{@code approach <方块 ID>}：传送到 16 格内最近的这种方块正面两格的地方，面朝它
  * <li>{@code button <编号>}：按当前设备界面的第几个按钮
  * <li>{@code click <x> <y> [shift] [ctrl]}：在当前界面上点一下，坐标相对界面中心（界面缩放后的像素）
  * <li>{@code type <文字>}：往当前界面里有焦点的输入框打字；{@code enter}：按一下回车
@@ -71,7 +74,7 @@ import net.neoforged.neoforge.client.event.ClientTickEvent;
  * <li>{@code hud on|off}：显示、隐藏界面（F1）
  * <li>{@code fly on|off}：创造模式下悬停，好在半空里取景
  * <li>{@code track on|steer|off}：每刻把视线转向最近的海盗战机（驾驶飞船时测试开炮用）；{@code steer} 还按左右键把船头转过去
- * <li>{@code key forward|back|left|right|jump|sneak|sprint on|off}：按住、松开一个移动键（每刻重新按下，开飞船用）
+ * <li>{@code key forward|back|left|right|jump|sneak|sprint|use on|off}：按住、松开一个键（每刻重新按下，开飞船、按住右键分析用）
  * <li>{@code near <实体 ID> <距离> [最多等几刻]}：等这种实体进到这么近以内再往下走
  * <li>{@code shot <名字>}：截图存到 {@code screenshots/<名字>.png}
  * <li>{@code log <文字>}：写一行日志（带上鼠标有没有被抓住、信用点、位置和重力）
@@ -256,6 +259,7 @@ public final class DevScript {
                     case "jump" -> minecraft.options.keyJump;
                     case "sneak" -> minecraft.options.keyShift;
                     case "sprint" -> minecraft.options.keySprint;
+                    case "use" -> minecraft.options.keyUse;
                     default -> throw new IllegalArgumentException("unknown key " + args[0]);
                 };
                 boolean down = args.length < 2 || args[1].equals("on");
@@ -288,20 +292,21 @@ public final class DevScript {
                 }
             }
             case "usenear" -> {
-                Identifier id = Identifier.parse(args[0]);
-                BlockPos origin = player.blockPosition();
-                BlockPos found = null;
-                double best = Double.MAX_VALUE;
-                for (BlockPos pos : BlockPos.betweenClosed(origin.offset(-8, -8, -8), origin.offset(8, 8, 8))) {
-                    double d = pos.distSqr(origin);
-                    if (d < best && BuiltInRegistries.BLOCK.getKey(minecraft.level.getBlockState(pos).getBlock()).equals(id)) {
-                        best = d;
-                        found = pos.immutable();
-                    }
-                }
+                BlockPos found = nearest(minecraft, player, Identifier.parse(args[0]), 8);
                 if (found != null && minecraft.gameMode != null) {
                     BlockHitResult hit = new BlockHitResult(Vec3.atCenterOf(found).add(0, 0.5, 0), Direction.UP, found, false);
                     minecraft.gameMode.useItemOn(player, InteractionHand.MAIN_HAND, hit);
+                }
+            }
+            case "approach" -> {
+                BlockPos found = nearest(minecraft, player, Identifier.parse(args[0]), 16);
+                if (found != null) {
+                    BlockState state = minecraft.level.getBlockState(found);
+                    Direction facing = state.hasProperty(BlockStateProperties.HORIZONTAL_FACING)
+                            ? state.getValue(BlockStateProperties.HORIZONTAL_FACING) : Direction.NORTH;
+                    BlockPos stand = found.relative(facing, 2);
+                    player.connection.sendCommand(String.format(Locale.ROOT, "tp @s %.1f %d %.1f %.1f 0", stand.getX() + 0.5, stand.getY(),
+                            stand.getZ() + 0.5, facing.getOpposite().toYRot()));
                 }
             }
             case "interact", "attack" -> {
@@ -434,5 +439,20 @@ public final class DevScript {
 
     private static @Nullable String name(String[] args) {
         return args.length == 0 ? null : args[0].endsWith(".png") ? args[0] : args[0] + ".png";
+    }
+
+    /** 范围内离玩家最近的这种方块。 */
+    private static @Nullable BlockPos nearest(Minecraft minecraft, LocalPlayer player, Identifier id, int radius) {
+        BlockPos origin = player.blockPosition();
+        BlockPos found = null;
+        double best = Double.MAX_VALUE;
+        for (BlockPos pos : BlockPos.betweenClosed(origin.offset(-radius, -radius, -radius), origin.offset(radius, radius, radius))) {
+            double d = pos.distSqr(origin);
+            if (d < best && BuiltInRegistries.BLOCK.getKey(minecraft.level.getBlockState(pos).getBlock()).equals(id)) {
+                best = d;
+                found = pos.immutable();
+            }
+        }
+        return found;
     }
 }

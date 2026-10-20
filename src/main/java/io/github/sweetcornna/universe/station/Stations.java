@@ -81,6 +81,8 @@ public final class Stations {
                     .setValue(HorizontalDirectionalBlock.FACING, direction(placement.facing().rotate(site.hangar())));
             case TELEPORTER -> UniverseBlocks.STATION_TELEPORTER.get().defaultBlockState()
                     .setValue(HorizontalDirectionalBlock.FACING, direction(placement.facing().rotate(site.hangar())));
+            case MISSION_BOARD -> UniverseBlocks.MISSION_BOARD.get().defaultBlockState()
+                    .setValue(HorizontalDirectionalBlock.FACING, direction(placement.facing().rotate(site.hangar())));
         };
     }
 
@@ -106,19 +108,18 @@ public final class Stations {
         };
     }
 
-    /**
-     * 老存档里的空间站生成时还没有传送器：有人进站时看一眼，那一格空着就补上。
-     *
-     * @return 补上了
-     */
-    public static boolean ensureTeleporter(ServerLevel level, Site site) {
-        BlockPos pos = teleporter(site);
-        if (!level.isLoaded(pos) || !level.getBlockState(pos).isAir()) {
-            return false;
+    /** 老存档里的空间站生成时还没有传送器和任务板：有人进站时看一眼，那一格空着就补上。 */
+    public static void ensureFixtures(ServerLevel level, Site site) {
+        ensure(level, site, StationLayout.TELEPORTER_X, StationLayout.TELEPORTER_Z);
+        ensure(level, site, StationLayout.MISSION_BOARD_X, StationLayout.MISSION_BOARD_Z);
+    }
+
+    private static void ensure(ServerLevel level, Site site, int x, int z) {
+        int[] world = site.toWorld(x, 1, z);
+        BlockPos pos = new BlockPos(world[0], world[1], world[2]);
+        if (level.isLoaded(pos) && level.getBlockState(pos).isAir()) {
+            level.setBlock(pos, state(StationLayout.at(x, 1, z), site), 3);
         }
-        Placement placement = StationLayout.at(StationLayout.TELEPORTER_X, 1, StationLayout.TELEPORTER_Z);
-        level.setBlock(pos, state(placement, site), 3);
-        return true;
     }
 
     /** 生成区块时调用：把落在这个区块里的那部分空间站放上去，顺带更新生成用的高度图。 */

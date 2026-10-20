@@ -27,6 +27,7 @@ import io.github.sweetcornna.universe.block.ship.ShipSeatBlock;
 import io.github.sweetcornna.universe.block.ship.ShipThrusterBlock;
 import io.github.sweetcornna.universe.block.ship.ShipWeaponBlock;
 import io.github.sweetcornna.universe.block.ship.WarpDriveBlock;
+import io.github.sweetcornna.universe.block.station.MissionBoardBlock;
 import io.github.sweetcornna.universe.block.station.ShipRepairBlock;
 import io.github.sweetcornna.universe.block.station.TradeTerminalBlock;
 import io.github.sweetcornna.universe.core.ecology.PlantForm;
@@ -203,6 +204,10 @@ public final class UniverseBlocks {
             p -> station(p.mapColor(MapColor.COLOR_CYAN)).lightLevel(state -> 9));
     /** 交易终端：挖不掉，只在空间站里有。 */
     public static final DeferredBlock<TradeTerminalBlock> TRADE_TERMINAL = BLOCKS.registerBlock("trade_terminal", TradeTerminalBlock::new,
+            p -> p.mapColor(MapColor.METAL).strength(-1.0F, 3600000.0F).sound(SoundType.METAL).noLootTable().lightLevel(state -> 10)
+                    .pushReaction(PushReaction.IMMOVEABLE));
+    /** 任务板：挖不掉，只在空间站的大厅里有。 */
+    public static final DeferredBlock<MissionBoardBlock> MISSION_BOARD = BLOCKS.registerBlock("mission_board", MissionBoardBlock::new,
             p -> p.mapColor(MapColor.METAL).strength(-1.0F, 3600000.0F).sound(SoundType.METAL).noLootTable().lightLevel(state -> 10)
                     .pushReaction(PushReaction.IMMOVEABLE));
     /** 飞船维修台：挖不掉，只在空间站的机库里有。 */

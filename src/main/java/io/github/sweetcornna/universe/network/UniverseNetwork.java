@@ -3,6 +3,7 @@ package io.github.sweetcornna.universe.network;
 import io.github.sweetcornna.universe.dyson.Dyson;
 import io.github.sweetcornna.universe.entity.ship.ShipWeapons;
 import io.github.sweetcornna.universe.exocraft.Exocrafts;
+import io.github.sweetcornna.universe.mission.Missions;
 import io.github.sweetcornna.universe.stats.ProductionLog;
 import io.github.sweetcornna.universe.survival.Multitool;
 import io.github.sweetcornna.universe.discovery.Discoveries;
@@ -25,7 +26,7 @@ import net.neoforged.neoforge.server.ServerLifecycleHooks;
  */
 public final class UniverseNetwork {
     /** 协议版本：任何包的格式改动都要加一，版本不同的客户端和服务端会拒绝连接。 */
-    private static final String PROTOCOL_VERSION = "18";
+    private static final String PROTOCOL_VERSION = "19";
 
     private UniverseNetwork() {
     }
@@ -53,6 +54,7 @@ public final class UniverseNetwork {
                 .playToClient(DysonSyncPayload.TYPE, DysonSyncPayload.STREAM_CODEC)
                 .playToClient(TradeStatePayload.TYPE, TradeStatePayload.STREAM_CODEC)
                 .playToClient(OpenTeleporterPayload.TYPE, OpenTeleporterPayload.STREAM_CODEC)
+                .playToClient(OpenMissionBoardPayload.TYPE, OpenMissionBoardPayload.STREAM_CODEC)
                 .playToClient(OpenBaseBeaconPayload.TYPE, OpenBaseBeaconPayload.STREAM_CODEC)
                 .playToServer(DysonEditPayload.TYPE, DysonEditPayload.STREAM_CODEC, Dyson::handleEdit)
                 .playToServer(JetpackPayload.TYPE, JetpackPayload.STREAM_CODEC, PlayerSurvival::handleJetpack)
@@ -68,6 +70,7 @@ public final class UniverseNetwork {
                 .playToServer(ShipControlPayload.TYPE, ShipControlPayload.STREAM_CODEC, ShipWeapons::handleControl)
                 .playToServer(ExocraftControlPayload.TYPE, ExocraftControlPayload.STREAM_CODEC, Exocrafts::handleControl)
                 .playToServer(TeleportRequestPayload.TYPE, TeleportRequestPayload.STREAM_CODEC, Teleporters::handleRequest)
-                .playToServer(RenameBasePayload.TYPE, RenameBasePayload.STREAM_CODEC, Teleporters::handleRename);
+                .playToServer(RenameBasePayload.TYPE, RenameBasePayload.STREAM_CODEC, Teleporters::handleRename)
+                .playToServer(MissionActionPayload.TYPE, MissionActionPayload.STREAM_CODEC, Missions::handleAction);
     }
 }

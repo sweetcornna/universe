@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "universe:block/mission_board",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "universe:block/mission_board"
+    },
+    "facing=south": {
+      "model": "universe:block/mission_board",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "universe:block/mission_board",
+      "y": 270
+    }
+  }
+}

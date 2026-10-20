@@ -305,6 +305,7 @@ io.github.sweetcornna.universe
 | 鼠标键的编号换了：左键 `InputConstants.MOUSE_BUTTON_LEFT` 是 1、右键是 3（不是 GLFW 的 0、1），`AbstractWidget.isValidClickButton` 只认 1；自己造 `MouseButtonInfo` 时要用这些常量 | 已确认，开发脚本的 `click` 原来传 0，按钮点不动 |
 | 方块换掉时的收尾 `affectNeighborsAfterRemoval(BlockState, ServerLevel, BlockPos, boolean)` 只在方块真的变了、而且带了标志 1（通知邻居）时调用；`/setblock … strict` 不带这个标志，不会触发 | 已确认，基地信标在用 |
 | 玩家放下方块后调 `Block.setPlacedBy(Level, BlockPos, BlockState, @Nullable LivingEntity, ItemStack)`；按 UUID 查玩家名用 `server.services().nameToIdCache().get(UUID)`，返回 `Optional<NameAndId>` | 已确认，基地信标在用 |
+| `Item.getName` 要传 `ItemStack`；只有 `Item` 时用 `new ItemStack(item).getHoverName()` | 已确认 |
 | 界面输入事件是记录：`CharacterEvent(int codepoint)`、`KeyEvent(key, keycode, modifiers)`；按钮的悬停说明 `Button.Builder.tooltip(Tooltip.create(Component))` | 已确认，传送器界面在用 |
 
 拿不准的 API 先查源码再写，核实后把结果补进这张表。源码在：

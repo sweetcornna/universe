@@ -115,7 +115,7 @@ public final class Trading {
     }
 
     /** 能在空间站买卖的东西：常备品，加上打了大类标签、算得出价钱的东西（科技类只有常备品和模块）。 */
-    static synchronized List<Goods> catalog(MinecraftServer server) {
+    public static synchronized List<Goods> catalog(MinecraftServer server) {
         if (catalog == null) {
             Map<String, Goods> goods = new LinkedHashMap<>();
             for (Staple staple : STAPLES) {

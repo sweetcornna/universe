@@ -39,6 +39,9 @@ public final class StationLayout {
     /** 传送器：大厅里交易终端旁边，面朝机库；到站的人站在它前面两格。 */
     public static final int TELEPORTER_X = -15;
     public static final int TELEPORTER_Z = -6;
+    /** 任务板：交易终端另一边，和传送器对称。 */
+    public static final int MISSION_BOARD_X = -15;
+    public static final int MISSION_BOARD_Z = 6;
     /** 离别的天体至少这么远。 */
     private static final double CLEARANCE = 150;
 
@@ -109,7 +112,9 @@ public final class StationLayout {
         /** 飞船维修台，在机库里停机坪旁边。 */
         REPAIR,
         /** 传送器，在大厅里交易终端旁边。 */
-        TELEPORTER
+        TELEPORTER,
+        /** 任务板，在交易终端另一边。 */
+        MISSION_BOARD
     }
 
     /**
@@ -392,6 +397,9 @@ public final class StationLayout {
         }
         if (y == 1 && x == TELEPORTER_X && z == TELEPORTER_Z) {
             return new Placement(Part.TELEPORTER, Dir.EAST);
+        }
+        if (y == 1 && x == MISSION_BOARD_X && z == MISSION_BOARD_Z) {
+            return new Placement(Part.MISSION_BOARD, Dir.EAST);
         }
         // 维修台：停机坪的一侧，面朝停机坪
         if (y == 1 && x == REPAIR_X && z == REPAIR_Z) {
