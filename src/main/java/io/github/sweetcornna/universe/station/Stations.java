@@ -17,6 +17,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
@@ -78,7 +79,46 @@ public final class Stations {
                     .setValue(HorizontalDirectionalBlock.FACING, direction(placement.facing().rotate(site.hangar())));
             case REPAIR -> UniverseBlocks.SHIP_REPAIR.get().defaultBlockState()
                     .setValue(HorizontalDirectionalBlock.FACING, direction(placement.facing().rotate(site.hangar())));
+            case TELEPORTER -> UniverseBlocks.STATION_TELEPORTER.get().defaultBlockState()
+                    .setValue(HorizontalDirectionalBlock.FACING, direction(placement.facing().rotate(site.hangar())));
         };
+    }
+
+    /** 空间站传送器的位置。 */
+    public static BlockPos teleporter(Site site) {
+        int[] pos = site.toWorld(StationLayout.TELEPORTER_X, 1, StationLayout.TELEPORTER_Z);
+        return new BlockPos(pos[0], pos[1], pos[2]);
+    }
+
+    /** 传送到空间站的人站的地方：传送器前面两格，脚下是地板。 */
+    public static Vec3 arrival(Site site) {
+        int[] pos = site.toWorld(StationLayout.TELEPORTER_X + 2, 1, StationLayout.TELEPORTER_Z);
+        return new Vec3(pos[0] + 0.5, pos[1], pos[2] + 0.5);
+    }
+
+    /** 到站时面朝机库。 */
+    public static float arrivalYaw(Site site) {
+        return switch (site.hangar()) {
+            case EAST -> -90;
+            case SOUTH -> 0;
+            case WEST -> 90;
+            case NORTH -> 180;
+        };
+    }
+
+    /**
+     * 老存档里的空间站生成时还没有传送器：有人进站时看一眼，那一格空着就补上。
+     *
+     * @return 补上了
+     */
+    public static boolean ensureTeleporter(ServerLevel level, Site site) {
+        BlockPos pos = teleporter(site);
+        if (!level.isLoaded(pos) || !level.getBlockState(pos).isAir()) {
+            return false;
+        }
+        Placement placement = StationLayout.at(StationLayout.TELEPORTER_X, 1, StationLayout.TELEPORTER_Z);
+        level.setBlock(pos, state(placement, site), 3);
+        return true;
     }
 
     /** 生成区块时调用：把落在这个区块里的那部分空间站放上去，顺带更新生成用的高度图。 */

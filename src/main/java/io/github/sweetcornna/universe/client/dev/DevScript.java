@@ -1,5 +1,6 @@
 package io.github.sweetcornna.universe.client.dev;
 
+import com.mojang.blaze3d.platform.InputConstants;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -28,6 +29,8 @@ import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Screenshot;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.CharacterEvent;
+import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.input.MouseButtonInfo;
 import net.minecraft.client.player.LocalPlayer;
@@ -59,8 +62,10 @@ import net.neoforged.neoforge.client.event.ClientTickEvent;
  * <li>{@code cmd <命令>}：以玩家身份执行命令（不带斜杠）
  * <li>{@code look <偏航> <俯仰>}：转视角
  * <li>{@code use <x> <y> <z>}：右键点方块的顶面（打开设备界面）
+ * <li>{@code usenear <方块 ID>}：右键点 8 格内最近的这种方块的顶面
  * <li>{@code button <编号>}：按当前设备界面的第几个按钮
  * <li>{@code click <x> <y> [shift] [ctrl]}：在当前界面上点一下，坐标相对界面中心（界面缩放后的像素）
+ * <li>{@code type <文字>}：往当前界面里有焦点的输入框打字；{@code enter}：按一下回车
  * <li>{@code await launch|shot <x> <y> <z> [最多等几刻]}：等那里的发射井发射、弹射器射出一次再往下走
  * <li>{@code dyson}：打开戴森球编辑器；{@code close}：关掉当前界面
  * <li>{@code hud on|off}：显示、隐藏界面（F1）
@@ -282,6 +287,23 @@ public final class DevScript {
                     minecraft.gameMode.useItemOn(player, InteractionHand.MAIN_HAND, hit);
                 }
             }
+            case "usenear" -> {
+                Identifier id = Identifier.parse(args[0]);
+                BlockPos origin = player.blockPosition();
+                BlockPos found = null;
+                double best = Double.MAX_VALUE;
+                for (BlockPos pos : BlockPos.betweenClosed(origin.offset(-8, -8, -8), origin.offset(8, 8, 8))) {
+                    double d = pos.distSqr(origin);
+                    if (d < best && BuiltInRegistries.BLOCK.getKey(minecraft.level.getBlockState(pos).getBlock()).equals(id)) {
+                        best = d;
+                        found = pos.immutable();
+                    }
+                }
+                if (found != null && minecraft.gameMode != null) {
+                    BlockHitResult hit = new BlockHitResult(Vec3.atCenterOf(found).add(0, 0.5, 0), Direction.UP, found, false);
+                    minecraft.gameMode.useItemOn(player, InteractionHand.MAIN_HAND, hit);
+                }
+            }
             case "interact", "attack" -> {
                 // interact|attack <实体类型>：对最近的那个实体右键或左键（16 格内）
                 Identifier type = Identifier.parse(args[0]);
@@ -351,7 +373,19 @@ public final class DevScript {
                     }
                     double x = screen.width / 2.0 + Double.parseDouble(args[0]);
                     double y = screen.height / 2.0 + Double.parseDouble(args[1]);
-                    screen.mouseClicked(new MouseButtonEvent(x, y, new MouseButtonInfo(0, modifiers)), false);
+                    screen.mouseClicked(new MouseButtonEvent(x, y, new MouseButtonInfo(InputConstants.MOUSE_BUTTON_LEFT, modifiers)), false);
+                }
+            }
+            case "type" -> {
+                Screen screen = minecraft.gui.screen();
+                if (screen != null) {
+                    rest.codePoints().forEach(codepoint -> screen.charTyped(new CharacterEvent(codepoint)));
+                }
+            }
+            case "enter" -> {
+                Screen screen = minecraft.gui.screen();
+                if (screen != null) {
+                    screen.keyPressed(new KeyEvent(InputConstants.KEY_RETURN, 0, 0));
                 }
             }
             case "await" -> {

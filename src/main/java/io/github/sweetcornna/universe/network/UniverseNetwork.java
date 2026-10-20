@@ -10,6 +10,7 @@ import io.github.sweetcornna.universe.entity.ship.ShipWarp;
 import io.github.sweetcornna.universe.factory.research.Research;
 import io.github.sweetcornna.universe.survival.PlayerSurvival;
 import io.github.sweetcornna.universe.tech.SuitTech;
+import io.github.sweetcornna.universe.teleport.Teleporters;
 import io.github.sweetcornna.universe.trade.Trading;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.network.event.RegisterConfigurationTasksEvent;
@@ -24,7 +25,7 @@ import net.neoforged.neoforge.server.ServerLifecycleHooks;
  */
 public final class UniverseNetwork {
     /** 协议版本：任何包的格式改动都要加一，版本不同的客户端和服务端会拒绝连接。 */
-    private static final String PROTOCOL_VERSION = "17";
+    private static final String PROTOCOL_VERSION = "18";
 
     private UniverseNetwork() {
     }
@@ -51,6 +52,8 @@ public final class UniverseNetwork {
                 .playToClient(StatsSnapshotPayload.TYPE, StatsSnapshotPayload.STREAM_CODEC)
                 .playToClient(DysonSyncPayload.TYPE, DysonSyncPayload.STREAM_CODEC)
                 .playToClient(TradeStatePayload.TYPE, TradeStatePayload.STREAM_CODEC)
+                .playToClient(OpenTeleporterPayload.TYPE, OpenTeleporterPayload.STREAM_CODEC)
+                .playToClient(OpenBaseBeaconPayload.TYPE, OpenBaseBeaconPayload.STREAM_CODEC)
                 .playToServer(DysonEditPayload.TYPE, DysonEditPayload.STREAM_CODEC, Dyson::handleEdit)
                 .playToServer(JetpackPayload.TYPE, JetpackPayload.STREAM_CODEC, PlayerSurvival::handleJetpack)
                 .playToServer(ResearchActionPayload.TYPE, ResearchActionPayload.STREAM_CODEC, Research::handleAction)
@@ -63,6 +66,8 @@ public final class UniverseNetwork {
                 .playToServer(StatsRequestPayload.TYPE, StatsRequestPayload.STREAM_CODEC, ProductionLog::handleRequest)
                 .playToServer(TradeActionPayload.TYPE, TradeActionPayload.STREAM_CODEC, Trading::handleAction)
                 .playToServer(ShipControlPayload.TYPE, ShipControlPayload.STREAM_CODEC, ShipWeapons::handleControl)
-                .playToServer(ExocraftControlPayload.TYPE, ExocraftControlPayload.STREAM_CODEC, Exocrafts::handleControl);
+                .playToServer(ExocraftControlPayload.TYPE, ExocraftControlPayload.STREAM_CODEC, Exocrafts::handleControl)
+                .playToServer(TeleportRequestPayload.TYPE, TeleportRequestPayload.STREAM_CODEC, Teleporters::handleRequest)
+                .playToServer(RenameBasePayload.TYPE, RenameBasePayload.STREAM_CODEC, Teleporters::handleRename);
     }
 }

@@ -27,6 +27,7 @@ import io.github.sweetcornna.universe.client.poi.PoiClient;
 import io.github.sweetcornna.universe.client.sky.PlanetSkyRenderer;
 import io.github.sweetcornna.universe.client.station.StationClient;
 import io.github.sweetcornna.universe.client.stats.StatsClient;
+import io.github.sweetcornna.universe.client.teleport.TeleportClient;
 import io.github.sweetcornna.universe.client.tech.TechClient;
 import io.github.sweetcornna.universe.client.trade.TradeClient;
 import io.github.sweetcornna.universe.datagen.UniverseDataGen;
@@ -73,6 +74,7 @@ public final class UniverseClient {
         ItemSummaries.registerEvents(NeoForge.EVENT_BUS);
         PoiClient.registerEvents(modBus);
         SentinelClient.registerEvents(modBus);
+        TeleportClient.registerEvents(modBus);
         // 开发用：带了 -Duniverse.devScript 才启用
         DevScript.registerEvents(NeoForge.EVENT_BUS);
         // 客户端世界建立环境属性时，从客户端的星团里查星球

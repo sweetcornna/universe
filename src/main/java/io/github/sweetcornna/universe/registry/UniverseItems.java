@@ -151,6 +151,9 @@ public final class UniverseItems {
     public static final DeferredItem<BlockItem> STATION_PAD = ITEMS.registerSimpleBlockItem(UniverseBlocks.STATION_PAD);
     public static final DeferredItem<BlockItem> STATION_TRIM = ITEMS.registerSimpleBlockItem(UniverseBlocks.STATION_TRIM);
     public static final DeferredItem<BlockItem> SHIP_REPAIR = ITEMS.registerSimpleBlockItem(UniverseBlocks.SHIP_REPAIR);
+    public static final DeferredItem<BlockItem> STATION_TELEPORTER = ITEMS.registerSimpleBlockItem(UniverseBlocks.STATION_TELEPORTER);
+    public static final DeferredItem<BlockItem> BASE_BEACON = ITEMS.registerSimpleBlockItem(UniverseBlocks.BASE_BEACON);
+    public static final DeferredItem<BlockItem> TELEPORTER = ITEMS.registerSimpleBlockItem(UniverseBlocks.TELEPORTER);
 
     // ---- 外骨骼
     public static final DeferredItem<Item> EXOSUIT_HELMET = ITEMS.registerSimpleItem("exosuit_helmet",
@@ -347,7 +350,8 @@ public final class UniverseItems {
                 MULTITOOL, DAMAGED_MULTITOOL));
         order.addAll(MODULES.values());
         order.addAll(List.of(NAVIGATION_DATA, SIGNAL_BOOSTER, SUPPLY_CRATE, DROP_POD, DATA_TERMINAL, MONOLITH, TECH_CACHE, SMOLDERING_WRECK));
-        order.addAll(List.of(TRADE_TERMINAL, SHIP_REPAIR, STATION_HULL, STATION_FLOOR, STATION_GLASS, STATION_LIGHT, STATION_PAD, STATION_TRIM));
+        order.addAll(List.of(BASE_BEACON, TELEPORTER));
+        order.addAll(List.of(TRADE_TERMINAL, SHIP_REPAIR, STATION_TELEPORTER, STATION_HULL, STATION_FLOOR, STATION_GLASS, STATION_LIGHT, STATION_PAD, STATION_TRIM));
         order.addAll(List.of(SENTINEL_SCRAP, SENTINEL_SPAWN_EGG, HEAVY_SENTINEL_SPAWN_EGG, PIRATE_SCRAP));
         order.addAll(ORES.values());
         order.addAll(ORE_DROPS.values());

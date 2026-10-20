@@ -371,6 +371,13 @@ final class UniverseModelProvider extends ModelProvider {
         Identifier boosterModel = ModelLocationUtils.getModelLocation(booster);
         blockModels.blockStateOutput.accept(BlockModelGenerators.createSimpleBlock(booster, BlockModelGenerators.plainVariant(boosterModel)));
         blockModels.registerSimpleItemModel(booster, boosterModel);
+        // 基地和传送（ADR-0017）：传送器充满电时台面发亮；基地信标的模型是手写的
+        recipeMachine(blockModels, UniverseBlocks.TELEPORTER.get(), "teleporter", true, "machine_casing_top");
+        recipeMachine(blockModels, UniverseBlocks.STATION_TELEPORTER.get(), "station_teleporter", true, "station_hull");
+        Block beacon = UniverseBlocks.BASE_BEACON.get();
+        Identifier beaconModel = ModelLocationUtils.getModelLocation(beacon);
+        blockModels.blockStateOutput.accept(BlockModelGenerators.createSimpleBlock(beacon, BlockModelGenerators.plainVariant(beaconModel)));
+        blockModels.registerSimpleItemModel(beacon, beaconModel);
         itemModels.generateFlatItem(UniverseItems.NAVIGATION_DATA.get(), ModelTemplates.FLAT_ITEM);
         // 守卫机（ADR-0014）
         itemModels.generateFlatItem(UniverseItems.SENTINEL_SCRAP.get(), ModelTemplates.FLAT_ITEM);

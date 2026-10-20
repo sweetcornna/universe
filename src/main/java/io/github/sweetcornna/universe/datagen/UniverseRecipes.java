@@ -474,6 +474,11 @@ final class UniverseRecipes extends RecipeProvider {
                 in(UniverseItems.STEEL.get(), 6, UniverseItems.ELECTRIC_MOTOR.get(), 4, UniverseItems.ACCUMULATOR.get(), 1,
                         UniverseItems.PLASMA_EXCITER.get(), 1),
                 out(UniverseItems.EXOCRAFT.get(), 1));
+        // 传送器（ADR-0017）：钛的机壳、等离子激发器，核心是一个空间翘曲器
+        this.machine(Kind.ASSEMBLING, "teleporter", 240, "teleport_network",
+                in(UniverseItems.ORE_SMELTED.get(OreKind.TITANIUM).get(), 4, UniverseItems.PLASMA_EXCITER.get(), 1, UniverseItems.STEEL.get(), 2,
+                        UniverseItems.SPACE_WARPER.get(), 1),
+                out(UniverseItems.TELEPORTER.get(), 1));
         this.machine(Kind.ASSEMBLING, "shield_generator", 240, "ship_shields",
                 in(UniverseItems.TITANIUM_ALLOY.get(), 4, UniverseItems.SUPER_MAGNETIC_RING.get(), 2, UniverseItems.PARTICLE_BROADBAND.get(), 2,
                         UniverseItems.ACCUMULATOR.get(), 1),
@@ -652,6 +657,12 @@ final class UniverseRecipes extends RecipeProvider {
                 .define('R', Items.LIGHTNING_ROD.weathering().unaffected()).define('C', Items.COPPER_INGOT).define('B', board).define('I', Items.IRON_INGOT)
                 .unlockedBy(getHasName(board), this.has(board))
                 .save(this.output);
+        // 基地信标（ADR-0017）：和信号增强器一样，有电路板就能做
+        this.shaped(RecipeCategory.TOOLS, UniverseItems.BASE_BEACON.get())
+                .pattern(" R ").pattern("CBC").pattern("III")
+                .define('R', Items.REDSTONE_TORCH).define('C', Items.COPPER_INGOT).define('B', board).define('I', Items.IRON_INGOT)
+                .unlockedBy(getHasName(board), this.has(board))
+                .save(this.output);
         this.shapeless(RecipeCategory.MISC, UniverseItems.NAVIGATION_DATA.get(), 2)
                 .requires(board).requires(Items.PAPER, 2).requires(Items.REDSTONE)
                 .unlockedBy(getHasName(board), this.has(board))
@@ -703,6 +714,9 @@ final class UniverseRecipes extends RecipeProvider {
         this.researchShaped("exocraft", RecipeCategory.TRANSPORTATION, UniverseItems.EXOCRAFT.get(), 1,
                 List.of("SXS", "CAC", "MSM"), Map.of('S', steel, 'X', exciter, 'C', UniverseItems.CIRCUIT_BOARD.get(),
                         'A', UniverseItems.ACCUMULATOR.get(), 'M', UniverseItems.ELECTRIC_MOTOR.get()));
+        this.researchShaped("teleport_network", RecipeCategory.TRANSPORTATION, UniverseItems.TELEPORTER.get(), 1,
+                List.of("TPT", "SWS", "TCT"), Map.of('T', UniverseItems.ORE_SMELTED.get(OreKind.TITANIUM).get(), 'P', exciter, 'S', steel,
+                        'W', UniverseItems.SPACE_WARPER.get(), 'C', UniverseItems.CIRCUIT_BOARD.get()));
         this.researchShaped("ship_shields", RecipeCategory.COMBAT, UniverseItems.SHIELD_GENERATOR.get(), 1,
                 List.of("TMT", "BAB", "TMT"), Map.of('T', alloy, 'M', UniverseItems.SUPER_MAGNETIC_RING.get(),
                         'B', UniverseItems.PARTICLE_BROADBAND.get(), 'A', UniverseItems.ACCUMULATOR.get()));

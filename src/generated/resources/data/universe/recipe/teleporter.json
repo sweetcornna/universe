@@ -1,0 +1,19 @@
+{
+  "type": "universe:research_shaped",
+  "key": {
+    "C": "universe:circuit_board",
+    "P": "universe:plasma_exciter",
+    "S": "universe:steel",
+    "T": "universe:titanium_ingot",
+    "W": "universe:space_warper"
+  },
+  "pattern": [
+    "TPT",
+    "SWS",
+    "TCT"
+  ],
+  "research": "teleport_network",
+  "result": {
+    "id": "universe:teleporter"
+  }
+}

@@ -12,6 +12,7 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.portal.TeleportTransition;
 import net.minecraft.world.phys.AABB;
@@ -59,14 +60,28 @@ public final class TamedCreatures {
     }
 
     private static void bring(ServerPlayer player, Seen from) {
+        ServerLevel old = player.level().getServer().getLevel(from.dimension());
+        if (old != null) {
+            bring(player, followers(player, old, from.position()));
+        }
+    }
+
+    /** 主人在这里的时候跟着他的宠物（没待命、没拴绳、没骑着别的东西也没被骑）。传送器在传送前先记下来。 */
+    public static List<AlienCreature> followers(ServerPlayer player, ServerLevel level, Vec3 position) {
+        return level.getEntitiesOfClass(AlienCreature.class, AABB.ofSize(position, RADIUS * 2, RADIUS * 2, RADIUS * 2),
+                c -> c.isAlive() && c.isOwnedBy(player) && !c.isStaying() && !c.isLeashed() && !c.isPassenger() && !c.isVehicle());
+    }
+
+    /** 把这些宠物带到主人现在的身边，落在地面上；找不到地面或者主人在太空里就留在原地。 */
+    public static void bring(ServerPlayer player, List<AlienCreature> pets) {
         ServerLevel to = player.level();
-        ServerLevel old = to.getServer().getLevel(from.dimension());
-        if (old == null || SpaceDimensions.isSpace(to.dimension())) {
+        if (SpaceDimensions.isSpace(to.dimension())) {
             return;
         }
-        List<AlienCreature> pets = old.getEntitiesOfClass(AlienCreature.class, AABB.ofSize(from.position(), RADIUS * 2, RADIUS * 2, RADIUS * 2),
-                c -> c.isAlive() && c.isOwnedBy(player) && !c.isStaying() && !c.isLeashed() && !c.isPassenger() && !c.isVehicle());
         for (AlienCreature pet : pets) {
+            if (!pet.isAlive()) {
+                continue;
+            }
             Vec3 pos = groundNear(to, pet, player.blockPosition());
             if (pos != null) {
                 pet.teleport(new TeleportTransition(to, pos, Vec3.ZERO, pet.getYRot(), pet.getXRot(), TeleportTransition.DO_NOTHING));
@@ -74,8 +89,8 @@ public final class TamedCreatures {
         }
     }
 
-    /** 主人身边（先找一圈，最后才是主人脚下那一列）往下最近的、放得下这只动物的地面；都没有返回 null。 */
-    private static @Nullable Vec3 groundNear(ServerLevel level, AlienCreature pet, BlockPos centre) {
+    /** 一个位置身边（先找一圈，最后才是脚下那一列）往下最近的、放得下这个实体的地面；都没有返回 null。 */
+    public static @Nullable Vec3 groundNear(ServerLevel level, Entity pet, BlockPos centre) {
         for (int r = 1; r <= 3; r++) {
             for (int dx = -r; dx <= r; dx++) {
                 for (int dz = -r; dz <= r; dz++) {
@@ -91,7 +106,7 @@ public final class TamedCreatures {
         return groundBelow(level, pet, centre);
     }
 
-    private static @Nullable Vec3 groundBelow(ServerLevel level, AlienCreature pet, BlockPos top) {
+    private static @Nullable Vec3 groundBelow(ServerLevel level, Entity pet, BlockPos top) {
         for (int dy = 0; dy <= DROP && top.getY() - dy > level.getMinY(); dy++) {
             BlockPos pos = top.below(dy);
             AABB box = pet.getDimensions(pet.getPose()).makeBoundingBox(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5);

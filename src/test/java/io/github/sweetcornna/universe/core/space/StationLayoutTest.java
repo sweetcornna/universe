@@ -88,6 +88,11 @@ class StationLayoutTest {
         Placement terminal = StationLayout.at(-15, 1, 0);
         assertEquals(Part.TERMINAL, terminal.part());
         assertEquals(Dir.EAST, terminal.facing());
+        Placement teleporter = StationLayout.at(StationLayout.TELEPORTER_X, 1, StationLayout.TELEPORTER_Z);
+        assertEquals(Part.TELEPORTER, teleporter.part());
+        assertEquals(Dir.EAST, teleporter.facing());
+        assertNull(StationLayout.at(StationLayout.TELEPORTER_X + 2, 1, StationLayout.TELEPORTER_Z), "传送器前面空着，到站的人站在那里");
+        assertNull(StationLayout.at(StationLayout.TELEPORTER_X + 2, 2, StationLayout.TELEPORTER_Z));
         assertNull(StationLayout.at(0, StationLayout.MAX_Y + 1, 0));
         assertNotNull(StationLayout.at(0, StationLayout.MAX_Y, 0));
     }

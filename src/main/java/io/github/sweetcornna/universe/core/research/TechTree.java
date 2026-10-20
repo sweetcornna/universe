@@ -127,7 +127,9 @@ public final class TechTree {
             Tech.lab("ship_shields", List.of("ship_weapons", "information_matrix"), List.of(BLUE, RED, YELLOW, PURPLE), 120,
                     items("shield_generator")),
             // ---- M7：探索车（ADR-0017）
-            Tech.lab("exocraft", List.of("energy_storage", "processor"), List.of(BLUE, RED), 40, items("exocraft"))));
+            Tech.lab("exocraft", List.of("energy_storage", "processor"), List.of(BLUE, RED), 40, items("exocraft")),
+            // ---- M7：传送网络（ADR-0017）。基地信标不用研究
+            Tech.lab("teleport_network", List.of("warp_drive"), List.of(BLUE, RED), 80, items("teleporter"))));
 
     private final List<Tech> techs;
     private final Map<String, Tech> byId;

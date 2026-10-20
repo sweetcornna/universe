@@ -52,6 +52,8 @@ import io.github.sweetcornna.universe.factory.resource.CrudeOilSeepBlock;
 import io.github.sweetcornna.universe.factory.resource.ResourceMachineBlocks;
 import io.github.sweetcornna.universe.logistics.OrbitalCollectorBlock;
 import io.github.sweetcornna.universe.logistics.StationBlock;
+import io.github.sweetcornna.universe.teleport.BaseBeaconBlock;
+import io.github.sweetcornna.universe.teleport.TeleporterBlock;
 import net.minecraft.world.level.block.TransparentBlock;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.util.ColorRGBA;
@@ -207,6 +209,16 @@ public final class UniverseBlocks {
     public static final DeferredBlock<ShipRepairBlock> SHIP_REPAIR = BLOCKS.registerBlock("ship_repair", ShipRepairBlock::new,
             p -> p.mapColor(MapColor.METAL).strength(-1.0F, 3600000.0F).sound(SoundType.METAL).noLootTable().lightLevel(state -> 10)
                     .pushReaction(PushReaction.IMMOVEABLE));
+    /** 空间站的传送器：挖不掉，不用电。 */
+    public static final DeferredBlock<TeleporterBlock> STATION_TELEPORTER = BLOCKS.registerBlock("station_teleporter", TeleporterBlock::new,
+            p -> p.mapColor(MapColor.METAL).strength(-1.0F, 3600000.0F).sound(SoundType.METAL).noLootTable()
+                    .lightLevel(state -> state.getValue(MachineBlock.WORKING) ? 10 : 4).pushReaction(PushReaction.IMMOVEABLE));
+    // ---- 基地和传送（ADR-0017）
+    public static final DeferredBlock<BaseBeaconBlock> BASE_BEACON = BLOCKS.registerBlock("base_beacon", BaseBeaconBlock::new,
+            p -> p.mapColor(MapColor.METAL).strength(3.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()
+                    .lightLevel(state -> 7));
+    public static final DeferredBlock<TeleporterBlock> TELEPORTER = BLOCKS.registerBlock("teleporter", TeleporterBlock::new,
+            p -> machine(p).lightLevel(state -> state.getValue(MachineBlock.WORKING) ? 10 : 2));
     // ---- 工业（ADR-0011）
     public static final DeferredBlock<TallMachineBlock> TESLA_TOWER = BLOCKS.registerBlock("tesla_tower",
             p -> new TallMachineBlock(p, UniverseBlockEntities.TESLA_TOWER),

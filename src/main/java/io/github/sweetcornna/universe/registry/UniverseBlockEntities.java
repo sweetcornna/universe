@@ -27,6 +27,7 @@ import io.github.sweetcornna.universe.factory.resource.MiningMachineBlockEntity;
 import io.github.sweetcornna.universe.factory.resource.OilExtractorBlockEntity;
 import io.github.sweetcornna.universe.factory.resource.WaterPumpBlockEntity;
 import io.github.sweetcornna.universe.logistics.StationBlockEntity;
+import io.github.sweetcornna.universe.teleport.TeleporterBlockEntity;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -52,6 +53,8 @@ public final class UniverseBlockEntities {
             () -> new BlockEntityType<>(SolarPanelBlockEntity::new, UniverseBlocks.SOLAR_PANEL.get()));
     public static final Supplier<BlockEntityType<ThermalPlantBlockEntity>> THERMAL_PLANT = BLOCK_ENTITIES.register("thermal_plant",
             () -> new BlockEntityType<>(ThermalPlantBlockEntity::new, UniverseBlocks.THERMAL_PLANT.get()));
+    public static final Supplier<BlockEntityType<TeleporterBlockEntity>> TELEPORTER = BLOCK_ENTITIES.register("teleporter",
+            () -> new BlockEntityType<>(TeleporterBlockEntity::new, UniverseBlocks.TELEPORTER.get(), UniverseBlocks.STATION_TELEPORTER.get()));
     public static final Supplier<BlockEntityType<AccumulatorBlockEntity>> ACCUMULATOR = BLOCK_ENTITIES.register("accumulator",
             () -> new BlockEntityType<>(AccumulatorBlockEntity::new, UniverseBlocks.ACCUMULATOR.get()));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<RecipeMachineBlockEntity>> ARC_SMELTER = recipeMachine(

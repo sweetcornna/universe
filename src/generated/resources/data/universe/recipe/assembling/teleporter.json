@@ -1,0 +1,28 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 4,
+      "ingredient": "universe:titanium_ingot"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:plasma_exciter"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:steel"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:space_warper"
+    }
+  ],
+  "research": "teleport_network",
+  "results": [
+    {
+      "id": "universe:teleporter"
+    }
+  ],
+  "time": 240
+}

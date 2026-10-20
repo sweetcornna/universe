@@ -38,6 +38,7 @@ import io.github.sweetcornna.universe.station.ShipRepair;
 import io.github.sweetcornna.universe.stats.ProductionLog;
 import io.github.sweetcornna.universe.survival.PlayerSurvival;
 import io.github.sweetcornna.universe.tech.SuitTech;
+import io.github.sweetcornna.universe.teleport.Teleporters;
 import io.github.sweetcornna.universe.trade.Trading;
 import io.github.sweetcornna.universe.world.CrashSite;
 import io.github.sweetcornna.universe.world.DimensionCommand;
@@ -79,6 +80,7 @@ public final class Universe {
         PlanetWeather.registerEvents(gameBus);
         FaunaSpawner.registerEvents(gameBus);
         TamedCreatures.registerEvents(gameBus);
+        Teleporters.registerEvents(gameBus);
         ShipTransit.registerEvents(gameBus);
         PlayerSurvival.registerEvents(gameBus);
         CrashSite.registerEvents(gameBus);

@@ -95,6 +95,35 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         this.multitool();
         this.factory();
         this.trade();
+        this.teleport();
+    }
+
+    /** 基地信标和传送（ADR-0017）。 */
+    private void teleport() {
+        block(UniverseBlocks.BASE_BEACON.get(), "基地信标", "Base Beacon");
+        block(UniverseBlocks.TELEPORTER.get(), "传送器", "Teleporter");
+        block(UniverseBlocks.STATION_TELEPORTER.get(), "空间站传送器", "Station Teleporter");
+        both("tooltip.universe.base_beacon.summary", "放下后登记为你的基地\n右键：给基地改名\n传送器能把你送到这里",
+                "Registers a base for you when placed\nRight-click: rename the base\nTeleporters can send you here");
+        both("tooltip.universe.teleporter.summary", "接入电网后充电，充满一次能传送一次（约 10 秒）\n右键：选目的地\n能去你的基地和进过的空间站，跟着你的宠物一起走",
+                "Charges from the power grid. One full charge per jump (about 10 s)\nRight-click: pick a destination\nGoes to your bases and any station you've been inside. Following pets come along");
+        tech("teleport_network", "传送网络", "Teleport Network");
+        both("gui.universe.base.default_name", "%s · 基地 %s", "%s Base %s");
+        both("gui.universe.base.rename_hint", "基地名称，留空用默认名", "Base name. Leave blank for the default");
+        both("gui.universe.teleporter.energy", "电量 %s / %s kJ", "Charge %s / %s kJ");
+        both("gui.universe.teleporter.free", "由空间站供电", "Powered by the station");
+        both("gui.universe.teleporter.here", "你在这里", "You are here");
+        both("gui.universe.teleporter.system", "%s星系", "%s system");
+        both("gui.universe.teleporter.empty", "还没有能去的地方。放一个基地信标，或者先进一次空间站",
+                "Nowhere to go yet. Place a Base Beacon or visit a space station first");
+        both("message.universe.base.registered", "已登记基地：%s", "Base registered: %s");
+        both("message.universe.base.owned", "这是%s的基地", "This base belongs to %s");
+        both("message.universe.teleport.arrived", "已传送到 %s", "Teleported to %s");
+        both("message.universe.teleport.too_far", "离传送器太远了", "Too far from the teleporter");
+        both("message.universe.teleport.not_charged", "传送器还没充满电", "The teleporter isn't charged yet");
+        both("message.universe.teleport.unreachable", "去不了那里", "Can't reach that destination");
+        both("message.universe.teleport.beacon_missing", "%s的基地信标不见了，已从列表里删掉", "The beacon at %s is gone. Removed from the list");
+        both("message.universe.teleport.no_room", "目的地没有落脚的地方", "No room to stand at the destination");
     }
 
     /** 空间站和交易（ADR-0017）。 */

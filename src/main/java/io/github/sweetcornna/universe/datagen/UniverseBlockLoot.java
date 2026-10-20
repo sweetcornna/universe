@@ -121,6 +121,9 @@ final class UniverseBlockLoot extends BlockLootSubProvider {
         // 兴趣点（ADR-0014）：掉落舱、石碑挖不掉；科技储藏箱掉一个随机模块，有时多一份勘探数据；冒烟的残骸拆出船体板
         this.dropSelf(UniverseBlocks.DATA_TERMINAL.get());
         this.dropSelf(UniverseBlocks.SIGNAL_BOOSTER.get());
+        // 基地和传送（ADR-0017）：空间站传送器挖不掉
+        this.dropSelf(UniverseBlocks.BASE_BEACON.get());
+        this.dropSelf(UniverseBlocks.TELEPORTER.get());
         this.dropSelf(UniverseBlocks.SUPPLY_CRATE.get());
         this.add(UniverseBlocks.SMOLDERING_WRECK.get(), this.createSingleItemTable(UniverseBlocks.HULL_PLATING.get(DyeColor.GRAY).get()));
         this.add(UniverseBlocks.TECH_CACHE.get(), LootTable.lootTable()

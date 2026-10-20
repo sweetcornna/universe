@@ -1,0 +1,9 @@
+{
+  "parent": "minecraft:block/orientable_with_bottom",
+  "textures": {
+    "bottom": "universe:block/machine_casing_top",
+    "front": "universe:block/teleporter_front_on",
+    "side": "universe:block/teleporter_side",
+    "top": "universe:block/teleporter_top_on"
+  }
+}
