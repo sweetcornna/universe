@@ -35,6 +35,7 @@ Thumbs.db
 
 ### Minecraft 模组开发 ###
 run/
+run2/
 !**/src/**/run/
 **/src/generated/**/.cache/
 repo/

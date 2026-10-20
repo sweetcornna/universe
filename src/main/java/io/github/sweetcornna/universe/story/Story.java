@@ -20,6 +20,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.gamerules.GameRules;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
@@ -40,12 +41,20 @@ public final class Story {
         gameBus.addListener(PlayerEvent.PlayerLoggedInEvent.class, event -> {
             if (event.getEntity() instanceof ServerPlayer player) {
                 PacketDistributor.sendToPlayer(player, state(player.level().getServer()));
-                // 不在线时到达的剧情节点，进度补上
+                // 不在线时（或还没进过这个世界时）到达的剧情节点，进度补上。剧情是整个世界的，补的进度不往聊天栏里报，
+                // 免得刚进服的人当着所有人"完成了挑战：任务完成"。整段在服务器线程上一口气做完，规则马上还原
                 StoryData data = StoryData.get(player.level().getServer());
-                for (Milestone milestone : Milestone.values()) {
-                    if (data.reached(milestone)) {
-                        MilestoneTrigger.reach(player, MilestoneTrigger.story(milestone));
+                GameRules rules = player.level().getGameRules();
+                boolean announce = rules.get(GameRules.SHOW_ADVANCEMENT_MESSAGES);
+                rules.set(GameRules.SHOW_ADVANCEMENT_MESSAGES, false, null);
+                try {
+                    for (Milestone milestone : Milestone.values()) {
+                        if (data.reached(milestone)) {
+                            MilestoneTrigger.reach(player, MilestoneTrigger.story(milestone));
+                        }
                     }
+                } finally {
+                    rules.set(GameRules.SHOW_ADVANCEMENT_MESSAGES, announce, null);
                 }
             }
         });

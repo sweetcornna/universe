@@ -42,11 +42,13 @@ import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.input.MouseButtonInfo;
 import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
@@ -108,6 +110,11 @@ public final class DevScript {
     /** 脚本按住的键（每刻重新按下，免得被界面开关之类的复位）。 */
     private final Set<KeyMapping> held = new HashSet<>();
     private @Nullable Near near;
+    private @Nullable Players players;
+
+    /** 在等在线人数变成某个数（多人测试：主机等第二个客户端连上、再等它退出）。 */
+    private record Players(int count, long deadline) {
+    }
 
     /** 在等某种实体靠近。 */
     private record Near(Identifier type, double distance, long deadline) {
@@ -180,7 +187,15 @@ public final class DevScript {
             Universe.LOGGER.info("Dev script: near done ({})", close ? "close" : "timeout");
             this.near = null;
         }
-        while (!this.lines.isEmpty() && this.waiting <= 0 && this.await == null && this.near == null) {
+        if (this.players != null) {
+            int online = player.connection.getOnlinePlayers().size();
+            if (online != this.players.count() && minecraft.level.getGameTime() < this.players.deadline()) {
+                return;
+            }
+            Universe.LOGGER.info("Dev script: players done ({} online)", online);
+            this.players = null;
+        }
+        while (!this.lines.isEmpty() && this.waiting <= 0 && this.await == null && this.near == null && this.players == null) {
             String line = this.lines.poll().strip();
             if (line.isEmpty() || line.startsWith("#")) {
                 continue;
@@ -361,11 +376,15 @@ public final class DevScript {
                 }
             }
             case "press" -> {
-                // press analyze|techtree|rotate：按一下本模组的键（开关分析目镜、打开科技树、转蓝图）
+                // press analyze|techtree|rotate|starmap|discovery|stats：按一下本模组的键（开关分析目镜、打开科技树、转蓝图、
+                // 打开星图、发现日志、生产统计）
                 KeyMapping key = switch (args[0]) {
                     case "analyze" -> UniverseKeys.ANALYZE;
                     case "techtree" -> UniverseKeys.TECH_TREE;
                     case "rotate" -> UniverseKeys.ROTATE_BLUEPRINT;
+                    case "starmap" -> UniverseKeys.STAR_MAP;
+                    case "discovery" -> UniverseKeys.DISCOVERY_LOG;
+                    case "stats" -> UniverseKeys.STATS;
                     default -> throw new IllegalArgumentException("unknown key " + args[0]);
                 };
                 KeyMapping.click(key.getKey());
@@ -450,7 +469,8 @@ public final class DevScript {
             }
             case "shot" -> Screenshot.grab(minecraft.gameDirectory, name(args), minecraft.gameRenderer.mainRenderTarget(), 1,
                     message -> Universe.LOGGER.info("Dev script screenshot: {}", message.getString()));
-            case "log" -> Universe.LOGGER.info("Dev script note: {} (mouse grabbed: {}, credits: {}, pos: {} {} {}, gravity: {}, fps: {})", rest,
+            case "log" -> Universe.LOGGER.info("Dev script note: {} ({} in {}, mouse grabbed: {}, credits: {}, pos: {} {} {}, gravity: {}, fps: {})", rest,
+                    player.getName().getString(), minecraft.level.dimension().identifier(),
                     minecraft.mouseHandler.isMouseGrabbed(), player.getData(UniverseAttachments.CREDITS), String.format("%.2f", player.getX()),
                     String.format("%.2f", player.getY()), String.format("%.2f", player.getZ()),
                     player.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.GRAVITY), minecraft.getFps()
@@ -462,6 +482,18 @@ public final class DevScript {
                 minecraft.options.inactivityFpsLimit().set(net.minecraft.client.InactivityFpsLimit.MINIMIZED);
             }
             case "dysonsky" -> ClientConfig.DYSON_SKY.set(ClientConfig.DysonSky.valueOf(args[0].toUpperCase(java.util.Locale.ROOT)));
+            // 多人测试的主机：对局域网开放，给客人用命令的权限，不验证正版账号（开发客户端都是离线账号）。
+            // 只监听回环地址，见 IntegratedServerMixin
+            case "lan" -> {
+                IntegratedServer server = minecraft.getSingleplayerServer();
+                if (server != null) {
+                    server.setUsesAuthentication(false);
+                    boolean published = server.publishServer(MinecraftServer.MultiplayerScope.LAN, true, Integer.parseInt(args[0]));
+                    Universe.LOGGER.info("Dev script: LAN on port {}: {}", args[0], published);
+                }
+            }
+            case "waitplayers" -> this.players = new Players(Integer.parseInt(args[0]),
+                    minecraft.level.getGameTime() + (args.length > 1 ? Integer.parseInt(args[1]) : 6000));
             case "quit" -> minecraft.stop();
             default -> {
                 Consumer<String[]> extra = EXTRA_VERBS.get(verb);

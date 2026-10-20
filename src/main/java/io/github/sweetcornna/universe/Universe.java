@@ -19,6 +19,7 @@ import io.github.sweetcornna.universe.factory.belt.BeltNetwork;
 import io.github.sweetcornna.universe.factory.power.LevelPower;
 import io.github.sweetcornna.universe.factory.recipe.MachineRecipes;
 import io.github.sweetcornna.universe.factory.research.Research;
+import io.github.sweetcornna.universe.gametest.UniverseGameTests;
 import io.github.sweetcornna.universe.logistics.Logistics;
 import io.github.sweetcornna.universe.mission.Missions;
 import io.github.sweetcornna.universe.network.UniverseNetwork;
@@ -81,6 +82,7 @@ public final class Universe {
         UniverseCreativeTabs.register(modBus);
         UniverseWorldgen.register(modBus);
         UniverseNetwork.registerEvents(modBus);
+        UniverseGameTests.register(modBus);
 
         IEventBus gameBus = NeoForge.EVENT_BUS;
         RuntimeDimensions.registerEvents(modBus, gameBus);

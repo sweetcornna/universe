@@ -12,6 +12,7 @@
   "client": [
     "client.CameraMixin",
     "client.ClientLevelMixin",
+    "client.IntegratedServerMixin",
     "client.MouseHandlerMixin"
   ],
   "injectors": {

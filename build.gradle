@@ -62,6 +62,20 @@ neoForge {
             }
         }
 
+        // 多人测试用的第二个客户端：游戏目录是 run2，用户名固定为 Dev2。
+        // ./gradlew runClient2 -PjoinServer=localhost:25599 启动后直接连主机（主机在开发脚本里用 lan 25599 开放）
+        client2 {
+            client()
+            gameDirectory = project.file('run2')
+            programArguments.addAll '--username', 'Dev2'
+            if (project.hasProperty('joinServer')) {
+                programArguments.addAll '--quickPlayMultiplayer', project.property('joinServer').toString()
+            }
+            if (project.hasProperty('devScript')) {
+                systemProperty 'universe.devScript', file(project.property('devScript').toString()).getAbsolutePath()
+            }
+        }
+
         server {
             server()
             programArgument '--nogui'

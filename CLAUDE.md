@@ -18,7 +18,8 @@
 - 构建并运行单元测试：`./gradlew build`（PowerShell 下用 `.\gradlew.bat build`）
 - 只跑单元测试：`./gradlew test`
 - 数据生成：`./gradlew runData`
-- 开发客户端：`./gradlew runClient`。会在用户桌面上打开游戏窗口，运行前先问用户。
+- 开发客户端：`./gradlew runClient`。会在用户桌面上打开游戏窗口，运行前先问用户。第二个客户端 `runClient2`（`run2`，用户名 Dev2）测多人用，规矩一样。
+- 游戏内测试：`./gradlew runGameTestServer`，跑完全部 GameTest 后退出，不需要 EULA。
 - 开发服务器 `runServer` 需要在 `run/eula.txt` 同意 EULA，这必须由用户本人决定。
 
 ## 代码约定
