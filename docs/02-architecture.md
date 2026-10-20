@@ -318,8 +318,8 @@ io.github.sweetcornna.universe
 
 拿不准的 API 先查源码再写，核实后把结果补进这张表。源码在：
 
-- Minecraft（含 NeoForge 补丁）：`build/moddev/artifacts/minecraft-patched-26.3.0.86-sources.jar`，IDE 里可以直接跳转。
-- NeoForge 自己的类：Gradle 缓存里的 `neoforge-26.3.0.86-sources.jar`（`~/.gradle/caches/modules-2/files-2.1/net.neoforged/neoforge/26.3.0.86/`）。
+- Minecraft（含 NeoForge 补丁）：`build/moddev/artifacts/minecraft-patched-26.3.0.95-sources.jar`，IDE 里可以直接跳转。
+- NeoForge 自己的类：Gradle 缓存里的 `neoforge-26.3.0.95-sources.jar`（`~/.gradle/caches/modules-2/files-2.1/net.neoforged/neoforge/26.3.0.95/`）。
 
 ## 5. 性能预算（目标）
 

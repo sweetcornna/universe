@@ -8,7 +8,7 @@
 
 ## 版本与环境
 
-- Minecraft 26.3 + NeoForge 26.3.0.86，Java 25，Gradle 9.2.1，ModDevGradle 2.0.148。版本号集中在 `gradle.properties`。
+- Minecraft 26.3 + NeoForge 26.3.0.95，Java 25，Gradle 9.2.1，ModDevGradle 2.0.148。版本号集中在 `gradle.properties`。
 - 策略是跟随最新正式版，升级按 `docs/adr/0001-target-version.md` 的步骤做。
 - 本机 `JAVA_HOME` 是 JDK 21（REA 自带的 Temurin），只用来运行 Gradle；编译用的 JDK 25 由 Gradle 工具链自动下载到 `~/.gradle/jdks`。
 - 本机下载 Gradle 发行包等较慢（约 0.7 MB/s），偶尔会超时。wrapper 的超时已调到 60 秒；再失败就重试，或用 `curl -C -` 续传。
@@ -35,8 +35,8 @@
 
 - 训练资料和网上教程大多是 1.21.1 及更早的版本。写 MC 或 NeoForge 相关的代码前，先在源码里确认类名和方法签名，不要凭记忆。
 - 源码（首次构建后才有）：
-  - Minecraft（含 NeoForge 补丁）：`build/moddev/artifacts/minecraft-patched-26.3.0.86-sources.jar`
-  - NeoForge 自己的类：`~/.gradle/caches/modules-2/files-2.1/net.neoforged/neoforge/26.3.0.86/*/neoforge-26.3.0.86-sources.jar`
+  - Minecraft（含 NeoForge 补丁）：`build/moddev/artifacts/minecraft-patched-26.3.0.95-sources.jar`
+  - NeoForge 自己的类：`~/.gradle/caches/modules-2/files-2.1/net.neoforged/neoforge/26.3.0.95/*/neoforge-26.3.0.95-sources.jar`
   - 查法：`unzip -l <jar> | grep <类名>` 找路径，`unzip -p <jar> <路径>` 看内容。
 - 已知的变化见 `docs/02-architecture.md` §4；核实了新的变化，就补进那张表。
 
