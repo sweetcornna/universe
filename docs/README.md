@@ -30,6 +30,7 @@
 | [0015](adr/0015-logistics-and-midgame-industry.md) | 物流网络与中期工业 | 已采纳 |
 | [0016](adr/0016-dyson-sphere.md) | 戴森球 | 已采纳 |
 | [0017](adr/0017-space-and-trade.md) | 太空与贸易：空间站、信用点、小行星、飞船战斗、探索车、驯养和传送 | 已采纳 |
+| [0018](adr/0018-endgame-and-content.md) | 终局与内容：反物质、宇宙矩阵、人造恒星、升级科技、通关、蓝图、指南 | 已采纳 |
 
 模板：
 
