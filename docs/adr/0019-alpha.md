@@ -1,6 +1,6 @@
 # ADR-0019 Alpha：性能、兼容、多人和发布
 
-- 状态：已采纳（M9 已实现；Sodium、Iris 待测，上传发布由作者操作）
+- 状态：已采纳（M9 已实现；上传发布由作者操作）
 - 日期：2026-10-20
 
 ## 背景
@@ -66,7 +66,11 @@
 - JEI 用 31.16.0.86（26.3 上还是测试版）。它的运行库 `net.mezzdev.config:mezz_config` 也在 JEI 的仓库里，Gradle 的仓库过滤要放行这个组。
 - JEI 的说明页只在空格处换行，中文会在"1%"这种数字两边断开、词中间加连字符。说明文字先按本模组的 `TextWrap` 断好，一行一个组件交给 JEI。配方分类里英文的"需要研究"一行太长，放不下时截断加省略号，鼠标指着时提示全文；英文键改成更短的"Research: %s"。
 - Jade 显示的数据由服务端每次查看时写进去：设备的数据数组、在做的配方的第一个产物、射线接收站的效率、物流站每格的物品。
-- Sodium 0.9.2 在 NeoForge 26.3.0.86 和 26.3.0.95 上都启动就崩溃：它的 mixin 找的是 4 个参数的 `extractVisibleBlockEntities(Camera, float, LevelRenderState, Frustum)`，现在的 NeoForge 里没有这个签名，和本模组无关。Modrinth 上有 0.9.3-beta.1，作者只同意下载过 0.9.2，所以先没测。Iris 依赖 Sodium，一起搁着。这一项没打勾。
+- Sodium 0.9.2 在 NeoForge 26.3.0.86 和 26.3.0.95 上都启动就崩溃：它的 mixin 找的是 4 个参数的 `extractVisibleBlockEntities(Camera, float, LevelRenderState, Frustum)`，现在的 NeoForge 里没有这个签名，和本模组无关。0.9.3-beta.1 去掉了这个 mixin，更新说明写的是适配 NeoForge 26.3.0.65 以后的构建。作者同意下载以后，`sodium_version` 改成了它。
+- Sodium 0.9.3-beta.1：启动正常，本模组自己画的东西都对：设备模型、传送带上的物品、飞船（实体和飞行 HUD）、星球地形和天空、生存模式的 HUD、戴森球（两层壳加一条帆轨道，约 2.6 万个顶点，每帧 0.009 ms）。日志里没有本模组的警告。
+- Iris 1.11.7：Modrinth 上标的是配 Sodium 0.9.2，它自己的 `neoforge.mods.toml` 只要求 Sodium 0.6 以上，配 0.9.3-beta.1 能加载。不装光影包时，上面几样和只装 Sodium 时一样，帧数也差不多。
+- Iris 的 `neoforge.mods.toml` 还在用 `logoFile`，NeoForge 启动时会停在"模组加载警告"界面，玩家点"继续"就行，但开发脚本的直接进世界会被它挡住。无头测试时在开发目录的 `config/neoforge-client.toml` 里临时关掉 `showLoadWarnings`，测完改回来。
+- 光影包没测。光影包会换掉天空、雾和半透明物体的着色器，星球天空和戴森球最可能受影响；要测得另外下载光影包，需要作者同意。
 - M9 当中 NeoForge 从 26.3.0.86 升到 26.3.0.95（见 ADR-0001 的升级记录），代码不用改。
 
 ### 专用服务器和 GameTest
