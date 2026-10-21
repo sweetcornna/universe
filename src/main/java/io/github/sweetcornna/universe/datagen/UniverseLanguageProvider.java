@@ -840,6 +840,7 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         item(UniverseItems.ENERGY_MATRIX.get(), "能量矩阵", "Energy Matrix");
         this.dyson();
         this.factoryDepth();
+        this.mecha();
 
         both("gui.universe.machine.unpowered", "未接入电网（需要电力感应塔）", "No power (needs a tesla tower in range)");
         both("gui.universe.machine.power", "功率 %s · 满足率 %s%%", "Power %s · %s%% satisfied");
@@ -1017,6 +1018,124 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
     }
 
     /** 科技名称和研究的提示。 */
+    /** 机甲、建造无人机、物流配送器（ADR-0023）。 */
+    private void mecha() {
+        item(UniverseItems.LOGISTICS_BOT.get(), "配送机器人", "Logistics Bot");
+        item(UniverseItems.CONSTRUCTION_DRONE.get(), "建造无人机", "Construction Drone");
+        block(UniverseBlocks.LOGISTICS_DISTRIBUTOR.get(), "物流配送器", "Logistics Distributor");
+        both("tooltip.universe.logistics_distributor.summary", "放在箱子或储物仓顶上，管一种物品\n给附近机甲的物流栏位送货、收货，也和别的配送器互通\n范围 64 格，充电最多 9 kW",
+                "Sits on a chest or storage depot and handles one item\nFills and empties nearby mechas' logistics slots, and trades with other distributors\nRange 64; charges at up to 9 kW");
+        both("tooltip.universe.logistics_bot.summary", "放进物流配送器，一台最多 10 个", "Goes in a logistics distributor, up to 10 each");
+        both("tooltip.universe.construction_drone.summary", "机甲自带，研究「通讯控制」增加数量", "Built into the mecha; Communication Control adds more");
+        both("key.universe.mecha", "机甲面板", "Mecha Panel");
+
+        // 科技
+        both("tech.universe.distribution_logistics", "配送物流系统", "Distribution Logistics");
+        both("tech.universe.mecha_core", "机甲核心", "Mecha Core");
+        both("tech.universe.energy_circuit", "能量回路", "Energy Circuit");
+        both("tech.universe.drive_engine", "驱动引擎", "Drive Engine");
+        both("tech.universe.mechanical_frame", "机械骨骼", "Mechanical Frame");
+        both("tech.universe.communication_control", "通讯控制", "Communication Control");
+        both("tech.universe.drone_engine", "无人机引擎", "Drone Engine");
+        both("tech.universe.mass_construction", "批量建造", "Mass Construction");
+        both("upgrade.universe.mecha_core.effect", "核心容量 %s", "Core capacity %s");
+        both("upgrade.universe.energy_circuit.effect", "燃烧室功率 %s", "Fuel chamber %s");
+        both("upgrade.universe.drive_engine.effect", "能持续飞行，速度 ×%s", "Sustained flight at ×%s");
+        both("upgrade.universe.mechanical_frame.effect", "行走速度 +%s%%", "Walk speed +%s%%");
+        both("upgrade.universe.communication_control.effect", "%s 架建造无人机，每趟 %s 格", "%s construction drones, %s blocks a trip");
+        both("upgrade.universe.drone_engine.effect", "无人机 %s m/s", "Drones fly at %s m/s");
+        both("upgrade.universe.mass_construction.effect", "一张蓝图最多 %s 个方块", "Blueprints up to %s blocks");
+
+        // 机甲面板
+        both("gui.universe.mecha.title", "机甲", "Mecha");
+        both("gui.universe.mecha.core", "能量核心", "Energy Core");
+        both("gui.universe.mecha.energy", "%s / %s", "%s / %s");
+        both("gui.universe.mecha.flow", "充 %s · 耗 %s", "In %s · out %s");
+        both("gui.universe.mecha.core.hint", "飞行、加快行走、建造无人机都用这里的电\n燃烧室烧燃料充电，无线输电塔旁边也能充",
+                "Flight, faster walking and drones run on this\nCharged by the fuel chamber, or near a wireless power tower");
+        both("gui.universe.mecha.chamber", "燃烧室 %s", "Fuel %s");
+        both("gui.universe.mecha.refuel.on", "自动加燃料：开", "Refuel: on");
+        both("gui.universe.mecha.refuel.off", "自动加燃料：关", "Refuel: off");
+        both("gui.universe.mecha.refuel.hint", "烧完了从背包里拿同一种燃料", "Takes the same fuel from your inventory when it runs out");
+        both("gui.universe.mecha.no_chest", "没穿外骨骼", "No exosuit");
+        both("gui.universe.mecha.speed", "行走 +%s%%", "Walk +%s%%");
+        both("gui.universe.mecha.flight", "飞行 ×%s", "Flight ×%s");
+        both("gui.universe.mecha.no_flight", "还不能飞", "Can't fly yet");
+        both("gui.universe.mecha.drones", "无人机 %s 架 · %s m/s", "Drones %s · %s m/s");
+        both("gui.universe.mecha.tasks", "每趟 %s 格", "%s blocks a trip");
+        both("gui.universe.mecha.sites", "工地还差 %s 格", "Sites: %s left");
+        both("gui.universe.mecha.no_sites", "没有工地", "No sites");
+        both("gui.universe.mecha.missing", "缺 %s", "Missing %s");
+        both("gui.universe.mecha.logistics", "物流栏位", "Logistics Slots");
+        both("gui.universe.mecha.logistics.locked", "研究「配送物流系统」后可用", "Research Distribution Logistics to use");
+        both("gui.universe.mecha.logistics.hint", "拿着物品点格子设定，空手点选中，右键清掉", "Click with an item to set; empty hand selects; right-click clears");
+        both("gui.universe.mecha.carried", "身上 %s 个", "Carrying %s");
+        both("gui.universe.mecha.bounds", "少于 %s 送来，多于 %s 收走", "Delivered below %s, collected above %s");
+        both("gui.universe.mecha.min", "下限", "Min");
+        both("gui.universe.mecha.max", "上限", "Max");
+        both("gui.universe.mecha.limit_hint", "点一下 ±16，Shift ±64，滚轮 ±1", "Click ±16, Shift ±64, scroll ±1");
+        both("gui.universe.mecha.cancel", "撤掉工地", "Clear Sites");
+        both("gui.universe.mecha.cancel.hint", "撤掉你在这个维度里还没建完的工地", "Removes your unfinished sites in this dimension");
+
+        // 状态栏和提示
+        both("hud.universe.suit.energy", "能量", "Energy");
+        both("hud.universe.suit.flying", "飞行中", "Flying");
+        both("hud.universe.suit.build", "工地还差 %s 格", "%s blocks to build");
+        both("hud.universe.suit.build_missing", "缺 %s", "Missing %s");
+        both("hud.universe.suit.warning.energy", "能量不足", "Low energy");
+        both("hud.universe.mecha.cutout", "机甲没电了", "Mecha out of energy");
+        both("message.universe.blueprint.site", "工地开工，%s 个方块", "Site started: %s blocks");
+        both("message.universe.blueprint.need_chest", "穿上外骨骼，无人机才会出来", "Wear an exosuit to send out drones");
+        both("message.universe.blueprint.already_built", "这里已经建好了", "Already built");
+        both("message.universe.blueprint.over_limit", "这张蓝图 %s 个方块，批量建造现在最多 %s 个", "%s blocks; Mass Construction allows %s");
+        both("message.universe.blueprint.cancelled", "撤掉了 %s 处工地", "Cleared %s sites");
+
+        // 物流配送器
+        both("gui.universe.distributor.no_item", "没设物品", "No item set");
+        both("gui.universe.distributor.item_hint", "拿着物品点这里设定，右键清掉", "Click with an item to set; right-click clears");
+        both("gui.universe.distributor.battery", "电池 %s / %s", "Battery %s / %s");
+        both("gui.universe.distributor.bots", "机器人 %s 架空闲，共 %s 架", "Bots: %s idle of %s");
+        both("gui.universe.distributor.bot_hint", "放配送机器人，最多 %s 个", "Logistics bots, up to %s");
+        both("gui.universe.distributor.icarus.none", "机甲：不管", "Mecha: off");
+        both("gui.universe.distributor.icarus.supply", "机甲：供应", "Mecha: supply");
+        both("gui.universe.distributor.icarus.collect", "机甲：回收", "Mecha: collect");
+        both("gui.universe.distributor.icarus.both", "机甲：供应和回收", "Mecha: both");
+        both("gui.universe.distributor.icarus_hint.none", "不给机甲送货，也不收", "Ignores mecha logistics slots");
+        both("gui.universe.distributor.icarus_hint.supply", "机甲身上少于下限时送过去", "Delivers when a mecha drops below its minimum");
+        both("gui.universe.distributor.icarus_hint.collect", "机甲身上多于上限时收回来", "Collects when a mecha goes over its maximum");
+        both("gui.universe.distributor.icarus_hint.both", "少了送去，多了收回", "Delivers below the minimum, collects above the maximum");
+        both("gui.universe.distributor.peer.none", "配送器：不管", "Peers: off");
+        both("gui.universe.distributor.peer.supply", "配送器：供应", "Peers: supply");
+        both("gui.universe.distributor.peer.demand", "配送器：需求", "Peers: demand");
+        both("gui.universe.distributor.peer_hint.none", "不和别的配送器来往", "Ignores other distributors");
+        both("gui.universe.distributor.peer_hint.supply", "需求同一种物品的配送器会派机器人来取", "Distributors demanding this item send bots to fetch it");
+        both("gui.universe.distributor.peer_hint.demand", "派机器人去供应的配送器取货，放进下面", "Sends bots to supplying distributors and stores the haul below");
+        both("gui.universe.distributor.storage", "下面有 %s 个，还放得下 %s 个", "%s stored, room for %s");
+        both("gui.universe.distributor.no_storage", "下面没有容器", "No container below");
+
+        // 手册
+        both("guide.universe.survival.core.title", "机甲的能量核心", "Mecha Energy Core");
+        both("guide.universe.survival.core",
+                "穿上外骨骼就有了机甲的能量核心。飞行、加快行走、建造无人机都用核心的电，生命维持另算。按 B 打开机甲面板。\n\n核心：120 kJ，研究「机甲核心」加大\n燃烧室：800 W，研究「能量回路」加大\n燃烧室里放燃料，自动加燃料打开时烧完了从背包里拿同一种\n无线输电塔旁边也能充，最多 15 kW",
+                "An exosuit carries the mecha's energy core. Flight, faster walking and drones draw on it; life support does not. Press B for the mecha panel.\n\nCore: 120 kJ, more with Mecha Core\nFuel chamber: 800 W, more with Energy Circuit\nPut fuel in the chamber; with auto refuel on it takes more of the same from your inventory\nWireless power towers also charge it, up to 15 kW");
+        both("guide.universe.survival.flight.title", "机甲飞行", "Mecha Flight");
+        both("guide.universe.survival.flight",
+                "研究「驱动引擎」后，跳起来按两下空格就能一直飞，和创造模式一样。没电时会慢慢落下来，不摔伤。太空里不能这样飞。\n\n悬停：1.2 kW，每 1 m/s 再加 100 W\n驱动引擎 1–4 级：速度 ×1、×1.3、×1.6、×2\n机械骨骼：前 6 级每级行走 +10%，后 2 级每级 +20%，多出来的速度才耗电",
+                "With Drive Engine you can fly like in creative: double-tap jump. Run out of energy and you drift down without fall damage. This flight does not work in space.\n\nHover: 1.2 kW, plus 100 W per m/s\nDrive Engine 1-4: speed x1, x1.3, x1.6, x2\nMechanical Frame: walking +10% per level for 6 levels, then +20% for 2; only the extra speed costs energy");
+        both("guide.universe.logistics.drones.title", "建造无人机", "Construction Drones");
+        both("guide.universe.logistics.drones",
+                "生存模式放下蓝图是一片蓝色的工地。机甲的建造无人机从低处、近处开始，一格格建起来，材料从背包和货舱里扣。自己放对了方块也算建好。\n\n范围：64 格\n无人机：3 架，6 m/s，每趟 4 格；研究「通讯控制」「无人机引擎」加多加快\n一张蓝图的上限：300 格，研究「批量建造」放宽\n缺材料时状态栏会写缺什么；机甲面板里可以撤掉工地",
+                "In survival a blueprint places a blue site. Your mecha's drones build it from the bottom up, nearest first, using materials from inventory and cargo. Placing the right block yourself counts too.\n\nRange: 64 blocks\nDrones: 3 at 6 m/s, 4 blocks a trip; more and faster with Communication Control and Drone Engine\nBlueprint size: 300 blocks, more with Mass Construction\nThe HUD shows what is missing; the mecha panel can clear sites");
+        both("guide.universe.logistics.distributor.title", "物流配送器", "Logistics Distributor");
+        both("guide.universe.logistics.distributor",
+                "配送器放在箱子或储物仓顶上，只管一种物品，派机器人给附近的机甲送货、收货，也在配送器之间搬。\n\n范围：水平 64 格，一叠储物仓算一个容器\n机器人：最多 10 个，每趟 8 个，6 m/s\n物流载具的升级对机器人一样有效\n电池：60 kJ，最多 9 kW 充电，每飞一格 20 J\n研究：配送物流系统",
+                "Sits on a chest or depot and handles one item. Bots supply and collect for nearby mechas and other distributors.\n\nRange: 64 blocks\nBots: 10 max, 8 items a trip at 6 m/s\nBattery: 60 kJ, 20 J per block flown\nResearch: Distribution Logistics");
+        both("guide.universe.logistics.slots.title", "物流栏位", "Logistics Slots");
+        both("guide.universe.logistics.slots",
+                "机甲面板右边有 12 个物流栏位，每格设一种物品和上下限。背包加货舱少于下限时，供应的配送器派机器人送来；多于上限时，回收的配送器来收走（带附加数据的不收）。\n\n上下限：0–9999\n机甲模式：不管、供应、回收、供应和回收\n配送器之间：需求的从供应的那里取货",
+                "The 12 slots on the right of the mecha panel each hold an item with a min and max. Below the min (inventory plus cargo), a supplying distributor sends bots; above the max, a collecting one takes the surplus, plain items only.\n\nLimits: 0-9999\nMecha modes: off, supply, collect, both\nBetween distributors: demand fetches from supply");
+    }
+
     private void research() {
         tech("electromagnetism", "电磁学", "Electromagnetism");
         tech("basic_logistics", "基础物流系统", "Basic Logistics System");
@@ -1325,8 +1444,8 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
                 "Stations send and receive by each slot's settings. Drones serve one dimension; vessels travel between planets.\nSet each slot's item and limit, then storage, supply or demand for local and remote. Stations charge only from grid surplus.\n\nPlanetary: 4 slots x 5,000, drone range 1,000 by default\nInterstellar: 5 slots x 10,000 plus vessels; other systems cost 2 space warpers a trip");
         both("guide.universe.logistics.blueprint.title", "蓝图", "Blueprints");
         both("guide.universe.logistics.blueprint",
-                "蓝图把一片建筑存下来，在别处照着放。配方、分拣器过滤和物流站设置一起复制，库存不复制。\n\n空白：右键两个方块框选（每边最多 32），潜行右键保存\n画好的：右键放下，R 转 90°，潜行右键清空\n放置距离：64 格\n材料从背包和外骨骼货舱扣，缺的会列出来；补齐后对着原处再右键。",
-                "Blueprints copy builds with recipes, filters and station settings.\n\nBlank: mark two corners (32 max per side), sneak + right-click to save\nSaved: right-click to build, R rotates, sneak + right-click clears\nRange: 64 blocks\nMaterials come from inventory and cargo; right-click again to fill gaps.");
+                "蓝图把一片建筑存下来，在别处照着放。配方、分拣器过滤和物流站设置一起复制，库存不复制。\n\n空白：右键两个方块框选（每边最多 32），潜行右键保存\n画好的：右键放下，R 转 90°，潜行右键清空\n放置距离：64 格\n放下的是工地：蓝色的虚影由机甲的建造无人机一格格建起来，材料从背包和外骨骼货舱里扣。创造模式直接放好。",
+                "Blueprints copy builds with recipes, filters and station settings.\n\nBlank: mark two corners (32 max per side), sneak + right-click to save\nSaved: right-click to place, R rotates, sneak + right-click clears\nRange: 64 blocks\nSurvival: your drones build it\nCreative: placed at once");
         both("guide.universe.ship.build.title", "造船", "Building a Ship");
         both("guide.universe.ship.build",
                 "飞船由方块拼成。右键驾驶台组装：和它连在一起的方块都算船上的，地形不算。\n\n必需：一个驾驶台（朝向是船头）、至少一个推进器\n可选：燃料舱、脉冲引擎、跃迁引擎、护盾、武器、座椅、船体板\n上限：4096 个方块\n起飞条件：推重比大于 1；一个推进器在 1 倍重力下推 12 吨",

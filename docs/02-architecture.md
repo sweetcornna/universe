@@ -329,6 +329,10 @@ io.github.sweetcornna.universe
 | 原版一分钟没有键鼠输入就把帧率压到 30（`FramerateLimitTracker`，选项 `inactivityFpsLimit`），十分钟后压到 10；脚本按的键不算输入，要调 `minecraft.getFramerateLimitTracker().onInputReceived()` | 已确认，开发脚本里在用 |
 | `DimensionType` 没有 `ultraWarm()` 了，判断下界用 `level.dimension() == Level.NETHER`；`BaseEntityBlock` 不用再写 `codec()` | 已确认，`factory.power.GeothermalBlockEntity` |
 | 物品能力的组合：`CombinedResourceHandler`（`net.neoforged.neoforge.transfer`）把几个 `ResourceHandler` 拼成一个；`ItemResource.with(组件, 值)` 带上数据组件，`isComponentsPatchEmpty()` 判断有没有组件；事务 `Transaction.openRoot()`，不 `commit()` 就回滚，`SnapshotJournal` 记快照 | 已确认，叠着的储物仓、物流站 |
+| 生存里飞：给 `NeoForgeMod.CREATIVE_FLIGHT` 属性加一个临时修饰符，`IPlayerExtension.mayFly()` 是 `abilities.mayfly || 属性 > 0`；`ServerPlayer.tick` 在 `!mayFly()` 时把 `flying` 关掉；`Player.causeFallDamage` 对 `mayFly()` 的玩家不扣血，收回飞行后要自己给缓降 | 已确认，`mecha.Mecha` |
+| 物品的燃烧时间是数据组件：`ResolvableInt.getFromItem(物品, DataComponents.COOKING_FUEL, CookingFuel::burnTime, 战利品上下文, 0)`。给玩家用的上下文是 `LootContextParamSets.EQUIPMENT`（`ORIGIN`、`THIS_ENTITY`），别的模组的燃料可能要别的参数，要接住异常 | 已确认，`mecha.Mecha.fuelEnergy` |
+| `ContainerData` 按 short 发给客户端，超过 32767 的数要拆成两格（`MachineMenu.low/high/join`） | 已确认 |
+| 游戏内测试里的玩家：`GameTestHelper.makeMockServerPlayerInLevel()` 标了待删除，它的连接没协商过模组的频道，`PacketDistributor.sendToPlayer` 会抛 `UnsupportedOperationException`（may not be sent to the client）。发之前用 `player.connection.hasChannel(TYPE)` 查；`Inventory` 没有 `countItem` 了 | 已确认，`mecha.Flyers` |
 拿不准的 API 先查源码再写，核实后把结果补进这张表。源码在：
 
 - Minecraft（含 NeoForge 补丁）：`build/moddev/artifacts/minecraft-patched-26.3.0.95-sources.jar`，IDE 里可以直接跳转。

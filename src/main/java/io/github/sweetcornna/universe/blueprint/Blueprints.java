@@ -52,8 +52,8 @@ import net.neoforged.neoforge.network.PacketDistributor;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 /**
- * 蓝图的服务端（ADR-0018）：框选区、存蓝图、转向、放蓝图。放蓝图排成一个队列，每刻放几个方块，从背包和外骨骼货舱里
- * 扣材料；材料不够、位置被占着的跳过，放完在聊天栏说一声缺了什么。
+ * 蓝图的服务端（ADR-0018）：框选区、存蓝图、转向、放蓝图。生存模式放蓝图留下工地，由建造无人机去建（{@link Construction}，
+ * ADR-0023）；创造模式排成一个队列，每刻放几个方块，位置被占着的跳过。
  */
 public final class Blueprints {
     /** 每刻放几个方块。 */
@@ -66,7 +66,7 @@ public final class Blueprints {
     private static final Map<UUID, Job> JOBS = new HashMap<>();
 
     /** 要放的一个方块；cost 为空的不扣材料（双格方块的上半截、床头）。 */
-    private record Placement(BlockPos pos, BlockState state, @Nullable CompoundTag settings, @Nullable Item cost) {
+    record Placement(BlockPos pos, BlockState state, @Nullable CompoundTag settings, @Nullable Item cost) {
     }
 
     private static final class Job {
@@ -310,11 +310,16 @@ public final class Blueprints {
             return;
         }
         int turns = stack.getOrDefault(UniverseDataComponents.BLUEPRINT_ROTATION.get(), 0);
+        // 生存模式留下工地，让建造无人机去建（ADR-0023）；创造模式照旧直接放
+        if (!player.isCreative()) {
+            Construction.paste(player, stored, anchor, turns);
+            return;
+        }
         JOBS.put(player.getUUID(), new Job(player.level().dimension(), placements(stored, anchor, turns)));
     }
 
     /** 蓝图里每个方块转过以后放在哪：从下往上，同一层里先放要花材料的，再放跟着另一半的。 */
-    private static List<Placement> placements(BlueprintData.Stored stored, BlockPos anchor, int turns) {
+    static List<Placement> placements(BlueprintData.Stored stored, BlockPos anchor, int turns) {
         int[] rotated = BlueprintGeometry.rotatedSize(new int[] {stored.sizeX(), stored.sizeY(), stored.sizeZ()}, turns);
         BlockPos origin = BlueprintItem.origin(anchor, rotated);
         Rotation rotation = rotation(turns);
@@ -398,7 +403,7 @@ public final class Blueprints {
     }
 
     /** 上半截下面、床头后面是不是已经有同一种方块。 */
-    private static boolean partnerPlaced(ServerLevel level, BlockPos pos, BlockState state) {
+    static boolean partnerPlaced(ServerLevel level, BlockPos pos, BlockState state) {
         BlockPos partner;
         if (state.hasProperty(BlockStateProperties.DOUBLE_BLOCK_HALF)) {
             partner = pos.below();
@@ -412,7 +417,7 @@ public final class Blueprints {
     }
 
     /** 从背包、再从外骨骼货舱里拿一个。 */
-    private static boolean take(ServerPlayer player, Item item) {
+    static boolean take(ServerPlayer player, Item item) {
         Inventory inventory = player.getInventory();
         for (int i = 0; i < inventory.getContainerSize(); i++) {
             ItemStack stack = inventory.getItem(i);

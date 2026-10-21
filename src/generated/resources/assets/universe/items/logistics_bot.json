@@ -1,0 +1,19 @@
+{
+  "model": {
+    "type": "minecraft:select",
+    "cases": [
+      {
+        "model": {
+          "type": "minecraft:model",
+          "model": "universe:item/logistics_bot"
+        },
+        "when": "gui"
+      }
+    ],
+    "fallback": {
+      "type": "minecraft:model",
+      "model": "universe:block/logistics_bot_model"
+    },
+    "property": "minecraft:display_context"
+  }
+}

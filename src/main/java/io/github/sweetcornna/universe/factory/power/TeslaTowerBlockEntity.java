@@ -3,9 +3,11 @@ package io.github.sweetcornna.universe.factory.power;
 import org.jspecify.annotations.Nullable;
 
 import io.github.sweetcornna.universe.core.power.PowerSystem;
+import io.github.sweetcornna.universe.core.mecha.MechaEnergy;
 import io.github.sweetcornna.universe.core.survival.LifeSupport;
 import io.github.sweetcornna.universe.factory.MachineBlockEntity;
 import io.github.sweetcornna.universe.factory.MachineMenu;
+import io.github.sweetcornna.universe.mecha.Mecha;
 import io.github.sweetcornna.universe.registry.UniverseAttachments;
 import io.github.sweetcornna.universe.registry.UniverseBlockEntities;
 import io.github.sweetcornna.universe.registry.UniverseMenus;
@@ -48,6 +50,10 @@ public class TeslaTowerBlockEntity extends MachineBlockEntity {
 
     private boolean charging;
     private double chargeSupplied;
+    /** 附近的机甲核心这一刻还想充多少（ADR-0023），每座塔最多 {@link MechaEnergy#TOWER_CHARGE}。 */
+    private double mechaDemand;
+    /** 不封顶的总和，按比例分电用。 */
+    private double mechaWanted;
 
     public TeslaTowerBlockEntity(BlockPos pos, BlockState state) {
         super(UniverseBlockEntities.TESLA_TOWER.get(), pos, state, 0);
@@ -79,7 +85,7 @@ public class TeslaTowerBlockEntity extends MachineBlockEntity {
 
     @Override
     public long demand() {
-        return this.charging ? CHARGE_POWER : 0;
+        return this.charging ? CHARGE_POWER + Math.round(this.mechaDemand) : 0;
     }
 
     @Override
@@ -118,25 +124,39 @@ public class TeslaTowerBlockEntity extends MachineBlockEntity {
         return grid != null && grid.generation() + grid.discharged() > 0;
     }
 
-    /** 每秒看一次附近有没有穿外骨骼的玩家，有就要电；拿到多少电就充多少。 */
+    /**
+     * 每秒看一次附近有没有穿外骨骼的玩家，有就要电；拿到多少电就充多少。密封的外骨骼补氧和防护，穿着胸甲的给机甲核心充电，
+     * 几个人分这座塔的 {@link MechaEnergy#TOWER_CHARGE}。
+     */
     private void charge(ServerLevel level, int radius) {
         double supplied = this.chargeSupplied;
+        double asked = this.mechaWanted;
         this.chargeSupplied = 0;
         if (level.getGameTime() % 20 != Math.floorMod(this.worldPosition.asLong(), 20) && !this.charging) {
             return;
         }
         AABB box = new AABB(this.worldPosition).inflate(radius);
         boolean any = false;
-        for (ServerPlayer player : level.getEntitiesOfClass(ServerPlayer.class, box, player -> Exosuit.of(player).sealed())) {
+        double demand = 0;
+        for (ServerPlayer player : level.getEntitiesOfClass(ServerPlayer.class, box, Mecha::chest)) {
             any = true;
+            double want = Mecha.towerDemand(player);
             if (supplied > 0) {
-                LifeSupport support = player.getData(UniverseAttachments.LIFE_SUPPORT);
-                float share = (float) (CHARGE_PER_SECOND / 20 * supplied);
-                support.addOxygen(LifeSupport.OXYGEN_MAX * share);
-                support.rechargeHazards(LifeSupport.HAZARD_MAX * share);
+                if (Exosuit.of(player).sealed()) {
+                    LifeSupport support = player.getData(UniverseAttachments.LIFE_SUPPORT);
+                    float share = (float) (CHARGE_PER_SECOND / 20 * supplied);
+                    support.addOxygen(LifeSupport.OXYGEN_MAX * share);
+                    support.rechargeHazards(LifeSupport.HAZARD_MAX * share);
+                }
+                if (asked > 0 && want > 0) {
+                    Mecha.towerCharge(player, want * supplied * Math.min(1, MechaEnergy.TOWER_CHARGE / asked));
+                }
             }
+            demand += want;
         }
         this.charging = any;
+        this.mechaWanted = demand;
+        this.mechaDemand = Math.min(MechaEnergy.TOWER_CHARGE, demand);
     }
 
     @Override

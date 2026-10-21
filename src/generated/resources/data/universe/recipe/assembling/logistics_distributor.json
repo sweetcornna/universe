@@ -1,0 +1,24 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 8,
+      "ingredient": "minecraft:iron_ingot"
+    },
+    {
+      "count": 4,
+      "ingredient": "universe:plasma_exciter"
+    },
+    {
+      "count": 4,
+      "ingredient": "universe:processor"
+    }
+  ],
+  "research": "distribution_logistics",
+  "results": [
+    {
+      "id": "universe:logistics_distributor"
+    }
+  ],
+  "time": 160
+}

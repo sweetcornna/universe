@@ -34,6 +34,9 @@ public final class UniverseKeys {
     public static final KeyMapping ROTATE_BLUEPRINT = new KeyMapping("key.universe.rotate_blueprint", InputConstants.Type.KEYBOARD,
             InputConstants.KEY_R, CATEGORY);
 
+    /** 机甲面板：能量核心、燃烧室、物流栏位（默认 B，ADR-0023）。 */
+    public static final KeyMapping MECHA = new KeyMapping("key.universe.mecha", InputConstants.Type.KEYBOARD, InputConstants.KEY_B, CATEGORY);
+
     private UniverseKeys() {
     }
 
@@ -49,6 +52,7 @@ public final class UniverseKeys {
             event.register(DYSON_EDITOR);
             event.register(TOOL_MODE);
             event.register(ROTATE_BLUEPRINT);
+            event.register(MECHA);
         });
     }
 }

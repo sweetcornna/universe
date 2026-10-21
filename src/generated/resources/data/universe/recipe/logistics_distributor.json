@@ -1,0 +1,17 @@
+{
+  "type": "universe:research_shaped",
+  "key": {
+    "E": "universe:plasma_exciter",
+    "I": "minecraft:iron_ingot",
+    "P": "universe:processor"
+  },
+  "pattern": [
+    "IEI",
+    "PIP",
+    "IEI"
+  ],
+  "research": "distribution_logistics",
+  "result": {
+    "id": "universe:logistics_distributor"
+  }
+}

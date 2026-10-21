@@ -257,6 +257,7 @@ public final class UniverseItems {
     public static final DeferredItem<BlockItem> SPRAY_COATER = ITEMS.registerSimpleBlockItem(UniverseBlocks.SPRAY_COATER);
     public static final DeferredItem<BlockItem> AUTOMATIC_PILER = ITEMS.registerSimpleBlockItem(UniverseBlocks.AUTOMATIC_PILER);
     public static final DeferredItem<BlockItem> TRAFFIC_MONITOR = ITEMS.registerSimpleBlockItem(UniverseBlocks.TRAFFIC_MONITOR);
+    public static final DeferredItem<BlockItem> LOGISTICS_DISTRIBUTOR = ITEMS.registerSimpleBlockItem(UniverseBlocks.LOGISTICS_DISTRIBUTOR);
     public static final DeferredItem<BlockItem> PILE_SORTER = ITEMS.registerSimpleBlockItem(UniverseBlocks.PILE_SORTER);
     public static final DeferredItem<BlockItem> WIRELESS_POWER_TOWER = ITEMS.registerSimpleBlockItem(UniverseBlocks.WIRELESS_POWER_TOWER);
     public static final DeferredItem<BlockItem> SATELLITE_SUBSTATION = ITEMS.registerSimpleBlockItem(UniverseBlocks.SATELLITE_SUBSTATION);
@@ -326,6 +327,10 @@ public final class UniverseItems {
     public static final DeferredItem<Item> PARTICLE_CONTAINER = ITEMS.registerSimpleItem("particle_container");
     public static final DeferredItem<Item> LOGISTICS_DRONE = ITEMS.registerSimpleItem("logistics_drone");
     public static final DeferredItem<Item> LOGISTICS_VESSEL = ITEMS.registerSimpleItem("logistics_vessel");
+    /** 配送机器人（ADR-0023），放进物流配送器里。 */
+    public static final DeferredItem<Item> LOGISTICS_BOT = ITEMS.registerSimpleItem("logistics_bot");
+    /** 建造无人机：外骨骼胸甲自带，这个物品只用来画在天上飞的无人机和升级科技的图标，拿不到。 */
+    public static final DeferredItem<Item> CONSTRUCTION_DRONE = ITEMS.registerSimpleItem("construction_drone");
     public static final DeferredItem<Item> STRUCTURE_MATRIX = ITEMS.registerSimpleItem("structure_matrix");
     public static final DeferredItem<Item> INFORMATION_MATRIX = ITEMS.registerSimpleItem("information_matrix");
     /** 戴森球阶段的物品（ADR-0016），配方照戴森球计划。 */
@@ -399,7 +404,7 @@ public final class UniverseItems {
                 ARC_SMELTER, ASSEMBLER, OIL_REFINERY, MATRIX_LAB, CONVEYOR_BELT, CONVEYOR_BELT_MK2, CONVEYOR_BELT_MK3,
                 SORTER, SORTER_MK2, SORTER_MK3, SPLITTER, STORAGE_DEPOT, STORAGE_TANK, CRUDE_OIL_SEEP,
                 ASSEMBLER_MK2, ASSEMBLER_MK3, PLANE_SMELTER, CHEMICAL_PLANT, FRACTIONATOR, ADVANCED_MINING_MACHINE, FACTORY_ANCHOR,
-                PLANETARY_LOGISTICS_STATION, INTERSTELLAR_LOGISTICS_STATION, ORBITAL_COLLECTOR,
+                PLANETARY_LOGISTICS_STATION, INTERSTELLAR_LOGISTICS_STATION, ORBITAL_COLLECTOR, LOGISTICS_DISTRIBUTOR,
                 SPRAY_COATER, AUTOMATIC_PILER, TRAFFIC_MONITOR, PILE_SORTER, WIRELESS_POWER_TOWER, SATELLITE_SUBSTATION,
                 GEOTHERMAL_POWER_STATION, ENERGY_EXCHANGER, FOUNDATION,
                 EM_RAIL_EJECTOR, VERTICAL_LAUNCHING_SILO, RAY_RECEIVER, MINIATURE_PARTICLE_COLLIDER, MINI_FUSION_POWER_PLANT, ARTIFICIAL_STAR,
@@ -408,7 +413,7 @@ public final class UniverseItems {
                 PROLIFERATOR_MK1, PROLIFERATOR_MK2, PROLIFERATOR_MK3, HYDROGEN_FUEL_ROD,
                 WATER, CRUDE_OIL, REFINED_OIL, HYDROGEN, DEUTERIUM, ELECTROMAGNETIC_MATRIX, ENERGY_MATRIX,
                 CRYSTAL_SILICON, TITANIUM_ALLOY, SYNTHETIC_DIAMOND, PLASTIC, SULFURIC_ACID, GRAPHENE, CARBON_NANOTUBE, TITANIUM_CRYSTAL, MICROCRYSTALLINE_COMPONENT, PROCESSOR,
-                PARTICLE_BROADBAND, THRUSTER, REINFORCED_THRUSTER, ELECTROMAGNETIC_TURBINE, SUPER_MAGNETIC_RING, PARTICLE_CONTAINER, LOGISTICS_DRONE, LOGISTICS_VESSEL, STRUCTURE_MATRIX, INFORMATION_MATRIX,
+                PARTICLE_BROADBAND, THRUSTER, REINFORCED_THRUSTER, ELECTROMAGNETIC_TURBINE, SUPER_MAGNETIC_RING, PARTICLE_CONTAINER, LOGISTICS_DRONE, LOGISTICS_VESSEL, LOGISTICS_BOT, STRUCTURE_MATRIX, INFORMATION_MATRIX,
                 PHOTON_COMBINER, SOLAR_SAIL, FRAME_MATERIAL, DYSON_SPHERE_COMPONENT, SMALL_CARRIER_ROCKET, DEUTERON_FUEL_ROD, TITANIUM_GLASS,
                 CASIMIR_CRYSTAL, PLANE_FILTER, QUANTUM_CHIP, GRAVITON_LENS, CRITICAL_PHOTON, GRAVITY_MATRIX,
                 ANTIMATTER, ANNIHILATION_CONSTRAINT_SPHERE, ANTIMATTER_FUEL_ROD, COMPOSITE_MATRIX, UNIVERSE_MATRIX));

@@ -237,6 +237,7 @@ final class UniverseModelProvider extends ModelProvider {
         recipeMachine(blockModels, UniverseBlocks.MINI_FUSION_POWER_PLANT.get(), "mini_fusion_power_plant", false, "machine_casing_top");
         tall(blockModels, itemModels, UniverseBlocks.ARTIFICIAL_STAR.get(), "artificial_star", true, false);
         factoryDepth(blockModels, itemModels);
+        mecha(blockModels, itemModels);
         for (DeferredItem<?> item : List.of(UniverseItems.ANTIMATTER, UniverseItems.ANNIHILATION_CONSTRAINT_SPHERE,
                 UniverseItems.ANTIMATTER_FUEL_ROD, UniverseItems.COMPOSITE_MATRIX, UniverseItems.UNIVERSE_MATRIX, UniverseItems.BLUEPRINT,
                 UniverseItems.GUIDE)) {
@@ -274,6 +275,18 @@ final class UniverseModelProvider extends ModelProvider {
                 UniverseItems.COMBUSTIBLE_UNIT, UniverseItems.HYDROGEN_FUEL_ROD)) {
             itemModels.generateFlatItem(item.get(), ModelTemplates.FLAT_ITEM);
         }
+    }
+
+    /** 机甲和配送（ADR-0023）：模型由 tools/m12_models.py 生成；配送器上下左右对称，不按朝向转。 */
+    private static void mecha(BlockModelGenerators blockModels, ItemModelGenerators itemModels) {
+        Block distributor = UniverseBlocks.LOGISTICS_DISTRIBUTOR.get();
+        Identifier off = Universe.id("block/logistics_distributor");
+        Identifier on = Universe.id("block/logistics_distributor_on");
+        blockModels.blockStateOutput.accept(MultiVariantGenerator.dispatch(distributor)
+                .with(PropertyDispatch.initial(MachineBlock.WORKING).generate(working -> BlockModelGenerators.plainVariant(working ? on : off))));
+        itemModels.itemModelOutput.accept(distributor.asItem(), ItemModelUtils.plainModel(off));
+        craft(itemModels, UniverseItems.LOGISTICS_BOT.get(), "logistics_bot_model");
+        craft(itemModels, UniverseItems.CONSTRUCTION_DRONE.get(), "construction_drone_model");
     }
 
     /** 载具：界面里用平面图标，其余场合用 {@code models/block/} 下手写的立体模型。 */

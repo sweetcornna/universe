@@ -33,6 +33,7 @@ import io.github.sweetcornna.universe.factory.research.MatrixLabBlockEntity;
 import io.github.sweetcornna.universe.factory.resource.MiningMachineBlockEntity;
 import io.github.sweetcornna.universe.factory.resource.OilExtractorBlockEntity;
 import io.github.sweetcornna.universe.factory.resource.WaterPumpBlockEntity;
+import io.github.sweetcornna.universe.logistics.DistributorBlockEntity;
 import io.github.sweetcornna.universe.logistics.StationBlockEntity;
 import io.github.sweetcornna.universe.teleport.TeleporterBlockEntity;
 import net.minecraft.core.registries.Registries;
@@ -134,6 +135,8 @@ public final class UniverseBlockEntities {
             () -> new BlockEntityType<>(SprayCoaterBlockEntity::new, UniverseBlocks.SPRAY_COATER.get()));
     public static final Supplier<BlockEntityType<PilerBlockEntity>> AUTOMATIC_PILER = BLOCK_ENTITIES.register("automatic_piler",
             () -> new BlockEntityType<>(PilerBlockEntity::new, UniverseBlocks.AUTOMATIC_PILER.get()));
+    public static final Supplier<BlockEntityType<DistributorBlockEntity>> LOGISTICS_DISTRIBUTOR = BLOCK_ENTITIES.register("logistics_distributor",
+            () -> new BlockEntityType<>(DistributorBlockEntity::new, UniverseBlocks.LOGISTICS_DISTRIBUTOR.get()));
     public static final Supplier<BlockEntityType<TrafficMonitorBlockEntity>> TRAFFIC_MONITOR = BLOCK_ENTITIES.register("traffic_monitor",
             () -> new BlockEntityType<>(TrafficMonitorBlockEntity::new, UniverseBlocks.TRAFFIC_MONITOR.get()));
     public static final Supplier<BlockEntityType<GeothermalBlockEntity>> GEOTHERMAL_POWER_STATION = BLOCK_ENTITIES.register(

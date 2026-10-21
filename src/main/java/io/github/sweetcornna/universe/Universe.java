@@ -6,6 +6,10 @@ import com.mojang.logging.LogUtils;
 
 import io.github.sweetcornna.universe.asteroid.Asteroids;
 import io.github.sweetcornna.universe.blueprint.Blueprints;
+import io.github.sweetcornna.universe.blueprint.Construction;
+import io.github.sweetcornna.universe.logistics.Distributors;
+import io.github.sweetcornna.universe.mecha.Flyers;
+import io.github.sweetcornna.universe.mecha.Mecha;
 import io.github.sweetcornna.universe.discovery.Discoveries;
 import io.github.sweetcornna.universe.dyson.Dyson;
 import io.github.sweetcornna.universe.entity.FaunaSpawner;
@@ -116,6 +120,10 @@ public final class Universe {
         ShipRepair.registerEvents(gameBus);
         Story.registerEvents(gameBus);
         Blueprints.registerEvents(gameBus);
+        Construction.registerEvents(gameBus);
+        Distributors.registerEvents(gameBus);
+        Mecha.registerEvents(gameBus);
+        Flyers.registerEvents(gameBus);
         ServerPerf.registerEvents(gameBus);
         BenchCommand.registerEvents(gameBus);
         gameBus.addListener(RegisterCommandsEvent.class, event -> DimensionCommand.register(event.getDispatcher()));

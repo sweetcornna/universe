@@ -4,6 +4,8 @@ import io.github.sweetcornna.universe.client.ClientConfig;
 import io.github.sweetcornna.universe.client.ItemSummaries;
 import io.github.sweetcornna.universe.client.asteroid.AsteroidClient;
 import io.github.sweetcornna.universe.client.blueprint.BlueprintClient;
+import io.github.sweetcornna.universe.client.blueprint.GhostClient;
+import io.github.sweetcornna.universe.client.mecha.MechaClient;
 import io.github.sweetcornna.universe.client.dev.DevScript;
 import io.github.sweetcornna.universe.client.exocraft.ExocraftClient;
 import io.github.sweetcornna.universe.client.guide.GuideScreen;
@@ -87,6 +89,8 @@ public final class UniverseClient {
         ClientStory.registerEvents(modBus, NeoForge.EVENT_BUS);
         GuideItem.opener = () -> Minecraft.getInstance().gui.setScreen(new GuideScreen());
         BlueprintClient.registerEvents(modBus, NeoForge.EVENT_BUS);
+        GhostClient.registerEvents(modBus, NeoForge.EVENT_BUS);
+        MechaClient.registerEvents(modBus, NeoForge.EVENT_BUS);
         // 开发用：带了 -Duniverse.devScript 才启用
         DevScript.registerEvents(NeoForge.EVENT_BUS);
         // 客户端世界建立环境属性时，从客户端的星团里查星球

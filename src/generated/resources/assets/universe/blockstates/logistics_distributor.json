@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "working=false": {
+      "model": "universe:block/logistics_distributor"
+    },
+    "working=true": {
+      "model": "universe:block/logistics_distributor_on"
+    }
+  }
+}

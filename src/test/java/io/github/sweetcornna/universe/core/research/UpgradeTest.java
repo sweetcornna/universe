@@ -135,7 +135,7 @@ class UpgradeTest {
     @Test
     void defaultUpgradesMatchTheDesign() {
         TechTree tree = TechTree.DEFAULT;
-        assertEquals(8, tree.upgrades().size());
+        assertEquals(15, tree.upgrades().size());
         // 有限几级：矿脉利用 4、研究速度 3、载具引擎 5、射线 4；容量和太阳帆 6 级封顶
         assertEquals(4, tree.upgrade(Upgrades.VEIN_UTILIZATION).orElseThrow().tiers().size());
         assertEquals(3, tree.upgrade(Upgrades.RESEARCH_SPEED).orElseThrow().tiers().size());
@@ -146,6 +146,12 @@ class UpgradeTest {
         // 货物集装两级就叠到 4 个；宇宙探索 4 级看得到整个银河
         assertEquals(2, tree.upgrade(Upgrades.BELT_STACKING).orElseThrow().maxLevel());
         assertEquals(Upgrades.EXPLORATION_MAX, tree.upgrade(Upgrades.UNIVERSE_EXPLORATION).orElseThrow().maxLevel());
+        // 机甲（ADR-0023）：驱动引擎 4 级、机械骨骼 8 级、批量建造 4 级封顶，其余无限
+        assertEquals(4, tree.upgrade(Upgrades.DRIVE_ENGINE).orElseThrow().maxLevel());
+        assertEquals(8, tree.upgrade(Upgrades.MECHANICAL_FRAME).orElseThrow().maxLevel());
+        assertEquals(4, tree.upgrade(Upgrades.MASS_CONSTRUCTION).orElseThrow().maxLevel());
+        assertEquals(Integer.MAX_VALUE, tree.upgrade(Upgrades.MECHA_CORE).orElseThrow().maxLevel());
+        assertEquals(5, tree.upgrade(Upgrades.COMMUNICATION_CONTROL).orElseThrow().tiers().size());
         for (Upgrade upgrade : tree.upgrades()) {
             for (int level = 1; level <= upgrade.tiers().size() + 3 && level <= upgrade.maxLevel(); level++) {
                 assertTrue(TechTree.MATRICES.containsAll(upgrade.matrices(level)), upgrade.id() + " " + level);
@@ -175,6 +181,42 @@ class UpgradeTest {
         assertEquals(List.of("55", "550"), Upgrades.effectArgs(Upgrades.CARRIER_CAPACITY, 1));
         assertEquals(List.of("105"), Upgrades.effectArgs(Upgrades.SAIL_LIFETIME, 1));
         assertEquals(List.of("15"), Upgrades.effectArgs(Upgrades.RAY_EFFICIENCY, 1));
+    }
+
+    @Test
+    void mechaUpgradesFollowTheOriginal() {
+        // 能量核心 120 MJ → 3.2 GJ，之后每级 +2.4 GJ（本模组的 kJ 对应原作的 MJ）
+        assertEquals(120_000, Upgrades.mechaCapacity(0));
+        assertEquals(3_200_000, Upgrades.mechaCapacity(5));
+        assertEquals(5_600_000, Upgrades.mechaCapacity(6));
+        // 燃烧室 800 W → 1.6 kW → 2.4 kW，之后每级 +1 kW
+        assertEquals(40, Upgrades.fuelPower(0));
+        assertEquals(80, Upgrades.fuelPower(4));
+        assertEquals(120, Upgrades.fuelPower(5));
+        assertEquals(170, Upgrades.fuelPower(6));
+        assertEquals(0, Upgrades.flightSpeed(0));
+        assertEquals(2, Upgrades.flightSpeed(9));
+        assertEquals(0.6, Upgrades.frameBonus(6), 1e-9);
+        assertEquals(1.0, Upgrades.frameBonus(8), 1e-9);
+        assertEquals(List.of(3, 4, 6, 6, 9, 12, 15), java.util.stream.IntStream.rangeClosed(0, 6).map(Upgrades::drones).boxed().toList());
+        assertEquals(4, Upgrades.droneTasks(2));
+        assertEquals(8, Upgrades.droneTasks(3));
+        assertEquals(List.of(6, 8, 10, 12, 15, 18, 21), java.util.stream.IntStream.rangeClosed(0, 6).map(Upgrades::droneSpeed).boxed().toList());
+        assertEquals(300, Upgrades.buildLimit(0));
+        assertEquals(Upgrades.UNLIMITED, Upgrades.buildLimit(4));
+        assertEquals(8, Upgrades.botCapacity(0));
+        assertEquals(20, Upgrades.botCapacity(6));
+        assertEquals(List.of("200 kJ"), Upgrades.effectArgs(Upgrades.MECHA_CORE, 1));
+        assertEquals(List.of("3.2 MJ"), Upgrades.effectArgs(Upgrades.MECHA_CORE, 5));
+        assertEquals(List.of("1 kW"), Upgrades.effectArgs(Upgrades.ENERGY_CIRCUIT, 1));
+        assertEquals(List.of("2.4 kW"), Upgrades.effectArgs(Upgrades.ENERGY_CIRCUIT, 5));
+        assertEquals(List.of("1.3"), Upgrades.effectArgs(Upgrades.DRIVE_ENGINE, 2));
+        assertEquals(List.of("80"), Upgrades.effectArgs(Upgrades.MECHANICAL_FRAME, 7));
+        assertEquals(List.of("6", "8"), Upgrades.effectArgs(Upgrades.COMMUNICATION_CONTROL, 3));
+        assertEquals(List.of("∞"), Upgrades.effectArgs(Upgrades.MASS_CONSTRUCTION, 4));
+        assertEquals("800 W", Upgrades.watts(40));
+        assertEquals("999 J", Upgrades.energy(999));
+        assertEquals("1 kJ", Upgrades.energy(999.96));
     }
 
     @Test

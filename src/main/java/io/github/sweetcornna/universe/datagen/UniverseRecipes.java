@@ -357,6 +357,11 @@ final class UniverseRecipes extends RecipeProvider {
                 out(UniverseItems.LOGISTICS_DRONE.get(), 1));
         this.machine(Kind.ASSEMBLING, "logistics_vessel", 120, "interstellar_logistics", in(alloy, 10, processor, 10, reinforced, 2),
                 out(UniverseItems.LOGISTICS_VESSEL.get(), 1));
+        // 配送（ADR-0023）：照戴森球计划的原料
+        this.machine(Kind.ASSEMBLING, "logistics_distributor", 160, "distribution_logistics",
+                in(Items.IRON_INGOT, 8, UniverseItems.PLASMA_EXCITER.get(), 4, processor, 4), out(UniverseItems.LOGISTICS_DISTRIBUTOR.get(), 1));
+        this.machine(Kind.ASSEMBLING, "logistics_bot", 40, "distribution_logistics", in(Items.IRON_INGOT, 2, processor, 1, thruster, 1),
+                out(UniverseItems.LOGISTICS_BOT.get(), 1));
         this.machine(Kind.ASSEMBLING, "structure_matrix", 160, "structure_matrix", in(diamond, 1, titaniumCrystal, 1),
                 out(UniverseItems.STRUCTURE_MATRIX.get(), 1));
         this.machine(Kind.ASSEMBLING, "information_matrix", 200, "information_matrix", in(processor, 2, broadband, 1),
@@ -451,6 +456,10 @@ final class UniverseRecipes extends RecipeProvider {
         this.researchShaped("orbital_collection", RecipeCategory.TRANSPORTATION, UniverseItems.ORBITAL_COLLECTOR.get(), 1,
                 List.of("RTR", "AIA", "RTR"), Map.of('R', ring, 'T', reinforced, 'A', UniverseItems.ACCUMULATOR.get(),
                         'I', UniverseItems.INTERSTELLAR_LOGISTICS_STATION.get()));
+        this.researchShaped("distribution_logistics", RecipeCategory.TRANSPORTATION, UniverseItems.LOGISTICS_DISTRIBUTOR.get(), 1,
+                List.of("IEI", "PIP", "IEI"), Map.of('I', Items.IRON_INGOT, 'E', UniverseItems.PLASMA_EXCITER.get(), 'P', processor));
+        this.researchShaped("distribution_logistics", RecipeCategory.MISC, UniverseItems.LOGISTICS_BOT.get(), 1, List.of(" P ", "ITI"),
+                Map.of('I', Items.IRON_INGOT, 'P', processor, 'T', thruster));
     }
 
     /**

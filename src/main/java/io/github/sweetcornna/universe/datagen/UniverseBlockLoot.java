@@ -119,6 +119,8 @@ final class UniverseBlockLoot extends BlockLootSubProvider {
                 UniverseBlocks.SELF_EVOLUTION_LAB.get(), UniverseBlocks.FOUNDATION.get())) {
             this.dropSelf(block);
         }
+        // 配送（ADR-0023）
+        this.dropSelf(UniverseBlocks.LOGISTICS_DISTRIBUTOR.get());
         this.add(UniverseBlocks.STORAGE_TANK.get(), block -> LootTable.lootTable().withPool(this.applyExplosionCondition(block,
                 LootPool.lootPool().setRolls(ContextIntProviders.exactly(1)).add(LootItem.lootTableItem(block)
                         .apply(CopyComponentsFunction.copyComponentsFromBlockEntity(LootContextParams.BLOCK_ENTITY)

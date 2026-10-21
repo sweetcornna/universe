@@ -9,6 +9,7 @@ import io.github.sweetcornna.universe.client.galaxy.GalaxyText;
 import io.github.sweetcornna.universe.client.station.StationClient;
 import io.github.sweetcornna.universe.core.galaxy.Hazard;
 import io.github.sweetcornna.universe.core.galaxy.Planet;
+import io.github.sweetcornna.universe.core.mecha.MechaEnergy;
 import io.github.sweetcornna.universe.core.survival.LifeSupport;
 import io.github.sweetcornna.universe.network.JetpackPayload;
 import io.github.sweetcornna.universe.registry.UniverseAttachments;
@@ -20,10 +21,12 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
@@ -70,7 +73,7 @@ public final class SuitClient {
         boolean jumpDown = player.input.keyPresses.jump();
         boolean chest = player.getItemBySlot(EquipmentSlot.CHEST).is(UniverseItems.EXOSUIT_CHESTPLATE);
         boolean blocked = !chest || player.onGround() || player.isInWater() || player.isInLava() || player.isPassenger()
-                || player.getAbilities().mayfly || player.isFallFlying() || StationClient.weightless(player);
+                || player.getAbilities().mayfly || player.getAbilities().flying || player.isFallFlying() || StationClient.weightless(player);
         if (blocked) {
             armed = false;
         } else if (jumpDown && !jumpWasDown) {
@@ -167,14 +170,26 @@ public final class SuitClient {
         if (chest && shownJet < LifeSupport.JET_MAX) {
             bars.add(new Bar(Component.translatable("hud.universe.suit.jetpack"), shownJet, LifeSupport.JET_MAX, 0xFFFFC14D, Component.empty()));
         }
-        if (bars.isEmpty()) {
+        // 机甲的能量核心（ADR-0023）：没满、在飞、无人机在干活时显示
+        if (chest && hud.energyMax() > 0 && (hud.energy() < hud.energyMax() * 0.995F || hud.has(SuitHud.FLYING) || hud.has(SuitHud.DRONES))) {
+            Component note = hud.has(SuitHud.FLYING) ? Component.translatable("hud.universe.suit.flying") : Component.empty();
+            bars.add(new Bar(Component.translatable("hud.universe.suit.energy"), hud.energy(), hud.energyMax(), 0xFF5BE0B0, note));
+        }
+        List<Component> notes = new ArrayList<>();
+        if (hud.build() > 0) {
+            notes.add(Component.translatable("hud.universe.suit.build", hud.build()));
+            if (hud.missing() >= 0) {
+                notes.add(Component.translatable("hud.universe.suit.build_missing", new ItemStack(BuiltInRegistries.ITEM.byId(hud.missing())).getHoverName()));
+            }
+        }
+        if (bars.isEmpty() && notes.isEmpty()) {
             return;
         }
         Font font = minecraft.font;
         Optional<Planet> planet = ClientGalaxy.currentPlanet();
         int x = 6;
         int y = 6;
-        int height = 12 + bars.size() * 15 + (planet.isPresent() ? 10 : 0);
+        int height = 12 + bars.size() * 15 + notes.size() * 10 + (planet.isPresent() ? 10 : 0);
         graphics.fill(x - 3, y - 3, x + PANEL_WIDTH, y + height, 0x90000000);
         Component title = Component.translatable("hud.universe.suit.title");
         if (hud.has(SuitHud.SUPPLIED)) {
@@ -209,6 +224,10 @@ public final class SuitClient {
             graphics.fill(x, y, x + Math.round(barWidth * share), y + 3, share < 0.2F ? 0xFFE5533D : bar.color());
             y += 5;
         }
+        for (int i = 0; i < notes.size(); i++) {
+            graphics.text(font, notes.get(i), x, y, i == 0 ? 0xFF7FE0F7 : 0xFFFF8A6A, false);
+            y += 10;
+        }
         warnings(graphics, font, hud, player);
     }
 
@@ -220,6 +239,8 @@ public final class SuitClient {
         Component warning = null;
         if (hud.has(SuitHud.NEEDS_OXYGEN) && hud.oxygen() < LifeSupport.OXYGEN_MAX * 0.25F) {
             warning = Component.translatable(hud.oxygen() <= 0 ? "hud.universe.suit.warning.no_oxygen" : "hud.universe.suit.warning.oxygen");
+        } else if (hud.has(SuitHud.FLYING) && hud.energy() < hud.energyMax() * MechaEnergy.LOW) {
+            warning = Component.translatable("hud.universe.suit.warning.energy");
         } else {
             for (Hazard hazard : Hazard.values()) {
                 if (hud.exposed(hazard) && hud.protection(hazard) < LifeSupport.HAZARD_MAX * 0.2F) {

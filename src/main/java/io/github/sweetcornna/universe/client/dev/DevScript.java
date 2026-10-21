@@ -22,9 +22,11 @@ import io.github.sweetcornna.universe.asteroid.Asteroid;
 import io.github.sweetcornna.universe.client.ClientConfig;
 import io.github.sweetcornna.universe.client.ItemSummaries;
 import io.github.sweetcornna.universe.client.UniverseKeys;
+import io.github.sweetcornna.universe.client.blueprint.GhostClient;
 import io.github.sweetcornna.universe.client.dyson.ClientDyson;
 import io.github.sweetcornna.universe.client.dyson.DysonSkyRenderer;
 import io.github.sweetcornna.universe.client.guide.GuideScreen;
+import io.github.sweetcornna.universe.client.mecha.FlyersClient;
 import io.github.sweetcornna.universe.client.pirate.PirateClient;
 import io.github.sweetcornna.universe.client.ship.ShipClient;
 import io.github.sweetcornna.universe.dyson.EmRailEjectorBlockEntity;
@@ -32,6 +34,7 @@ import io.github.sweetcornna.universe.dyson.LaunchSiloBlockEntity;
 import io.github.sweetcornna.universe.entity.ship.ShipEntity;
 import io.github.sweetcornna.universe.network.ResearchActionPayload;
 import io.github.sweetcornna.universe.registry.UniverseAttachments;
+import io.github.sweetcornna.universe.survival.SuitHud;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Screenshot;
@@ -54,6 +57,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -252,6 +256,17 @@ public final class DevScript {
         player.xRotO = player.getXRot();
     }
 
+    private static int count(LocalPlayer player, Item item) {
+        int count = 0;
+        for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
+            ItemStack stack = player.getInventory().getItem(i);
+            if (stack.is(item)) {
+                count += stack.getCount();
+            }
+        }
+        return count;
+    }
+
     private static int coord(String token, int base) {
         return token.startsWith("~") ? base + (token.length() > 1 ? Integer.parseInt(token.substring(1)) : 0) : Integer.parseInt(token);
     }
@@ -387,6 +402,7 @@ public final class DevScript {
                     case "starmap" -> UniverseKeys.STAR_MAP;
                     case "discovery" -> UniverseKeys.DISCOVERY_LOG;
                     case "stats" -> UniverseKeys.STATS;
+                    case "mecha" -> UniverseKeys.MECHA;
                     default -> throw new IllegalArgumentException("unknown key " + args[0]);
                 };
                 KeyMapping.click(key.getKey());
@@ -426,7 +442,10 @@ public final class DevScript {
                     }
                     double x = screen.width / 2.0 + Double.parseDouble(args[0]);
                     double y = screen.height / 2.0 + Double.parseDouble(args[1]);
-                    screen.mouseClicked(new MouseButtonEvent(x, y, new MouseButtonInfo(InputConstants.MOUSE_BUTTON_LEFT, modifiers)), false);
+                    MouseButtonEvent click = new MouseButtonEvent(x, y, new MouseButtonInfo(InputConstants.MOUSE_BUTTON_LEFT, modifiers));
+                    screen.mouseClicked(click, false);
+                    // 手上拿着东西点格子时，原版要等松开鼠标才放下去
+                    screen.mouseReleased(click);
                 }
             }
             case "scroll" -> {
@@ -464,10 +483,20 @@ public final class DevScript {
                 }
             }
             case "fly" -> {
-                if (player.getAbilities().mayfly) {
+                // mayFly 也算上机甲的驱动引擎（NeoForge 的 creative_flight 属性）
+                if (player.mayFly()) {
                     player.getAbilities().flying = args.length == 0 || !args[0].equals("off");
                     player.onUpdateAbilities();
                 }
+            }
+            // 机甲：核心电量、在不在飞、工地还剩几格（服务端的和客户端虚影的）、缺什么、在飞的无人机和机器人
+            case "mecha" -> {
+                SuitHud hud = player.getData(UniverseAttachments.SUIT_HUD);
+                Universe.LOGGER.info("Dev script mecha: {} energy {}/{}, flying {}, build {}, ghosts {}, missing {}, flyers {}, iron {}, cobblestone {}",
+                        rest, Math.round(hud.energy()), Math.round(hud.energyMax()), player.getAbilities().flying, hud.build(),
+                        GhostClient.remaining(), hud.missing() < 0 ? "-" : BuiltInRegistries.ITEM.getKey(BuiltInRegistries.ITEM.byId(hud.missing())),
+                        FlyersClient.count(), count(player, Items.IRON_INGOT),
+                        count(player, Items.COBBLESTONE));
             }
             case "shot" -> Screenshot.grab(minecraft.gameDirectory, name(args), minecraft.gameRenderer.mainRenderTarget(), 1,
                     message -> Universe.LOGGER.info("Dev script screenshot: {}", message.getString()));

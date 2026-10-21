@@ -16,6 +16,7 @@ import io.github.sweetcornna.universe.core.survival.LifeSupport;
 import io.github.sweetcornna.universe.core.survival.Suit;
 import io.github.sweetcornna.universe.core.tech.TechBonuses;
 import io.github.sweetcornna.universe.entity.ship.ShipEntity;
+import io.github.sweetcornna.universe.mecha.Mecha;
 import io.github.sweetcornna.universe.network.JetpackPayload;
 import io.github.sweetcornna.universe.perf.ServerPerf;
 import io.github.sweetcornna.universe.registry.UniverseAttachments;
@@ -177,7 +178,7 @@ public final class PlayerSurvival {
             if (player.tickCount % HUD_INTERVAL == 0) {
                 SuitHud full = SuitHud.FULL;
                 publish(player, new SuitHud(full.oxygen(), full.cold(), full.heat(), full.toxic(), full.radiation(), full.jet(),
-                        Multitool.heat(player), Multitool.overheated(player) ? SuitHud.OVERHEATED : 0, 0, 0, 1, 1)
+                        Multitool.heat(player), Multitool.overheated(player) ? SuitHud.OVERHEATED : 0, 0, 0, 1, 1, 0, 0, 0, -1)
                         .withTech(player.getData(UniverseAttachments.EXOSUIT).shield(), bonuses));
             }
             return;
@@ -212,8 +213,8 @@ public final class PlayerSurvival {
             player.hurtServer(level, level.damageSources().source(SurvivalDamage.BY_HAZARD.get(worst)), total);
         }
         if (player.tickCount % HUD_INTERVAL == 0) {
-            publish(player, SuitHud.of(support, env, suit, Multitool.heat(player), Multitool.overheated(player),
-                    player.getData(UniverseAttachments.EXOSUIT).shield(), bonuses));
+            publish(player, Mecha.hud(player, SuitHud.of(support, env, suit, Multitool.heat(player), Multitool.overheated(player),
+                    player.getData(UniverseAttachments.EXOSUIT).shield(), bonuses)));
         }
     }
 

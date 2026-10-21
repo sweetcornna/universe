@@ -90,6 +90,9 @@ public final class TechTree {
             Tech.lab("improved_assembling", List.of("processor", "high_strength_materials"), List.of(BLUE, RED), 80, items("assembler_mk2")),
             Tech.lab("planetary_logistics", List.of("improved_logistics", "processor", "thruster", "high_strength_materials"),
                     List.of(BLUE, RED), 120, items("planetary_logistics_station", "logistics_drone", "particle_container")),
+            // M12（ADR-0023）：物流配送器、配送机器人和机甲的物流栏位
+            Tech.lab("distribution_logistics", List.of("planetary_logistics"), List.of(BLUE, RED), 150,
+                    items("logistics_distributor", "logistics_bot")),
             Tech.lab("structure_matrix", List.of("high_strength_materials", "processor"), List.of(BLUE, RED), 120,
                     items("structure_matrix", "synthetic_diamond", "titanium_crystal")),
             Tech.lab("efficient_logistics", List.of("planetary_logistics", "structure_matrix"), List.of(BLUE, RED, YELLOW), 140,
@@ -209,6 +212,33 @@ public final class TechTree {
                             null),
                     new Upgrade(Upgrades.UNIVERSE_EXPLORATION, NS + "survey_data", List.of("interstellar_survey"), List.of(
                             tier(40, BLUE), tier(80, BLUE, RED), tier(120, BLUE, RED, YELLOW), tier(200, BLUE, RED, YELLOW, PURPLE)),
+                            null),
+                    // M12（ADR-0023）：机甲
+                    new Upgrade(Upgrades.MECHA_CORE, NS + "accumulator", List.of("electromagnetic_matrix"), List.of(
+                            tier(40, BLUE), tier(80, BLUE, RED), tier(120, BLUE, RED, YELLOW), tier(160, BLUE, RED, YELLOW, PURPLE),
+                            tier(200, BLUE, RED, YELLOW, PURPLE, GREEN)),
+                            new Infinite(List.of(WHITE), 300, 100)),
+                    new Upgrade(Upgrades.ENERGY_CIRCUIT, NS + "thermal_plant", List.of("electromagnetic_matrix"), List.of(
+                            tier(40, BLUE), tier(80, BLUE, RED), tier(120, BLUE, RED, YELLOW), tier(160, BLUE, RED, YELLOW, PURPLE),
+                            tier(200, BLUE, RED, YELLOW, PURPLE, GREEN)),
+                            new Infinite(List.of(WHITE), 300, 100)),
+                    new Upgrade(Upgrades.DRIVE_ENGINE, NS + "thruster", List.of("electromagnetic_drive"), List.of(
+                            tier(40, BLUE), tier(80, BLUE, RED), tier(150, BLUE, RED, YELLOW), tier(200, BLUE, RED, YELLOW, PURPLE)),
+                            null),
+                    new Upgrade(Upgrades.MECHANICAL_FRAME, NS + "exosuit_leggings", List.of("electromagnetic_matrix"), List.of(
+                            tier(30, BLUE), tier(60, BLUE), tier(90, BLUE, RED), tier(120, BLUE, RED), tier(150, BLUE, RED, YELLOW),
+                            tier(200, BLUE, RED, YELLOW), tier(250, BLUE, RED, YELLOW, PURPLE), tier(300, BLUE, RED, YELLOW, PURPLE, GREEN)),
+                            null),
+                    new Upgrade(Upgrades.COMMUNICATION_CONTROL, NS + "construction_drone", List.of("blueprint"), List.of(
+                            tier(40, BLUE), tier(80, BLUE, RED), tier(120, BLUE, RED, YELLOW), tier(160, BLUE, RED, YELLOW, PURPLE),
+                            tier(200, BLUE, RED, YELLOW, PURPLE, GREEN)),
+                            new Infinite(List.of(WHITE), 300, 100)),
+                    new Upgrade(Upgrades.DRONE_ENGINE, NS + "electric_motor", List.of("blueprint"), List.of(
+                            tier(40, BLUE), tier(80, BLUE, RED), tier(120, BLUE, RED, YELLOW), tier(160, BLUE, RED, YELLOW, PURPLE),
+                            tier(200, BLUE, RED, YELLOW, PURPLE, GREEN)),
+                            new Infinite(List.of(WHITE), 300, 100)),
+                    new Upgrade(Upgrades.MASS_CONSTRUCTION, NS + "blueprint", List.of("blueprint"), List.of(
+                            tier(60, BLUE), tier(120, BLUE, RED), tier(200, BLUE, RED, YELLOW), tier(300, BLUE, RED, YELLOW, PURPLE)),
                             null)));
 
     private final List<Tech> techs;

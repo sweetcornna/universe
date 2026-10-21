@@ -61,11 +61,11 @@ public final class BlueprintClient {
     /** 预览最多画几个方块，再多只画外框。 */
     public static final int MAX_GHOSTS = 4096;
     private static final ContextKey<Preview> PREVIEW = new ContextKey<>(Universe.id("blueprint_preview"));
-    private static final int GHOST = 0x8CBFE4FF;
-    private static final int BLOCKED = 0x99FF5A5A;
+    static final int GHOST = 0x8CBFE4FF;
+    static final int BLOCKED = 0x99FF5A5A;
     private static final int FRAME = 0xFF6FD8FF;
     private static final int FRAME_BAD = 0xFFFF6060;
-    private static final Direction[] DIRECTIONS = Direction.values();
+    static final Direction[] DIRECTIONS = Direction.values();
 
     private static final Map<Integer, BlueprintPayloads.Content> CACHE = new HashMap<>();
     private static final Set<Integer> REQUESTED = new HashSet<>();
@@ -73,7 +73,7 @@ public final class BlueprintClient {
     private static @Nullable BlockStateModelSet modelSet;
 
     /** 一个半透明的方块：相对相机的位置、模型、不画的面（相邻的实心预览方块挡住的面）。 */
-    private record Ghost(float x, float y, float z, List<BlockStateModelPart> parts, int hidden, int color) {
+    record Ghost(float x, float y, float z, List<BlockStateModelPart> parts, int hidden, int color) {
     }
 
     private record Preview(AABB frame, int frameColor, List<Ghost> ghosts) {
@@ -209,13 +209,21 @@ public final class BlueprintClient {
         return new Preview(box.move(camera.reverse()), blocked ? FRAME_BAD : FRAME, ghosts);
     }
 
-    private static List<Ghost> ghosts(BlueprintPayloads.Content content, BlockPos origin, int turns, ClientLevel level, Vec3 camera) {
+    /** 一个方块状态的模型（缓存，资源包重新加载过就重新取）。 */
+    static List<BlockStateModelPart> parts(BlockState state) {
         BlockStateModelSet models = Minecraft.getInstance().getModelManager().getBlockStateModelSet();
         if (models != modelSet) {
-            // 资源包重新加载过，模型要重新取
             MODELS.clear();
             modelSet = models;
         }
+        return MODELS.computeIfAbsent(state, key -> {
+            List<BlockStateModelPart> list = new ArrayList<>();
+            models.get(key).collectParts(RandomSource.create(42), list);
+            return list;
+        });
+    }
+
+    private static List<Ghost> ghosts(BlueprintPayloads.Content content, BlockPos origin, int turns, ClientLevel level, Vec3 camera) {
         Rotation rotation = Blueprints.rotation(turns);
         int count = content.positions().size();
         Map<BlockPos, BlockState> placed = new HashMap<>(count * 2);
@@ -239,11 +247,7 @@ public final class BlueprintClient {
                     hidden |= 1 << direction.ordinal();
                 }
             }
-            List<BlockStateModelPart> parts = MODELS.computeIfAbsent(state, key -> {
-                List<BlockStateModelPart> list = new ArrayList<>();
-                models.get(key).collectParts(RandomSource.create(42), list);
-                return list;
-            });
+            List<BlockStateModelPart> parts = parts(state);
             int color = current.canBeReplaced() && level.isUnobstructed(state, pos, CollisionContext.empty()) ? GHOST : BLOCKED;
             ghosts.add(new Ghost((float) (pos.getX() - camera.x), (float) (pos.getY() - camera.y), (float) (pos.getZ() - camera.z), parts, hidden,
                     color));
@@ -260,7 +264,13 @@ public final class BlueprintClient {
         float width = Minecraft.getInstance().getWindow().getAppropriateLineWidth() * 1.5F;
         event.getSubmitNodeCollector().submitShapeOutline(pose, Shapes.create(preview.frame), RenderTypes.linesTranslucent(), preview.frameColor,
                 width, false);
-        for (Ghost ghost : preview.ghosts) {
+        submitGhosts(event, preview.ghosts);
+    }
+
+    /** 画一串半透明的方块。 */
+    static void submitGhosts(SubmitCustomGeometryEvent event, List<Ghost> ghosts) {
+        PoseStack pose = event.getPoseStack();
+        for (Ghost ghost : ghosts) {
             pose.pushPose();
             pose.translate(ghost.x, ghost.y, ghost.z);
             event.getSubmitNodeCollector().submitCustomGeometry(pose, RenderTypes.translucentMovingBlock(), (p, buffer) -> {

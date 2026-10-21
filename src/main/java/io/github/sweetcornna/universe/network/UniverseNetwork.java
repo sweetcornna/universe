@@ -4,6 +4,7 @@ import io.github.sweetcornna.universe.blueprint.Blueprints;
 import io.github.sweetcornna.universe.dyson.Dyson;
 import io.github.sweetcornna.universe.entity.ship.ShipWeapons;
 import io.github.sweetcornna.universe.exocraft.Exocrafts;
+import io.github.sweetcornna.universe.mecha.Mecha;
 import io.github.sweetcornna.universe.mission.Missions;
 import io.github.sweetcornna.universe.stats.ProductionLog;
 import io.github.sweetcornna.universe.story.Story;
@@ -28,7 +29,7 @@ import net.neoforged.neoforge.server.ServerLifecycleHooks;
  */
 public final class UniverseNetwork {
     /** 协议版本：任何包的格式改动都要加一，版本不同的客户端和服务端会拒绝连接。 */
-    private static final String PROTOCOL_VERSION = "19";
+    private static final String PROTOCOL_VERSION = "20";
 
     private UniverseNetwork() {
     }
@@ -52,6 +53,8 @@ public final class UniverseNetwork {
                 .playToClient(PoiTextPayload.TYPE, PoiTextPayload.STREAM_CODEC)
                 .playToClient(OpenSignalBoosterPayload.TYPE, OpenSignalBoosterPayload.STREAM_CODEC)
                 .playToClient(LogisticsFlightsPayload.TYPE, LogisticsFlightsPayload.STREAM_CODEC)
+                .playToClient(FlyersPayload.TYPE, FlyersPayload.STREAM_CODEC)
+                .playToClient(GhostsPayload.TYPE, GhostsPayload.STREAM_CODEC)
                 .playToClient(StatsSnapshotPayload.TYPE, StatsSnapshotPayload.STREAM_CODEC)
                 .playToClient(DysonSyncPayload.TYPE, DysonSyncPayload.STREAM_CODEC)
                 .playToClient(TradeStatePayload.TYPE, TradeStatePayload.STREAM_CODEC)
@@ -69,6 +72,8 @@ public final class UniverseNetwork {
                 .playToServer(BlueprintPayloads.Request.TYPE, BlueprintPayloads.Request.STREAM_CODEC, Blueprints::handleRequest)
                 .playToServer(DysonEditPayload.TYPE, DysonEditPayload.STREAM_CODEC, Dyson::handleEdit)
                 .playToServer(JetpackPayload.TYPE, JetpackPayload.STREAM_CODEC, PlayerSurvival::handleJetpack)
+                .playToServer(MechaPayloads.Open.TYPE, MechaPayloads.Open.STREAM_CODEC, Mecha::handleOpen)
+                .playToServer(MechaPayloads.Bounds.TYPE, MechaPayloads.Bounds.STREAM_CODEC, Mecha::handleBounds)
                 .playToServer(ResearchActionPayload.TYPE, ResearchActionPayload.STREAM_CODEC, Research::handleAction)
                 .playToServer(WarpRequestPayload.TYPE, WarpRequestPayload.STREAM_CODEC, ShipWarp::handleRequest)
                 .playToServer(AnalyzePayload.TYPE, AnalyzePayload.STREAM_CODEC, Discoveries::handleAnalyze)

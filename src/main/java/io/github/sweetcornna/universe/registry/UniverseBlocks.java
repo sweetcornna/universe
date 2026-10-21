@@ -58,6 +58,7 @@ import io.github.sweetcornna.universe.factory.power.TeslaTowerBlockEntity;
 import io.github.sweetcornna.universe.factory.power.ThermalPlantBlock;
 import io.github.sweetcornna.universe.factory.resource.CrudeOilSeepBlock;
 import io.github.sweetcornna.universe.factory.resource.ResourceMachineBlocks;
+import io.github.sweetcornna.universe.logistics.DistributorBlock;
 import io.github.sweetcornna.universe.logistics.OrbitalCollectorBlock;
 import io.github.sweetcornna.universe.logistics.StationBlock;
 import io.github.sweetcornna.universe.teleport.BaseBeaconBlock;
@@ -341,6 +342,9 @@ public final class UniverseBlocks {
     public static final DeferredBlock<MachineBlock> GEOTHERMAL_POWER_STATION = BLOCKS.registerBlock("geothermal_power_station",
             p -> new MachineBlock(p, UniverseBlockEntities.GEOTHERMAL_POWER_STATION),
             p -> machine(p).lightLevel(state -> state.getValue(MachineBlock.WORKING) ? 12 : 3));
+    /** 物流配送器（ADR-0023）：装在储物仓顶上。 */
+    public static final DeferredBlock<DistributorBlock> LOGISTICS_DISTRIBUTOR = BLOCKS.registerBlock("logistics_distributor",
+            DistributorBlock::new, p -> machine(p).noOcclusion().lightLevel(state -> state.getValue(MachineBlock.WORKING) ? 8 : 2));
     public static final DeferredBlock<MachineBlock> ENERGY_EXCHANGER = BLOCKS.registerBlock("energy_exchanger",
             p -> new MachineBlock(p, UniverseBlockEntities.ENERGY_EXCHANGER),
             p -> machine(p).lightLevel(state -> state.getValue(MachineBlock.WORKING) ? 10 : 2));

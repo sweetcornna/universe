@@ -1,0 +1,19 @@
+{
+  "model": {
+    "type": "minecraft:select",
+    "cases": [
+      {
+        "model": {
+          "type": "minecraft:model",
+          "model": "universe:item/construction_drone"
+        },
+        "when": "gui"
+      }
+    ],
+    "fallback": {
+      "type": "minecraft:model",
+      "model": "universe:block/construction_drone_model"
+    },
+    "property": "minecraft:display_context"
+  }
+}

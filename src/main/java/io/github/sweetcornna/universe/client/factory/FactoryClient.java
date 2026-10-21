@@ -1,6 +1,7 @@
 package io.github.sweetcornna.universe.client.factory;
 
 import io.github.sweetcornna.universe.client.logistics.LogisticsClient;
+import io.github.sweetcornna.universe.client.logistics.DistributorScreen;
 import io.github.sweetcornna.universe.client.logistics.StationScreen;
 import io.github.sweetcornna.universe.factory.MachineMenu;
 import io.github.sweetcornna.universe.factory.RecipeMachineBlockEntity;
@@ -69,6 +70,7 @@ public final class FactoryClient {
         event.register(UniverseMenus.PLANETARY_LOGISTICS_STATION.menuType(), StationScreen::new);
         event.register(UniverseMenus.INTERSTELLAR_LOGISTICS_STATION.menuType(), StationScreen::new);
         event.register(UniverseMenus.ORBITAL_COLLECTOR.menuType(), StationScreen::new);
+        event.register(UniverseMenus.LOGISTICS_DISTRIBUTOR.menuType(), DistributorScreen::new);
         event.register(UniverseMenus.MATRIX_LAB.menuType(), MatrixLabScreen::new);
         event.register(UniverseMenus.TRAFFIC_MONITOR.menuType(), TrafficMonitorScreen::new);
     }

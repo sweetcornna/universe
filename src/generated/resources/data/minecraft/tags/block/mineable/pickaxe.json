@@ -85,6 +85,7 @@
     "universe:recomposing_assembler",
     "universe:quantum_chemical_plant",
     "universe:self_evolution_lab",
+    "universe:logistics_distributor",
     "universe:foundation",
     "universe:data_terminal",
     "universe:tech_cache",

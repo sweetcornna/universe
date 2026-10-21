@@ -56,13 +56,15 @@ class SurvivalProgressionTest {
             NS + "alien_egg", NS + "herbivore_feed",
             NS + "alien_fluff", NS + "herbivore_feed",
             NS + "bio_gel", NS + "carnivore_feed");
-    /** 生存里本来就拿不到的：挖不掉的涌泉、掉落舱和石碑、空间站的交易终端和建材，只在坠毁点箱子里的损坏工具。刷怪蛋另算。 */
+    /** 生存里本来就拿不到的：挖不掉的涌泉、掉落舱和石碑、空间站的交易终端和建材，只在坠毁点箱子里的损坏工具，机甲的建造无人机。刷怪蛋另算。 */
     private static final Set<String> UNOBTAINABLE = Set.of(NS + "crude_oil_seep", NS + "damaged_multitool", NS + "drop_pod",
             NS + "monolith", NS + "trade_terminal",
             NS + "station_hull", NS + "station_floor", NS + "station_glass", NS + "station_light", NS + "station_pad", NS + "station_trim",
             NS + "station_solar_panel", NS + "ship_repair", NS + "station_teleporter", NS + "mission_board",
             // Mk.II 部件只能在空间站买、在坠毁飞船里拆到（ADR-0017）
-            NS + "ship_thruster_mk2", NS + "fuel_tank_mk2", NS + "impulse_engine_mk2", NS + "warp_drive_mk2", NS + "alloy_hull_plating");
+            NS + "ship_thruster_mk2", NS + "fuel_tank_mk2", NS + "impulse_engine_mk2", NS + "warp_drive_mk2", NS + "alloy_hull_plating",
+            // 建造无人机是机甲自带的，物品只用来画在世界里飞的样子（ADR-0023）
+            NS + "construction_drone");
     /** 每类设备配方最多几种原料、几种产物：同类设备里格子最多的那台（{@code RecipeMachines}）。 */
     private static final Map<String, int[]> SLOTS = Map.of(
             "universe:smelting", new int[] {3, 1},

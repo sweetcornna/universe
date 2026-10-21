@@ -12,6 +12,8 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import io.github.sweetcornna.universe.mission.MissionState;
+import io.github.sweetcornna.universe.mecha.MechaData;
+import io.github.sweetcornna.universe.mecha.MechaSettings;
 import io.github.sweetcornna.universe.sentinel.SentinelHud;
 import io.github.sweetcornna.universe.sentinel.SentinelAlert;
 import io.github.sweetcornna.universe.Universe;
@@ -67,6 +69,13 @@ public final class UniverseAttachments {
     /** 外骨骼的技术槽、货舱和修过的掉落舱（ADR-0014），死亡后保留。 */
     public static final Supplier<AttachmentType<ExosuitData>> EXOSUIT = ATTACHMENT_TYPES.register("exosuit",
             () -> AttachmentType.builder(() -> new ExosuitData()).serialize(ExosuitData.CODEC).copyOnDeath().build());
+    /** 机甲的能量核心和燃烧室（ADR-0023），只在服务端，死亡后保留。 */
+    public static final Supplier<AttachmentType<MechaData>> MECHA = ATTACHMENT_TYPES.register("mecha",
+            () -> AttachmentType.builder(() -> new MechaData()).serialize(MechaData.CODEC).copyOnDeath().build());
+    /** 机甲面板的物流栏位和自动补燃料（ADR-0023），死亡后保留，同步给本人。 */
+    public static final Supplier<AttachmentType<MechaSettings>> MECHA_SETTINGS = ATTACHMENT_TYPES.register("mecha_settings",
+            () -> AttachmentType.builder(() -> MechaSettings.DEFAULT).serialize(MechaSettings.CODEC).copyOnDeath()
+                    .sync((holder, player) -> holder == player, MechaSettings.STREAM_CODEC).build());
     /** 玩家在兴趣点上的进度：去过哪些、领过哪些奖励、先驱者线索讲到第几段（ADR-0014）。 */
     public static final Supplier<AttachmentType<PoiProgress>> POI_PROGRESS = ATTACHMENT_TYPES.register("poi_progress",
             () -> AttachmentType.builder(() -> new PoiProgress()).serialize(PoiProgress.CODEC).copyOnDeath().build());

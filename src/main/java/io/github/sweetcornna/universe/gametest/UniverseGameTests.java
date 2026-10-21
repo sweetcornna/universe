@@ -7,6 +7,7 @@ import io.github.sweetcornna.universe.core.factory.Cargo;
 import io.github.sweetcornna.universe.core.factory.Proliferation;
 import io.github.sweetcornna.universe.core.logistics.Station;
 import io.github.sweetcornna.universe.core.logistics.StationSlot;
+import io.github.sweetcornna.universe.core.mecha.Distribution;
 import io.github.sweetcornna.universe.core.research.ResearchState;
 import io.github.sweetcornna.universe.core.research.Tech;
 import io.github.sweetcornna.universe.core.research.TechTree;
@@ -22,6 +23,7 @@ import io.github.sweetcornna.universe.factory.power.GeothermalBlockEntity;
 import io.github.sweetcornna.universe.factory.research.MatrixLabBlockEntity;
 import io.github.sweetcornna.universe.factory.research.Research;
 import io.github.sweetcornna.universe.factory.research.ResearchData;
+import io.github.sweetcornna.universe.logistics.DistributorBlockEntity;
 import io.github.sweetcornna.universe.logistics.StationBlockEntity;
 import io.github.sweetcornna.universe.logistics.StationHandler;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
@@ -86,6 +88,8 @@ public final class UniverseGameTests {
             UniverseGameTests::geothermalNeedsLava);
     private static final ResourceKey<Consumer<GameTestHelper>> STATION_KEEPS_POINTS = function("station_keeps_points",
             UniverseGameTests::stationKeepsPoints);
+    private static final ResourceKey<Consumer<GameTestHelper>> DISTRIBUTORS_SHARE_ITEMS = function("distributors_share_items",
+            UniverseGameTests::distributorsShareItems);
 
     private UniverseGameTests() {
     }
@@ -115,6 +119,7 @@ public final class UniverseGameTests {
         test(event, environment, STACKED_LABS_SHARE, 100);
         test(event, environment, GEOTHERMAL_NEEDS_LAVA, 60);
         test(event, environment, STATION_KEEPS_POINTS, 40);
+        test(event, environment, DISTRIBUTORS_SHARE_ITEMS, 200);
     }
 
     private static void test(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition<?>> environment, ResourceKey<Consumer<GameTestHelper>> function,
@@ -313,7 +318,33 @@ public final class UniverseGameTests {
         });
     }
 
+    /** 两台配送器各自顶在储物仓上：需求的那台派机器人去供应的那台取铁锭，放进自己下面（ADR-0023）。 */
+    private static void distributorsShareItems(GameTestHelper helper) {
+        powerPlant(helper);
+        BlockPos supply = new BlockPos(2, 1, 4);
+        BlockPos demand = new BlockPos(4, 1, 4);
+        helper.setBlock(supply, UniverseBlocks.STORAGE_DEPOT.get());
+        helper.setBlock(demand, UniverseBlocks.STORAGE_DEPOT.get());
+        helper.getBlockEntity(supply, StorageDepotBlockEntity.class).setItem(0, new ItemStack(Items.IRON_INGOT, 32));
+        distributor(helper, supply.above(), Distribution.Icarus.NONE, Distribution.Peer.SUPPLY);
+        distributor(helper, demand.above(), Distribution.Icarus.NONE, Distribution.Peer.DEMAND);
+        helper.succeedWhen(() -> helper.assertTrue(helper.getBlockEntity(demand, StorageDepotBlockEntity.class).countItem(Items.IRON_INGOT) > 0,
+                "需求的配送器没有取到铁锭"));
+    }
+
     // ---- 搭场地
+
+    /** 一台管铁锭、装了两个配送机器人的物流配送器。 */
+    private static void distributor(GameTestHelper helper, BlockPos pos, Distribution.Icarus icarus, Distribution.Peer peer) {
+        helper.setBlock(pos, UniverseBlocks.LOGISTICS_DISTRIBUTOR.get());
+        DistributorBlockEntity distributor = helper.getBlockEntity(pos, DistributorBlockEntity.class);
+        CompoundTag settings = new CompoundTag();
+        settings.putString("Filter", "minecraft:iron_ingot");
+        settings.putString("Icarus", icarus.name());
+        settings.putString("Peer", peer.name());
+        distributor.applyBlueprintSettings(settings);
+        distributor.setItem(DistributorBlockEntity.BOT_SLOT, new ItemStack(UniverseItems.LOGISTICS_BOT.get(), 2));
+    }
 
     /** 场地西北角一座感应塔，东北角一台装了燃料棒的人造恒星，中间的设备都在塔的覆盖范围里。 */
     private static void powerPlant(GameTestHelper helper) {

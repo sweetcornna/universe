@@ -23,7 +23,9 @@ import io.github.sweetcornna.universe.factory.research.MatrixLabBlockEntity;
 import io.github.sweetcornna.universe.factory.resource.MiningMachineBlockEntity;
 import io.github.sweetcornna.universe.factory.resource.OilExtractorBlockEntity;
 import io.github.sweetcornna.universe.factory.resource.WaterPumpBlockEntity;
+import io.github.sweetcornna.universe.logistics.DistributorBlockEntity;
 import io.github.sweetcornna.universe.logistics.StationBlockEntity;
+import io.github.sweetcornna.universe.mecha.MechaMenu;
 import io.github.sweetcornna.universe.tech.TechMenu;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.inventory.MenuType;
@@ -111,6 +113,8 @@ public final class UniverseMenus {
             new MachineMenu.Type(GeothermalBlockEntity.DATA_COUNT, 66));
     public static final MachineMenu.Type ENERGY_EXCHANGER = machine("energy_exchanger",
             new MachineMenu.Type(EnergyExchangerBlockEntity.DATA_COUNT, RESOURCE_WIDTH, 166, input(136, 46), output(172, 46)));
+    public static final MachineMenu.Type LOGISTICS_DISTRIBUTOR = machine("logistics_distributor",
+            new MachineMenu.Type(DistributorBlockEntity.DATA_COUNT, 176, 198, input(152, 58)));
     public static final MachineMenu.Type TRAFFIC_MONITOR = machine("traffic_monitor",
             new MachineMenu.Type(TrafficMonitorBlockEntity.DATA_COUNT, 176, 84));
     // 储物仓：3 行 10 列
@@ -120,6 +124,9 @@ public final class UniverseMenus {
     /** 技术配置界面（ADR-0014）。 */
     public static final DeferredHolder<MenuType<?>, MenuType<TechMenu>> TECH = MENUS.register("tech",
             () -> IMenuTypeExtension.create(TechMenu::new));
+    /** 机甲面板（ADR-0023）。 */
+    public static final DeferredHolder<MenuType<?>, MenuType<MechaMenu>> MECHA = MENUS.register("mecha",
+            () -> IMenuTypeExtension.create(MechaMenu::new));
 
     private UniverseMenus() {
     }

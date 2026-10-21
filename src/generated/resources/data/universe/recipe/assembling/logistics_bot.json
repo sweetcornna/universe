@@ -1,0 +1,24 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 2,
+      "ingredient": "minecraft:iron_ingot"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:processor"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:thruster"
+    }
+  ],
+  "research": "distribution_logistics",
+  "results": [
+    {
+      "id": "universe:logistics_bot"
+    }
+  ],
+  "time": 40
+}
