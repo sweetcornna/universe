@@ -4,7 +4,10 @@ import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.core.dyson.RayReceiver;
 import io.github.sweetcornna.universe.core.research.Upgrades;
 import io.github.sweetcornna.universe.dyson.RayReceiverBlockEntity;
+import io.github.sweetcornna.universe.core.factory.Proliferation;
 import io.github.sweetcornna.universe.factory.MachineBlockEntity;
+import io.github.sweetcornna.universe.factory.belt.SprayCoaterBlockEntity;
+import io.github.sweetcornna.universe.factory.belt.TrafficMonitorBlockEntity;
 import io.github.sweetcornna.universe.factory.RecipeMachineBlockEntity;
 import io.github.sweetcornna.universe.factory.recipe.MachineRecipe;
 import io.github.sweetcornna.universe.factory.research.Research;
@@ -30,6 +33,9 @@ enum MachineServerData implements IServerDataProvider<BlockAccessor> {
     static final String MAKING = "UniverseMaking";
     static final String EFFICIENCY = "UniverseEfficiency";
     static final String STATION = "UniverseStation";
+    /** 喷涂机：装的是哪档增产剂（没有是 0）、还能喷几个；流速监测器：最近一分钟的个数、下限、报警（ADR-0022）。 */
+    static final String COATER = "UniverseCoater";
+    static final String FLOW = "UniverseFlow";
 
     @Override
     public Identifier getUid() {
@@ -38,6 +44,15 @@ enum MachineServerData implements IServerDataProvider<BlockAccessor> {
 
     @Override
     public void appendServerData(CompoundTag tag, BlockAccessor accessor) {
+        if (accessor.getBlockEntity() instanceof SprayCoaterBlockEntity coater) {
+            Proliferation.Tier tier = coater.tier();
+            tag.putIntArray(COATER, new int[] {tier == null ? 0 : tier.ordinal() + 1, coater.remaining()});
+            return;
+        }
+        if (accessor.getBlockEntity() instanceof TrafficMonitorBlockEntity monitor) {
+            tag.putIntArray(FLOW, new int[] {monitor.perMinute(), monitor.threshold(), monitor.alarm() ? 1 : 0, monitor.measured() ? 1 : 0});
+            return;
+        }
         if (!(accessor.getBlockEntity() instanceof MachineBlockEntity machine)) {
             return;
         }

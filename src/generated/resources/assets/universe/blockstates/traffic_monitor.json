@@ -1,0 +1,34 @@
+{
+  "variants": {
+    "alarm=false,facing=east": {
+      "model": "universe:block/traffic_monitor",
+      "y": 90
+    },
+    "alarm=false,facing=north": {
+      "model": "universe:block/traffic_monitor"
+    },
+    "alarm=false,facing=south": {
+      "model": "universe:block/traffic_monitor",
+      "y": 180
+    },
+    "alarm=false,facing=west": {
+      "model": "universe:block/traffic_monitor",
+      "y": 270
+    },
+    "alarm=true,facing=east": {
+      "model": "universe:block/traffic_monitor_alarm",
+      "y": 90
+    },
+    "alarm=true,facing=north": {
+      "model": "universe:block/traffic_monitor_alarm"
+    },
+    "alarm=true,facing=south": {
+      "model": "universe:block/traffic_monitor_alarm",
+      "y": 180
+    },
+    "alarm=true,facing=west": {
+      "model": "universe:block/traffic_monitor_alarm",
+      "y": 270
+    }
+  }
+}

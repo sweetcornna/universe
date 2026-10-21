@@ -2,6 +2,7 @@ package io.github.sweetcornna.universe.factory.power;
 
 import java.util.function.Supplier;
 
+import io.github.sweetcornna.universe.core.factory.Proliferation;
 import io.github.sweetcornna.universe.factory.MachineBlockEntity;
 import io.github.sweetcornna.universe.stats.ProductionLog;
 import net.minecraft.core.BlockPos;
@@ -59,9 +60,9 @@ public abstract class FuelGeneratorBlockEntity extends MachineBlockEntity {
         if (this.energy < this.maxPower && this.level instanceof ServerLevel serverLevel) {
             ItemStack stack = this.getItem(FUEL_SLOT);
             if (stack.is(this.fuel.get())) {
-                this.energy += this.fuelEnergy;
                 ProductionLog.consumed(serverLevel, stack.getItem(), 1);
-                stack.shrink(1);
+                // 喷过增产剂的燃料棒多出能量（ADR-0022）
+                this.energy += Math.round(this.fuelEnergy * (1 + Proliferation.extraProducts(this.consumeInput(FUEL_SLOT, 1))));
                 this.setChanged();
             }
         }

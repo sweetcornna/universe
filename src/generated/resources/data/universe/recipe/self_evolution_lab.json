@@ -1,0 +1,19 @@
+{
+  "type": "universe:research_shaped",
+  "category": "redstone",
+  "key": {
+    "L": "universe:graviton_lens",
+    "M": "universe:matrix_lab",
+    "Q": "universe:quantum_chip",
+    "S": "universe:strange_matter"
+  },
+  "pattern": [
+    "LSL",
+    "QMQ",
+    "LSL"
+  ],
+  "research": "self_evolution",
+  "result": {
+    "id": "universe:self_evolution_lab"
+  }
+}

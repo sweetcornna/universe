@@ -1,0 +1,16 @@
+{
+  "type": "universe:research_shaped",
+  "category": "redstone",
+  "key": {
+    "P": "universe:plasma_exciter",
+    "T": "universe:tesla_tower"
+  },
+  "pattern": [
+    "PTP",
+    " P "
+  ],
+  "research": "wireless_power",
+  "result": {
+    "id": "universe:wireless_power_tower"
+  }
+}

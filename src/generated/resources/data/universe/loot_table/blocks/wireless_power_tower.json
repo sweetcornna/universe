@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "condition": {
+        "type": "minecraft:survives_explosion"
+      },
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "condition": {
+            "type": "minecraft:match_block",
+            "blocks": "universe:wireless_power_tower",
+            "state": {
+              "half": "lower"
+            }
+          },
+          "name": "universe:wireless_power_tower"
+        }
+      ],
+      "rolls": 1
+    }
+  ],
+  "random_sequence": "universe:blocks/wireless_power_tower"
+}

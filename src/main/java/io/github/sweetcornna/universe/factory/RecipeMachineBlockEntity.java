@@ -5,13 +5,16 @@ import java.util.Objects;
 
 import org.jspecify.annotations.Nullable;
 
+import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.blueprint.BlueprintSettings;
+import io.github.sweetcornna.universe.core.factory.Proliferation;
 import io.github.sweetcornna.universe.factory.recipe.MachineRecipe;
 import io.github.sweetcornna.universe.factory.recipe.MachineRecipes;
 import io.github.sweetcornna.universe.factory.research.Research;
 import io.github.sweetcornna.universe.stats.ProductionLog;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.Identifier;
@@ -19,6 +22,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Prediction;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.crafting.Recipe;
@@ -35,12 +39,19 @@ import net.neoforged.neoforge.common.crafting.SizedIngredient;
  *
  * <p>格子：前 {@link Spec#inputs()} 个是原料，后面是产物。存档里记下原料格数；原料格变多了（M8 把熔炉改成三格），
  * 读档时把产物挪到新的位置。
+ *
+ * <p>增产剂（ADR-0022）：这一批原料的等级取各原料平均点数的最低值。界面上选“额外产出”时每做一次按等级攒额外进度，
+ * 攒满多出一份产物；选“加速”时做得更快。两种都按等级多耗电。建筑和设备的配方不能额外产出，只能加速。
  */
 public class RecipeMachineBlockEntity extends MachineBlockEntity implements MachineMenu.ButtonTarget, BlueprintSettings {
     public static final int SELECTED = BASE_DATA;
     public static final int PROGRESS = BASE_DATA + 1;
     public static final int STATUS = BASE_DATA + 2;
-    public static final int DATA_COUNT = BASE_DATA + 3;
+    /** 增产：第 0 位是加速模式，第 1–3 位是这一批原料的等级，第 4 位表示这个配方能额外产出。 */
+    public static final int PROLIFERATION = BASE_DATA + 3;
+    public static final int DATA_COUNT = BASE_DATA + 4;
+    /** 界面上切换“额外产出”和“加速”的按钮（配方清单的按钮是 0 开始的序号）。 */
+    public static final int MODE_BUTTON = 1000;
 
     /** 状态（界面上显示）。 */
     public static final int RUNNING = 0;
@@ -62,6 +73,10 @@ public class RecipeMachineBlockEntity extends MachineBlockEntity implements Mach
     /** 这一刻电网给的满足率；没要电或没接上时是 0。 */
     private double supplied;
     private int status = NO_RECIPE;
+    private Proliferation.Mode mode = Proliferation.Mode.EXTRA_PRODUCTS;
+    private final Proliferation.ExtraProgress extra = new Proliferation.ExtraProgress();
+    /** 这一批原料的增产等级（界面和耗电用）。 */
+    private int batchLevel;
 
     /**
      * 一种配方设备。
@@ -95,6 +110,7 @@ public class RecipeMachineBlockEntity extends MachineBlockEntity implements Mach
         }
         CompoundTag tag = new CompoundTag();
         tag.putString("Recipe", this.selected.identifier().toString());
+        tag.putBoolean("Speedup", this.mode == Proliferation.Mode.SPEEDUP);
         return tag;
     }
 
@@ -102,6 +118,7 @@ public class RecipeMachineBlockEntity extends MachineBlockEntity implements Mach
     public void applyBlueprintSettings(CompoundTag settings) {
         Identifier id = Identifier.tryParse(settings.getStringOr("Recipe", ""));
         this.selected = id == null ? null : ResourceKey.create(Registries.RECIPE, id);
+        this.mode = settings.getBooleanOr("Speedup", false) ? Proliferation.Mode.SPEEDUP : Proliferation.Mode.EXTRA_PRODUCTS;
         this.setChanged();
     }
 
@@ -123,6 +140,11 @@ public class RecipeMachineBlockEntity extends MachineBlockEntity implements Mach
     public boolean clickButton(ServerPlayer player, int button) {
         if (this.level == null) {
             return false;
+        }
+        if (button == MODE_BUTTON) {
+            this.mode = this.mode.next();
+            this.setChanged();
+            return true;
         }
         List<RecipeHolder<MachineRecipe>> recipes = MachineRecipes.list(this.level, this.spec.kind());
         if (button < 0 || button >= recipes.size()) {
@@ -149,7 +171,7 @@ public class RecipeMachineBlockEntity extends MachineBlockEntity implements Mach
 
     @Override
     public long demand() {
-        return this.active ? this.spec.power() : 0;
+        return this.active ? Math.round(this.spec.power() * Proliferation.powerFactor(this.batchLevel)) : 0;
     }
 
     @Override
@@ -176,7 +198,9 @@ public class RecipeMachineBlockEntity extends MachineBlockEntity implements Mach
         if (!this.hasInputs(recipe)) {
             return this.idle(NO_INPUT);
         }
-        if (!this.outputsFit(recipe)) {
+        this.batchLevel = this.batchLevel(recipe);
+        Proliferation.Mode mode = this.effectiveMode(recipe);
+        if (!this.outputsFit(recipe, mode == Proliferation.Mode.EXTRA_PRODUCTS && this.batchLevel > 0)) {
             return this.idle(OUTPUT_FULL);
         }
         this.active = true;
@@ -185,10 +209,10 @@ public class RecipeMachineBlockEntity extends MachineBlockEntity implements Mach
             return false;
         }
         this.status = RUNNING;
-        this.progress += this.spec.speed() * rate;
+        this.progress += this.spec.speed() * rate * Proliferation.speedFactor(mode, this.batchLevel);
         if (this.progress >= recipe.time()) {
             this.progress = 0;
-            this.craft(recipe);
+            this.craft(recipe, mode);
         }
         this.setChanged();
         return true;
@@ -199,6 +223,35 @@ public class RecipeMachineBlockEntity extends MachineBlockEntity implements Mach
         this.status = status;
         this.active = false;
         return false;
+    }
+
+    /** 这一批原料的等级：每种原料的平均点数，取最低的。 */
+    private int batchLevel(MachineRecipe recipe) {
+        int level = Proliferation.MAX_LEVEL;
+        for (int i = 0; i < recipe.ingredients().size(); i++) {
+            level = Math.min(level, this.inputLevel(i));
+        }
+        return recipe.ingredients().isEmpty() ? 0 : level;
+    }
+
+    /** 能额外产出的配方按界面上选的；建筑和设备只能加速。 */
+    private Proliferation.Mode effectiveMode(MachineRecipe recipe) {
+        return productive(recipe) ? this.mode : Proliferation.Mode.SPEEDUP;
+    }
+
+    /** 配方能不能额外产出：产物是本模组的方块（建筑、设备）时不能，和戴森球计划一样。 */
+    public static boolean productive(MachineRecipe recipe) {
+        for (ItemStackTemplate result : recipe.results()) {
+            ItemStack stack = result.create();
+            if (stack.getItem() instanceof BlockItem && BuiltInRegistries.ITEM.getKey(stack.getItem()).getNamespace().equals(Universe.MOD_ID)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public Proliferation.Mode mode() {
+        return this.mode;
     }
 
     private boolean hasInputs(MachineRecipe recipe) {
@@ -214,7 +267,8 @@ public class RecipeMachineBlockEntity extends MachineBlockEntity implements Mach
         return true;
     }
 
-    private boolean outputsFit(MachineRecipe recipe) {
+    /** 产物放不放得下；可能额外产出时按两份算。 */
+    private boolean outputsFit(MachineRecipe recipe, boolean mayDouble) {
         List<ItemStackTemplate> results = recipe.results();
         if (results.size() > this.spec.outputs()) {
             return false;
@@ -222,25 +276,29 @@ public class RecipeMachineBlockEntity extends MachineBlockEntity implements Mach
         for (int i = 0; i < results.size(); i++) {
             ItemStack current = this.getItem(this.spec.inputs() + i);
             ItemStack result = results.get(i).create();
+            int count = result.getCount() * (mayDouble ? 2 : 1);
             if (!current.isEmpty() && (!ItemStack.isSameItemSameComponents(current, result)
-                    || current.getCount() + result.getCount() > current.getMaxStackSize())) {
+                    || current.getCount() + count > current.getMaxStackSize())) {
                 return false;
             }
         }
         return true;
     }
 
-    private void craft(MachineRecipe recipe) {
+    private void craft(MachineRecipe recipe, Proliferation.Mode mode) {
         List<SizedIngredient> ingredients = recipe.ingredients();
+        int level = ingredients.isEmpty() ? 0 : Proliferation.MAX_LEVEL;
         for (int i = 0; i < ingredients.size(); i++) {
             ProductionLog.consumed(this.level, this.getItem(i).getItem(), ingredients.get(i).count());
-            this.getItem(i).shrink(ingredients.get(i).count());
+            level = Math.min(level, this.consumeInput(i, ingredients.get(i).count()));
         }
+        int copies = 1 + (mode == Proliferation.Mode.EXTRA_PRODUCTS ? this.extra.craft(level) : 0);
         List<ItemStackTemplate> results = recipe.results();
         for (int i = 0; i < results.size(); i++) {
             int slot = this.spec.inputs() + i;
             ItemStack current = this.getItem(slot);
             ItemStack result = results.get(i).create();
+            result.setCount(result.getCount() * copies);
             ProductionLog.produced(this.level, result);
             if (current.isEmpty()) {
                 this.setItem(slot, result);
@@ -312,6 +370,11 @@ public class RecipeMachineBlockEntity extends MachineBlockEntity implements Mach
                 yield holder == null ? 0 : (int) Math.min(1000, Math.round(this.progress * 1000 / holder.value().time()));
             }
             case STATUS -> this.status;
+            case PROLIFERATION -> {
+                RecipeHolder<MachineRecipe> holder = this.recipe();
+                boolean productive = holder != null && productive(holder.value());
+                yield (this.mode == Proliferation.Mode.SPEEDUP ? 1 : 0) | this.batchLevel << 1 | (productive ? 16 : 0);
+            }
             default -> super.dataValue(index);
         };
     }
@@ -325,6 +388,8 @@ public class RecipeMachineBlockEntity extends MachineBlockEntity implements Mach
         Identifier id = recipe.isEmpty() ? null : Identifier.tryParse(recipe);
         this.selected = id == null ? null : ResourceKey.create(Registries.RECIPE, id);
         this.progress = input.getDoubleOr("Progress", 0);
+        this.mode = input.getBooleanOr("Speedup", false) ? Proliferation.Mode.SPEEDUP : Proliferation.Mode.EXTRA_PRODUCTS;
+        this.extra.set(input.getIntOr("ExtraProgress", 0));
         // M8 以前没记格数，那时熔炉是两个原料格，别的设备和现在一样
         int saved = input.getIntOr("InputSlots", this.spec.kind() == MachineRecipe.Kind.SMELTING ? 2 : this.spec.inputs());
         if (saved < this.spec.inputs()) {
@@ -352,5 +417,7 @@ public class RecipeMachineBlockEntity extends MachineBlockEntity implements Mach
         }
         output.putDouble("Progress", this.progress);
         output.putInt("InputSlots", this.spec.inputs());
+        output.putBoolean("Speedup", this.mode == Proliferation.Mode.SPEEDUP);
+        output.putInt("ExtraProgress", this.extra.milli());
     }
 }

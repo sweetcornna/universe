@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "universe:block/automatic_piler",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "universe:block/automatic_piler"
+    },
+    "facing=south": {
+      "model": "universe:block/automatic_piler",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "universe:block/automatic_piler",
+      "y": 270
+    }
+  }
+}

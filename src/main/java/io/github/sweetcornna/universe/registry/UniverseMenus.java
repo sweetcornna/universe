@@ -10,8 +10,11 @@ import io.github.sweetcornna.universe.factory.MachineMenu.Role;
 import io.github.sweetcornna.universe.factory.MachineMenu.SlotSpec;
 import io.github.sweetcornna.universe.factory.MachineMenu;
 import io.github.sweetcornna.universe.factory.RecipeMachineBlockEntity;
+import io.github.sweetcornna.universe.factory.belt.TrafficMonitorBlockEntity;
 import io.github.sweetcornna.universe.factory.power.AccumulatorBlockEntity;
+import io.github.sweetcornna.universe.factory.power.EnergyExchangerBlockEntity;
 import io.github.sweetcornna.universe.factory.power.FuelGeneratorBlockEntity;
+import io.github.sweetcornna.universe.factory.power.GeothermalBlockEntity;
 import io.github.sweetcornna.universe.factory.power.SolarPanelBlockEntity;
 import io.github.sweetcornna.universe.factory.power.TeslaTowerBlockEntity;
 import io.github.sweetcornna.universe.factory.power.ThermalPlantBlockEntity;
@@ -67,6 +70,15 @@ public final class UniverseMenus {
     public static final MachineMenu.Type MINIATURE_PARTICLE_COLLIDER = machine("miniature_particle_collider",
             new MachineMenu.Type(RecipeMachineBlockEntity.DATA_COUNT, RECIPE_WIDTH, RECIPE_HEIGHT, input(118, 36), input(136, 36), input(118, 54),
                     output(190, 36), output(190, 54)));
+    // 高级设备（ADR-0022）：布局和低一级的一样
+    public static final MachineMenu.Type NEGENTROPY_SMELTER = machine("negentropy_smelter", new MachineMenu.Type(
+            RecipeMachineBlockEntity.DATA_COUNT, RECIPE_WIDTH, RECIPE_HEIGHT, input(118, 36), input(136, 36), input(118, 54), output(190, 45)));
+    public static final MachineMenu.Type RECOMPOSING_ASSEMBLER = machine("recomposing_assembler", new MachineMenu.Type(
+            RecipeMachineBlockEntity.DATA_COUNT, RECIPE_WIDTH, RECIPE_HEIGHT, input(118, 36), input(136, 36), input(118, 54), input(136, 54),
+            output(190, 45)));
+    public static final MachineMenu.Type QUANTUM_CHEMICAL_PLANT = machine("quantum_chemical_plant", new MachineMenu.Type(
+            RecipeMachineBlockEntity.DATA_COUNT, RECIPE_WIDTH, RECIPE_HEIGHT, input(118, 36), input(136, 36), input(118, 54), output(190, 36),
+            output(190, 54)));
     // 戴森球的设备（ADR-0016）：左边读数，右边一两个格子，格子下面是打开戴森球编辑器的按钮
     public static final MachineMenu.Type EM_RAIL_EJECTOR = machine("em_rail_ejector",
             new MachineMenu.Type(EmRailEjectorBlockEntity.DATA_COUNT, RESOURCE_WIDTH, 192, input(172, 30)));
@@ -86,7 +98,7 @@ public final class UniverseMenus {
             new MachineMenu.Type(FractionatorBlockEntity.DATA_COUNT, RESOURCE_WIDTH, 166, input(136, 46), output(172, 36), output(172, 56)));
     // 矩阵研究站：左边研究进度，右边每种矩阵一格（两排各三格，最后一格是白矩阵），再下面是打开科技树的按钮
     public static final MachineMenu.Type MATRIX_LAB = machine("matrix_lab",
-            new MachineMenu.Type(MatrixLabBlockEntity.DATA_COUNT, 176, 180, input(112, 30), input(130, 30), input(148, 30), input(112, 48),
+            new MachineMenu.Type(MatrixLabBlockEntity.DATA_COUNT, 176, 192, input(112, 30), input(130, 30), input(148, 30), input(112, 48),
                     input(130, 48), input(148, 48)));
     // 物流站（ADR-0015）：布局见 StationBlockEntity#layout
     public static final MachineMenu.Type PLANETARY_LOGISTICS_STATION = machine("planetary_logistics_station",
@@ -94,6 +106,13 @@ public final class UniverseMenus {
     public static final MachineMenu.Type INTERSTELLAR_LOGISTICS_STATION = machine("interstellar_logistics_station",
             StationBlockEntity.layout(StationKind.INTERSTELLAR));
     public static final MachineMenu.Type ORBITAL_COLLECTOR = machine("orbital_collector", StationBlockEntity.layout(StationKind.COLLECTOR));
+    // 工厂的补全（ADR-0022）：地热电站只有读数；能量枢纽左边读数，右边空的、满的蓄电器各一格；流速监测器只有读数和按钮
+    public static final MachineMenu.Type GEOTHERMAL_POWER_STATION = machine("geothermal_power_station",
+            new MachineMenu.Type(GeothermalBlockEntity.DATA_COUNT, 66));
+    public static final MachineMenu.Type ENERGY_EXCHANGER = machine("energy_exchanger",
+            new MachineMenu.Type(EnergyExchangerBlockEntity.DATA_COUNT, RESOURCE_WIDTH, 166, input(136, 46), output(172, 46)));
+    public static final MachineMenu.Type TRAFFIC_MONITOR = machine("traffic_monitor",
+            new MachineMenu.Type(TrafficMonitorBlockEntity.DATA_COUNT, 176, 84));
     // 储物仓：3 行 10 列
     public static final MachineMenu.Type STORAGE_DEPOT = machine("storage_depot",
             new MachineMenu.Type(0, 196, 170, grid(9, 20, 10, 3)));

@@ -1,0 +1,78 @@
+{
+  "parent": "block/block",
+  "textures": {
+    "particle": "universe:block/splitter_priority",
+    "mark": "universe:block/splitter_priority"
+  },
+  "elements": [
+    {
+      "from": [
+        5,
+        6,
+        1
+      ],
+      "to": [
+        11,
+        7,
+        4
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            5,
+            9,
+            11,
+            10
+          ],
+          "texture": "#mark"
+        },
+        "south": {
+          "uv": [
+            5,
+            9,
+            11,
+            10
+          ],
+          "texture": "#mark"
+        },
+        "west": {
+          "uv": [
+            1,
+            9,
+            4,
+            10
+          ],
+          "texture": "#mark"
+        },
+        "east": {
+          "uv": [
+            12,
+            9,
+            15,
+            10
+          ],
+          "texture": "#mark"
+        },
+        "up": {
+          "uv": [
+            5,
+            1,
+            11,
+            4
+          ],
+          "texture": "#mark"
+        },
+        "down": {
+          "uv": [
+            5,
+            12,
+            11,
+            15
+          ],
+          "texture": "#mark"
+        }
+      },
+      "light_emission": 10
+    }
+  ]
+}

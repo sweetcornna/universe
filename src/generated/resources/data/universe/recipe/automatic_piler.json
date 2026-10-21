@@ -1,0 +1,19 @@
+{
+  "type": "universe:research_shaped",
+  "category": "redstone",
+  "key": {
+    "G": "universe:gear",
+    "P": "universe:processor",
+    "R": "universe:super_magnetic_ring",
+    "S": "universe:steel"
+  },
+  "pattern": [
+    "SGS",
+    "GRG",
+    "SPS"
+  ],
+  "research": "integrated_logistics",
+  "result": {
+    "id": "universe:automatic_piler"
+  }
+}

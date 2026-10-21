@@ -97,7 +97,7 @@ class ResearchStateTest {
         assertEquals(9, tree.depth("warp_calibration"));
         assertEquals(4, tree.depth("tech_modules"));
         assertEquals(18, tree.columns());
-        assertEquals(6, tree.rows());
+        assertEquals(10, tree.rows());
         for (Tech tech : tree.techs()) {
             assertTrue(tech.id().matches("[a-z][a-z0-9_]*"), tech.id());
             // 研究站只认清单里的矩阵

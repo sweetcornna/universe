@@ -1,0 +1,18 @@
+{
+  "type": "universe:research_shaped",
+  "category": "building",
+  "key": {
+    "C": "minecraft:stone",
+    "S": "universe:steel"
+  },
+  "pattern": [
+    "CCC",
+    "CSC",
+    "CCC"
+  ],
+  "research": "steel_smelting",
+  "result": {
+    "count": 8,
+    "id": "universe:foundation"
+  }
+}

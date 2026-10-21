@@ -3,6 +3,7 @@ package io.github.sweetcornna.universe.client;
 import java.util.List;
 
 import io.github.sweetcornna.universe.Universe;
+import io.github.sweetcornna.universe.registry.UniverseDataComponents;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -26,6 +27,11 @@ public final class ItemSummaries {
     }
 
     private static void onTooltip(ItemTooltipEvent event) {
+        // 喷过增产剂的物品（ADR-0022）：名字下面一行点数
+        Integer points = event.getItemStack().get(UniverseDataComponents.PROLIFERATION.get());
+        if (points != null && !event.getToolTip().isEmpty()) {
+            event.getToolTip().add(1, Component.translatable("tooltip.universe.proliferation", points).withStyle(ChatFormatting.LIGHT_PURPLE));
+        }
         append(event.getItemStack(), event.getToolTip(), Minecraft.getInstance().hasShiftDown());
     }
 

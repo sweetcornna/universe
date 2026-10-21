@@ -13,13 +13,18 @@ import io.github.sweetcornna.universe.factory.FractionatorBlockEntity;
 import io.github.sweetcornna.universe.factory.RecipeMachineBlockEntity;
 import io.github.sweetcornna.universe.factory.RecipeMachines;
 import io.github.sweetcornna.universe.factory.belt.BeltBlockEntity;
+import io.github.sweetcornna.universe.factory.belt.PilerBlockEntity;
 import io.github.sweetcornna.universe.factory.belt.SorterBlockEntity;
 import io.github.sweetcornna.universe.factory.belt.SplitterBlockEntity;
+import io.github.sweetcornna.universe.factory.belt.SprayCoaterBlockEntity;
 import io.github.sweetcornna.universe.factory.belt.StorageDepotBlockEntity;
 import io.github.sweetcornna.universe.factory.belt.StorageTankBlockEntity;
+import io.github.sweetcornna.universe.factory.belt.TrafficMonitorBlockEntity;
 import io.github.sweetcornna.universe.factory.power.AccumulatorBlockEntity;
 import io.github.sweetcornna.universe.factory.power.ArtificialStarBlockEntity;
+import io.github.sweetcornna.universe.factory.power.EnergyExchangerBlockEntity;
 import io.github.sweetcornna.universe.factory.power.FusionPlantBlockEntity;
+import io.github.sweetcornna.universe.factory.power.GeothermalBlockEntity;
 import io.github.sweetcornna.universe.factory.power.SolarPanelBlockEntity;
 import io.github.sweetcornna.universe.factory.power.TeslaTowerBlockEntity;
 import io.github.sweetcornna.universe.factory.power.ThermalPlantBlockEntity;
@@ -48,7 +53,8 @@ public final class UniverseBlockEntities {
 
     // ---- 工业
     public static final Supplier<BlockEntityType<TeslaTowerBlockEntity>> TESLA_TOWER = BLOCK_ENTITIES.register("tesla_tower",
-            () -> new BlockEntityType<>(TeslaTowerBlockEntity::new, UniverseBlocks.TESLA_TOWER.get()));
+            () -> new BlockEntityType<>(TeslaTowerBlockEntity::new, UniverseBlocks.TESLA_TOWER.get(), UniverseBlocks.WIRELESS_POWER_TOWER.get(),
+                    UniverseBlocks.SATELLITE_SUBSTATION.get()));
     public static final Supplier<BlockEntityType<WindTurbineBlockEntity>> WIND_TURBINE = BLOCK_ENTITIES.register("wind_turbine",
             () -> new BlockEntityType<>(WindTurbineBlockEntity::new, UniverseBlocks.WIND_TURBINE.get()));
     public static final Supplier<BlockEntityType<SolarPanelBlockEntity>> SOLAR_PANEL = BLOCK_ENTITIES.register("solar_panel",
@@ -90,14 +96,14 @@ public final class UniverseBlockEntities {
     public static final Supplier<BlockEntityType<OilExtractorBlockEntity>> OIL_EXTRACTOR = BLOCK_ENTITIES.register("oil_extractor",
             () -> new BlockEntityType<>(OilExtractorBlockEntity::new, UniverseBlocks.OIL_EXTRACTOR.get()));
     public static final Supplier<BlockEntityType<MatrixLabBlockEntity>> MATRIX_LAB = BLOCK_ENTITIES.register("matrix_lab",
-            () -> new BlockEntityType<>(MatrixLabBlockEntity::new, UniverseBlocks.MATRIX_LAB.get()));
+            () -> new BlockEntityType<>(MatrixLabBlockEntity::new, UniverseBlocks.MATRIX_LAB.get(), UniverseBlocks.SELF_EVOLUTION_LAB.get()));
 
     public static final Supplier<BlockEntityType<BeltBlockEntity>> CONVEYOR_BELT = BLOCK_ENTITIES.register("conveyor_belt",
             () -> new BlockEntityType<>(BeltBlockEntity::new, UniverseBlocks.CONVEYOR_BELT.get(), UniverseBlocks.CONVEYOR_BELT_MK2.get(),
                     UniverseBlocks.CONVEYOR_BELT_MK3.get()));
     public static final Supplier<BlockEntityType<SorterBlockEntity>> SORTER = BLOCK_ENTITIES.register("sorter",
             () -> new BlockEntityType<>(SorterBlockEntity::new, UniverseBlocks.SORTER.get(), UniverseBlocks.SORTER_MK2.get(),
-                    UniverseBlocks.SORTER_MK3.get()));
+                    UniverseBlocks.SORTER_MK3.get(), UniverseBlocks.PILE_SORTER.get()));
     public static final Supplier<BlockEntityType<SplitterBlockEntity>> SPLITTER = BLOCK_ENTITIES.register("splitter",
             () -> new BlockEntityType<>(SplitterBlockEntity::new, UniverseBlocks.SPLITTER.get()));
     public static final Supplier<BlockEntityType<StorageDepotBlockEntity>> STORAGE_DEPOT = BLOCK_ENTITIES.register("storage_depot",
@@ -122,6 +128,24 @@ public final class UniverseBlockEntities {
             () -> new BlockEntityType<>(RayReceiverBlockEntity::new, UniverseBlocks.RAY_RECEIVER.get()));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<RecipeMachineBlockEntity>> MINIATURE_PARTICLE_COLLIDER = recipeMachine(
             "miniature_particle_collider", UniverseBlocks.MINIATURE_PARTICLE_COLLIDER, RecipeMachines.MINIATURE_PARTICLE_COLLIDER);
+
+    // 工厂的补全（ADR-0022）
+    public static final Supplier<BlockEntityType<SprayCoaterBlockEntity>> SPRAY_COATER = BLOCK_ENTITIES.register("spray_coater",
+            () -> new BlockEntityType<>(SprayCoaterBlockEntity::new, UniverseBlocks.SPRAY_COATER.get()));
+    public static final Supplier<BlockEntityType<PilerBlockEntity>> AUTOMATIC_PILER = BLOCK_ENTITIES.register("automatic_piler",
+            () -> new BlockEntityType<>(PilerBlockEntity::new, UniverseBlocks.AUTOMATIC_PILER.get()));
+    public static final Supplier<BlockEntityType<TrafficMonitorBlockEntity>> TRAFFIC_MONITOR = BLOCK_ENTITIES.register("traffic_monitor",
+            () -> new BlockEntityType<>(TrafficMonitorBlockEntity::new, UniverseBlocks.TRAFFIC_MONITOR.get()));
+    public static final Supplier<BlockEntityType<GeothermalBlockEntity>> GEOTHERMAL_POWER_STATION = BLOCK_ENTITIES.register(
+            "geothermal_power_station", () -> new BlockEntityType<>(GeothermalBlockEntity::new, UniverseBlocks.GEOTHERMAL_POWER_STATION.get()));
+    public static final Supplier<BlockEntityType<EnergyExchangerBlockEntity>> ENERGY_EXCHANGER = BLOCK_ENTITIES.register("energy_exchanger",
+            () -> new BlockEntityType<>(EnergyExchangerBlockEntity::new, UniverseBlocks.ENERGY_EXCHANGER.get()));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<RecipeMachineBlockEntity>> NEGENTROPY_SMELTER = recipeMachine(
+            "negentropy_smelter", UniverseBlocks.NEGENTROPY_SMELTER, RecipeMachines.NEGENTROPY_SMELTER);
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<RecipeMachineBlockEntity>> RECOMPOSING_ASSEMBLER = recipeMachine(
+            "recomposing_assembler", UniverseBlocks.RECOMPOSING_ASSEMBLER, RecipeMachines.RECOMPOSING_ASSEMBLER);
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<RecipeMachineBlockEntity>> QUANTUM_CHEMICAL_PLANT = recipeMachine(
+            "quantum_chemical_plant", UniverseBlocks.QUANTUM_CHEMICAL_PLANT, RecipeMachines.QUANTUM_CHEMICAL_PLANT);
 
     private UniverseBlockEntities() {
     }

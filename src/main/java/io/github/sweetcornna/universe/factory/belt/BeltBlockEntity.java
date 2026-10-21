@@ -8,6 +8,7 @@ import org.jspecify.annotations.Nullable;
 
 import com.mojang.serialization.Codec;
 
+import io.github.sweetcornna.universe.core.factory.Cargo;
 import io.github.sweetcornna.universe.registry.UniverseBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -87,8 +88,10 @@ public class BeltBlockEntity extends BlockEntity {
         BeltNetwork.BlockItems items = this.held;
         this.held = null;
         if (items != null) {
-            for (int id : items.items()) {
-                Containers.dropItemStack(this.level, pos.getX() + 0.5, pos.getY() + 0.3, pos.getZ() + 0.5, new ItemStack(BeltNetwork.item(id)));
+            for (int cargo : items.items()) {
+                for (ItemStack stack : BeltNetwork.stacks(cargo)) {
+                    Containers.dropItemStack(this.level, pos.getX() + 0.5, pos.getY() + 0.3, pos.getZ() + 0.5, stack);
+                }
             }
         }
     }
@@ -117,10 +120,12 @@ public class BeltBlockEntity extends BlockEntity {
         super.loadAdditional(input);
         int[] positions = input.getIntArray("BeltPositions").orElse(new int[0]);
         List<Item> items = input.read("BeltItems", ITEMS_CODEC).orElse(List.of());
+        // 叠了几个、增产点数（ADR-0022）；旧档没有，都是一个、0 点
+        int[] stacks = input.getIntArray("BeltStacks").orElse(new int[0]);
         int n = Math.min(positions.length, items.size());
         int[] ids = new int[n];
         for (int i = 0; i < n; i++) {
-            ids[i] = BeltNetwork.id(items.get(i));
+            ids[i] = Cargo.withItem(i < stacks.length ? stacks[i] : 0, BeltNetwork.id(items.get(i)));
         }
         this.held = n == 0 ? null : new BeltNetwork.BlockItems(Arrays.copyOf(positions, n), ids);
         if (this.registered && this.level != null) {
@@ -139,12 +144,20 @@ public class BeltBlockEntity extends BlockEntity {
         if (items == null || items.isEmpty()) {
             return;
         }
-        List<Item> list = new ArrayList<>(items.items().length);
-        for (int id : items.items()) {
-            list.add(BeltNetwork.item(id));
+        int[] cargo = items.items();
+        List<Item> list = new ArrayList<>(cargo.length);
+        int[] stacks = new int[cargo.length];
+        boolean stacked = false;
+        for (int i = 0; i < cargo.length; i++) {
+            list.add(BeltNetwork.item(cargo[i]));
+            stacks[i] = Cargo.withItem(cargo[i], 0);
+            stacked |= stacks[i] != 0;
         }
         output.putIntArray("BeltPositions", items.positions());
         output.store("BeltItems", ITEMS_CODEC, list);
+        if (stacked) {
+            output.putIntArray("BeltStacks", stacks);
+        }
     }
 
     /** 区块数据里带上这格的物品，客户端一加载就能画出来。 */

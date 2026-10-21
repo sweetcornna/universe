@@ -24,7 +24,7 @@ import net.minecraft.world.item.ItemStack;
 
 /**
  * 矩阵研究站的界面（ADR-0011）：左边是全服当前在研究的科技和进度，右边每种矩阵一格（空着时画出该放的矩阵），
- * 下面一个按钮打开科技树。
+ * 下面一个按钮打开科技树。左下角的按钮切换增产剂的"额外产出"和"加速"（ADR-0022）。
  */
 public class MatrixLabScreen extends MachineScreen {
     private static final int TEXT_WIDTH = 100;
@@ -32,6 +32,8 @@ public class MatrixLabScreen extends MachineScreen {
     private static final int BUTTON_Y = 68;
     private static final int BUTTON_WIDTH = 56;
     private static final int BUTTON_HEIGHT = 14;
+    /** 增产模式按钮（ADR-0022），在研究状态下面。 */
+    private static final int MODE_Y = 80;
 
     public MatrixLabScreen(MachineMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title);
@@ -109,6 +111,7 @@ public class MatrixLabScreen extends MachineScreen {
         }
         graphics.centeredText(this.font, Component.translatable("gui.universe.matrix_lab.tech_tree"), BUTTON_X + BUTTON_WIDTH / 2,
                 BUTTON_Y + 3, TEXT);
+        this.modeButton(graphics, 8, MODE_Y, TEXT_WIDTH, this.menu.data(MatrixLabBlockEntity.PROLIFERATION), true, mouseX, mouseY);
     }
 
     @Override
@@ -127,6 +130,10 @@ public class MatrixLabScreen extends MachineScreen {
             this.minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
             this.onClose();
             this.minecraft.gui.setScreen(new TechTreeScreen());
+            return true;
+        }
+        if (event.button() == InputConstants.MOUSE_BUTTON_LEFT && overMode(event.x() - this.leftPos, event.y() - this.topPos, 8, MODE_Y, TEXT_WIDTH)) {
+            this.clickMode(MatrixLabBlockEntity.MODE_BUTTON);
             return true;
         }
         return super.mouseClicked(event, doubleClick);

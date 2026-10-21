@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "universe:block/spray_coater",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "universe:block/spray_coater"
+    },
+    "facing=south": {
+      "model": "universe:block/spray_coater",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "universe:block/spray_coater",
+      "y": 270
+    }
+  }
+}

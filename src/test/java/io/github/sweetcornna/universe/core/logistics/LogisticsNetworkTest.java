@@ -282,4 +282,57 @@ class LogisticsNetworkTest {
         assertFalse(supply.removeDrones(1) > 0, "飞出去的无人机拿不出来");
         assertNotNull(network.get(supply.id()));
     }
+
+    @Test
+    void slotKeepsProliferationPoints() {
+        Station station = station(StationKind.PLANETARY, "overworld", 0, HOME);
+        StationSlot slot = slot(station, IRON, 0, 100, Logic.STORAGE, Logic.STORAGE);
+        assertEquals(60, station.insert(IRON, 60, 120));
+        assertEquals(2, slot.level());
+        // 只放得下 40 个：带进去 40 个的点数
+        assertEquals(40, station.insert(IRON, 50, 200));
+        assertEquals(120 + 160, slot.points());
+        assertEquals(2, slot.level(), "平均 2.8 点，按 2 点给");
+        assertEquals(10, station.extract(0, 10, 2));
+        assertEquals(260, slot.points());
+        // 不指定点数拿：按比例带走
+        assertEquals(45, station.extract(0, 45));
+        assertEquals(130, slot.points());
+        // 点数不会超过每个 4 点
+        station.restoreCount(0, 10);
+        assertEquals(40, slot.points());
+        assertEquals(4, slot.level());
+        assertEquals(3, StationSlot.share(10, 1, 3));
+        assertEquals(10, StationSlot.share(10, 5, 5));
+    }
+
+    @Test
+    void pointsTravelWithTheCargo() {
+        LogisticsNetwork network = new LogisticsNetwork();
+        Station supply = station(StationKind.PLANETARY, "overworld", 0, HOME);
+        Station demand = station(StationKind.PLANETARY, "overworld", 200, HOME);
+        StationSlot from = slot(supply, IRON, 0, 5000, Logic.SUPPLY, Logic.STORAGE);
+        supply.insert(IRON, 500, 1000);
+        StationSlot to = slot(demand, IRON, 0, 200, Logic.DEMAND, Logic.STORAGE);
+        supply.addDrones(10);
+        network.add(supply);
+        network.add(demand);
+
+        network.tick(0);
+        assertEquals(100, network.trips().getFirst().points(), "50 个，每个 2 点");
+        settle(network, 1, 20_000);
+        assertEquals(200, to.count());
+        assertEquals(400, to.points());
+        assertEquals(600, from.points());
+        assertEquals(2, to.level());
+
+        // 对方来取：取货的回程也带点数
+        Station picker = station(StationKind.PLANETARY, "overworld", -200, HOME);
+        StationSlot wanted = slot(picker, IRON, 0, 100, Logic.DEMAND, Logic.STORAGE);
+        picker.addDrones(1);
+        network.add(picker);
+        settle(network, 20_001, 60_000);
+        assertEquals(100, wanted.count());
+        assertEquals(200, wanted.points());
+    }
 }

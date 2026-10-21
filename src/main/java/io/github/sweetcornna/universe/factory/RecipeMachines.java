@@ -23,6 +23,13 @@ public final class RecipeMachines {
     /** 微型粒子对撞机：12 MW，速度 1，三种原料（ADR-0016）、两种产物（反物质和氢，ADR-0018）。 */
     public static final Spec MINIATURE_PARTICLE_COLLIDER = new Spec(Kind.PARTICLE, 3, 2, 600, 1.0, UniverseMenus.MINIATURE_PARTICLE_COLLIDER);
 
+    /** 负熵熔炉：2.88 MW，速度 3（ADR-0022）。 */
+    public static final Spec NEGENTROPY_SMELTER = new Spec(Kind.SMELTING, 3, 1, 144, 3.0, UniverseMenus.NEGENTROPY_SMELTER);
+    /** 重组式制造台：2.7 MW，速度 3。 */
+    public static final Spec RECOMPOSING_ASSEMBLER = new Spec(Kind.ASSEMBLING, 4, 1, 135, 3.0, UniverseMenus.RECOMPOSING_ASSEMBLER);
+    /** 量子化工厂：2.16 MW，速度 2。 */
+    public static final Spec QUANTUM_CHEMICAL_PLANT = new Spec(Kind.CHEMICAL, 3, 2, 108, 2.0, UniverseMenus.QUANTUM_CHEMICAL_PLANT);
+
     private RecipeMachines() {
     }
 }

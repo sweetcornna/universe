@@ -43,7 +43,7 @@ public final class BeltInsertHandler implements ResourceHandler<ItemResource> {
 
     @Override
     public boolean isValid(int index, ItemResource resource) {
-        return !resource.isEmpty() && resource.isComponentsPatchEmpty();
+        return BeltNetwork.canCarry(resource);
     }
 
     @Override
@@ -54,7 +54,7 @@ public final class BeltInsertHandler implements ResourceHandler<ItemResource> {
             return 0;
         }
         this.journal.updateSnapshots(transaction);
-        this.journal.pending.add(BeltNetwork.id(resource.getItem()));
+        this.journal.pending.add(BeltNetwork.cargo(resource.toStack(1)));
         return 1;
     }
 

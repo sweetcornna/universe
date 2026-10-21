@@ -9,10 +9,11 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
-import net.neoforged.neoforge.transfer.item.VanillaContainerWrapper;
-import net.neoforged.neoforge.transfer.item.WorldlyContainerWrapper;
 
-/** 设备对外提供的能力：有物品栏的设备都提供物品能力，漏斗、分拣器和其他模组的管道都能接（ADR-0011）。 */
+/**
+ * 设备对外提供的能力：有物品栏的设备都提供物品能力，漏斗、分拣器和其他模组的管道都能接（ADR-0011）；喷过增产剂的原料
+ * 进设备时点数记进池子（{@link MachineItemHandler}，ADR-0022）。
+ */
 public final class FactoryCapabilities {
     private FactoryCapabilities() {
     }
@@ -28,16 +29,17 @@ public final class FactoryCapabilities {
                 UniverseBlockEntities.ASSEMBLER_MK3, UniverseBlockEntities.PLANE_SMELTER, UniverseBlockEntities.CHEMICAL_PLANT,
                 UniverseBlockEntities.FRACTIONATOR, UniverseBlockEntities.ADVANCED_MINING_MACHINE, UniverseBlockEntities.EM_RAIL_EJECTOR,
                 UniverseBlockEntities.VERTICAL_LAUNCHING_SILO, UniverseBlockEntities.RAY_RECEIVER, UniverseBlockEntities.MINIATURE_PARTICLE_COLLIDER,
-                UniverseBlockEntities.MINI_FUSION_POWER_PLANT, UniverseBlockEntities.ARTIFICIAL_STAR);
+                UniverseBlockEntities.MINI_FUSION_POWER_PLANT, UniverseBlockEntities.ARTIFICIAL_STAR, UniverseBlockEntities.ENERGY_EXCHANGER,
+                UniverseBlockEntities.NEGENTROPY_SMELTER, UniverseBlockEntities.RECOMPOSING_ASSEMBLER, UniverseBlockEntities.QUANTUM_CHEMICAL_PLANT);
     }
 
     private static void register(RegisterCapabilitiesEvent event) {
         for (Supplier<? extends BlockEntityType<? extends MachineBlockEntity>> type : containers()) {
-            event.registerBlockEntity(Capabilities.Item.BLOCK, type.get(), WorldlyContainerWrapper::new);
+            event.registerBlockEntity(Capabilities.Item.BLOCK, type.get(), MachineItemHandler::new);
         }
         // 传送带只能往上放
         event.registerBlockEntity(Capabilities.Item.BLOCK, UniverseBlockEntities.CONVEYOR_BELT.get(), (belt, side) -> belt.insertHandler());
-        event.registerBlockEntity(Capabilities.Item.BLOCK, UniverseBlockEntities.STORAGE_DEPOT.get(), (depot, side) -> VanillaContainerWrapper.of(depot));
+        event.registerBlockEntity(Capabilities.Item.BLOCK, UniverseBlockEntities.STORAGE_DEPOT.get(), (depot, side) -> depot.handler());
         // 储液罐：流体是物品，只收流体（ADR-0015）
         event.registerBlockEntity(Capabilities.Item.BLOCK, UniverseBlockEntities.STORAGE_TANK.get(), (tank, side) -> tank.handler());
         // 物流站：直接读写账本里的物品格

@@ -1,6 +1,5 @@
 package io.github.sweetcornna.universe.factory.belt;
 
-import java.util.List;
 import java.util.Map;
 
 import org.jspecify.annotations.Nullable;
@@ -16,7 +15,6 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
@@ -137,7 +135,7 @@ public class BeltBlock extends BaseEntityBlock {
         if (stack.getItem() instanceof BlockItem blockItem && blockItem.getBlock() instanceof BeltBlock || !BeltNetwork.canCarry(stack)) {
             return InteractionResult.PASS;
         }
-        if (!level.isClientSide() && BeltNetwork.of(level).insertAt(pos, BeltNetwork.HALF, BeltNetwork.id(stack.getItem()))) {
+        if (!level.isClientSide() && BeltNetwork.of(level).insertAt(pos, BeltNetwork.HALF, BeltNetwork.cargo(stack, 1))) {
             stack.consume(1, player);
         }
         return InteractionResult.SUCCESS;
@@ -152,9 +150,8 @@ public class BeltBlock extends BaseEntityBlock {
             return InteractionResult.SUCCESS;
         }
         if (!level.isClientSide()) {
-            List<Item> items = BeltNetwork.of(level).takeAll(pos);
-            for (Item item : items) {
-                player.getInventory().placeItemBackInInventory(new ItemStack(item), Prediction.SERVER_ONLY);
+            for (ItemStack taken : BeltNetwork.of(level).takeAll(pos)) {
+                player.getInventory().placeItemBackInInventory(taken, Prediction.SERVER_ONLY);
             }
         }
         return InteractionResult.SUCCESS;
@@ -167,7 +164,7 @@ public class BeltBlock extends BaseEntityBlock {
         if (entity instanceof ItemEntity itemEntity) {
             if (!level.isClientSide()) {
                 ItemStack stack = itemEntity.getItem();
-                if (BeltNetwork.canCarry(stack) && BeltNetwork.of(level).insertAt(pos, BeltNetwork.HALF, BeltNetwork.id(stack.getItem()))) {
+                if (BeltNetwork.canCarry(stack) && BeltNetwork.of(level).insertAt(pos, BeltNetwork.HALF, BeltNetwork.cargo(stack, 1))) {
                     ItemStack rest = stack.copy();
                     rest.shrink(1);
                     if (rest.isEmpty()) {

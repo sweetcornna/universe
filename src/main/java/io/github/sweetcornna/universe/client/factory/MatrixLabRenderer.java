@@ -31,6 +31,8 @@ import net.neoforged.neoforge.client.model.standalone.StandaloneModelKey;
  */
 public class MatrixLabRenderer implements BlockEntityRenderer<MatrixLabBlockEntity, MatrixLabRenderer.State> {
     public static final StandaloneModelKey<BlockStateModelPart> CORE = new StandaloneModelKey<>(() -> "universe:matrix_lab_core");
+    /** 自我演化研究站的核心：紫绿两色（ADR-0022）。 */
+    public static final StandaloneModelKey<BlockStateModelPart> EVOLUTION_CORE = new StandaloneModelKey<>(() -> "universe:self_evolution_lab_core");
     /** 核心的中心（以方块原点算）。 */
     private static final float CENTER_Y = 10 / 16F;
 
@@ -39,6 +41,7 @@ public class MatrixLabRenderer implements BlockEntityRenderer<MatrixLabBlockEnti
 
     public static void registerModels(ModelEvent.RegisterStandalone event) {
         event.register(CORE, SimpleUnbakedStandaloneModel.simpleModelWrapper(Universe.id("block/matrix_lab_core")));
+        event.register(EVOLUTION_CORE, SimpleUnbakedStandaloneModel.simpleModelWrapper(Universe.id("block/self_evolution_lab_core")));
     }
 
     @Override
@@ -51,6 +54,7 @@ public class MatrixLabRenderer implements BlockEntityRenderer<MatrixLabBlockEnti
             ModelFeatureRenderer.@Nullable CrumblingOverlay breakProgress) {
         BlockEntityRenderer.super.extractRenderState(blockEntity, state, partialTicks, cameraPosition, breakProgress);
         state.working = blockEntity.getBlockState().getValue(MachineBlock.WORKING);
+        state.evolution = blockEntity.evolution();
         float time = blockEntity.getLevel() == null ? 0 : (blockEntity.getLevel().getGameTime() % 72000) + partialTicks;
         // 每个研究站的相位错开一点，一排研究站不会整齐划一
         float phase = (blockEntity.getBlockPos().hashCode() & 0xFF) * 1.4F;
@@ -63,7 +67,7 @@ public class MatrixLabRenderer implements BlockEntityRenderer<MatrixLabBlockEnti
 
     @Override
     public void submit(State state, PoseStack poseStack, SubmitNodeCollector collector, CameraRenderState camera) {
-        BlockStateModelPart core = Minecraft.getInstance().getModelManager().getStandaloneModel(CORE);
+        BlockStateModelPart core = Minecraft.getInstance().getModelManager().getStandaloneModel(state.evolution ? EVOLUTION_CORE : CORE);
         if (core == null) {
             return;
         }
@@ -83,6 +87,7 @@ public class MatrixLabRenderer implements BlockEntityRenderer<MatrixLabBlockEnti
 
     public static class State extends BlockEntityRenderState {
         boolean working;
+        boolean evolution;
         float angle;
         float bob;
     }

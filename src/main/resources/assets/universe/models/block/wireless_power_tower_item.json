@@ -1,0 +1,8 @@
+{
+  "parent": "universe:block/tesla_tower_item",
+  "textures": {
+    "coil": "universe:block/wireless_power_tower_coil",
+    "orb": "universe:block/wireless_power_tower_top_off",
+    "orb_on": "universe:block/wireless_power_tower_top"
+  }
+}

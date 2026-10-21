@@ -1,0 +1,6 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "universe:block/pile_sorter_item"
+  }
+}

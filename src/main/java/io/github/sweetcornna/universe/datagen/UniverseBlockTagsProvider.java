@@ -108,10 +108,14 @@ final class UniverseBlockTagsProvider extends BlockTagsProvider {
                 UniverseBlocks.ORBITAL_COLLECTOR, UniverseBlocks.SOLAR_PANEL, UniverseBlocks.EM_RAIL_EJECTOR,
                 UniverseBlocks.VERTICAL_LAUNCHING_SILO, UniverseBlocks.RAY_RECEIVER, UniverseBlocks.MINIATURE_PARTICLE_COLLIDER,
                 UniverseBlocks.MINI_FUSION_POWER_PLANT, UniverseBlocks.ARTIFICIAL_STAR,
-                UniverseBlocks.TELEPORTER, UniverseBlocks.BASE_BEACON)) {
+                UniverseBlocks.TELEPORTER, UniverseBlocks.BASE_BEACON, UniverseBlocks.SPRAY_COATER, UniverseBlocks.AUTOMATIC_PILER,
+                UniverseBlocks.TRAFFIC_MONITOR, UniverseBlocks.PILE_SORTER, UniverseBlocks.WIRELESS_POWER_TOWER, UniverseBlocks.SATELLITE_SUBSTATION,
+                UniverseBlocks.GEOTHERMAL_POWER_STATION, UniverseBlocks.ENERGY_EXCHANGER, UniverseBlocks.NEGENTROPY_SMELTER,
+                UniverseBlocks.RECOMPOSING_ASSEMBLER, UniverseBlocks.QUANTUM_CHEMICAL_PLANT, UniverseBlocks.SELF_EVOLUTION_LAB)) {
             this.tag(BlockTags.MINEABLE_WITH_PICKAXE).add(block.key());
             this.tag(ShipParts.EXCLUDED).add(block.key());
         }
+        this.tag(BlockTags.MINEABLE_WITH_PICKAXE).add(UniverseBlocks.FOUNDATION.key());
         // 原油涌泉不会被组装进飞船
         this.tag(ShipParts.EXCLUDED).add(UniverseBlocks.CRUDE_OIL_SEEP.key());
         // 兴趣点的方块（ADR-0014）：都是实心的；能挖的用镐子；固定在原地的不会被组装进飞船

@@ -1,0 +1,28 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 15,
+      "ingredient": "universe:steel"
+    },
+    {
+      "count": 20,
+      "ingredient": "minecraft:copper_ingot"
+    },
+    {
+      "count": 4,
+      "ingredient": "universe:processor"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:super_magnetic_ring"
+    }
+  ],
+  "research": "geothermal_power",
+  "results": [
+    {
+      "id": "universe:geothermal_power_station"
+    }
+  ],
+  "time": 120
+}

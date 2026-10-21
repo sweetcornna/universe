@@ -78,7 +78,7 @@ final class UniverseBlockLoot extends BlockLootSubProvider {
         // 工业设备：两格高的只认下半截；蓄电器拆下来带着电量
         for (Block block : List.of(UniverseBlocks.TESLA_TOWER.get(), UniverseBlocks.WIND_TURBINE.get(), UniverseBlocks.THERMAL_PLANT.get(),
                 UniverseBlocks.OIL_EXTRACTOR.get(), UniverseBlocks.OIL_REFINERY.get(), UniverseBlocks.VERTICAL_LAUNCHING_SILO.get(),
-                UniverseBlocks.ARTIFICIAL_STAR.get())) {
+                UniverseBlocks.ARTIFICIAL_STAR.get(), UniverseBlocks.WIRELESS_POWER_TOWER.get(), UniverseBlocks.SATELLITE_SUBSTATION.get())) {
             this.add(block, this.createSinglePropConditionTable(block, TallMachineBlock.HALF, DoubleBlockHalf.LOWER));
         }
         this.add(UniverseBlocks.ACCUMULATOR.get(), block -> LootTable.lootTable().withPool(this.applyExplosionCondition(block,
@@ -112,6 +112,13 @@ final class UniverseBlockLoot extends BlockLootSubProvider {
         this.dropSelf(UniverseBlocks.RAY_RECEIVER.get());
         this.dropSelf(UniverseBlocks.MINIATURE_PARTICLE_COLLIDER.get());
         this.dropSelf(UniverseBlocks.MINI_FUSION_POWER_PLANT.get());
+        // 工厂的补全（ADR-0022）
+        for (Block block : List.of(UniverseBlocks.SPRAY_COATER.get(), UniverseBlocks.AUTOMATIC_PILER.get(), UniverseBlocks.TRAFFIC_MONITOR.get(),
+                UniverseBlocks.PILE_SORTER.get(), UniverseBlocks.GEOTHERMAL_POWER_STATION.get(), UniverseBlocks.ENERGY_EXCHANGER.get(),
+                UniverseBlocks.NEGENTROPY_SMELTER.get(), UniverseBlocks.RECOMPOSING_ASSEMBLER.get(), UniverseBlocks.QUANTUM_CHEMICAL_PLANT.get(),
+                UniverseBlocks.SELF_EVOLUTION_LAB.get(), UniverseBlocks.FOUNDATION.get())) {
+            this.dropSelf(block);
+        }
         this.add(UniverseBlocks.STORAGE_TANK.get(), block -> LootTable.lootTable().withPool(this.applyExplosionCondition(block,
                 LootPool.lootPool().setRolls(ContextIntProviders.exactly(1)).add(LootItem.lootTableItem(block)
                         .apply(CopyComponentsFunction.copyComponentsFromBlockEntity(LootContextParams.BLOCK_ENTITY)

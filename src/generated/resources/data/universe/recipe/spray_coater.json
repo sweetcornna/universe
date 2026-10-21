@@ -1,0 +1,17 @@
+{
+  "type": "universe:research_shaped",
+  "category": "redstone",
+  "key": {
+    "B": "universe:circuit_board",
+    "P": "universe:plasma_exciter",
+    "S": "universe:steel"
+  },
+  "pattern": [
+    "SPS",
+    "BSB"
+  ],
+  "research": "proliferator_mk1",
+  "result": {
+    "id": "universe:spray_coater"
+  }
+}

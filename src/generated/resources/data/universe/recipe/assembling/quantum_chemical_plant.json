@@ -1,0 +1,28 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:chemical_plant"
+    },
+    {
+      "count": 4,
+      "ingredient": "universe:strange_matter"
+    },
+    {
+      "count": 4,
+      "ingredient": "universe:graviton_lens"
+    },
+    {
+      "count": 4,
+      "ingredient": "universe:quantum_chip"
+    }
+  ],
+  "research": "quantum_chemistry",
+  "results": [
+    {
+      "id": "universe:quantum_chemical_plant"
+    }
+  ],
+  "time": 300
+}

@@ -21,6 +21,7 @@ import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.client.ClientGalaxy;
 import io.github.sweetcornna.universe.client.UniverseKeys;
 import io.github.sweetcornna.universe.client.discovery.ClientDiscoveries;
+import io.github.sweetcornna.universe.client.factory.ClientResearch;
 import io.github.sweetcornna.universe.core.discovery.DiscoveryKey;
 import io.github.sweetcornna.universe.core.discovery.DiscoveryLog;
 import io.github.sweetcornna.universe.core.galaxy.Galaxy;
@@ -28,11 +29,13 @@ import io.github.sweetcornna.universe.core.galaxy.GalaxyGenerator;
 import io.github.sweetcornna.universe.core.galaxy.Hazard;
 import io.github.sweetcornna.universe.core.galaxy.Planet;
 import io.github.sweetcornna.universe.core.galaxy.PlanetType;
+import io.github.sweetcornna.universe.core.galaxy.Resource;
 import io.github.sweetcornna.universe.core.galaxy.Star;
 import io.github.sweetcornna.universe.core.galaxy.StarClass;
 import io.github.sweetcornna.universe.core.galaxy.StarMapCamera;
 import io.github.sweetcornna.universe.core.galaxy.StarSystem;
 import io.github.sweetcornna.universe.core.procgen.Rng;
+import io.github.sweetcornna.universe.core.research.Upgrades;
 import io.github.sweetcornna.universe.core.sky.BodyLook;
 import io.github.sweetcornna.universe.core.space.SpaceLayout;
 import io.github.sweetcornna.universe.core.space.Warp;
@@ -94,6 +97,11 @@ public class StarMapScreen extends Screen {
     private int selected;
     private int hovered = -1;
     private int hoveredPlanet = -1;
+    /** 面板上的行星要不要列出资源（宇宙探索，ADR-0022）。 */
+    private boolean showResources;
+    /** 缓存：哪个星系离最近的去过的星系多远。 */
+    private int nearestFor = -1;
+    private double nearestExplored = Double.POSITIVE_INFINITY;
     private boolean rotating;
     private boolean panning;
     private double panelScroll;
@@ -497,15 +505,19 @@ public class StarMapScreen extends Screen {
 
         this.hoveredPlanet = -1;
         DiscoveryLog.Entry discovery = ClientDiscoveries.entry(DiscoveryKey.system(system.index())).orElse(null);
-        if (discovery == null) {
-            // 没去过的恒星系（ADR-0012）：只看得到恒星
+        Upgrades.Reveal reveal = this.reveal(system, discovery != null);
+        this.showResources = reveal == Upgrades.Reveal.RESOURCES;
+        if (reveal == Upgrades.Reveal.STAR) {
+            // 没去过的恒星系（ADR-0012）：只看得到恒星；研究宇宙探索能看得更远（ADR-0022）
             y = this.smallText(graphics, Component.translatable("gui.universe.star_map.unexplored"), x, y, width, WARN) + 4;
             graphics.disableScissor();
             this.panelContentHeight = y + (int) this.panelScroll - top;
             this.drawWarp(graphics, system, x, bottom + 4, width, mouseX, mouseY);
             return;
         }
-        if (discovery.discoverer() != null) {
+        if (discovery == null) {
+            y = this.smallText(graphics, Component.translatable("gui.universe.star_map.surveyed"), x, y, width, DIM) + 3;
+        } else if (discovery.discoverer() != null) {
             y = this.smallText(graphics, Component.translatable("gui.universe.star_map.discovered_by", discovery.discovererName()), x, y, width,
                     DIM) + 3;
         }
@@ -706,6 +718,13 @@ public class StarMapScreen extends Screen {
                     String.join(GalaxyText.pick("、", ", "), names));
             y = this.smallText(graphics, hazards, x + 9, y, width - 9, WARN);
         }
+        if (this.showResources && !planet.resources().isEmpty()) {
+            List<String> names = new ArrayList<>();
+            planet.resources().stream().sorted(Comparator.comparingDouble(Resource.Deposit::abundance).reversed())
+                    .forEach(deposit -> names.add(GalaxyText.pick(deposit.resource().nameZh(), deposit.resource().nameEn())));
+            y = this.smallText(graphics, Component.translatable("gui.universe.star_map.resources",
+                    String.join(GalaxyText.pick("、", ", "), names)), x + 9, y, width - 9, 0xFF9FD8A8);
+        }
         if (planet.landable()) {
             SentinelLevel sentinels = SentinelLevel.of(planet);
             y = this.smallText(graphics, Component.translatable("gui.universe.star_map.sentinels",
@@ -713,6 +732,25 @@ public class StarMapScreen extends Screen {
                     sentinels.ordinal() >= SentinelLevel.NORMAL.ordinal() ? WARN : DIM);
         }
         return y + 1;
+    }
+
+    /** 宇宙探索（ADR-0022）：这个星系在星图上看得到多少。离最近的去过的星系有多远按选中的星系缓存。 */
+    private Upgrades.Reveal reveal(StarSystem system, boolean explored) {
+        int level = ClientResearch.state().level(Upgrades.UNIVERSE_EXPLORATION);
+        if (explored || level < 2) {
+            return Upgrades.reveal(level, explored, Double.POSITIVE_INFINITY);
+        }
+        if (this.nearestFor != system.index()) {
+            double nearest = Double.POSITIVE_INFINITY;
+            for (StarSystem other : this.galaxy.systems()) {
+                if (ClientDiscoveries.entry(DiscoveryKey.system(other.index())).isPresent()) {
+                    nearest = Math.min(nearest, system.distanceTo(other));
+                }
+            }
+            this.nearestFor = system.index();
+            this.nearestExplored = nearest;
+        }
+        return Upgrades.reveal(level, false, this.nearestExplored);
     }
 
     /** 缩小到 0.75 倍、自动换行的一段字，返回下一行的位置。 */

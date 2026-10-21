@@ -1,0 +1,16 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 3,
+      "ingredient": "minecraft:coal"
+    }
+  ],
+  "research": "thermal_power",
+  "results": [
+    {
+      "id": "universe:combustible_unit"
+    }
+  ],
+  "time": 60
+}

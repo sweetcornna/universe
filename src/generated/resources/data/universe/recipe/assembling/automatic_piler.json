@@ -1,0 +1,28 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 3,
+      "ingredient": "universe:steel"
+    },
+    {
+      "count": 4,
+      "ingredient": "universe:gear"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:super_magnetic_ring"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:processor"
+    }
+  ],
+  "research": "integrated_logistics",
+  "results": [
+    {
+      "id": "universe:automatic_piler"
+    }
+  ],
+  "time": 60
+}

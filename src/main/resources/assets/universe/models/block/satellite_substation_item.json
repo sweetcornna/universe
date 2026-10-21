@@ -1,0 +1,10 @@
+{
+  "parent": "universe:block/tesla_tower_item",
+  "textures": {
+    "particle": "universe:block/satellite_substation_pole",
+    "pole": "universe:block/satellite_substation_pole",
+    "coil": "universe:block/satellite_substation_coil",
+    "orb": "universe:block/satellite_substation_top_off",
+    "orb_on": "universe:block/satellite_substation_top"
+  }
+}

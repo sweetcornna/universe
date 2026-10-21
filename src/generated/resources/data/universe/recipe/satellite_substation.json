@@ -1,0 +1,18 @@
+{
+  "type": "universe:research_shaped",
+  "category": "redstone",
+  "key": {
+    "F": "universe:frame_material",
+    "R": "universe:super_magnetic_ring",
+    "W": "universe:wireless_power_tower"
+  },
+  "pattern": [
+    "RFR",
+    "RWR",
+    "RFR"
+  ],
+  "research": "satellite_power",
+  "result": {
+    "id": "universe:satellite_substation"
+  }
+}

@@ -72,6 +72,9 @@ public final class UniverseDataComponents {
     /** 画好的蓝图：编号、名字、大小和材料（ADR-0018）。 */
     public static final Supplier<DataComponentType<BlueprintInfo>> BLUEPRINT = COMPONENTS.registerComponentType("blueprint",
             builder -> builder.persistent(BlueprintInfo.CODEC).networkSynchronized(BlueprintInfo.STREAM_CODEC).cacheEncoding());
+    /** 喷过增产剂的物品：每个物品的增产点数，1–4（ADR-0022）。 */
+    public static final Supplier<DataComponentType<Integer>> PROLIFERATION = COMPONENTS.registerComponentType("proliferation",
+            builder -> builder.persistent(Codec.intRange(1, 4)).networkSynchronized(ByteBufCodecs.VAR_INT));
     /** 蓝图转了几个 90°（ADR-0018）。 */
     public static final Supplier<DataComponentType<Integer>> BLUEPRINT_ROTATION = COMPONENTS.registerComponentType("blueprint_rotation",
             builder -> builder.persistent(Codec.INT).networkSynchronized(ByteBufCodecs.VAR_INT));

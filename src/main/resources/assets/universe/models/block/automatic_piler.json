@@ -1,0 +1,145 @@
+{
+  "parent": "block/block",
+  "textures": {
+    "port": "universe:block/belt_pass_port",
+    "base": "universe:block/belt_pass_side",
+    "belt": "universe:block/belt_pass_top",
+    "particle": "universe:block/belt_pass_side",
+    "side": "universe:block/automatic_piler_side",
+    "top": "universe:block/automatic_piler_top"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        9,
+        16
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            7,
+            16,
+            16
+          ],
+          "texture": "#port",
+          "cullface": "north"
+        },
+        "south": {
+          "uv": [
+            0,
+            7,
+            16,
+            16
+          ],
+          "texture": "#port",
+          "cullface": "south"
+        },
+        "west": {
+          "uv": [
+            0,
+            7,
+            16,
+            16
+          ],
+          "texture": "#base",
+          "cullface": "west"
+        },
+        "east": {
+          "uv": [
+            0,
+            7,
+            16,
+            16
+          ],
+          "texture": "#base",
+          "cullface": "east"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#belt"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#base",
+          "cullface": "down"
+        }
+      }
+    },
+    {
+      "from": [
+        1,
+        9,
+        1
+      ],
+      "to": [
+        15,
+        14,
+        15
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            1,
+            5.5,
+            15,
+            10.5
+          ],
+          "texture": "#side"
+        },
+        "south": {
+          "uv": [
+            1,
+            5.5,
+            15,
+            10.5
+          ],
+          "texture": "#side"
+        },
+        "west": {
+          "uv": [
+            1,
+            5.5,
+            15,
+            10.5
+          ],
+          "texture": "#side"
+        },
+        "east": {
+          "uv": [
+            1,
+            5.5,
+            15,
+            10.5
+          ],
+          "texture": "#side"
+        },
+        "up": {
+          "uv": [
+            1,
+            1,
+            15,
+            15
+          ],
+          "texture": "#top"
+        }
+      }
+    }
+  ]
+}

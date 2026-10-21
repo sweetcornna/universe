@@ -83,7 +83,11 @@ public final class Research {
 
     /** 这一级升级科技的效果说明。 */
     public static MutableComponent upgradeEffect(String upgrade, int level) {
-        return Component.translatable("upgrade.universe." + upgrade + ".effect", Upgrades.effectArgs(upgrade, level).toArray());
+        // 宇宙探索每一级看得到的东西不一样，各用一句话
+        String key = Upgrades.UNIVERSE_EXPLORATION.equals(upgrade)
+                ? "upgrade.universe.universe_exploration.effect." + Math.clamp(level, 0, Upgrades.EXPLORATION_MAX)
+                : "upgrade.universe." + upgrade + ".effect";
+        return Component.translatable(key, Upgrades.effectArgs(upgrade, level).toArray());
     }
 
     /** 升级科技现在的级数（服务端和客户端都能用）。 */

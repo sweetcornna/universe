@@ -62,8 +62,8 @@ public final class TechTree {
                             "module_heat_sink", "module_scanner_array", "module_analyzer", "module_weapon_calibrator")),
             Tech.lab("fluid_storage", List.of("electromagnetic_matrix"), List.of(BLUE), 20, items("water_pump")),
             Tech.lab("electromagnetic_drive", List.of("electromagnetic_matrix"), List.of(BLUE), 20, items("electric_motor")),
-            Tech.lab("thermal_power", List.of("electromagnetic_matrix"), List.of(BLUE), 20, items("thermal_plant")),
-            Tech.lab("steel_smelting", List.of("electromagnetic_matrix"), List.of(BLUE), 30, items("steel")),
+            Tech.lab("thermal_power", List.of("electromagnetic_matrix"), List.of(BLUE), 20, items("thermal_plant", "combustible_unit")),
+            Tech.lab("steel_smelting", List.of("electromagnetic_matrix"), List.of(BLUE), 30, items("steel", "foundation")),
             Tech.lab("plasma_refining", List.of("fluid_storage", "electromagnetic_drive", "steel_smelting"), List.of(BLUE), 60,
                     items("oil_extractor", "oil_refinery", "prism", "plasma_exciter")),
             Tech.lab("energy_matrix", List.of("plasma_refining", "thermal_power"), List.of(BLUE), 60, items("energy_matrix")),
@@ -85,7 +85,8 @@ public final class TechTree {
             Tech.lab("solar_power", List.of("semiconductor"), List.of(BLUE, RED), 60, items("solar_panel")),
             Tech.lab("processor", List.of("semiconductor"), List.of(BLUE, RED), 80, items("processor")),
             Tech.lab("high_strength_materials", List.of("basic_chemical"), List.of(BLUE, RED), 80, items("graphene", "carbon_nanotube")),
-            Tech.lab("deuterium_fractionation", List.of("basic_chemical"), List.of(BLUE, RED), 70, items("fractionator", "deuterium")),
+            Tech.lab("deuterium_fractionation", List.of("basic_chemical"), List.of(BLUE, RED), 70,
+                    items("fractionator", "deuterium", "hydrogen_fuel_rod")),
             Tech.lab("improved_assembling", List.of("processor", "high_strength_materials"), List.of(BLUE, RED), 80, items("assembler_mk2")),
             Tech.lab("planetary_logistics", List.of("improved_logistics", "processor", "thruster", "high_strength_materials"),
                     List.of(BLUE, RED), 120, items("planetary_logistics_station", "logistics_drone", "particle_container")),
@@ -111,6 +112,23 @@ public final class TechTree {
                     items("advanced_mining_machine")),
             Tech.lab("high_speed_assembling", List.of("improved_assembling", "quantum_printing"), List.of(BLUE, RED, YELLOW, PURPLE), 160,
                     items("assembler_mk3")),
+            // ---- M11：工厂的补全（ADR-0022）
+            Tech.lab("proliferator_mk1", List.of("plasma_refining"), List.of(BLUE), 60, items("proliferator_mk1", "spray_coater")),
+            Tech.lab("proliferator_mk2", List.of("proliferator_mk1", "structure_matrix"), List.of(BLUE, RED, YELLOW), 120,
+                    items("proliferator_mk2")),
+            Tech.lab("proliferator_mk3", List.of("proliferator_mk2", "information_matrix"), List.of(BLUE, RED, YELLOW, PURPLE), 160,
+                    items("proliferator_mk3")),
+            Tech.lab("integrated_logistics", List.of("efficient_logistics"), List.of(BLUE, RED, YELLOW), 150,
+                    items("automatic_piler", "traffic_monitor")),
+            Tech.lab("pile_sorting", List.of("integrated_logistics", "information_matrix"), List.of(BLUE, RED, YELLOW, PURPLE), 160,
+                    items("pile_sorter")),
+            Tech.lab("wireless_power", List.of("energy_storage"), List.of(BLUE, RED), 60, items("wireless_power_tower")),
+            Tech.lab("geothermal_power", List.of("thermal_power", "structure_matrix"), List.of(BLUE, RED, YELLOW), 120,
+                    items("geothermal_power_station")),
+            Tech.lab("satellite_power", List.of("wireless_power", "frame_material"), List.of(BLUE, RED, YELLOW), 140,
+                    items("satellite_substation")),
+            Tech.lab("energy_exchange", List.of("energy_storage", "information_matrix"), List.of(BLUE, RED, YELLOW, PURPLE), 160,
+                    items("energy_exchanger")),
             // ---- 戴森球（ADR-0016）
             Tech.lab("solar_sail_orbit", List.of("structure_matrix", "solar_power"), List.of(BLUE, RED, YELLOW), 200,
                     items("photon_combiner", "solar_sail", "em_rail_ejector")),
@@ -122,6 +140,14 @@ public final class TechTree {
                     items("graviton_lens")),
             Tech.lab("gravity_matrix", List.of("gravitational_wave_refraction", "quantum_printing"), List.of(BLUE, RED, YELLOW, PURPLE), 240,
                     items("gravity_matrix")),
+            // M11 的高级设备（ADR-0022）：五种矩阵
+            Tech.lab("negentropy_smelting", List.of("gravity_matrix", "plane_smelting"), List.of(BLUE, RED, YELLOW, PURPLE, GREEN), 300,
+                    items("negentropy_smelter")),
+            Tech.lab("recomposing_assembly", List.of("gravity_matrix", "high_speed_assembling"), List.of(BLUE, RED, YELLOW, PURPLE, GREEN), 300,
+                    items("recomposing_assembler")),
+            Tech.lab("quantum_chemistry", List.of("gravity_matrix", "basic_chemical"), List.of(BLUE, RED, YELLOW, PURPLE, GREEN), 300,
+                    items("quantum_chemical_plant")),
+            Tech.lab("self_evolution", List.of("gravity_matrix"), List.of(BLUE, RED, YELLOW, PURPLE, GREEN), 300, items("self_evolution_lab")),
             Tech.lab("vertical_launching_silo", List.of("gravity_matrix", "solar_sail_orbit", "deuterium_fractionation"),
                     List.of(BLUE, RED, YELLOW, PURPLE, GREEN), 200,
                     items("vertical_launching_silo", "dyson_sphere_component", "small_carrier_rocket", "deuteron_fuel_rod")),
@@ -176,6 +202,13 @@ public final class TechTree {
                             tier(60, BLUE, RED, YELLOW), tier(90, BLUE, RED, YELLOW), tier(120, BLUE, RED, YELLOW, PURPLE),
                             tier(160, BLUE, RED, YELLOW, PURPLE), tier(200, BLUE, RED, YELLOW, PURPLE, GREEN),
                             tier(300, BLUE, RED, YELLOW, PURPLE, GREEN)),
+                            null),
+                    // M11（ADR-0022）：集装机和集装分拣器一摞叠几个；星图上能看到多少星系的资源
+                    new Upgrade(Upgrades.BELT_STACKING, NS + "automatic_piler", List.of("integrated_logistics"), List.of(
+                            tier(150, BLUE, RED, YELLOW, PURPLE), tier(200, BLUE, RED, YELLOW, PURPLE, GREEN)),
+                            null),
+                    new Upgrade(Upgrades.UNIVERSE_EXPLORATION, NS + "survey_data", List.of("interstellar_survey"), List.of(
+                            tier(40, BLUE), tier(80, BLUE, RED), tier(120, BLUE, RED, YELLOW), tier(200, BLUE, RED, YELLOW, PURPLE)),
                             null)));
 
     private final List<Tech> techs;

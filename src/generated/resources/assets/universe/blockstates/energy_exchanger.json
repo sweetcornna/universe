@@ -1,0 +1,34 @@
+{
+  "variants": {
+    "facing=east,working=false": {
+      "model": "universe:block/energy_exchanger",
+      "y": 90
+    },
+    "facing=east,working=true": {
+      "model": "universe:block/energy_exchanger_on",
+      "y": 90
+    },
+    "facing=north,working=false": {
+      "model": "universe:block/energy_exchanger"
+    },
+    "facing=north,working=true": {
+      "model": "universe:block/energy_exchanger_on"
+    },
+    "facing=south,working=false": {
+      "model": "universe:block/energy_exchanger",
+      "y": 180
+    },
+    "facing=south,working=true": {
+      "model": "universe:block/energy_exchanger_on",
+      "y": 180
+    },
+    "facing=west,working=false": {
+      "model": "universe:block/energy_exchanger",
+      "y": 270
+    },
+    "facing=west,working=true": {
+      "model": "universe:block/energy_exchanger_on",
+      "y": 270
+    }
+  }
+}

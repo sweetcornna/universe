@@ -18,13 +18,14 @@ import net.minecraft.network.codec.StreamCodec;
  * 像潜影盒一样存在掉落的物品里，放下时原样恢复。在外面飞的载具算回来了。
  */
 public record StationContents(List<Slot> slots, int drones, int vessels, int warpers, long energy, int range) {
-    public record Slot(String item, int count, int max, int local, int remote) {
+    public record Slot(String item, int count, int max, int local, int remote, long points) {
         static final Codec<Slot> CODEC = RecordCodecBuilder.create(i -> i.group(
                 Codec.STRING.optionalFieldOf("item", "").forGetter(Slot::item),
                 Codec.INT.optionalFieldOf("count", 0).forGetter(Slot::count),
                 Codec.INT.optionalFieldOf("max", 0).forGetter(Slot::max),
                 Codec.INT.optionalFieldOf("local", 0).forGetter(Slot::local),
-                Codec.INT.optionalFieldOf("remote", 0).forGetter(Slot::remote)
+                Codec.INT.optionalFieldOf("remote", 0).forGetter(Slot::remote),
+                Codec.LONG.optionalFieldOf("points", 0L).forGetter(Slot::points)
         ).apply(i, Slot::new));
         static final StreamCodec<ByteBuf, Slot> STREAM_CODEC = StreamCodec.composite(
                 ByteBufCodecs.STRING_UTF8, Slot::item,
@@ -32,6 +33,7 @@ public record StationContents(List<Slot> slots, int drones, int vessels, int war
                 ByteBufCodecs.VAR_INT, Slot::max,
                 ByteBufCodecs.VAR_INT, Slot::local,
                 ByteBufCodecs.VAR_INT, Slot::remote,
+                ByteBufCodecs.VAR_LONG, Slot::points,
                 Slot::new);
     }
 
@@ -59,7 +61,7 @@ public record StationContents(List<Slot> slots, int drones, int vessels, int war
     public static StationContents of(Station station) {
         List<Slot> slots = new ArrayList<>();
         for (StationSlot slot : station.slots()) {
-            slots.add(new Slot(slot.item(), slot.count(), slot.max(), slot.local().ordinal(), slot.remote().ordinal()));
+            slots.add(new Slot(slot.item(), slot.count(), slot.max(), slot.local().ordinal(), slot.remote().ordinal(), slot.points()));
         }
         return new StationContents(slots, station.drones(), station.vessels(), station.warpers(), station.energy(), station.droneRange());
     }
@@ -68,7 +70,7 @@ public record StationContents(List<Slot> slots, int drones, int vessels, int war
     public StationContents settingsOnly() {
         List<Slot> settings = new ArrayList<>();
         for (Slot slot : this.slots) {
-            settings.add(new Slot(slot.item, 0, slot.max, slot.local, slot.remote));
+            settings.add(new Slot(slot.item, 0, slot.max, slot.local, slot.remote, 0));
         }
         return new StationContents(settings, 0, 0, 0, 0, this.range);
     }
@@ -89,7 +91,7 @@ public record StationContents(List<Slot> slots, int drones, int vessels, int war
             Slot slot = this.slots.get(k);
             Logic[] logics = Logic.values();
             station.restoreSlot(k, new StationSlot(slot.item, slot.count, slot.max, logics[Math.floorMod(slot.local, logics.length)],
-                    logics[Math.floorMod(slot.remote, logics.length)], 0, 0));
+                    logics[Math.floorMod(slot.remote, logics.length)], 0, 0, slot.points));
         }
         station.addDrones(this.drones);
         station.addVessels(this.vessels);

@@ -229,8 +229,13 @@ public final class Station {
      * @return 实际放了几个；没有这种物品的格子时是 0
      */
     public int insert(String item, int amount) {
+        return this.insert(item, amount, 0);
+    }
+
+    /** 同上，这些物品一共带 {@code points} 点增产点数（ADR-0022）。 */
+    public int insert(String item, int amount, long points) {
         int index = this.slotOf(item);
-        return index < 0 ? 0 : this.slots[index].add(amount, Math.min(this.slots[index].max(), this.kind.slotCapacity()));
+        return index < 0 ? 0 : this.slots[index].add(amount, points, Math.min(this.slots[index].max(), this.kind.slotCapacity()));
     }
 
     /** 直接改一格的数量：物品能力的事务回滚时用。 */
@@ -238,9 +243,19 @@ public final class Station {
         this.slots[index].setCount(Math.min(count, this.kind.slotCapacity()));
     }
 
-    /** 从一格里拿出去，不动别人预订的那部分。 */
+    /** 直接改一格的点数：回滚时在 {@link #restoreCount} 之后调。 */
+    public void restorePoints(int index, long points) {
+        this.slots[index].setPoints(points);
+    }
+
+    /** 从一格里拿出去，不动别人预订的那部分，按比例带走点数。 */
     public int extract(int index, int amount) {
         return this.slots[index].take(amount);
+    }
+
+    /** 从一格里拿出去，每个带走 {@code level} 点。 */
+    public int extract(int index, int amount, int level) {
+        return this.slots[index].take(amount, level);
     }
 
     /** 直接设定一格的内容（拆了再放下时恢复）。 */
@@ -249,6 +264,7 @@ public final class Station {
         target.setItem("");
         target.setItem(slot.item());
         target.setCount(Math.min(slot.count(), this.kind.slotCapacity()));
+        target.setPoints(slot.points());
         target.setMax(Math.min(slot.max(), this.kind.slotCapacity()));
         target.setLocal(slot.local());
         target.setRemote(this.kind.remote() ? slot.remote() : Logic.STORAGE);

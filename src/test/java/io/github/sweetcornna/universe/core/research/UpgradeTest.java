@@ -135,7 +135,7 @@ class UpgradeTest {
     @Test
     void defaultUpgradesMatchTheDesign() {
         TechTree tree = TechTree.DEFAULT;
-        assertEquals(6, tree.upgrades().size());
+        assertEquals(8, tree.upgrades().size());
         // 有限几级：矿脉利用 4、研究速度 3、载具引擎 5、射线 4；容量和太阳帆 6 级封顶
         assertEquals(4, tree.upgrade(Upgrades.VEIN_UTILIZATION).orElseThrow().tiers().size());
         assertEquals(3, tree.upgrade(Upgrades.RESEARCH_SPEED).orElseThrow().tiers().size());
@@ -143,6 +143,9 @@ class UpgradeTest {
         assertEquals(4, tree.upgrade(Upgrades.RAY_EFFICIENCY).orElseThrow().tiers().size());
         assertEquals(6, tree.upgrade(Upgrades.CARRIER_CAPACITY).orElseThrow().maxLevel());
         assertEquals(6, tree.upgrade(Upgrades.SAIL_LIFETIME).orElseThrow().maxLevel());
+        // 货物集装两级就叠到 4 个；宇宙探索 4 级看得到整个银河
+        assertEquals(2, tree.upgrade(Upgrades.BELT_STACKING).orElseThrow().maxLevel());
+        assertEquals(Upgrades.EXPLORATION_MAX, tree.upgrade(Upgrades.UNIVERSE_EXPLORATION).orElseThrow().maxLevel());
         for (Upgrade upgrade : tree.upgrades()) {
             for (int level = 1; level <= upgrade.tiers().size() + 3 && level <= upgrade.maxLevel(); level++) {
                 assertTrue(TechTree.MATRICES.containsAll(upgrade.matrices(level)), upgrade.id() + " " + level);
@@ -172,5 +175,28 @@ class UpgradeTest {
         assertEquals(List.of("55", "550"), Upgrades.effectArgs(Upgrades.CARRIER_CAPACITY, 1));
         assertEquals(List.of("105"), Upgrades.effectArgs(Upgrades.SAIL_LIFETIME, 1));
         assertEquals(List.of("15"), Upgrades.effectArgs(Upgrades.RAY_EFFICIENCY, 1));
+    }
+
+    @Test
+    void beltStackGrowsToFour() {
+        assertEquals(2, Upgrades.beltStack(0));
+        assertEquals(3, Upgrades.beltStack(1));
+        assertEquals(4, Upgrades.beltStack(2));
+        assertEquals(4, Upgrades.beltStack(9));
+        assertEquals(List.of("3"), Upgrades.effectArgs(Upgrades.BELT_STACKING, 1));
+    }
+
+    @Test
+    void universeExplorationRevealsMoreOfTheMap() {
+        // 去过的星系：0 级看得到行星，1 级起还有资源
+        assertEquals(Upgrades.Reveal.PLANETS, Upgrades.reveal(0, true, 0));
+        assertEquals(Upgrades.Reveal.RESOURCES, Upgrades.reveal(1, true, 0));
+        // 没去过的：1 级还是只有恒星
+        assertEquals(Upgrades.Reveal.STAR, Upgrades.reveal(1, false, 5));
+        assertEquals(Upgrades.Reveal.PLANETS, Upgrades.reveal(2, false, 10));
+        assertEquals(Upgrades.Reveal.STAR, Upgrades.reveal(2, false, 10.5));
+        assertEquals(Upgrades.Reveal.RESOURCES, Upgrades.reveal(3, false, 30));
+        assertEquals(Upgrades.Reveal.STAR, Upgrades.reveal(3, false, 31));
+        assertEquals(Upgrades.Reveal.RESOURCES, Upgrades.reveal(4, false, Double.POSITIVE_INFINITY));
     }
 }

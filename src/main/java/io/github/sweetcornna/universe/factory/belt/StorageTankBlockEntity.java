@@ -5,6 +5,7 @@ import org.jspecify.annotations.Nullable;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
+import io.github.sweetcornna.universe.core.factory.Cargo;
 import io.github.sweetcornna.universe.factory.FluidItems;
 import io.github.sweetcornna.universe.registry.UniverseBlockEntities;
 import io.github.sweetcornna.universe.registry.UniverseDataComponents;
@@ -130,8 +131,11 @@ public class StorageTankBlockEntity extends BlockEntity implements BeltReceiver 
     }
 
     @Override
-    public boolean acceptFromBelt(Item item) {
-        return this.fill(item, 1) == 1;
+    public boolean acceptFromBelt(int cargo) {
+        // 储液罐不记增产点数
+        Item item = BeltNetwork.item(cargo);
+        int count = Cargo.count(cargo);
+        return this.room(item) >= count && this.fill(item, count) == count;
     }
 
     void serverTick() {

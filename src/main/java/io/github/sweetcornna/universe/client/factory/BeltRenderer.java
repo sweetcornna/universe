@@ -9,6 +9,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 
 import io.github.sweetcornna.universe.core.factory.BeltLine;
+import io.github.sweetcornna.universe.core.factory.Cargo;
 import io.github.sweetcornna.universe.factory.belt.BeltBlock;
 import io.github.sweetcornna.universe.factory.belt.BeltBlockEntity;
 import io.github.sweetcornna.universe.factory.belt.BeltCurve;
@@ -35,12 +36,14 @@ import net.minecraft.world.phys.Vec3;
 
 /**
  * 传送带上的物品（ADR-0011）：每格画自己那一段上的物品，平躺在带面上。位置在两刻之间按速度插值，不越过前面的物品
- * 和线路尽头；弯道走四分之一圆弧，坡道斜着走。
+ * 和线路尽头；弯道走四分之一圆弧，坡道斜着走。叠着的货物（ADR-0022）一层层摞起来画。
  */
 public class BeltRenderer implements BlockEntityRenderer<BeltBlockEntity, BeltRenderer.State> {
     /** 带面的高度（平的传送带）。 */
     private static final float SURFACE = 3 / 16F;
     private static final float ITEM_SCALE = 0.3F;
+    /** 叠着的货物每层高多少（格）。 */
+    private static final float LAYER = 0.045F;
 
     private final ItemModelResolver itemModelResolver;
     private final Int2ObjectMap<ItemStack> stacks = new Int2ObjectOpenHashMap<>();
@@ -88,8 +91,9 @@ public class BeltRenderer implements BlockEntityRenderer<BeltBlockEntity, BeltRe
             float t = (shown - from) / BeltNetwork.UNITS;
             Item entry = place(slope, curve, t);
             entry.render = new ItemStackRenderState();
-            int id = line.item(i);
-            ItemStack stack = this.stacks.computeIfAbsent(id, key -> new ItemStack(BeltNetwork.item(key)));
+            int cargo = line.item(i);
+            ItemStack stack = this.stacks.computeIfAbsent(cargo, BeltNetwork::display);
+            entry.layers = Cargo.count(cargo);
             this.itemModelResolver.updateForTopItem(entry.render, stack, ItemDisplayContext.FIXED, level, null, seed + i);
             state.items.add(entry);
         }
@@ -147,10 +151,17 @@ public class BeltRenderer implements BlockEntityRenderer<BeltBlockEntity, BeltRe
             poseStack.rotateDegrees(Axis.YP, -state.facing.toYRot() + 180);
             poseStack.translate(item.x - 0.5F, item.y + 0.01F, item.z - 0.5F);
             poseStack.rotateDegrees(Axis.YP, item.yaw);
-            // 转 90° 平躺；坡道再顺着坡面立起来（上坡前高后低）
-            poseStack.rotateDegrees(Axis.XP, 90 + item.pitch);
-            poseStack.scale(ITEM_SCALE, ITEM_SCALE, ITEM_SCALE);
-            item.render.submit(poseStack, collector, state.lightCoords, OverlayTexture.NO_OVERLAY, 0);
+            for (int layer = 0; layer < item.layers; layer++) {
+                poseStack.pushPose();
+                // 一层层往上摞，稍微错开一点角度，看得出是几个
+                poseStack.translate(0, layer * LAYER, 0);
+                poseStack.rotateDegrees(Axis.YP, layer * 17);
+                // 转 90° 平躺；坡道再顺着坡面立起来（上坡前高后低）
+                poseStack.rotateDegrees(Axis.XP, 90 + item.pitch);
+                poseStack.scale(ITEM_SCALE, ITEM_SCALE, ITEM_SCALE);
+                item.render.submit(poseStack, collector, state.lightCoords, OverlayTexture.NO_OVERLAY, 0);
+                poseStack.popPose();
+            }
             poseStack.popPose();
         }
     }
@@ -167,6 +178,7 @@ public class BeltRenderer implements BlockEntityRenderer<BeltBlockEntity, BeltRe
         float z;
         float yaw;
         float pitch;
+        int layers = 1;
         @Nullable ItemStackRenderState render;
     }
 

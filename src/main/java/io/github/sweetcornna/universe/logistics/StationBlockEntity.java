@@ -307,9 +307,9 @@ public class StationBlockEntity extends MachineBlockEntity implements MachineMen
     // ---- 传送带直接送进来
 
     @Override
-    public boolean acceptFromBelt(Item item) {
+    public boolean acceptFromBelt(int cargo) {
         Station station = this.station();
-        return station != null && this.handler.insertOne(station, item);
+        return station != null && this.handler.insertFromBelt(station, cargo);
     }
 
     // ---- 投放口
@@ -325,7 +325,7 @@ public class StationBlockEntity extends MachineBlockEntity implements MachineMen
             // 进货口：这一格是这种物品，而且放得下整叠
             int row = this.inputRow(slot);
             Station station = this.station();
-            if (row < 0 || station == null || !stack.isComponentsPatchEmpty()) {
+            if (row < 0 || station == null || !BeltNetwork.canCarry(stack)) {
                 return false;
             }
             StationSlot ledger = station.slot(row);
@@ -404,7 +404,7 @@ public class StationBlockEntity extends MachineBlockEntity implements MachineMen
             return ItemStack.EMPTY;
         }
         Item item = itemOf(station.slot(row).item());
-        return new ItemStack(item, Math.min(station.slot(row).available(), item.getDefaultMaxStackSize()));
+        return BeltNetwork.stack(item, Math.min(station.slot(row).available(), item.getDefaultMaxStackSize()), station.slot(row).level());
     }
 
     @Override
@@ -418,11 +418,12 @@ public class StationBlockEntity extends MachineBlockEntity implements MachineMen
             return ItemStack.EMPTY;
         }
         Item item = itemOf(station.slot(row).item());
-        int taken = station.extract(row, Math.min(count, item.getDefaultMaxStackSize()));
+        int level = station.slot(row).level();
+        int taken = station.extract(row, Math.min(count, item.getDefaultMaxStackSize()), level);
         if (taken > 0) {
             this.setChanged();
         }
-        return taken > 0 ? new ItemStack(item, taken) : ItemStack.EMPTY;
+        return taken > 0 ? BeltNetwork.stack(item, taken, level) : ItemStack.EMPTY;
     }
 
     @Override
@@ -442,7 +443,7 @@ public class StationBlockEntity extends MachineBlockEntity implements MachineMen
         }
         int input = this.inputRow(slot);
         if (input >= 0 && !stack.isEmpty()) {
-            station.insert(idOf(stack.getItem()), stack.getCount());
+            station.insert(idOf(stack.getItem()), stack.getCount(), (long) stack.getCount() * BeltNetwork.level(stack));
             this.setChanged();
             return;
         }
@@ -453,7 +454,10 @@ public class StationBlockEntity extends MachineBlockEntity implements MachineMen
             int shown = this.getItem(slot).getCount();
             int wanted = stack.isEmpty() || !idOf(stack.getItem()).equals(ledger.item()) ? 0 : stack.getCount();
             if (wanted != shown) {
+                int level = wanted > shown ? BeltNetwork.level(stack) : ledger.level();
+                long points = ledger.points() + (long) (wanted - shown) * level;
                 station.restoreCount(output, ledger.count() + wanted - shown);
+                station.restorePoints(output, points);
                 this.setChanged();
             }
         }
@@ -567,9 +571,13 @@ public class StationBlockEntity extends MachineBlockEntity implements MachineMen
     }
 
     private static void give(ServerPlayer player, Item item, int count) {
+        give(player, item, count, 0);
+    }
+
+    private static void give(ServerPlayer player, Item item, int count, int level) {
         while (count > 0) {
             int n = Math.min(count, item.getDefaultMaxStackSize());
-            player.getInventory().placeItemBackInInventory(new ItemStack(item, n), Prediction.SERVER_ONLY);
+            player.getInventory().placeItemBackInInventory(BeltNetwork.stack(item, n, level), Prediction.SERVER_ONLY);
             count -= n;
         }
     }
@@ -595,10 +603,10 @@ public class StationBlockEntity extends MachineBlockEntity implements MachineMen
                     }
                     return true;
                 }
-                if (!slot.item().equals(item) || !carried.isComponentsPatchEmpty()) {
+                if (!slot.item().equals(item) || !BeltNetwork.canCarry(carried)) {
                     return false;
                 }
-                int added = station.insert(item, carried.getCount());
+                int added = station.insert(item, carried.getCount(), (long) carried.getCount() * BeltNetwork.level(carried));
                 carried.shrink(added);
                 return added > 0;
             }
@@ -607,8 +615,9 @@ public class StationBlockEntity extends MachineBlockEntity implements MachineMen
                     return false;
                 }
                 Item item = itemOf(slot.item());
-                int taken = station.extract(row, item.getDefaultMaxStackSize());
-                give(player, item, taken);
+                int level = slot.level();
+                int taken = station.extract(row, item.getDefaultMaxStackSize(), level);
+                give(player, item, taken, level);
                 return taken > 0;
             }
             case CYCLE_LOCAL -> slot.setLocal(slot.local().next());

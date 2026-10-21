@@ -839,6 +839,7 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         item(UniverseItems.ELECTROMAGNETIC_MATRIX.get(), "电磁矩阵", "Electromagnetic Matrix");
         item(UniverseItems.ENERGY_MATRIX.get(), "能量矩阵", "Energy Matrix");
         this.dyson();
+        this.factoryDepth();
 
         both("gui.universe.machine.unpowered", "未接入电网（需要电力感应塔）", "No power (needs a tesla tower in range)");
         both("gui.universe.machine.power", "功率 %s · 满足率 %s%%", "Power %s · %s%% satisfied");
@@ -890,6 +891,129 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("gui.universe.recipe_machine.results", "产物", "Products");
         both("gui.universe.recipe_machine.requires", "需要研究：%s", "Requires research: %s");
         research();
+    }
+
+    /** 工厂的补全（ADR-0022）：增产剂、传送带上的设备、电力和高级设备。 */
+    private void factoryDepth() {
+        item(UniverseItems.PROLIFERATOR_MK1.get(), "增产剂 Mk.I", "Proliferator Mk.I");
+        item(UniverseItems.PROLIFERATOR_MK2.get(), "增产剂 Mk.II", "Proliferator Mk.II");
+        item(UniverseItems.PROLIFERATOR_MK3.get(), "增产剂 Mk.III", "Proliferator Mk.III");
+        item(UniverseItems.COMBUSTIBLE_UNIT.get(), "燃烧单元", "Combustible Unit");
+        item(UniverseItems.HYDROGEN_FUEL_ROD.get(), "液氢燃料棒", "Hydrogen Fuel Rod");
+        block(UniverseBlocks.SPRAY_COATER.get(), "喷涂机", "Spray Coater");
+        block(UniverseBlocks.AUTOMATIC_PILER.get(), "自动集装机", "Automatic Piler");
+        block(UniverseBlocks.TRAFFIC_MONITOR.get(), "流速监测器", "Traffic Monitor");
+        block(UniverseBlocks.PILE_SORTER.get(), "集装分拣器", "Pile Sorter");
+        block(UniverseBlocks.WIRELESS_POWER_TOWER.get(), "无线输电塔", "Wireless Power Tower");
+        block(UniverseBlocks.SATELLITE_SUBSTATION.get(), "卫星配电站", "Satellite Substation");
+        block(UniverseBlocks.GEOTHERMAL_POWER_STATION.get(), "地热发电站", "Geothermal Power Station");
+        block(UniverseBlocks.ENERGY_EXCHANGER.get(), "能量枢纽", "Energy Exchanger");
+        block(UniverseBlocks.NEGENTROPY_SMELTER.get(), "负熵熔炉", "Negentropy Smelter");
+        block(UniverseBlocks.RECOMPOSING_ASSEMBLER.get(), "重组式制造台", "Re-composing Assembler");
+        block(UniverseBlocks.QUANTUM_CHEMICAL_PLANT.get(), "量子化工厂", "Quantum Chemical Plant");
+        block(UniverseBlocks.SELF_EVOLUTION_LAB.get(), "自演化研究站", "Self-evolution Lab");
+        block(UniverseBlocks.FOUNDATION.get(), "地基", "Foundation");
+
+        // 物品说明（按住 Shift）
+        for (int tier = 1; tier <= 3; tier++) {
+            int points = tier == 3 ? 4 : tier;
+            int sprays = tier == 1 ? 12 : tier == 2 ? 24 : 60;
+            both("tooltip.universe.proliferator_mk" + tier + ".summary",
+                    "装进喷涂机，给传送带上的货物喷 " + points + " 点\n一个能喷 " + sprays + " 个货物\n设备用喷过的原料：多出产物或者做得更快",
+                    "Load it into a spray coater to give belt cargo " + points + " point" + (points > 1 ? "s" : "")
+                            + "\nOne covers " + sprays + " items\nMachines fed sprayed ingredients make extra products or work faster");
+        }
+        both("tooltip.universe.combustible_unit.summary", "燃料，比高能石墨耐烧\n火力发电厂和熔炉都能烧",
+                "Fuel that outlasts energetic graphite\nBurns in thermal plants and furnaces");
+        both("tooltip.universe.hydrogen_fuel_rod.summary", "高能燃料，一根顶 8 块多高能石墨\n火力发电厂和熔炉都能烧",
+                "Dense fuel, worth over 8 energetic graphite\nBurns in thermal plants and furnaces");
+        both("tooltip.universe.spray_coater.summary", "串在传送带上，给经过的货物喷增产剂\n拿着增产剂右键装填，空手右键看还剩多少\n用电 100 W",
+                "Sits in a belt line and sprays passing cargo\nRight-click with a proliferator to load, empty-handed to check\nUses 100 W");
+        both("tooltip.universe.automatic_piler.summary", "串在传送带上，把同一种货物叠成一摞再送走\n一摞几个看「货物集装」研究到几级\n用电 160 W",
+                "Sits in a belt line and stacks matching cargo into piles\nPile size depends on Cargo Stacking research\nUses 160 W");
+        both("tooltip.universe.traffic_monitor.summary", "串在传送带上，数最近一分钟流过多少个\n右键设报警下限，拿着物品右键只数这一种\n流量低于下限时亮红灯、发出红石信号",
+                "Sits in a belt line and counts items over the last minute\nRight-click to set an alarm floor; right-click with an item to count only that\nBelow the floor it lights red and emits redstone");
+        both("tooltip.universe.pile_sorter.summary", "一次搬一整摞，比分拣器 Mk.III 快一倍\n一摞几个看「货物集装」研究到几级",
+                "Moves a whole pile at once, twice as fast as Sorter Mk.III\nPile size depends on Cargo Stacking research");
+        both("tooltip.universe.wireless_power_tower.summary", "覆盖半径 4 格，相距 10 格内的塔自动相连\n给 5 格内穿着外骨骼的玩家补氧、给危害防护充能",
+                "Range 4, links towers within 10\nRefills oxygen and hazard protection for exosuits within 5 blocks");
+        both("tooltip.universe.satellite_substation.summary", "覆盖半径 20 格，相距 40 格内的塔自动相连",
+                "Range 20, links towers within 40");
+        both("tooltip.universe.geothermal_power_station.summary", "正下方一格是熔岩才发电，最大 4.8 kW\n灼热星球和下界多五成\n不烧燃料",
+                "Needs lava directly below; up to 4.8 kW\n50% more on scorched planets and in the Nether\nNo fuel needed");
+        both("tooltip.universe.energy_exchanger.summary", "空的蓄电器放进去充满，满的放进去把电放回电网\n在界面里切换充电和放电，功率 45 kW",
+                "Charges empty accumulators, or drains full ones back into the grid\nSwitch modes in the screen; 45 kW");
+        both("tooltip.universe.negentropy_smelter.summary", "熔炉配方，速度 3 倍\n用电 2.88 kW", "Smelting recipes at 3× speed\nUses 2.88 kW");
+        both("tooltip.universe.recomposing_assembler.summary", "制造台配方，速度 3 倍\n用电 2.7 kW", "Assembling recipes at 3× speed\nUses 2.7 kW");
+        both("tooltip.universe.quantum_chemical_plant.summary", "化工配方，速度 2 倍\n用电 2.16 kW", "Chemical recipes at 2× speed\nUses 2.16 kW");
+        both("tooltip.universe.self_evolution_lab.summary", "研究速度是矩阵研究站的 3 倍\n可以和矩阵研究站叠在一起，上面的从下面拿矩阵",
+                "Researches 3× as fast as a matrix lab\nStacks with matrix labs; upper labs draw matrices from below");
+        both("tooltip.universe.matrix_lab.summary", "研究全服当前的科技，几台一起研究就快几倍\n可以竖着叠，上面的从下面拿矩阵，只给最下面一台送料",
+                "Researches the server's current tech; more labs, faster research\nStack them: upper labs draw matrices from below, so feed only the bottom one");
+        both("tooltip.universe.storage_depot.summary", "30 格\n可以竖着叠：下面放满了往上放，从最下面一层就能取整叠",
+                "30 slots\nStack them: overflow goes up, and the bottom one reaches the whole stack");
+        both("tooltip.universe.foundation.summary", "铺地面用的建筑方块", "A building block for floors");
+        both("tooltip.universe.proliferation", "增产点数 %s", "Proliferator points %s");
+
+        // 界面
+        both("gui.universe.proliferation.extra", "额外产出", "Extra products");
+        both("gui.universe.proliferation.speedup", "生产加速", "Speedup");
+        both("gui.universe.proliferation.speedup_only", "这个配方只能加速", "Speedup only");
+        both("gui.universe.proliferation.bonus", "%s +%s", "%s +%s");
+        both("gui.universe.tesla_tower.range_charge", "%s；给 %s 格内的外骨骼充能", "%s; charges exosuits within %s");
+        both("gui.universe.geothermal.heat", "地热 %s%%", "Heat %s%%");
+        both("gui.universe.geothermal.hint", "灼热星球和下界的地热更强", "Hotter on scorched planets and in the Nether");
+        both("gui.universe.geothermal.no_lava", "正下方一格要是熔岩", "Needs lava directly below");
+        both("gui.universe.energy_exchanger.energy", "当前蓄电器 %s / %s", "Current accumulator %s / %s");
+        both("gui.universe.energy_exchanger.empty", "放入蓄电器", "Insert an accumulator");
+        both("gui.universe.energy_exchanger.charge", "模式：充电", "Mode: charge");
+        both("gui.universe.energy_exchanger.discharge", "模式：放电", "Mode: discharge");
+        both("gui.universe.traffic_monitor.count", "最近一分钟 %s 个", "Last minute: %s");
+        both("gui.universe.traffic_monitor.all", "统计所有物品", "Counting all items");
+        both("gui.universe.traffic_monitor.only", "只统计 %s", "Counting only %s");
+        both("gui.universe.traffic_monitor.no_threshold", "没设报警下限", "No alarm floor set");
+        both("gui.universe.traffic_monitor.alarm", "低于下限 %s，报警中", "Below %s, alarm on");
+        both("gui.universe.traffic_monitor.warming", "下限 %s，开机满一分钟后开始判断", "Floor %s, checking after one minute");
+        both("gui.universe.traffic_monitor.ok", "下限 %s，流量正常", "Floor %s, flow OK");
+        both("gui.universe.star_map.surveyed", "远程测绘：没去过，资料来自宇宙探索", "Remote survey: not visited, data from Universe Exploration");
+        both("gui.universe.star_map.resources", "资源：%s", "Resources: %s");
+
+        // 右键的提示
+        both("message.universe.spray_coater.empty", "没有增产剂，拿着增产剂右键装填", "Empty. Right-click with a proliferator to load it");
+        both("message.universe.spray_coater.status", "%s，还能喷 %s 个", "%s, %s sprays left");
+        both("message.universe.traffic_monitor.filter", "只统计 %s", "Counting only %s");
+        both("message.universe.traffic_monitor.no_filter", "统计所有物品", "Counting all items");
+        both("message.universe.splitter.filter", "过滤 %s：只走优先出口，别的走其他出口", "Filter %s: priority output only, everything else elsewhere");
+        both("message.universe.splitter.no_filter", "已清除过滤", "Filter cleared");
+        both("message.universe.splitter.priority", "优先出口：%s", "Priority output: %s");
+        both("message.universe.splitter.no_priority", "已取消优先出口", "Priority output cleared");
+        both("message.universe.direction.north", "北", "north");
+        both("message.universe.direction.east", "东", "east");
+        both("message.universe.direction.south", "南", "south");
+        both("message.universe.direction.west", "西", "west");
+
+        // 科技和升级
+        tech("proliferator_mk1", "增产剂 Mk.I", "Proliferator Mk.I");
+        tech("proliferator_mk2", "增产剂 Mk.II", "Proliferator Mk.II");
+        tech("proliferator_mk3", "增产剂 Mk.III", "Proliferator Mk.III");
+        tech("integrated_logistics", "集装物流系统", "Integrated Logistics System");
+        tech("pile_sorting", "集装分拣", "Pile Sorting");
+        tech("wireless_power", "无线输电", "Wireless Power Transmission");
+        tech("geothermal_power", "地热开采", "Geothermal Extraction");
+        tech("satellite_power", "卫星配电系统", "Satellite Power Distribution");
+        tech("energy_exchange", "能量枢纽", "Energy Exchanger");
+        tech("negentropy_smelting", "负熵熔炼", "Negentropy Smelting");
+        tech("recomposing_assembly", "重组式制造", "Re-composing Assembly");
+        tech("quantum_chemistry", "量子化工", "Quantum Chemical Engineering");
+        tech("self_evolution", "自演化研究", "Self-evolution Research");
+        both("tech.universe.belt_stacking", "货物集装", "Cargo Stacking");
+        both("upgrade.universe.belt_stacking.effect", "一摞最多 %s 个", "Piles up to %s");
+        both("tech.universe.universe_exploration", "宇宙探索", "Universe Exploration");
+        both("upgrade.universe.universe_exploration.effect.0", "星图只看得到去过的星系", "The star map shows only visited systems");
+        both("upgrade.universe.universe_exploration.effect.1", "星图上看得到去过的星系里每颗行星的资源", "The star map shows resources in visited systems");
+        both("upgrade.universe.universe_exploration.effect.2", "看得到去过的星系周围 %s 光年内的行星", "Shows planets within %s ly of visited systems");
+        both("upgrade.universe.universe_exploration.effect.3", "看得到去过的星系周围 %2$s 光年内的行星和资源", "Shows planets and resources within %2$s ly of visited systems");
+        both("upgrade.universe.universe_exploration.effect.4", "看得到整个银河的行星和资源", "Shows planets and resources across the galaxy");
     }
 
     /** 科技名称和研究的提示。 */
@@ -1119,6 +1243,38 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("guide.universe.power.storage",
                 "蓄电器在电网有富余时充电，发电不够时放电。拆下来电量还在。\n\n容量：180 kJ\n充放电：最多 2.7 kW\n研究：能量储存",
                 "Accumulators charge from surplus and discharge when generation falls short. They keep their charge when broken.\n\nCapacity: 180 kJ\nRate: up to 2.7 kW\nResearch: Energy Storage");
+        both("guide.universe.power.towers.title", "输电塔", "Power Towers");
+        both("guide.universe.power.towers",
+                "三种塔都能连成同一个电网，只是范围不同。\n\n电力感应塔：供电 6 格，连接 12 格\n无线输电塔：供电 4 格，连接 10 格；给 5 格内穿外骨骼的玩家补氧、给危害防护充能，充能时用电 1.5 kW\n卫星配电站：供电 20 格，连接 40 格\n\n研究：无线输电、卫星配电系统",
+                "All three towers join the same grid; only their reach differs.\n\nTesla tower: power 6, link 12\nWireless power tower: power 4, link 10. Refills oxygen and hazard protection for exosuits within 5 blocks, drawing 1.5 kW while charging\nSatellite substation: power 20, link 40\n\nResearch: Wireless Power, Satellite Power Distribution");
+        both("guide.universe.power.geothermal.title", "地热发电站", "Geothermal Power");
+        both("guide.universe.power.geothermal",
+                "地热发电站放在熔岩上，正下方一格是熔岩才发电。不烧燃料，电网用多少发多少。\n\n最大：4.8 kW\n灼热星球和下界：7.2 kW\n研究：地热开采",
+                "Place it over lava; the block directly below must be lava. No fuel, and it only produces what the grid draws.\n\nMax: 4.8 kW\nScorched planets and the Nether: 7.2 kW\nResearch: Geothermal Extraction");
+        both("guide.universe.power.exchanger.title", "能量枢纽", "Energy Exchanger");
+        both("guide.universe.power.exchanger",
+                "能量枢纽给蓄电器（物品）充电，或者把满的蓄电器里的电放回电网，用来把电带去没有电网的地方。\n界面里切换充电和放电。和模式对不上的蓄电器直接挪到右边。\n\n功率：45 kW\n充满一个：4 秒\n研究：能量枢纽",
+                "The exchanger charges accumulator items, or drains full ones back into the grid, so you can carry power to a site with no generators.\nSwitch modes in its screen. Accumulators that don't match the mode go straight to the output.\n\nRate: 45 kW\nOne accumulator: 4 s\nResearch: Energy Exchanger");
+        both("guide.universe.research.stacking.title", "叠研究站", "Stacking Labs");
+        both("guide.universe.research.stacking",
+                "研究站可以竖着叠。上面那台每秒从正下方那台拿矩阵，两台的数量拉平，只给最下面一台送料就行。喷过增产剂的矩阵点数跟着走。\n\n自演化研究站：研究速度 3 倍，1.92 kW，能和矩阵研究站叠在一起\n研究：自演化研究",
+                "Labs stack. Each second a lab takes matrices from the one below until both hold the same, so feed only the bottom one. Sprayed points carry over.\n\nSelf-evolution Lab: 3x speed, 1.92 kW, stacks with matrix labs\nResearch: Self-evolution Research");
+        both("guide.universe.logistics.splitter.title", "分流器和叠仓", "Splitters and Stacked Storage");
+        both("guide.universe.logistics.splitter",
+                "空手右键分流器的一边，把它设成优先出口，再点一次取消。货物先走优先出口，堵了才分给别的出口。\n设了优先出口以后，拿着物品右键设过滤：这种物品只走优先出口，别的物品走其他出口。潜行空手右键清除过滤。\n\n储物仓可以竖着叠。传送带送进来的东西放满了往上一层放；分拣器从最下面一层就能存取整叠。",
+                "Right-click a side of a splitter empty-handed to make it the priority output; click again to clear. Cargo takes the priority side first and spills to the others when it backs up.\nWith a priority set, right-click with an item to filter: that item goes only to the priority side, everything else to the rest. Sneak + empty hand clears the filter.\n\nStorage depots stack. Belt input fills upward, and a sorter on the bottom depot reaches the whole stack.");
+        both("guide.universe.logistics.proliferator.title", "增产剂", "Proliferators");
+        both("guide.universe.logistics.proliferator",
+                "喷涂机串在传送带上，给经过的货物喷增产剂。拿着增产剂右键装填，空手右键看还剩多少。\n设备用喷过的原料时，在界面里选：额外产出（多出产物）或者生产加速。两种都更费电。原料点数不齐时按最少的算。\n\nMk.I：1 点，一个喷 12 个，产物 +12.5% 或速度 +25%，耗电 +30%\nMk.II：2 点，喷 24 个，+20% 或 +50%，耗电 +70%\nMk.III：4 点，喷 60 个，+25% 或 +100%，耗电 +150%\n\n喷过的燃料多发电，喷过的矩阵多出研究点数。",
+                "Spray coaters sit in a belt line and spray passing cargo. Right-click with a proliferator to load, empty-handed to check.\nMachines fed sprayed ingredients offer extra products or speedup in their screen, at a power cost. Mixed batches count the lowest level.\n\nPoints, sprays, extra / speed, power:\nMk.I: 1, 12, +12.5% / +25%, +30%\nMk.II: 2, 24, +20% / +50%, +70%\nMk.III: 4, 60, +25% / +100%, +150%\nSprayed fuel burns longer; sprayed matrices give extra research.");
+        both("guide.universe.logistics.piling.title", "集装", "Piling");
+        both("guide.universe.logistics.piling",
+                "自动集装机把传送带上同一种货物叠成一摞，一格传送带能运好几个。凑不齐时最多等 1 秒。集装分拣器一次搬一整摞，每秒 12 次。\n一摞几个看升级科技「货物集装」：开始 2 个，最多 4 个。\n\n流速监测器数最近一分钟流过多少个。右键设报警下限，拿着物品右键只数这一种。流量低于下限时亮红灯，四面发出红石信号；开机满一分钟才开始判断。\n\n研究：集装物流系统、集装分拣",
+                "The automatic piler stacks matching cargo so one belt slot carries several. It waits up to 1 s for a full pile. The pile sorter moves whole piles, 12 a second.\nPile size comes from the Cargo Stacking upgrade: 2 at first, up to 4.\n\nThe traffic monitor counts items over the last minute. Right-click to set an alarm floor, or right-click with an item to count only that. Below the floor it lights red and emits redstone; it starts checking after a minute.\n\nResearch: Integrated Logistics, Pile Sorting");
+        both("guide.universe.endgame.advanced.title", "高级设备", "Advanced Machines");
+        both("guide.universe.endgame.advanced",
+                "有了绿矩阵就能研究四台高级设备，配方和低一级的一样，只是快得多。\n\n负熵熔炉：速度 3，2.88 kW\n重组式制造台：速度 3，2.7 kW\n量子化工厂：速度 2，2.16 kW\n自演化研究站：研究速度 3 倍，1.92 kW",
+                "Green matrices unlock four advanced machines. They run the same recipes as the machines below them, only faster.\n\nNegentropy Smelter: speed 3, 2.88 kW\nRe-composing Assembler: speed 3, 2.7 kW\nQuantum Chemical Plant: speed 2, 2.16 kW\nSelf-evolution Lab: 3x research, 1.92 kW");
         both("guide.universe.gathering.mining.title", "采矿机", "Mining Machine");
         both("guide.universe.gathering.mining",
                 "采矿机开采下方的矿，从正面出货。范围里有几种矿时，只挖数量最多的那种。\n\n范围：5×5，深 3 层\n产量：每块矿 40 秒 1 个\n耗电：420 W\n研究：电磁学",

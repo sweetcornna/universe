@@ -14,6 +14,7 @@ import io.github.sweetcornna.universe.core.galaxy.Palette;
 import io.github.sweetcornna.universe.factory.MachineBlock;
 import io.github.sweetcornna.universe.factory.TallMachineBlock;
 import io.github.sweetcornna.universe.factory.belt.BeltBlock;
+import io.github.sweetcornna.universe.factory.belt.TrafficMonitorBlock;
 import io.github.sweetcornna.universe.factory.power.AccumulatorBlock;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
 import io.github.sweetcornna.universe.registry.UniverseItems;
@@ -173,7 +174,8 @@ final class UniverseModelProvider extends ModelProvider {
         belt(blockModels, itemModels, UniverseBlocks.CONVEYOR_BELT_MK2.get(), "conveyor_belt_mk2");
         belt(blockModels, itemModels, UniverseBlocks.CONVEYOR_BELT_MK3.get(), "conveyor_belt_mk3");
         // 分拣器：底座和立柱是方块模型，手臂由方块实体渲染器画；物品模型里带一只朝后的手臂。三档只换颜色
-        for (Block sorter : List.of(UniverseBlocks.SORTER.get(), UniverseBlocks.SORTER_MK2.get(), UniverseBlocks.SORTER_MK3.get())) {
+        for (Block sorter : List.of(UniverseBlocks.SORTER.get(), UniverseBlocks.SORTER_MK2.get(), UniverseBlocks.SORTER_MK3.get(),
+                UniverseBlocks.PILE_SORTER.get())) {
             String name = BuiltInRegistries.BLOCK.getKey(sorter).getPath();
             blockModels.blockStateOutput.accept(MultiVariantGenerator.dispatch(sorter, BlockModelGenerators.plainVariant(Universe.id("block/" + name)))
                     .with(BlockModelGenerators.ROTATION_HORIZONTAL_FACING));
@@ -195,6 +197,10 @@ final class UniverseModelProvider extends ModelProvider {
         blockModels.blockStateOutput.accept(MultiVariantGenerator.dispatch(lab, BlockModelGenerators.plainVariant(Universe.id("block/matrix_lab")))
                 .with(BlockModelGenerators.ROTATION_HORIZONTAL_FACING));
         itemModels.itemModelOutput.accept(lab.asItem(), ItemModelUtils.plainModel(Universe.id("block/matrix_lab_item")));
+        Block evolution = UniverseBlocks.SELF_EVOLUTION_LAB.get();
+        blockModels.blockStateOutput.accept(MultiVariantGenerator.dispatch(evolution,
+                BlockModelGenerators.plainVariant(Universe.id("block/self_evolution_lab"))).with(BlockModelGenerators.ROTATION_HORIZONTAL_FACING));
+        itemModels.itemModelOutput.accept(evolution.asItem(), ItemModelUtils.plainModel(Universe.id("block/self_evolution_lab_item")));
         Block depot = UniverseBlocks.STORAGE_DEPOT.get();
         Identifier depotModel = ModelTemplates.CUBE_BOTTOM_TOP.create(depot, new TextureMapping()
                 .put(TextureSlot.TOP, texture("storage_depot_top"))
@@ -230,9 +236,42 @@ final class UniverseModelProvider extends ModelProvider {
         // 终局（ADR-0018）：人造恒星的模型由 tools/endgame_models.py 生成，上半截的恒星由方块实体渲染器画
         recipeMachine(blockModels, UniverseBlocks.MINI_FUSION_POWER_PLANT.get(), "mini_fusion_power_plant", false, "machine_casing_top");
         tall(blockModels, itemModels, UniverseBlocks.ARTIFICIAL_STAR.get(), "artificial_star", true, false);
+        factoryDepth(blockModels, itemModels);
         for (DeferredItem<?> item : List.of(UniverseItems.ANTIMATTER, UniverseItems.ANNIHILATION_CONSTRAINT_SPHERE,
                 UniverseItems.ANTIMATTER_FUEL_ROD, UniverseItems.COMPOSITE_MATRIX, UniverseItems.UNIVERSE_MATRIX, UniverseItems.BLUEPRINT,
                 UniverseItems.GUIDE)) {
+            itemModels.generateFlatItem(item.get(), ModelTemplates.FLAT_ITEM);
+        }
+    }
+
+    /**
+     * 工厂的补全（ADR-0022）：串在传送带中间的方块和两种塔的模型由 tools/m11_models.py 生成，一格的设备用和别的设备一样的模板。
+     */
+    private static void factoryDepth(BlockModelGenerators blockModels, ItemModelGenerators itemModels) {
+        for (Block block : List.of(UniverseBlocks.SPRAY_COATER.get(), UniverseBlocks.AUTOMATIC_PILER.get())) {
+            Identifier model = ModelLocationUtils.getModelLocation(block);
+            blockModels.blockStateOutput.accept(MultiVariantGenerator.dispatch(block, BlockModelGenerators.plainVariant(model))
+                    .with(BlockModelGenerators.ROTATION_HORIZONTAL_FACING));
+            itemModels.itemModelOutput.accept(block.asItem(), ItemModelUtils.plainModel(model));
+        }
+        // 流速监测器：报警时灯是红的
+        Block monitor = UniverseBlocks.TRAFFIC_MONITOR.get();
+        Identifier monitorModel = Universe.id("block/traffic_monitor");
+        Identifier alarmModel = Universe.id("block/traffic_monitor_alarm");
+        blockModels.blockStateOutput.accept(MultiVariantGenerator.dispatch(monitor)
+                .with(PropertyDispatch.initial(TrafficMonitorBlock.ALARM).generate(alarm -> BlockModelGenerators.plainVariant(alarm ? alarmModel : monitorModel)))
+                .with(BlockModelGenerators.ROTATION_HORIZONTAL_FACING));
+        itemModels.itemModelOutput.accept(monitor.asItem(), ItemModelUtils.plainModel(monitorModel));
+        tall(blockModels, itemModels, UniverseBlocks.WIRELESS_POWER_TOWER.get(), "wireless_power_tower", false, true);
+        tall(blockModels, itemModels, UniverseBlocks.SATELLITE_SUBSTATION.get(), "satellite_substation", false, true);
+        recipeMachine(blockModels, UniverseBlocks.GEOTHERMAL_POWER_STATION.get(), "geothermal_power_station", false, "machine_casing_top");
+        recipeMachine(blockModels, UniverseBlocks.ENERGY_EXCHANGER.get(), "energy_exchanger", false, "machine_casing_top");
+        recipeMachine(blockModels, UniverseBlocks.NEGENTROPY_SMELTER.get(), "negentropy_smelter", true, "machine_casing_top");
+        recipeMachine(blockModels, UniverseBlocks.RECOMPOSING_ASSEMBLER.get(), "recomposing_assembler", false, "machine_casing_top");
+        recipeMachine(blockModels, UniverseBlocks.QUANTUM_CHEMICAL_PLANT.get(), "quantum_chemical_plant", false, "machine_casing_top");
+        blockModels.createTrivialCube(UniverseBlocks.FOUNDATION.get());
+        for (DeferredItem<?> item : List.of(UniverseItems.PROLIFERATOR_MK1, UniverseItems.PROLIFERATOR_MK2, UniverseItems.PROLIFERATOR_MK3,
+                UniverseItems.COMBUSTIBLE_UNIT, UniverseItems.HYDROGEN_FUEL_ROD)) {
             itemModels.generateFlatItem(item.get(), ModelTemplates.FLAT_ITEM);
         }
     }

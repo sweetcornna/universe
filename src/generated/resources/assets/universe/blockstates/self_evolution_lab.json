@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "universe:block/self_evolution_lab",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "universe:block/self_evolution_lab"
+    },
+    "facing=south": {
+      "model": "universe:block/self_evolution_lab",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "universe:block/self_evolution_lab",
+      "y": 270
+    }
+  }
+}

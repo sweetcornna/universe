@@ -67,6 +67,7 @@ final class UniverseRecipes extends RecipeProvider {
         this.midgame();
         this.dyson();
         this.endgame();
+        this.factoryDepth();
     }
 
     /**
@@ -159,6 +160,94 @@ final class UniverseRecipes extends RecipeProvider {
                 List.of("AFA", "LQL", "AFA"), Map.of('A', alloy, 'F', frame, 'L', lens, 'Q', quantum));
         this.researchShaped("miniature_collider", RecipeCategory.REDSTONE, UniverseItems.MINIATURE_PARTICLE_COLLIDER.get(), 1,
                 List.of("ARA", "FPF", "ARA"), Map.of('A', alloy, 'R', ring, 'F', frame, 'P', processor));
+    }
+
+    /**
+     * 工厂的补全（ADR-0022）：配方照戴森球计划，时间是戴森球计划的秒数 × 20；原料太多的按比例缩了。设备也能手工合成，
+     * 增产剂、燃烧单元和燃料棒只能在制造台里做。地基手工合成一次出 8 个，当建筑方块用。
+     */
+    private void factoryDepth() {
+        Item steel = UniverseItems.STEEL.get();
+        Item board = UniverseItems.CIRCUIT_BOARD.get();
+        Item gear = UniverseItems.GEAR.get();
+        Item exciter = UniverseItems.PLASMA_EXCITER.get();
+        Item ring = UniverseItems.SUPER_MAGNETIC_RING.get();
+        Item processor = UniverseItems.PROCESSOR.get();
+        Item frame = UniverseItems.FRAME_MATERIAL.get();
+        Item alloy = UniverseItems.TITANIUM_ALLOY.get();
+        Item container = UniverseItems.PARTICLE_CONTAINER.get();
+        Item strange = UniverseItems.STRANGE_MATTER.get();
+        Item lens = UniverseItems.GRAVITON_LENS.get();
+        Item quantum = UniverseItems.QUANTUM_CHIP.get();
+        Item titanium = UniverseItems.ORE_SMELTED.get(OreKind.TITANIUM).get();
+        Item mk1 = UniverseItems.PROLIFERATOR_MK1.get();
+        Item mk2 = UniverseItems.PROLIFERATOR_MK2.get();
+
+        // ---- 制造台：物品
+        this.machine(Kind.ASSEMBLING, "proliferator_mk1", 10, "proliferator_mk1", in(Items.COAL, 1), out(mk1, 1));
+        this.machine(Kind.ASSEMBLING, "proliferator_mk2", 20, "proliferator_mk2", in(mk1, 2, UniverseItems.SYNTHETIC_DIAMOND.get(), 1),
+                out(mk2, 1));
+        this.machine(Kind.ASSEMBLING, "proliferator_mk3", 40, "proliferator_mk3", in(mk2, 2, UniverseItems.CARBON_NANOTUBE.get(), 1),
+                out(UniverseItems.PROLIFERATOR_MK3.get(), 1));
+        this.machine(Kind.ASSEMBLING, "combustible_unit", 60, "thermal_power", in(Items.COAL, 3), out(UniverseItems.COMBUSTIBLE_UNIT.get(), 1));
+        this.machine(Kind.ASSEMBLING, "hydrogen_fuel_rod", 120, "deuterium_fractionation", in(titanium, 1, UniverseItems.HYDROGEN.get(), 10),
+                out(UniverseItems.HYDROGEN_FUEL_ROD.get(), 2));
+        this.machine(Kind.ASSEMBLING, "foundation", 20, "steel_smelting", in(Items.STONE, 3, steel, 1), out(UniverseItems.FOUNDATION.get(), 1));
+
+        // ---- 制造台：设备
+        this.machine(Kind.ASSEMBLING, "spray_coater", 60, "proliferator_mk1", in(steel, 4, exciter, 2, board, 2),
+                out(UniverseItems.SPRAY_COATER.get(), 1));
+        this.machine(Kind.ASSEMBLING, "automatic_piler", 60, "integrated_logistics", in(steel, 3, gear, 4, ring, 1, processor, 2),
+                out(UniverseItems.AUTOMATIC_PILER.get(), 1));
+        this.machine(Kind.ASSEMBLING, "traffic_monitor", 40, "integrated_logistics", in(Items.IRON_INGOT, 3, gear, 2, Items.GLASS, 1, board, 2),
+                out(UniverseItems.TRAFFIC_MONITOR.get(), 1));
+        this.machine(Kind.ASSEMBLING, "pile_sorter", 20, "pile_sorting", in(UniverseItems.SORTER_MK3.get(), 2, ring, 1, processor, 1),
+                out(UniverseItems.PILE_SORTER.get(), 1));
+        this.machine(Kind.ASSEMBLING, "wireless_power_tower", 60, "wireless_power", in(UniverseItems.TESLA_TOWER.get(), 1, exciter, 3),
+                out(UniverseItems.WIRELESS_POWER_TOWER.get(), 1));
+        this.machine(Kind.ASSEMBLING, "satellite_substation", 90, "satellite_power",
+                in(UniverseItems.WIRELESS_POWER_TOWER.get(), 1, ring, 10, frame, 2), out(UniverseItems.SATELLITE_SUBSTATION.get(), 1));
+        this.machine(Kind.ASSEMBLING, "geothermal_power_station", 120, "geothermal_power", in(steel, 15, Items.COPPER_INGOT, 20, processor, 4, ring, 1),
+                out(UniverseItems.GEOTHERMAL_POWER_STATION.get(), 1));
+        this.machine(Kind.ASSEMBLING, "energy_exchanger", 300, "energy_exchange", in(alloy, 20, steel, 20, processor, 10, container, 4),
+                out(UniverseItems.ENERGY_EXCHANGER.get(), 1));
+        // 高级设备：低一级的设备加奇异物质、引力透镜、量子芯片
+        this.machine(Kind.ASSEMBLING, "negentropy_smelter", 300, "negentropy_smelting",
+                in(UniverseItems.PLANE_SMELTER.get(), 1, strange, 4, lens, 4, quantum, 4), out(UniverseItems.NEGENTROPY_SMELTER.get(), 1));
+        this.machine(Kind.ASSEMBLING, "recomposing_assembler", 300, "recomposing_assembly",
+                in(UniverseItems.ASSEMBLER_MK3.get(), 1, strange, 4, lens, 4, quantum, 4), out(UniverseItems.RECOMPOSING_ASSEMBLER.get(), 1));
+        this.machine(Kind.ASSEMBLING, "quantum_chemical_plant", 300, "quantum_chemistry",
+                in(UniverseItems.CHEMICAL_PLANT.get(), 1, strange, 4, lens, 4, quantum, 4), out(UniverseItems.QUANTUM_CHEMICAL_PLANT.get(), 1));
+        this.machine(Kind.ASSEMBLING, "self_evolution_lab", 300, "self_evolution",
+                in(UniverseItems.MATRIX_LAB.get(), 1, strange, 4, lens, 4, quantum, 4), out(UniverseItems.SELF_EVOLUTION_LAB.get(), 1));
+
+        // ---- 手工合成
+        this.researchShaped("steel_smelting", RecipeCategory.BUILDING_BLOCKS, UniverseItems.FOUNDATION.get(), 8, List.of("CCC", "CSC", "CCC"),
+                Map.of('C', Items.STONE, 'S', steel));
+        this.researchShaped("proliferator_mk1", RecipeCategory.REDSTONE, UniverseItems.SPRAY_COATER.get(), 1, List.of("SPS", "BSB"),
+                Map.of('S', steel, 'P', exciter, 'B', board));
+        this.researchShaped("integrated_logistics", RecipeCategory.REDSTONE, UniverseItems.AUTOMATIC_PILER.get(), 1, List.of("SGS", "GRG", "SPS"),
+                Map.of('S', steel, 'G', gear, 'R', ring, 'P', processor));
+        this.researchShaped("integrated_logistics", RecipeCategory.REDSTONE, UniverseItems.TRAFFIC_MONITOR.get(), 1, List.of("IGI", "BLB"),
+                Map.of('I', Items.IRON_INGOT, 'G', gear, 'L', Items.GLASS, 'B', board));
+        this.researchShaped("pile_sorting", RecipeCategory.REDSTONE, UniverseItems.PILE_SORTER.get(), 1, List.of("SRS", " P "),
+                Map.of('S', UniverseItems.SORTER_MK3.get(), 'R', ring, 'P', processor));
+        this.researchShaped("wireless_power", RecipeCategory.REDSTONE, UniverseItems.WIRELESS_POWER_TOWER.get(), 1, List.of("PTP", " P "),
+                Map.of('P', exciter, 'T', UniverseItems.TESLA_TOWER.get()));
+        this.researchShaped("satellite_power", RecipeCategory.REDSTONE, UniverseItems.SATELLITE_SUBSTATION.get(), 1, List.of("RFR", "RWR", "RFR"),
+                Map.of('R', ring, 'F', frame, 'W', UniverseItems.WIRELESS_POWER_TOWER.get()));
+        this.researchShaped("geothermal_power", RecipeCategory.REDSTONE, UniverseItems.GEOTHERMAL_POWER_STATION.get(), 1, List.of("SPS", "CRC", "SCS"),
+                Map.of('S', steel, 'P', processor, 'C', Items.COPPER_INGOT, 'R', ring));
+        this.researchShaped("energy_exchange", RecipeCategory.REDSTONE, UniverseItems.ENERGY_EXCHANGER.get(), 1, List.of("ASA", "PCP", "ASA"),
+                Map.of('A', alloy, 'S', steel, 'P', processor, 'C', container));
+        for (Map.Entry<String, List<Item>> advanced : Map.<String, List<Item>>of(
+                "negentropy_smelting", List.of(UniverseItems.PLANE_SMELTER.get(), UniverseItems.NEGENTROPY_SMELTER.get()),
+                "recomposing_assembly", List.of(UniverseItems.ASSEMBLER_MK3.get(), UniverseItems.RECOMPOSING_ASSEMBLER.get()),
+                "quantum_chemistry", List.of(UniverseItems.CHEMICAL_PLANT.get(), UniverseItems.QUANTUM_CHEMICAL_PLANT.get()),
+                "self_evolution", List.of(UniverseItems.MATRIX_LAB.get(), UniverseItems.SELF_EVOLUTION_LAB.get())).entrySet()) {
+            this.researchShaped(advanced.getKey(), RecipeCategory.REDSTONE, advanced.getValue().get(1), 1, List.of("LSL", "QMQ", "LSL"),
+                    Map.of('L', lens, 'S', strange, 'Q', quantum, 'M', advanced.getValue().get(0)));
+        }
     }
 
     /**

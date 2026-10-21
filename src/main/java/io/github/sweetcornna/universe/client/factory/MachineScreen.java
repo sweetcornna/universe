@@ -2,10 +2,13 @@ package io.github.sweetcornna.universe.client.factory;
 
 import java.util.Locale;
 
+import io.github.sweetcornna.universe.core.factory.Proliferation;
 import io.github.sweetcornna.universe.factory.MachineMenu;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
 
@@ -103,6 +106,55 @@ public class MachineScreen extends AbstractContainerScreen<MachineMenu> {
         int g = (((color >> 8) & 0xFF) + 0xFF) >> 1;
         int b = ((color & 0xFF) + 0xFF) >> 1;
         return 0xFF000000 | r << 16 | g << 8 | b;
+    }
+
+    // ---- 增产模式（ADR-0022）
+
+    protected static final int MODE_HEIGHT = 12;
+
+    /**
+     * 增产模式的按钮：现在的模式和这一批原料带来的加成。坐标相对界面左上角。
+     *
+     * @param value      界面数据：第 0 位是加速模式，第 1–3 位是原料的等级
+     * @param productive 配方能额外产出；不能时只显示"只能加速"，按钮点不动
+     */
+    protected void modeButton(GuiGraphicsExtractor graphics, int x, int y, int width, int value, boolean productive, int mouseX, int mouseY) {
+        boolean speedup = !productive || (value & 1) != 0;
+        int level = value >> 1 & 7;
+        boolean hovered = productive && overMode(mouseX, mouseY, x, y, width);
+        graphics.fill(x, y, x + width, y + MODE_HEIGHT, productive ? BORDER : 0xFF24404D);
+        graphics.fill(x + 1, y + 1, x + width - 1, y + MODE_HEIGHT - 1, hovered ? 0xFF1F4A5A : 0xFF12303B);
+        Component mode = Component.translatable(!productive ? "gui.universe.proliferation.speedup_only"
+                : speedup ? "gui.universe.proliferation.speedup" : "gui.universe.proliferation.extra");
+        Component text = level > 0 ? Component.translatable("gui.universe.proliferation.bonus", mode,
+                percent(speedup ? Proliferation.speedup(level) : Proliferation.extraProducts(level))) : mode;
+        graphics.centeredText(this.font, text, x + width / 2, y + 2, level > 0 ? GOOD : productive ? TEXT : DIM);
+    }
+
+    /** 一个带字的按钮，和增产模式的按钮一个样子。坐标相对界面左上角。 */
+    protected void textButton(GuiGraphicsExtractor graphics, int x, int y, int width, Component text, int color, int mouseX, int mouseY) {
+        boolean hovered = overMode(mouseX, mouseY, x, y, width);
+        graphics.fill(x, y, x + width, y + MODE_HEIGHT, BORDER);
+        graphics.fill(x + 1, y + 1, x + width - 1, y + MODE_HEIGHT - 1, hovered ? 0xFF1F4A5A : 0xFF12303B);
+        graphics.centeredText(this.font, text, x + width / 2, y + 2, color);
+    }
+
+    protected static boolean overMode(double mouseX, double mouseY, int x, int y, int width) {
+        return mouseX >= x && mouseX < x + width && mouseY >= y && mouseY < y + MODE_HEIGHT;
+    }
+
+    /** 点了增产模式的按钮：让服务端切换。 */
+    protected void clickMode(int button) {
+        if (this.minecraft != null && this.minecraft.gameMode != null) {
+            this.minecraft.gameMode.handleInventoryButtonClick(this.menu.containerId, button);
+            this.minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+        }
+    }
+
+    /** 比例写成百分数，整数不带小数点：0.125 → "12.5%"，1 → "100%"。 */
+    public static String percent(double share) {
+        double value = share * 100;
+        return (value == Math.rint(value) ? String.format(Locale.ROOT, "%.0f", value) : String.format(Locale.ROOT, "%.1f", value)) + "%";
     }
 
     /** 界面数据里的功率（焦耳/刻 × 10）换成瓦特显示。 */

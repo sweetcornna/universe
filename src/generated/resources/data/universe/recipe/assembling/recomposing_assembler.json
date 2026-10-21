@@ -1,0 +1,28 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:assembler_mk3"
+    },
+    {
+      "count": 4,
+      "ingredient": "universe:strange_matter"
+    },
+    {
+      "count": 4,
+      "ingredient": "universe:graviton_lens"
+    },
+    {
+      "count": 4,
+      "ingredient": "universe:quantum_chip"
+    }
+  ],
+  "research": "recomposing_assembly",
+  "results": [
+    {
+      "id": "universe:recomposing_assembler"
+    }
+  ],
+  "time": 300
+}

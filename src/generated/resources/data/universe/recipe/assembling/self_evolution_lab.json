@@ -1,0 +1,28 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:matrix_lab"
+    },
+    {
+      "count": 4,
+      "ingredient": "universe:strange_matter"
+    },
+    {
+      "count": 4,
+      "ingredient": "universe:graviton_lens"
+    },
+    {
+      "count": 4,
+      "ingredient": "universe:quantum_chip"
+    }
+  ],
+  "research": "self_evolution",
+  "results": [
+    {
+      "id": "universe:self_evolution_lab"
+    }
+  ],
+  "time": 300
+}

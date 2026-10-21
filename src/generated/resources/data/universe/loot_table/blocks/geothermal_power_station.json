@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "condition": {
+        "type": "minecraft:survives_explosion"
+      },
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "universe:geothermal_power_station"
+        }
+      ],
+      "rolls": 1
+    }
+  ],
+  "random_sequence": "universe:blocks/geothermal_power_station"
+}

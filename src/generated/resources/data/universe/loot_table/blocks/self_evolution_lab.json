@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "condition": {
+        "type": "minecraft:survives_explosion"
+      },
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "universe:self_evolution_lab"
+        }
+      ],
+      "rolls": 1
+    }
+  ],
+  "random_sequence": "universe:blocks/self_evolution_lab"
+}

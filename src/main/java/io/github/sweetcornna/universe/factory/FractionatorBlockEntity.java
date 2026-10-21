@@ -1,5 +1,7 @@
 package io.github.sweetcornna.universe.factory;
 
+import io.github.sweetcornna.universe.core.factory.Cargo;
+import io.github.sweetcornna.universe.core.factory.Proliferation;
 import io.github.sweetcornna.universe.core.factory.Throughput;
 import io.github.sweetcornna.universe.factory.belt.BeltNetwork;
 import io.github.sweetcornna.universe.factory.belt.BeltReceiver;
@@ -73,18 +75,31 @@ public class FractionatorBlockEntity extends MachineBlockEntity implements BeltR
         return UniverseItems.HYDROGEN.get();
     }
 
+    /** 喷过增产剂的氢变成重氢的概率。 */
+    public static double chance(int proliferation) {
+        return CHANCE * (1 + Proliferation.speedup(proliferation));
+    }
+
+    /** 下一个流出去的氢：带着原料格里的平均点数。 */
+    private ItemStack passThrough() {
+        return BeltNetwork.stack(hydrogen(), 1, this.inputLevel(INPUT));
+    }
+
     @Override
-    public boolean acceptFromBelt(Item item) {
+    public boolean acceptFromBelt(int cargo) {
         ItemStack input = this.getItem(INPUT);
-        if (item != hydrogen() || input.getCount() >= BUFFER) {
+        int count = Cargo.count(cargo);
+        if (BeltNetwork.item(cargo) != hydrogen() || input.getCount() + count > BUFFER) {
             return false;
         }
+        this.pool(INPUT);
         if (input.isEmpty()) {
-            this.setItem(INPUT, new ItemStack(item));
+            this.getItems().set(INPUT, new ItemStack(hydrogen(), count));
         } else {
-            input.grow(1);
-            this.setChanged();
+            input.grow(count);
         }
+        this.receiveInput(INPUT, hydrogen(), count, Cargo.points(cargo));
+        this.setChanged();
         return true;
     }
 
@@ -111,17 +126,19 @@ public class FractionatorBlockEntity extends MachineBlockEntity implements BeltR
         Direction front = this.getBlockState().getValue(MachineBlock.FACING);
         this.pushOutput(HYDROGEN, front, 2);
         this.pushOutput(DEUTERIUM, Direction.UP, 2);
-        ItemStack h = new ItemStack(hydrogen());
         ItemStack d = new ItemStack(UniverseItems.DEUTERIUM.get());
-        this.active = !this.getItem(INPUT).isEmpty() && this.outputHasRoom(HYDROGEN, h) && this.outputHasRoom(DEUTERIUM, d);
+        this.active = !this.getItem(INPUT).isEmpty() && this.outputHasRoom(HYDROGEN, this.passThrough()) && this.outputHasRoom(DEUTERIUM, d);
         if (!this.active || rate <= 0 || this.level == null) {
             return false;
         }
         this.progress += PER_TICK * rate;
-        while (this.progress >= 1 && !this.getItem(INPUT).isEmpty() && this.outputHasRoom(HYDROGEN, h) && this.outputHasRoom(DEUTERIUM, d)) {
+        while (this.progress >= 1 && !this.getItem(INPUT).isEmpty() && this.outputHasRoom(HYDROGEN, this.passThrough())
+                && this.outputHasRoom(DEUTERIUM, d)) {
             this.progress -= 1;
-            this.getItem(INPUT).shrink(1);
-            if (this.level.getRandom().nextDouble() < CHANCE) {
+            // 喷过增产剂的氢变成重氢的概率按加速的比例提高，没变的氢带着点数流出去，下一座分馏塔接着用（ADR-0022）
+            int proliferation = this.consumeInput(INPUT, 1);
+            ItemStack h = BeltNetwork.stack(hydrogen(), 1, proliferation);
+            if (this.level.getRandom().nextDouble() < chance(proliferation)) {
                 // 统计里只算变成重氢的那一个，流过去的氢不算
                 ProductionLog.consumed(this.level, h.getItem(), 1);
                 ProductionLog.produced(this.level, d.getItem(), 1);

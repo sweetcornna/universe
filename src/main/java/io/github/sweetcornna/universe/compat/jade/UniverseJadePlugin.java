@@ -1,6 +1,7 @@
 package io.github.sweetcornna.universe.compat.jade;
 
 import io.github.sweetcornna.universe.factory.MachineBlockEntity;
+import io.github.sweetcornna.universe.factory.belt.BeltPassBlockEntity;
 import net.minecraft.world.level.block.Block;
 import snownee.jade.api.IWailaClientRegistration;
 import snownee.jade.api.IWailaCommonRegistration;
@@ -16,6 +17,7 @@ public final class UniverseJadePlugin implements IWailaPlugin {
     @Override
     public void register(IWailaCommonRegistration registration) {
         registration.registerBlockDataProvider(MachineServerData.INSTANCE, MachineBlockEntity.class);
+        registration.registerBlockDataProvider(MachineServerData.INSTANCE, BeltPassBlockEntity.class);
     }
 
     @Override

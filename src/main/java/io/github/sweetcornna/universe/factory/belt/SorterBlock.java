@@ -93,7 +93,7 @@ public class SorterBlock extends BaseEntityBlock {
         // 拿着物流方块照常放置
         if (stack.getItem() instanceof BlockItem blockItem
                 && (blockItem.getBlock() instanceof SorterBlock || blockItem.getBlock() instanceof BeltBlock
-                        || blockItem.getBlock() instanceof SplitterBlock)) {
+                        || blockItem.getBlock() instanceof SplitterBlock || blockItem.getBlock() instanceof BeltPassBlock)) {
             return InteractionResult.PASS;
         }
         if (!level.isClientSide() && level.getBlockEntity(pos) instanceof SorterBlockEntity sorter) {

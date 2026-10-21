@@ -1,0 +1,21 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:titanium_ingot"
+    },
+    {
+      "count": 10,
+      "ingredient": "universe:hydrogen"
+    }
+  ],
+  "research": "deuterium_fractionation",
+  "results": [
+    {
+      "count": 2,
+      "id": "universe:hydrogen_fuel_rod"
+    }
+  ],
+  "time": 120
+}

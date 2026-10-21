@@ -30,7 +30,8 @@ import net.neoforged.neoforge.common.crafting.SizedIngredient;
 
 /**
  * 配方设备的界面（ADR-0011）：左边是这类设备的全部配方，点一下选定；右边是原料格、进度箭头和产物格。
- * 原料格空着时画出该放的原料（半透明）和数量；没解锁的配方变暗，提示要研究什么。
+ * 原料格空着时画出该放的原料（半透明）和数量；没解锁的配方变暗，提示要研究什么。右下角的按钮切换增产剂的
+ * "额外产出"和"加速"（ADR-0022）。
  */
 public class RecipeMachineScreen extends MachineScreen {
     private static final int GRID_X = 8;
@@ -43,6 +44,9 @@ public class RecipeMachineScreen extends MachineScreen {
     /** 进度箭头占的地方（相对界面左上角：x、y、宽、高），JEI 在这里放"查看配方"的点击区。 */
     public static final int[] ARROW_AREA = {ARROW_X, ARROW_Y - 11, 26, 23};
     private static final int INFO_X = 114;
+    /** 增产模式按钮（ADR-0022）。 */
+    private static final int MODE_Y = 98;
+    private static final int MODE_WIDTH = 96;
 
     private final RecipeMachineBlockEntity.Spec spec;
     private int scrollRow;
@@ -221,6 +225,8 @@ public class RecipeMachineScreen extends MachineScreen {
         if (selected != null) {
             graphics.text(this.font, Component.translatable("gui.universe.recipe_machine.time",
                     seconds(selected.value().time() / this.spec.speed())), INFO_X, 88, DIM, false);
+            int value = this.menu.data(RecipeMachineBlockEntity.PROLIFERATION);
+            this.modeButton(graphics, INFO_X, MODE_Y, MODE_WIDTH, value, (value & 16) != 0, mouseX, mouseY);
         }
     }
 
@@ -262,6 +268,12 @@ public class RecipeMachineScreen extends MachineScreen {
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
         List<RecipeHolder<MachineRecipe>> recipes = this.recipes();
+        if (event.button() == InputConstants.MOUSE_BUTTON_LEFT && this.selected(recipes) != null
+                && (this.menu.data(RecipeMachineBlockEntity.PROLIFERATION) & 16) != 0
+                && overMode(event.x() - this.leftPos, event.y() - this.topPos, INFO_X, MODE_Y, MODE_WIDTH)) {
+            this.clickMode(RecipeMachineBlockEntity.MODE_BUTTON);
+            return true;
+        }
         int index = this.recipeAt(event.x(), event.y(), recipes.size());
         // 26.x 的输入是 SDL：左键是 1，不是 GLFW 的 0
         if (index >= 0 && event.button() == InputConstants.MOUSE_BUTTON_LEFT) {

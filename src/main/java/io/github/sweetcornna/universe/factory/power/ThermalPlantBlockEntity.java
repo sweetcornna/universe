@@ -1,5 +1,6 @@
 package io.github.sweetcornna.universe.factory.power;
 
+import io.github.sweetcornna.universe.core.factory.Proliferation;
 import io.github.sweetcornna.universe.factory.MachineBlockEntity;
 import io.github.sweetcornna.universe.factory.MachineMenu;
 import io.github.sweetcornna.universe.registry.UniverseBlockEntities;
@@ -57,11 +58,12 @@ public class ThermalPlantBlockEntity extends MachineBlockEntity {
             ItemStack fuel = this.getItem(FUEL_SLOT);
             long value = this.fuelEnergy(serverLevel, fuel);
             if (value > 0) {
-                this.energy += value;
-                this.energyTotal = value;
                 ItemStackTemplate remainder = fuel.getCraftingRemainder();
                 ProductionLog.consumed(serverLevel, fuel.getItem(), 1);
-                fuel.shrink(1);
+                // 喷过增产剂的燃料多出热量，比例和额外产出一样（ADR-0022）
+                value = Math.round(value * (1 + Proliferation.extraProducts(this.consumeInput(FUEL_SLOT, 1))));
+                this.energy += value;
+                this.energyTotal = value;
                 if (remainder != null) {
                     if (fuel.isEmpty()) {
                         this.setItem(FUEL_SLOT, remainder.create());

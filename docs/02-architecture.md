@@ -327,6 +327,8 @@ io.github.sweetcornna.universe
 | 换维度的加载画面：mod 总线的 `RegisterDimensionTransitionScreenEvent`，`registerIncomingEffect(维度, (tracker, reason) -> 画面)` 返回一个 `LevelLoadingScreen` 子类；画面在 `tick()` 里一看 `isLevelReady()` 就关，覆盖 `tick()` 可以多放一会儿。工厂被调用时客户端的玩家是新建的，还没坐上载具 | 已确认，`client.sky.AtmosphereTransitions` |
 | `SubmitCustomGeometryEvent` 的 `PoseStack` 是单位矩阵，坐标相对摄像机；`RenderTypes.lightning()` 是 `POSITION_COLOR` 四边形、叠加混合、带背面剔除，顶点要按摄像机看过去逆时针排 | 已确认，`client.sky.SpaceDust` |
 | 原版一分钟没有键鼠输入就把帧率压到 30（`FramerateLimitTracker`，选项 `inactivityFpsLimit`），十分钟后压到 10；脚本按的键不算输入，要调 `minecraft.getFramerateLimitTracker().onInputReceived()` | 已确认，开发脚本里在用 |
+| `DimensionType` 没有 `ultraWarm()` 了，判断下界用 `level.dimension() == Level.NETHER`；`BaseEntityBlock` 不用再写 `codec()` | 已确认，`factory.power.GeothermalBlockEntity` |
+| 物品能力的组合：`CombinedResourceHandler`（`net.neoforged.neoforge.transfer`）把几个 `ResourceHandler` 拼成一个；`ItemResource.with(组件, 值)` 带上数据组件，`isComponentsPatchEmpty()` 判断有没有组件；事务 `Transaction.openRoot()`，不 `commit()` 就回滚，`SnapshotJournal` 记快照 | 已确认，叠着的储物仓、物流站 |
 拿不准的 API 先查源码再写，核实后把结果补进这张表。源码在：
 
 - Minecraft（含 NeoForge 补丁）：`build/moddev/artifacts/minecraft-patched-26.3.0.95-sources.jar`，IDE 里可以直接跳转。

@@ -1,0 +1,19 @@
+{
+  "type": "universe:research_shaped",
+  "category": "redstone",
+  "key": {
+    "L": "universe:graviton_lens",
+    "M": "universe:assembler_mk3",
+    "Q": "universe:quantum_chip",
+    "S": "universe:strange_matter"
+  },
+  "pattern": [
+    "LSL",
+    "QMQ",
+    "LSL"
+  ],
+  "research": "recomposing_assembly",
+  "result": {
+    "id": "universe:recomposing_assembler"
+  }
+}

@@ -20,13 +20,17 @@ import io.github.sweetcornna.universe.core.factory.BeltLine;
 import io.github.sweetcornna.universe.core.factory.BeltOutput;
 import io.github.sweetcornna.universe.core.factory.BeltSystem;
 import io.github.sweetcornna.universe.core.factory.BeltTier;
+import io.github.sweetcornna.universe.core.factory.Cargo;
+import io.github.sweetcornna.universe.core.factory.Proliferation;
 import io.github.sweetcornna.universe.network.BeltLinesPayload;
 import io.github.sweetcornna.universe.perf.ServerPerf;
+import io.github.sweetcornna.universe.registry.UniverseDataComponents;
 import it.unimi.dsi.fastutil.longs.Long2ObjectMap;
 import it.unimi.dsi.fastutil.longs.Long2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.longs.LongOpenHashSet;
 import it.unimi.dsi.fastutil.longs.LongSet;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -40,6 +44,7 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.event.level.LevelEvent;
 import net.neoforged.neoforge.event.tick.LevelTickEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
+import net.neoforged.neoforge.transfer.item.ItemResource;
 
 /**
  * 一个世界里的传送带（ADR-0011）：包着核心层的 {@link BeltSystem}，服务端和客户端各有一份，用同一套规则从已加载的
@@ -108,19 +113,92 @@ public final class BeltNetwork {
         return LEVELS.get(level);
     }
 
-    // ---- 物品编号
+    // ---- 货物（ADR-0022）
 
-    /** 能放上传送带的物品：不带组件（附魔、耐久、名字……）。 */
+    /** 能放上传送带的物品：不带组件（附魔、耐久、名字……），增产点数除外。 */
     public static boolean canCarry(ItemStack stack) {
-        return !stack.isEmpty() && stack.isComponentsPatchEmpty();
+        return !stack.isEmpty() && carriable(stack.getComponentsPatch());
     }
 
+    public static boolean canCarry(ItemResource resource) {
+        return !resource.isEmpty() && carriable(resource.getComponentsPatch());
+    }
+
+    private static boolean carriable(DataComponentPatch patch) {
+        return patch.isEmpty() || patch.size() == 1 && patch.getPatch(UniverseDataComponents.PROLIFERATION.get()) != null;
+    }
+
+    /** 一个没喷过的物品的货物，就是它的注册表编号。 */
     public static int id(Item item) {
         return BuiltInRegistries.ITEM.getId(item);
     }
 
-    public static Item item(int id) {
-        return BuiltInRegistries.ITEM.byId(id);
+    /** 货物是哪种物品。 */
+    public static Item item(int cargo) {
+        return BuiltInRegistries.ITEM.byId(Cargo.item(cargo));
+    }
+
+    /** 物品堆上每个物品的增产点数。 */
+    public static int level(ItemStack stack) {
+        return stack.getOrDefault(UniverseDataComponents.PROLIFERATION.get(), 0);
+    }
+
+    /** 物品堆里的前 {@code count} 个（最多 {@link Cargo#MAX_STACK} 个）合成一格货物；先用 {@link #canCarry} 看能不能上带。 */
+    public static int cargo(ItemStack stack, int count) {
+        return Cargo.uniform(id(stack.getItem()), Math.min(count, stack.getCount()), level(stack));
+    }
+
+    public static int cargo(ItemStack stack) {
+        return cargo(stack, stack.getCount());
+    }
+
+    /**
+     * 几堆同一种物品合成一格货物（分拣器手里的）。
+     *
+     * @return 种类不同、带别的组件或者超过 {@link Cargo#MAX_STACK} 个时返回 {@link BeltLine#EMPTY}
+     */
+    public static int cargo(List<ItemStack> stacks) {
+        if (stacks.isEmpty()) {
+            return BeltLine.EMPTY;
+        }
+        Item type = stacks.getFirst().getItem();
+        int count = 0;
+        int points = 0;
+        for (ItemStack stack : stacks) {
+            if (!canCarry(stack) || stack.getItem() != type) {
+                return BeltLine.EMPTY;
+            }
+            count += stack.getCount();
+            points += stack.getCount() * level(stack);
+        }
+        return count > Cargo.MAX_STACK ? BeltLine.EMPTY : Cargo.of(id(type), count, points);
+    }
+
+    /** {@code count} 个物品，每个 {@code level} 点。 */
+    public static ItemStack stack(Item item, int count, int level) {
+        ItemStack stack = new ItemStack(item, count);
+        if (level > 0) {
+            stack.set(UniverseDataComponents.PROLIFERATION.get(), Math.min(level, Proliferation.MAX_LEVEL));
+        }
+        return stack;
+    }
+
+    /** 一格货物变回物品堆：点数分不匀时分成两堆，多一点的在前（点数一点不丢）。 */
+    public static List<ItemStack> stacks(int cargo) {
+        Item item = item(cargo);
+        int count = Cargo.count(cargo);
+        int points = Cargo.points(cargo);
+        int low = points / count;
+        int high = points % count;
+        if (high == 0) {
+            return List.of(stack(item, count, low));
+        }
+        return List.of(stack(item, high, low + 1), stack(item, count - high, low));
+    }
+
+    /** 画出来的样子：一个物品，喷过的带着点数。 */
+    public static ItemStack display(int cargo) {
+        return stack(item(cargo), 1, Cargo.level(cargo));
     }
 
     // ---- 登记
@@ -203,14 +281,14 @@ public final class BeltNetwork {
         return segment.items();
     }
 
-    /** 在这格的 {@code at}（0–{@link #UNITS}）处放一个物品。 */
-    public boolean insertAt(BlockPos pos, int at, int item) {
+    /** 在这格的 {@code at}（0–{@link #UNITS}）处放一格货物。 */
+    public boolean insertAt(BlockPos pos, int at, int cargo) {
         this.rebuildIfDirty();
         Segment segment = this.segments.get(pos.asLong());
         if (segment == null || segment.line == null) {
             return false;
         }
-        if (!segment.line.line.insert(segment.offset() + at, item)) {
+        if (!segment.line.line.insert(segment.offset() + at, cargo)) {
             return false;
         }
         this.markChanged(segment.line);
@@ -224,9 +302,9 @@ public final class BeltNetwork {
     }
 
     /**
-     * 拿走这格上离中间最近、符合 {@code filter} 的一个物品（分拣器）。
+     * 拿走这格上离中间最近、符合 {@code filter} 的一格货物（分拣器）。
      *
-     * @return 物品编号；没有返回 {@link BeltLine#EMPTY}
+     * @return 货物；没有返回 {@link BeltLine#EMPTY}
      */
     public int take(BlockPos pos, IntPredicate filter) {
         this.rebuildIfDirty();
@@ -242,7 +320,7 @@ public final class BeltNetwork {
     }
 
     /** 拿走这格上的所有物品（玩家空手右键）。 */
-    public List<Item> takeAll(BlockPos pos) {
+    public List<ItemStack> takeAll(BlockPos pos) {
         this.rebuildIfDirty();
         Segment segment = this.segments.get(pos.asLong());
         if (segment == null || segment.line == null) {
@@ -257,9 +335,9 @@ public final class BeltNetwork {
         boolean last = segment.index == info.blocks.length - 1;
         info.line.replaceRange(from, last ? info.line.length() : from + UNITS, new int[0], new int[0]);
         this.markChanged(info);
-        List<Item> out = new ArrayList<>(items.items().length);
-        for (int id : items.items()) {
-            out.add(item(id));
+        List<ItemStack> out = new ArrayList<>(items.items().length);
+        for (int cargo : items.items()) {
+            out.addAll(stacks(cargo));
         }
         return out;
     }
@@ -571,7 +649,7 @@ public final class BeltNetwork {
 
     // ---- 数据
 
-    /** 一格上的物品：位置相对本格的起点（0–{@link #UNITS}），和物品编号一一对应。 */
+    /** 一格上的物品：位置相对本格的起点（0–{@link #UNITS}），和货物（{@link Cargo}）一一对应。 */
     public record BlockItems(int[] positions, int[] items) {
         public static final BlockItems EMPTY = new BlockItems(new int[0], new int[0]);
 
@@ -719,12 +797,12 @@ public final class BeltNetwork {
         }
 
         @Override
-        public boolean accept(int item, int overshoot) {
+        public boolean accept(int cargo, int overshoot) {
             Level level = BeltNetwork.this.level;
             if (!(level instanceof ServerLevel)) {
                 return !this.blocked;
             }
-            boolean accepted = level.getBlockEntity(this.pos) instanceof BeltReceiver receiver && receiver.acceptFromBelt(item(item));
+            boolean accepted = level.getBlockEntity(this.pos) instanceof BeltReceiver receiver && receiver.acceptFromBelt(cargo);
             this.blocked = !accepted;
             return accepted;
         }

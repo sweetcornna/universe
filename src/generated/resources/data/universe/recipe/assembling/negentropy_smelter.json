@@ -1,0 +1,28 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:plane_smelter"
+    },
+    {
+      "count": 4,
+      "ingredient": "universe:strange_matter"
+    },
+    {
+      "count": 4,
+      "ingredient": "universe:graviton_lens"
+    },
+    {
+      "count": 4,
+      "ingredient": "universe:quantum_chip"
+    }
+  ],
+  "research": "negentropy_smelting",
+  "results": [
+    {
+      "id": "universe:negentropy_smelter"
+    }
+  ],
+  "time": 300
+}

@@ -1,0 +1,18 @@
+{
+  "type": "universe:research_shaped",
+  "category": "redstone",
+  "key": {
+    "B": "universe:circuit_board",
+    "G": "universe:gear",
+    "I": "minecraft:iron_ingot",
+    "L": "minecraft:glass"
+  },
+  "pattern": [
+    "IGI",
+    "BLB"
+  ],
+  "research": "integrated_logistics",
+  "result": {
+    "id": "universe:traffic_monitor"
+  }
+}

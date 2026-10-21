@@ -1,0 +1,28 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 20,
+      "ingredient": "universe:titanium_alloy"
+    },
+    {
+      "count": 20,
+      "ingredient": "universe:steel"
+    },
+    {
+      "count": 10,
+      "ingredient": "universe:processor"
+    },
+    {
+      "count": 4,
+      "ingredient": "universe:particle_container"
+    }
+  ],
+  "research": "energy_exchange",
+  "results": [
+    {
+      "id": "universe:energy_exchanger"
+    }
+  ],
+  "time": 300
+}

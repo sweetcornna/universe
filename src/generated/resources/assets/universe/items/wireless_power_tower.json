@@ -1,0 +1,6 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "universe:block/wireless_power_tower_item"
+  }
+}

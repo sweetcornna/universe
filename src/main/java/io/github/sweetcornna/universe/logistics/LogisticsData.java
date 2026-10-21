@@ -42,7 +42,8 @@ public final class LogisticsData extends SavedData {
             enumCodec(Logic.class).optionalFieldOf("local", Logic.STORAGE).forGetter(StationSlot::local),
             enumCodec(Logic.class).optionalFieldOf("remote", Logic.STORAGE).forGetter(StationSlot::remote),
             Codec.INT.optionalFieldOf("incoming", 0).forGetter(StationSlot::incoming),
-            Codec.INT.optionalFieldOf("outgoing", 0).forGetter(StationSlot::outgoing)
+            Codec.INT.optionalFieldOf("outgoing", 0).forGetter(StationSlot::outgoing),
+            Codec.LONG.optionalFieldOf("points", 0L).forGetter(StationSlot::points)
     ).apply(i, StationSlot::new));
 
     private static final Codec<Location> LOCATION_CODEC = RecordCodecBuilder.create(i -> i.group(
@@ -128,10 +129,11 @@ public final class LogisticsData extends SavedData {
             Codec.BOOL.fieldOf("delivering").forGetter(Trip::delivering),
             Times.CODEC.fieldOf("times").forGetter(trip -> new Times(trip.departAt(), trip.arriveAt(), trip.returnAt())),
             Codec.BOOL.fieldOf("returning").forGetter(Trip::returning),
-            Codec.BOOL.optionalFieldOf("warp", false).forGetter(Trip::warp)
-    ).apply(i, (vehicle, home, other, item, homeSlot, otherSlot, amount, cargo, delivering, times, returning, warp) ->
+            Codec.BOOL.optionalFieldOf("warp", false).forGetter(Trip::warp),
+            Codec.LONG.optionalFieldOf("points", 0L).forGetter(Trip::points)
+    ).apply(i, (vehicle, home, other, item, homeSlot, otherSlot, amount, cargo, delivering, times, returning, warp, points) ->
             new Trip(vehicle, home, other, item, homeSlot, otherSlot, amount, cargo, delivering, times.departAt(), times.arriveAt(),
-                    times.returnAt(), returning, warp)));
+                    times.returnAt(), returning, warp, points)));
 
     private static final Codec<LogisticsData> CODEC = RecordCodecBuilder.create(i -> i.group(
             Codec.INT.optionalFieldOf("format").forGetter(data -> Optional.of(FORMAT)),

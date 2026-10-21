@@ -2,16 +2,21 @@ package io.github.sweetcornna.universe.client.factory;
 
 import java.util.Locale;
 
+import com.mojang.blaze3d.platform.InputConstants;
+
 import io.github.sweetcornna.universe.core.power.Solar;
 import io.github.sweetcornna.universe.factory.MachineMenu;
 import io.github.sweetcornna.universe.factory.power.AccumulatorBlockEntity;
+import io.github.sweetcornna.universe.factory.power.EnergyExchangerBlockEntity;
 import io.github.sweetcornna.universe.factory.power.FuelGeneratorBlockEntity;
+import io.github.sweetcornna.universe.factory.power.GeothermalBlockEntity;
 import io.github.sweetcornna.universe.factory.power.SolarPanelBlockEntity;
 import io.github.sweetcornna.universe.factory.power.TeslaTowerBlockEntity;
 import io.github.sweetcornna.universe.factory.power.WindTurbineBlockEntity;
 import io.github.sweetcornna.universe.factory.power.ThermalPlantBlockEntity;
 import io.github.sweetcornna.universe.world.space.SpaceDimensions;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 
@@ -42,8 +47,13 @@ public final class PowerScreens {
             graphics.text(this.font, Component.translatable("gui.universe.tesla_tower.storage",
                     watts(this.menu.wide(TeslaTowerBlockEntity.CHARGED)), watts(this.menu.wide(TeslaTowerBlockEntity.DISCHARGED))),
                     8, 62, TEXT, false);
-            graphics.text(this.font, Component.translatable("gui.universe.tesla_tower.range",
-                    TeslaTowerBlockEntity.SPEC.coverRange(), TeslaTowerBlockEntity.SPEC.connectRange()), 8, 78, DIM, false);
+            int range = this.menu.data(TeslaTowerBlockEntity.RANGE);
+            int charge = this.menu.data(TeslaTowerBlockEntity.CHARGE_RADIUS);
+            Component rangeText = Component.translatable("gui.universe.tesla_tower.range", range & 0xFF, range >> 8 & 0xFF);
+            if (charge > 0) {
+                rangeText = Component.translatable("gui.universe.tesla_tower.range_charge", rangeText, charge);
+            }
+            graphics.text(this.font, rangeText, 8, 78, DIM, false);
         }
     }
 
@@ -131,6 +141,59 @@ public final class PowerScreens {
             graphics.text(this.font, Component.translatable("gui.universe.fuel_generator.fuel"), 32, 37, TEXT, false);
             bar(graphics, 32, 49, 136, 5, fuel, fuel > 0.2F ? ACCENT : BAD);
             graphics.text(this.font, Component.translatable("gui.universe.thermal_plant.hint"), 8, 60, DIM, false);
+        }
+    }
+
+    /** 地热发电站：发电量和地热强度，下面没有熔岩时说一声。 */
+    public static final class Geothermal extends MachineScreen {
+        public Geothermal(MachineMenu menu, Inventory inventory, Component title) {
+            super(menu, inventory, title);
+        }
+
+        @Override
+        protected void extractInfo(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+            this.powerLine(graphics, 8, 22);
+            int heat = this.menu.data(GeothermalBlockEntity.HEAT);
+            Component label = Component.translatable("gui.universe.geothermal.heat", heat);
+            graphics.text(this.font, label, 8, 36, heat > 0 ? TEXT : BAD, false);
+            int barX = 8 + this.font.width(label) + 6;
+            bar(graphics, barX, 37, 168 - barX, 6, heat / 150F, heat > 0 ? 0xFFF0943A : BAD);
+            graphics.text(this.font, Component.translatable(heat > 0 ? "gui.universe.geothermal.hint" : "gui.universe.geothermal.no_lava"),
+                    8, 52, heat > 0 ? DIM : BAD, false);
+        }
+    }
+
+    /** 能量枢纽：正在充（放）的那个蓄电器的电量，切换充电和放电的按钮。 */
+    public static final class EnergyExchanger extends MachineScreen {
+        private static final int BUTTON_Y = 62;
+        private static final int BUTTON_WIDTH = 116;
+
+        public EnergyExchanger(MachineMenu menu, Inventory inventory, Component title) {
+            super(menu, inventory, title);
+        }
+
+        @Override
+        protected void extractInfo(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+            this.powerLine(graphics, 8, 22);
+            boolean loaded = this.menu.data(EnergyExchangerBlockEntity.LOADED) != 0;
+            long energy = this.menu.wide(EnergyExchangerBlockEntity.ENERGY);
+            graphics.text(this.font, loaded ? Component.translatable("gui.universe.energy_exchanger.energy", joules(energy),
+                    joules(AccumulatorBlockEntity.CAPACITY)) : Component.translatable("gui.universe.energy_exchanger.empty"), 8, 36,
+                    loaded ? TEXT : DIM, false);
+            bar(graphics, 8, 49, BUTTON_WIDTH, 6, loaded ? energy / (float) AccumulatorBlockEntity.CAPACITY : 0, GOOD);
+            boolean discharging = this.menu.data(EnergyExchangerBlockEntity.MODE) != 0;
+            this.textButton(graphics, 8, BUTTON_Y, BUTTON_WIDTH, Component.translatable(discharging
+                    ? "gui.universe.energy_exchanger.discharge" : "gui.universe.energy_exchanger.charge"), discharging ? WARN : GOOD, mouseX, mouseY);
+        }
+
+        @Override
+        public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+            if (event.button() == InputConstants.MOUSE_BUTTON_LEFT
+                    && overMode(event.x() - this.leftPos, event.y() - this.topPos, 8, BUTTON_Y, BUTTON_WIDTH)) {
+                this.clickMode(EnergyExchangerBlockEntity.MODE_BUTTON);
+                return true;
+            }
+            return super.mouseClicked(event, doubleClick);
         }
     }
 

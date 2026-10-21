@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "universe:block/pile_sorter",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "universe:block/pile_sorter"
+    },
+    "facing=south": {
+      "model": "universe:block/pile_sorter",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "universe:block/pile_sorter",
+      "y": 270
+    }
+  }
+}

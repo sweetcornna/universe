@@ -1,0 +1,17 @@
+{
+  "type": "universe:research_shaped",
+  "category": "redstone",
+  "key": {
+    "P": "universe:processor",
+    "R": "universe:super_magnetic_ring",
+    "S": "universe:sorter_mk3"
+  },
+  "pattern": [
+    "SRS",
+    " P "
+  ],
+  "research": "pile_sorting",
+  "result": {
+    "id": "universe:pile_sorter"
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "minecraft:coal"
+    }
+  ],
+  "research": "proliferator_mk1",
+  "results": [
+    {
+      "id": "universe:proliferator_mk1"
+    }
+  ],
+  "time": 10
+}

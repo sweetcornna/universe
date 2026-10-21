@@ -1,0 +1,19 @@
+{
+  "type": "universe:research_shaped",
+  "category": "redstone",
+  "key": {
+    "L": "universe:graviton_lens",
+    "M": "universe:plane_smelter",
+    "Q": "universe:quantum_chip",
+    "S": "universe:strange_matter"
+  },
+  "pattern": [
+    "LSL",
+    "QMQ",
+    "LSL"
+  ],
+  "research": "negentropy_smelting",
+  "result": {
+    "id": "universe:negentropy_smelter"
+  }
+}

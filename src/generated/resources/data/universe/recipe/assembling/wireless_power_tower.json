@@ -1,0 +1,20 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:tesla_tower"
+    },
+    {
+      "count": 3,
+      "ingredient": "universe:plasma_exciter"
+    }
+  ],
+  "research": "wireless_power",
+  "results": [
+    {
+      "id": "universe:wireless_power_tower"
+    }
+  ],
+  "time": 60
+}

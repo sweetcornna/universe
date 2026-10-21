@@ -132,21 +132,26 @@ public final class LogisticsNetwork {
         StationSlot slot = other == null ? null : matching(other, trip.otherSlot(), trip.item());
         if (trip.delivering()) {
             int left = trip.cargo();
+            long points = trip.points();
             if (slot != null) {
                 slot.releaseIncoming(trip.amount());
-                left -= slot.add(left, other.kind().slotCapacity());
+                int added = slot.add(left, points, other.kind().slotCapacity());
+                points -= StationSlot.share(points, added, left);
+                left -= added;
             }
-            return trip.arrived(left);
+            return trip.arrived(left, points);
         }
         if (slot == null) {
-            return trip.arrived(0);
+            return trip.arrived(0, 0);
         }
         if (home == null) {
             // 家已经没了：不拿了，把预订放掉
             slot.releaseOutgoing(trip.amount());
-            return trip.arrived(0);
+            return trip.arrived(0, 0);
         }
-        return trip.arrived(slot.pickUp(trip.amount()));
+        long before = slot.points();
+        int taken = slot.pickUp(trip.amount());
+        return trip.arrived(taken, before - slot.points());
     }
 
     /** 回到家：载具空闲，取回来的货（或者没送出去的货）入库。 */
@@ -161,7 +166,7 @@ public final class LogisticsNetwork {
             if (!trip.delivering()) {
                 slot.releaseIncoming(trip.amount());
             }
-            slot.add(trip.cargo(), home.kind().slotCapacity());
+            slot.add(trip.cargo(), trip.points(), home.kind().slotCapacity());
         }
     }
 
@@ -201,7 +206,7 @@ public final class LogisticsNetwork {
                 if (amount >= Math.min(DRONE_MIN_LOAD, slot.need()) && this.payDrone(home, source.distance)) {
                     source.slot.reserveOutgoing(amount);
                     slot.reserveIncoming(amount);
-                    this.launchDrone(home, index, source, amount, 0, false, now);
+                    this.launchDrone(home, index, source, amount, 0, 0, false, now);
                 }
             }
         }
@@ -210,9 +215,10 @@ public final class LogisticsNetwork {
             if (target != null) {
                 int amount = Math.min(this.droneCapacity(), Math.min(slot.available(), target.slot.need()));
                 if (amount >= Math.min(DRONE_MIN_LOAD, target.slot.need()) && this.payDrone(home, target.distance)) {
+                    long before = slot.points();
                     int loaded = slot.take(amount);
                     target.slot.reserveIncoming(loaded);
-                    this.launchDrone(home, index, target, loaded, loaded, true, now);
+                    this.launchDrone(home, index, target, loaded, loaded, before - slot.points(), true, now);
                 }
             }
         }
@@ -251,12 +257,12 @@ public final class LogisticsNetwork {
         return Upgrades.carrierCapacity(VESSEL_CAPACITY, this.capacityLevel);
     }
 
-    private void launchDrone(Station home, int index, Candidate other, int amount, int cargo, boolean delivering, long now) {
+    private void launchDrone(Station home, int index, Candidate other, int amount, int cargo, long points, boolean delivering, long now) {
         home.launch(Vehicle.DRONE);
         long leg = droneLegTicks(other.distance, this.speedFactor);
         this.revision++;
         this.trips.add(new Trip(Vehicle.DRONE, home.id(), other.station.id(), home.slot(index).item(), index, other.index, amount, cargo,
-                delivering, now, now + leg, now + 2 * leg, false, false));
+                delivering, now, now + leg, now + 2 * leg, false, false, points));
     }
 
     /** 同一维度里、在 {@code home} 的航程内、某种设置的同种物品格，最近的那个。 */
@@ -293,7 +299,7 @@ public final class LogisticsNetwork {
                 if (amount >= Math.min(VESSEL_MIN_LOAD, slot.need()) && this.payVessel(home, source.station)) {
                     source.slot.reserveOutgoing(amount);
                     slot.reserveIncoming(amount);
-                    this.launchVessel(home, index, source, amount, 0, false, now);
+                    this.launchVessel(home, index, source, amount, 0, 0, false, now);
                 }
             }
         }
@@ -302,9 +308,10 @@ public final class LogisticsNetwork {
             if (target != null) {
                 int amount = Math.min(this.vesselCapacity(), Math.min(slot.available(), target.slot.need()));
                 if (amount >= Math.min(VESSEL_MIN_LOAD, target.slot.need()) && this.payVessel(home, target.station)) {
+                    long before = slot.points();
                     int loaded = slot.take(amount);
                     target.slot.reserveIncoming(loaded);
-                    this.launchVessel(home, index, target, loaded, loaded, true, now);
+                    this.launchVessel(home, index, target, loaded, loaded, before - slot.points(), true, now);
                 }
             }
         }
@@ -348,13 +355,13 @@ public final class LogisticsNetwork {
         return Math.round(seconds * 20);
     }
 
-    private void launchVessel(Station home, int index, Candidate other, int amount, int cargo, boolean delivering, long now) {
+    private void launchVessel(Station home, int index, Candidate other, int amount, int cargo, long points, boolean delivering, long now) {
         home.launch(Vehicle.VESSEL);
         long leg = vesselLegTicks(home.location(), other.station.location(), this.speedFactor);
         boolean warp = !home.location().sameSystem(other.station.location());
         this.revision++;
         this.trips.add(new Trip(Vehicle.VESSEL, home.id(), other.station.id(), home.slot(index).item(), index, other.index, amount, cargo,
-                delivering, now, now + leg, now + 2 * leg, false, warp));
+                delivering, now, now + leg, now + 2 * leg, false, warp, points));
     }
 
     /**

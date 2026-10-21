@@ -1,0 +1,20 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 2,
+      "ingredient": "universe:proliferator_mk2"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:carbon_nanotube"
+    }
+  ],
+  "research": "proliferator_mk3",
+  "results": [
+    {
+      "id": "universe:proliferator_mk3"
+    }
+  ],
+  "time": 40
+}

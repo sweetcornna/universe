@@ -10,13 +10,14 @@ import java.util.UUID;
  * @param amount     预订的货量
  * @param cargo      现在载着多少（送货的去程、取货的回程）
  * @param warp       跨恒星系，用了翘曲器
+ * @param points     载着的货的增产点数（ADR-0022）
  */
 public record Trip(Vehicle vehicle, UUID home, UUID other, String item, int homeSlot, int otherSlot, int amount, int cargo,
-        boolean delivering, long departAt, long arriveAt, long returnAt, boolean returning, boolean warp) {
+        boolean delivering, long departAt, long arriveAt, long returnAt, boolean returning, boolean warp, long points) {
 
-    Trip arrived(int cargo) {
+    Trip arrived(int cargo, long points) {
         return new Trip(this.vehicle, this.home, this.other, this.item, this.homeSlot, this.otherSlot, this.amount, cargo,
-                this.delivering, this.departAt, this.arriveAt, this.returnAt, true, this.warp);
+                this.delivering, this.departAt, this.arriveAt, this.returnAt, true, this.warp, points);
     }
 
     /** 某一时刻离起点多远（0 在自己的站，1 在对方的站），画载具用。 */

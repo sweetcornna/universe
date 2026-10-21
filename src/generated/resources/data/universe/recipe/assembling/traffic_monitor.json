@@ -1,0 +1,28 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 3,
+      "ingredient": "minecraft:iron_ingot"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:gear"
+    },
+    {
+      "count": 1,
+      "ingredient": "minecraft:glass"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:circuit_board"
+    }
+  ],
+  "research": "integrated_logistics",
+  "results": [
+    {
+      "id": "universe:traffic_monitor"
+    }
+  ],
+  "time": 40
+}

@@ -61,10 +61,11 @@ public final class UniverseJeiPlugin implements IModPlugin {
     /** 每种配方能在哪些设备里做，第一个当分类的图标。 */
     private static List<ItemLike> machines(MachineRecipe.Kind kind) {
         return switch (kind) {
-            case SMELTING -> List.of(UniverseBlocks.ARC_SMELTER.get(), UniverseBlocks.PLANE_SMELTER.get());
-            case ASSEMBLING -> List.of(UniverseBlocks.ASSEMBLER.get(), UniverseBlocks.ASSEMBLER_MK2.get(), UniverseBlocks.ASSEMBLER_MK3.get());
+            case SMELTING -> List.of(UniverseBlocks.ARC_SMELTER.get(), UniverseBlocks.PLANE_SMELTER.get(), UniverseBlocks.NEGENTROPY_SMELTER.get());
+            case ASSEMBLING -> List.of(UniverseBlocks.ASSEMBLER.get(), UniverseBlocks.ASSEMBLER_MK2.get(), UniverseBlocks.ASSEMBLER_MK3.get(),
+                    UniverseBlocks.RECOMPOSING_ASSEMBLER.get());
             case REFINING -> List.of(UniverseBlocks.OIL_REFINERY.get());
-            case CHEMICAL -> List.of(UniverseBlocks.CHEMICAL_PLANT.get());
+            case CHEMICAL -> List.of(UniverseBlocks.CHEMICAL_PLANT.get(), UniverseBlocks.QUANTUM_CHEMICAL_PLANT.get());
             case PARTICLE -> List.of(UniverseBlocks.MINIATURE_PARTICLE_COLLIDER.get());
         };
     }

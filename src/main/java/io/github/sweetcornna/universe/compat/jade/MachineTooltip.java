@@ -3,10 +3,15 @@ package io.github.sweetcornna.universe.compat.jade;
 import java.util.Locale;
 
 import io.github.sweetcornna.universe.client.factory.MachineScreen;
+import io.github.sweetcornna.universe.core.factory.Proliferation;
 import io.github.sweetcornna.universe.core.logistics.Logic;
 import io.github.sweetcornna.universe.dyson.RayReceiverBlockEntity;
 import io.github.sweetcornna.universe.factory.MachineMenu;
+import io.github.sweetcornna.universe.factory.Proliferators;
 import io.github.sweetcornna.universe.factory.RecipeMachineBlockEntity;
+import io.github.sweetcornna.universe.factory.power.AccumulatorBlockEntity;
+import io.github.sweetcornna.universe.factory.power.EnergyExchangerBlockEntity;
+import io.github.sweetcornna.universe.factory.power.GeothermalBlockEntity;
 import io.github.sweetcornna.universe.factory.resource.MiningMachineBlockEntity;
 import io.github.sweetcornna.universe.logistics.StationBlockEntity;
 import io.github.sweetcornna.universe.logistics.StationContents;
@@ -44,6 +49,7 @@ enum MachineTooltip implements IBlockComponentProvider {
     @Override
     public void appendTooltip(ITooltip tooltip, BlockAccessor accessor, IPluginConfig config) {
         CompoundTag tag = accessor.getServerData();
+        beltPass(tooltip, tag);
         int[] data = tag.getIntArray(MachineServerData.DATA).orElse(null);
         if (data == null || data.length <= FLAGS) {
             return;
@@ -51,6 +57,18 @@ enum MachineTooltip implements IBlockComponentProvider {
         BlockEntity entity = accessor.getBlockEntity();
         if (entity instanceof RecipeMachineBlockEntity) {
             recipeMachine(tooltip, tag, data);
+        } else if (entity instanceof GeothermalBlockEntity && data.length > GeothermalBlockEntity.HEAT) {
+            int heat = data[GeothermalBlockEntity.HEAT];
+            tooltip.add(heat > 0 ? Component.translatable("gui.universe.geothermal.heat", heat)
+                    : Component.translatable("gui.universe.geothermal.no_lava").withStyle(ChatFormatting.GOLD));
+        } else if (entity instanceof EnergyExchangerBlockEntity && data.length > EnergyExchangerBlockEntity.LOADED) {
+            tooltip.add(Component.translatable(data[EnergyExchangerBlockEntity.MODE] != 0 ? "gui.universe.energy_exchanger.discharge"
+                    : "gui.universe.energy_exchanger.charge"));
+            if (data[EnergyExchangerBlockEntity.LOADED] != 0) {
+                long energy = MachineMenu.join(data[EnergyExchangerBlockEntity.ENERGY], data[EnergyExchangerBlockEntity.ENERGY + 1]);
+                tooltip.add(Component.translatable("gui.universe.energy_exchanger.energy", MachineScreen.joules(energy),
+                        MachineScreen.joules(AccumulatorBlockEntity.CAPACITY)));
+            }
         } else if (entity instanceof MiningMachineBlockEntity) {
             miner(tooltip, data);
         } else if (entity instanceof RayReceiverBlockEntity) {
@@ -101,6 +119,36 @@ enum MachineTooltip implements IBlockComponentProvider {
         };
         if (key != null) {
             tooltip.add(Component.translatable("gui.universe.recipe_machine." + key).withStyle(ChatFormatting.GOLD));
+        }
+        // 原料喷过增产剂时的加成（ADR-0022）
+        if (data.length > RecipeMachineBlockEntity.PROLIFERATION) {
+            int value = data[RecipeMachineBlockEntity.PROLIFERATION];
+            int level = value >> 1 & 7;
+            if (level > 0) {
+                boolean speedup = (value & 16) == 0 || (value & 1) != 0;
+                Component mode = Component.translatable(speedup ? "gui.universe.proliferation.speedup" : "gui.universe.proliferation.extra");
+                tooltip.add(Component.translatable("gui.universe.proliferation.bonus", mode, MachineScreen.percent(speedup
+                        ? Proliferation.speedup(level) : Proliferation.extraProducts(level))).withStyle(ChatFormatting.LIGHT_PURPLE));
+            }
+        }
+    }
+
+    /** 喷涂机和流速监测器（ADR-0022）：不是用电设备，数据单独发过来。 */
+    private static void beltPass(ITooltip tooltip, CompoundTag tag) {
+        int[] coater = tag.getIntArray(MachineServerData.COATER).orElse(null);
+        if (coater != null && coater.length >= 2) {
+            tooltip.add(coater[0] == 0 ? Component.translatable("message.universe.spray_coater.empty").withStyle(ChatFormatting.GOLD)
+                    : Component.translatable("message.universe.spray_coater.status",
+                            new ItemStack(Proliferators.item(Proliferation.Tier.values()[coater[0] - 1])).getHoverName(), coater[1]));
+        }
+        int[] flow = tag.getIntArray(MachineServerData.FLOW).orElse(null);
+        if (flow != null && flow.length >= 3) {
+            tooltip.add(Component.translatable("gui.universe.traffic_monitor.count", flow[0]));
+            if (flow[1] > 0) {
+                boolean measured = flow.length < 4 || flow[3] != 0;
+                tooltip.add(flow[2] != 0 ? Component.translatable("gui.universe.traffic_monitor.alarm", flow[1]).withStyle(ChatFormatting.RED)
+                        : Component.translatable(measured ? "gui.universe.traffic_monitor.ok" : "gui.universe.traffic_monitor.warming", flow[1]));
+            }
         }
     }
 

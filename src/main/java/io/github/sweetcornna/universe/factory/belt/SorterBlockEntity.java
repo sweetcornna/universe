@@ -1,13 +1,19 @@
 package io.github.sweetcornna.universe.factory.belt;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import org.jspecify.annotations.Nullable;
+
+import com.mojang.serialization.Codec;
 
 import io.github.sweetcornna.universe.blueprint.BlueprintSettings;
 import io.github.sweetcornna.universe.core.factory.BeltLine;
 import io.github.sweetcornna.universe.core.factory.SorterTier;
 import io.github.sweetcornna.universe.core.power.PowerDevice;
+import io.github.sweetcornna.universe.core.research.Upgrades;
+import io.github.sweetcornna.universe.factory.research.Research;
 import io.github.sweetcornna.universe.factory.power.LevelPower;
 import io.github.sweetcornna.universe.registry.UniverseBlockEntities;
 import net.minecraft.core.BlockPos;
@@ -40,14 +46,19 @@ import net.neoforged.neoforge.transfer.transaction.Transaction;
  * （箱子、储物仓、设备）。只拿前面放得下的东西，所以给设备送料时自然只送配方要的原料；可以设一个过滤物品。
  *
  * <p>一个循环的刻数按档位（{@link SorterTier}，Mk.I 每秒 1.5 次）：前一半抓着东西转到前面，放下后后一半转回来。
- * 电力不足时按满足率变慢。三档共用这个方块实体，档位看方块。
+ * 电力不足时按满足率变慢。几档共用这个方块实体，档位看方块。
+ *
+ * <p>从传送带上拿时整格拿走（叠着的几个一起，ADR-0022）；从容器拿时一次拿 {@link SorterTier#stack()} 个。手里的东西
+ * 要么全放下，要么不放。
  */
 public class SorterBlockEntity extends BlockEntity implements PowerDevice, BlueprintSettings {
     /** 前面的容器放不下时隔几刻再试。设备的原料格留着几次配方的量，晚几刻送到不影响产量。 */
     private static final int BLOCKED_RETRY = 4;
+    private static final Codec<List<ItemStack>> HELD_CODEC = ItemStack.CODEC.listOf();
 
     private @Nullable Item filter;
-    private ItemStack held = ItemStack.EMPTY;
+    /** 手里抓着的东西：一般是一堆，从传送带上拿的点数分不匀时是两堆（{@link BeltNetwork#stacks}）。 */
+    private List<ItemStack> held = List.of();
     /** 循环进度（刻）；-1 是停在背后等着抓。 */
     private double progress = -1;
     private double supplied;
@@ -93,8 +104,9 @@ public class SorterBlockEntity extends BlockEntity implements PowerDevice, Bluep
         this.sync();
     }
 
+    /** 客户端画在手上的样子。 */
     public ItemStack held() {
-        return this.held;
+        return this.held.isEmpty() ? ItemStack.EMPTY : this.held.getFirst();
     }
 
     public SorterTier tier() {
@@ -167,7 +179,7 @@ public class SorterBlockEntity extends BlockEntity implements PowerDevice, Bluep
             if (next < tier.halfCycle()) {
                 this.progress = next;
             } else if (this.drop(this.held)) {
-                this.held = ItemStack.EMPTY;
+                this.held = List.of();
                 this.progress = next;
                 this.setChanged();
                 this.sync();
@@ -187,7 +199,7 @@ public class SorterBlockEntity extends BlockEntity implements PowerDevice, Bluep
     }
 
     private boolean tryGrab() {
-        ItemStack grabbed = this.grab();
+        List<ItemStack> grabbed = this.grab();
         if (grabbed.isEmpty()) {
             if (this.blocked) {
                 this.retryIn = BLOCKED_RETRY;
@@ -209,53 +221,63 @@ public class SorterBlockEntity extends BlockEntity implements PowerDevice, Bluep
         return this.filter == null || this.filter == item;
     }
 
-    /** 从背后拿一个前面放得下的东西。 */
-    private ItemStack grab() {
+    /** 从背后拿前面放得下的东西。 */
+    private List<ItemStack> grab() {
         this.blocked = false;
         this.askedItem = BeltLine.EMPTY;
         Direction facing = this.facing();
         BlockPos from = this.worldPosition.relative(facing.getOpposite());
         BeltNetwork network = BeltNetwork.of(this.level);
         if (network.segment(from) != null) {
-            int id = network.take(from, this::wants);
-            return id == BeltLine.EMPTY ? ItemStack.EMPTY : new ItemStack(BeltNetwork.item(id));
+            int cargo = network.take(from, this::wants);
+            return cargo == BeltLine.EMPTY ? List.of() : BeltNetwork.stacks(cargo);
         }
         ResourceHandler<ItemResource> source = this.source(facing);
         if (source == null) {
-            return ItemStack.EMPTY;
+            return List.of();
         }
+        int stack = Math.min(this.tier().stack(), this.tier().stack() > 1 && this.level instanceof ServerLevel serverLevel
+                ? Upgrades.beltStack(Research.level(serverLevel, Upgrades.BELT_STACKING)) : 1);
         for (int index = 0; index < source.size(); index++) {
             ItemResource resource = source.getResource(index);
-            if (resource.isEmpty() || !this.matches(resource.getItem()) || !this.canDrop(resource.toStack(1))) {
+            if (resource.isEmpty() || !this.matches(resource.getItem())) {
+                continue;
+            }
+            // 集装分拣器一次拿一叠；前面放不下一整叠就少拿几个
+            int n = (int) Math.min(stack, source.getAmountAsLong(index));
+            while (n > 0 && !this.canDrop(List.of(resource.toStack(n)))) {
+                n--;
+            }
+            if (n <= 0) {
                 continue;
             }
             try (Transaction transaction = Transaction.openRoot()) {
-                if (source.extract(index, resource, 1, transaction) == 1) {
+                int taken = source.extract(index, resource, n, transaction);
+                if (taken > 0) {
                     transaction.commit();
-                    return resource.toStack(1);
+                    return List.of(resource.toStack(taken));
                 }
             }
         }
-        return ItemStack.EMPTY;
+        return List.of();
     }
 
-    /** 传送带上的这个物品要不要抓。 */
-    private boolean wants(int item) {
-        if (item != this.askedItem) {
-            Item type = BeltNetwork.item(item);
-            this.askedItem = item;
-            this.askedFits = this.matches(type) && this.canDrop(new ItemStack(type));
+    /** 传送带上的这格货物要不要抓。 */
+    private boolean wants(int cargo) {
+        if (cargo != this.askedItem) {
+            this.askedItem = cargo;
+            this.askedFits = this.matches(BeltNetwork.item(cargo)) && this.canDrop(BeltNetwork.stacks(cargo));
         }
         return this.askedFits;
     }
 
-    /** 前面放不放得下（不真的放）。 */
-    private boolean canDrop(ItemStack stack) {
+    /** 前面放不放得下这些（不真的放）。 */
+    private boolean canDrop(List<ItemStack> stacks) {
         Direction facing = this.facing();
         BlockPos to = this.worldPosition.relative(facing);
         BeltNetwork network = BeltNetwork.of(this.level);
         if (network.segment(to) != null) {
-            return BeltNetwork.canCarry(stack) && network.canInsertAt(to, BeltNetwork.HALF);
+            return BeltNetwork.cargo(stacks) != BeltLine.EMPTY && network.canInsertAt(to, BeltNetwork.HALF);
         }
         ResourceHandler<ItemResource> target = this.target(facing);
         if (target == null) {
@@ -263,21 +285,41 @@ public class SorterBlockEntity extends BlockEntity implements PowerDevice, Bluep
             return false;
         }
         try (Transaction transaction = Transaction.openRoot()) {
-            boolean fits = ResourceHandlerUtil.insertStacking(target, ItemResource.of(stack), 1, transaction) == 1;
+            boolean fits = insertAll(target, stacks, transaction);
             this.blocked |= !fits;
             return fits;
         }
     }
 
-    private boolean drop(ItemStack stack) {
+    private boolean drop(List<ItemStack> stacks) {
         Direction facing = this.facing();
         BlockPos to = this.worldPosition.relative(facing);
         BeltNetwork network = BeltNetwork.of(this.level);
         if (network.segment(to) != null) {
-            return BeltNetwork.canCarry(stack) && network.insertAt(to, BeltNetwork.HALF, BeltNetwork.id(stack.getItem()));
+            int cargo = BeltNetwork.cargo(stacks);
+            return cargo != BeltLine.EMPTY && network.insertAt(to, BeltNetwork.HALF, cargo);
         }
         ResourceHandler<ItemResource> target = this.target(facing);
-        return target != null && ResourceHandlerUtil.insertStacking(target, ItemResource.of(stack), 1, null) == 1;
+        if (target == null) {
+            return false;
+        }
+        try (Transaction transaction = Transaction.openRoot()) {
+            if (!insertAll(target, stacks, transaction)) {
+                return false;
+            }
+            transaction.commit();
+            return true;
+        }
+    }
+
+    /** 在事务里把这几堆全放进去；有一堆放不下就返回 false，调用的一方不提交。 */
+    private static boolean insertAll(ResourceHandler<ItemResource> target, List<ItemStack> stacks, Transaction transaction) {
+        for (ItemStack stack : stacks) {
+            if (ResourceHandlerUtil.insertStacking(target, ItemResource.of(stack), stack.getCount(), transaction) != stack.getCount()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private @Nullable ResourceHandler<ItemResource> source(Direction facing) {
@@ -303,8 +345,10 @@ public class SorterBlockEntity extends BlockEntity implements PowerDevice, Bluep
     @Override
     public void preRemoveSideEffects(BlockPos pos, BlockState state) {
         if (this.level != null && !this.held.isEmpty()) {
-            Containers.dropItemStack(this.level, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, this.held);
-            this.held = ItemStack.EMPTY;
+            for (ItemStack stack : this.held) {
+                Containers.dropItemStack(this.level, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, stack.copy());
+            }
+            this.held = List.of();
         }
     }
 
@@ -320,7 +364,10 @@ public class SorterBlockEntity extends BlockEntity implements PowerDevice, Bluep
     protected void loadAdditional(ValueInput input) {
         super.loadAdditional(input);
         this.filter = input.read("Filter", BuiltInRegistries.ITEM.byNameCodec()).filter(item -> item != Items.AIR).orElse(null);
-        this.held = input.read("Held", ItemStack.OPTIONAL_CODEC).orElse(ItemStack.EMPTY);
+        List<ItemStack> held = new ArrayList<>(input.read("HeldItems", HELD_CODEC).orElse(List.of()));
+        // 旧档只抓着一个
+        input.read("Held", ItemStack.OPTIONAL_CODEC).filter(stack -> !stack.isEmpty()).ifPresent(held::add);
+        this.held = List.copyOf(held);
         this.progress = input.getDoubleOr("Progress", -1);
         if (this.level != null) {
             this.syncedAt = this.level.getGameTime();
@@ -332,7 +379,7 @@ public class SorterBlockEntity extends BlockEntity implements PowerDevice, Bluep
         super.saveAdditional(output);
         Optional.ofNullable(this.filter).ifPresent(item -> output.store("Filter", BuiltInRegistries.ITEM.byNameCodec(), item));
         if (!this.held.isEmpty()) {
-            output.store("Held", ItemStack.OPTIONAL_CODEC, this.held);
+            output.store("HeldItems", HELD_CODEC, this.held);
         }
         output.putDouble("Progress", this.progress);
     }

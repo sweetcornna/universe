@@ -1,0 +1,19 @@
+{
+  "type": "universe:research_shaped",
+  "category": "redstone",
+  "key": {
+    "A": "universe:titanium_alloy",
+    "C": "universe:particle_container",
+    "P": "universe:processor",
+    "S": "universe:steel"
+  },
+  "pattern": [
+    "ASA",
+    "PCP",
+    "ASA"
+  ],
+  "research": "energy_exchange",
+  "result": {
+    "id": "universe:energy_exchanger"
+  }
+}

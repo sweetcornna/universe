@@ -42,14 +42,19 @@ import io.github.sweetcornna.universe.factory.MachineBlock;
 import io.github.sweetcornna.universe.factory.ProcessingBlocks;
 import io.github.sweetcornna.universe.factory.TallMachineBlock;
 import io.github.sweetcornna.universe.factory.belt.BeltBlock;
+import io.github.sweetcornna.universe.factory.belt.PilerBlock;
 import io.github.sweetcornna.universe.factory.belt.SorterBlock;
 import io.github.sweetcornna.universe.factory.belt.SplitterBlock;
+import io.github.sweetcornna.universe.factory.belt.SprayCoaterBlock;
 import io.github.sweetcornna.universe.factory.belt.StorageDepotBlock;
 import io.github.sweetcornna.universe.factory.belt.StorageTankBlock;
+import io.github.sweetcornna.universe.factory.belt.TrafficMonitorBlock;
 import io.github.sweetcornna.universe.factory.power.AccumulatorBlock;
 import io.github.sweetcornna.universe.factory.power.ArtificialStarBlock;
 import io.github.sweetcornna.universe.factory.power.FusionPlantBlock;
+import io.github.sweetcornna.universe.factory.power.PowerTowerBlock;
 import io.github.sweetcornna.universe.factory.power.SolarPanelBlock;
+import io.github.sweetcornna.universe.factory.power.TeslaTowerBlockEntity;
 import io.github.sweetcornna.universe.factory.power.ThermalPlantBlock;
 import io.github.sweetcornna.universe.factory.resource.CrudeOilSeepBlock;
 import io.github.sweetcornna.universe.factory.resource.ResourceMachineBlocks;
@@ -230,10 +235,8 @@ public final class UniverseBlocks {
     public static final DeferredBlock<TeleporterBlock> TELEPORTER = BLOCKS.registerBlock("teleporter", TeleporterBlock::new,
             p -> machine(p).lightLevel(state -> state.getValue(MachineBlock.WORKING) ? 10 : 2));
     // ---- 工业（ADR-0011）
-    public static final DeferredBlock<TallMachineBlock> TESLA_TOWER = BLOCKS.registerBlock("tesla_tower",
-            p -> new TallMachineBlock(p, UniverseBlockEntities.TESLA_TOWER),
-            p -> machine(p).noOcclusion().lightLevel(state -> state.getValue(MachineBlock.WORKING)
-                    && state.getValue(TallMachineBlock.HALF) == DoubleBlockHalf.UPPER ? 9 : 0));
+    public static final DeferredBlock<PowerTowerBlock> TESLA_TOWER = BLOCKS.registerBlock("tesla_tower",
+            p -> new PowerTowerBlock(p, TeslaTowerBlockEntity.SPEC, 0), UniverseBlocks::tower);
     public static final DeferredBlock<TallMachineBlock> WIND_TURBINE = BLOCKS.registerBlock("wind_turbine",
             p -> new TallMachineBlock(p, UniverseBlockEntities.WIND_TURBINE), p -> machine(p).noOcclusion());
     public static final DeferredBlock<SolarPanelBlock> SOLAR_PANEL = BLOCKS.registerBlock("solar_panel",
@@ -322,17 +325,57 @@ public final class UniverseBlocks {
     public static final DeferredBlock<ArtificialStarBlock> ARTIFICIAL_STAR = BLOCKS.registerBlock("artificial_star", ArtificialStarBlock::new,
             p -> machine(p).noOcclusion().lightLevel(state -> !state.getValue(MachineBlock.WORKING) ? 0
                     : state.getValue(TallMachineBlock.HALF) == DoubleBlockHalf.UPPER ? 15 : 9));
+    // ---- 工厂的补全（ADR-0022）
+    public static final DeferredBlock<SprayCoaterBlock> SPRAY_COATER = BLOCKS.registerBlock("spray_coater", SprayCoaterBlock::new,
+            UniverseBlocks::logistics);
+    public static final DeferredBlock<PilerBlock> AUTOMATIC_PILER = BLOCKS.registerBlock("automatic_piler", PilerBlock::new,
+            UniverseBlocks::logistics);
+    public static final DeferredBlock<TrafficMonitorBlock> TRAFFIC_MONITOR = BLOCKS.registerBlock("traffic_monitor", TrafficMonitorBlock::new,
+            p -> logistics(p).lightLevel(state -> state.getValue(TrafficMonitorBlock.ALARM) ? 7 : 0));
+    public static final DeferredBlock<SorterBlock> PILE_SORTER = BLOCKS.registerBlock("pile_sorter", p -> new SorterBlock(p, SorterTier.PILE),
+            UniverseBlocks::logistics);
+    public static final DeferredBlock<PowerTowerBlock> WIRELESS_POWER_TOWER = BLOCKS.registerBlock("wireless_power_tower",
+            p -> new PowerTowerBlock(p, TeslaTowerBlockEntity.WIRELESS_SPEC, TeslaTowerBlockEntity.WIRELESS_CHARGE_RADIUS), UniverseBlocks::tower);
+    public static final DeferredBlock<PowerTowerBlock> SATELLITE_SUBSTATION = BLOCKS.registerBlock("satellite_substation",
+            p -> new PowerTowerBlock(p, TeslaTowerBlockEntity.SATELLITE_SPEC, 0), UniverseBlocks::tower);
+    public static final DeferredBlock<MachineBlock> GEOTHERMAL_POWER_STATION = BLOCKS.registerBlock("geothermal_power_station",
+            p -> new MachineBlock(p, UniverseBlockEntities.GEOTHERMAL_POWER_STATION),
+            p -> machine(p).lightLevel(state -> state.getValue(MachineBlock.WORKING) ? 12 : 3));
+    public static final DeferredBlock<MachineBlock> ENERGY_EXCHANGER = BLOCKS.registerBlock("energy_exchanger",
+            p -> new MachineBlock(p, UniverseBlockEntities.ENERGY_EXCHANGER),
+            p -> machine(p).lightLevel(state -> state.getValue(MachineBlock.WORKING) ? 10 : 2));
+    public static final DeferredBlock<MachineBlock> NEGENTROPY_SMELTER = BLOCKS.registerBlock("negentropy_smelter",
+            p -> new MachineBlock(p, UniverseBlockEntities.NEGENTROPY_SMELTER),
+            p -> machine(p).lightLevel(state -> state.getValue(MachineBlock.WORKING) ? 14 : 3));
+    public static final DeferredBlock<MachineBlock> RECOMPOSING_ASSEMBLER = BLOCKS.registerBlock("recomposing_assembler",
+            p -> new MachineBlock(p, UniverseBlockEntities.RECOMPOSING_ASSEMBLER),
+            p -> machine(p).lightLevel(state -> state.getValue(MachineBlock.WORKING) ? 10 : 3));
+    public static final DeferredBlock<MachineBlock> QUANTUM_CHEMICAL_PLANT = BLOCKS.registerBlock("quantum_chemical_plant",
+            p -> new MachineBlock(p, UniverseBlockEntities.QUANTUM_CHEMICAL_PLANT),
+            p -> machine(p).lightLevel(state -> state.getValue(MachineBlock.WORKING) ? 10 : 3));
+    public static final DeferredBlock<MachineBlock> SELF_EVOLUTION_LAB = BLOCKS.registerBlock("self_evolution_lab",
+            p -> new MachineBlock(p, UniverseBlockEntities.MATRIX_LAB),
+            p -> machine(p).noOcclusion().lightLevel(state -> state.getValue(MachineBlock.WORKING) ? 12 : 4));
+    /** 地基：铺地面用的建筑方块，比石头硬一点。 */
+    public static final DeferredBlock<Block> FOUNDATION = BLOCKS.registerSimpleBlock("foundation",
+            p -> p.mapColor(MapColor.COLOR_GRAY).strength(2.0F, 6.0F).sound(SoundType.STONE).requiresCorrectToolForDrops());
     /** 原油涌泉：挖不掉，也不掉落。 */
     public static final DeferredBlock<CrudeOilSeepBlock> CRUDE_OIL_SEEP = BLOCKS.registerBlock("crude_oil_seep", CrudeOilSeepBlock::new,
             p -> p.mapColor(MapColor.COLOR_BLACK).strength(-1.0F, 3600000.0F).noLootTable().sound(SoundType.MUD));
 
-    /** 传送带、分拣器、分流器：金属，拆起来很快，不挑工具。 */
+    /** 输电的塔：两格高，上半截工作时亮。 */
+    private static BlockBehaviour.Properties tower(BlockBehaviour.Properties properties) {
+        return machine(properties).noOcclusion().lightLevel(state -> state.getValue(MachineBlock.WORKING)
+                && state.getValue(TallMachineBlock.HALF) == DoubleBlockHalf.UPPER ? 9 : 0);
+    }
+
     /** 空间站的方块：挖不掉、炸不坏、推不动，不掉落。 */
     private static BlockBehaviour.Properties station(BlockBehaviour.Properties properties) {
         return properties.strength(-1.0F, 3600000.0F).sound(SoundType.METAL).noLootTable().pushReaction(PushReaction.IMMOVEABLE)
                 .isValidSpawn(Blocks::never);
     }
 
+    /** 传送带、分拣器、分流器：金属，拆起来很快，不挑工具。 */
     private static BlockBehaviour.Properties logistics(BlockBehaviour.Properties properties) {
         return properties.mapColor(MapColor.METAL).strength(1.0F, 3.0F).sound(SoundType.METAL).noOcclusion();
     }

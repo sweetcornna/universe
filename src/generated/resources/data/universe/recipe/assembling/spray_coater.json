@@ -1,0 +1,24 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 4,
+      "ingredient": "universe:steel"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:plasma_exciter"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:circuit_board"
+    }
+  ],
+  "research": "proliferator_mk1",
+  "results": [
+    {
+      "id": "universe:spray_coater"
+    }
+  ],
+  "time": 60
+}

@@ -1,0 +1,7 @@
+{
+  "parent": "universe:block/matrix_lab_core",
+  "textures": {
+    "frame": "universe:block/self_evolution_lab_frame",
+    "core": "universe:block/self_evolution_lab_core"
+  }
+}

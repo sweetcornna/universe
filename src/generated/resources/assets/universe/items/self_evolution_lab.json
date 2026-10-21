@@ -1,0 +1,6 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "universe:block/self_evolution_lab_item"
+  }
+}

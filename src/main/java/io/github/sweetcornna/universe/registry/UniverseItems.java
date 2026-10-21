@@ -253,6 +253,20 @@ public final class UniverseItems {
     public static final DeferredItem<StationItem> INTERSTELLAR_LOGISTICS_STATION = ITEMS.registerItem("interstellar_logistics_station",
             properties -> new StationItem(UniverseBlocks.INTERSTELLAR_LOGISTICS_STATION.get(), properties),
             () -> new Item.Properties().useBlockDescriptionPrefix());
+    // 工厂的补全（ADR-0022）
+    public static final DeferredItem<BlockItem> SPRAY_COATER = ITEMS.registerSimpleBlockItem(UniverseBlocks.SPRAY_COATER);
+    public static final DeferredItem<BlockItem> AUTOMATIC_PILER = ITEMS.registerSimpleBlockItem(UniverseBlocks.AUTOMATIC_PILER);
+    public static final DeferredItem<BlockItem> TRAFFIC_MONITOR = ITEMS.registerSimpleBlockItem(UniverseBlocks.TRAFFIC_MONITOR);
+    public static final DeferredItem<BlockItem> PILE_SORTER = ITEMS.registerSimpleBlockItem(UniverseBlocks.PILE_SORTER);
+    public static final DeferredItem<BlockItem> WIRELESS_POWER_TOWER = ITEMS.registerSimpleBlockItem(UniverseBlocks.WIRELESS_POWER_TOWER);
+    public static final DeferredItem<BlockItem> SATELLITE_SUBSTATION = ITEMS.registerSimpleBlockItem(UniverseBlocks.SATELLITE_SUBSTATION);
+    public static final DeferredItem<BlockItem> GEOTHERMAL_POWER_STATION = ITEMS.registerSimpleBlockItem(UniverseBlocks.GEOTHERMAL_POWER_STATION);
+    public static final DeferredItem<BlockItem> ENERGY_EXCHANGER = ITEMS.registerSimpleBlockItem(UniverseBlocks.ENERGY_EXCHANGER);
+    public static final DeferredItem<BlockItem> NEGENTROPY_SMELTER = ITEMS.registerSimpleBlockItem(UniverseBlocks.NEGENTROPY_SMELTER);
+    public static final DeferredItem<BlockItem> RECOMPOSING_ASSEMBLER = ITEMS.registerSimpleBlockItem(UniverseBlocks.RECOMPOSING_ASSEMBLER);
+    public static final DeferredItem<BlockItem> QUANTUM_CHEMICAL_PLANT = ITEMS.registerSimpleBlockItem(UniverseBlocks.QUANTUM_CHEMICAL_PLANT);
+    public static final DeferredItem<BlockItem> SELF_EVOLUTION_LAB = ITEMS.registerSimpleBlockItem(UniverseBlocks.SELF_EVOLUTION_LAB);
+    public static final DeferredItem<BlockItem> FOUNDATION = ITEMS.registerSimpleBlockItem(UniverseBlocks.FOUNDATION);
     // 戴森球的设备（ADR-0016）
     public static final DeferredItem<BlockItem> EM_RAIL_EJECTOR = ITEMS.registerSimpleBlockItem(UniverseBlocks.EM_RAIL_EJECTOR);
     public static final DeferredItem<BlockItem> VERTICAL_LAUNCHING_SILO = ITEMS.registerSimpleBlockItem(UniverseBlocks.VERTICAL_LAUNCHING_SILO);
@@ -274,6 +288,15 @@ public final class UniverseItems {
     public static final DeferredItem<Item> PLASMA_EXCITER = ITEMS.registerSimpleItem("plasma_exciter");
     /** 高能石墨：两块煤烧一块，也是好燃料（戴森球计划 6.3 MJ，折合燃烧时间 3700 刻）。 */
     public static final DeferredItem<Item> ENERGETIC_GRAPHITE = ITEMS.registerSimpleItem("energetic_graphite", properties -> fuel(properties, 3700));
+    /** 增产剂三档（ADR-0022）：喷涂机用它们给传送带上的货物喷点数。 */
+    public static final DeferredItem<Item> PROLIFERATOR_MK1 = ITEMS.registerSimpleItem("proliferator_mk1");
+    public static final DeferredItem<Item> PROLIFERATOR_MK2 = ITEMS.registerSimpleItem("proliferator_mk2");
+    public static final DeferredItem<Item> PROLIFERATOR_MK3 = ITEMS.registerSimpleItem("proliferator_mk3");
+    /** 燃烧单元：三块煤压成一个，比高能石墨耐烧（戴森球计划 9 MJ）。 */
+    public static final DeferredItem<Item> COMBUSTIBLE_UNIT = ITEMS.registerSimpleItem("combustible_unit", properties -> fuel(properties, 5300));
+    /** 液氢燃料棒：钛壳装氢（戴森球计划 54 MJ）。 */
+    public static final DeferredItem<Item> HYDROGEN_FUEL_ROD = ITEMS.registerSimpleItem("hydrogen_fuel_rod",
+            properties -> fuel(properties.stacksTo(32), 31700));
     /** 液体按物品处理，能放上传送带（ADR-0011）。 */
     public static final DeferredItem<Item> WATER = ITEMS.registerSimpleItem("water");
     public static final DeferredItem<Item> CRUDE_OIL = ITEMS.registerSimpleItem("crude_oil");
@@ -377,8 +400,12 @@ public final class UniverseItems {
                 SORTER, SORTER_MK2, SORTER_MK3, SPLITTER, STORAGE_DEPOT, STORAGE_TANK, CRUDE_OIL_SEEP,
                 ASSEMBLER_MK2, ASSEMBLER_MK3, PLANE_SMELTER, CHEMICAL_PLANT, FRACTIONATOR, ADVANCED_MINING_MACHINE, FACTORY_ANCHOR,
                 PLANETARY_LOGISTICS_STATION, INTERSTELLAR_LOGISTICS_STATION, ORBITAL_COLLECTOR,
+                SPRAY_COATER, AUTOMATIC_PILER, TRAFFIC_MONITOR, PILE_SORTER, WIRELESS_POWER_TOWER, SATELLITE_SUBSTATION,
+                GEOTHERMAL_POWER_STATION, ENERGY_EXCHANGER, FOUNDATION,
                 EM_RAIL_EJECTOR, VERTICAL_LAUNCHING_SILO, RAY_RECEIVER, MINIATURE_PARTICLE_COLLIDER, MINI_FUSION_POWER_PLANT, ARTIFICIAL_STAR,
-                GEAR, MAGNETIC_COIL, CIRCUIT_BOARD, ELECTRIC_MOTOR, STEEL, PRISM, PLASMA_EXCITER, ENERGETIC_GRAPHITE,
+                NEGENTROPY_SMELTER, RECOMPOSING_ASSEMBLER, QUANTUM_CHEMICAL_PLANT, SELF_EVOLUTION_LAB,
+                GEAR, MAGNETIC_COIL, CIRCUIT_BOARD, ELECTRIC_MOTOR, STEEL, PRISM, PLASMA_EXCITER, ENERGETIC_GRAPHITE, COMBUSTIBLE_UNIT,
+                PROLIFERATOR_MK1, PROLIFERATOR_MK2, PROLIFERATOR_MK3, HYDROGEN_FUEL_ROD,
                 WATER, CRUDE_OIL, REFINED_OIL, HYDROGEN, DEUTERIUM, ELECTROMAGNETIC_MATRIX, ENERGY_MATRIX,
                 CRYSTAL_SILICON, TITANIUM_ALLOY, SYNTHETIC_DIAMOND, PLASTIC, SULFURIC_ACID, GRAPHENE, CARBON_NANOTUBE, TITANIUM_CRYSTAL, MICROCRYSTALLINE_COMPONENT, PROCESSOR,
                 PARTICLE_BROADBAND, THRUSTER, REINFORCED_THRUSTER, ELECTROMAGNETIC_TURBINE, SUPER_MAGNETIC_RING, PARTICLE_CONTAINER, LOGISTICS_DRONE, LOGISTICS_VESSEL, STRUCTURE_MATRIX, INFORMATION_MATRIX,

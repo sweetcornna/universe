@@ -5,8 +5,10 @@ import java.util.Map;
 
 import org.jspecify.annotations.Nullable;
 
+import io.github.sweetcornna.universe.core.factory.Proliferation;
 import io.github.sweetcornna.universe.core.power.PowerDevice;
 import io.github.sweetcornna.universe.factory.power.LevelPower;
+import io.github.sweetcornna.universe.registry.UniverseDataComponents;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.NonNullList;
@@ -17,6 +19,7 @@ import net.minecraft.world.WorldlyContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.ContainerData;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BaseContainerBlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -28,6 +31,8 @@ import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.ResourceHandlerUtil;
 import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.transaction.SnapshotJournal;
+import net.neoforged.neoforge.transfer.transaction.TransactionContext;
 
 /**
  * 工业设备的方块实体（ADR-0011）：物品栏、接入电网、"工作中"状态和界面数据。
@@ -53,6 +58,11 @@ public abstract class MachineBlockEntity extends BaseContainerBlockEntity implem
     /** 往外推产物的目标，按方向缓存。 */
     private final Map<Direction, BlockCapabilityCache<ResourceHandler<ItemResource>, @Nullable Direction>> outputs =
             new EnumMap<>(Direction.class);
+    /** 原料格里攒下的增产点数，按格记；物品放在格子里时不带组件，同一种原料喷没喷过都叠在一起。 */
+    private final Proliferation.Pool[] pools;
+    /** 每格的池子对应的物品，格子里换了东西就清零。 */
+    private final @Nullable Item[] poolItems;
+    private final PoolJournal poolJournal = new PoolJournal();
     private final ContainerData data = new ContainerData() {
         @Override
         public int get(int index) {
@@ -73,8 +83,11 @@ public abstract class MachineBlockEntity extends BaseContainerBlockEntity implem
         super(type, pos, state);
         this.items = NonNullList.withSize(slots, ItemStack.EMPTY);
         this.allSlots = new int[slots];
+        this.pools = new Proliferation.Pool[slots];
+        this.poolItems = new Item[slots];
         for (int i = 0; i < slots; i++) {
             this.allSlots[i] = i;
+            this.pools[i] = new Proliferation.Pool();
         }
     }
 
@@ -305,11 +318,123 @@ public abstract class MachineBlockEntity extends BaseContainerBlockEntity implem
         super.loadAdditional(input);
         this.items = NonNullList.withSize(this.getContainerSize(), ItemStack.EMPTY);
         ContainerHelper.loadAllItems(input, this.items);
+        int[] points = input.getIntArray("InputPoints").orElse(new int[0]);
+        for (int slot = 0; slot < this.pools.length; slot++) {
+            ItemStack stack = this.items.get(slot);
+            this.poolItems[slot] = stack.isEmpty() ? null : stack.getItem();
+            this.pools[slot].set(stack.getCount(), slot < points.length ? points[slot] : 0);
+        }
     }
 
     @Override
     protected void saveAdditional(ValueOutput output) {
         super.saveAdditional(output);
         ContainerHelper.saveAllItems(output, this.items);
+        int[] points = new int[this.pools.length];
+        boolean any = false;
+        for (int slot = 0; slot < points.length; slot++) {
+            points[slot] = (int) this.pool(slot).points();
+            any |= points[slot] > 0;
+        }
+        if (any) {
+            output.putIntArray("InputPoints", points);
+        }
+    }
+
+    // ---- 增产点数（ADR-0022）
+
+    /**
+     * 这一格原料的点数池。先和格子里的数量对上：格子空了或换了物品就清零，数量被别处改了（玩家拿走、漏斗放进没喷过的）
+     * 按 {@link Proliferation.Pool#reconcile} 对上。
+     */
+    protected Proliferation.Pool pool(int slot) {
+        ItemStack stack = this.items.get(slot);
+        Proliferation.Pool pool = this.pools[slot];
+        Item item = stack.isEmpty() ? null : stack.getItem();
+        if (item != this.poolItems[slot]) {
+            this.poolItems[slot] = item;
+            pool.set(stack.getCount(), 0);
+        } else {
+            pool.reconcile(stack.getCount());
+        }
+        return pool;
+    }
+
+    /** 这一格原料的平均等级，不拿走。 */
+    public int inputLevel(int slot) {
+        Proliferation.Pool pool = this.pool(slot);
+        return pool.count() == 0 ? 0 : (int) Math.min(Proliferation.MAX_LEVEL, pool.points() / pool.count());
+    }
+
+    /** 从原料格扣掉 {@code n} 个，返回它们的平均等级（点数按比例跟着拿走）。 */
+    protected int consumeInput(int slot, int n) {
+        int level = this.pool(slot).take(n);
+        this.items.get(slot).shrink(n);
+        return Math.max(0, level);
+    }
+
+    /**
+     * 原料格里刚放进 {@code count} 个 {@code item}，点数一共 {@code points}。放之前要先调一次 {@link #pool}，让池子对上放之前的数量。
+     */
+    protected void receiveInput(int slot, Item item, int count, long points) {
+        Proliferation.Pool pool = this.pools[slot];
+        if (this.poolItems[slot] != item) {
+            this.poolItems[slot] = item;
+            pool.set(0, 0);
+        }
+        pool.addTotal(count, points);
+    }
+
+    /** 物品能力的事务开始改池子之前记一下，回滚时恢复。 */
+    void snapshotPools(TransactionContext transaction) {
+        this.poolJournal.updateSnapshots(transaction);
+    }
+
+    /** 玩家在界面里把喷过的物品放进原料格：去掉组件，点数记进池子。 */
+    @Override
+    public void setItem(int slot, ItemStack stack) {
+        Integer level = stack.get(UniverseDataComponents.PROLIFERATION.get());
+        if (level == null || !this.isInput(slot)) {
+            super.setItem(slot, stack);
+            return;
+        }
+        stack.remove(UniverseDataComponents.PROLIFERATION.get());
+        super.setItem(slot, stack);
+        this.poolItems[slot] = stack.isEmpty() ? null : stack.getItem();
+        this.pools[slot].set(stack.getCount(), (long) stack.getCount() * level);
+    }
+
+    @Override
+    public ItemStack removeItem(int slot, int count) {
+        this.pool(slot);
+        ItemStack taken = super.removeItem(slot, count);
+        this.pool(slot);
+        return taken;
+    }
+
+    private record PoolSnapshot(long[] counts, long[] points, @Nullable Item[] items) {
+    }
+
+    private final class PoolJournal extends SnapshotJournal<PoolSnapshot> {
+        @Override
+        protected PoolSnapshot createSnapshot() {
+            Proliferation.Pool[] pools = MachineBlockEntity.this.pools;
+            long[] counts = new long[pools.length];
+            long[] points = new long[pools.length];
+            for (int i = 0; i < pools.length; i++) {
+                counts[i] = pools[i].count();
+                points[i] = pools[i].points();
+            }
+            return new PoolSnapshot(counts, points, MachineBlockEntity.this.poolItems.clone());
+        }
+
+        @Override
+        protected void revertToSnapshot(PoolSnapshot snapshot) {
+            Proliferation.Pool[] pools = MachineBlockEntity.this.pools;
+            for (int i = 0; i < pools.length; i++) {
+                pools[i].set(snapshot.counts()[i], snapshot.points()[i]);
+            }
+            System.arraycopy(snapshot.items(), 0, MachineBlockEntity.this.poolItems, 0, pools.length);
+        }
     }
 }
