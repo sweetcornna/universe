@@ -77,6 +77,8 @@ public final class Construction {
         int[] flyers = new int[0];
         long idleUntil;
         final Map<Item, Integer> reserved = new HashMap<>();
+        /** 因为缺它而跳过了格子的材料；补上了就不等 RECHECK。 */
+        final Set<Item> lacking = new HashSet<>();
         /** 发过的工地 → 发的时候的版本。 */
         final Map<Integer, Integer> known = new HashMap<>();
         @Nullable ResourceKey<Level> dimension;
@@ -255,6 +257,9 @@ public final class Construction {
         int tasks = Upgrades.droneTasks(Research.level(level, Upgrades.COMMUNICATION_CONTROL));
         int speedMps = Upgrades.droneSpeed(Research.level(level, Upgrades.DRONE_ENGINE));
         double speed = speedMps / 20.0;
+        if (now % SUMMARY_INTERVAL == 0) {
+            refilled(player, crew, sites);
+        }
         SitePlanner planner = new SitePlanner(player, crew, sites);
         if (!chest && crew.fleet.flying() > 0) {
             applyChanges(player, crew, crew.fleet.recall(planner));
@@ -276,6 +281,20 @@ public final class Construction {
         }
     }
 
+    /** 缺的材料到了背包或货舱：把跳过的格子马上放出来，无人机不用等到下一轮。 */
+    private static void refilled(ServerPlayer player, Crew crew, BuildSites sites) {
+        if (crew.lacking.isEmpty()
+                || !crew.lacking.removeIf(item -> available(player, item) - crew.reserved.getOrDefault(item, 0) > 0)) {
+            return;
+        }
+        for (BuildSite site : sites.in(player.level().dimension())) {
+            if (mayBuild(player, site)) {
+                site.skipped.clear();
+            }
+        }
+        crew.idleUntil = 0;
+    }
+
     /** 玩家下线、换维度：没建的还回去，航段收掉。 */
     private static void dock(ServerPlayer player, Crew crew) {
         BuildSites sites = BuildSites.get(player.level().getServer());
@@ -289,6 +308,7 @@ public final class Construction {
             }
         }
         crew.reserved.clear();
+        crew.lacking.clear();
     }
 
     private static void applyChanges(ServerPlayer player, Crew crew, List<DroneFleet.Change> changes) {
@@ -433,6 +453,7 @@ public final class Construction {
                 if (cost != null && !this.player.isCreative()) {
                     if (available(this.player, cost) - this.crew.reserved.getOrDefault(cost, 0) <= 0) {
                         site.skipped.set(task.index());
+                        this.crew.lacking.add(cost);
                         continue;
                     }
                     this.crew.reserved.merge(cost, 1, Integer::sum);
@@ -506,6 +527,7 @@ public final class Construction {
             }
             if (cost != null && !this.player.isCreative() && available(this.player, cost) - this.crew.reserved.getOrDefault(cost, 0) <= 0) {
                 site.skipped.set(index);
+                this.crew.lacking.add(cost);
                 return Check.SKIP;
             }
             return Check.OK;
