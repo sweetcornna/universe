@@ -87,7 +87,7 @@ io.github.sweetcornna.universe
 - 接入点按 26.3 源码确认过：原版的 `DimensionSpecialEffects` 已经不存在，NeoForge 提供 `CustomSkyboxRenderer`，在 `RegisterCustomEnvironmentEffectRendererEvent` 里注册，再通过环境属性 `NeoForgeEnvironmentAttributes.CUSTOM_SKYBOX` 指定给维度类型或群系；渲染要用的数据在 `ExtractLevelRenderStateEvent` 里提取。同一事件还能注册自定义的云和天气渲染器。所有环境模板都指向同一个天空渲染器，由它按当前星球的参数绘制。
 - 进出星球的过场画面用 NeoForge 的 `RegisterDimensionTransitionScreenEvent` 按维度键注册，但这个事件只在客户端启动时触发一次，那时运行时维度还不存在。S1 保留事件对象，客户端得知新维度时再补注册，实测有效（`client.ClientDimensions`）。这依赖 NeoForge 的内部实现，长期方案（向 NeoForge 提 PR 或用 mixin）在 S4 做降落画面时定，见 ADR-0004。
 - 渲染代码集中在 `client` 包，方便随版本调整。
-- 光影兼容在 M1 用 Iris 实测（26.3 已有 NeoForge 版），必要时提供简化渲染。M9 实测：Iris 1.11.7 加 Sodium 0.9.3-beta.1、不装光影包时，星球天空和戴森球都正常；装光影包的情况还没测（ADR-0019）。
+- 光影兼容在 M1 用 Iris 实测（26.3 已有 NeoForge 版），必要时提供简化渲染。M9 实测：Iris 1.11.7 加 Sodium 0.9.3-beta.1、不装光影包时，星球天空和戴森球都正常。装 Complementary Reimagined 时戴森球看不见，太空维度被光影包画成主世界的天空（ADR-0019）。
 - S3 里天体位置和配色在 `core.sky` 算，渲染器 `client.sky.PlanetSkyRenderer` 按参数画；每颗星球的天色、雾、云、日落、水色靠 mixin 往环境属性系统里插两层，不写数据包；天气按维度单独轮换。详见 [ADR-0006](adr/0006-planet-sky-and-weather.md)。
 
 ### 3.5 太空与飞船

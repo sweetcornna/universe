@@ -45,6 +45,10 @@ base {
 // 26.3 给玩家分发的是 Java 25，模组也以 Java 25 为目标
 java.toolchain.languageVersion = JavaLanguageVersion.of(25)
 
+// 兼容测试（ADR-0019）：-Pcompat=jei,jade,sodium,iris 选哪些模组跟着开发客户端一起加载；不写时都不加载，
+// 平常的开发运行和无头验收不受影响。兼容代码编译时总能看到 JEI 和 Jade 的接口。
+var compatMods = (project.findProperty('compat') ?: '').toString().split(',').collect { it.trim() }.findAll { it } as Set
+
 neoForge {
     version = project.neo_version
 
@@ -59,6 +63,11 @@ neoForge {
             // 无头验收用：./gradlew runClient -PdevScript=<脚本> 进存档后按脚本自动操作、截图（client/dev/DevScript）
             if (project.hasProperty('devScript')) {
                 systemProperty 'universe.devScript', file(project.property('devScript').toString()).getAbsolutePath()
+            }
+            // Iris 1.11.7 给光影包建的渲染管线过不了开发环境才开的渲染校验，开着光影包第一帧就崩；
+            // 装 Iris 时关掉这层校验，和玩家的环境一样
+            if (compatMods.contains('iris')) {
+                systemProperty 'neoforge.disableBlaze3DValidation', 'true'
             }
         }
 
@@ -114,10 +123,6 @@ neoForge {
 configurations {
     runtimeClasspath.extendsFrom localRuntime
 }
-
-// 兼容测试（ADR-0019）：-Pcompat=jei,jade,sodium,iris 选哪些模组跟着开发客户端一起加载；不写时都不加载，
-// 平常的开发运行和无头验收不受影响。兼容代码编译时总能看到 JEI 和 Jade 的接口。
-var compatMods = (project.findProperty('compat') ?: '').toString().split(',').collect { it.trim() }.findAll { it } as Set
 
 dependencies {
     // core 包的纯 Java 单元测试

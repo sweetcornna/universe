@@ -38,7 +38,7 @@ This is an **alpha**. The whole main line is in, from the crashed probe near spa
 - Minecraft 26.3, NeoForge 26.3.0.95 or newer, Java 25.
 - Install on both the client and the server.
 - Optional: JEI (recipe categories for every machine) and Jade (machine status on hover).
-- Sodium: use 0.9.3-beta.1 or newer. 0.9.2 crashes on current NeoForge 26.3 builds on its own. Iris 1.11.7 works with 0.9.3-beta.1; shader packs have not been tested yet.
+- Sodium: use 0.9.3-beta.1 or newer. 0.9.2 crashes on current NeoForge 26.3 builds on its own. Iris 1.11.7 works with 0.9.3-beta.1. With a shader pack on (tested with Complementary Reimagined), the Dyson sphere is not drawn and space shows an Overworld sky.
 
 ### Links
 
@@ -71,7 +71,7 @@ Inspired by *No Man's Sky* and *Dyson Sphere Program*. Not affiliated with Hello
 - Minecraft 26.3，NeoForge 26.3.0.95 或更新，Java 25。
 - 客户端和服务器都要装。
 - 可选：JEI（每种设备配方一个分类）、Jade（指着设备看状态）。
-- Sodium 要用 0.9.3-beta.1 或更新的版本，0.9.2 本身在现在的 NeoForge 26.3 上启动就崩溃。Iris 1.11.7 配它能用，光影包还没测。
+- Sodium 要用 0.9.3-beta.1 或更新的版本，0.9.2 本身在现在的 NeoForge 26.3 上启动就崩溃。Iris 1.11.7 配它能用。开光影包（试的是 Complementary Reimagined）时戴森球看不见，太空里会变成主世界的天空。
 
 玩法参考了《无人深空》和《戴森球计划》。本模组和 Hello Games、柚子猫工作室（Youthcat Studio）没有关系，没有用这两款游戏的美术和音效。
 
@@ -109,7 +109,7 @@ Inspired by *No Man's Sky* and *Dyson Sphere Program*. Not affiliated with Hello
 > **Known issues**
 >
 > - Story text is a placeholder and will be rewritten.
-> - Sodium needs 0.9.3-beta.1 or newer; 0.9.2 crashes on current NeoForge 26.3 builds by itself. Iris 1.11.7 works with it. Shader packs are untested.
+> - Sodium needs 0.9.3-beta.1 or newer; 0.9.2 crashes on current NeoForge 26.3 builds by itself. Iris 1.11.7 works with it. With a shader pack, the Dyson sphere is not drawn and space shows an Overworld sky.
 > - Worlds are not guaranteed to load in later versions before 1.0.
 > - Every stage was tested in game, but nobody has played the whole thing start to finish yet.
 > - Feedback from the `/universe` debug commands is Chinese only.
