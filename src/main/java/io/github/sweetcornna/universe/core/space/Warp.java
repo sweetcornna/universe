@@ -20,13 +20,15 @@ public final class Warp {
     /** 最多算几台跃迁引擎。 */
     public static final int MAX_DRIVES = 4;
     /** 离恒星中心至少这么远才能跃迁（格）。 */
-    public static final double STAR_CLEARANCE = 1200;
-    /** 离天体的大气球外沿至少这么远才能跃迁（格）。 */
-    public static final double BODY_CLEARANCE = 150;
-    /** 到达点离那颗行星的大气球外沿多远（格）：开脉冲引擎几秒就到。 */
-    public static final double APPROACH = 2000;
+    public static final double STAR_CLEARANCE = 14400;
+    /** 离天体的大气球外沿至少这么远才能跃迁（格），再加上大气球半径的 {@link #BODY_CLEARANCE_SHARE}。 */
+    public static final double BODY_CLEARANCE = 600;
+    static final double BODY_CLEARANCE_SHARE = 0.25;
+    /** 到达点离那颗行星的大气球外沿多远（格），再加上大气球半径的 {@link #APPROACH_SHARE} 倍：星球看上去二三十度大，脉冲引擎几秒到。 */
+    public static final double APPROACH = 3000;
+    static final double APPROACH_SHARE = 2.5;
     /** 没有行星时停在离恒星多远（格）。 */
-    private static final double EMPTY_ARRIVAL = 4000;
+    private static final double EMPTY_ARRIVAL = 48000;
 
     private Warp() {
     }
@@ -70,17 +72,22 @@ public final class Warp {
             return Status.NEAR_STAR;
         }
         for (SpaceLayout.Body body : bodies) {
-            if (body.distanceTo(x, y, z) < body.radius() + BODY_CLEARANCE) {
+            if (body.distanceTo(x, y, z) < clearance(body)) {
                 return Status.NEAR_BODY;
             }
         }
         return Status.OK;
     }
 
+    /** 离这个天体中心至少多远才能跃迁。 */
+    public static double clearance(SpaceLayout.Body body) {
+        return body.radius() * (1 + BODY_CLEARANCE_SHARE) + BODY_CLEARANCE;
+    }
+
     /** 挡住跃迁的那个天体（{@link Status#NEAR_BODY} 时）。 */
     public static Optional<SpaceLayout.Body> blocker(List<SpaceLayout.Body> bodies, double x, double y, double z) {
         for (SpaceLayout.Body body : bodies) {
-            if (body.distanceTo(x, y, z) < body.radius() + BODY_CLEARANCE) {
+            if (body.distanceTo(x, y, z) < clearance(body)) {
                 return Optional.of(body);
             }
         }
@@ -108,12 +115,12 @@ public final class Warp {
         SpaceLayout.Body target = approachTarget(bodies, dx, dz);
         double cx = target == null ? 0 : target.x();
         double cz = target == null ? 0 : target.z();
-        double distance = target == null ? EMPTY_ARRIVAL : target.radius() + APPROACH;
+        double distance = target == null ? EMPTY_ARRIVAL : target.radius() * (1 + APPROACH_SHARE) + APPROACH;
         double x = cx + dx * distance;
         double z = cz + dz * distance;
         // 离别的天体（卫星）或者恒星太近就再往外挪
         for (int attempt = 0; attempt < 64 && check(bodies, x, 0, z) != Status.OK; attempt++) {
-            distance += 250;
+            distance += 1500;
             x = cx + dx * distance;
             z = cz + dz * distance;
         }

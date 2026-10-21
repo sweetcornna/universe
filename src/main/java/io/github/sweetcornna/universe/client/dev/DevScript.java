@@ -156,6 +156,8 @@ public final class DevScript {
         if (player == null || minecraft.level == null) {
             return;
         }
+        // 脚本按的键不算玩家输入，原版一分钟没输入就把帧率压到 30，量出来的帧率就不对了
+        minecraft.getFramerateLimitTracker().onInputReceived();
         if (!this.started) {
             this.started = true;
             Universe.LOGGER.info("Dev script: player in world, starting in {} ticks", START_DELAY);
@@ -474,7 +476,7 @@ public final class DevScript {
                     minecraft.mouseHandler.isMouseGrabbed(), player.getData(UniverseAttachments.CREDITS), String.format("%.2f", player.getX()),
                     String.format("%.2f", player.getY()), String.format("%.2f", player.getZ()),
                     player.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.GRAVITY), minecraft.getFps()
-                            + ", dyson sky " + DysonSkyRenderer.takeStats());
+                            + ", dyson sky " + DysonSkyRenderer.takeStats() + ", " + io.github.sweetcornna.universe.client.sky.SpaceDust.stats());
             // 测帧率：不限帧、关垂直同步（无头验收结束后 options.txt 会还原）
             case "unlimitedfps" -> {
                 minecraft.options.framerateLimit().set(260);

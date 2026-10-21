@@ -60,7 +60,7 @@ class SurvivalProgressionTest {
     private static final Set<String> UNOBTAINABLE = Set.of(NS + "crude_oil_seep", NS + "damaged_multitool", NS + "drop_pod",
             NS + "monolith", NS + "trade_terminal",
             NS + "station_hull", NS + "station_floor", NS + "station_glass", NS + "station_light", NS + "station_pad", NS + "station_trim",
-            NS + "ship_repair", NS + "station_teleporter", NS + "mission_board",
+            NS + "station_solar_panel", NS + "ship_repair", NS + "station_teleporter", NS + "mission_board",
             // Mk.II 部件只能在空间站买、在坠毁飞船里拆到（ADR-0017）
             NS + "ship_thruster_mk2", NS + "fuel_tank_mk2", NS + "impulse_engine_mk2", NS + "warp_drive_mk2", NS + "alloy_hull_plating");
     /** 每类设备配方最多几种原料、几种产物：同类设备里格子最多的那台（{@code RecipeMachines}）。 */

@@ -152,6 +152,7 @@ public final class UniverseItems {
     public static final DeferredItem<BlockItem> STATION_LIGHT = ITEMS.registerSimpleBlockItem(UniverseBlocks.STATION_LIGHT);
     public static final DeferredItem<BlockItem> STATION_PAD = ITEMS.registerSimpleBlockItem(UniverseBlocks.STATION_PAD);
     public static final DeferredItem<BlockItem> STATION_TRIM = ITEMS.registerSimpleBlockItem(UniverseBlocks.STATION_TRIM);
+    public static final DeferredItem<BlockItem> STATION_SOLAR_PANEL = ITEMS.registerSimpleBlockItem(UniverseBlocks.STATION_SOLAR_PANEL);
     public static final DeferredItem<BlockItem> SHIP_REPAIR = ITEMS.registerSimpleBlockItem(UniverseBlocks.SHIP_REPAIR);
     public static final DeferredItem<BlockItem> STATION_TELEPORTER = ITEMS.registerSimpleBlockItem(UniverseBlocks.STATION_TELEPORTER);
     public static final DeferredItem<BlockItem> MISSION_BOARD = ITEMS.registerSimpleBlockItem(UniverseBlocks.MISSION_BOARD);
@@ -366,7 +367,7 @@ public final class UniverseItems {
         order.addAll(MODULES.values());
         order.addAll(List.of(NAVIGATION_DATA, SIGNAL_BOOSTER, SUPPLY_CRATE, DROP_POD, DATA_TERMINAL, MONOLITH, TECH_CACHE, SMOLDERING_WRECK));
         order.addAll(List.of(BASE_BEACON, TELEPORTER));
-        order.addAll(List.of(TRADE_TERMINAL, MISSION_BOARD, SHIP_REPAIR, STATION_TELEPORTER, STATION_HULL, STATION_FLOOR, STATION_GLASS, STATION_LIGHT, STATION_PAD, STATION_TRIM));
+        order.addAll(List.of(TRADE_TERMINAL, MISSION_BOARD, SHIP_REPAIR, STATION_TELEPORTER, STATION_HULL, STATION_FLOOR, STATION_GLASS, STATION_LIGHT, STATION_PAD, STATION_TRIM, STATION_SOLAR_PANEL));
         order.addAll(List.of(SENTINEL_SCRAP, SENTINEL_SPAWN_EGG, HEAVY_SENTINEL_SPAWN_EGG, PIRATE_SCRAP));
         order.addAll(ORES.values());
         order.addAll(ORE_DROPS.values());

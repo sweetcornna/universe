@@ -234,6 +234,7 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         block(UniverseBlocks.STATION_LIGHT.get(), "空间站灯板", "Station Light Panel");
         block(UniverseBlocks.STATION_PAD.get(), "停机坪标线", "Landing Pad Marking");
         block(UniverseBlocks.STATION_TRIM.get(), "空间站灯带", "Station Light Strip");
+        block(UniverseBlocks.STATION_SOLAR_PANEL.get(), "空间站太阳能板", "Station Solar Array");
         both("hud.universe.station", "空间站 · %s 格", "Station · %s m");
         both("gui.universe.star_map.economy", "空间站：%s · %s", "Station: %s · %s");
         both("hud.universe.station.credits", "%s 信用点", "%s credits");
@@ -649,6 +650,12 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("hud.universe.ship.hint.land", "飞入行星大气层即可降落", "Fly into a planet's atmosphere to land");
         both("hud.universe.ship.hint.no_fuel", "燃料耗尽", "Out of fuel");
         both("hud.universe.ship.target", "%s  %s 格", "%s  %s m");
+        both("commands.universe.space.unknown", "没有这个天体：%s", "Unknown body: %s");
+        both("commands.universe.space.view", "到了 %s 上空 %s 格", "Now %2$s m above %1$s");
+        both("hud.universe.ship.target_far", "%s  %s 千格", "%s  %s km");
+        both("screen.universe.transition.entry", "进入大气层", "Entering atmosphere");
+        both("screen.universe.transition.exit", "离开大气层", "Leaving atmosphere");
+        both("screen.universe.transition.warp", "脱离跃迁", "Dropping out of warp");
         both("hud.universe.ship.unlandable", "（不能着陆）", " (no landing)");
         both("hud.universe.ship.above", "  ▲%s 格", "  ▲%s m");
         both("hud.universe.ship.below", "  ▼%s 格", "  ▼%s m");

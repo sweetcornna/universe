@@ -369,7 +369,8 @@ final class UniverseModelProvider extends ModelProvider {
         }
         // 空间站的建材（ADR-0017）
         for (Block block : List.of(UniverseBlocks.STATION_HULL.get(), UniverseBlocks.STATION_FLOOR.get(), UniverseBlocks.STATION_GLASS.get(),
-                UniverseBlocks.STATION_LIGHT.get(), UniverseBlocks.STATION_PAD.get(), UniverseBlocks.STATION_TRIM.get())) {
+                UniverseBlocks.STATION_LIGHT.get(), UniverseBlocks.STATION_PAD.get(), UniverseBlocks.STATION_TRIM.get(),
+                UniverseBlocks.STATION_SOLAR_PANEL.get())) {
             blockModels.createTrivialCube(block);
         }
         for (Block block : List.of(UniverseBlocks.MONOLITH.get(), UniverseBlocks.TECH_CACHE.get(), UniverseBlocks.SMOLDERING_WRECK.get())) {

@@ -864,7 +864,7 @@ public class StarMapScreen extends Screen {
     // ---- 小工具
 
     /** 任意方向的线：把一个 1×1 的方块转过去、拉长。 */
-    static void line(GuiGraphicsExtractor graphics, double x0, double y0, double x1, double y1, float width, int color) {
+    public static void line(GuiGraphicsExtractor graphics, double x0, double y0, double x1, double y1, float width, int color) {
         double dx = x1 - x0;
         double dy = y1 - y0;
         double length = Math.sqrt(dx * dx + dy * dy);
@@ -882,7 +882,7 @@ public class StarMapScreen extends Screen {
     }
 
     /** 以 (x, y) 为中心画一张白色贴图，乘上颜色。 */
-    static void sprite(GuiGraphicsExtractor graphics, Identifier texture, double x, double y, double size, int color) {
+    public static void sprite(GuiGraphicsExtractor graphics, Identifier texture, double x, double y, double size, int color) {
         Matrix3x2fStack pose = graphics.pose();
         pose.pushMatrix();
         pose.translate((float) (x - size / 2), (float) (y - size / 2));

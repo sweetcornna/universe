@@ -75,6 +75,7 @@ public final class Stations {
             case LIGHT -> UniverseBlocks.STATION_LIGHT.get().defaultBlockState();
             case PAD -> UniverseBlocks.STATION_PAD.get().defaultBlockState();
             case TRIM -> UniverseBlocks.STATION_TRIM.get().defaultBlockState();
+            case SOLAR -> UniverseBlocks.STATION_SOLAR_PANEL.get().defaultBlockState();
             case TERMINAL -> UniverseBlocks.TRADE_TERMINAL.get().defaultBlockState()
                     .setValue(HorizontalDirectionalBlock.FACING, direction(placement.facing().rotate(site.hangar())));
             case REPAIR -> UniverseBlocks.SHIP_REPAIR.get().defaultBlockState()

@@ -12,9 +12,10 @@ import io.github.sweetcornna.universe.core.procgen.Seeds;
 /**
  * 每个恒星系的空间站（ADR-0017）：在哪、长什么样、哪里算"站内"。
  *
- * <p>空间站在第一颗能着陆的行星（母星系是母星）的大气球外 700 格的黄道面上，方位由种子定，避开别的天体；
+ * <p>空间站在第一颗能着陆的行星（母星系是母星）的大气球外 {@value #DISTANCE} 格的黄道面上，方位由种子定，避开别的天体；
  * 机库的开口朝向那颗行星（取最近的正方向）。建筑是一个直径 45 格的圆盘：地板在 y = 0，室内 9 格高，
  * 开口一侧是机库（地上画着停机坪，旁边是飞船维修台），另一侧是大厅（交易终端、任务板、传送器）。
+ * 圆盘外面（ADR-0021）：机库开口前两排引导灯，背后一根桁架通到一面碟形天线，两边伸出两百多格宽的太阳翼。
  *
  * <p>方块按"本地坐标"描述：原点是地板中心，+x 朝机库开口；放进世界时按 {@link Site#hangar()} 转过去。
  */
@@ -27,7 +28,7 @@ public final class StationLayout {
     public static final int MIN_Y = -4;
     public static final int MAX_Y = 18;
     /** 离行星大气球多远。 */
-    public static final double DISTANCE = 700;
+    public static final double DISTANCE = 900;
     /** 机库开口：宽 17（本地 |z| ≤ 8）、高 9（1–9 层）。 */
     public static final int OPENING_HALF_WIDTH = 8;
     /** 停机坪中心（本地 x）和半径。 */
@@ -43,7 +44,18 @@ public final class StationLayout {
     public static final int MISSION_BOARD_X = -15;
     public static final int MISSION_BOARD_Z = 6;
     /** 离别的天体至少这么远。 */
-    private static final double CLEARANCE = 150;
+    private static final double CLEARANCE = 400;
+    /** 机库开口前的引导灯从外墙往外排多远（ADR-0021）。 */
+    static final int APPROACH_LENGTH = 96;
+    /** 背后的桁架多长，尽头是一面碟形天线。 */
+    static final int SPINE_LENGTH = 72;
+    static final int DISH_RADIUS = 8;
+    /** 两翼的太阳能板：横梁在本地 x = {@value #WING_X}、y = {@value #WING_Y}，每边从外墙往外伸 {@value #WING_SPAN} 格。 */
+    static final int WING_X = -8;
+    static final int WING_Y = 5;
+    static final int WING_SPAN = 92;
+    /** 整座空间站（连同两翼）离中心最远多少格。 */
+    public static final int EXTENT = RADIUS + WING_SPAN;
 
     private StationLayout() {
     }
@@ -114,7 +126,9 @@ public final class StationLayout {
         /** 传送器，在大厅里交易终端旁边。 */
         TELEPORTER,
         /** 任务板，在交易终端另一边。 */
-        MISSION_BOARD
+        MISSION_BOARD,
+        /** 两翼的太阳能板。 */
+        SOLAR
     }
 
     /**
@@ -204,9 +218,14 @@ public final class StationLayout {
             return dx * dx + dz * dz < (RADIUS - 0.5) * (RADIUS - 0.5) && ly >= 0.5 && ly < CEILING;
         }
 
-        /** 包住整座建筑的方块范围：{minX, minY, minZ, maxX, maxY, maxZ}。 */
+        /** 包住整座建筑（连同外面的结构）的方块范围：{minX, minY, minZ, maxX, maxY, maxZ}。 */
         public int[] bounds() {
-            return new int[] {this.x - RADIUS - 1, this.y + MIN_Y, this.z - RADIUS - 1, this.x + RADIUS + 1, this.y + MAX_Y, this.z + RADIUS + 1};
+            int back = RADIUS + SPINE_LENGTH + DISH_RADIUS;
+            int front = RADIUS + APPROACH_LENGTH;
+            int side = EXTENT + 1;
+            int[] a = this.toWorld(-back, MIN_Y, -side);
+            int[] b = this.toWorld(front, MAX_Y, side);
+            return new int[] {Math.min(a[0], b[0]), this.y + MIN_Y, Math.min(a[2], b[2]), Math.max(a[0], b[0]), this.y + MAX_Y, Math.max(a[2], b[2])};
         }
     }
 
@@ -239,9 +258,9 @@ public final class StationLayout {
             double angle = start + i * Math.PI / 12;
             double sx = anchor.x() + Math.cos(angle) * distance;
             double sz = anchor.z() + Math.sin(angle) * distance;
-            double margin = Math.hypot(sx, sz) - starRadius - 300;
+            double margin = Math.hypot(sx, sz) - starRadius - 3000;
             for (SpaceLayout.Body body : bodies) {
-                margin = Math.min(margin, body.distanceTo(sx, 0, sz) - body.radius() - RADIUS - CLEARANCE);
+                margin = Math.min(margin, body.distanceTo(sx, 0, sz) - body.radius() - EXTENT - CLEARANCE);
             }
             if (margin > bestMargin) {
                 bestMargin = margin;
@@ -297,6 +316,9 @@ public final class StationLayout {
             return null;
         }
         double r = Math.sqrt(x * x + z * z);
+        if (r > RADIUS + 0.5) {
+            return exterior(x, y, z);
+        }
         if (y < 0) {
             return below(r, y);
         }
@@ -421,6 +443,71 @@ public final class StationLayout {
         }
         if (x == 0 && z == 0 && y > CEILING + 3) {
             return place(y == MAX_Y ? Part.LIGHT : Part.HULL);
+        }
+        return null;
+    }
+
+    /** 圆盘外面：引导灯、桁架和天线、太阳翼。 */
+    private static Placement exterior(int x, int y, int z) {
+        // 机库开口前两排引导灯，地板和天花板的高度各一排，每 8 格一盏
+        if (x > RADIUS && x <= RADIUS + APPROACH_LENGTH && (x - RADIUS) % 8 == 0 && Math.abs(z) == OPENING_HALF_WIDTH + 4
+                && (y == 0 || y == CEILING)) {
+            return place(Part.LIGHT);
+        }
+        if (x < -RADIUS) {
+            return spine(-x - RADIUS, y, z);
+        }
+        int out = Math.abs(z) - RADIUS;
+        if (out < -2 || out > WING_SPAN) {
+            return null;
+        }
+        // 太阳翼的横梁，尖上一盏灯
+        if (x == WING_X && y == WING_Y) {
+            return place(Part.HULL);
+        }
+        if (out == WING_SPAN && x == WING_X && y == WING_Y + 1) {
+            return place(Part.LIGHT);
+        }
+        // 四块太阳能板，每块 18 格长、19 格宽，中间隔 4 格露出横梁，边上一圈灯带
+        if (y == WING_Y && out >= 6) {
+            int k = (out - 6) % 22;
+            int across = Math.abs(x - WING_X);
+            if (k < 18 && across <= 9) {
+                return place(k == 0 || k == 17 || across == 9 ? Part.TRIM : Part.SOLAR);
+            }
+        }
+        return null;
+    }
+
+    /** 背后的桁架（{@code along} 是离外墙多远）：5×5 的方管，四条边梁、面上斜撑，每 12 格一圈灯带；中段两侧一排散热片；尽头一面朝外的碟形天线。 */
+    private static Placement spine(int along, int y, int z) {
+        int az = Math.abs(z);
+        if (along <= SPINE_LENGTH) {
+            if (az <= 2 && y >= 2 && y <= 6) {
+                boolean face = az == 2 || y == 2 || y == 6;
+                if (!face) {
+                    return null;
+                }
+                if (along % 12 == 0) {
+                    return place(Part.TRIM);
+                }
+                boolean beam = az == 2 && (y == 2 || y == 6);
+                return beam || Math.floorMod(along + y + z, 4) == 0 ? place(Part.HULL) : null;
+            }
+            if (y == 4 && along >= 10 && along <= 50 && az >= 3 && az <= 14 && along % 10 < 7) {
+                return place(Part.HULL);
+            }
+            return null;
+        }
+        int out = along - SPINE_LENGTH;
+        double rr = Math.hypot(z, y - 4);
+        // 碟面：中间离桁架最近，往外翘，凹面朝外
+        if (rr <= DISH_RADIUS + 0.5 && out == 1 + (int) Math.round(rr * rr / (DISH_RADIUS * 3.0))) {
+            return place(Part.HULL);
+        }
+        // 馈源杆，顶上一盏灯
+        if (z == 0 && y == 4 && out >= 2 && out <= 7) {
+            return place(out == 7 ? Part.LIGHT : Part.HULL);
         }
         return null;
     }

@@ -322,6 +322,11 @@ io.github.sweetcornna.universe
 | `neoforge.mods.toml` 的图标：方形图标用 `iconFile`（模组列表左边），横幅用 `bannerFile`；`logoFile` 已弃用，还写着会在启动时弹"模组加载警告"界面，挡住 `--quickPlay` | 已确认 |
 | 客户端配置界面：`container.registerConfig(ModConfig.Type.CLIENT, SPEC)`，`container.registerExtensionPoint(IConfigScreenFactory.class, ConfigurationScreen::new)`；枚举项实现 `TranslatableEnum` 给出显示名，语言键 `<模组>.configuration.<键>`、`.tooltip`，分节标题 `<模组>.configuration.section.<模组>.client.toml` | 已确认，`client.ClientConfig` |
 
+| 界面层的叠加混合：原版的 `position_tex_color.fsh` 丢掉透明度为 0 的像素，`BlendFunction.ADDITIVE` 那样"颜色乘 0 再加"的贴图画不出来。要叠加就用 `BlendFunction.LIGHTNING`（`SRC_ALPHA, ONE`），贴图存白色、亮度放在透明度里；管线从 `RenderPipelines.GUI_TEXTURED_SNIPPET` 派生，在 `RegisterRenderPipelinesEvent` 里注册 | 已确认，`client.sky.SunGlare` |
+| 当前屏幕是 `minecraft.gui.screen()`（没有 `minecraft.screen` 字段了）；颜色插值是 `ARGB.srgbLerp`；这一帧实际的视野（飞行、疾跑会改）是 `camera.getFov()`，`options.fov()` 只是设置 | 已确认 |
+| 换维度的加载画面：mod 总线的 `RegisterDimensionTransitionScreenEvent`，`registerIncomingEffect(维度, (tracker, reason) -> 画面)` 返回一个 `LevelLoadingScreen` 子类；画面在 `tick()` 里一看 `isLevelReady()` 就关，覆盖 `tick()` 可以多放一会儿。工厂被调用时客户端的玩家是新建的，还没坐上载具 | 已确认，`client.sky.AtmosphereTransitions` |
+| `SubmitCustomGeometryEvent` 的 `PoseStack` 是单位矩阵，坐标相对摄像机；`RenderTypes.lightning()` 是 `POSITION_COLOR` 四边形、叠加混合、带背面剔除，顶点要按摄像机看过去逆时针排 | 已确认，`client.sky.SpaceDust` |
+| 原版一分钟没有键鼠输入就把帧率压到 30（`FramerateLimitTracker`，选项 `inactivityFpsLimit`），十分钟后压到 10；脚本按的键不算输入，要调 `minecraft.getFramerateLimitTracker().onInputReceived()` | 已确认，开发脚本里在用 |
 拿不准的 API 先查源码再写，核实后把结果补进这张表。源码在：
 
 - Minecraft（含 NeoForge 补丁）：`build/moddev/artifacts/minecraft-patched-26.3.0.95-sources.jar`，IDE 里可以直接跳转。

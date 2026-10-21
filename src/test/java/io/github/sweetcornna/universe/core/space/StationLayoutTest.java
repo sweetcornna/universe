@@ -39,8 +39,8 @@ class StationLayoutTest {
             boolean ok = true;
             for (SpaceLayout.Body body : SpaceLayout.of(system)) {
                 double gap = body.distanceTo(s.x(), s.y(), s.z()) - body.radius();
-                assertTrue(gap > StationLayout.RADIUS, "空间站不能压进大气球：" + system.name() + " 离 " + body.planet().id() + " " + gap);
-                ok &= gap > StationLayout.RADIUS + 100;
+                assertTrue(gap > StationLayout.EXTENT, "空间站不能压进大气球：" + system.name() + " 离 " + body.planet().id() + " " + gap);
+                ok &= gap > StationLayout.EXTENT + 100;
             }
             clear += ok ? 1 : 0;
             assertFalse(StationLayout.anchor(system).orElseThrow().moon());

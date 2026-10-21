@@ -17,7 +17,7 @@ import org.jspecify.annotations.Nullable;
 /**
  * 小行星（ADR-0017）。
  *
- * <p>每个恒星系有一两条小行星带：在相邻两颗行星的轨道之间（或最外侧行星的外面）绕恒星一圈，带宽几百格，上下 200 格以内，
+ * <p>每个恒星系有一两条小行星带：在相邻两颗行星的轨道之间（或最外侧行星的外面）绕恒星一圈，带宽两三千格，上下几百格，
  * 中间密、边上稀。太空按 {@link #CELL} 格的立方体分格，每格里有哪几颗小行星由恒星系种子和格子坐标定：同一格永远是同样几颗。
  * 适配层只在玩家附近生成实体，离开就删掉，回来再按种子生成（和无人深空一样"重生"）；打碎的那颗要过
  * {@link #REGROW_TICKS} 才重新出现。带外的太空里偶尔也有零散的一颗。
@@ -32,14 +32,14 @@ public final class AsteroidField {
     /** 带外每个候选点留下的概率：每格平均约 0.05 颗。 */
     static final double SCATTER = 0.008;
     /** 带的内外边离天体（大气球）至少多远。 */
-    static final double BODY_MARGIN = 400;
+    static final double BODY_MARGIN = 3000;
     /** 带的内边离恒星表面至少多远。 */
-    static final double STAR_MARGIN = 800;
+    static final double STAR_MARGIN = 9000;
     /** 带宽、上下半厚的范围（格）。 */
-    static final double MIN_WIDTH = 300;
-    static final double MAX_WIDTH = 650;
-    static final double MIN_HALF_HEIGHT = 90;
-    static final double MAX_HALF_HEIGHT = 200;
+    static final double MIN_WIDTH = 1800;
+    static final double MAX_WIDTH = 4500;
+    static final double MIN_HALF_HEIGHT = 200;
+    static final double MAX_HALF_HEIGHT = 500;
     /** 打碎后多久才重新长出来（刻）：十分钟。 */
     public static final int REGROW_TICKS = 20 * 60 * 10;
     /**
@@ -129,7 +129,7 @@ public final class AsteroidField {
             }
             from = Math.max(from, band[1]);
         }
-        gaps.add(new double[] {Math.max(from, outermost), Math.max(from, outermost) + 2500});
+        gaps.add(new double[] {Math.max(from, outermost), Math.max(from, outermost) + 24000});
 
         Rng rng = Rng.of(Seeds.derive(system.seed(), "asteroid_belts"));
         int count = Math.min(gaps.size(), rng.chance(0.55) ? 2 : 1);

@@ -144,6 +144,27 @@ class GalaxyGeneratorTest {
     }
 
     @Test
+    void someRockyPlanetsHaveRings() {
+        int ringed = 0;
+        for (long seed : SEEDS) {
+            Galaxy galaxy = GalaxyGenerator.generate(seed, 64);
+            assertFalse(galaxy.homePlanet().rings(), "母星不带环");
+            for (StarSystem system : galaxy.systems()) {
+                for (Planet body : system.bodies()) {
+                    if (body.rings() && body.type() != PlanetType.GAS_GIANT) {
+                        assertFalse(body.id().isMoon(), "卫星不带环：" + body.id());
+                        if (body.landable()) {
+                            ringed++;
+                        }
+                    }
+                }
+            }
+        }
+        // 每个星系十来颗能登陆、带环的岩石行星
+        assertTrue(ringed >= 5 * 8, "带环的可登陆岩石行星只有 " + ringed + " 颗");
+    }
+
+    @Test
     void systemsAreSpreadOut() {
         Galaxy galaxy = GalaxyGenerator.generate(42L, 64);
         double nearestSum = 0;

@@ -56,6 +56,8 @@ final class PlanetGenerator {
         } else {
             radius = physical.logRange(0.35, 1.8);
             gravity = clamp(radius * physical.range(0.7, 1.15), 0.15, 2.4);
+            // 少数岩石行星也带环，站在地上看得到环横过天空（ADR-0021）。单开一条流，别的取值不变；母星系照旧
+            rings = spec.forcedType() == null && Rng.of(Seeds.derive(seed, "rings")).chance(0.12);
         }
         double albedo = physical.range(0.1, 0.45);
         double atmosphereChance = spec.gasGiant() ? 1

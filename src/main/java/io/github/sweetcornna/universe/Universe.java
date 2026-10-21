@@ -51,6 +51,7 @@ import io.github.sweetcornna.universe.world.CrashSite;
 import io.github.sweetcornna.universe.world.DimensionCommand;
 import io.github.sweetcornna.universe.world.RuntimeDimensions;
 import io.github.sweetcornna.universe.world.planet.PlanetWeather;
+import io.github.sweetcornna.universe.world.space.SpaceCommand;
 import net.minecraft.resources.Identifier;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
@@ -118,6 +119,7 @@ public final class Universe {
         ServerPerf.registerEvents(gameBus);
         BenchCommand.registerEvents(gameBus);
         gameBus.addListener(RegisterCommandsEvent.class, event -> DimensionCommand.register(event.getDispatcher()));
+        gameBus.addListener(RegisterCommandsEvent.class, event -> SpaceCommand.register(event.getDispatcher()));
     }
 
     private void commonSetup(FMLCommonSetupEvent event) {

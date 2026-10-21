@@ -204,6 +204,9 @@ public final class UniverseBlocks {
             p -> station(p.mapColor(MapColor.COLOR_YELLOW)));
     public static final DeferredBlock<Block> STATION_TRIM = BLOCKS.registerSimpleBlock("station_trim",
             p -> station(p.mapColor(MapColor.COLOR_CYAN)).lightLevel(state -> 9));
+    /** 空间站两翼的太阳能板（ADR-0021），只是外观，不发电。 */
+    public static final DeferredBlock<Block> STATION_SOLAR_PANEL = BLOCKS.registerSimpleBlock("station_solar_panel",
+            p -> station(p.mapColor(MapColor.COLOR_BLUE)));
     /** 交易终端：挖不掉，只在空间站里有。 */
     public static final DeferredBlock<TradeTerminalBlock> TRADE_TERMINAL = BLOCKS.registerBlock("trade_terminal", TradeTerminalBlock::new,
             p -> p.mapColor(MapColor.METAL).strength(-1.0F, 3600000.0F).sound(SoundType.METAL).noLootTable().lightLevel(state -> 10)

@@ -3,6 +3,7 @@ package io.github.sweetcornna.universe.client.ship;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 import java.util.OptionalInt;
 
 import org.jspecify.annotations.Nullable;
@@ -450,15 +451,14 @@ public final class ShipClient {
             double dz = body.z() - ship.getZ();
             float bearing = (float) Math.toDegrees(Math.atan2(-dx, dz));
             float relative = Mth.wrapDegrees(bearing - viewYaw);
-            int distance = (int) Math.max(0, body.distanceTo(ship.getX(), ship.getY(), ship.getZ()) - body.radius());
+            double distance = Math.max(0, body.distanceTo(ship.getX(), ship.getY(), ship.getZ()) - body.radius());
             String name = GalaxyText.planet(body.planet());
             Component kind = body.planet().landable() ? Component.empty() : Component.translatable("hud.universe.ship.unlandable");
             // 箭头只管水平方向；高度差超过半个大气球时标出来，不然会从星球上方或下方飞过去
             double dy = body.y() - ship.getY();
             Component vertical = Math.abs(dy) < body.radius() * 0.5 ? Component.empty()
                     : Component.translatable(dy > 0 ? "hud.universe.ship.above" : "hud.universe.ship.below", (int) Math.abs(dy));
-            lines.add(Component.literal(arrow(relative) + " ").append(Component.translatable("hud.universe.ship.target", name, distance))
-                    .append(vertical).append(kind));
+            lines.add(Component.literal(arrow(relative) + " ").append(target(name, distance)).append(vertical).append(kind));
         }
         // 最近的小行星带：在带里就写"在小行星带里"，不然指向带里最近的一点
         AsteroidField.Belt belt = AsteroidField.nearest(belts, ship.getX(), ship.getY(), ship.getZ());
@@ -472,11 +472,19 @@ public final class ShipClient {
                 double dy = p[1] - ship.getY();
                 Component vertical = Math.abs(dy) < 40 ? Component.empty()
                         : Component.translatable(dy > 0 ? "hud.universe.ship.above" : "hud.universe.ship.below", (int) Math.abs(dy));
-                lines.add(Component.literal(arrow(relative) + " ").append(Component.translatable("hud.universe.ship.target",
-                        Component.translatable("hud.universe.ship.belt"), (int) belt.distanceTo(ship.getX(), ship.getY(), ship.getZ())))
+                lines.add(Component.literal(arrow(relative) + " ")
+                        .append(target(Component.translatable("hud.universe.ship.belt"), belt.distanceTo(ship.getX(), ship.getY(), ship.getZ())))
                         .append(vertical));
             }
         }
+    }
+
+    /** 目标和距离：一万格以内写格数，再远按千格写一位小数。 */
+    private static Component target(Object name, double distance) {
+        if (distance < 10000) {
+            return Component.translatable("hud.universe.ship.target", name, (int) distance);
+        }
+        return Component.translatable("hud.universe.ship.target_far", name, String.format(Locale.ROOT, "%.1f", distance / 1000));
     }
 
     /** 背包里有几个空间翘曲器；创造模式显示 ∞。 */

@@ -71,7 +71,8 @@ public class ShipEntity extends Entity implements IEntityWithComplexSpawn {
     /** 船飞出星球维度顶部这么高就进入太空。 */
     public static final int SPACE_ALTITUDE = 48;
     /** 太空里离维度底部最近能飞到多少格。 */
-    private static final int SPACE_MARGIN = 32;
+    /** 太空里离黄道面最远能飞多远（格）：比最大的气态巨行星连同卫星还远。 */
+    public static final double SPACE_LIMIT = 60000;
     /** 撞上小行星：顺着法线的速度反弹几成；比这么快（格/刻）撞上开始掉船体，每快 1 格/刻掉几点，最多掉几点。 */
     private static final double BUMP_RESTITUTION = 0.4;
     public static final double RAM_SPEED = 0.8;
@@ -833,8 +834,8 @@ public class ShipEntity extends Entity implements IEntityWithComplexSpawn {
         this.setPos(this.getX() + moved.x, this.getY() + moved.y, this.getZ() + moved.z);
         this.setDeltaMovement(moved);
         if (env.space()) {
-            // 太空维度上下只有几百格：飞到边上就停住，免得掉出世界（船会被删掉，乘客受伤）
-            double y = Mth.clamp(this.getY(), level.getMinY() + SPACE_MARGIN, level.getMaxY() + SPACE_MARGIN * 8);
+            // 太空里能绕着星球上下飞（虚空伤害由 EntityMixin 关掉），只在离黄道面极远的地方停住
+            double y = Mth.clamp(this.getY(), -SPACE_LIMIT, SPACE_LIMIT);
             if (y != this.getY()) {
                 this.setPos(this.getX(), y, this.getZ());
                 this.flight.restore(this.flight.vx(), 0, this.flight.vz(), this.flight.yaw());

@@ -5,9 +5,9 @@ import java.util.Set;
 import org.jspecify.annotations.Nullable;
 
 import io.github.sweetcornna.universe.Universe;
+import io.github.sweetcornna.universe.client.sky.AtmosphereTransitions;
 import io.github.sweetcornna.universe.network.DimensionListPayload;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screens.LevelLoadingScreen;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.level.Level;
@@ -34,7 +34,11 @@ public final class ClientDimensions {
     public static void registerEvents(IEventBus modBus, IEventBus gameBus) {
         modBus.addListener(RegisterClientPayloadHandlersEvent.class,
                 event -> event.register(DimensionListPayload.TYPE, ClientDimensions::handle));
-        modBus.addListener(RegisterDimensionTransitionScreenEvent.class, event -> transitionScreens = event);
+        modBus.addListener(RegisterDimensionTransitionScreenEvent.class, event -> {
+            transitionScreens = event;
+            // 母星是主世界，不是运行时维度，开局就登记
+            event.registerIncomingEffect(Level.OVERWORLD, (tracker, reason) -> AtmosphereTransitions.create(tracker, reason, Level.OVERWORLD));
+        });
         // 登录包里的维度清单已经包含当时加载着的运行时维度
         gameBus.addListener(ClientPlayerNetworkEvent.LoggingIn.class,
                 event -> event.getPlayer().connection.levels().forEach(ClientDimensions::registerTransitionScreen));
@@ -55,10 +59,10 @@ public final class ClientDimensions {
 
     private static void registerTransitionScreen(ResourceKey<Level> dimension) {
         if (transitionScreens != null && dimension.identifier().getNamespace().equals(Universe.MOD_ID)) {
-            // 暂时借用末地传送门的背景，进入运行时维度时能直接看出补注册是否生效；正式的降落画面留给 S4
+            // 坐飞船进出大气、跃迁到达有自己的过场（ADR-0021）；别的情况还是末地传送门的背景，能看出补注册是否生效
             transitionScreens.registerIncomingEffect(dimension, (tracker, reason) -> {
                 Universe.LOGGER.debug("Runtime transition screen for {}", dimension.identifier());
-                return new LevelLoadingScreen(tracker, LevelLoadingScreen.Reason.END_PORTAL);
+                return AtmosphereTransitions.create(tracker, reason, dimension);
             });
         }
     }

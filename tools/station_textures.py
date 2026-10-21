@@ -304,6 +304,26 @@ def station_trim():
     return img
 
 
+def station_solar_panel():
+    """太阳能板：深蓝的电池片排成格子，银色的细栅线，边上一道金色的框（国际空间站的太阳翼）。"""
+    rng = random.Random(187)
+    cell = (24, 40, 92)
+    img = new(cell)
+    for y in range(N):
+        for x in range(N):
+            if x % 4 == 0 or y % 8 == 0:
+                put(img, x, y, (150, 160, 175))
+            else:
+                # 电池片上一点斜的反光
+                t = ((x + y) % 8) / 8
+                put(img, x, y, mix(cell, (52, 84, 160), 0.35 * (1 - abs(t - 0.5) * 2)))
+    noise(img, rng, 0.04)
+    for i in range(N):
+        put(img, i, 0, (196, 150, 60))
+        put(img, i, N - 1, (150, 110, 40))
+    return img
+
+
 # ---- 任务板：同一个机壳，屏幕上三行任务，每行前面一个彩色的小方块，最后一行打了勾
 
 RED = (255, 106, 90)
@@ -372,6 +392,7 @@ def main():
     save(station_light(), "station_light")
     save(station_pad(), "station_pad")
     save(station_trim(), "station_trim")
+    save(station_solar_panel(), "station_solar_panel")
     save(trade_terminal_front(), "trade_terminal_front")
     save(trade_terminal_side(), "trade_terminal_side")
     save(trade_terminal_top(), "trade_terminal_top")

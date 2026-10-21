@@ -5,7 +5,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * 把世界里的点投影到 HUD 上（扫描标记、航点用）。按当前相机的位置、朝向和视野算，不考虑视角晃动。
+ * 把世界里的点投影到 HUD 上（扫描标记、航点、眩光用）。按当前相机的位置、朝向和视野算，不考虑视角晃动。
  */
 public final class ScreenProjection {
     private final Vec3 eye;
@@ -30,8 +30,9 @@ public final class ScreenProjection {
 
     public static ScreenProjection of(Minecraft minecraft, int width, int height) {
         Camera camera = minecraft.gameRenderer.mainCamera();
+        // 这一帧实际的视野：飞行、疾跑、跃迁都会改它，用设置里的视野会让标记和眩光偏离目标
         return new ScreenProjection(camera.position(), Math.toRadians(camera.yRot()), Math.toRadians(camera.xRot()),
-                Math.toRadians(minecraft.options.fov().get()), width, height);
+                Math.toRadians(camera.getFov()), width, height);
     }
 
     public Vec3 eye() {
@@ -57,6 +58,15 @@ public final class ScreenProjection {
         }
         return new int[] {(int) Math.round(this.width / 2.0 + c[0] / c[2] * this.focal),
                 (int) Math.round(this.height / 2.0 - c[1] / c[2] * this.focal)};
+    }
+
+    /** 不取整的屏幕坐标，屏幕外的也算（眩光贴图要跟着恒星平滑移动）；点在身后时为空。 */
+    public double[] screen(Vec3 world) {
+        double[] c = this.camera(world);
+        if (c[2] < 1e-3) {
+            return null;
+        }
+        return new double[] {this.width / 2.0 + c[0] / c[2] * this.focal, this.height / 2.0 - c[1] / c[2] * this.focal};
     }
 
     /** 屏幕外（或身后）的点：在离屏幕边 {@code margin} 的框上，朝它那个方向的位置。 */

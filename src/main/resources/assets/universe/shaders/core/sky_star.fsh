@@ -76,7 +76,7 @@ float spikes(vec2 p, float strength) {
 }
 
 // 主序星和红巨星的表面：临边昏暗、米粒组织、黑子，慢慢自转
-vec3 surface(vec2 p, float r, vec3 tint, float granulation, float activity, float seed, float time, bool giant) {
+vec3 surface(vec2 p, float r, vec3 tint, float granulation, float activity, float spotDepth, float seed, float time, bool giant) {
     float mu = sqrt(max(1.0 - r * r, 0.0));
     float spin = time * (giant ? 0.003 : 0.015) + seed * TAU;
     vec3 n = vec3(p, mu);
@@ -98,7 +98,7 @@ vec3 surface(vec2 p, float r, vec3 tint, float granulation, float activity, floa
         float s = fbm(q * 5.0 + o * 1.7, 3);
         float umbra = smoothstep(0.75 - 0.05 * activity, 0.78 - 0.05 * activity, s);
         float penumbra = smoothstep(0.70 - 0.05 * activity, 0.75 - 0.05 * activity, s);
-        spots = (0.4 * penumbra + 0.45 * umbra) * belt;
+        spots = (0.4 * penumbra + 0.45 * umbra) * belt * spotDepth;
     }
     float limb = giant ? 0.2 + 0.8 * pow(mu, 0.8) : 0.45 + 0.55 * pow(mu, 0.6);
     if (giant) {
@@ -261,16 +261,26 @@ void main() {
         }
     } else {
         bool giant = style == RED_GIANT;
+        // 我的世界的样子：圆盘按像素块画，边缘是一级级的台阶，像原版的太阳贴图；外面的日冕和光晕还是平滑的（ADR-0021）。
+        // 一块三四个像素，取 2 的幂，圆盘至少分成十六块宽
+        float cell = exp2(ceil(log2(max(max(fwidth(p.x), fwidth(p.y)) * 3.5, 1e-5))));
+        cell = min(cell, 0.125);
+        vec2 pq = (floor(p / cell) + 0.5) * cell;
+        float rq = length(pq);
         float edgeRadius = r;
+        float edgeBlock = rq;
         if (giant) {
             // 红巨星的边缘不是正圆，被对流顶得起伏
-            vec2 around = p / max(r, 1e-3);
+            vec2 around = pq / max(rq, 1e-3);
             float wobble = fbm(vec3(around * 2.0 + seed * 9.0, time * 0.01), 3) - 0.5;
             edgeRadius = r / (1.0 + 0.05 * wobble);
+            edgeBlock = rq / (1.0 + 0.05 * wobble);
         }
-        vec3 core = surface(p, min(edgeRadius, 1.0), tint, first, TextureMat[1].y, seed, time, giant);
-        alpha = insideDisc(edgeRadius);
-        color = mix(corona(edgeRadius, extent, scatter, glow, giant), core, alpha);
+        // 真空里直接看恒星，圆盘亮得发白，黑子几乎看不出；隔着大气才看得清
+        float spotDepth = mix(0.2, 1.0, clamp(scatter * 2.0, 0.0, 1.0));
+        vec3 core = surface(pq, min(edgeBlock, 1.0), tint, first, TextureMat[1].y, spotDepth, seed, time, giant);
+        alpha = step(edgeBlock, 1.0);
+        color = mix(corona(max(edgeRadius, 1.0), extent, scatter, glow, giant), core, alpha);
     }
     if (TextureMat[1].z > 0.0) {
         color += mix(glow, vec3(1.0), 0.5) * spikes(p, TextureMat[1].z);

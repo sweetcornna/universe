@@ -124,7 +124,7 @@ public final class ShipTransit {
                 player.setData(UniverseAttachments.DEPARTURES, Map.copyOf(departures));
             }
         }
-        double[] exit = SpaceLayout.exitPoint(body.get(), ship.getYRot());
+        double[] exit = SpaceLayout.exitPoint(body.get(), ship.getX(), ship.getZ(), body.get().planet().worldSize());
         PENDING.add(new Pending(ship, SpaceDimensions.key(system), Optional.empty(), new Vec3(exit[0], exit[1], exit[2]), Float.NaN, -1));
     }
 

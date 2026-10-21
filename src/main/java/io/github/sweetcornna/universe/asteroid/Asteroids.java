@@ -38,7 +38,7 @@ public final class Asteroids {
     /** 玩家身边多远以内的小行星要生成出来（格）。 */
     static final double SPAWN_RADIUS = 160;
     /** 空间站周围多远以内不放（格）。 */
-    private static final double STATION_CLEARANCE = StationLayout.RADIUS + 120;
+    private static final double STATION_CLEARANCE = StationLayout.EXTENT + 60;
 
     /** 一个恒星系的太空：小行星带、天体和空间站的位置。 */
     record Field(StarSystem system, List<AsteroidField.Belt> belts, List<SpaceLayout.Body> bodies, double starRadius,
