@@ -13,7 +13,8 @@
     "client.CameraMixin",
     "client.ClientLevelMixin",
     "client.IntegratedServerMixin",
-    "client.MouseHandlerMixin"
+    "client.MouseHandlerMixin",
+    "client.SkyRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 1

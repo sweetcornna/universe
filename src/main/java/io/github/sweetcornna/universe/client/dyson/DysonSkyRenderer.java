@@ -4,7 +4,6 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.Optional;
-import java.util.OptionalDouble;
 import java.util.OptionalInt;
 
 import org.joml.Matrix4f;
@@ -12,7 +11,6 @@ import org.joml.Vector3fc;
 import org.joml.Vector4f;
 import org.jspecify.annotations.Nullable;
 
-import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.ByteBufferBuilder;
@@ -43,7 +41,6 @@ import io.github.sweetcornna.universe.core.sky.SkyModel;
 import io.github.sweetcornna.universe.core.space.SpaceLayout;
 import io.github.sweetcornna.universe.world.planet.Planets;
 import io.github.sweetcornna.universe.world.space.SpaceDimensions;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.BindGroupLayouts;
 import net.minecraft.client.renderer.RenderPipelines;
@@ -51,19 +48,22 @@ import net.minecraft.client.renderer.state.level.LevelRenderState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.attribute.EnvironmentAttributes;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.client.event.ExtractLevelRenderStateEvent;
 import net.neoforged.neoforge.client.event.RegisterRenderPipelinesEvent;
-import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 
 /**
- * 天空里的戴森球（ADR-0016）：建好的节点、框架、球壳，和戴森云的太阳帆。画完天空以后叠上去，所有维度共用：
+ * 天空里的戴森球（ADR-0016）：建好的节点、框架、球壳，和戴森云的太阳帆。所有维度共用：
  * 星球（包括用原版天空的主世界）上按观察者在轨道上的位置看过去，角距离重新映射到恒星圆盘外面（{@link DysonSky}）；
  * 太空维度里按真实的位置画（半径换成太空里的距离，和行星的摆法一致）。
+ *
+ * <p>画在天空自己的那个 {@code RenderPass} 里，排在天空的最后：本模组的维度由 {@link PlanetSkyRenderer} 调
+ * {@link #drawInSky}，用原版天空的维度由 {@code SkyRendererMixin} 调。不另开 RenderPass，是因为开着 Iris 光影包时，
+ * 新开的 RenderPass 绑的是原版的主帧缓冲，光影包最后一步会把它整个盖掉；天空的 RenderPass 里前面画过光影包接管的原版天空，
+ * 后面画的东西跟着进了光影包的缓冲区（ADR-0019）。RenderPass 开着的时候不能写缓冲区，所以顶点在提取阶段就上传好。
  *
  * <p>背面的框架和节点先画、暗一些；然后是正面的球壳（半透明，能挡住后面的恒星）；最后是正面的框架、节点和帆。
  * 发光的部分在暗的天空里叠加混合；亮的天空里叠加会发白，按天空的亮度换成半透明的金色。
@@ -71,7 +71,6 @@ import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 public final class DysonSkyRenderer {
     /** 画在离观察者多远的天球上（和天空渲染器一样）。 */
     private static final float DISTANCE = 100;
-    private static final ContextKey<Frame> FRAME = new ContextKey<>(Universe.id("dyson_sky"));
     private static final RenderPipeline.Snippet SNIPPET = RenderPipeline.builder(RenderPipelines.GLOBALS_SNIPPET)
             .withBindGroupLayout(BindGroupLayouts.PROJECTION)
             .withBindGroupLayout(BindGroupLayouts.DYNAMIC_TRANSFORMS)
@@ -114,6 +113,9 @@ public final class DysonSkyRenderer {
     private final Batch[] batches = {this.backTint, this.back, this.shells, this.frontTint, this.front};
     private static final RenderPipeline[] PIPELINES = {SHELL, GLOW, SHELL, SHELL, GLOW};
     private final Frame frame = new Frame(this.batches);
+    private static @Nullable DysonSkyRenderer instance;
+    /** 这一帧要画的（提取阶段定下来，天空里画）；没有要画的是 null。 */
+    private @Nullable Frame toDraw;
     /** 天空有多亮：0 是黑的（夜里、太空、没有大气），1 是晴天的蓝天。 */
     private double bright;
     /** 这一帧按简化画质画（设置里的戴森球画质）。 */
@@ -224,6 +226,7 @@ public final class DysonSkyRenderer {
 
     public static void registerEvents(IEventBus modBus, IEventBus gameBus) {
         DysonSkyRenderer renderer = new DysonSkyRenderer();
+        instance = renderer;
         modBus.addListener(RegisterRenderPipelinesEvent.class, event -> {
             event.registerPipeline(GLOW);
             event.registerPipeline(SHELL);
@@ -234,11 +237,17 @@ public final class DysonSkyRenderer {
             cpuNanos += System.nanoTime() - start;
             cpuFrames++;
         });
-        gameBus.addListener(RenderLevelStageEvent.AfterSky.class, event -> {
-            long start = System.nanoTime();
-            renderer.render(event);
-            cpuNanos += System.nanoTime() - start;
-        });
+    }
+
+    /** 在天空的 RenderPass 里画这一帧的戴森球，排在天空最后。只在渲染线程上调。 */
+    public static void drawInSky(RenderPass pass) {
+        DysonSkyRenderer renderer = instance;
+        if (renderer == null || renderer.toDraw == null) {
+            return;
+        }
+        long start = System.nanoTime();
+        renderer.draw(pass, renderer.toDraw);
+        cpuNanos += System.nanoTime() - start;
     }
 
     // ---- 提取：算出天球上的位置
@@ -253,7 +262,7 @@ public final class DysonSkyRenderer {
 
     private void extract(ExtractLevelRenderStateEvent event) {
         LevelRenderState state = event.getRenderState();
-        state.setRenderData(FRAME, null);
+        this.toDraw = null;
         lastVertices = 0;
         ClientLevel level = event.getLevel();
         OptionalInt systemIndex = ClientDyson.currentSystem();
@@ -304,9 +313,7 @@ public final class DysonSkyRenderer {
         }
         if (state.gameTime == this.builtTick && level.dimension() == this.builtDimension && detail == this.builtDetail
                 && systemIndex.getAsInt() == this.builtSystem && camera.distanceToSqr(this.builtCamera) < 16) {
-            if (!this.frame.isEmpty()) {
-                state.setRenderData(FRAME, this.frame);
-            }
+            this.show();
             return;
         }
         this.builtTick = state.gameTime;
@@ -324,9 +331,18 @@ public final class DysonSkyRenderer {
         for (SwarmOrbit orbit : sphere.orbits()) {
             this.swarm(orbit, projector, time, visibility);
         }
-        if (!this.frame.isEmpty()) {
-            state.setRenderData(FRAME, this.frame);
+        this.show();
+    }
+
+    /** 有东西要画：顶点变了就先上传，记下这一帧要画。 */
+    private void show() {
+        if (this.frame.isEmpty()) {
+            return;
         }
+        if (this.uploadedVersion != this.version || this.buffer == null) {
+            this.upload();
+        }
+        this.toDraw = this.frame;
     }
 
     /** 星球上：真实方向再按角距离映射到恒星圆盘外面。 */
@@ -535,75 +551,76 @@ public final class DysonSkyRenderer {
 
     // ---- 画
 
-    private void render(RenderLevelStageEvent.AfterSky event) {
-        Frame current = event.getLevelRenderState().getRenderData(FRAME);
-        if (current == null || current.isEmpty()) {
+    private void upload() {
+        int stride = DefaultVertexFormat.POSITION_COLOR.getVertexSize();
+        int total = 0;
+        for (Batch batch : this.batches) {
+            total += batch.vertices;
+        }
+        long size = (long) total * stride;
+        if (this.buffer == null || this.buffer.size() < size) {
+            if (this.buffer != null) {
+                this.buffer.close();
+            }
+            this.buffer = RenderSystem.getDevice().createBuffer(() -> "Universe Dyson sky", GpuBuffer.USAGE_VERTEX | GpuBuffer.USAGE_COPY_DST,
+                    Math.max(size, 64 * 1024) * 2);
+        }
+        if (this.bytes == null) {
+            this.bytes = new ByteBufferBuilder(256 * 1024);
+        }
+        var encoder = RenderSystem.getDevice().createCommandEncoder();
+        long offset = 0;
+        for (int i = 0; i < this.batches.length; i++) {
+            this.offsets[i] = offset;
+            Batch batch = this.batches[i];
+            if (batch.vertices == 0) {
+                continue;
+            }
+            BufferBuilder builder = new BufferBuilder(this.bytes, PrimitiveTopology.QUADS, DefaultVertexFormat.POSITION_COLOR);
+            for (int v = 0; v < batch.vertices; v++) {
+                builder.addVertex(batch.xyz[v * 3], batch.xyz[v * 3 + 1], batch.xyz[v * 3 + 2]).setColor(batch.colors[v]);
+            }
+            try (MeshData mesh = builder.buildOrThrow()) {
+                ByteBuffer data = mesh.vertexBuffer();
+                int length = data.remaining();
+                encoder.writeToBuffer(this.buffer.slice(offset, length), data);
+                offset += length;
+            }
+        }
+        this.uploadedVersion = this.version;
+    }
+
+    private void draw(RenderPass pass, Frame current) {
+        GpuBuffer vertices = this.buffer;
+        if (vertices == null) {
             return;
         }
         int stride = DefaultVertexFormat.POSITION_COLOR.getVertexSize();
         Batch[] batches = current.batches();
         int total = 0;
-        for (Batch batch : batches) {
-            total += batch.vertices;
-        }
-        lastVertices = total;
         int maxVertices = 0;
         for (Batch batch : batches) {
+            total += batch.vertices;
             maxVertices = Math.max(maxVertices, batch.vertices);
         }
-        var encoder = RenderSystem.getDevice().createCommandEncoder();
-        if (this.uploadedVersion != this.version || this.buffer == null) {
-            long size = (long) total * stride;
-            if (this.buffer == null || this.buffer.size() < size) {
-                if (this.buffer != null) {
-                    this.buffer.close();
-                }
-                this.buffer = RenderSystem.getDevice().createBuffer(() -> "Universe Dyson sky", GpuBuffer.USAGE_VERTEX | GpuBuffer.USAGE_COPY_DST,
-                        Math.max(size, 64 * 1024) * 2);
-            }
-            if (this.bytes == null) {
-                this.bytes = new ByteBufferBuilder(256 * 1024);
-            }
-            long offset = 0;
-            for (int i = 0; i < batches.length; i++) {
-                this.offsets[i] = offset;
-                Batch batch = batches[i];
-                if (batch.vertices == 0) {
-                    continue;
-                }
-                BufferBuilder builder = new BufferBuilder(this.bytes, PrimitiveTopology.QUADS, DefaultVertexFormat.POSITION_COLOR);
-                for (int v = 0; v < batch.vertices; v++) {
-                    builder.addVertex(batch.xyz[v * 3], batch.xyz[v * 3 + 1], batch.xyz[v * 3 + 2]).setColor(batch.colors[v]);
-                }
-                try (MeshData mesh = builder.buildOrThrow()) {
-                    ByteBuffer data = mesh.vertexBuffer();
-                    int length = data.remaining();
-                    encoder.writeToBuffer(this.buffer.slice(offset, length), data);
-                    offset += length;
-                }
-            }
-            this.uploadedVersion = this.version;
-        }
-        long[] offsets = this.offsets;
+        lastVertices = total;
         RenderSystem.AutoStorageIndexBuffer indices = RenderSystem.getSequentialBuffer(PrimitiveTopology.QUADS);
         GpuBuffer indexBuffer = indices.getBuffer(maxVertices / 4 * 6);
         GpuBufferSlice transform = RenderSystem.getDynamicUniforms().writeTransform(new Matrix4f(RenderSystem.getModelViewStack()),
                 new Vector4f(1.0F, 1.0F, 1.0F, 1.0F));
-        RenderTarget target = Minecraft.getInstance().gameRenderer.mainRenderTarget();
-        try (RenderPass pass = encoder.createRenderPass(() -> "Universe Dyson sky", target.getColorTextureView(), Optional.empty(),
-                target.getDepthTextureView(), OptionalDouble.empty())) {
-            RenderSystem.bindDefaultUniforms(pass);
-            pass.setIndexBuffer(indexBuffer, indices.type());
-            for (int i = 0; i < batches.length; i++) {
-                Batch batch = batches[i];
-                if (batch.vertices == 0) {
-                    continue;
-                }
-                pass.setPipeline(RenderSystem.getCompiledPipeline(PIPELINES[i]));
-                pass.setUniform("DynamicTransforms", transform);
-                pass.setVertexBuffer(0, this.buffer.slice(offsets[i], (long) batch.vertices * stride));
-                pass.drawIndexed(batch.vertices / 4 * 6, 1, 0, 0, 0);
+        pass.pushDebugGroup(() -> "Universe Dyson sky");
+        RenderSystem.bindDefaultUniforms(pass);
+        pass.setIndexBuffer(indexBuffer, indices.type());
+        for (int i = 0; i < batches.length; i++) {
+            Batch batch = batches[i];
+            if (batch.vertices == 0) {
+                continue;
             }
+            pass.setPipeline(RenderSystem.getCompiledPipeline(PIPELINES[i]));
+            pass.setUniform("DynamicTransforms", transform);
+            pass.setVertexBuffer(0, vertices.slice(this.offsets[i], (long) batch.vertices * stride));
+            pass.drawIndexed(batch.vertices / 4 * 6, 1, 0, 0, 0);
         }
+        pass.popDebugGroup();
     }
 }

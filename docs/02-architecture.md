@@ -87,7 +87,7 @@ io.github.sweetcornna.universe
 - 接入点按 26.3 源码确认过：原版的 `DimensionSpecialEffects` 已经不存在，NeoForge 提供 `CustomSkyboxRenderer`，在 `RegisterCustomEnvironmentEffectRendererEvent` 里注册，再通过环境属性 `NeoForgeEnvironmentAttributes.CUSTOM_SKYBOX` 指定给维度类型或群系；渲染要用的数据在 `ExtractLevelRenderStateEvent` 里提取。同一事件还能注册自定义的云和天气渲染器。所有环境模板都指向同一个天空渲染器，由它按当前星球的参数绘制。
 - 进出星球的过场画面用 NeoForge 的 `RegisterDimensionTransitionScreenEvent` 按维度键注册，但这个事件只在客户端启动时触发一次，那时运行时维度还不存在。S1 保留事件对象，客户端得知新维度时再补注册，实测有效（`client.ClientDimensions`）。这依赖 NeoForge 的内部实现，长期方案（向 NeoForge 提 PR 或用 mixin）在 S4 做降落画面时定，见 ADR-0004。
 - 渲染代码集中在 `client` 包，方便随版本调整。
-- 光影兼容在 M1 用 Iris 实测（26.3 已有 NeoForge 版），必要时提供简化渲染。M9 实测：Iris 1.11.7 加 Sodium 0.9.3-beta.1、不装光影包时，星球天空和戴森球都正常。装 Complementary Reimagined 时戴森球看不见，太空维度被光影包画成主世界的天空（ADR-0019）。
+- 光影兼容在 M1 用 Iris 实测（26.3 已有 NeoForge 版），必要时提供简化渲染。M9 实测：Iris 1.11.7 加 Sodium 0.9.3-beta.1、不装光影包时，星球天空和戴森球都正常。装 Complementary Reimagined 时戴森球也看得见（画在天空自己的 RenderPass 里），但本模组的维度被光影包画成主世界的天空（ADR-0019）。
 - S3 里天体位置和配色在 `core.sky` 算，渲染器 `client.sky.PlanetSkyRenderer` 按参数画；每颗星球的天色、雾、云、日落、水色靠 mixin 往环境属性系统里插两层，不写数据包；天气按维度单独轮换。详见 [ADR-0006](adr/0006-planet-sky-and-weather.md)。
 
 ### 3.5 太空与飞船
@@ -123,7 +123,7 @@ io.github.sweetcornna.universe
 - 数据模型在 `core.dyson`：每颗恒星一个戴森球，包括戴森云轨道（半径、倾角、升交点，太阳帆按到期时间分批）和球壳层（半径、朝向、网格模板和密度，每个节点、框架、壳面的建造进度）。网格由模板算出来（`DysonGrid`），存档和同步只有进度（ADR-0016）。
 - 服务端每秒结算一次太阳帆消散、火箭到达、节点吸帆铺壳和发电量，射线接收站按各自要的比例分电。
 - 状态存进全局的 SavedData。客户端只拿自己所在恒星系的戴森球：进入时发一份完整的，之后有变化时每 5 秒最多发一次。
-- 渲染时把节点、框架、壳面和帆投到天球上画，世界里不摆实体（`DysonSkyRenderer`，接在 `RenderLevelStageEvent.AfterSky` 上）。星球上按观察者的位置算方向，再把角距离映射到恒星圆盘外面；太空维度里按 `SpaceLayout` 的真实位置。编辑器的三维视图在界面里自己画三角形（`GuiMesh`）。
+- 渲染时把节点、框架、壳面和帆投到天球上画，世界里不摆实体（`DysonSkyRenderer`，画在天空自己的 RenderPass 里，排在最后：本模组的维度由 `PlanetSkyRenderer` 调用，主世界由 `SkyRendererMixin` 调用）。星球上按观察者的位置算方向，再把角距离映射到恒星圆盘外面；太空维度里按 `SpaceLayout` 的真实位置。编辑器的三维视图在界面里自己画三角形（`GuiMesh`）。
 
 ### 3.10 网络与存档
 
@@ -276,7 +276,8 @@ io.github.sweetcornna.universe
 | 方块实体渲染器画到方块外面：`getRenderBoundingBox(方块实体)` 返回要画的范围（可以是 `AABB.INFINITE`），`getViewDistance()` 改可见距离，`shouldRenderOffScreen()` 为真时方块本身出了视锥也画 | 已确认，弹射器、发射井、射线接收站在用 |
 | 信标光束能朝任意方向画：`BeaconRenderer.submitBeaconBeam(poseStack, collector, BeaconRenderer.BEAM_LOCATION, 缩放, 动画时间, 起点, 高度, 颜色, 内半径, 外半径)` 沿 +Y 画，里面先平移 (0.5, 0, 0.5)；调用前 `poseStack.rotate(Quaternionf)` 转到目标方向 | 已确认，射线接收站的光束在用 |
 | 叠加发光的四边形用 `RenderTypes.lightning()`（位置加颜色），全亮度的光照值是 `LightCoordsUtil.FULL_BRIGHT` | 已确认，弹射器的光迹在用 |
-| 在天空上叠加：`RenderLevelStageEvent.AfterSky` 在原版天空或自定义天空画完以后触发，每个维度都有；事件不给渲染通道，要自己 `createRenderPass`。顶点放进常驻的 `GpuBuffer`（`USAGE_VERTEX \| USAGE_COPY_DST`），每帧用 `CommandEncoder.writeToBuffer(slice, ByteBuffer)` 写入；四边形的索引用 `RenderSystem.getSequentialBuffer(PrimitiveTopology.QUADS)`；原版着色器 `core/position_color` 配 `PROJECTION`、`DYNAMIC_TRANSFORMS` 两个绑定组。这时模型视图栈里只有视角的旋转 | 已确认，戴森球的天空渲染在用 |
+| 在天空上叠加：`RenderLevelStageEvent.AfterSky` 在原版天空或自定义天空画完以后触发，每个维度都有；事件不给渲染通道，要自己 `createRenderPass`。顶点放进常驻的 `GpuBuffer`（`USAGE_VERTEX \| USAGE_COPY_DST`），每帧用 `CommandEncoder.writeToBuffer(slice, ByteBuffer)` 写入；四边形的索引用 `RenderSystem.getSequentialBuffer(PrimitiveTopology.QUADS)`；原版着色器 `core/position_color` 配 `PROJECTION`、`DYNAMIC_TRANSFORMS` 两个绑定组。这时模型视图栈里只有视角的旋转。开 Iris 光影包时这里画的东西会被盖掉，见下一行 | 已确认；戴森球原来用，M9 改到天空的渲染通道里 |
+| 在天空的渲染通道里画：原版 `SkyRenderer.render` 整个天空用一个 `RenderPass`，主世界的太阳、月亮、星星在 `renderSunMoonAndStars(RenderPass, PoseStack, sunAngle, moonAngle, starAngle, MoonPhase, rainBrightness, starBrightness)` 里画，可以注入在它末尾；末地走另一条路，不调它。通道开着时不能 `writeToBuffer`，顶点要在 `ExtractLevelRenderStateEvent` 里先上传；`getSequentialBuffer(...).getBuffer(n)` 在通道里调没问题，原版也这样用。开 Iris 光影包时，原版天空的管线换成光影包的程序、画进光影包的缓冲区，同一个通道里后面画的也跟着进去；另开的通道绑的是原版的主帧缓冲，光影包最后一步会把它整个盖掉 | 已确认，戴森球的天空渲染在用（ADR-0019） |
 | 原版太阳是边长 30 的贴图，放在 100 格外（`SkyRenderer.SUN_SIZE`、`SUN_HEIGHT`），亮的方块只占中间一半，视半径约 4.3°，比自定义天空里按真实大小画的恒星大得多。天色 `EnvironmentAttributes.SKY_COLOR` 是 `Vector3fc`，入夜时已经乘暗 | 已确认，戴森球踩过 |
 | 界面里画任意三角形：实现 `GuiElementRenderState`（自己写顶点，带上 `pose`、裁剪框 `graphics.peekScissorStack()` 和范围），用 `graphics.submitGuiElementRenderState(...)` 提交 | 已确认，戴森球编辑器在用 |
 | 判断语言键有没有翻译：`Language.getInstance().has(键)`（`I18n.exists` 没有了） | 已确认，科技树的效果说明在用 |

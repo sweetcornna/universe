@@ -34,6 +34,7 @@ import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.client.ClientGalaxy;
 import io.github.sweetcornna.universe.client.ClientWeather;
 import io.github.sweetcornna.universe.client.discovery.SkyTargets;
+import io.github.sweetcornna.universe.client.dyson.DysonSkyRenderer;
 import io.github.sweetcornna.universe.core.galaxy.Planet;
 import io.github.sweetcornna.universe.core.galaxy.PlanetType;
 import io.github.sweetcornna.universe.core.galaxy.StarSystem;
@@ -208,6 +209,7 @@ public final class PlanetSkyRenderer implements CustomSkyboxRenderer {
             if (sky.shouldRenderDarkDisc) {
                 this.drawDarkDisc(pass);
             }
+            DysonSkyRenderer.drawInSky(pass);
         }
         return true;
     }
@@ -265,6 +267,7 @@ public final class PlanetSkyRenderer implements CustomSkyboxRenderer {
                 this.drawStarAt(pass, toStar, starAngular, look, frame.system().star().color(), seconds);
             }
             SkyTargets.end();
+            DysonSkyRenderer.drawInSky(pass);
         }
     }
 
