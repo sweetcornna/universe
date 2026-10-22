@@ -463,6 +463,10 @@ public final class DevScript {
                     case "stats" -> UniverseKeys.STATS;
                     case "mecha" -> UniverseKeys.MECHA;
                     case "summon" -> UniverseKeys.SUMMON;
+                    // 多功能工具切模式（G）
+                    case "toolmode" -> UniverseKeys.TOOL_MODE;
+                    // 技术配置界面（U）
+                    case "tech" -> UniverseKeys.TECH;
                     default -> throw new IllegalArgumentException("unknown key " + args[0]);
                 };
                 KeyMapping.click(key.getKey());

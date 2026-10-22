@@ -13,6 +13,7 @@ import io.github.sweetcornna.universe.network.OpenTechPayload;
 import io.github.sweetcornna.universe.perf.ServerPerf;
 import io.github.sweetcornna.universe.registry.UniverseAttachments;
 import io.github.sweetcornna.universe.registry.UniverseDataComponents;
+import io.github.sweetcornna.universe.survival.MultitoolItem;
 import io.github.sweetcornna.universe.registry.UniverseItems;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -88,19 +89,22 @@ public final class SuitTech {
         return player.getData(UniverseAttachments.EXOSUIT).bonuses();
     }
 
-    /** 多功能工具上模块的加成。 */
+    /**
+     * 多功能工具的加成：装着的模块加上工具类型的专长（ADR-0026）。槽里的武器（{@link ToolWeaponItem}）不算模块。
+     * 不是多功能工具时没有加成。
+     */
     public static TechBonuses tool(ItemStack tool) {
-        ItemContainerContents contents = tool.get(UniverseDataComponents.TOOL_MODULES.get());
-        if (contents == null) {
+        if (!(tool.getItem() instanceof MultitoolItem)) {
             return TechBonuses.NONE;
         }
+        ItemContainerContents contents = tool.getOrDefault(UniverseDataComponents.TOOL_MODULES.get(), ItemContainerContents.EMPTY);
         List<TechModule> modules = new ArrayList<>();
         contents.nonEmptyItemCopyStream().forEach(stack -> {
             if (stack.getItem() instanceof TechModuleItem item) {
                 modules.add(item.module(stack));
             }
         });
-        return TechBonuses.of(modules);
+        return TechBonuses.of(modules).with(MultitoolItem.spec(tool).specialty());
     }
 
     /** 客户端按了技术配置键。 */

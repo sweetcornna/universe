@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "universe:block/vehicle_summoner",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "universe:block/vehicle_summoner"
+    },
+    "facing=south": {
+      "model": "universe:block/vehicle_summoner",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "universe:block/vehicle_summoner",
+      "y": 270
+    }
+  }
+}

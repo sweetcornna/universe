@@ -86,9 +86,19 @@ import io.github.sweetcornna.universe.core.poi.DoorBreach;
 import io.github.sweetcornna.universe.poi.OutpostInteractions;
 import io.github.sweetcornna.universe.world.planet.Fulgurites;
 import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.Mob;
+import io.github.sweetcornna.universe.entity.PlasmaGrenade;
+import io.github.sweetcornna.universe.survival.WeaponFire;
 import net.minecraft.world.entity.item.ItemEntity;
 import io.github.sweetcornna.universe.entity.AquaticCreature;
+import io.github.sweetcornna.universe.exocraft.Exocraft;
+import io.github.sweetcornna.universe.exocraft.HeavyRover;
+import io.github.sweetcornna.universe.exocraft.HoverCar;
 import io.github.sweetcornna.universe.exocraft.Submarine;
+import io.github.sweetcornna.universe.exocraft.VehicleRefiner;
+import io.github.sweetcornna.universe.exocraft.VehicleRoster;
+import io.github.sweetcornna.universe.exocraft.VehicleSummoning;
 import io.github.sweetcornna.universe.exocraft.Torpedo;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.GameType;
@@ -122,6 +132,17 @@ import net.neoforged.neoforge.gametest.GameTestHooks;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.neoforged.neoforge.transfer.transaction.Transaction;
+import io.github.sweetcornna.universe.core.survival.MultitoolClass;
+import io.github.sweetcornna.universe.core.survival.MultitoolSpec;
+import io.github.sweetcornna.universe.core.survival.ToolWeapon;
+import io.github.sweetcornna.universe.core.trade.MultitoolMarket;
+import io.github.sweetcornna.universe.entity.ship.ShipDealer;
+import io.github.sweetcornna.universe.station.MultitoolCabinet;
+import io.github.sweetcornna.universe.survival.MultitoolItem;
+import io.github.sweetcornna.universe.tech.TechMenu;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.inventory.ContainerInput;
+import net.minecraft.world.item.component.ItemContainerContents;
 
 /**
  * 游戏内测试（ADR-0019）：在真的世界里搭几台设备，看电网、配方、传送带、研究站连起来能不能转。单元测试只管 core，
@@ -200,8 +221,24 @@ public final class UniverseGameTests {
             UniverseGameTests::groundSentinelsWalk);
     private static final ResourceKey<Consumer<GameTestHelper>> PILLAR_TERMINAL_SHUTS_DOWN = function("pillar_terminal_shuts_down",
             UniverseGameTests::pillarTerminalShutsDown);
+    private static final ResourceKey<Consumer<GameTestHelper>> PILLAR_GIVES_SENTINEL_TOOL = function("pillar_gives_sentinel_tool",
+            UniverseGameTests::pillarGivesSentinelTool);
+    private static final ResourceKey<Consumer<GameTestHelper>> CABINET_MOVES_MODULES = function("cabinet_moves_modules",
+            UniverseGameTests::cabinetMovesModules);
     private static final ResourceKey<Consumer<GameTestHelper>> REPAIR_DRONE_HEALS = function("repair_drone_heals",
             UniverseGameTests::repairDroneHeals);
+    private static final ResourceKey<Consumer<GameTestHelper>> GRENADE_SPARES_BLOCKS = function("grenade_spares_blocks",
+            UniverseGameTests::grenadeSparesBlocks);
+    private static final ResourceKey<Consumer<GameTestHelper>> SCATTER_HITS_CLOSE = function("scatter_hits_close",
+            UniverseGameTests::scatterHitsClose);
+    private static final ResourceKey<Consumer<GameTestHelper>> JAVELIN_HITS_FIRST = function("javelin_hits_first",
+            UniverseGameTests::javelinHitsFirst);
+    private static final ResourceKey<Consumer<GameTestHelper>> HOVER_CAR_FLOATS_ON_WATER = function("hover_car_floats_on_water",
+            UniverseGameTests::hoverCarFloatsOnWater);
+    private static final ResourceKey<Consumer<GameTestHelper>> SUMMONER_FETCHES_VEHICLE = function("summoner_fetches_vehicle",
+            UniverseGameTests::summonerFetchesVehicle);
+    private static final ResourceKey<Consumer<GameTestHelper>> HEAVY_ROVER_REFINES = function("heavy_rover_refines",
+            UniverseGameTests::heavyRoverRefines);
 
     private UniverseGameTests() {
     }
@@ -251,7 +288,15 @@ public final class UniverseGameTests {
         test(event, environment, QUAD_BACK_HIT_DOUBLES, 20);
         test(event, environment, GROUND_SENTINELS_WALK, 60);
         test(event, environment, PILLAR_TERMINAL_SHUTS_DOWN, 20);
+        test(event, environment, PILLAR_GIVES_SENTINEL_TOOL, 20);
+        test(event, environment, CABINET_MOVES_MODULES, 20);
         test(event, environment, REPAIR_DRONE_HEALS, 80);
+        test(event, environment, GRENADE_SPARES_BLOCKS, 80);
+        test(event, environment, SCATTER_HITS_CLOSE, 40);
+        test(event, environment, JAVELIN_HITS_FIRST, 20);
+        test(event, environment, HOVER_CAR_FLOATS_ON_WATER, 80);
+        test(event, environment, SUMMONER_FETCHES_VEHICLE, 20);
+        test(event, environment, HEAVY_ROVER_REFINES, 200);
     }
 
     private static void test(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition<?>> environment, ResourceKey<Consumer<GameTestHelper>> function,
@@ -688,6 +733,68 @@ public final class UniverseGameTests {
     }
 
     /** 守卫塔的终端（ADR-0026）：被通缉时不响应；关停这个维度的守卫机；同一个游戏日第二次用不了。 */
+    /**
+     * 守卫机型多功能工具（ADR-0026 §六）：没有步行机主脑取不出来；交一个主脑取出一把，一半的格子是坏的；同一座塔不能再取。
+     * 拿着 3 个守卫机残骸在技术配置界面点坏格子，修好一格。
+     */
+    private static void pillarGivesSentinelTool(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos terminal = helper.absolutePos(new BlockPos(2, 1, 2));
+        helper.setBlock(new BlockPos(2, 1, 2), UniverseBlocks.SENTINEL_PILLAR_TERMINAL.get());
+        ServerPlayer player = (ServerPlayer) helper.makeMockServerPlayer(GameType.SURVIVAL);
+        helper.assertTrue(SentinelPillars.takeTool(player, level, terminal) == SentinelPillars.ToolResult.NO_BRAIN, "没有主脑也取出了工具");
+        player.getInventory().setItem(8, new ItemStack(UniverseItems.WALKER_BRAIN.get(), 2));
+        helper.assertTrue(SentinelPillars.takeTool(player, level, terminal) == SentinelPillars.ToolResult.GIVEN, "交了主脑没给工具");
+        helper.assertTrue(player.getInventory().getItem(8).getCount() == 1, "主脑没扣或者扣多了");
+        ItemStack tool = player.getInventory().getItem(0);
+        helper.assertTrue(tool.getItem() instanceof MultitoolItem, "工具没进背包");
+        MultitoolSpec spec = MultitoolItem.spec(tool);
+        helper.assertTrue(spec.type() == MultitoolClass.SENTINEL, "不是守卫机型");
+        helper.assertTrue(spec.broken() == spec.slots() / 2 && spec.broken() > 0, "坏格不是一半：" + spec);
+        helper.assertTrue(SentinelPillars.takeTool(player, level, terminal) == SentinelPillars.ToolResult.TAKEN, "同一座塔取了两次");
+        helper.assertTrue(player.getInventory().getItem(8).getCount() == 1, "取过了还扣主脑");
+        // 修坏格：工具在主手（快捷栏第一格），手上拿着 3 个残骸点第一个坏格子
+        player.getInventory().setSelectedSlot(0);
+        TechMenu menu = TechMenu.server(0, player.getInventory(), player);
+        int brokenSlot = TechMenu.TOOL_START + spec.working();
+        helper.assertTrue(!menu.getSlot(brokenSlot).mayPlace(new ItemStack(UniverseItems.SENTINEL_SCRAP.get())), "坏格子放进了东西");
+        menu.setCarried(new ItemStack(UniverseItems.SENTINEL_SCRAP.get(), MultitoolSpec.REPAIR_SCRAP));
+        menu.clicked(brokenSlot, 0, ContainerInput.PICKUP, player);
+        MultitoolSpec repaired = MultitoolItem.spec(player.getInventory().getItem(0));
+        helper.assertTrue(repaired.broken() == spec.broken() - 1, "残骸没修好坏格：" + repaired);
+        helper.assertTrue(menu.getCarried().isEmpty(), "修好以后残骸没扣");
+        helper.assertTrue(!menu.toolSlotBroken(spec.working()), "界面里那一格还是坏的");
+        helper.succeed();
+    }
+
+    /**
+     * 工具柜买工具时把旧工具里的东西装进新工具（ADR-0026 §六）：C 档 4 格，同种模块最多 3 个、同种武器 1 个，装不下的退回来；
+     * 买来的工具按标价折一半；C 档手枪谁都能做，和没有类型的旧工具一样按材料折。
+     */
+    private static void cabinetMovesModules(GameTestHelper helper) {
+        MultitoolSpec spec = new MultitoolSpec(MultitoolClass.PISTOL, Grade.C, 0);
+        ItemStack tool = MultitoolItem.create(spec);
+        List<ItemStack> stacks = new ArrayList<>();
+        for (int i = 0; i < 4; i++) {
+            stacks.add(ShipDealer.moduleStack(TechModule.typical(ModuleType.BEAM_FOCUS, Grade.B)));
+        }
+        stacks.add(new ItemStack(UniverseItems.WEAPONS.get(ToolWeapon.SCATTER_BLASTER).get()));
+        stacks.add(new ItemStack(UniverseItems.WEAPONS.get(ToolWeapon.SCATTER_BLASTER).get()));
+        stacks.add(ShipDealer.moduleStack(TechModule.typical(ModuleType.SCANNER_ARRAY, Grade.B)));
+        List<ItemStack> leftover = MultitoolCabinet.install(tool, spec, stacks);
+        long installed = tool.getOrDefault(UniverseDataComponents.TOOL_MODULES.get(), ItemContainerContents.EMPTY).nonEmptyItemCopyStream().count();
+        helper.assertTrue(installed == 4, "装进去的不是 4 个：" + installed);
+        helper.assertTrue(leftover.size() == 3, "退回来的不是 3 个：" + leftover.size());
+        MinecraftServer server = helper.getLevel().getServer();
+        MultitoolSpec bought = new MultitoolSpec(MultitoolClass.RIFLE, Grade.B, 0);
+        helper.assertTrue(MultitoolCabinet.tradeIn(server, MultitoolItem.create(bought)) == MultitoolMarket.tradeIn(bought), "买来的工具折价不对");
+        long crafted = MultitoolCabinet.tradeIn(server, new ItemStack(UniverseItems.MULTITOOL.get()));
+        helper.assertTrue(crafted >= 0, "做出来的工具不能折价");
+        helper.assertTrue(MultitoolCabinet.tradeIn(server, tool) == crafted, "C 档手枪没按材料折价");
+        helper.assertTrue(MultitoolCabinet.tradeIn(server, new ItemStack(UniverseItems.WALKER_BRAIN.get())) == -1, "不是工具也能折价");
+        helper.succeed();
+    }
+
     private static void pillarTerminalShutsDown(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
         helper.assertTrue(SentinelPillars.use(level, true) == SentinelPillars.Use.WANTED, "通缉时终端响应了");
@@ -696,6 +803,104 @@ public final class UniverseGameTests {
         helper.assertTrue(Sentinels.dormant(level), "关停以后守卫机还在");
         helper.assertTrue(SentinelPillars.use(level, false) == SentinelPillars.Use.USED_TODAY, "同一天能关停两次");
         helper.succeed();
+    }
+
+    /**
+     * 等离子发射器的榴弹（ADR-0026 §六）：落在地上停住，2 秒后炸开；旁边的牛挨了伤害、没被炸死，
+     * 紧挨着的玻璃和脚下的石头都还在。
+     */
+    private static void grenadeSparesBlocks(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        // 场地的地板在测试世界里放不出来（脚下只有屏障），榴弹落点自己铺一块石头
+        for (BlockPos pos : BlockPos.betweenClosed(2, 0, 2, 4, 0, 4)) {
+            helper.setBlock(pos, Blocks.SMOOTH_STONE);
+        }
+        helper.setBlock(new BlockPos(2, 1, 3), Blocks.GLASS);
+        Mob cow = helper.spawn(EntityTypes.COW, new Vec3(5.5, 1, 3.5));
+        cow.setNoAi(true);
+        float health = cow.getHealth();
+        Player shooter = helper.makeMockPlayer(GameType.SURVIVAL);
+        PlasmaGrenade grenade = WeaponFire.launch(level, shooter, helper.absoluteVec(new Vec3(3.5, 1.6, 3.5)), new Vec3(0, -1, 0), 1);
+        helper.succeedWhen(() -> {
+            helper.assertTrue(grenade.isRemoved(), "榴弹还没炸");
+            helper.assertTrue(cow.isAlive() && cow.getHealth() < health, "牛的生命：" + cow.getHealth());
+            helper.assertBlockPresent(Blocks.GLASS, new BlockPos(2, 1, 3));
+            helper.assertBlockPresent(Blocks.SMOOTH_STONE, new BlockPos(3, 0, 3));
+        });
+    }
+
+    /** 散射爆能枪（ADR-0026 §六）：4 格外的牛挨了不止一颗弹丸（每颗 1.5，弹丸之间没有受伤无敌时间）。 */
+    private static void scatterHitsClose(GameTestHelper helper) {
+        Mob cow = helper.spawn(EntityTypes.COW, new Vec3(5.5, 1, 3.5));
+        cow.setNoAi(true);
+        float health = cow.getHealth();
+        Player shooter = helper.makeMockPlayer(GameType.SURVIVAL);
+        WeaponFire.scatter(helper.getLevel(), shooter, helper.absoluteVec(new Vec3(1.5, 1.6, 3.5)), new Vec3(1, 0, 0), 1);
+        helper.succeedWhen(() -> helper.assertTrue(!cow.isAlive() || cow.getHealth() <= health - 3, "牛的生命：" + cow.getHealth()));
+    }
+
+    /** 烈焰标枪（ADR-0026 §六）：一下打中视线上的第一只牛，18 点打死；后面那只没事。 */
+    private static void javelinHitsFirst(GameTestHelper helper) {
+        Mob first = helper.spawn(EntityTypes.COW, new Vec3(3.5, 1, 3.5));
+        Mob behind = helper.spawn(EntityTypes.COW, new Vec3(5.5, 1, 3.5));
+        first.setNoAi(true);
+        behind.setNoAi(true);
+        Player shooter = helper.makeMockPlayer(GameType.SURVIVAL);
+        Vec3 eye = helper.absoluteVec(new Vec3(0.5, 1.5, 3.5));
+        Entity struck = WeaponFire.javelin(helper.getLevel(), shooter, eye, new Vec3(1, 0, 0), eye, 1);
+        helper.assertTrue(struck == first, "打中的是 " + struck);
+        helper.succeedWhen(() -> {
+            helper.assertTrue(!first.isAlive(), "第一只牛还活着：" + first.getHealth());
+            helper.assertTrue(behind.isAlive() && behind.getHealth() == behind.getMaxHealth(), "后面的牛挨了打");
+        });
+    }
+
+    /**
+     * 悬浮车（ADR-0026）：没人开也悬在离水面一格左右的地方，不沉、不进水。
+     * 水灌在地板那一层：场地顶上有一层屏障，水再深车就顶到天花板了。
+     */
+    private static void hoverCarFloatsOnWater(GameTestHelper helper) {
+        flood(helper, 0, 0, 0, 6, 0, 6);
+        HoverCar car = helper.spawn(UniverseEntities.HOVER_CAR.get(), new Vec3(3.5, 1.2, 3.5));
+        // 水源方块的水面在方块里 8/9 高的地方
+        double surface = helper.absoluteVec(new Vec3(0, 8 / 9.0, 0)).y;
+        helper.runAfterDelay(60, () -> {
+            helper.assertFalse(car.isInWater(), "悬浮车掉进水里了");
+            double clearance = car.getY() - surface;
+            helper.assertTrue(clearance > 0.6 && clearance < 1.4, "悬浮车离水面 " + clearance + " 格");
+            helper.succeed();
+        });
+    }
+
+    /** 载具召唤台（ADR-0026）：把名册上同一个维度的探索车挪到台子正面，名册上的位置跟着更新。 */
+    private static void summonerFetchesVehicle(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos summonerPos = new BlockPos(3, 1, 0);
+        helper.setBlock(summonerPos, UniverseBlocks.VEHICLE_SUMMONER.get().defaultBlockState()
+                .setValue(HorizontalDirectionalBlock.FACING, Direction.SOUTH));
+        Exocraft exocraft = helper.spawn(UniverseEntities.EXOCRAFT.get(), new Vec3(1.0, 1, 5.5));
+        UUID owner = UUID.randomUUID();
+        exocraft.setOwner(owner);
+        VehicleRoster roster = VehicleRoster.get(level.getServer());
+        roster.update(owner, exocraft);
+        VehicleSummoning.Result result = VehicleSummoning.summon(level, helper.absolutePos(summonerPos), owner, exocraft.getUUID());
+        helper.assertTrue(result == VehicleSummoning.Result.ARRIVED, "召唤的结果：" + result);
+        // 台子朝南，车停在台子南边两格半左右
+        Vec3 expected = helper.absoluteVec(new Vec3(3.5, 1, 3.0));
+        helper.assertTrue(exocraft.position().distanceTo(expected) < 1.5, "车停在 " + helper.relativeVec(exocraft.position()));
+        VehicleRoster.Entry entry = roster.entry(owner, exocraft.getUUID());
+        helper.assertTrue(entry != null && entry.pos().equals(exocraft.blockPosition()), "名册上的位置没更新：" + entry);
+        roster.remove(owner, exocraft.getUUID());
+        helper.succeed();
+    }
+
+    /** 重型车车尾的精炼机（ADR-0026）：车停着没人开，也烧异星原木把粗铁炼成铁锭。 */
+    private static void heavyRoverRefines(GameTestHelper helper) {
+        HeavyRover rover = helper.spawn(UniverseEntities.HEAVY_ROVER.get(), new Vec3(3.5, 1, 3.5));
+        rover.refiner().restore(new VehicleRefiner.Contents(ItemContainerContents.fromItems(List.of(new ItemStack(Items.RAW_IRON, 2),
+                ItemStack.EMPTY, new ItemStack(UniverseItems.PLANET_LOG.get()))), "universe:portable_refining/iron_ingot", 0, 0));
+        helper.succeedWhen(() -> helper.assertTrue(rover.refiner().getItem(1).is(Items.IRON_INGOT),
+                "重型车的精炼机没有炼出铁锭：" + rover.refiner().getItems()));
     }
 
     /** 测试场地里这一块（含两端，相对坐标）灌满水。 */

@@ -3,7 +3,12 @@ package io.github.sweetcornna.universe.client;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 
+import io.github.sweetcornna.universe.core.survival.ToolWeapon;
+import io.github.sweetcornna.universe.core.tech.Stat;
+import io.github.sweetcornna.universe.tech.SuitTech;
+import net.minecraft.world.item.ItemStack;
 import io.github.sweetcornna.universe.entity.ship.ShipEntity;
 import io.github.sweetcornna.universe.survival.Multitool;
 import io.github.sweetcornna.universe.network.ToolModePayload;
@@ -36,7 +41,7 @@ import net.neoforged.neoforge.client.network.event.RegisterClientPayloadHandlers
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
 /**
- * 多功能工具的客户端部分：模式切换键、战斗模式的准星框、准星下方的热量条，以及扫描到的矿脉和兴趣点标记
+ * 多功能工具的客户端部分：模式切换键、开火模式的准星框、装着的武器名和烈焰标枪的蓄力条、准星下方的热量条，以及扫描到的矿脉和兴趣点标记
  * （投影到屏幕上，30 秒后淡出）。
  */
 public final class MultitoolClient {
@@ -109,8 +114,15 @@ public final class MultitoolClient {
         if (player == null || minecraft.gui.hud.isHidden() || !(player.getMainHandItem().getItem() instanceof MultitoolItem)) {
             return;
         }
-        if (Multitool.mode(player.getMainHandItem()) == ToolMode.COMBAT && minecraft.options.getCameraType().isFirstPerson()) {
-            reticle(graphics, graphics.guiWidth() / 2, graphics.guiHeight() / 2);
+        ItemStack tool = player.getMainHandItem();
+        ToolMode mode = Multitool.activeMode(tool);
+        int cx = graphics.guiWidth() / 2;
+        int cy = graphics.guiHeight() / 2;
+        if (mode.combat() && minecraft.options.getCameraType().isFirstPerson()) {
+            reticle(graphics, cx, cy, mode);
+        }
+        if (mode.weapon() != null) {
+            weapon(graphics, minecraft, player, tool, mode, cx, cy);
         }
         SuitHud hud = player.getData(UniverseAttachments.SUIT_HUD);
         if (hud.laser() <= 0) {
@@ -131,10 +143,38 @@ public final class MultitoolClient {
         }
     }
 
-    /** 战斗模式的准星框：准星四角各一个青色的折角。 */
-    private static void reticle(GuiGraphicsExtractor graphics, int cx, int cy) {
-        int color = 0xC06FE3FF;
-        int r = 7;
+    /**
+     * 装在工具上的武器（ADR-0026 §六）：准星右下写武器名；烈焰标枪在准星上方画一条蓄力条，蓄满了变白。
+     * 蓄力按客户端自己按住使用键的时间算，和服务端差一两刻不要紧。
+     */
+    private static void weapon(GuiGraphicsExtractor graphics, Minecraft minecraft, LocalPlayer player, ItemStack tool, ToolMode mode, int cx,
+            int cy) {
+        Font font = minecraft.font;
+        ToolWeapon weapon = mode.weapon();
+        int color = 0xC0000000 | weapon.color();
+        Component name = Component.translatable("hud.universe.multitool.mode." + mode.name().toLowerCase(Locale.ROOT));
+        graphics.text(font, name, cx + 12, cy + 6, color, true);
+        if (mode != ToolMode.BLAZE_JAVELIN || !player.isUsingItem()) {
+            return;
+        }
+        int full = ToolWeapon.chargeTicks(SuitTech.tool(tool).boost(Stat.FIRE_RATE));
+        float share = Mth.clamp(player.getTicksUsingItem() / (float) full, 0, 1);
+        int width = 40;
+        int x = cx - width / 2;
+        int y = cy - 14;
+        graphics.fill(x - 1, y - 1, x + width + 1, y + 3, 0xA0000000);
+        graphics.fill(x, y, x + Math.round(width * share), y + 2, share >= 1 ? 0xFFFFFFFF : 0xFF000000 | weapon.color());
+    }
+
+    /** 开火模式的准星框：准星四角各一个折角，颜色和张开的大小按武器来（散射开得最大）。 */
+    private static void reticle(GuiGraphicsExtractor graphics, int cx, int cy, ToolMode mode) {
+        int color = mode.weapon() == null ? 0xC06FE3FF : 0xC0000000 | mode.weapon().color();
+        int r = switch (mode) {
+            case SCATTER_BLASTER -> 11;
+            case PULSE_SPITTER -> 9;
+            case BLAZE_JAVELIN -> 5;
+            default -> 7;
+        };
         int len = 3;
         for (int sx = -1; sx <= 1; sx += 2) {
             for (int sy = -1; sy <= 1; sy += 2) {

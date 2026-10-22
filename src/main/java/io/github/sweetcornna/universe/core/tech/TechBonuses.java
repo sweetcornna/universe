@@ -46,6 +46,17 @@ public final class TechBonuses {
         return new TechBonuses(totals);
     }
 
+    /** 再加上一些不来自模块的加成（比如多功能工具类型的专长，ADR-0026）。 */
+    public TechBonuses with(Map<Stat, Double> extra) {
+        if (extra.isEmpty()) {
+            return this;
+        }
+        Map<Stat, Double> totals = new EnumMap<>(Stat.class);
+        totals.putAll(this.totals);
+        extra.forEach((stat, value) -> totals.merge(stat, value, Double::sum));
+        return new TechBonuses(totals);
+    }
+
     public double get(Stat stat) {
         return this.totals.getOrDefault(stat, 0.0);
     }

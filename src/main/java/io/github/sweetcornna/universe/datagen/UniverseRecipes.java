@@ -12,12 +12,16 @@ import io.github.sweetcornna.universe.block.OreKind;
 import io.github.sweetcornna.universe.core.galaxy.Hazard;
 import io.github.sweetcornna.universe.core.space.DriveTier;
 import io.github.sweetcornna.universe.core.survival.Dish;
+import io.github.sweetcornna.universe.core.survival.MultitoolSpec;
+import io.github.sweetcornna.universe.core.survival.ToolWeapon;
 import io.github.sweetcornna.universe.core.tech.ModuleType;
 import io.github.sweetcornna.universe.factory.recipe.MachineRecipe;
 import io.github.sweetcornna.universe.factory.recipe.MachineRecipe.Kind;
 import io.github.sweetcornna.universe.factory.recipe.ResearchShapedRecipe;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
+import io.github.sweetcornna.universe.registry.UniverseDataComponents;
 import io.github.sweetcornna.universe.registry.UniverseItems;
+import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.advancements.Advancement;
 import net.minecraft.core.registries.Registries;
@@ -719,6 +723,24 @@ final class UniverseRecipes extends RecipeProvider {
                 in(UniverseItems.ORE_SMELTED.get(OreKind.TITANIUM).get(), 4, Items.GLASS, 1, UniverseItems.ACCUMULATOR.get(), 1,
                         UniverseItems.ELECTRIC_MOTOR.get(), 1),
                 out(UniverseItems.SUBMARINE.get(), 1));
+        // 悬浮车、重型车、机甲、载具召唤台（ADR-0026）：悬浮车靠超级磁场环托着；重型车车尾背一台便携精炼机；
+        // 机甲的腿用四足机的伺服器，步行机主脑管平衡；召唤台是一块处理器加等离子激发器做的定位信标
+        this.machine(Kind.ASSEMBLING, "hover_car", 240, "all_terrain_vehicles",
+                in(UniverseItems.TITANIUM_ALLOY.get(), 4, UniverseItems.SUPER_MAGNETIC_RING.get(), 2, UniverseItems.ACCUMULATOR.get(), 1,
+                        UniverseItems.PLASMA_EXCITER.get(), 1),
+                out(UniverseItems.HOVER_CAR.get(), 1));
+        this.machine(Kind.ASSEMBLING, "heavy_rover", 360, "all_terrain_vehicles",
+                in(UniverseItems.STEEL.get(), 10, UniverseItems.ELECTRIC_MOTOR.get(), 8, UniverseItems.ACCUMULATOR.get(), 2,
+                        UniverseItems.PORTABLE_REFINER.get(), 1),
+                out(UniverseItems.HEAVY_ROVER.get(), 1));
+        this.machine(Kind.ASSEMBLING, "exo_mech", 360, "exo_mech",
+                in(UniverseItems.TITANIUM_ALLOY.get(), 8, UniverseItems.QUADRUPED_SERVO.get(), 2, UniverseItems.WALKER_BRAIN.get(), 1,
+                        UniverseItems.ACCUMULATOR.get(), 2),
+                out(UniverseItems.EXO_MECH.get(), 1));
+        this.machine(Kind.ASSEMBLING, "vehicle_summoner", 160, "all_terrain_vehicles",
+                in(UniverseItems.STEEL.get(), 4, UniverseItems.PROCESSOR.get(), 1, UniverseItems.PLASMA_EXCITER.get(), 1,
+                        UniverseItems.CIRCUIT_BOARD.get(), 2),
+                out(UniverseItems.VEHICLE_SUMMONER.get(), 1));
         // 传送器（ADR-0017）：钛的机壳、等离子激发器，核心是一个空间翘曲器
         this.machine(Kind.ASSEMBLING, "teleporter", 240, "teleport_network",
                 in(UniverseItems.ORE_SMELTED.get(OreKind.TITANIUM).get(), 4, UniverseItems.PLASMA_EXCITER.get(), 1, UniverseItems.STEEL.get(), 2,
@@ -754,6 +776,16 @@ final class UniverseRecipes extends RecipeProvider {
         modules.put(ModuleType.FIRE_CONTROL, in(scrap, 3, survey, 2, board, 2, prism, 1));
         modules.forEach((type, ingredients) -> this.machine(Kind.ASSEMBLING, type.itemName(), 100, "tech_modules", ingredients,
                 out(UniverseItems.MODULES.get(type).get(), 1)));
+        // ---- M14：多功能工具的武器（ADR-0026 §六），和模块一样在制造台里做，都要守卫机残骸
+        Item steel = UniverseItems.STEEL.get();
+        this.machine(Kind.ASSEMBLING, ToolWeapon.SCATTER_BLASTER.id(), 200, "plasma_weapons",
+                in(scrap, 4, coil, 4, board, 2, Items.COPPER_INGOT, 4), out(UniverseItems.WEAPONS.get(ToolWeapon.SCATTER_BLASTER).get(), 1));
+        this.machine(Kind.ASSEMBLING, ToolWeapon.PULSE_SPITTER.id(), 200, "plasma_weapons",
+                in(scrap, 4, coil, 6, board, 2, gear, 4), out(UniverseItems.WEAPONS.get(ToolWeapon.PULSE_SPITTER).get(), 1));
+        this.machine(Kind.ASSEMBLING, ToolWeapon.BLAZE_JAVELIN.id(), 300, "heavy_plasma_weapons",
+                in(scrap, 6, prism, 2, coil, 4, board, 4), out(UniverseItems.WEAPONS.get(ToolWeapon.BLAZE_JAVELIN).get(), 1));
+        this.machine(Kind.ASSEMBLING, ToolWeapon.PLASMA_LAUNCHER.id(), 300, "heavy_plasma_weapons",
+                in(scrap, 6, steel, 4, coil, 4, board, 4), out(UniverseItems.WEAPONS.get(ToolWeapon.PLASMA_LAUNCHER).get(), 1));
         // ---- M13：着陆台和三档驱动（ADR-0024）。驱动一档套一档：做高一档的要用掉低一档的
         this.researchShaped("landing_pad", RecipeCategory.TRANSPORTATION, UniverseItems.LANDING_PAD.get(), 1,
                 List.of("SYS", "CBC", "III"), Map.of('S', Items.SMOOTH_STONE_SLAB, 'Y', Items.DYE.yellow(), 'C', coil, 'B', board,
@@ -845,7 +877,10 @@ final class UniverseRecipes extends RecipeProvider {
 
     /** 多功能工具：修好坠毁点找到的那把，或者用钻石从头造一把（多人游戏里别的玩家用）。 */
     private void multitool() {
-        this.shapeless(RecipeCategory.TOOLS, UniverseItems.MULTITOOL.get())
+        // 修好的和新做的多功能工具都是 C 档手枪（ADR-0026）；没有类型的旧工具才按 A 档算
+        ItemStackTemplate starter = new ItemStackTemplate(UniverseItems.MULTITOOL.get(),
+                DataComponentPatch.builder().set(UniverseDataComponents.TOOL_SPEC.get(), MultitoolSpec.STARTER).build());
+        this.shapeless(RecipeCategory.TOOLS, starter)
                 .requires(UniverseItems.DAMAGED_MULTITOOL.get())
                 .requires(Items.COPPER_INGOT).requires(Items.COPPER_INGOT)
                 .requires(Items.REDSTONE).requires(Items.REDSTONE).requires(Items.IRON_INGOT)
@@ -856,7 +891,7 @@ final class UniverseRecipes extends RecipeProvider {
                 .requires(Items.BOOK).requires(UniverseItems.CIRCUIT_BOARD.get())
                 .unlockedBy(getHasName(UniverseItems.CIRCUIT_BOARD.get()), this.has(UniverseItems.CIRCUIT_BOARD.get()))
                 .save(this.output);
-        this.shaped(RecipeCategory.TOOLS, UniverseItems.MULTITOOL.get())
+        this.shaped(RecipeCategory.TOOLS, starter)
                 .pattern(" GD").pattern("CRC").pattern("I  ")
                 .define('G', Items.GLASS_PANE).define('D', Items.DIAMOND).define('C', Items.COPPER_INGOT)
                 .define('R', Items.REDSTONE_BLOCK).define('I', Items.IRON_INGOT)
@@ -992,6 +1027,19 @@ final class UniverseRecipes extends RecipeProvider {
         this.researchShaped("submarine", RecipeCategory.TRANSPORTATION, UniverseItems.SUBMARINE.get(), 1,
                 List.of("TGT", "CAC", "TMT"), Map.of('T', UniverseItems.ORE_SMELTED.get(OreKind.TITANIUM).get(), 'G', Items.GLASS,
                         'C', UniverseItems.CIRCUIT_BOARD.get(), 'A', UniverseItems.ACCUMULATOR.get(), 'M', UniverseItems.ELECTRIC_MOTOR.get()));
+        // 悬浮车、重型车、机甲、载具召唤台（ADR-0026）：配方 ID 就是物品名（召唤台的手册里引用）
+        this.researchShaped("all_terrain_vehicles", RecipeCategory.TRANSPORTATION, UniverseItems.HOVER_CAR.get(), 1,
+                List.of("TXT", "RAR", "T T"), Map.of('T', alloy, 'X', exciter, 'R', UniverseItems.SUPER_MAGNETIC_RING.get(),
+                        'A', UniverseItems.ACCUMULATOR.get()));
+        this.researchShaped("all_terrain_vehicles", RecipeCategory.TRANSPORTATION, UniverseItems.HEAVY_ROVER.get(), 1,
+                List.of("SXS", "MRM", "MAM"), Map.of('S', steel, 'X', exciter, 'M', UniverseItems.ELECTRIC_MOTOR.get(),
+                        'R', UniverseItems.PORTABLE_REFINER.get(), 'A', UniverseItems.ACCUMULATOR.get()));
+        this.researchShaped("exo_mech", RecipeCategory.TRANSPORTATION, UniverseItems.EXO_MECH.get(), 1,
+                List.of("TXT", "QBQ", "TAT"), Map.of('T', alloy, 'X', exciter, 'Q', UniverseItems.QUADRUPED_SERVO.get(),
+                        'B', UniverseItems.WALKER_BRAIN.get(), 'A', UniverseItems.ACCUMULATOR.get()));
+        this.researchShaped("all_terrain_vehicles", RecipeCategory.TRANSPORTATION, UniverseItems.VEHICLE_SUMMONER.get(), 1,
+                List.of("SPS", "CXC", "SSS"), Map.of('S', steel, 'P', UniverseItems.PROCESSOR.get(), 'C', UniverseItems.CIRCUIT_BOARD.get(),
+                        'X', exciter));
         // 蓝图（ADR-0018）：四张纸围着一块电路板，一次出两张
         this.researchShaped("blueprint", RecipeCategory.TOOLS, UniverseItems.BLUEPRINT.get(), 2, List.of(" P ", "PCP", " P "),
                 Map.of('P', Items.PAPER, 'C', UniverseItems.CIRCUIT_BOARD.get()));

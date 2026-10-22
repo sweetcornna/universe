@@ -18,7 +18,18 @@ public final class PlasmaWeapon {
     public static final int LIFETIME = 20;
     private static final double EPSILON = 1e-9;
 
+    private final double rate;
     private double charge = 1;
+
+    /** 爆能枪：每秒 {@link #BASE_RATE} 发。 */
+    public PlasmaWeapon() {
+        this(BASE_RATE);
+    }
+
+    /** 装在工具上的别的武器按自己的射速连发（ADR-0026 §六），充能的算法一样。 */
+    public PlasmaWeapon(double rate) {
+        this.rate = rate;
+    }
 
     /**
      * 推进一刻。
@@ -28,7 +39,7 @@ public final class PlasmaWeapon {
      * @return 这一刻打出几发
      */
     public int tick(boolean firing, double rateBoost) {
-        double perTick = BASE_RATE * rateBoost / 20;
+        double perTick = this.rate * rateBoost / 20;
         if (!firing) {
             this.charge = Math.min(1, this.charge + perTick);
             return 0;

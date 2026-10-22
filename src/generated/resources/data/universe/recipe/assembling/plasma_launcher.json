@@ -1,0 +1,28 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 6,
+      "ingredient": "universe:sentinel_scrap"
+    },
+    {
+      "count": 4,
+      "ingredient": "universe:steel"
+    },
+    {
+      "count": 4,
+      "ingredient": "universe:magnetic_coil"
+    },
+    {
+      "count": 4,
+      "ingredient": "universe:circuit_board"
+    }
+  ],
+  "research": "heavy_plasma_weapons",
+  "results": [
+    {
+      "id": "universe:plasma_launcher"
+    }
+  ],
+  "time": 300
+}

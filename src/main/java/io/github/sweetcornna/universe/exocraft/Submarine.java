@@ -3,6 +3,7 @@ package io.github.sweetcornna.universe.exocraft;
 import java.util.List;
 
 import io.github.sweetcornna.universe.core.vehicle.SubmarineDrive;
+import io.github.sweetcornna.universe.core.vehicle.VehicleKind;
 import io.github.sweetcornna.universe.network.ScanResultPayload;
 import io.github.sweetcornna.universe.registry.UniverseItems;
 import io.github.sweetcornna.universe.survival.Multitool;
@@ -39,7 +40,7 @@ import net.neoforged.neoforge.network.PacketDistributor;
  * 声呐不标矿脉：海底一扫上百个矿点，会把沉船和遗迹淹掉；找矿下艇用多功能工具。
  */
 public class Submarine extends UniverseVehicle {
-    public static final int CARGO_SLOTS = 18;
+    public static final int CARGO_SLOTS = VehicleKind.SUBMARINE.cargoSlots();
     /** 推进器开着每刻烧多少（比探索车省一点：水里没有坡要爬）。 */
     public static final double FUEL_PER_TICK = 0.04;
     /** 一发鱼雷烧多少燃料。 */
@@ -74,6 +75,11 @@ public class Submarine extends UniverseVehicle {
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
         super.defineSynchedData(builder);
         builder.define(DATA_RELOAD, 0);
+    }
+
+    @Override
+    public VehicleKind kind() {
+        return VehicleKind.SUBMARINE;
     }
 
     /** 鱼雷还要多少刻装好（两端都能读）。 */

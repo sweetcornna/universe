@@ -68,7 +68,8 @@ public final class UniverseJeiPlugin implements IModPlugin {
             case CHEMICAL -> List.of(UniverseBlocks.CHEMICAL_PLANT.get(), UniverseBlocks.QUANTUM_CHEMICAL_PLANT.get());
             case PARTICLE -> List.of(UniverseBlocks.MINIATURE_PARTICLE_COLLIDER.get());
             case NUTRIENT -> List.of(UniverseBlocks.NUTRIENT_PROCESSOR.get());
-            case PORTABLE_REFINING -> List.of(UniverseBlocks.PORTABLE_REFINER.get());
+            // 重型车车尾背着一台便携精炼机（ADR-0026）
+            case PORTABLE_REFINING -> List.of(UniverseBlocks.PORTABLE_REFINER.get(), UniverseItems.HEAVY_ROVER.get());
         };
     }
 
@@ -96,12 +97,22 @@ public final class UniverseJeiPlugin implements IModPlugin {
         // 地面守卫机的掉落（ADR-0026）
         info(registration, UniverseItems.QUADRUPED_SERVO.get(), "quadruped_servo");
         info(registration, UniverseItems.WALKER_BRAIN.get(), "walker_brain");
+        // 多功能工具的类型和档次、工具柜（ADR-0026 §六）
+        info(registration, UniverseItems.MULTITOOL.get(), "multitool");
+        info(registration, UniverseItems.MULTITOOL_CABINET.get(), "multitool_cabinet");
         // 野外的地标（ADR-0026）：化石、打捞的废料、雷击石
         info(registration, UniverseItems.SHELL_FOSSIL.get(), "fossil");
         info(registration, UniverseItems.ARTHROPOD_FOSSIL.get(), "fossil");
         info(registration, UniverseItems.SKULL_FOSSIL.get(), "fossil");
         info(registration, UniverseItems.SALVAGED_SCRAP.get(), "salvaged_scrap");
         info(registration, UniverseItems.FULGURITE.get(), "fulgurite");
+        // 别的载具和召唤台（ADR-0026）
+        info(registration, UniverseItems.HOVER_CAR.get(), "hover_car");
+        info(registration, UniverseItems.HEAVY_ROVER.get(), "heavy_rover");
+        info(registration, UniverseItems.EXO_MECH.get(), "exo_mech");
+        info(registration, UniverseItems.VEHICLE_SUMMONER.get(), "vehicle_summoner");
+        // 多功能工具的武器（ADR-0026 §六）：怎么装、怎么切换
+        UniverseItems.WEAPONS.values().forEach(item -> info(registration, item.get(), "tool_weapon"));
     }
 
     /** JEI 换行只认空格，中文会断在数字两边、词中间加连字符，所以先按本模组的规则断好行，一行一个组件。 */

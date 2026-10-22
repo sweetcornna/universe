@@ -18,6 +18,7 @@ import io.github.sweetcornna.universe.core.survival.LifeSupport;
 import io.github.sweetcornna.universe.core.survival.Suit;
 import io.github.sweetcornna.universe.core.tech.TechBonuses;
 import io.github.sweetcornna.universe.entity.ship.ShipEntity;
+import io.github.sweetcornna.universe.exocraft.ExoMech;
 import io.github.sweetcornna.universe.exocraft.Submarine;
 import io.github.sweetcornna.universe.mecha.Mecha;
 import io.github.sweetcornna.universe.network.JetpackPayload;
@@ -238,8 +239,9 @@ public final class PlayerSurvival {
     }
 
     static Environment environment(ServerPlayer player, ServerLevel level, Suit suit) {
-        // 飞船和潜艇的舱里有空气（ADR-0026）
-        boolean supplied = player.getVehicle() instanceof ShipEntity || player.getVehicle() instanceof Submarine;
+        // 飞船、潜艇和机甲的舱里有空气（ADR-0026）
+        boolean supplied = player.getVehicle() instanceof ShipEntity || player.getVehicle() instanceof Submarine
+                || player.getVehicle() instanceof ExoMech;
         boolean underwater = suit.sealed() && player.isEyeInFluid(FluidTags.WATER);
         // 水压：密封外骨骼在深水里耗氧更快（潜艇里没有）
         boolean pressure = underwater && !supplied && level.getSeaLevel() - player.getEyeY() >= LifeSupport.PRESSURE_DEPTH;

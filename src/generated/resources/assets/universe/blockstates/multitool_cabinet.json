@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "universe:block/multitool_cabinet",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "universe:block/multitool_cabinet"
+    },
+    "facing=south": {
+      "model": "universe:block/multitool_cabinet",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "universe:block/multitool_cabinet",
+      "y": 270
+    }
+  }
+}

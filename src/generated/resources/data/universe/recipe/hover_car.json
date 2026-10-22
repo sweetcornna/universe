@@ -1,0 +1,18 @@
+{
+  "type": "universe:research_shaped",
+  "key": {
+    "A": "universe:accumulator",
+    "R": "universe:super_magnetic_ring",
+    "T": "universe:titanium_alloy",
+    "X": "universe:plasma_exciter"
+  },
+  "pattern": [
+    "TXT",
+    "RAR",
+    "T T"
+  ],
+  "research": "all_terrain_vehicles",
+  "result": {
+    "id": "universe:hover_car"
+  }
+}

@@ -63,7 +63,7 @@ class SurvivalProgressionTest {
     private static final Set<String> UNOBTAINABLE = Set.of(NS + "crude_oil_seep", NS + "damaged_multitool", NS + "drop_pod",
             NS + "monolith", NS + "trade_terminal",
             NS + "station_hull", NS + "station_floor", NS + "station_glass", NS + "station_light", NS + "station_pad", NS + "station_trim",
-            NS + "station_solar_panel", NS + "ship_repair", NS + "station_teleporter", NS + "mission_board", NS + "ship_dealer",
+            NS + "station_solar_panel", NS + "ship_repair", NS + "station_teleporter", NS + "mission_board", NS + "ship_dealer", NS + "multitool_cabinet",
             // 货船的外壳和船舱里打不坏的方块（ADR-0024）
             NS + "freighter_plate", NS + "freighter_engine", NS + "freighter_console", NS + "fleet_terminal",
             // 先驱者传送门挖不掉（ADR-0024）

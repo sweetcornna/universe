@@ -1,0 +1,28 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 10,
+      "ingredient": "universe:steel"
+    },
+    {
+      "count": 8,
+      "ingredient": "universe:electric_motor"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:accumulator"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:portable_refiner"
+    }
+  ],
+  "research": "all_terrain_vehicles",
+  "results": [
+    {
+      "id": "universe:heavy_rover"
+    }
+  ],
+  "time": 360
+}

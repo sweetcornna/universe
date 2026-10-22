@@ -6,7 +6,8 @@ import io.github.sweetcornna.universe.core.research.Tech.ItemCost;
 
 /**
  * 外骨骼的格子（ADR-0014）：技术槽开局 4 个、最多 12 个；货舱开局 9 格、最多 54 格。每修好一个掉落舱，技术槽加 1、
- * 货舱加 9，到上限为止。修理材料按已经修过的个数分三档。多功能工具的技术槽固定 6 个。
+ * 货舱加 9，到上限为止。修理材料按已经修过的个数分三档。多功能工具的技术槽按档次 4–8 个（ADR-0026，
+ * 见 {@link io.github.sweetcornna.universe.core.survival.MultitoolSpec}），界面按最多的留格子。
  */
 public final class SuitSlots {
     public static final int TECH_START = 4;
@@ -14,7 +15,7 @@ public final class SuitSlots {
     public static final int CARGO_START = 9;
     public static final int CARGO_MAX = 54;
     public static final int CARGO_PER_POD = 9;
-    public static final int TOOL_SLOTS = 6;
+    public static final int TOOL_SLOTS = 8;
 
     private SuitSlots() {
     }

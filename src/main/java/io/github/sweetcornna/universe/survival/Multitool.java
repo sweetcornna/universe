@@ -2,9 +2,12 @@ package io.github.sweetcornna.universe.survival;
 
 import java.util.Locale;
 import java.util.ArrayList;
+import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -16,7 +19,10 @@ import io.github.sweetcornna.universe.registry.UniverseDataComponents;
 import io.github.sweetcornna.universe.network.ToolModePayload;
 import io.github.sweetcornna.universe.entity.PlasmaBolt;
 import io.github.sweetcornna.universe.core.survival.ToolMode;
+import io.github.sweetcornna.universe.core.survival.ToolWeapon;
 import io.github.sweetcornna.universe.core.survival.PlasmaWeapon;
+import io.github.sweetcornna.universe.tech.ToolWeaponItem;
+import net.minecraft.world.item.component.ItemContainerContents;
 import io.github.sweetcornna.universe.registry.UniverseAttachments;
 import io.github.sweetcornna.universe.poi.Landmarks;
 import io.github.sweetcornna.universe.poi.OutpostInteractions;
@@ -62,6 +68,9 @@ import net.neoforged.neoforge.network.PacketDistributor;
  *       连续开火 4 秒过热，强制冷却 2 秒。挖下来的方块走原版的破坏流程（事件、掉落、经验）。</li>
  *   <li><b>扫描</b>：潜行时按使用键发一次脉冲，把 32 格内的矿石并成矿脉发给客户端，HUD 上标 30 秒。冷却 5 秒。</li>
  *   <li><b>战斗模式</b>（ADR-0014）：G 键切换，按住使用键连发等离子弹，和采矿激光共用热量；扫描两种模式都能用。</li>
+ *   <li><b>武器</b>（ADR-0026 §六）：技术槽里装了武器，G 键接着往下切到它们。散射爆能枪、脉冲喷射器、等离子发射器按住连发，
+ *       烈焰标枪按住蓄力、松开放出去。各有各的射速冷却（没在用的照样充能，切换刷不掉冷却），热量还是共用一份。
+ *       怎么打出去在 {@link WeaponFire}。</li>
  * </ul>
  */
 public final class Multitool {
@@ -80,12 +89,19 @@ public final class Multitool {
 
     static final class State {
         final LaserHeat heat = new LaserHeat();
-        final PlasmaWeapon weapon = new PlasmaWeapon();
+        /** 爆能枪和连发的武器各自的射速冷却。 */
+        final Map<ToolMode, PlasmaWeapon> rates = new EnumMap<>(ToolMode.class);
+        /** 标枪蓄了几刻。 */
+        int charge;
         boolean trigger;
         @Nullable BlockPos target;
         float progress;
         int scanCooldown;
         boolean wasOverheated;
+
+        PlasmaWeapon rate(ToolMode mode) {
+            return this.rates.computeIfAbsent(mode, m -> new PlasmaWeapon(m.weapon() == null ? PlasmaWeapon.BASE_RATE : m.weapon().rate()));
+        }
     }
 
     private Multitool() {
@@ -114,23 +130,38 @@ public final class Multitool {
         boolean holding = tool.getItem() instanceof MultitoolItem;
         boolean trigger = state.trigger && holding;
         state.trigger = false;
-        boolean combat = holding && mode(tool) == ToolMode.COMBAT;
-        TechBonuses bonuses = trigger ? SuitTech.tool(tool) : TechBonuses.NONE;
-        float heatFactor = (float) bonuses.reduction(Stat.COOLING) * (combat ? PlasmaWeapon.HEAT_FACTOR : 1);
-        boolean firing = state.heat.tick(trigger, heatFactor);
+        ToolMode mode = holding ? activeMode(tool) : ToolMode.MINING;
+        // 拿着武器时一直算加成：冷却按射速加成充，标枪松手的那一刻也要用
+        TechBonuses bonuses = trigger || mode.combat() ? SuitTech.tool(tool) : TechBonuses.NONE;
+        float heatFactor = (float) bonuses.reduction(Stat.COOLING) * mode.heatFactor();
         if (state.scanCooldown > 0) {
             state.scanCooldown--;
         }
-        if (combat) {
-            clearTarget(player, state);
-            int shots = state.weapon.tick(firing, bonuses.boost(Stat.FIRE_RATE));
-            for (int i = 0; i < shots; i++) {
-                shoot(player, bonuses);
+        // 没在用的武器照样充能，切回来不用从头等；也刷不掉正在用的那把的冷却
+        for (Map.Entry<ToolMode, PlasmaWeapon> entry : state.rates.entrySet()) {
+            if (entry.getKey() != mode) {
+                entry.getValue().tick(false, 1);
             }
-        } else if (firing) {
-            fire(player, state, bonuses);
+        }
+        if (mode != ToolMode.BLAZE_JAVELIN) {
+            state.charge = 0;
+        }
+        if (mode == ToolMode.MINING) {
+            if (state.heat.tick(trigger, heatFactor)) {
+                fire(player, state, bonuses);
+            } else {
+                clearTarget(player, state);
+            }
+        } else if (mode == ToolMode.BLAZE_JAVELIN) {
+            clearTarget(player, state);
+            javelin(player, state, trigger, heatFactor, bonuses);
         } else {
             clearTarget(player, state);
+            boolean firing = state.heat.tick(trigger, heatFactor);
+            int shots = state.rate(mode).tick(firing, bonuses.boost(Stat.FIRE_RATE));
+            for (int i = 0; i < shots; i++) {
+                shoot(player, mode, bonuses);
+            }
         }
         if (state.heat.overheated() && !state.wasOverheated) {
             player.level().playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.FIRE_EXTINGUISH, SoundSource.PLAYERS, 0.7F, 1.6F);
@@ -151,21 +182,45 @@ public final class Multitool {
 
     // ---- 模式
 
+    /** 工具上存着的模式。选中的武器可能已经拆掉了，开火用 {@link #activeMode}。 */
     public static ToolMode mode(ItemStack tool) {
         return tool.getOrDefault(UniverseDataComponents.TOOL_MODE.get(), ToolMode.MINING);
     }
 
-    /** 按了切换键：主手的多功能工具在采矿和战斗模式之间切换。 */
+    /** 实际用的模式：选中的武器拆掉了就是爆能枪。客户端也能调（只读物品组件）。 */
+    public static ToolMode activeMode(ItemStack tool) {
+        return mode(tool).effective(weapons(tool));
+    }
+
+    /** 工具技术槽里装着的武器（ADR-0026 §六）。 */
+    public static Set<ToolWeapon> weapons(ItemStack tool) {
+        ItemContainerContents contents = tool.get(UniverseDataComponents.TOOL_MODULES.get());
+        if (contents == null) {
+            return Set.of();
+        }
+        Set<ToolWeapon> weapons = EnumSet.noneOf(ToolWeapon.class);
+        contents.nonEmptyItemCopyStream().forEach(stack -> {
+            if (stack.getItem() instanceof ToolWeaponItem item) {
+                weapons.add(item.weapon());
+            }
+        });
+        return weapons;
+    }
+
+    /** 按了切换键：主手的多功能工具切到下一个模式（采矿 → 爆能枪 → 装了的武器 → 采矿）。 */
     public static void toggleMode(ServerPlayer player) {
         ItemStack tool = player.getMainHandItem();
         if (!(tool.getItem() instanceof MultitoolItem)) {
             return;
         }
-        ToolMode mode = mode(tool).next();
+        Set<ToolWeapon> weapons = weapons(tool);
+        ToolMode mode = mode(tool).effective(weapons).next(weapons);
         tool.set(UniverseDataComponents.TOOL_MODE.get(), mode);
-        clearTarget(player, state(player));
+        State state = state(player);
+        clearTarget(player, state);
+        state.charge = 0;
         player.level().playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.CROSSBOW_LOADING_END, SoundSource.PLAYERS, 0.7F,
-                mode == ToolMode.COMBAT ? 1.5F : 1.0F);
+                mode.combat() ? 1.5F - mode.ordinal() * 0.08F : 1.0F);
         player.sendOverlayMessage(Component.translatable("message.universe.multitool.mode." + mode.name().toLowerCase(Locale.ROOT)));
     }
 
@@ -175,30 +230,80 @@ public final class Multitool {
         }
     }
 
-    // ---- 等离子弹
+    // ---- 等离子弹和武器
 
-    private static void shoot(ServerPlayer player, TechBonuses bonuses) {
-        ServerLevel level = player.level();
+    /** 枪口和弹道：从右手边打出，朝准星对着的点飞。 */
+    private record Muzzle(Vec3 from, Vec3 direction) {
+    }
+
+    private static Muzzle muzzle(ServerPlayer player) {
         Vec3 eye = player.getEyePosition();
         Vec3 look = player.getLookAngle();
         Vec3 aim = aimPoint(player, eye, look);
-        Vec3 from;
-        Vec3 direction;
         if (aim.distanceToSqr(eye) < 4) {
             // 贴着东西开火：从正前方打出去，免得弹体从侧面绕开目标
-            from = eye.add(look.scale(0.3));
-            direction = look;
-        } else {
-            Vec3 right = look.cross(new Vec3(0, 1, 0)).normalize();
-            from = eye.add(look.scale(0.5)).add(right.scale(0.25)).add(0, -0.2, 0);
-            direction = aim.subtract(from);
+            return new Muzzle(eye.add(look.scale(0.3)), look);
         }
-        level.addFreshEntity(PlasmaBolt.shoot(level, player, from, direction, PlasmaWeapon.damage(bonuses.boost(Stat.DAMAGE)), PlasmaBolt.PLAYER_COLOR));
+        Vec3 right = look.cross(new Vec3(0, 1, 0)).normalize();
+        Vec3 from = eye.add(look.scale(0.5)).add(right.scale(0.25)).add(0, -0.2, 0);
+        return new Muzzle(from, aim.subtract(from));
+    }
+
+    private static void shoot(ServerPlayer player, ToolMode mode, TechBonuses bonuses) {
+        ServerLevel level = player.level();
+        Muzzle muzzle = muzzle(player);
+        double damage = bonuses.boost(Stat.DAMAGE);
+        switch (mode) {
+            case SCATTER_BLASTER -> WeaponFire.scatter(level, player, muzzle.from(), muzzle.direction(), damage);
+            case PULSE_SPITTER -> WeaponFire.pulse(level, player, muzzle.from(), muzzle.direction(), damage);
+            // 榴弹顺着视线往前抛，不对准星：它是抛物线
+            case PLASMA_LAUNCHER -> WeaponFire.launch(level, player, muzzle.from(), player.getLookAngle(), damage);
+            default -> blaster(level, player, muzzle, damage);
+        }
+    }
+
+    private static void blaster(ServerLevel level, ServerPlayer player, Muzzle muzzle, double damage) {
+        level.addFreshEntity(PlasmaBolt.shoot(level, player, muzzle.from(), muzzle.direction(), PlasmaWeapon.damage(damage),
+                PlasmaBolt.PLAYER_COLOR));
         level.playSound(null, player.getX(), player.getEyeY(), player.getZ(), SoundEvents.BLAZE_SHOOT, SoundSource.PLAYERS, 0.3F,
                 1.8F + player.getRandom().nextFloat() * 0.2F);
         // 火花放在枪口前一格多：贴着镜头的粒子会大得遮住视野
-        Vec3 flash = from.add(direction.normalize().scale(1.2));
+        Vec3 flash = muzzle.from().add(muzzle.direction().normalize().scale(1.2));
         level.sendParticles(ParticleTypes.ELECTRIC_SPARK, flash.x, flash.y, flash.z, 1, 0.02, 0.02, 0.02, 0.02);
+    }
+
+    /**
+     * 烈焰标枪：按着扳机蓄力（蓄满以前升温），松开时蓄满了就放出去。蓄力时过热，前功尽弃。
+     * 松手由"这一刻没按着"判断：物品的 {@code onUseTick} 每刻都在按着的时候调。
+     */
+    private static void javelin(ServerPlayer player, State state, boolean trigger, float heatFactor, TechBonuses bonuses) {
+        int full = ToolWeapon.chargeTicks(bonuses.boost(Stat.FIRE_RATE));
+        if (trigger) {
+            boolean charged = state.charge >= full;
+            boolean heating = state.heat.tick(!charged, heatFactor);
+            if (state.heat.overheated()) {
+                state.charge = 0;
+                return;
+            }
+            if (heating) {
+                state.charge++;
+                if (state.charge == full) {
+                    player.level().playSound(null, player.getX(), player.getEyeY(), player.getZ(), SoundEvents.AMETHYST_BLOCK_CHIME,
+                            SoundSource.PLAYERS, 1.0F, 1.6F);
+                } else if (state.charge % 6 == 1) {
+                    player.level().playSound(null, player.getX(), player.getEyeY(), player.getZ(), SoundEvents.BEACON_AMBIENT,
+                            SoundSource.PLAYERS, 0.4F, 1.0F + state.charge / (float) full);
+                }
+            }
+            return;
+        }
+        state.heat.tick(false, heatFactor);
+        if (state.charge >= full) {
+            Muzzle muzzle = muzzle(player);
+            WeaponFire.javelin(player.level(), player, player.getEyePosition(), player.getLookAngle(), muzzle.from(),
+                    bonuses.boost(Stat.DAMAGE));
+        }
+        state.charge = 0;
     }
 
     /** 准星对着的点：先找方块，再找这段视线上最近的实体。 */

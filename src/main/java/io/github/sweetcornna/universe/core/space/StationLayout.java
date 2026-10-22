@@ -14,7 +14,7 @@ import io.github.sweetcornna.universe.core.procgen.Seeds;
  *
  * <p>空间站在第一颗能着陆的行星（母星系是母星）的大气球外 {@value #DISTANCE} 格的黄道面上，方位由种子定，避开别的天体；
  * 机库的开口朝向那颗行星（取最近的正方向）。建筑是一个直径 45 格的圆盘：地板在 y = 0，室内 9 格高，
- * 开口一侧是机库（地上画着停机坪，旁边是飞船维修台），另一侧是大厅（交易终端、任务板、传送器）。
+ * 开口一侧是机库（地上画着停机坪，旁边是飞船维修台），另一侧是大厅（交易终端、任务板、传送器、多功能工具柜）。
  * 圆盘外面（ADR-0021）：机库开口前两排引导灯，背后一根桁架通到一面碟形天线，两边伸出两百多格宽的太阳翼。
  *
  * <p>方块按"本地坐标"描述：原点是地板中心，+x 朝机库开口；放进世界时按 {@link Site#hangar()} 转过去。
@@ -46,6 +46,9 @@ public final class StationLayout {
     /** 任务板：交易终端另一边，和传送器对称。 */
     public static final int MISSION_BOARD_X = -15;
     public static final int MISSION_BOARD_Z = 6;
+    /** 多功能工具柜（ADR-0026）：大厅里传送器那一侧靠墙，面朝大厅中间。 */
+    public static final int CABINET_X = -6;
+    public static final int CABINET_Z = -15;
     /** 离别的天体至少这么远。 */
     private static final double CLEARANCE = 400;
     /** 机库开口前的引导灯从外墙往外排多远（ADR-0021）。 */
@@ -133,7 +136,9 @@ public final class StationLayout {
         /** 任务板，在交易终端另一边。 */
         MISSION_BOARD,
         /** 两翼的太阳能板。 */
-        SOLAR
+        SOLAR,
+        /** 多功能工具柜，在大厅里（ADR-0026）。 */
+        MULTITOOL_CABINET
     }
 
     /**
@@ -427,6 +432,9 @@ public final class StationLayout {
         }
         if (y == 1 && x == MISSION_BOARD_X && z == MISSION_BOARD_Z) {
             return new Placement(Part.MISSION_BOARD, Dir.EAST);
+        }
+        if (y == 1 && x == CABINET_X && z == CABINET_Z) {
+            return new Placement(Part.MULTITOOL_CABINET, Dir.SOUTH);
         }
         // 维修台：停机坪的一侧，面朝停机坪
         if (y == 1 && x == REPAIR_X && z == REPAIR_Z) {

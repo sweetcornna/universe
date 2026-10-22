@@ -13,6 +13,7 @@ import io.github.sweetcornna.universe.core.poi.PoiType;
 import io.github.sweetcornna.universe.core.ship.ShipType;
 import io.github.sweetcornna.universe.core.space.DriveTier;
 import io.github.sweetcornna.universe.core.survival.Dish;
+import io.github.sweetcornna.universe.core.survival.ToolWeapon;
 import io.github.sweetcornna.universe.core.tech.ModuleType;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
 import io.github.sweetcornna.universe.registry.UniverseItems;
@@ -724,6 +725,32 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("hud.universe.multitool.mode.mining", "采矿", "Mining");
         both("hud.universe.multitool.mode.combat", "战斗", "Combat");
         both("item.universe.multitool.mode", "模式：%s（%s 切换）", "Mode: %s (%s to switch)");
+        // 装在工具槽里的武器（ADR-0026 §六）
+        item(UniverseItems.WEAPONS.get(ToolWeapon.SCATTER_BLASTER).get(), "散射爆能枪", "Scatter Blaster");
+        item(UniverseItems.WEAPONS.get(ToolWeapon.PULSE_SPITTER).get(), "脉冲喷射器", "Pulse Spitter");
+        item(UniverseItems.WEAPONS.get(ToolWeapon.BLAZE_JAVELIN).get(), "烈焰标枪", "Blaze Javelin");
+        item(UniverseItems.WEAPONS.get(ToolWeapon.PLASMA_LAUNCHER).get(), "等离子发射器", "Plasma Launcher");
+        both("message.universe.multitool.mode.scatter_blaster", "多功能工具：散射爆能枪", "Multitool: Scatter Blaster");
+        both("message.universe.multitool.mode.pulse_spitter", "多功能工具：脉冲喷射器", "Multitool: Pulse Spitter");
+        both("message.universe.multitool.mode.blaze_javelin", "多功能工具：烈焰标枪", "Multitool: Blaze Javelin");
+        both("message.universe.multitool.mode.plasma_launcher", "多功能工具：等离子发射器", "Multitool: Plasma Launcher");
+        both("hud.universe.multitool.mode.scatter_blaster", "散射爆能枪", "Scatter Blaster");
+        both("hud.universe.multitool.mode.pulse_spitter", "脉冲喷射器", "Pulse Spitter");
+        both("hud.universe.multitool.mode.blaze_javelin", "烈焰标枪", "Blaze Javelin");
+        both("hud.universe.multitool.mode.plasma_launcher", "等离子发射器", "Plasma Launcher");
+        both("tooltip.universe.tool_weapon.scatter_blaster", "霰弹：8 颗 × 1.5，16 格内，1.2 秒一发", "Shotgun: 8 × 1.5, within 16 m, every 1.2 s");
+        both("tooltip.universe.tool_weapon.pulse_spitter", "连发：每颗 1.5，每秒 10 发，散布大，热得快",
+                "Automatic: 1.5 each, 10 per second, wide spread, heats fast");
+        both("tooltip.universe.tool_weapon.blaze_javelin", "蓄力 1.5 秒，松开命中 120 格内的目标，18 点",
+                "Charge 1.5 s, release to hit up to 120 m away for 18");
+        both("tooltip.universe.tool_weapon.plasma_launcher", "榴弹：会弹跳，2 秒后炸开，3 格内 10 点，3 秒一发",
+                "Grenade: bounces, bursts after 2 s for 10 within 3 m, every 3 s");
+        both("tooltip.universe.tool_weapon.hint", "装进多功能工具的技术槽，%s 切换", "Fit into a multitool tech slot, %s to switch");
+        both("entity.universe.plasma_grenade", "等离子榴弹", "Plasma Grenade");
+        tech("plasma_weapons", "等离子武器", "Plasma Weapons");
+        tech("heavy_plasma_weapons", "重型等离子武器", "Heavy Plasma Weapons");
+        both("jei.universe.info.tool_weapon", "装进多功能工具的技术槽（U 键），按 G 在采矿、爆能枪和装着的武器之间切换。伤害和射速吃工具上的武器模块加成。",
+                "Fit into a multitool tech slot (U). Press G to cycle mining, blaster and fitted weapons. Weapon modules on the tool boost damage and fire rate.");
         both("message.universe.multitool.charging", "扫描仪充能中", "Scanner recharging");
         both("message.universe.multitool.scanned", "扫描完成：%s 条矿脉，共 %s 块", "Scan complete: %s veins, %s blocks");
         both("hud.universe.multitool.overheated", "过热", "OVERHEATED");
@@ -839,6 +866,57 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("message.universe.submarine.need_water", "要放在水里", "Must be placed in water");
         both("message.universe.submarine.sonar", "声呐：%s 处沉船和遗迹，%s 个兴趣点", "Sonar: %s wrecks and ruins, %s points of interest");
         tech("submarine", "潜艇", "Submarine");
+        // 悬浮车、重型车、机甲和载具召唤台（ADR-0026）
+        both("entity.universe.hover_car", "悬浮车", "Hover Car");
+        both("entity.universe.heavy_rover", "重型车", "Heavy Rover");
+        both("entity.universe.exo_mech", "机甲", "Exo Mech");
+        item(UniverseItems.HOVER_CAR.get(), "悬浮车", "Hover Car");
+        item(UniverseItems.HEAVY_ROVER.get(), "重型车", "Heavy Rover");
+        item(UniverseItems.EXO_MECH.get(), "机甲", "Exo Mech");
+        block(UniverseBlocks.VEHICLE_SUMMONER.get(), "载具召唤台", "Vehicle Summoner");
+        both("tooltip.universe.hover_car.summary",
+                "对着地面使用：放置\n右键：驾驶\n潜行右键：打开货舱\n手持燃料右键：加燃料\n离地一格悬浮，能开过水面\n驾驶时按攻击键：采矿激光\n用镐敲三下：收起，保留燃料和货物",
+                "Use on the ground: deploy\nRight-click: drive\nSneak + right-click: open cargo\nRight-click with fuel: refuel\nFloats a block up and crosses water\nAttack while driving: mining laser\nHit three times with a pickaxe: pack up, keeping fuel and cargo");
+        both("tooltip.universe.heavy_rover.summary",
+                "对着地面使用：放置\n右键：驾驶\n潜行右键车尾：打开精炼机\n潜行右键别处：打开货舱\n手持燃料右键：加燃料\n驾驶时按攻击键：采矿激光\n用镐敲三下：收起，保留燃料、货物和精炼机里的东西",
+                "Use on the ground: deploy\nRight-click: drive\nSneak + right-click the rear: open the refiner\nSneak + right-click elsewhere: open cargo\nRight-click with fuel: refuel\nAttack while driving: mining laser\nHit three times with a pickaxe: pack up, keeping fuel, cargo and refiner contents");
+        both("tooltip.universe.exo_mech.summary",
+                "对着地面使用：放置\n右键：坐进去\n潜行右键：打开货舱\n手持燃料右键：加燃料\n驾驶时按住跳跃：喷气\n驾驶时按攻击键：爆能炮\n舱里有空气，挡得住危害\n用镐敲三下：收起，保留燃料和货物",
+                "Use on the ground: deploy\nRight-click: climb in\nSneak + right-click: open cargo\nRight-click with fuel: refuel\nHold jump while piloting: jets\nAttack while piloting: blaster cannon\nThe cabin has air and blocks hazards\nHit three times with a pickaxe: pack up, keeping fuel and cargo");
+        both("tooltip.universe.vehicle_summoner.summary", "右键：选一辆你的车叫过来\n别的维度的车也叫得来",
+                "Right-click: call one of your vehicles over\nWorks across dimensions");
+        both("container.universe.heavy_rover_refiner", "重型车精炼机", "Heavy Rover Refiner");
+        both("hud.universe.hover_car.hover", "悬浮 %s 格", "Hover %s blocks");
+        both("hud.universe.hover_car.falling", "离地太高", "Too high to hover");
+        both("hud.universe.heavy_rover.refining", "精炼机运转中（车尾 %s + %s）", "Refiner running (rear: %s + %s)");
+        both("hud.universe.heavy_rover.refiner_idle", "精炼机：车尾 %s + %s", "Refiner: %s + %s at the rear");
+        both("hud.universe.exo_mech.sealed", "舱内密封", "Cabin sealed");
+        both("hud.universe.exo_mech.jet", "喷气（%s）", "Jets (%s)");
+        both("hud.universe.exo_mech.jet_empty", "喷气（落地回充）", "Jets (land to recharge)");
+        both("hud.universe.exo_mech.keys", "%s 爆能炮  %s 下机", "%s Cannon  %s Exit");
+        both("gui.universe.summoner.title", "载具召唤台", "Vehicle Summoner");
+        both("gui.universe.summoner.hint", "选一辆车叫到台子前面", "Pick a vehicle to call over");
+        both("gui.universe.summoner.empty", "外面没有你的车", "You have no vehicles out");
+        both("gui.universe.summoner.entry", "%s · %s · %s 格", "%s · %s · %s blocks");
+        both("gui.universe.summoner.entry_far", "%s · %s", "%s · %s");
+        both("gui.universe.summoner.dimension.overworld", "主世界", "Overworld");
+        both("gui.universe.summoner.dimension.the_nether", "下界", "The Nether");
+        both("gui.universe.summoner.dimension.the_end", "末地", "The End");
+        both("message.universe.summoner.arrived", "车到了", "Your vehicle has arrived");
+        both("message.universe.summoner.loading", "正在找车……", "Locating your vehicle…");
+        both("message.universe.summoner.lost", "找不到这辆车", "Vehicle not found");
+        both("message.universe.summoner.no_room", "台子前面没地方", "No room in front of the summoner");
+        both("message.universe.summoner.need_water", "潜艇要台子前面有水", "Submarines need water in front of the summoner");
+        both("jei.universe.info.hover_car", "最快的载具。离地一格悬浮，能开过水面。货舱 18 格。",
+                "The fastest vehicle. Floats a block above the ground and crosses water. 18-slot hold.");
+        both("jei.universe.info.heavy_rover", "八轮运输车，慢，货舱 54 格。车尾带一台便携精炼机：潜行右键车尾打开，开着车也在炼。",
+                "Slow eight-wheeled hauler with a 54-slot hold. A portable refiner rides on the back: sneak + right-click the rear to open it. It keeps working while you drive.");
+        both("jei.universe.info.exo_mech", "两足机甲。跨得上两格的坎，按住跳跃喷气。舱里有空气，挡得住星球的危害。左键开爆能炮。",
+                "A two-legged mech. Steps up 2 blocks; hold jump to fire the jets. The sealed cabin has air and blocks planet hazards. Left-click fires the blaster cannon.");
+        both("jei.universe.info.vehicle_summoner", "右键选一辆你放在外面的车，叫到台子前面。别的维度的也叫得来。潜艇要台子前面有水。",
+                "Right-click to call one of your deployed vehicles to the front of the pad, even from another dimension. Submarines need water there.");
+        tech("all_terrain_vehicles", "全地形载具", "All-Terrain Vehicles");
+        tech("exo_mech", "机甲", "Exo Mech");
     }
 
     /** 有人的地标（ADR-0026）：交易站、制造设施、观测站。 */
@@ -1545,12 +1623,16 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
                 "The crash site is 60 to 110 blocks from spawn and appears the first time the world loads. Chat tells you which way the smoke is.\n\nThe chest holds:\nDamaged multitool\nProbe log and this guide\nCopper, iron and redstone\n2 oxygen capsules, 2 hazard cells");
         both("guide.universe.start.multitool.title", "多功能工具", "The Multitool");
         both("guide.universe.start.multitool",
-                "多功能工具是开局的主要工具，能当镐、锹、斧用。损坏的那把加铜锭、红石和铁锭就能修好，箱子里的材料正好够。\n没有坠毁点的玩家可以用钻石从头做一把。\n\n挖掘等级：铁\n挖掘速度：6",
-                "The multitool is your main early tool: pickaxe, shovel and axe in one. Repair the damaged one with copper, redstone and iron; the crash chest has exactly enough.\nWithout a crash site, craft one from scratch with a diamond.\n\nMining tier: iron\nDig speed: 6");
+                "多功能工具是开局的主要工具，能当镐、锹、斧用。损坏的那把加铜锭、红石和铁锭就能修好，箱子里的材料正好够。\n没有坠毁点的玩家可以用钻石从头做一把。\n修好、做出来的都是 C 档手枪。\n\n挖掘等级：铁\n挖掘速度：6",
+                "The multitool is your main early tool: pickaxe, shovel and axe in one. Repair the damaged one with copper, redstone and iron; the crash chest has exactly enough.\nWithout a crash site, craft one from scratch with a diamond.\nEither way you get a C-grade pistol.\n\nMining tier: iron\nDig speed: 6");
         both("guide.universe.start.laser.title", "激光和扫描", "Laser and Scanner");
         both("guide.universe.start.laser",
                 "多功能工具还带采矿激光、扫描器和等离子枪。\n\n按住右键：采矿激光\n潜行右键：扫描\nG：切换采矿和战斗模式\n\n激光：射程 10 格，比手挖快一半\n过热：连续 4 秒，冷却 2 秒\n扫描：矿脉 32 格，兴趣点 200 格，冷却 5 秒\n等离子弹：每发 5 点伤害\n\n在星球上开激光会引来哨兵。",
                 "The multitool also carries a mining laser, a scanner and a plasma gun.\n\nHold right-click: mining laser\nSneak + right-click: scan\nG: switch mining and combat mode\n\nLaser: 10 blocks, 1.5x dig speed\nOverheat: after 4 s, cools for 2 s\nScan: veins 32, points of interest 200, 5 s cooldown\nPlasma bolt: 5 damage\n\nLasering on planets draws Sentinels.");
+        both("guide.universe.start.tools.title", "工具的类型", "Multitool Classes");
+        both("guide.universe.start.tools",
+                "多功能工具分五种，档次 C 到 S。档次越高，格子越多，专长加成越大。\n\n手枪：采矿速度\n步枪：武器伤害\n实验型：扫描范围\n异星型：伤害和扫描各一半\n守卫机型：伤害，加成最高\n\n格子：C 4、B 5、A 6、S 8\n专长：C 0、B 10%、A 20%、S 35%\n\n空间站大厅的工具柜每天卖 3 把。拿着旧工具买能折价，模块跟着转过去。",
+                "Multitools come in five classes, graded C to S. Higher grades get more slots and a bigger bonus.\n\nPistol: mining speed\nRifle: weapon damage\nExperimental: scan range\nAlien: damage and scan\nSentinel: damage, highest bonus\n\nSlots: C 4, B 5, A 6, S 8\nBonus: C 0, B 10%, A 20%, S 35%\nStation cabinets sell 3 a day. Trade in the one you hold; its modules move over.");
         both("guide.universe.start.suit.title", "外骨骼", "The Exosuit");
         both("guide.universe.start.suit",
                 "外骨骼四件都用铁和铜做。头盔加胸甲才算密封。\n件数越少防护掉得越快：三件 ×2，两件 ×3.5，一件 ×6。\n\n氧气：密封 10 分钟，不密封 15 秒\n危害防护：全套 5 分钟\n主世界、空间站、飞船里不消耗",
@@ -1723,6 +1805,10 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("guide.universe.survival.sentinels",
                 "有守卫机的星球上，激光采矿、捕杀动物、攻击守卫机都会提高警戒，警戒满了就被通缉。\n\n通缉五级，打光一波升一级：\n1 级：无人机\n2 级：多一架维修无人机\n3 级起：重型无人机、召唤无人机、四足机\n5 级：步行机\n\n维修无人机给别的守卫机回血，召唤无人机叫来更多无人机，先打它们。四足机、步行机从背后打伤害翻倍。躲开视线 20 + 10 × 等级 秒就脱身；打光五级，这颗星球的守卫机撤走 10 分钟。",
                 "Laser mining, hunting and attacking Sentinels raise the alert. Fill it and you are wanted.\n\nFive levels. Destroy a wave to go up one:\n1: drones\n2: a repair drone joins\n3+: heavy drones, summoners, quads\n5: a walker\n\nKill repair drones and summoners first. Quads and walkers take double damage from behind. Stay out of sight 20 + 10 × level seconds to escape. Beat level 5 and the Sentinels leave for 10 minutes.");
+        both("guide.universe.survival.weapons.title", "多功能工具的武器", "Multitool Weapons");
+        both("guide.universe.survival.weapons",
+                "装进多功能工具的技术槽，一种装一个。按 G 在采矿、爆能枪和装着的武器之间切换。\n\n散射爆能枪：霰弹，8 颗弹丸，16 格内\n脉冲喷射器：每秒 10 发，散布大，热得快\n烈焰标枪：按住蓄力 1.5 秒，松开打中 120 格内的目标\n等离子发射器：榴弹会弹跳，2 秒后炸开\n\n热量和采矿激光共用，武器模块的伤害、射速加成都算。\n研究：等离子武器、重型等离子武器",
+                "Fit one of each into multitool slots. G cycles mining, blaster and fitted weapons.\n\nScatter Blaster: 8 pellets, 16 m\nPulse Spitter: 10 shots/s, wide spread, runs hot\nBlaze Javelin: hold 1.5 s, release, hits to 120 m\nPlasma Launcher: bouncing grenade, 2 s fuse\nShares the laser's heat. Weapon modules add damage and fire rate.\nResearch: Plasma Weapons, Heavy Plasma Weapons");
         both("guide.universe.survival.modules.title", "技术模块", "Tech Modules");
         both("guide.universe.survival.modules",
                 "U 键打开技术配置，在这里装模块、整理货舱。\n\n外骨骼：开始 4 个技术槽、9 格货舱，每修好一个掉落舱 +1 槽、+9 格，最多 12 槽、54 格\n多功能工具：6 个技术槽\n品质：C、B、A、S，同一种最多三个生效\n来源：制造台做 C 档，更好的从兴趣点和空间站拿\n\n喷气背包：空中再按一次跳跃，喷 2.5 秒，落地 2 秒充满",
@@ -1768,8 +1854,12 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
                 "Dropped by sea life on planets with seas.");
         both("jei.universe.info.quadruped_servo", "四足机掉的。三级以上的通缉会派四足机来，制造设施门口也有一台在巡逻。从背后打，伤害翻倍。",
                 "Dropped by sentinel quads. They join the hunt from wanted level 3, and one patrols outside each manufacturing facility. Hits from behind do double damage.");
-        both("jei.universe.info.walker_brain", "步行机掉的。五级通缉才会派步行机来。它转身慢，绕到背后打散热口，伤害翻倍。",
-                "Dropped by sentinel walkers, which only come at wanted level 5. They turn slowly: get behind them and hit the vent for double damage.");
+        both("jei.universe.info.walker_brain", "步行机掉的。五级通缉才会派步行机来。它转身慢，绕到背后打散热口，伤害翻倍。拿着它右键守卫塔终端，换一把守卫机型多功能工具。",
+                "Dropped by sentinel walkers, which only come at wanted level 5. They turn slowly: get behind them and hit the vent for double damage. Right-click a Sentinel Pillar terminal with it to get a Sentinel multitool.");
+        both("jei.universe.info.multitool", "多功能工具分手枪、步枪、实验型、异星型、守卫机型五种，档次 C 到 S。做出来的是 A 档手枪。别的类型去空间站大厅的工具柜买；守卫机型在守卫塔终端用步行机主脑换。",
+                "Multitools come as Pistol, Rifle, Experimental, Alien and Sentinel, graded C to S. A crafted one is an A-Class Pistol. Buy other classes from the cabinet in a station lobby. Trade a Walker Brain at a Sentinel Pillar for a Sentinel one.");
+        both("jei.universe.info.multitool_cabinet", "只在空间站的大厅里有。每天挂 3 把工具，档次看这个星系的经济。拿着旧工具买会折价，旧工具里的模块和武器转到新工具上。",
+                "Found only in station lobbies. Stocks 3 tools a day; richer systems sell better grades. Buy while holding your old multitool to trade it in. Its modules and weapons move to the new one.");
         // 潜艇的仪表盘（ADR-0026）
         both("hud.universe.submarine.depth", "深度 %s 格", "Depth %s blocks");
         both("hud.universe.submarine.surfaced", "浮在水面", "Surfaced");
@@ -1812,6 +1902,14 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("guide.universe.husbandry.exocraft",
                 "探索车是能开的采矿车。对着地面使用物品放下，拿镐敲三下收回，燃料和货物留在物品里。\n\n右键上车，潜行下车\nW / S：油门，A / D：转向\n按住左键：采矿激光，射程 12 格\n车上拿多功能工具右键：扫描 64 格内的矿脉\n\n油箱 1000（和飞船燃料通用），货箱 27 格",
                 "A drivable mining vehicle. Use it on the ground to deploy; three pickaxe hits pack it up with its fuel and cargo.\n\nRight-click to get in, sneak to get out\nW / S: throttle, A / D: steer\nHold left-click: mining laser, 12 blocks\nVein scan: multitool right-click, 64 blocks\n\nTank: 1,000 (ship fuel), hold: 27 slots");
+        both("guide.universe.husbandry.vehicles.title", "更多载具", "More Vehicles");
+        both("guide.universe.husbandry.vehicles",
+                "放下、收起、加燃料都和探索车一样。\n\n悬浮车：最快，离地一格飘着，开得过水面。货舱 18 格\n重型车：慢，八个轮子，货舱 54 格。车尾有台便携精炼机，潜行右键车尾打开，开着也在炼\n机甲：走得慢，跨得上两格的坎。按住跳跃喷气，最多 3 秒，落地回充。舱里有空气、挡得住危害。左键爆能炮。货舱 27 格",
+                "They deploy, pack up and refuel like the exocraft.\n\nHover car: fastest. Floats a block up and crosses water. 18-slot hold\nHeavy rover: slow, eight wheels, 54-slot hold. Sneak + right-click the rear for its portable refiner, which works on the move\nExo mech: slow, steps up 2 blocks. Hold jump for up to 3 s of jets; land to recharge. Sealed cabin with air. Left-click: blaster cannon. 27-slot hold");
+        both("guide.universe.husbandry.summoner.title", "载具召唤台", "Vehicle Summoner");
+        both("guide.universe.husbandry.summoner",
+                "右键召唤台，列出你放在外面的车，选一辆叫到台子前面。\n\n同一维度：直接挪过来，没加载的区块先加载\n别的维度：拆了在这边重新放，燃料和货物都在\n潜艇要台子前面有水\n收在背包里的车不列出来\n\n车记在放下它的人名下。",
+                "Right-click to list your deployed vehicles, then pick one to call it to the front of the pad.\n\nSame dimension: moved straight over\nOther dimensions: packed up and rebuilt here, fuel and cargo kept\nSubmarines need water in front\nVehicles in your inventory aren't listed\nA vehicle belongs to whoever deploys it.");
         both("guide.universe.dyson.sails.title", "太阳帆", "Solar Sails");
         both("guide.universe.dyson.sails",
                 "电磁轨道弹射器把太阳帆射进戴森云，在界面里选轨道。\n\n射速：每 3 秒一张\n条件：露天，恒星在地平线 5° 以上；太空里随时能射\n寿命：90 分钟\n每张帆：36 W × 恒星光度系数\n\n射线接收站把电送到地面。",
@@ -2274,10 +2372,13 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("message.universe.pillar.shutdown", "守卫机关停 %s 分钟", "Sentinels offline for %s minutes");
         both("message.universe.pillar.wanted", "通缉中，终端没有响应", "Wanted: the terminal won't respond");
         both("message.universe.pillar.used", "今天已经关停过，%s 分钟后再来", "Already used today. Try again in %s min");
+        both("message.universe.pillar.tool", "取出一把 %s 级守卫机型多功能工具", "Took a %s-Class Sentinel Multitool");
+        both("message.universe.pillar.tool_taken", "这座塔的工具已经取过了", "You already took this pillar's multitool");
+        both("message.universe.pillar.tool_needs_brain", "要一个步行机主脑才能取出工具", "Needs a Walker Brain to release the multitool");
         both("guide.universe.exploration.pillars.title", "守卫塔", "Sentinel Pillars");
         both("guide.universe.exploration.pillars",
-                "有守卫机的星球上都有一座守卫塔，在降落点 400–900 格外，二十多格高，塔身亮着琥珀色的灯带。\n\n塔下的终端：右键关停这颗星球的守卫机 20 分钟\n一个游戏日只能关停一次\n被通缉时终端不响应\n\n打光五级通缉的那一波，HUD 上会标出守卫塔。",
-                "Every planet with sentinels has one Sentinel Pillar, 400–900 blocks from the landing site: a tall tower with amber light strips.\n\nBase terminal: right-click to shut down this planet's sentinels for 20 minutes\nOnce per in-game day\nNo response while you are wanted\n\nClear the level 5 wave and the pillar is marked on your HUD.");
+                "有守卫机的星球上都有一座守卫塔，在降落点 400–900 格外，二十多格高，塔身亮着琥珀色的灯带。\n\n塔下的终端：右键关停这颗星球的守卫机 20 分钟\n一个游戏日只能关停一次\n被通缉时终端不响应\n拿着步行机主脑右键：换一把守卫机型多功能工具，每座塔一次\n\n打光五级通缉的那一波，HUD 上会标出守卫塔。",
+                "Every planet with sentinels has one Sentinel Pillar, 400–900 blocks from the landing site: a tall tower with amber light strips.\n\nBase terminal: right-click to shut down this planet's sentinels for 20 minutes\nOnce per in-game day\nNo response while you are wanted\nRight-click with a Walker Brain: trade it for a Sentinel multitool, once per pillar\n\nClear the level 5 wave and the pillar is marked on your HUD.");
         both("gui.universe.portal.title", "先驱者传送门", "Precursor Portal");
         both("gui.universe.portal.here", "这座门：", "This portal:");
         both("gui.universe.portal.back", "退格", "Back");
@@ -2475,6 +2576,31 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("gui.universe.tech.suit_off", "没穿外骨骼胸甲，外骨骼模块不生效", "Chestplate not worn: exosuit modules inactive");
         both("gui.universe.tech.more", "……还有 %s 项（鼠标移到这里查看）", "…%s more (hover to see all)");
         both("hud.universe.cargo.stored", "背包满了，%s ×%s 收进货舱", "Inventory full: %s ×%s stored in cargo");
+        // 多功能工具的类型和档次、工具柜（ADR-0026 §六）
+        both("multitool.universe.class.pistol", "手枪", "Pistol");
+        both("multitool.universe.class.rifle", "步枪", "Rifle");
+        both("multitool.universe.class.experimental", "实验型", "Experimental");
+        both("multitool.universe.class.alien", "异星型", "Alien");
+        both("multitool.universe.class.sentinel", "守卫机型", "Sentinel");
+        both("item.universe.multitool.spec", "%s 级%s · %s 格", "%s-Class %s · %s slots");
+        both("item.universe.multitool.specialty", "专长：%s", "Specialty: %s");
+        both("item.universe.multitool.broken", "坏了 %s 格，每格用 %s 个守卫机残骸修", "%s slots broken. Fix each with %s Sentinel Scrap");
+        both("gui.universe.tech.multitool_spec", "多功能工具（%s 级%s）", "Multitool (%s-Class %s)");
+        both("gui.universe.tech.multitool_short", "%s 级%s", "%s-Class %s");
+        both("gui.universe.tech.broken_slot", "坏的格子。手里拿着 %s 个守卫机残骸点一下修好", "Broken slot. Click it holding %s Sentinel Scrap to fix it");
+        both("message.universe.multitool.repair_needs", "修一格要 %s 个守卫机残骸", "Each slot takes %s Sentinel Scrap");
+        block(UniverseBlocks.MULTITOOL_CABINET.get(), "多功能工具柜", "Multitool Cabinet");
+        both("gui.universe.cabinet.title", "多功能工具柜", "Multitool Cabinet");
+        both("gui.universe.cabinet.trade_in", "手上的工具折价 %s", "Your multitool trades in for %s");
+        both("gui.universe.cabinet.no_trade_in", "手上没拿多功能工具，买的工具放进背包", "No multitool in hand: the new one goes to your inventory");
+        both("gui.universe.cabinet.tool", "%s 级%s", "%s %s");
+        both("gui.universe.cabinet.slots", "%s 格", "%s slots");
+        both("gui.universe.cabinet.no_specialty", "没有专长加成", "No specialty bonus");
+        both("gui.universe.cabinet.price", "标价 %s", "Price %s");
+        both("gui.universe.cabinet.buy_refund", "买下 · 退 %s", "Buy · +%s");
+        both("message.universe.cabinet.bought", "买下 %s 级%s，付了 %s", "Bought %s-Class %s for %s");
+        both("message.universe.cabinet.bought_refund", "买下 %s 级%s，退回 %s", "Bought %s-Class %s, %s refunded");
+        both("message.universe.cabinet.returned", "%s 个模块装不下，放回背包", "%s modules didn't fit and went to your inventory");
     }
 
     /** 发现日志、分析目镜、勘探数据（ADR-0012）。 */

@@ -1,6 +1,40 @@
 {
   "model": {
-    "type": "minecraft:model",
-    "model": "universe:item/multitool"
+    "type": "minecraft:select",
+    "cases": [
+      {
+        "model": {
+          "type": "minecraft:model",
+          "model": "universe:item/multitool_rifle"
+        },
+        "when": "rifle"
+      },
+      {
+        "model": {
+          "type": "minecraft:model",
+          "model": "universe:item/multitool_experimental"
+        },
+        "when": "experimental"
+      },
+      {
+        "model": {
+          "type": "minecraft:model",
+          "model": "universe:item/multitool_alien"
+        },
+        "when": "alien"
+      },
+      {
+        "model": {
+          "type": "minecraft:model",
+          "model": "universe:item/multitool_sentinel"
+        },
+        "when": "sentinel"
+      }
+    ],
+    "fallback": {
+      "type": "minecraft:model",
+      "model": "universe:item/multitool"
+    },
+    "property": "universe:multitool_class"
   }
 }

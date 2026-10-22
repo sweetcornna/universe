@@ -1,0 +1,28 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 4,
+      "ingredient": "universe:sentinel_scrap"
+    },
+    {
+      "count": 4,
+      "ingredient": "universe:magnetic_coil"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:circuit_board"
+    },
+    {
+      "count": 4,
+      "ingredient": "minecraft:copper_ingot"
+    }
+  ],
+  "research": "plasma_weapons",
+  "results": [
+    {
+      "id": "universe:scatter_blaster"
+    }
+  ],
+  "time": 200
+}

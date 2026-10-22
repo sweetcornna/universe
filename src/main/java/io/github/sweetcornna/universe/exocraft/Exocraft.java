@@ -6,7 +6,8 @@ import org.jspecify.annotations.Nullable;
 
 import io.github.sweetcornna.universe.core.sentinel.Offense;
 import io.github.sweetcornna.universe.core.survival.LaserHeat;
-import io.github.sweetcornna.universe.core.vehicle.RoverDrive;
+import io.github.sweetcornna.universe.core.vehicle.VehicleKind;
+import io.github.sweetcornna.universe.core.vehicle.WheelDrive;
 import io.github.sweetcornna.universe.network.ScanResultPayload;
 import io.github.sweetcornna.universe.registry.UniverseItems;
 import io.github.sweetcornna.universe.sentinel.Sentinels;
@@ -54,6 +55,9 @@ import net.neoforged.neoforge.network.PacketDistributor;
  * 驾驶像原版的船一样由驾驶员的客户端算（地形上开起来才顺），服务端收车的位置，按驾驶员这一刻按着的键扣燃料。车载采矿激光按住攻击键开，
  * 打 {@link #LASER_RANGE} 格内准星对着的方块，挖下的东西进货箱；坐在车上用多功能工具右键是车载扫描（矿脉 {@link #SCAN_RADIUS} 格、
  * 兴趣点 {@link #POI_RADIUS} 格）。右键上车，潜行右键开货箱，拿燃料右键加油，拿镐敲三下变回物品（货物和燃料存在物品里）。
+ * <p>
+ * 悬浮车、重型车（ADR-0026）也是这一类车：同样的激光、扫描和仪表盘，换一组驾驶的数（{@link #wheels}）、货舱和模型；
+ * 悬浮车另外改了上下的运动（{@link #traction}、{@link #verticalSpeed}）。
  */
 public class Exocraft extends UniverseVehicle {
     /** 踩着油门每刻烧多少（和一台飞船推进器全开一样）。 */
@@ -86,6 +90,7 @@ public class Exocraft extends UniverseVehicle {
     private static final EntityDataAccessor<Boolean> DATA_LASER = SynchedEntityData.defineId(Exocraft.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Boolean> DATA_OVERHEATED = SynchedEntityData.defineId(Exocraft.class, EntityDataSerializers.BOOLEAN);
 
+    private final VehicleKind kind;
     /** 沿车头方向的速度（格/刻）：在算驾驶的那一端（驾驶员的客户端，没人开时的服务端）才有意义。 */
     private double speed;
     /** 这一刻转了多少度，乘客跟着转。 */
@@ -105,7 +110,32 @@ public class Exocraft extends UniverseVehicle {
     public float wheelSpinO;
 
     public Exocraft(EntityType<? extends Exocraft> type, Level level) {
-        super(type, level, CARGO_SLOTS);
+        this(type, level, VehicleKind.EXOCRAFT);
+    }
+
+    protected Exocraft(EntityType<? extends Exocraft> type, Level level, VehicleKind kind) {
+        super(type, level, kind.cargoSlots());
+        this.kind = kind;
+    }
+
+    @Override
+    public VehicleKind kind() {
+        return this.kind;
+    }
+
+    /** 驾驶的手感：最快多快、起步、刹车、转向。 */
+    protected WheelDrive wheels() {
+        return WheelDrive.ROVER;
+    }
+
+    /** 踩着油门每刻烧多少燃料。 */
+    protected double fuelPerTick() {
+        return FUEL_PER_TICK;
+    }
+
+    /** 第三人称开车时镜头至少拉开多远。 */
+    public float cameraDistance() {
+        return CAMERA_DISTANCE;
     }
 
     // ---- 同步的数据
@@ -173,29 +203,38 @@ public class Exocraft extends UniverseVehicle {
     /** 算驾驶的那一端：按驾驶员的方向键转向、加减速，加上重力和水的阻力。 */
     private void drive() {
         Player driver = this.getControllingPassenger() instanceof Player player ? player : null;
-        boolean grounded = this.onGround();
+        boolean grip = this.traction();
         boolean water = this.isInWater();
         double throttle = driver == null ? 0 : driver.zza;
         // 玩家的 xxa 向左为正，方向盘向右为正
         double steer = driver == null ? 0 : -driver.xxa;
         boolean powered = this.powered(driver);
-        this.deltaRotation = RoverDrive.turn(this.speed, steer, grounded || water);
+        WheelDrive wheels = this.wheels();
+        this.deltaRotation = wheels.turn(this.speed, steer, grip);
         this.setYRot(this.getYRot() + this.deltaRotation);
-        this.speed = RoverDrive.speed(this.speed, throttle, powered, grounded || water);
+        this.speed = wheels.speed(this.speed, throttle, powered, grip);
         if (water) {
             this.speed *= 0.92;
         }
         Vec3 heading = heading(this.getYRot());
+        this.setDeltaMovement(heading.x * this.speed, this.verticalSpeed(this.getDeltaMovement().y, water), heading.z * this.speed);
+    }
+
+    /** 这一刻轮子抓得住地（在水里漂着也算，能慢慢开出来）。每刻驾驶时先调。 */
+    protected boolean traction() {
+        return this.onGround() || this.isInWater();
+    }
+
+    /** 下一刻的上下速度：重力，在水里慢慢沉。 */
+    protected double verticalSpeed(double vy, boolean water) {
         double g = GRAVITY * this.gravityScale();
-        double vy = this.getDeltaMovement().y;
-        vy = water ? Math.max(vy * 0.8 - g * 0.15, -0.12) : (vy - g) * 0.98;
-        this.setDeltaMovement(heading.x * this.speed, vy, heading.z * this.speed);
+        return water ? Math.max(vy * 0.8 - g * 0.15, -0.12) : (vy - g) * 0.98;
     }
 
     private void serverTick(ServerLevel level) {
         ServerPlayer driver = this.getControllingPassenger() instanceof ServerPlayer player ? player : null;
         boolean infinite = driver != null && driver.hasInfiniteMaterials();
-        this.burnDriveFuel(driver, FUEL_PER_TICK);
+        this.burnDriveFuel(driver, this.fuelPerTick());
         if (this.scanCooldown > 0) {
             this.scanCooldown--;
         }
@@ -250,7 +289,13 @@ public class Exocraft extends UniverseVehicle {
     /** 激光从发动机罩上炮管的口打出来（和模型对齐）。 */
     public Vec3 muzzle() {
         Vec3 heading = heading(this.getYRot());
-        return this.position().add(heading.scale(1.25)).add(0, 1.22, 0);
+        Vec3 offset = this.muzzleOffset();
+        return this.position().add(heading.scale(offset.z)).add(0, offset.y, 0);
+    }
+
+    /** 炮口在车上的位置：y 是离地多高，z 是在车中心前面多远。 */
+    protected Vec3 muzzleOffset() {
+        return new Vec3(0, 1.22, 1.25);
     }
 
     private void fireLaser(ServerLevel level, ServerPlayer driver) {
@@ -341,16 +386,21 @@ public class Exocraft extends UniverseVehicle {
             return;
         }
         this.scanCooldown = SCAN_COOLDOWN;
+        scanAround(this, player);
+    }
+
+    /** 车载扫描：载具周围 {@link #SCAN_RADIUS} 格的矿脉、{@link #POI_RADIUS} 格的兴趣点和地标（机甲也用）。 */
+    static void scanAround(Entity vehicle, ServerPlayer player) {
         ServerLevel level = player.level();
-        List<ScanResultPayload.Marker> markers = Multitool.scanOres(level, this.blockPosition(), SCAN_RADIUS);
+        List<ScanResultPayload.Marker> markers = Multitool.scanOres(level, vehicle.blockPosition(), SCAN_RADIUS);
         List<ScanResultPayload.PoiMarker> pois = Multitool.scanPois(player, POI_RADIUS);
         List<ScanResultPayload.LandmarkMarker> landmarks = Multitool.scanLandmarks(player, POI_RADIUS);
         PacketDistributor.sendToPlayer(player, new ScanResultPayload(markers, pois, landmarks));
-        level.playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.BEACON_ACTIVATE, SoundSource.NEUTRAL, 1.0F, 1.4F);
+        level.playSound(null, vehicle.getX(), vehicle.getY(), vehicle.getZ(), SoundEvents.BEACON_ACTIVATE, SoundSource.NEUTRAL, 1.0F, 1.4F);
         for (int i = 0; i < 72; i++) {
             double angle = i * Math.PI * 2 / 72;
-            level.sendParticles(ParticleTypes.END_ROD, this.getX() + Math.cos(angle) * 3, this.getY() + 0.3, this.getZ() + Math.sin(angle) * 3,
-                    1, 0, 0, 0, 0);
+            level.sendParticles(ParticleTypes.END_ROD, vehicle.getX() + Math.cos(angle) * 3, vehicle.getY() + 0.3,
+                    vehicle.getZ() + Math.sin(angle) * 3, 1, 0, 0, 0, 0);
         }
         int total = markers.stream().mapToInt(ScanResultPayload.Marker::count).sum();
         int sites = pois.size() + landmarks.size();

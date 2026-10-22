@@ -86,6 +86,8 @@ public final class Stations {
                     .setValue(HorizontalDirectionalBlock.FACING, direction(placement.facing().rotate(site.hangar())));
             case MISSION_BOARD -> UniverseBlocks.MISSION_BOARD.get().defaultBlockState()
                     .setValue(HorizontalDirectionalBlock.FACING, direction(placement.facing().rotate(site.hangar())));
+            case MULTITOOL_CABINET -> UniverseBlocks.MULTITOOL_CABINET.get().defaultBlockState()
+                    .setValue(HorizontalDirectionalBlock.FACING, direction(placement.facing().rotate(site.hangar())));
         };
     }
 
@@ -111,11 +113,12 @@ public final class Stations {
         };
     }
 
-    /** 老存档里的空间站生成时还没有传送器、任务板和飞船交易终端：有人进站时看一眼，那一格空着就补上。 */
+    /** 老存档里的空间站生成时还没有传送器、任务板、飞船交易终端和多功能工具柜：有人进站时看一眼，那一格空着就补上。 */
     public static void ensureFixtures(ServerLevel level, Site site) {
         ensure(level, site, StationLayout.TELEPORTER_X, StationLayout.TELEPORTER_Z);
         ensure(level, site, StationLayout.MISSION_BOARD_X, StationLayout.MISSION_BOARD_Z);
         ensure(level, site, StationLayout.DEALER_X, StationLayout.DEALER_Z);
+        ensure(level, site, StationLayout.CABINET_X, StationLayout.CABINET_Z);
     }
 
     private static void ensure(ServerLevel level, Site site, int x, int z) {

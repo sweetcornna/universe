@@ -10,10 +10,13 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.blueprint.BlueprintInfo;
 import io.github.sweetcornna.universe.blueprint.BlueprintSelection;
+import io.github.sweetcornna.universe.core.survival.MultitoolClass;
+import io.github.sweetcornna.universe.core.survival.MultitoolSpec;
 import io.github.sweetcornna.universe.core.survival.ToolMode;
 import io.github.sweetcornna.universe.core.tech.Grade;
 import io.github.sweetcornna.universe.core.tech.ModuleType;
 import io.github.sweetcornna.universe.core.tech.TechModule;
+import io.github.sweetcornna.universe.exocraft.VehicleRefiner;
 import io.github.sweetcornna.universe.factory.belt.StorageTankBlockEntity;
 import io.github.sweetcornna.universe.logistics.StationContents;
 import io.netty.buffer.ByteBuf;
@@ -66,6 +69,18 @@ public final class UniverseDataComponents {
             builder -> builder.persistent(enumCodec(ToolMode.class))
                     .networkSynchronized(ByteBufCodecs.idMapper(index -> ToolMode.values()[Math.floorMod(index, ToolMode.values().length)],
                             ToolMode::ordinal)));
+    /** 多功能工具的类型、档次和坏了几格（ADR-0026）；没有这个组件的旧工具按 A 档手枪算。 */
+    public static final Supplier<DataComponentType<MultitoolSpec>> TOOL_SPEC = COMPONENTS.registerComponentType("tool_spec",
+            builder -> builder.persistent(RecordCodecBuilder.<MultitoolSpec>create(i -> i.group(
+                            enumCodec(MultitoolClass.class).fieldOf("type").forGetter(MultitoolSpec::type),
+                            enumCodec(Grade.class).fieldOf("grade").forGetter(MultitoolSpec::grade),
+                            Codec.INT.optionalFieldOf("broken", 0).forGetter(MultitoolSpec::broken)
+                    ).apply(i, MultitoolSpec::new)))
+                    .networkSynchronized(StreamCodec.composite(
+                            ByteBufCodecs.idMapper(index -> MultitoolClass.values()[index], MultitoolClass::ordinal), MultitoolSpec::type,
+                            ByteBufCodecs.idMapper(index -> Grade.values()[index], Grade::ordinal), MultitoolSpec::grade,
+                            ByteBufCodecs.VAR_INT, MultitoolSpec::broken,
+                            MultitoolSpec::new)));
 
     /** 空白蓝图框的选区（ADR-0018）。 */
     public static final Supplier<DataComponentType<BlueprintSelection>> BLUEPRINT_SELECTION = COMPONENTS.registerComponentType(
@@ -79,6 +94,10 @@ public final class UniverseDataComponents {
     /** 蓝图转了几个 90°（ADR-0018）。 */
     public static final Supplier<DataComponentType<Integer>> BLUEPRINT_ROTATION = COMPONENTS.registerComponentType("blueprint_rotation",
             builder -> builder.persistent(Codec.INT).networkSynchronized(ByteBufCodecs.VAR_INT));
+    /** 重型车收成物品时，车尾精炼机里的东西和选好的配方（ADR-0026）。 */
+    public static final Supplier<DataComponentType<VehicleRefiner.Contents>> VEHICLE_REFINER = COMPONENTS.registerComponentType(
+            "vehicle_refiner", builder -> builder.persistent(VehicleRefiner.Contents.CODEC)
+                    .networkSynchronized(VehicleRefiner.Contents.STREAM_CODEC).cacheEncoding());
 
     private UniverseDataComponents() {
     }

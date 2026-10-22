@@ -47,6 +47,7 @@ import io.github.sweetcornna.universe.block.ship.ShipThrusterBlock;
 import io.github.sweetcornna.universe.block.ship.ShipWeaponBlock;
 import io.github.sweetcornna.universe.block.ship.WarpDriveBlock;
 import io.github.sweetcornna.universe.block.station.MissionBoardBlock;
+import io.github.sweetcornna.universe.block.station.MultitoolCabinetBlock;
 import io.github.sweetcornna.universe.block.station.ShipDealerBlock;
 import io.github.sweetcornna.universe.block.station.ShipRepairBlock;
 import io.github.sweetcornna.universe.block.station.TradeTerminalBlock;
@@ -57,6 +58,7 @@ import io.github.sweetcornna.universe.core.factory.SorterTier;
 import io.github.sweetcornna.universe.core.galaxy.Palette;
 import io.github.sweetcornna.universe.core.ship.ShipStats;
 import io.github.sweetcornna.universe.dyson.DysonBlocks;
+import io.github.sweetcornna.universe.exocraft.VehicleSummonerBlock;
 import io.github.sweetcornna.universe.factory.ArcSmelterBlock;
 import io.github.sweetcornna.universe.factory.FactoryAnchorBlock;
 import io.github.sweetcornna.universe.factory.MachineBlock;
@@ -174,6 +176,9 @@ public final class UniverseBlocks {
                     .lightLevel(state -> 9));
     public static final DeferredBlock<ShipSeatBlock> SHIP_SEAT = BLOCKS.registerBlock("ship_seat", ShipSeatBlock::new,
             p -> p.mapColor(MapColor.COLOR_GRAY).strength(1.5F).sound(SoundType.WOOL).noOcclusion());
+    /** 载具召唤台（ADR-0026）：把自己的车叫到台子旁边，不用电。 */
+    public static final DeferredBlock<VehicleSummonerBlock> VEHICLE_SUMMONER = BLOCKS.registerBlock("vehicle_summoner", VehicleSummonerBlock::new,
+            p -> p.mapColor(MapColor.COLOR_CYAN).strength(3.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().lightLevel(state -> 6));
     /** 着陆台（ADR-0024）：接电网给停在上面的船加燃料，也是召唤飞船的落点。 */
     public static final DeferredBlock<LandingPadBlock> LANDING_PAD = BLOCKS.registerBlock("landing_pad", LandingPadBlock::new,
             p -> machine(p).lightLevel(state -> state.getValue(MachineBlock.WORKING) ? 9 : 3));
@@ -336,6 +341,10 @@ public final class UniverseBlocks {
     public static final DeferredBlock<ShipDealerBlock> SHIP_DEALER = BLOCKS.registerBlock("ship_dealer", ShipDealerBlock::new,
             p -> p.mapColor(MapColor.METAL).strength(-1.0F, 3600000.0F).sound(SoundType.METAL).noLootTable().lightLevel(state -> 10)
                     .pushReaction(PushReaction.IMMOVEABLE));
+    /** 多功能工具柜（ADR-0026）：挖不掉，只在空间站的大厅里有。 */
+    public static final DeferredBlock<MultitoolCabinetBlock> MULTITOOL_CABINET = BLOCKS.registerBlock("multitool_cabinet",
+            MultitoolCabinetBlock::new, p -> p.mapColor(MapColor.METAL).strength(-1.0F, 3600000.0F).sound(SoundType.METAL).noLootTable()
+                    .lightLevel(state -> 10).pushReaction(PushReaction.IMMOVEABLE));
     // ---- 货船（ADR-0024）：外壳的深色装甲板和引擎喷口，舰桥的控制台、指挥室的舰队终端，都挖不掉
     public static final DeferredBlock<Block> FREIGHTER_PLATE = BLOCKS.registerSimpleBlock("freighter_plate",
             p -> station(p.mapColor(MapColor.COLOR_GRAY)));

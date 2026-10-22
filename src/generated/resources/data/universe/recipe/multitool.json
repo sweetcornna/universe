@@ -14,6 +14,12 @@
     "I  "
   ],
   "result": {
+    "components": {
+      "universe:tool_spec": {
+        "type": "pistol",
+        "grade": "c"
+      }
+    },
     "id": "universe:multitool"
   }
 }

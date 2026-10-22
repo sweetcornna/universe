@@ -355,6 +355,13 @@ io.github.sweetcornna.universe
 | 潮涌能量（`MobEffects.CONDUIT_POWER`）给水下呼吸，眼睛在水里时 `LightmapRenderStateExtractor` 按 `getWaterVision()` 给夜视；隐藏的效果（`ambient`、不显示粒子和图标）也会同步给本人的客户端 | 已确认，潜艇的舱里在用 |
 | `ChestMenu` 带容器的静态工厂只有 `threeRows`、`sixRows`；别的行数用构造器 `new ChestMenu(MenuType.GENERIC_9xN, id, inventory, container, rows)` | 已确认，潜艇的 18 格货舱在用 |
 | 方块的水：海草那样的方块实现 `LiquidBlockContainer`，`getFluidState` 返回 `Fluids.WATER.getSource(false)`，`updateShape` 里 `scheduleTick(pos, Fluids.WATER, ...)`；`Heightmap.Types.OCEAN_FLOOR` 是不算液体的地面，`MOTION_BLOCKING` 算液体 | 已确认，烛光海带、甲壳蚌、海底的地标在用 |
+| 生物的受伤冷却是 `LivingEntity.damageCooldownTime`（public int），`hurtServer` 看它是不是大于 10；`Entity.setInvulnerableTime(0)` 清不掉。连发的弹丸要同时把它清零，不然冷却里不比上一发高的伤害全被吞掉 | 已确认，等离子弹、榴弹、标枪在用 |
+| 物品模型按自己的数据选模型：实现 `SelectItemModelProperty<T>`，类型用 `SelectItemModelProperty.Type.create(MapCodec.unit(...), valueCodec)`，在模组总线的 `RegisterSelectItemModelPropertyEvent` 里注册；客户端数据生成时也会发这个事件 | 已确认，多功能工具按类型换贴图在用 |
+| `AbstractContainerMenu.clicked(int, int, ContainerInput, Player)`：`ContainerInput` 取代了 `ClickType`；`Player.drop` 和 `Inventory.placeItemBackInInventory` 要多传一个 `Prediction`（`net.minecraft.util.Prediction`，服务端用 `SERVER_ONLY`） | 已确认，工具柜、技术配置界面在用 |
+| 同维度挪实体用 `Entity.teleportTo(ServerLevel, x, y, z, Set<Relative>, yaw, pitch, boolean)`；没加载的区块挂 `ServerChunkCache.addTicketWithRadius(TicketType.PORTAL, ChunkPos.containing(pos), r)`（300 刻后失效）；`RemovalReason.shouldDestroy()` 只有 KILLED、DISCARDED 是 true | 已确认，载具召唤台在用 |
+| SavedData：`new SavedDataType<>(id, ctor, CODEC)` 加 `server.getDataStorage().computeIfAbsent(TYPE)`；燃料值没有 `Level.fuelValues()`，用 `ResolvableInt.getFromItem(stack, DataComponents.COOKING_FUEL, CookingFuel::burnTime, LootContext, 0)` | 已确认，载具名册、重型车的精炼机在用 |
+| GameTest 的场地罩在屏障里，顶上也有一层屏障（`skyAccess` 默认 false）；本模组 `gametest/platform` 的石头地板在测试世界里放不出来，脚下只有屏障，要地板的测试自己铺 | 已确认 |
+| `GameTestHelper.makeMockServerPlayer(GameType)` 给出真的 `ServerPlayer`，但没有网络连接：`sendOverlayMessage`、`placeItemBackInInventory` 这些要发包的方法不能用 | 已确认 |
 拿不准的 API 先查源码再写，核实后把结果补进这张表。源码在：
 
 - Minecraft（含 NeoForge 补丁）：`build/moddev/artifacts/minecraft-patched-26.3.0.95-sources.jar`，IDE 里可以直接跳转。

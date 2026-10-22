@@ -9,7 +9,10 @@ import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.client.ship.ShipClient;
 import io.github.sweetcornna.universe.core.survival.LaserHeat;
 import io.github.sweetcornna.universe.exocraft.Exocraft;
+import io.github.sweetcornna.universe.exocraft.HeavyRover;
+import io.github.sweetcornna.universe.exocraft.HoverCar;
 import io.github.sweetcornna.universe.network.ExocraftControlPayload;
+import io.github.sweetcornna.universe.network.VehiclePayloads;
 import io.github.sweetcornna.universe.registry.UniverseEntities;
 import net.minecraft.client.Camera;
 import net.minecraft.client.CameraType;
@@ -36,10 +39,12 @@ import net.neoforged.neoforge.client.event.InputEvent;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 import net.neoforged.neoforge.client.network.ClientPacketDistributor;
+import net.neoforged.neoforge.client.network.event.RegisterClientPayloadHandlersEvent;
 
 /**
  * 探索车的客户端部分（ADR-0017）：渲染器；开车时攻击键不挖方块、改成开车载激光；上车切到第三人称，镜头抬高拉远，车落在准星下面；
  * 仪表盘写速度、燃料、激光热量、货箱和激光对着的方块，第三人称画激光准星；发动机的嗡嗡声跟着车速变调。
+ * 悬浮车和重型车（ADR-0026）是探索车的子类，共用这一套：仪表盘另写悬浮高度、车尾精炼机的状态。
  */
 public final class ExocraftClient {
     private static final int PANEL_WIDTH = 140;
@@ -53,10 +58,16 @@ public final class ExocraftClient {
     }
 
     public static void registerEvents(IEventBus modBus, IEventBus gameBus) {
-        modBus.addListener(EntityRenderersEvent.RegisterRenderers.class,
-                event -> event.registerEntityRenderer(UniverseEntities.EXOCRAFT.get(), ExocraftRenderer::new));
+        modBus.addListener(EntityRenderersEvent.RegisterRenderers.class, event -> {
+            event.registerEntityRenderer(UniverseEntities.EXOCRAFT.get(), ExocraftRenderer::new);
+            event.registerEntityRenderer(UniverseEntities.HOVER_CAR.get(), ExocraftRenderer::hoverCar);
+            event.registerEntityRenderer(UniverseEntities.HEAVY_ROVER.get(), ExocraftRenderer::heavyRover);
+        });
         modBus.addListener(RegisterGuiLayersEvent.class,
                 event -> event.registerAbove(VanillaGuiLayers.HOTBAR, Universe.id("exocraft_hud"), ExocraftClient::renderHud));
+        // 载具召唤台的列表
+        modBus.addListener(RegisterClientPayloadHandlersEvent.class, event -> event.register(VehiclePayloads.Listing.TYPE,
+                (payload, context) -> context.enqueueWork(() -> Minecraft.getInstance().gui.setScreen(new VehicleSummonerScreen(payload)))));
         gameBus.addListener(ClientTickEvent.Post.class, event -> tick());
         gameBus.addListener(InputEvent.InteractionKeyMappingTriggered.class, ExocraftClient::interceptAttack);
         gameBus.addListener(CalculateDetachedCameraDistanceEvent.class, ExocraftClient::cameraDistance);
@@ -76,8 +87,9 @@ public final class ExocraftClient {
     }
 
     private static void cameraDistance(CalculateDetachedCameraDistanceEvent event) {
-        if (driving() != null && !event.isCameraFlipped()) {
-            event.setDistance(Math.max(event.getDistance(), Exocraft.CAMERA_DISTANCE));
+        Exocraft exocraft = driving();
+        if (exocraft != null && !event.isCameraFlipped()) {
+            event.setDistance(Math.max(event.getDistance(), exocraft.cameraDistance()));
         }
     }
 
@@ -138,7 +150,14 @@ public final class ExocraftClient {
         boolean infinite = minecraft.player.hasInfiniteMaterials();
         List<Component> lines = new ArrayList<>();
         lines.add(Component.translatable("hud.universe.exocraft.speed", String.format("%.1f", speed)));
-        lines.add(Component.translatable("hud.universe.exocraft.cargo", exocraft.usedSlots(), Exocraft.CARGO_SLOTS));
+        lines.add(Component.translatable("hud.universe.exocraft.cargo", exocraft.usedSlots(), exocraft.cargoSlots()));
+        if (exocraft instanceof HoverCar hoverCar) {
+            lines.add(hoverCar.clearance() <= 1.5 ? Component.translatable("hud.universe.hover_car.hover", String.format("%.1f", hoverCar.clearance()))
+                    : Component.translatable("hud.universe.hover_car.falling"));
+        } else if (exocraft instanceof HeavyRover rover) {
+            lines.add(Component.translatable(rover.refining() ? "hud.universe.heavy_rover.refining" : "hud.universe.heavy_rover.refiner_idle",
+                    minecraft.options.keyShift.getTranslatedKeyMessage(), minecraft.options.keyUse.getTranslatedKeyMessage()));
+        }
         boolean third = thirdPerson(minecraft);
         Component target = target(minecraft, delta.getGameTimeDeltaPartialTick(true), third);
         Component fuelText = Component.translatable("hud.universe.exocraft.fuel", Math.round(exocraft.fuel()), (int) Exocraft.MAX_FUEL);
@@ -148,7 +167,7 @@ public final class ExocraftClient {
                 minecraft.options.keyShift.getTranslatedKeyMessage());
         Component hint = exocraft.fuel() <= 0 && !infinite ? Component.translatable("hud.universe.exocraft.no_fuel") : null;
 
-        Component title = Component.translatable("entity.universe.exocraft");
+        Component title = exocraft.getType().getDescription();
         int panelWidth = PANEL_WIDTH;
         for (Component line : List.of(title, fuelText, laserText, keys)) {
             panelWidth = Math.max(panelWidth, font.width(line) + 6);

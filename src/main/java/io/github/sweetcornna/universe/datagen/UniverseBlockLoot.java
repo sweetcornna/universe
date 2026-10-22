@@ -158,6 +158,7 @@ final class UniverseBlockLoot extends BlockLootSubProvider {
                                 StatePropertiesPredicate.Builder.properties().hasProperty(ResourcePlantBlock.RIPE, true))))));
         this.dropSelf(UniverseBlocks.HYDROPONIC_TRAY.get());
         this.dropSelf(UniverseBlocks.NUTRIENT_PROCESSOR.get());
+        this.dropSelf(UniverseBlocks.VEHICLE_SUMMONER.get());
         // 水下（ADR-0026）：没撬开的蚌掉里面的活珍珠，精准采集整个拿走（放下还是没撬开的）；撬开的空壳什么也不掉。
         // 海底密封箱和补给箱一样能拆走
         Block clam = UniverseBlocks.CLAM.get();

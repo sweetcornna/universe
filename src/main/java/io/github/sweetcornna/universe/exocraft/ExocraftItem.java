@@ -1,10 +1,10 @@
 package io.github.sweetcornna.universe.exocraft;
 
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import io.github.sweetcornna.universe.advancement.MilestoneTrigger;
 import io.github.sweetcornna.universe.registry.UniverseDataComponents;
-import io.github.sweetcornna.universe.registry.UniverseEntities;
 import io.github.sweetcornna.universe.world.space.SpaceDimensions;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -16,6 +16,7 @@ import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -26,10 +27,16 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.phys.Vec3;
 
-/** 探索车的物品（ADR-0017）：对着地面用就放下一辆，车头朝玩家看的方向；物品里存着上次收起来时的燃料和货物。 */
+/**
+ * 陆上载具的物品（ADR-0017、ADR-0026）：探索车、悬浮车、重型车、机甲。对着地面用就放下一辆，车头朝玩家看的方向，放下的人是主人；
+ * 物品里存着上次收起来时的燃料和货物。
+ */
 public class ExocraftItem extends Item {
-    public ExocraftItem(Properties properties) {
+    private final Supplier<? extends EntityType<? extends UniverseVehicle>> type;
+
+    public ExocraftItem(Supplier<? extends EntityType<? extends UniverseVehicle>> type, Properties properties) {
         super(properties);
+        this.type = type;
     }
 
     @Override
@@ -45,7 +52,7 @@ public class ExocraftItem extends Item {
         BlockPos clicked = context.getClickedPos();
         Direction face = context.getClickedFace();
         BlockPos pos = level.getBlockState(clicked).getCollisionShape(level, clicked).isEmpty() ? clicked : clicked.relative(face);
-        Exocraft exocraft = UniverseEntities.EXOCRAFT.get().create(level, EntitySpawnReason.SPAWN_ITEM_USE);
+        UniverseVehicle exocraft = this.type.get().create(level, EntitySpawnReason.SPAWN_ITEM_USE);
         if (exocraft == null) {
             return InteractionResult.FAIL;
         }
@@ -61,6 +68,9 @@ public class ExocraftItem extends Item {
         if (level instanceof ServerLevel server) {
             ItemStack stack = context.getItemInHand();
             exocraft.loadFrom(stack);
+            if (player != null) {
+                exocraft.setOwner(player.getUUID());
+            }
             server.addFreshEntity(exocraft);
             server.playSound(null, at.x, at.y, at.z, SoundEvents.ANVIL_PLACE, SoundSource.NEUTRAL, 0.5F, 1.3F);
             server.gameEvent(player, GameEvent.ENTITY_PLACE, at);

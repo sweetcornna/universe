@@ -1,0 +1,9 @@
+{
+  "parent": "minecraft:block/orientable_with_bottom",
+  "textures": {
+    "bottom": "universe:block/multitool_cabinet_top",
+    "front": "universe:block/multitool_cabinet_front",
+    "side": "universe:block/multitool_cabinet_side",
+    "top": "universe:block/multitool_cabinet_top"
+  }
+}

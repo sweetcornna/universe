@@ -60,6 +60,7 @@ public class SubmarineItem extends Item {
         if (level instanceof ServerLevel server) {
             ItemStack stack = player.getItemInHand(hand);
             submarine.loadFrom(stack);
+            submarine.setOwner(player.getUUID());
             server.addFreshEntity(submarine);
             server.playSound(null, at.x, at.y, at.z, SoundEvents.BUCKET_EMPTY, SoundSource.NEUTRAL, 0.8F, 0.8F);
             server.gameEvent(player, GameEvent.ENTITY_PLACE, at);

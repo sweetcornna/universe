@@ -1,0 +1,9 @@
+{
+  "parent": "minecraft:block/orientable_with_bottom",
+  "textures": {
+    "bottom": "universe:block/vehicle_summoner_top",
+    "front": "universe:block/vehicle_summoner_front",
+    "side": "universe:block/vehicle_summoner_side",
+    "top": "universe:block/vehicle_summoner_top"
+  }
+}

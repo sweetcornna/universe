@@ -1,0 +1,28 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 6,
+      "ingredient": "universe:sentinel_scrap"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:prism"
+    },
+    {
+      "count": 4,
+      "ingredient": "universe:magnetic_coil"
+    },
+    {
+      "count": 4,
+      "ingredient": "universe:circuit_board"
+    }
+  ],
+  "research": "heavy_plasma_weapons",
+  "results": [
+    {
+      "id": "universe:blaze_javelin"
+    }
+  ],
+  "time": 300
+}

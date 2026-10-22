@@ -1,0 +1,28 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 8,
+      "ingredient": "universe:titanium_alloy"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:quadruped_servo"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:walker_brain"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:accumulator"
+    }
+  ],
+  "research": "exo_mech",
+  "results": [
+    {
+      "id": "universe:exo_mech"
+    }
+  ],
+  "time": 360
+}

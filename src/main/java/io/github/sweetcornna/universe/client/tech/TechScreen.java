@@ -15,6 +15,7 @@ import org.joml.Matrix3x2fStack;
 
 import io.github.sweetcornna.universe.client.TextWrap;
 import io.github.sweetcornna.universe.client.factory.MachineScreen;
+import io.github.sweetcornna.universe.core.survival.MultitoolSpec;
 import io.github.sweetcornna.universe.core.tech.ModuleHost;
 import io.github.sweetcornna.universe.core.tech.Stat;
 import io.github.sweetcornna.universe.core.tech.SuitSlots;
@@ -22,6 +23,7 @@ import io.github.sweetcornna.universe.core.tech.TechBonuses;
 import io.github.sweetcornna.universe.core.tech.TechModule;
 import io.github.sweetcornna.universe.tech.TechMenu;
 import io.github.sweetcornna.universe.tech.TechModuleItem;
+import io.github.sweetcornna.universe.survival.MultitoolItem;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
@@ -31,7 +33,7 @@ import net.minecraft.world.item.ItemStack;
 
 /**
  * 技术配置界面（ADR-0014）：左上外骨骼技术槽，左中多功能工具技术槽，左下当前的加成；右边货舱和背包。
- * 没解锁的格子画成带斜纹的暗格。
+ * 没解锁的格子画成带斜纹的暗格。工具格按工具的档次画 4–8 个（ADR-0026），坏的格子画裂纹，鼠标移上去提示怎么修。
  */
 public class TechScreen extends AbstractContainerScreen<TechMenu> {
     private static final int SUIT_COLOR = 0xFF6EDCF5;
@@ -77,10 +79,24 @@ public class TechScreen extends AbstractContainerScreen<TechMenu> {
                     graphics.fill(sx + 14, sy + 15, sx + 16, sy + 16, faint);
                     graphics.fill(sx + 15, sy + 14, sx + 16, sy + 16, faint);
                 }
-            } else if (i < TechMenu.INVENTORY_START && (i >= TechMenu.CARGO_START || i < TechMenu.TOOL_START || this.menu.hasTool())) {
+            } else if (i < TechMenu.INVENTORY_START && (i >= TechMenu.CARGO_START || i < TechMenu.TOOL_START)) {
                 locked(graphics, sx, sy);
             }
+            if (slot instanceof TechMenu.TechSlot tech && tech.broken()) {
+                broken(graphics, sx, sy);
+            }
         }
+    }
+
+    /** 坏了的工具格：暗红的底，一道折线裂纹。 */
+    private static void broken(GuiGraphicsExtractor graphics, int x, int y) {
+        graphics.fill(x, y, x + 16, y + 16, 0xFF2A1416);
+        int[][] crack = {{3, 2}, {4, 3}, {5, 4}, {6, 5}, {6, 6}, {7, 7}, {8, 8}, {9, 8}, {10, 9}, {10, 10}, {11, 11}, {12, 12}, {12, 13}};
+        for (int[] p : crack) {
+            graphics.fill(x + p[0], y + p[1], x + p[0] + 1, y + p[1] + 1, 0xFFB0463C);
+        }
+        graphics.fill(x + 9, y + 3, x + 10, y + 7, 0xFF6E2A26);
+        graphics.fill(x + 3, y + 10, x + 7, y + 11, 0xFF6E2A26);
     }
 
     /** 没解锁的格子：暗底加斜纹。 */
@@ -100,7 +116,7 @@ public class TechScreen extends AbstractContainerScreen<TechMenu> {
         graphics.text(this.font, this.playerInventoryTitle, this.inventoryLabelX, this.inventoryLabelY, DIM, false);
         graphics.text(this.font, Component.translatable("gui.universe.tech.exosuit", this.menu.techSlots(), SuitSlots.TECH_MAX),
                 TechMenu.SUIT_X, TechMenu.SUIT_Y - 10, SUIT_COLOR, false);
-        graphics.text(this.font, Component.translatable("gui.universe.tech.multitool"), TechMenu.TOOL_X, TechMenu.TOOL_Y - 10, TOOL_COLOR, false);
+        graphics.text(this.font, this.toolLabel(), TechMenu.TOOL_X, TechMenu.TOOL_Y - 10, TOOL_COLOR, false);
         graphics.text(this.font, Component.translatable("gui.universe.tech.cargo", this.menu.cargoSlots(), SuitSlots.CARGO_MAX),
                 TechMenu.CARGO_X, TechMenu.CARGO_Y - 10, TEXT, false);
         if (!this.menu.hasTool()) {
@@ -109,9 +125,24 @@ public class TechScreen extends AbstractContainerScreen<TechMenu> {
         this.bonuses(graphics);
     }
 
+    /** 工具格上面的标题：拿着工具时写上档次和类型，放不下就只写档次和类型。 */
+    private Component toolLabel() {
+        if (!this.menu.hasTool()) {
+            return Component.translatable("gui.universe.tech.multitool");
+        }
+        MultitoolSpec spec = this.menu.spec();
+        Component full = Component.translatable("gui.universe.tech.multitool_spec", spec.grade().letter(), MultitoolItem.className(spec));
+        return this.font.width(full) <= TEXT_WIDTH ? full
+                : Component.translatable("gui.universe.tech.multitool_short", spec.grade().letter(), MultitoolItem.className(spec));
+    }
+
     @Override
     public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
         super.extractRenderState(graphics, mouseX, mouseY, a);
+        if (this.hoveredSlot instanceof TechMenu.TechSlot tech && tech.broken()) {
+            graphics.setTooltipForNextFrame(this.font, TextWrap.split(this.font,
+                    Component.translatable("gui.universe.tech.broken_slot", MultitoolSpec.REPAIR_SCRAP), 160), mouseX, mouseY);
+        }
         // 加成列表放不下时，鼠标移到列表上看全部
         int x = mouseX - this.leftPos;
         int y = mouseY - this.topPos;
@@ -169,7 +200,9 @@ public class TechScreen extends AbstractContainerScreen<TechMenu> {
                 modules.add(item.module(stack));
             }
         }
-        return TechBonuses.of(modules);
+        TechBonuses bonuses = TechBonuses.of(modules);
+        // 工具的类型专长也算进去（ADR-0026）
+        return host == ModuleHost.MULTITOOL && this.menu.hasTool() ? bonuses.with(this.menu.spec().specialty()) : bonuses;
     }
 
     /** 一段小字占的高度（和 {@link #small} 一致）。 */

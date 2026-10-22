@@ -1,6 +1,10 @@
 package io.github.sweetcornna.universe.survival;
 
+import io.github.sweetcornna.universe.core.survival.MultitoolSpec;
 import io.github.sweetcornna.universe.core.survival.ToolMode;
+import io.github.sweetcornna.universe.registry.UniverseDataComponents;
+import io.github.sweetcornna.universe.registry.UniverseItems;
+import io.github.sweetcornna.universe.tech.TechModuleItem;
 import io.github.sweetcornna.universe.exocraft.Exocrafts;
 import java.util.function.Consumer;
 import java.util.Locale;
@@ -21,10 +25,30 @@ import net.minecraft.world.level.Level;
 /**
  * 多功能工具：按住使用键开采矿激光（战斗模式下连发等离子弹），潜行时按使用键扫描。左键也能像镐、铲、斧一样挖（工具组件）。
  * 逻辑在 {@link Multitool}。
+ *
+ * <p>类型、档次和坏了几格存在 {@link UniverseDataComponents#TOOL_SPEC} 里（ADR-0026）；没有的是做出来的旧工具，按 A 档手枪算。
+ * 名字按档次上色。
  */
 public final class MultitoolItem extends Item {
     public MultitoolItem(Properties properties) {
         super(properties);
+    }
+
+    /** 这把工具的类型、档次和坏格。 */
+    public static MultitoolSpec spec(ItemStack tool) {
+        return tool.getOrDefault(UniverseDataComponents.TOOL_SPEC.get(), MultitoolSpec.LEGACY);
+    }
+
+    /** 一把新的、指定类型和档次的工具。 */
+    public static ItemStack create(MultitoolSpec spec) {
+        ItemStack stack = new ItemStack(UniverseItems.MULTITOOL.get());
+        stack.set(UniverseDataComponents.TOOL_SPEC.get(), spec);
+        return stack;
+    }
+
+    @Override
+    public Component getName(ItemStack stack) {
+        return super.getName(stack).copy().withColor(spec(stack).grade().color());
     }
 
     @Override
@@ -66,9 +90,24 @@ public final class MultitoolItem extends Item {
 
     @Override
     public void appendHoverText(ItemStack stack, Item.TooltipContext context, TooltipDisplay display, Consumer<Component> builder, TooltipFlag flag) {
-        ToolMode mode = Multitool.mode(stack);
+        MultitoolSpec spec = spec(stack);
+        builder.accept(Component.translatable("item.universe.multitool.spec", spec.grade().letter(), className(spec),
+                spec.slots()).withColor(spec.grade().color()));
+        spec.specialty().forEach((stat, value) -> builder.accept(Component.translatable("item.universe.multitool.specialty",
+                TechModuleItem.statLine(stat, value)).withStyle(ChatFormatting.GRAY)));
+        if (spec.broken() > 0) {
+            builder.accept(Component.translatable("item.universe.multitool.broken", spec.broken(), MultitoolSpec.REPAIR_SCRAP)
+                    .withStyle(ChatFormatting.RED));
+        }
+        // 实际生效的模式：选中的武器被拆下来了就是爆能枪
+        ToolMode mode = Multitool.activeMode(stack);
         builder.accept(Component.translatable("item.universe.multitool.mode",
                 Component.translatable("hud.universe.multitool.mode." + mode.name().toLowerCase(Locale.ROOT)),
-                Component.keybind("key.universe.tool_mode")).withStyle(mode == ToolMode.COMBAT ? ChatFormatting.AQUA : ChatFormatting.GRAY));
+                Component.keybind("key.universe.tool_mode")).withStyle(mode.combat() ? ChatFormatting.AQUA : ChatFormatting.GRAY));
+    }
+
+    /** 类型的名字，比如"手枪"。 */
+    public static Component className(MultitoolSpec spec) {
+        return Component.translatable("multitool.universe.class." + spec.type().key());
     }
 }

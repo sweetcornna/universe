@@ -159,7 +159,7 @@ public class PlasmaBolt extends ThrowableProjectile {
         Entity target = hitResult.getEntity();
         Entity owner = this.getOwner();
         DamageSource source = this.damageSources().source(DAMAGE, this, owner);
-        target.setInvulnerableTime(0);
+        clearHurtCooldown(target);
         if (target.hurtServer(level, source, this.damage)) {
             if (owner instanceof LivingEntity shooter) {
                 shooter.setLastHurtMob(target);
@@ -173,6 +173,17 @@ public class PlasmaBolt extends ThrowableProjectile {
         }
         level.playSound(null, target.getX(), target.getY(0.5), target.getZ(), SoundEvents.SHULKER_BULLET_HIT,
                 owner instanceof Sentinel || owner instanceof PirateFighter ? SoundSource.HOSTILE : SoundSource.PLAYERS, 0.5F, 1.6F);
+    }
+
+    /**
+     * 连发的弹丸互不挡：打之前清掉目标的受伤冷却。26.x 的生物看的是 {@code damageCooldownTime}，
+     * 只清 {@code invulnerableTime} 的话，冷却里的下一发伤害不比上一发高就被吞掉。
+     */
+    public static void clearHurtCooldown(Entity target) {
+        target.setInvulnerableTime(0);
+        if (target instanceof LivingEntity living) {
+            living.damageCooldownTime = 0;
+        }
     }
 
     @Override

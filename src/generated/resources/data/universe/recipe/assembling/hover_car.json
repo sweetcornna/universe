@@ -1,0 +1,28 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 4,
+      "ingredient": "universe:titanium_alloy"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:super_magnetic_ring"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:accumulator"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:plasma_exciter"
+    }
+  ],
+  "research": "all_terrain_vehicles",
+  "results": [
+    {
+      "id": "universe:hover_car"
+    }
+  ],
+  "time": 240
+}

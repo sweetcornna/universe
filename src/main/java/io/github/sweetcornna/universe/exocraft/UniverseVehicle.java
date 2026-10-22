@@ -1,12 +1,16 @@
 package io.github.sweetcornna.universe.exocraft;
 
+import java.util.UUID;
+
 import org.jspecify.annotations.Nullable;
 
 import io.github.sweetcornna.universe.block.ship.ShipFuel;
+import io.github.sweetcornna.universe.core.vehicle.VehicleKind;
 import io.github.sweetcornna.universe.core.ship.ShipFlight;
 import io.github.sweetcornna.universe.entity.ship.ShipEnvironment;
 import io.github.sweetcornna.universe.registry.UniverseDataComponents;
 import net.minecraft.core.NonNullList;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -45,6 +49,8 @@ import net.minecraft.world.phys.Vec3;
  * 拿镐敲三下变回物品（货物和燃料存在物品里）。怪物、爆炸、火都伤不了它。
  * <p>
  * 驾驶由驾驶员的客户端算（像原版的船），服务端收位置，按驾驶员这一刻按着的键扣燃料。
+ * <p>
+ * 载具记主人（放下它的人；老存档里的车第一次有人上车时记在那人名下），在 {@link VehicleRoster} 里登记位置，召唤台按它找车。
  */
 public abstract class UniverseVehicle extends VehicleEntity {
     /** 油箱多大（和飞船燃料同一个单位：一块煤 200）。 */
@@ -53,6 +59,8 @@ public abstract class UniverseVehicle extends VehicleEntity {
     private static final float HIT_DAMAGE = 20;
     /** 每刻回多少：按镐的攻击冷却一下一下敲，三下就收起；两下之间隔了两秒以上，前面的就白敲了。 */
     private static final float DAMAGE_DECAY = 0.25F;
+    /** 隔多少刻在名册上更新一次位置。 */
+    private static final int ROSTER_INTERVAL = 100;
 
     private static final EntityDataAccessor<Float> DATA_FUEL = SynchedEntityData.defineId(UniverseVehicle.class, EntityDataSerializers.FLOAT);
     private static final EntityDataAccessor<Float> DATA_GRAVITY = SynchedEntityData.defineId(UniverseVehicle.class,
@@ -61,6 +69,7 @@ public abstract class UniverseVehicle extends VehicleEntity {
 
     private final SimpleContainer cargo;
     private double fuel;
+    private @Nullable UUID owner;
 
     protected UniverseVehicle(EntityType<? extends UniverseVehicle> type, Level level, int cargoSlots) {
         super(type, level);
@@ -125,6 +134,18 @@ public abstract class UniverseVehicle extends VehicleEntity {
         return used;
     }
 
+    /** 放下这辆车的人；老存档里没人上过的车是 null。 */
+    public @Nullable UUID owner() {
+        return this.owner;
+    }
+
+    public void setOwner(@Nullable UUID owner) {
+        this.owner = owner;
+    }
+
+    /** 这是哪种载具（召唤台的列表、名册用）。 */
+    public abstract VehicleKind kind();
+
     /** 服务端的燃料。 */
     protected double fuelLeft() {
         return this.fuel;
@@ -155,6 +176,18 @@ public abstract class UniverseVehicle extends VehicleEntity {
             ShipFlight.Environment env = ShipEnvironment.of(level);
             this.entityData.set(DATA_GRAVITY, (float) (env.space() ? 1 : env.gravity()));
         }
+        if (this.level() instanceof ServerLevel level && this.owner != null && this.tickCount % ROSTER_INTERVAL == 2) {
+            VehicleRoster.get(level.getServer()).update(this.owner, this);
+        }
+    }
+
+    @Override
+    public void remove(RemovalReason reason) {
+        // 收起来、被毁了：从名册上划掉。区块卸载、换维度不算（召唤台搬车时先拆再放，新的那辆会重新登记）
+        if (reason.shouldDestroy() && this.owner != null && this.level() instanceof ServerLevel level) {
+            VehicleRoster.get(level.getServer()).remove(this.owner, this.getUUID());
+        }
+        super.remove(reason);
     }
 
     /** 服务端：驾驶员这一刻踩着油门就扣这么多燃料。 */
@@ -202,7 +235,12 @@ public abstract class UniverseVehicle extends VehicleEntity {
             return InteractionResult.SUCCESS;
         }
         if (!this.isVehicle()) {
-            if (this.level() instanceof ServerLevel) {
+            if (this.level() instanceof ServerLevel level) {
+                if (this.owner == null) {
+                    // 老存档里的车：第一个上车的人当主人
+                    this.owner = player.getUUID();
+                    VehicleRoster.get(level.getServer()).update(this.owner, this);
+                }
                 player.startRiding(this);
             }
             return InteractionResult.SUCCESS;
@@ -289,7 +327,16 @@ public abstract class UniverseVehicle extends VehicleEntity {
         if (!this.cargo.isEmpty()) {
             stack.set(DataComponents.CONTAINER, ItemContainerContents.fromItems(this.cargo.getItems()));
         }
+        this.saveToItem(stack);
         return stack;
+    }
+
+    /** 子类另外存进物品的东西（重型车的精炼机）。 */
+    protected void saveToItem(ItemStack stack) {
+    }
+
+    /** 子类从物品里取回 {@link #saveToItem} 存的东西。 */
+    protected void loadFromItem(ItemStack stack) {
     }
 
     /** 从物品放下时把物品里存的燃料和货物搬进来。 */
@@ -305,6 +352,7 @@ public abstract class UniverseVehicle extends VehicleEntity {
             }
         }
         this.setCustomName(stack.get(DataComponents.CUSTOM_NAME));
+        this.loadFromItem(stack);
     }
 
     @Override
@@ -352,6 +400,7 @@ public abstract class UniverseVehicle extends VehicleEntity {
     protected void addAdditionalSaveData(ValueOutput output) {
         output.putDouble("fuel", this.fuel);
         ContainerHelper.saveAllItems(output, this.cargo.getItems());
+        output.storeNullable("owner", UUIDUtil.CODEC, this.owner);
     }
 
     @Override
@@ -359,5 +408,6 @@ public abstract class UniverseVehicle extends VehicleEntity {
         this.setFuel(input.getDoubleOr("fuel", 0));
         ContainerHelper.loadAllItems(input, this.cargo.getItems());
         this.entityData.set(DATA_CARGO, this.countUsed());
+        this.owner = input.read("owner", UUIDUtil.CODEC).orElse(null);
     }
 }

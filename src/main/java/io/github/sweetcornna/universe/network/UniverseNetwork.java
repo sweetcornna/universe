@@ -4,6 +4,7 @@ import io.github.sweetcornna.universe.blueprint.Blueprints;
 import io.github.sweetcornna.universe.dyson.Dyson;
 import io.github.sweetcornna.universe.entity.ship.ShipWeapons;
 import io.github.sweetcornna.universe.exocraft.Exocrafts;
+import io.github.sweetcornna.universe.exocraft.VehicleSummoning;
 import io.github.sweetcornna.universe.mecha.Mecha;
 import io.github.sweetcornna.universe.mission.Missions;
 import io.github.sweetcornna.universe.stats.ProductionLog;
@@ -11,6 +12,7 @@ import io.github.sweetcornna.universe.story.Story;
 import io.github.sweetcornna.universe.survival.Multitool;
 import io.github.sweetcornna.universe.discovery.Discoveries;
 import io.github.sweetcornna.universe.entity.ship.ShipDealer;
+import io.github.sweetcornna.universe.station.MultitoolCabinet;
 import io.github.sweetcornna.universe.fleet.FleetTerminal;
 import io.github.sweetcornna.universe.fleet.FreighterConsole;
 import io.github.sweetcornna.universe.portal.Portals;
@@ -34,7 +36,7 @@ import net.neoforged.neoforge.server.ServerLifecycleHooks;
  */
 public final class UniverseNetwork {
     /** 协议版本：任何包的格式改动都要加一，版本不同的客户端和服务端会拒绝连接。 */
-    private static final String PROTOCOL_VERSION = "24";
+    private static final String PROTOCOL_VERSION = "25";
 
     private UniverseNetwork() {
     }
@@ -103,6 +105,12 @@ public final class UniverseNetwork {
                 .playToServer(DealerPayloads.Sell.TYPE, DealerPayloads.Sell.STREAM_CODEC, ShipDealer::handleSell)
                 .playToServer(DealerPayloads.Hire.TYPE, DealerPayloads.Hire.STREAM_CODEC, ShipDealer::handleHire)
                 .playToServer(DealerPayloads.BuyFreighter.TYPE, DealerPayloads.BuyFreighter.STREAM_CODEC, ShipDealer::handleBuyFreighter)
+                // M14：多功能工具柜（ADR-0026）
+                .playToClient(CabinetPayloads.State.TYPE, CabinetPayloads.State.STREAM_CODEC)
+                .playToServer(CabinetPayloads.Buy.TYPE, CabinetPayloads.Buy.STREAM_CODEC, MultitoolCabinet::handleBuy)
+                // M14：载具召唤台（ADR-0026）
+                .playToClient(VehiclePayloads.Listing.TYPE, VehiclePayloads.Listing.STREAM_CODEC)
+                .playToServer(VehiclePayloads.Summon.TYPE, VehiclePayloads.Summon.STREAM_CODEC, VehicleSummoning::handleSummon)
                 // M13：货船、舰队（ADR-0024）
                 .playToClient(FleetPayloads.Location.TYPE, FleetPayloads.Location.STREAM_CODEC)
                 .playToClient(FleetPayloads.Console.TYPE, FleetPayloads.Console.STREAM_CODEC)

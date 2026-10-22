@@ -1,0 +1,19 @@
+{
+  "type": "universe:research_shaped",
+  "key": {
+    "A": "universe:accumulator",
+    "M": "universe:electric_motor",
+    "R": "universe:portable_refiner",
+    "S": "universe:steel",
+    "X": "universe:plasma_exciter"
+  },
+  "pattern": [
+    "SXS",
+    "MRM",
+    "MAM"
+  ],
+  "research": "all_terrain_vehicles",
+  "result": {
+    "id": "universe:heavy_rover"
+  }
+}

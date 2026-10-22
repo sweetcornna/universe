@@ -1,7 +1,10 @@
 package io.github.sweetcornna.universe.registry;
 
 import io.github.sweetcornna.universe.asteroid.Asteroid;
+import io.github.sweetcornna.universe.exocraft.ExoMech;
 import io.github.sweetcornna.universe.exocraft.Exocraft;
+import io.github.sweetcornna.universe.exocraft.HeavyRover;
+import io.github.sweetcornna.universe.exocraft.HoverCar;
 import io.github.sweetcornna.universe.exocraft.Submarine;
 import io.github.sweetcornna.universe.exocraft.Torpedo;
 import io.github.sweetcornna.universe.encounter.SentinelInterceptor;
@@ -12,6 +15,7 @@ import io.github.sweetcornna.universe.sentinel.Sentinel;
 import io.github.sweetcornna.universe.sentinel.SummonerSentinel;
 import io.github.sweetcornna.universe.sentinel.WalkerSentinel;
 import io.github.sweetcornna.universe.entity.PlasmaBolt;
+import io.github.sweetcornna.universe.entity.PlasmaGrenade;
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.entity.AlienCreature;
 import io.github.sweetcornna.universe.entity.AlienFlyer;
@@ -46,6 +50,10 @@ public final class UniverseEntities {
     public static final DeferredHolder<EntityType<?>, EntityType<PlasmaBolt>> PLASMA_BOLT = ENTITIES.registerEntityType(
             "plasma_bolt", PlasmaBolt::new, MobCategory.MISC,
             builder -> builder.sized(0.25F, 0.25F).clientTrackingRange(6).updateInterval(10).noSave().noLootTable().fireImmune());
+    /** 等离子发射器的榴弹（ADR-0026）：会弹跳，位置常同步；不存档。 */
+    public static final DeferredHolder<EntityType<?>, EntityType<PlasmaGrenade>> PLASMA_GRENADE = ENTITIES.registerEntityType(
+            "plasma_grenade", PlasmaGrenade::new, MobCategory.MISC,
+            builder -> builder.sized(0.3F, 0.3F).clientTrackingRange(6).updateInterval(2).noSave().noLootTable().fireImmune());
 
     /** 守卫机（ADR-0014）：不存档，由 {@code Sentinels} 按玩家附近的情况补充。 */
     public static final DeferredHolder<EntityType<?>, EntityType<Sentinel>> SENTINEL = ENTITIES.registerEntityType(
@@ -80,6 +88,16 @@ public final class UniverseEntities {
     public static final DeferredHolder<EntityType<?>, EntityType<Submarine>> SUBMARINE = ENTITIES.registerEntityType(
             "submarine", Submarine::new, MobCategory.MISC,
             builder -> builder.sized(2.2F, 1.5F).clientTrackingRange(10).updateInterval(1).fireImmune().noLootTable());
+    /** 悬浮车、重型车、机甲（ADR-0026）：和探索车一样由驾驶员的客户端算位置。 */
+    public static final DeferredHolder<EntityType<?>, EntityType<HoverCar>> HOVER_CAR = ENTITIES.registerEntityType(
+            "hover_car", HoverCar::new, MobCategory.MISC,
+            builder -> builder.sized(1.9F, 1.2F).clientTrackingRange(10).updateInterval(1).fireImmune().noLootTable());
+    public static final DeferredHolder<EntityType<?>, EntityType<HeavyRover>> HEAVY_ROVER = ENTITIES.registerEntityType(
+            "heavy_rover", HeavyRover::new, MobCategory.MISC,
+            builder -> builder.sized(2.6F, 2.4F).clientTrackingRange(10).updateInterval(1).fireImmune().noLootTable());
+    public static final DeferredHolder<EntityType<?>, EntityType<ExoMech>> EXO_MECH = ENTITIES.registerEntityType(
+            "exo_mech", ExoMech::new, MobCategory.MISC,
+            builder -> builder.sized(1.8F, 3.4F).clientTrackingRange(10).updateInterval(1).fireImmune().noLootTable());
     /** 潜艇的鱼雷：直线跑，客户端按速度推算；不存档。 */
     public static final DeferredHolder<EntityType<?>, EntityType<Torpedo>> TORPEDO = ENTITIES.registerEntityType(
             "torpedo", Torpedo::new, MobCategory.MISC,

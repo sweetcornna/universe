@@ -1,0 +1,18 @@
+{
+  "type": "universe:research_shaped",
+  "key": {
+    "C": "universe:circuit_board",
+    "P": "universe:processor",
+    "S": "universe:steel",
+    "X": "universe:plasma_exciter"
+  },
+  "pattern": [
+    "SPS",
+    "CXC",
+    "SSS"
+  ],
+  "research": "all_terrain_vehicles",
+  "result": {
+    "id": "universe:vehicle_summoner"
+  }
+}

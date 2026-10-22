@@ -30,6 +30,8 @@ import io.github.sweetcornna.universe.survival.ResourceItem;
 import io.github.sweetcornna.universe.survival.SuitRefillItem;
 import io.github.sweetcornna.universe.tech.DriveItem;
 import io.github.sweetcornna.universe.tech.TechModuleItem;
+import io.github.sweetcornna.universe.tech.ToolWeaponItem;
+import io.github.sweetcornna.universe.core.survival.ToolWeapon;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -128,6 +130,15 @@ public final class UniverseItems {
     public static final DeferredItem<BlockItem> CLAM = ITEMS.registerSimpleBlockItem(UniverseBlocks.CLAM);
     /** 潜艇：对着水面用放下一艘。 */
     public static final DeferredItem<SubmarineItem> SUBMARINE = ITEMS.registerItem("submarine", SubmarineItem::new, properties -> properties.stacksTo(1));
+    /** 悬浮车、重型车、机甲（ADR-0026）：和探索车一样对着地面用放下。 */
+    public static final DeferredItem<ExocraftItem> HOVER_CAR = ITEMS.registerItem("hover_car",
+            properties -> new ExocraftItem(UniverseEntities.HOVER_CAR, properties), properties -> properties.stacksTo(1));
+    public static final DeferredItem<ExocraftItem> HEAVY_ROVER = ITEMS.registerItem("heavy_rover",
+            properties -> new ExocraftItem(UniverseEntities.HEAVY_ROVER, properties), properties -> properties.stacksTo(1));
+    public static final DeferredItem<ExocraftItem> EXO_MECH = ITEMS.registerItem("exo_mech",
+            properties -> new ExocraftItem(UniverseEntities.EXO_MECH, properties), properties -> properties.stacksTo(1));
+    /** 载具召唤台：把你的车叫到台子旁边。 */
+    public static final DeferredItem<BlockItem> VEHICLE_SUMMONER = ITEMS.registerSimpleBlockItem(UniverseBlocks.VEHICLE_SUMMONER);
 
     // ---- 野外的地标（ADR-0026）：化石坑、打捞点、雷击石。化石和废料只能卖钱
     public static final DeferredItem<BlockItem> FOSSIL_DIRT = ITEMS.registerSimpleBlockItem(UniverseBlocks.FOSSIL_DIRT);
@@ -231,6 +242,7 @@ public final class UniverseItems {
     public static final DeferredItem<BlockItem> STATION_TELEPORTER = ITEMS.registerSimpleBlockItem(UniverseBlocks.STATION_TELEPORTER);
     public static final DeferredItem<BlockItem> MISSION_BOARD = ITEMS.registerSimpleBlockItem(UniverseBlocks.MISSION_BOARD);
     public static final DeferredItem<BlockItem> SHIP_DEALER = ITEMS.registerSimpleBlockItem(UniverseBlocks.SHIP_DEALER);
+    public static final DeferredItem<BlockItem> MULTITOOL_CABINET = ITEMS.registerSimpleBlockItem(UniverseBlocks.MULTITOOL_CABINET);
     // ---- 货船（ADR-0024）
     public static final DeferredItem<BlockItem> FREIGHTER_PLATE = ITEMS.registerSimpleBlockItem(UniverseBlocks.FREIGHTER_PLATE);
     public static final DeferredItem<BlockItem> FREIGHTER_ENGINE = ITEMS.registerSimpleBlockItem(UniverseBlocks.FREIGHTER_ENGINE);
@@ -269,7 +281,8 @@ public final class UniverseItems {
     public static final DeferredItem<MultitoolItem> MULTITOOL = ITEMS.registerItem("multitool", MultitoolItem::new,
             properties -> properties.stacksTo(1).component(DataComponents.TOOL, multitoolRules()));
     /** 探索车（ADR-0017）：对着地面用就放下一辆。 */
-    public static final DeferredItem<ExocraftItem> EXOCRAFT = ITEMS.registerItem("exocraft", ExocraftItem::new, properties -> properties.stacksTo(1));
+    public static final DeferredItem<ExocraftItem> EXOCRAFT = ITEMS.registerItem("exocraft",
+            properties -> new ExocraftItem(UniverseEntities.EXOCRAFT, properties), properties -> properties.stacksTo(1));
     /** 坠毁的探测器里找到的，修好才能用。 */
     public static final DeferredItem<Item> DAMAGED_MULTITOOL = ITEMS.registerSimpleItem("damaged_multitool", properties -> properties.stacksTo(1));
 
@@ -468,6 +481,15 @@ public final class UniverseItems {
         }
     }
 
+    /** 多功能工具的武器（ADR-0026 §六）：装进工具的技术槽，按 {@link ToolWeapon} 的顺序。 */
+    public static final Map<ToolWeapon, DeferredItem<ToolWeaponItem>> WEAPONS = new EnumMap<>(ToolWeapon.class);
+
+    static {
+        for (ToolWeapon weapon : ToolWeapon.values()) {
+            WEAPONS.put(weapon, ITEMS.registerItem(weapon.id(), properties -> new ToolWeaponItem(weapon, properties), properties -> properties.stacksTo(1)));
+        }
+    }
+
     /** 镉、翠金、铟驱动（ADR-0024），装进驾驶台的技术槽。 */
     public static final Map<DriveTier, DeferredItem<DriveItem>> DRIVES = new EnumMap<>(DriveTier.class);
 
@@ -492,7 +514,8 @@ public final class UniverseItems {
                 ALIEN_FISH, COOKED_ALIEN_FISH, LIVING_PEARL, CLAM));
         order.addAll(List.of(SHIP_HELM, SHIP_THRUSTER, FUEL_TANK, IMPULSE_ENGINE, WARP_DRIVE, SHIP_SEAT, PHOTON_CANNON, MINING_BEAM,
                 SHIELD_GENERATOR, SHIP_THRUSTER_MK2, FUEL_TANK_MK2, IMPULSE_ENGINE_MK2, WARP_DRIVE_MK2, ALLOY_HULL_PLATING,
-                LAUNCH_FUEL, SPACE_WARPER, SURVEY_DATA, EXOCRAFT, SUBMARINE, BLUEPRINT, GUIDE));
+                LAUNCH_FUEL, SPACE_WARPER, SURVEY_DATA, EXOCRAFT, HOVER_CAR, HEAVY_ROVER, EXO_MECH, SUBMARINE,
+                VEHICLE_SUMMONER, BLUEPRINT, GUIDE));
         order.addAll(HULL_PLATING.values());
         order.addAll(List.of(EXOSUIT_HELMET, EXOSUIT_CHESTPLATE, EXOSUIT_LEGGINGS, EXOSUIT_BOOTS, OXYGEN_CAPSULE, HAZARD_CELL,
                 MULTITOOL, DAMAGED_MULTITOOL));
@@ -501,6 +524,7 @@ public final class UniverseItems {
         order.addAll(GELS.values());
         order.addAll(DISHES.values());
         order.addAll(MODULES.values());
+        order.addAll(WEAPONS.values());
         order.addAll(DRIVES.values());
         order.add(LANDING_PAD);
         order.add(DAMAGED_HELM);
@@ -511,7 +535,7 @@ public final class UniverseItems {
         order.addAll(List.of(OUTPOST_TRADE_TERMINAL, REINFORCED_DOOR, REINFORCED_PLATING, FACILITY_TERMINAL, OBSERVATORY_TERMINAL));
         order.addAll(List.of(SENTINEL_PILLAR_PLATING, SENTINEL_PILLAR_LIGHT, SENTINEL_PILLAR_TERMINAL));
         order.addAll(List.of(BASE_BEACON, TELEPORTER));
-        order.addAll(List.of(TRADE_TERMINAL, MISSION_BOARD, SHIP_REPAIR, SHIP_DEALER, FREIGHTER_CONSOLE, FLEET_TERMINAL, STATION_TELEPORTER, STATION_HULL, STATION_FLOOR, STATION_GLASS, STATION_LIGHT, STATION_PAD, STATION_TRIM, STATION_SOLAR_PANEL, FREIGHTER_PLATE, FREIGHTER_ENGINE));
+        order.addAll(List.of(TRADE_TERMINAL, MISSION_BOARD, SHIP_REPAIR, SHIP_DEALER, MULTITOOL_CABINET, FREIGHTER_CONSOLE, FLEET_TERMINAL, STATION_TELEPORTER, STATION_HULL, STATION_FLOOR, STATION_GLASS, STATION_LIGHT, STATION_PAD, STATION_TRIM, STATION_SOLAR_PANEL, FREIGHTER_PLATE, FREIGHTER_ENGINE));
         order.addAll(List.of(SENTINEL_SCRAP, QUADRUPED_SERVO, WALKER_BRAIN, SENTINEL_SPAWN_EGG, HEAVY_SENTINEL_SPAWN_EGG, QUADRUPED_SENTINEL_SPAWN_EGG,
                 WALKER_SENTINEL_SPAWN_EGG, PIRATE_SCRAP));
         order.addAll(ORES.values());

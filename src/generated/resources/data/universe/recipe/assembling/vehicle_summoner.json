@@ -1,0 +1,28 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 4,
+      "ingredient": "universe:steel"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:processor"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:plasma_exciter"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:circuit_board"
+    }
+  ],
+  "research": "all_terrain_vehicles",
+  "results": [
+    {
+      "id": "universe:vehicle_summoner"
+    }
+  ],
+  "time": 160
+}

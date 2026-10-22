@@ -4,6 +4,7 @@ package io.github.sweetcornna.universe.core.vehicle;
  * 探索车的驾驶（ADR-0017）：油门、刹车、滑行和转向，按刻算。只管沿车头方向的速度和每刻转多少度，碰撞、爬台阶和重力交给实体。
  * <p>
  * 像车不像飞船：A、D 是打方向盘，不是平移；速度越快方向盘越"重"，停着不能原地打转，倒车时方向反过来。
+ * 算法在 {@link WheelDrive}，这里是探索车的那组数（{@link WheelDrive#ROVER}）。
  */
 public final class RoverDrive {
     /** 最快多少格/刻（12 格/秒）。 */
@@ -37,19 +38,7 @@ public final class RoverDrive {
      * @param grounded 轮子着地
      */
     public static double speed(double speed, double throttle, boolean powered, boolean grounded) {
-        double grip = grounded ? 1 : AIRBORNE;
-        double input = powered ? clamp(throttle, -1, 1) : 0;
-        if (input != 0 && Math.signum(input) != Math.signum(speed) && Math.abs(speed) > 1e-6) {
-            // 反着踩先刹车，刹停了才往反方向走
-            return towardZero(speed, BRAKE * Math.abs(input) * grip);
-        }
-        double top = input > 0 ? MAX_SPEED * input : MAX_REVERSE * input;
-        if (input == 0 || Math.abs(speed) > Math.abs(top)) {
-            // 松开油门，或者比这一档快（下坡冲快了、油门只踩了一半）：滑行减速
-            return towardZero(speed, COAST * grip);
-        }
-        double gain = ACCELERATION * (input > 0 ? 1 : 0.6) * input * grip;
-        return input > 0 ? Math.min(speed + gain, top) : Math.max(speed + gain, top);
+        return WheelDrive.ROVER.speed(speed, throttle, powered, grounded);
     }
 
     /**
@@ -59,21 +48,6 @@ public final class RoverDrive {
      * @param steer 方向盘，-1 到 1（D 为正）
      */
     public static float turn(double speed, double steer, boolean grounded) {
-        double s = Math.abs(speed);
-        double rate = MAX_TURN * Math.min(1, s / TURN_SPEED) * (1 - (1 - HIGH_SPEED_TURN) * Math.min(1, s / MAX_SPEED));
-        if (!grounded) {
-            rate *= AIRBORNE;
-        }
-        return (float) (rate * clamp(steer, -1, 1) * Math.signum(speed));
-    }
-
-    private static double towardZero(double value, double amount) {
-        // 减到很小就当停住了，免得浮点的零头让"反着踩"变成直接倒车
-        double next = value > 0 ? value - amount : value + amount;
-        return Math.signum(next) != Math.signum(value) || Math.abs(next) < 1e-9 ? 0 : next;
-    }
-
-    private static double clamp(double v, double lo, double hi) {
-        return Math.max(lo, Math.min(hi, v));
+        return WheelDrive.ROVER.turn(speed, steer, grounded);
     }
 }

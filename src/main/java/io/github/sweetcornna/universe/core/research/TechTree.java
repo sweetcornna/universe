@@ -167,8 +167,10 @@ public final class TechTree {
                     items("shield_generator")),
             // ---- M7：探索车（ADR-0017）
             Tech.lab("exocraft", List.of("energy_storage", "processor"), List.of(BLUE, RED), 60, items("exocraft")),
-            // ---- M14：潜艇（ADR-0026）。暂时接在探索车后面，有了悬浮车再改
-            Tech.lab("submarine", List.of("exocraft"), List.of(BLUE, RED), 80, items("submarine")),
+            // ---- M14：载具（ADR-0026）。全地形载具解锁悬浮车、重型车和召唤台；潜艇和机甲接在它后面
+            Tech.lab("all_terrain_vehicles", List.of("exocraft"), List.of(BLUE, RED), 80, items("hover_car", "heavy_rover", "vehicle_summoner")),
+            Tech.lab("submarine", List.of("all_terrain_vehicles"), List.of(BLUE, RED), 80, items("submarine")),
+            Tech.lab("exo_mech", List.of("all_terrain_vehicles"), List.of(BLUE, RED), 100, items("exo_mech")),
             // ---- M7：传送网络（ADR-0017）。基地信标不用研究
             Tech.lab("teleport_network", List.of("warp_drive"), List.of(BLUE, RED), 100, items("teleporter")),
             // ---- M13：飞船与航行（ADR-0024）。着陆台电磁学阶段就能研究；三档驱动接在跃迁引擎后面，一档比一档要的矩阵多
@@ -177,6 +179,11 @@ public final class TechTree {
             // ---- M14：星球生活（ADR-0026）。水培槽电磁学阶段就能研究，要交野外采来的氧气
             Tech.handIn("hydroponics", List.of("electromagnetism"), List.of(cost("oxygen", 12), cost("circuit_board", 6)),
                     items("hydroponic_tray")),
+            // 多功能工具的武器（ADR-0026 §六）：等离子武器电磁学阶段就能研究，要交守卫机残骸；重武器要蓝矩阵
+            Tech.handIn("plasma_weapons", List.of("electromagnetism"), List.of(cost("sentinel_scrap", 8), cost("magnetic_coil", 10)),
+                    items("scatter_blaster", "pulse_spitter")),
+            Tech.lab("heavy_plasma_weapons", List.of("plasma_weapons", "electromagnetic_matrix"), List.of(BLUE), 60,
+                    items("blaze_javelin", "plasma_launcher")),
             Tech.lab("cadmium_drive", List.of("warp_drive", "structure_matrix"), List.of(BLUE, RED, YELLOW), 160, items("cadmium_drive")),
             Tech.lab("emeril_drive", List.of("cadmium_drive", "information_matrix"), List.of(BLUE, RED, YELLOW, PURPLE), 200,
                     items("emeril_drive")),

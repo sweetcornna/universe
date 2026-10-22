@@ -1,0 +1,19 @@
+{
+  "type": "universe:research_shaped",
+  "key": {
+    "A": "universe:accumulator",
+    "B": "universe:walker_brain",
+    "Q": "universe:quadruped_servo",
+    "T": "universe:titanium_alloy",
+    "X": "universe:plasma_exciter"
+  },
+  "pattern": [
+    "TXT",
+    "QBQ",
+    "TAT"
+  ],
+  "research": "exo_mech",
+  "result": {
+    "id": "universe:exo_mech"
+  }
+}

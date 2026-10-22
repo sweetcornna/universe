@@ -97,6 +97,11 @@ class StationLayoutTest {
         assertEquals(Part.MISSION_BOARD, board.part());
         assertEquals(Dir.EAST, board.facing());
         assertNull(StationLayout.at(StationLayout.MISSION_BOARD_X + 1, 1, StationLayout.MISSION_BOARD_Z), "任务板前面空着");
+        Placement cabinet = StationLayout.at(StationLayout.CABINET_X, 1, StationLayout.CABINET_Z);
+        assertEquals(Part.MULTITOOL_CABINET, cabinet.part());
+        assertEquals(Dir.SOUTH, cabinet.facing());
+        assertNull(StationLayout.at(StationLayout.CABINET_X, 1, StationLayout.CABINET_Z + 1), "工具柜前面空着");
+        assertNull(StationLayout.at(StationLayout.CABINET_X, 2, StationLayout.CABINET_Z), "工具柜上面空着");
         assertNull(StationLayout.at(0, StationLayout.MAX_Y + 1, 0));
         assertNotNull(StationLayout.at(0, StationLayout.MAX_Y, 0));
     }

@@ -1,5 +1,6 @@
 package io.github.sweetcornna.universe.datagen;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -12,6 +13,8 @@ import io.github.sweetcornna.universe.block.FloraBlocks;
 import io.github.sweetcornna.universe.block.ResourcePlantBlock;
 import io.github.sweetcornna.universe.client.PlanetTints;
 import io.github.sweetcornna.universe.client.tech.ModuleGradeTint;
+import io.github.sweetcornna.universe.client.tech.MultitoolClassProperty;
+import io.github.sweetcornna.universe.core.survival.MultitoolClass;
 import io.github.sweetcornna.universe.core.ecology.Flora;
 import io.github.sweetcornna.universe.core.ecology.PlantForm;
 import io.github.sweetcornna.universe.core.galaxy.Palette;
@@ -32,6 +35,7 @@ import net.minecraft.client.data.models.ModelProvider;
 import net.minecraft.client.data.models.blockstates.MultiVariantGenerator;
 import net.minecraft.client.data.models.blockstates.PropertyDispatch;
 import net.minecraft.client.data.models.model.ItemModelUtils;
+import net.minecraft.client.renderer.item.SelectItemModel;
 import net.minecraft.client.data.models.model.ModelLocationUtils;
 import net.minecraft.client.data.models.model.TexturedModel;
 import net.minecraft.client.data.models.model.ModelTemplate;
@@ -119,12 +123,14 @@ final class UniverseModelProvider extends ModelProvider {
                 UniverseItems.EXOSUIT_BOOTS, UniverseItems.OXYGEN_CAPSULE, UniverseItems.HAZARD_CELL, UniverseItems.DAMAGED_MULTITOOL)) {
             itemModels.generateFlatItem(item.get(), ModelTemplates.FLAT_ITEM);
         }
-        // 多功能工具拿在手里像工具一样斜着
-        itemModels.generateFlatItem(UniverseItems.MULTITOOL.get(), ModelTemplates.FLAT_HANDHELD_ITEM);
+        // 多功能工具拿在手里像工具一样斜着；按类型换贴图，手枪和没有类型的旧工具用原来那张（ADR-0026）
+        multitool(itemModels);
         // 技术模块：芯片加按品级染色的边框（ADR-0014）
         UniverseItems.MODULES.values().forEach(item -> itemModels.generateItemWithTintedOverlay(item.get(), ModuleGradeTint.INSTANCE));
         // 镉、翠金、铟驱动（ADR-0024）
         UniverseItems.DRIVES.values().forEach(item -> itemModels.generateFlatItem(item.get(), ModelTemplates.FLAT_ITEM));
+        // 多功能工具的武器（ADR-0026 §六）：装进工具槽的枪管组件
+        UniverseItems.WEAPONS.values().forEach(item -> itemModels.generateFlatItem(item.get(), ModelTemplates.FLAT_ITEM));
         // 资源植物（ADR-0026）：长熟的和收过的两种样子，植物本身没有物品；产物是平面物品
         UniverseBlocks.RESOURCE_PLANTS.values().forEach(block -> resourcePlant(blockModels, block.get()));
         UniverseItems.RESOURCES.values().forEach(item -> itemModels.generateFlatItem(item.get(), ModelTemplates.FLAT_ITEM));
@@ -396,6 +402,20 @@ final class UniverseModelProvider extends ModelProvider {
         craft(itemModels, UniverseItems.CONSTRUCTION_DRONE.get(), "construction_drone_model");
     }
 
+    /** 多功能工具：按类型选贴图（{@code item/multitool_<类型>}），手枪用 {@code item/multitool}。 */
+    private static void multitool(ItemModelGenerators itemModels) {
+        Item tool = UniverseItems.MULTITOOL.get();
+        Identifier pistol = itemModels.createFlatItemModel(tool, ModelTemplates.FLAT_HANDHELD_ITEM);
+        List<SelectItemModel.SwitchCase<MultitoolClass>> cases = new ArrayList<>();
+        for (MultitoolClass type : MultitoolClass.values()) {
+            if (type != MultitoolClass.PISTOL) {
+                Identifier model = itemModels.createFlatItemModel(tool, "_" + type.key(), ModelTemplates.FLAT_HANDHELD_ITEM);
+                cases.add(ItemModelUtils.when(type, ItemModelUtils.plainModel(model)));
+            }
+        }
+        itemModels.itemModelOutput.accept(tool, ItemModelUtils.select(new MultitoolClassProperty(), ItemModelUtils.plainModel(pistol), cases));
+    }
+
     /** 载具：界面里用平面图标，其余场合用 {@code models/block/} 下手写的立体模型。 */
     private static void craft(ItemModelGenerators itemModels, Item item, String model) {
         Identifier flat = itemModels.createFlatItemModel(item, ModelTemplates.FLAT_ITEM);
@@ -547,7 +567,7 @@ final class UniverseModelProvider extends ModelProvider {
         for (Block block : List.of(UniverseBlocks.DATA_TERMINAL.get(), UniverseBlocks.SUPPLY_CRATE.get(), UniverseBlocks.SEALED_CRATE.get(),
                 UniverseBlocks.TRADE_TERMINAL.get(),
                 UniverseBlocks.SHIP_REPAIR.get(), UniverseBlocks.MISSION_BOARD.get(), UniverseBlocks.SHIP_DEALER.get(),
-                UniverseBlocks.FREIGHTER_CONSOLE.get(), UniverseBlocks.FLEET_TERMINAL.get())) {
+                UniverseBlocks.MULTITOOL_CABINET.get(), UniverseBlocks.FREIGHTER_CONSOLE.get(), UniverseBlocks.FLEET_TERMINAL.get())) {
             String name = BuiltInRegistries.BLOCK.getKey(block).getPath();
             Identifier model = ModelTemplates.CUBE_ORIENTABLE_TOP_BOTTOM.create(block, new TextureMapping()
                     .put(TextureSlot.FRONT, texture(name + "_front"))
@@ -616,6 +636,19 @@ final class UniverseModelProvider extends ModelProvider {
         itemModels.generateFlatItem(UniverseItems.CREDIT_CHIP.get(), ModelTemplates.FLAT_ITEM);
         itemModels.generateFlatItem(UniverseItems.EMERGENCY_RECEIVER.get(), ModelTemplates.FLAT_ITEM);
         itemModels.generateFlatItem(UniverseItems.EXOCRAFT.get(), ModelTemplates.FLAT_ITEM);
+        // 悬浮车、重型车、机甲和载具召唤台（ADR-0026）：召唤台正面朝放的人，底面和顶面一样
+        itemModels.generateFlatItem(UniverseItems.HOVER_CAR.get(), ModelTemplates.FLAT_ITEM);
+        itemModels.generateFlatItem(UniverseItems.HEAVY_ROVER.get(), ModelTemplates.FLAT_ITEM);
+        itemModels.generateFlatItem(UniverseItems.EXO_MECH.get(), ModelTemplates.FLAT_ITEM);
+        Block summoner = UniverseBlocks.VEHICLE_SUMMONER.get();
+        Identifier summonerModel = ModelTemplates.CUBE_ORIENTABLE_TOP_BOTTOM.create(summoner, new TextureMapping()
+                .put(TextureSlot.FRONT, texture("vehicle_summoner_front"))
+                .put(TextureSlot.SIDE, texture("vehicle_summoner_side"))
+                .put(TextureSlot.TOP, texture("vehicle_summoner_top"))
+                .put(TextureSlot.BOTTOM, texture("vehicle_summoner_top")), blockModels.modelOutput);
+        blockModels.blockStateOutput.accept(MultiVariantGenerator.dispatch(summoner, BlockModelGenerators.plainVariant(summonerModel))
+                .with(BlockModelGenerators.ROTATION_HORIZONTAL_FACING));
+        blockModels.registerSimpleItemModel(summoner, summonerModel);
         itemModels.generateFlatItem(UniverseItems.SENTINEL_SPAWN_EGG.get(), ModelTemplates.FLAT_ITEM);
         itemModels.generateFlatItem(UniverseItems.HEAVY_SENTINEL_SPAWN_EGG.get(), ModelTemplates.FLAT_ITEM);
         // 地面守卫机（ADR-0026）
