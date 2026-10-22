@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "universe:block/live_conduit"
+    }
+  }
+}

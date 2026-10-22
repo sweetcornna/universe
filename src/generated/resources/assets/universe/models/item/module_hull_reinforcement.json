@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "universe:item/module_hull_reinforcement",
+    "layer1": "universe:item/module_hull_reinforcement_overlay"
+  }
+}

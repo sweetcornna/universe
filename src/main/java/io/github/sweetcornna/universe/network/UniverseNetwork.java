@@ -10,6 +10,11 @@ import io.github.sweetcornna.universe.stats.ProductionLog;
 import io.github.sweetcornna.universe.story.Story;
 import io.github.sweetcornna.universe.survival.Multitool;
 import io.github.sweetcornna.universe.discovery.Discoveries;
+import io.github.sweetcornna.universe.entity.ship.ShipDealer;
+import io.github.sweetcornna.universe.fleet.FleetTerminal;
+import io.github.sweetcornna.universe.fleet.FreighterConsole;
+import io.github.sweetcornna.universe.portal.Portals;
+import io.github.sweetcornna.universe.entity.ship.ShipSummon;
 import io.github.sweetcornna.universe.entity.ship.ShipWarp;
 import io.github.sweetcornna.universe.factory.research.Research;
 import io.github.sweetcornna.universe.survival.PlayerSurvival;
@@ -29,7 +34,7 @@ import net.neoforged.neoforge.server.ServerLifecycleHooks;
  */
 public final class UniverseNetwork {
     /** 协议版本：任何包的格式改动都要加一，版本不同的客户端和服务端会拒绝连接。 */
-    private static final String PROTOCOL_VERSION = "20";
+    private static final String PROTOCOL_VERSION = "22";
 
     private UniverseNetwork() {
     }
@@ -87,6 +92,27 @@ public final class UniverseNetwork {
                 .playToServer(ExocraftControlPayload.TYPE, ExocraftControlPayload.STREAM_CODEC, Exocrafts::handleControl)
                 .playToServer(TeleportRequestPayload.TYPE, TeleportRequestPayload.STREAM_CODEC, Teleporters::handleRequest)
                 .playToServer(RenameBasePayload.TYPE, RenameBasePayload.STREAM_CODEC, Teleporters::handleRename)
-                .playToServer(MissionActionPayload.TYPE, MissionActionPayload.STREAM_CODEC, Missions::handleAction);
+                .playToServer(MissionActionPayload.TYPE, MissionActionPayload.STREAM_CODEC, Missions::handleAction)
+                // M13：飞船面板、召唤、自动驾驶（ADR-0024）
+                .playToClient(ShipPayloads.Helm.TYPE, ShipPayloads.Helm.STREAM_CODEC)
+                .playToClient(ShipPayloads.Destinations.TYPE, ShipPayloads.Destinations.STREAM_CODEC)
+                .playToServer(ShipPayloads.Summon.TYPE, ShipPayloads.Summon.STREAM_CODEC, ShipSummon::handleSummon)
+                .playToServer(ShipPayloads.Navigate.TYPE, ShipPayloads.Navigate.STREAM_CODEC, ShipSummon::handleNavigate)
+                .playToClient(DealerPayloads.State.TYPE, DealerPayloads.State.STREAM_CODEC)
+                .playToServer(DealerPayloads.Buy.TYPE, DealerPayloads.Buy.STREAM_CODEC, ShipDealer::handleBuy)
+                .playToServer(DealerPayloads.Sell.TYPE, DealerPayloads.Sell.STREAM_CODEC, ShipDealer::handleSell)
+                .playToServer(DealerPayloads.Hire.TYPE, DealerPayloads.Hire.STREAM_CODEC, ShipDealer::handleHire)
+                .playToServer(DealerPayloads.BuyFreighter.TYPE, DealerPayloads.BuyFreighter.STREAM_CODEC, ShipDealer::handleBuyFreighter)
+                // M13：货船、舰队（ADR-0024）
+                .playToClient(FleetPayloads.Location.TYPE, FleetPayloads.Location.STREAM_CODEC)
+                .playToClient(FleetPayloads.Console.TYPE, FleetPayloads.Console.STREAM_CODEC)
+                .playToServer(FleetPayloads.Warp.TYPE, FleetPayloads.Warp.STREAM_CODEC, FreighterConsole::handleWarp)
+                .playToClient(FleetPayloads.Terminal.TYPE, FleetPayloads.Terminal.STREAM_CODEC)
+                .playToServer(FleetPayloads.Action.TYPE, FleetPayloads.Action.STREAM_CODEC, FleetTerminal::handleAction)
+                // M13：先驱者传送门（ADR-0024）
+                .playToClient(PortalPayloads.Open.TYPE, PortalPayloads.Open.STREAM_CODEC)
+                .playToServer(PortalPayloads.Dial.TYPE, PortalPayloads.Dial.STREAM_CODEC, Portals::handleDial)
+                // M13：太空遭遇（ADR-0024）
+                .playToClient(EncounterPayloads.Signal.TYPE, EncounterPayloads.Signal.STREAM_CODEC);
     }
 }

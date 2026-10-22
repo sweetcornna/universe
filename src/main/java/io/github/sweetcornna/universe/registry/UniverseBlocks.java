@@ -13,21 +13,30 @@ import io.github.sweetcornna.universe.block.PlanetBloomBlock;
 import io.github.sweetcornna.universe.block.PlanetLeavesBlock;
 import io.github.sweetcornna.universe.block.PlanetLogBlock;
 import io.github.sweetcornna.universe.block.PlanetPlantBlock;
+import io.github.sweetcornna.universe.block.encounter.LiveConduitBlock;
 import io.github.sweetcornna.universe.block.poi.DataTerminalBlock;
 import io.github.sweetcornna.universe.block.poi.DropPodBlock;
 import io.github.sweetcornna.universe.block.poi.MonolithBlock;
+import io.github.sweetcornna.universe.block.portal.PortalDialBlock;
+import io.github.sweetcornna.universe.block.portal.PortalFieldBlock;
+import io.github.sweetcornna.universe.block.portal.PortalGlyphBlock;
 import io.github.sweetcornna.universe.block.poi.SignalBoosterBlock;
 import io.github.sweetcornna.universe.block.poi.SmolderingWreckBlock;
 import io.github.sweetcornna.universe.block.poi.SupplyCrateBlock;
+import io.github.sweetcornna.universe.block.fleet.FleetTerminalBlock;
+import io.github.sweetcornna.universe.block.fleet.FreighterConsoleBlock;
+import io.github.sweetcornna.universe.block.ship.DamagedHelmBlock;
 import io.github.sweetcornna.universe.block.ship.FuelTankBlock;
 import io.github.sweetcornna.universe.block.ship.ImpulseEngineBlock;
 import io.github.sweetcornna.universe.block.ship.ShieldGeneratorBlock;
+import io.github.sweetcornna.universe.block.ship.LandingPadBlock;
 import io.github.sweetcornna.universe.block.ship.ShipHelmBlock;
 import io.github.sweetcornna.universe.block.ship.ShipSeatBlock;
 import io.github.sweetcornna.universe.block.ship.ShipThrusterBlock;
 import io.github.sweetcornna.universe.block.ship.ShipWeaponBlock;
 import io.github.sweetcornna.universe.block.ship.WarpDriveBlock;
 import io.github.sweetcornna.universe.block.station.MissionBoardBlock;
+import io.github.sweetcornna.universe.block.station.ShipDealerBlock;
 import io.github.sweetcornna.universe.block.station.ShipRepairBlock;
 import io.github.sweetcornna.universe.block.station.TradeTerminalBlock;
 import io.github.sweetcornna.universe.core.ecology.PlantForm;
@@ -137,6 +146,9 @@ public final class UniverseBlocks {
     // ---- 飞船部件（ADR-0008）
     public static final DeferredBlock<ShipHelmBlock> SHIP_HELM = BLOCKS.registerBlock("ship_helm", ShipHelmBlock::new,
             p -> p.mapColor(MapColor.METAL).strength(3.0F, 6.0F).sound(SoundType.COPPER).requiresCorrectToolForDrops().noOcclusion());
+    /** 坠毁飞船上损坏的驾驶台（ADR-0024），修好变回驾驶台。 */
+    public static final DeferredBlock<DamagedHelmBlock> DAMAGED_HELM = BLOCKS.registerBlock("damaged_ship_helm", DamagedHelmBlock::new,
+            p -> p.mapColor(MapColor.COLOR_GRAY).strength(3.0F, 6.0F).sound(SoundType.COPPER).requiresCorrectToolForDrops().noOcclusion());
     public static final DeferredBlock<ShipThrusterBlock> SHIP_THRUSTER = BLOCKS.registerBlock("ship_thruster", ShipThrusterBlock::new,
             p -> p.mapColor(MapColor.METAL).strength(3.0F, 6.0F).sound(SoundType.COPPER).requiresCorrectToolForDrops().noOcclusion());
     public static final DeferredBlock<FuelTankBlock> FUEL_TANK = BLOCKS.registerBlock("fuel_tank", FuelTankBlock::new,
@@ -149,6 +161,9 @@ public final class UniverseBlocks {
                     .lightLevel(state -> 9));
     public static final DeferredBlock<ShipSeatBlock> SHIP_SEAT = BLOCKS.registerBlock("ship_seat", ShipSeatBlock::new,
             p -> p.mapColor(MapColor.COLOR_GRAY).strength(1.5F).sound(SoundType.WOOL).noOcclusion());
+    /** 着陆台（ADR-0024）：接电网给停在上面的船加燃料，也是召唤飞船的落点。 */
+    public static final DeferredBlock<LandingPadBlock> LANDING_PAD = BLOCKS.registerBlock("landing_pad", LandingPadBlock::new,
+            p -> machine(p).lightLevel(state -> state.getValue(MachineBlock.WORKING) ? 9 : 3));
     // ---- 飞船武器、护盾和 Mk.II 部件（ADR-0017）
     public static final DeferredBlock<ShipWeaponBlock> PHOTON_CANNON = BLOCKS.registerBlock("photon_cannon", ShipWeaponBlock::new,
             p -> p.mapColor(MapColor.COLOR_ORANGE).strength(4.0F, 8.0F).sound(SoundType.NETHERITE_BLOCK).requiresCorrectToolForDrops()
@@ -183,6 +198,25 @@ public final class UniverseBlocks {
     public static final DeferredBlock<MonolithBlock> MONOLITH = BLOCKS.registerBlock("monolith", MonolithBlock::new,
             p -> p.mapColor(MapColor.DEEPSLATE).strength(-1.0F, 3600000.0F).sound(SoundType.DEEPSLATE_TILES).noLootTable()
                     .lightLevel(state -> 7).pushReaction(PushReaction.IMMOVEABLE));
+    /** 先驱者传送门（ADR-0024）：石台和石环、刻着地址的符文石、拨号台、门开时环里的那层光。都挖不掉、推不动。 */
+    public static final DeferredBlock<Block> PORTAL_STONE = BLOCKS.registerSimpleBlock("portal_stone",
+            p -> p.mapColor(MapColor.DEEPSLATE).strength(-1.0F, 3600000.0F).sound(SoundType.DEEPSLATE_TILES).noLootTable()
+                    .pushReaction(PushReaction.IMMOVEABLE));
+    public static final DeferredBlock<PortalGlyphBlock> PORTAL_GLYPH = BLOCKS.registerBlock("portal_glyph", PortalGlyphBlock::new,
+            p -> p.mapColor(MapColor.DEEPSLATE).strength(-1.0F, 3600000.0F).sound(SoundType.DEEPSLATE_TILES).noLootTable()
+                    .lightLevel(state -> 7).pushReaction(PushReaction.IMMOVEABLE));
+    public static final DeferredBlock<PortalDialBlock> PORTAL_DIAL = BLOCKS.registerBlock("portal_dial", PortalDialBlock::new,
+            p -> p.mapColor(MapColor.DEEPSLATE).strength(-1.0F, 3600000.0F).sound(SoundType.DEEPSLATE_TILES).noLootTable()
+                    .lightLevel(state -> 5).pushReaction(PushReaction.IMMOVEABLE));
+    /** 废弃货船里漏电的线管（ADR-0024）：打不坏，发光，冒火花。 */
+    public static final DeferredBlock<LiveConduitBlock> LIVE_CONDUIT = BLOCKS.registerBlock("live_conduit", LiveConduitBlock::new,
+            p -> p.mapColor(MapColor.METAL).strength(-1.0F, 3600000.0F).sound(SoundType.COPPER).noLootTable().lightLevel(state -> 7)
+                    .pushReaction(PushReaction.IMMOVEABLE).isValidSpawn(Blocks::never));
+    public static final DeferredBlock<PortalFieldBlock> PORTAL_FIELD = BLOCKS.registerBlock("portal_field", PortalFieldBlock::new,
+            p -> p.mapColor(MapColor.COLOR_PURPLE).strength(-1.0F, 3600000.0F).sound(SoundType.GLASS).noLootTable().noCollision()
+                    .noOcclusion().randomTicks().lightLevel(state -> 12).pushReaction(PushReaction.IMMOVEABLE).isValidSpawn(Blocks::never)
+                    .isRedstoneConductor((state, level, pos) -> false).isSuffocating((state, level, pos) -> false)
+                    .isViewBlocking((state, level, pos, box) -> false));
     /** 科技储藏箱：埋在地下，挖开掉一个随机模块。 */
     public static final DeferredBlock<Block> TECH_CACHE = BLOCKS.registerSimpleBlock("tech_cache",
             p -> p.mapColor(MapColor.COLOR_CYAN).strength(2.5F, 6.0F).sound(SoundType.METAL).lightLevel(state -> 5));
@@ -225,6 +259,19 @@ public final class UniverseBlocks {
     public static final DeferredBlock<ShipRepairBlock> SHIP_REPAIR = BLOCKS.registerBlock("ship_repair", ShipRepairBlock::new,
             p -> p.mapColor(MapColor.METAL).strength(-1.0F, 3600000.0F).sound(SoundType.METAL).noLootTable().lightLevel(state -> 10)
                     .pushReaction(PushReaction.IMMOVEABLE));
+    /** 飞船交易终端（ADR-0024）：挖不掉，只在空间站的机库里有。 */
+    public static final DeferredBlock<ShipDealerBlock> SHIP_DEALER = BLOCKS.registerBlock("ship_dealer", ShipDealerBlock::new,
+            p -> p.mapColor(MapColor.METAL).strength(-1.0F, 3600000.0F).sound(SoundType.METAL).noLootTable().lightLevel(state -> 10)
+                    .pushReaction(PushReaction.IMMOVEABLE));
+    // ---- 货船（ADR-0024）：外壳的深色装甲板和引擎喷口，舰桥的控制台、指挥室的舰队终端，都挖不掉
+    public static final DeferredBlock<Block> FREIGHTER_PLATE = BLOCKS.registerSimpleBlock("freighter_plate",
+            p -> station(p.mapColor(MapColor.COLOR_GRAY)));
+    public static final DeferredBlock<Block> FREIGHTER_ENGINE = BLOCKS.registerSimpleBlock("freighter_engine",
+            p -> station(p.mapColor(MapColor.COLOR_LIGHT_BLUE)).lightLevel(state -> 15));
+    public static final DeferredBlock<FreighterConsoleBlock> FREIGHTER_CONSOLE = BLOCKS.registerBlock("freighter_console",
+            FreighterConsoleBlock::new, p -> station(p.mapColor(MapColor.METAL)).lightLevel(state -> 10));
+    public static final DeferredBlock<FleetTerminalBlock> FLEET_TERMINAL = BLOCKS.registerBlock("fleet_terminal", FleetTerminalBlock::new,
+            p -> station(p.mapColor(MapColor.METAL)).lightLevel(state -> 10));
     /** 空间站的传送器：挖不掉，不用电。 */
     public static final DeferredBlock<TeleporterBlock> STATION_TELEPORTER = BLOCKS.registerBlock("station_teleporter", TeleporterBlock::new,
             p -> p.mapColor(MapColor.METAL).strength(-1.0F, 3600000.0F).sound(SoundType.METAL).noLootTable()

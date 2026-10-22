@@ -1,14 +1,17 @@
 package io.github.sweetcornna.universe.entity.ship;
 
+import java.util.ArrayDeque;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import org.jspecify.annotations.Nullable;
 
 import io.github.sweetcornna.universe.asteroid.Asteroid;
 import io.github.sweetcornna.universe.block.ship.ShipHelmBlock;
 import io.github.sweetcornna.universe.block.ship.ShipSeatBlock;
+import io.github.sweetcornna.universe.core.ship.ShipAutopilot;
 import io.github.sweetcornna.universe.core.ship.ShipCombat;
 import io.github.sweetcornna.universe.core.ship.ShipFlight;
 import io.github.sweetcornna.universe.core.ship.ShipFlight.Controls;
@@ -17,15 +20,19 @@ import io.github.sweetcornna.universe.core.ship.ShipShape;
 import io.github.sweetcornna.universe.core.ship.ShipStats;
 import io.github.sweetcornna.universe.core.space.AsteroidField;
 import io.github.sweetcornna.universe.core.space.Warp;
+import io.github.sweetcornna.universe.network.ShipPayloads;
+import io.github.sweetcornna.universe.encounter.SpaceEncounters;
 import io.github.sweetcornna.universe.pirate.Pirates;
 import io.github.sweetcornna.universe.registry.UniverseEntities;
 import io.github.sweetcornna.universe.station.Stations;
 import io.github.sweetcornna.universe.world.space.SpaceDimensions;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -57,6 +64,7 @@ import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.entity.IEntityWithComplexSpawn;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
  * 组装好的飞船（ADR-0008）。
@@ -80,6 +88,9 @@ public class ShipEntity extends Entity implements IEntityWithComplexSpawn {
     public static final double RAM_MAX_DAMAGE = 20;
     /** 撞上小行星后脉冲引擎停多久（刻）。 */
     private static final int BUMP_IMPULSE_LOCK = 60;
+    /** 自动驾驶推着走、每刻挪不到这么远（格），连着这么多刻就算被挡住了。 */
+    private static final double STUCK_SPEED = 0.02;
+    private static final int STUCK_TICKS = 60;
     /** 提示晚这么多刻再发：上船、穿过大气层时，客户端收到乘坐数据包会用原版的"按 Shift 下船"盖掉之前的提示。 */
     private static final int NOTICE_DELAY = 5;
 
@@ -93,6 +104,7 @@ public class ShipEntity extends Entity implements IEntityWithComplexSpawn {
     private static final EntityDataAccessor<Float> DATA_SHIELD = SynchedEntityData.defineId(ShipEntity.class, EntityDataSerializers.FLOAT);
     private static final EntityDataAccessor<Float> DATA_HEAT = SynchedEntityData.defineId(ShipEntity.class, EntityDataSerializers.FLOAT);
     private static final EntityDataAccessor<Byte> DATA_WEAPON = SynchedEntityData.defineId(ShipEntity.class, EntityDataSerializers.BYTE);
+    private static final EntityDataAccessor<Boolean> DATA_AUTOPILOT = SynchedEntityData.defineId(ShipEntity.class, EntityDataSerializers.BOOLEAN);
     /** {@link #DATA_WEAPON} 的位：采矿模式、过热、光束开着、驾驶员按着开火键。 */
     private static final int WEAPON_BEAM_MODE = 1;
     private static final int WEAPON_OVERHEATED = 2;
@@ -140,6 +152,14 @@ public class ShipEntity extends Entity implements IEntityWithComplexSpawn {
     /** 下一发轮到第几门炮。 */
     private int nextCannon;
     private int wreckTicks;
+    /** 主人：组装或者买下这艘船的玩家（ADR-0024）。旧存档里的船没有，谁先开就归谁。 */
+    private @Nullable UUID owner;
+    /** 自动驾驶的目的地；没开为空。 */
+    /** 自动驾驶的路线：第一段飞完换下一段，空了就是没开。 */
+    private final ArrayDeque<ShipAutopilot.Target> autopilot = new ArrayDeque<>();
+    private @Nullable Component autopilotName;
+    /** 自动驾驶往前推着却停在原地的刻数：被挡住了。 */
+    private int autopilotStuck;
     /** 客户端：渲染缓存（由渲染器创建和使用，服务端始终为空）。 */
     public @Nullable Object renderCache;
     /** 客户端：上一刻的位置，用来算 HUD 上的速度。 */
@@ -179,6 +199,7 @@ public class ShipEntity extends Entity implements IEntityWithComplexSpawn {
         builder.define(DATA_SHIELD, 0F);
         builder.define(DATA_HEAT, 0F);
         builder.define(DATA_WEAPON, (byte) 0);
+        builder.define(DATA_AUTOPILOT, false);
     }
 
     // ---- 查询
@@ -268,8 +289,73 @@ public class ShipEntity extends Entity implements IEntityWithComplexSpawn {
         return Math.max(0, this.maxShield() - this.combat.shield());
     }
 
-    double fuelServer() {
+    public double fuelServer() {
         return this.fuel;
+    }
+
+    public double fuelCapacity() {
+        return this.structure == null ? 0 : this.structure.stats().fuelCapacity();
+    }
+
+    /** 服务端：加燃料（着陆台，ADR-0024），不超过容量。 */
+    public void refuel(double amount) {
+        this.fuel = Math.min(this.fuelCapacity(), this.fuel + Math.max(0, amount));
+        this.entityData.set(DATA_FUEL, (float) this.fuel);
+    }
+
+    public @Nullable UUID owner() {
+        return this.owner;
+    }
+
+    public void setOwner(@Nullable UUID owner) {
+        this.owner = owner;
+    }
+
+    /** 开着自动驾驶（客户端用同步来的值）。 */
+    public boolean autopilotActive() {
+        return this.entityData.get(DATA_AUTOPILOT);
+    }
+
+    /** 服务端：自动驾驶按路线飞，最后一段的终点是目的地；按方向键就退出。 */
+    public void engageAutopilot(List<ShipAutopilot.Target> route, Component name) {
+        this.autopilot.clear();
+        this.autopilot.addAll(route);
+        this.autopilotName = name;
+        this.autopilotStuck = 0;
+        this.entityData.set(DATA_AUTOPILOT, true);
+        Player pilot = this.pilot();
+        if (pilot != null) {
+            pilot.sendOverlayMessage(Component.translatable("message.universe.autopilot.engaged", name));
+        }
+    }
+
+    private void stopAutopilot(@Nullable Player pilot, @Nullable String message) {
+        if (pilot != null && message != null && this.autopilotName != null) {
+            pilot.sendOverlayMessage(Component.translatable(message, this.autopilotName));
+        }
+        this.autopilot.clear();
+        this.autopilotName = null;
+        this.entityData.set(DATA_AUTOPILOT, false);
+    }
+
+    /**
+     * 服务端：飞行中改了技术（ADR-0024）。换上新的方块数据、重算性能，船体和护盾不超过新的上限；客户端那份驾驶台数据也换掉，
+     * HUD 和星图上的射程跟着变。
+     */
+    void techChanged(ShipStructure structure, CompoundTag clientData) {
+        this.structure = structure;
+        ShipStats stats = structure.stats();
+        this.combat.set(Math.min(this.combat.hull(), stats.hull()), Math.min(this.combat.shield(), stats.shield()));
+        this.syncCombat();
+        this.fuel = Math.min(this.fuel, stats.fuelCapacity());
+        PacketDistributor.sendToPlayersTrackingEntity(this, new ShipPayloads.Helm(this.getId(), clientData));
+    }
+
+    /** 客户端：服务端发来了新的驾驶台数据。 */
+    public void clientHelm(CompoundTag data) {
+        if (this.structure != null) {
+            this.structure = this.structure.withHelmData(data);
+        }
     }
 
     void setFuelServer(double fuel) {
@@ -280,7 +366,7 @@ public class ShipEntity extends Entity implements IEntityWithComplexSpawn {
         return this.departures;
     }
 
-    ShipFlight flight() {
+    public ShipFlight flight() {
         return this.flight;
     }
 
@@ -430,6 +516,14 @@ public class ShipEntity extends Entity implements IEntityWithComplexSpawn {
         this.syncCombat();
     }
 
+    /** 掉进黑洞（ADR-0024）：船体掉上限的一截，最少留 1 点，护盾清空；跃迁充能和自动驾驶都取消。 */
+    void swallowed(double hullLoss) {
+        this.combat.set(Math.max(1, this.combat.hull() - this.maxHull() * hullLoss), 0);
+        this.warpTarget = -1;
+        this.stopAutopilot(null, null);
+        this.syncCombat();
+    }
+
     /** 货舱里的东西变了（被击毁丢了货）：换成新的方块数据，方块的位置和种类不变。 */
     void replaceStructure(ShipStructure structure) {
         this.structure = structure;
@@ -486,7 +580,7 @@ public class ShipEntity extends Entity implements IEntityWithComplexSpawn {
             this.beamMode = false;
         }
         boolean trigger = this.firing && pilot != null && !warping && !this.docked && this.wreckTicks == 0;
-        int shots = this.combat.tick(stats.shield(), trigger, stats.cannons(), this.beamMode);
+        int shots = this.combat.tick(stats.shield(), trigger, stats.cannons(), this.beamMode, stats.fireRate());
         if (shots > 0) {
             ShipWeapons.fireCannons(this, level, pilot, shots);
         } else if (shots < 0) {
@@ -786,6 +880,10 @@ public class ShipEntity extends Entity implements IEntityWithComplexSpawn {
             boolean up = input.jump() && !this.verticalLatched;
             boolean down = input.shift() && !this.verticalLatched;
             controls = new Controls(input.forward(), input.backward(), input.left(), input.right(), up, down, input.sprint());
+            if (!this.autopilot.isEmpty()) {
+                controls = this.autopilotControls(player, input, env, stats, controls);
+            }
+            this.claim(player);
         } else if (this.landed || env.space()) {
             controls = Controls.NONE;
         } else {
@@ -798,8 +896,8 @@ public class ShipEntity extends Entity implements IEntityWithComplexSpawn {
                 controls = new Controls(controls.forward(), controls.back(), controls.left(), controls.right(), controls.up(), controls.down(), false);
             }
         }
-        if (controls.boost() && env.space() && stats.impulse() > 0 && Pirates.jammed(this)) {
-            // 海盗干扰：脉冲引擎开不起来，只能用推进器周旋（ADR-0017）
+        if (controls.boost() && env.space() && stats.impulse() > 0 && (Pirates.jammed(this) || SpaceEncounters.jammed(this))) {
+            // 海盗、守卫机的拦截机干扰：脉冲引擎开不起来，只能用推进器周旋（ADR-0017、ADR-0024）
             controls = new Controls(controls.forward(), controls.back(), controls.left(), controls.right(), controls.up(), controls.down(), false);
             if (pilot != null && this.tickCount % 40 == 0) {
                 pilot.sendOverlayMessage(Component.translatable("message.universe.pirate.jammed"));
@@ -883,6 +981,47 @@ public class ShipEntity extends Entity implements IEntityWithComplexSpawn {
         }
     }
 
+    /** 自动驾驶这一刻的操作：驾驶员动了方向键、进了大气或者空间站就退出，到了也退出。 */
+    private Controls autopilotControls(ServerPlayer pilot, Input input, Environment env, ShipStats stats, Controls manual) {
+        if (input.forward() || input.backward() || input.left() || input.right() || input.jump() || input.shift()) {
+            this.stopAutopilot(pilot, "message.universe.autopilot.off");
+            return manual;
+        }
+        if (!env.space() || this.docked) {
+            this.stopAutopilot(pilot, null);
+            return manual;
+        }
+        Controls steer = ShipAutopilot.steer(this.getX(), this.getY(), this.getZ(), this.flight.yaw(), this.flight.speed(), this.flight.vy(),
+                this.autopilot.getFirst(), stats);
+        while (steer == null && this.autopilot.size() > 1) {
+            this.autopilot.removeFirst();
+            steer = ShipAutopilot.steer(this.getX(), this.getY(), this.getZ(), this.flight.yaw(), this.flight.speed(), this.flight.vy(),
+                    this.autopilot.getFirst(), stats);
+        }
+        if (steer == null) {
+            this.stopAutopilot(pilot, "message.universe.autopilot.arrived");
+            return Controls.NONE;
+        }
+        // 推着走却一直不动：前面有东西挡着，交还给驾驶员
+        boolean pushing = steer.forward() || steer.up() || steer.down();
+        this.autopilotStuck = pushing && this.getDeltaMovement().lengthSqr() < STUCK_SPEED * STUCK_SPEED ? this.autopilotStuck + 1 : 0;
+        if (this.autopilotStuck > STUCK_TICKS) {
+            this.stopAutopilot(pilot, "message.universe.autopilot.blocked");
+            return Controls.NONE;
+        }
+        return steer;
+    }
+
+    /** 驾驶员开着船：没有主人的船归他；自己的船记成主力船（召唤用）。 */
+    private void claim(ServerPlayer pilot) {
+        if (this.owner == null) {
+            this.owner = pilot.getUUID();
+        }
+        if (this.owner.equals(pilot.getUUID()) && (this.tickCount % ShipOwners.RECORD_INTERVAL == 0)) {
+            ShipOwners.get(pilot.level().getServer()).piloted(pilot.getUUID(), this);
+        }
+    }
+
     // ---- 存档和同步
 
     @Override
@@ -896,6 +1035,7 @@ public class ShipEntity extends Entity implements IEntityWithComplexSpawn {
         output.putDouble("Hull", this.combat.hull());
         output.putDouble("Shield", this.combat.shield());
         output.putBoolean("BeamMode", this.beamMode);
+        output.storeNullable("Owner", UUIDUtil.CODEC, this.owner);
         ValueOutput.ValueOutputList list = output.childrenList("Departures");
         this.departures.forEach((dimension, pos) -> {
             ValueOutput child = list.addChild();
@@ -910,6 +1050,7 @@ public class ShipEntity extends Entity implements IEntityWithComplexSpawn {
         this.baseYaw = input.getFloatOr("BaseYaw", 0);
         this.fuel = input.getDoubleOr("Fuel", 0);
         this.landed = input.getBooleanOr("Landed", false);
+        this.owner = input.read("Owner", UUIDUtil.CODEC).orElse(null);
         this.departures.clear();
         for (ValueInput child : input.childrenListOrEmpty("Departures")) {
             Identifier dimension = Identifier.tryParse(child.getStringOr("Dimension", ""));

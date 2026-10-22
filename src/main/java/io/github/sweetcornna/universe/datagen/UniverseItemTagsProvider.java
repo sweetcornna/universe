@@ -96,7 +96,7 @@ final class UniverseItemTagsProvider extends ItemTagsProvider {
                 UniverseItems.SHIP_THRUSTER_MK2.key(), UniverseItems.FUEL_TANK_MK2.key(), UniverseItems.IMPULSE_ENGINE_MK2.key(),
                 UniverseItems.WARP_DRIVE_MK2.key(), UniverseItems.ALLOY_HULL_PLATING.key(),
                 UniverseItems.EXOSUIT_HELMET.key(), UniverseItems.EXOSUIT_CHESTPLATE.key(), UniverseItems.EXOSUIT_LEGGINGS.key(),
-                UniverseItems.EXOSUIT_BOOTS.key())
+                UniverseItems.EXOSUIT_BOOTS.key(), UniverseItems.EMERGENCY_RECEIVER.key())
                 .addAll(UniverseItems.MODULES.values().stream().map(item -> item.key()))
                 .addAll(UniverseItems.HULL_PLATING.values().stream().map(item -> item.key()));
     }

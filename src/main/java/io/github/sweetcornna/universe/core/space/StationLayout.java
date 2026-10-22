@@ -37,6 +37,9 @@ public final class StationLayout {
     /** 飞船维修台的位置（本地坐标，地板上一层）。 */
     public static final int REPAIR_X = PAD_X;
     public static final int REPAIR_Z = PAD_RADIUS + 3;
+    /** 飞船交易终端：停机坪另一边，和维修台对称（ADR-0024）。 */
+    public static final int DEALER_X = PAD_X;
+    public static final int DEALER_Z = -REPAIR_Z;
     /** 传送器：大厅里交易终端旁边，面朝机库；到站的人站在它前面两格。 */
     public static final int TELEPORTER_X = -15;
     public static final int TELEPORTER_Z = -6;
@@ -46,7 +49,7 @@ public final class StationLayout {
     /** 离别的天体至少这么远。 */
     private static final double CLEARANCE = 400;
     /** 机库开口前的引导灯从外墙往外排多远（ADR-0021）。 */
-    static final int APPROACH_LENGTH = 96;
+    public static final int APPROACH_LENGTH = 96;
     /** 背后的桁架多长，尽头是一面碟形天线。 */
     static final int SPINE_LENGTH = 72;
     static final int DISH_RADIUS = 8;
@@ -123,6 +126,8 @@ public final class StationLayout {
         TERMINAL,
         /** 飞船维修台，在机库里停机坪旁边。 */
         REPAIR,
+        /** 飞船交易终端，在停机坪另一边，和维修台对着。 */
+        SHIP_DEALER,
         /** 传送器，在大厅里交易终端旁边。 */
         TELEPORTER,
         /** 任务板，在交易终端另一边。 */
@@ -426,6 +431,9 @@ public final class StationLayout {
         // 维修台：停机坪的一侧，面朝停机坪
         if (y == 1 && x == REPAIR_X && z == REPAIR_Z) {
             return new Placement(Part.REPAIR, Dir.NORTH);
+        }
+        if (y == 1 && x == DEALER_X && z == DEALER_Z) {
+            return new Placement(Part.SHIP_DEALER, Dir.SOUTH);
         }
         return null;
     }

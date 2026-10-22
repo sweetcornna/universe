@@ -112,6 +112,15 @@ public final class ShipCombat {
      * @return 这一刻光子炮打出几发；采矿模式下光束开着时返回 -1
      */
     public int tick(double maxShield, boolean trigger, int cannons, boolean beam) {
+        return this.tick(maxShield, trigger, cannons, beam, 1);
+    }
+
+    /**
+     * 同上，按射速的倍数（火控校准的技术，ADR-0024）充能。
+     *
+     * @param rate 射速的倍数
+     */
+    public int tick(double maxShield, boolean trigger, int cannons, boolean beam, double rate) {
         this.sinceHit++;
         if (this.sinceHit > SHIELD_DELAY && this.shield < maxShield) {
             this.shield = Math.min(maxShield, this.shield + SHIELD_REGEN);
@@ -121,7 +130,7 @@ public final class ShipCombat {
             return this.heat.tick(trigger, BEAM_HEAT) ? -1 : 0;
         }
         boolean firing = this.heat.tick(trigger && cannons > 0, CANNON_HEAT);
-        double perTick = CANNON_RATE * cannons / 20;
+        double perTick = CANNON_RATE * cannons * rate / 20;
         if (!firing) {
             // 不开火时照样充能，但最多存 1 发：按下开火键的第一发立即打出，连点也快不过射速
             this.charge = Math.min(1, this.charge + perTick);

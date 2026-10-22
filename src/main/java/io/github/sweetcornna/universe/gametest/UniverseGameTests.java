@@ -1,16 +1,49 @@
 package io.github.sweetcornna.universe.gametest;
 
+import java.util.ArrayList;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import java.util.function.Consumer;
 
 import io.github.sweetcornna.universe.Universe;
+import io.github.sweetcornna.universe.block.portal.PortalGlyphBlock;
+import io.github.sweetcornna.universe.block.ship.HelmBlockEntity;
+import io.github.sweetcornna.universe.block.ship.LandingPadBlockEntity;
 import io.github.sweetcornna.universe.core.factory.Cargo;
 import io.github.sweetcornna.universe.core.factory.Proliferation;
+import io.github.sweetcornna.universe.core.fleet.Expedition;
+import io.github.sweetcornna.universe.core.fleet.Fleet;
+import io.github.sweetcornna.universe.core.fleet.Frigate;
+import io.github.sweetcornna.universe.core.fleet.FrigateType;
+import io.github.sweetcornna.universe.core.galaxy.BodyId;
+import io.github.sweetcornna.universe.core.galaxy.Planet;
+import io.github.sweetcornna.universe.core.galaxy.StarSystem;
 import io.github.sweetcornna.universe.core.logistics.Station;
 import io.github.sweetcornna.universe.core.logistics.StationSlot;
 import io.github.sweetcornna.universe.core.mecha.Distribution;
+import io.github.sweetcornna.universe.core.portal.PortalAddress;
+import io.github.sweetcornna.universe.core.portal.PortalLayout;
+import io.github.sweetcornna.universe.core.procgen.Rng;
 import io.github.sweetcornna.universe.core.research.ResearchState;
 import io.github.sweetcornna.universe.core.research.Tech;
 import io.github.sweetcornna.universe.core.research.TechTree;
+import io.github.sweetcornna.universe.core.ship.CrashedShip;
+import io.github.sweetcornna.universe.core.ship.ShipDesign;
+import io.github.sweetcornna.universe.core.ship.ShipDesigner;
+import io.github.sweetcornna.universe.core.ship.ShipMarket;
+import io.github.sweetcornna.universe.core.ship.ShipType;
+import io.github.sweetcornna.universe.core.space.DriveTier;
+import io.github.sweetcornna.universe.core.tech.Grade;
+import io.github.sweetcornna.universe.core.tech.ModuleType;
+import io.github.sweetcornna.universe.core.tech.TechModule;
+import io.github.sweetcornna.universe.core.trade.Economy;
+import io.github.sweetcornna.universe.entity.ship.ShipAssembly;
+import io.github.sweetcornna.universe.entity.ship.ShipBlueprints;
+import io.github.sweetcornna.universe.entity.ship.ShipEntity;
+import io.github.sweetcornna.universe.entity.ship.ShipOwners;
 import io.github.sweetcornna.universe.factory.RecipeMachineBlockEntity;
 import io.github.sweetcornna.universe.factory.TallMachineBlock;
 import io.github.sweetcornna.universe.factory.belt.BeltBlock;
@@ -23,12 +56,18 @@ import io.github.sweetcornna.universe.factory.power.GeothermalBlockEntity;
 import io.github.sweetcornna.universe.factory.research.MatrixLabBlockEntity;
 import io.github.sweetcornna.universe.factory.research.Research;
 import io.github.sweetcornna.universe.factory.research.ResearchData;
+import io.github.sweetcornna.universe.fleet.FleetData;
+import io.github.sweetcornna.universe.fleet.FleetTerminal;
 import io.github.sweetcornna.universe.logistics.DistributorBlockEntity;
 import io.github.sweetcornna.universe.logistics.StationBlockEntity;
 import io.github.sweetcornna.universe.logistics.StationHandler;
+import io.github.sweetcornna.universe.poi.PoiInteractions;
+import io.github.sweetcornna.universe.portal.Portals;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
 import io.github.sweetcornna.universe.registry.UniverseDataComponents;
+import io.github.sweetcornna.universe.registry.UniverseEntities;
 import io.github.sweetcornna.universe.registry.UniverseItems;
+import io.github.sweetcornna.universe.world.planet.Planets;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
@@ -39,13 +78,17 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.gametest.framework.TestData;
 import net.minecraft.gametest.framework.TestEnvironmentDefinition;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.Tag;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.neoforged.bus.api.IEventBus;
@@ -66,6 +109,10 @@ import net.neoforged.neoforge.transfer.transaction.Transaction;
 public final class UniverseGameTests {
     private static final DeferredRegister<Consumer<GameTestHelper>> FUNCTIONS = DeferredRegister.create(Registries.TEST_FUNCTION, Universe.MOD_ID);
     private static final Identifier PLATFORM = Universe.id("gametest/platform");
+    /** 17×8×17、石头地面的大场地，放整艘设计出来的船（ADR-0024）。 */
+    private static final Identifier HANGAR = Universe.id("gametest/hangar");
+    /** 13×12×11 的石台，放得下一整座先驱者传送门。 */
+    private static final Identifier PORTAL = Universe.id("gametest/portal");
     private static final String GEAR_RECIPE = "universe:assembling/gear";
     private static final String LAB_TECH = "fluid_storage";
     // 字段按顺序初始化：这几个要排在 FUNCTIONS 后面
@@ -90,6 +137,20 @@ public final class UniverseGameTests {
             UniverseGameTests::stationKeepsPoints);
     private static final ResourceKey<Consumer<GameTestHelper>> DISTRIBUTORS_SHARE_ITEMS = function("distributors_share_items",
             UniverseGameTests::distributorsShareItems);
+    private static final ResourceKey<Consumer<GameTestHelper>> HELM_TECH_TUNES_SHIP = function("helm_tech_tunes_ship",
+            UniverseGameTests::helmTechTunesShip);
+    private static final ResourceKey<Consumer<GameTestHelper>> LANDING_PAD_REFUELS_SHIP = function("landing_pad_refuels_ship",
+            UniverseGameTests::landingPadRefuelsShip);
+    private static final ResourceKey<Consumer<GameTestHelper>> FLEET_SAVE_ROUND_TRIP = function("fleet_save_round_trip",
+            UniverseGameTests::fleetSaveRoundTrip);
+    private static final ResourceKey<Consumer<GameTestHelper>> FLEET_VOYAGE_CLAIM = function("fleet_voyage_claim",
+            UniverseGameTests::fleetVoyageClaim);
+    private static final ResourceKey<Consumer<GameTestHelper>> DEALER_SHIPS_ASSEMBLE = function("dealer_ships_assemble",
+            UniverseGameTests::dealerShipsAssemble);
+    private static final ResourceKey<Consumer<GameTestHelper>> CRASHED_SHIP_REPAIRS = function("crashed_ship_repairs",
+            UniverseGameTests::crashedShipRepairs);
+    private static final ResourceKey<Consumer<GameTestHelper>> PORTAL_DIALS_AND_CLOSES = function("portal_dials_and_closes",
+            UniverseGameTests::portalDialsAndCloses);
 
     private UniverseGameTests() {
     }
@@ -120,11 +181,23 @@ public final class UniverseGameTests {
         test(event, environment, GEOTHERMAL_NEEDS_LAVA, 60);
         test(event, environment, STATION_KEEPS_POINTS, 40);
         test(event, environment, DISTRIBUTORS_SHARE_ITEMS, 200);
+        test(event, environment, HELM_TECH_TUNES_SHIP, 40);
+        test(event, environment, LANDING_PAD_REFUELS_SHIP, 300);
+        test(event, environment, DEALER_SHIPS_ASSEMBLE, HANGAR, 40);
+        test(event, environment, CRASHED_SHIP_REPAIRS, HANGAR, 40);
+        test(event, environment, PORTAL_DIALS_AND_CLOSES, PORTAL, 20);
+        test(event, environment, FLEET_SAVE_ROUND_TRIP, 20);
+        test(event, environment, FLEET_VOYAGE_CLAIM, 20);
     }
 
     private static void test(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition<?>> environment, ResourceKey<Consumer<GameTestHelper>> function,
             int maxTicks) {
-        event.registerTest(function.identifier(), new FunctionGameTestInstance(function, new TestData<>(environment, PLATFORM, maxTicks, 0, true)));
+        test(event, environment, function, PLATFORM, maxTicks);
+    }
+
+    private static void test(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition<?>> environment, ResourceKey<Consumer<GameTestHelper>> function,
+            Identifier structure, int maxTicks) {
+        event.registerTest(function.identifier(), new FunctionGameTestInstance(function, new TestData<>(environment, structure, maxTicks, 0, true)));
     }
 
     // ---- 测试
@@ -344,6 +417,261 @@ public final class UniverseGameTests {
         settings.putString("Peer", peer.name());
         distributor.applyBlueprintSettings(settings);
         distributor.setItem(DistributorBlockEntity.BOT_SLOT, new ItemStack(UniverseItems.LOGISTICS_BOT.get(), 2));
+    }
+
+    /**
+     * 驾驶台里的船体加固模块和镉驱动（ADR-0024）跟着船走：组装出来的船记了主人，船体比只按部件算的高，驱动是镉驱动；
+     * 停船以后主力船记成"停了"，模块和驱动还在驾驶台里。
+     */
+    private static void helmTechTunesShip(GameTestHelper helper) {
+        BlockPos helm = smallShip(helper, 1);
+        HelmBlockEntity tech = helper.getBlockEntity(helm, HelmBlockEntity.class);
+        ItemStack module = new ItemStack(UniverseItems.MODULES.get(ModuleType.HULL_REINFORCEMENT).get());
+        module.set(UniverseDataComponents.TECH_MODULE.get(), TechModule.typical(ModuleType.HULL_REINFORCEMENT, Grade.A));
+        tech.items().set(0, module);
+        tech.items().set(1, new ItemStack(UniverseItems.DRIVES.get(DriveTier.CADMIUM).get()));
+        tech.setChanged();
+        UUID owner = UUID.randomUUID();
+        ShipEntity ship = ShipAssembly.assemble(helper.getLevel(), helper.absolutePos(helm), owner, message -> {
+        });
+        helper.assertTrue(ship != null && ship.structure() != null, "没有组装出飞船");
+        helper.assertValueEqual(ship.structure().rating().type(), ShipType.SHUTTLE, "类型");
+        helper.assertValueEqual(ship.structure().tech().modules().size(), 1, "生效的模块数");
+        helper.assertValueEqual(ship.structure().stats().drive(), DriveTier.CADMIUM, "驱动");
+        helper.assertTrue(ship.structure().stats().hull() > ship.structure().baseStats().hull() + 1, "船体没有加上去");
+        helper.assertValueEqual(ship.owner(), owner, "主人");
+        ShipOwners owners = ShipOwners.get(helper.getLevel().getServer());
+        owners.piloted(owner, ship);
+        helper.assertTrue(ShipAssembly.disassemble(ship), "停不了船");
+        helper.assertTrue(owners.main(owner).orElseThrow().parked(), "停船没记下来");
+        HelmBlockEntity back = helper.getBlockEntity(helm, HelmBlockEntity.class);
+        helper.assertTrue(back.items().get(0).is(UniverseItems.MODULES.get(ModuleType.HULL_REINFORCEMENT).get()), "模块没放回驾驶台");
+        helper.assertTrue(back.items().get(1).is(UniverseItems.DRIVES.get(DriveTier.CADMIUM).get()), "驱动没放回驾驶台");
+        helper.succeed();
+    }
+
+    /** 着陆台接上电，给停在上面、燃料舱空着的船加燃料（ADR-0024）。 */
+    private static void landingPadRefuelsShip(GameTestHelper helper) {
+        powerPlant(helper);
+        BlockPos pad = new BlockPos(3, 1, 3);
+        helper.setBlock(pad, UniverseBlocks.LANDING_PAD.get());
+        BlockPos helm = smallShip(helper, 2);
+        ShipEntity ship = ShipAssembly.assemble(helper.getLevel(), helper.absolutePos(helm), null, message -> {
+        });
+        helper.assertTrue(ship != null, "没有组装出飞船");
+        helper.assertValueEqual(ship.fuelServer(), 0.0, "燃料舱一开始是空的");
+        helper.succeedWhen(() -> {
+            helper.assertTrue(helper.getBlockEntity(pad, LandingPadBlockEntity.class).shipAbove() == ship, "着陆台上没找到船");
+            helper.assertTrue(ship.fuelServer() > 20, "燃料没加上去：" + ship.fuelServer());
+            ship.discard();
+        });
+    }
+
+    /**
+     * 飞船交易终端卖的四种船（ADR-0024）放成方块、装上自带的模块、组装起来：方块一个不多一个不少（石头地面没带上），
+     * 类型和档次跟设计时一样，自带模块都生效，1 g 下推重比够。
+     */
+    private static void dealerShipsAssemble(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        Set<ShipType> seen = EnumSet.noneOf(ShipType.class);
+        for (long day = 0; day < 40 && seen.size() < ShipType.values().length; day++) {
+            for (ShipMarket.Offer offer : ShipMarket.ships(11, Economy.Wealth.WEALTHY, day)) {
+                if (!seen.add(offer.type())) {
+                    continue;
+                }
+                ShipDesign design = offer.design();
+                Map<BlockPos, BlockState> layout = ShipBlueprints.layout(design, helper.absolutePos(new BlockPos(8, 1, 8)), Direction.EAST);
+                BlockPos helm = null;
+                for (Map.Entry<BlockPos, BlockState> entry : layout.entrySet()) {
+                    level.setBlock(entry.getKey(), entry.getValue(), 3);
+                    if (entry.getValue().is(UniverseBlocks.SHIP_HELM.get())) {
+                        helm = entry.getKey();
+                    }
+                }
+                helper.assertTrue(helm != null, offer.type() + " 没有驾驶台");
+                HelmBlockEntity tech = (HelmBlockEntity) level.getBlockEntity(helm);
+                List<TechModule> modules = offer.modules();
+                for (int i = 0; i < modules.size(); i++) {
+                    ItemStack stack = new ItemStack(UniverseItems.MODULES.get(modules.get(i).type()).get());
+                    stack.set(UniverseDataComponents.TECH_MODULE.get(), modules.get(i));
+                    tech.items().set(i, stack);
+                }
+                tech.setChanged();
+                ShipEntity ship = ShipAssembly.assemble(level, helm, null, message -> {
+                });
+                helper.assertTrue(ship != null && ship.structure() != null, offer.type() + " 组装不起来");
+                helper.assertValueEqual(ship.structure().blocks().size(), design.cells().size(), offer.type() + " 的方块数");
+                helper.assertValueEqual(ship.structure().rating().type(), design.rating().type(), offer.type() + " 的类型");
+                helper.assertValueEqual(ship.structure().rating().grade(), design.rating().grade(), offer.type() + " 的档次");
+                helper.assertValueEqual(ship.structure().tech().modules().size(), modules.size(), offer.type() + " 生效的模块");
+                helper.assertTrue(ship.structure().stats().thrustToWeight(1) >= ShipDesigner.MIN_TWR, offer.type() + " 推重比不够");
+                ship.discard();
+            }
+        }
+        helper.assertValueEqual(seen.size(), ShipType.values().length, "四种船没凑齐");
+        helper.succeed();
+    }
+
+    /** 舰队的存档（ADR-0024）：货船、护卫舰（受损的也记着）、在外面的远征、接过的任务，存了再读回来一样。 */
+    private static void fleetSaveRoundTrip(GameTestHelper helper) {
+        FleetData data = FleetData.CODEC.parse(NbtOps.INSTANCE, new CompoundTag()).getOrThrow();
+        UUID owner = UUID.randomUUID();
+        Fleet fleet = data.entry(owner).fleet();
+        fleet.setFreighter(new Fleet.Freighter(data.takeFreighterId(), 99, Grade.A));
+        Rng rng = Rng.of(1);
+        for (int i = 0; i < 3; i++) {
+            fleet.hire(Frigate.roll(i, rng));
+        }
+        fleet.frigate(1).setDamaged(true);
+        Fleet.Voyage voyage = fleet.launch(5, 1, new Expedition.Offer(Expedition.Kind.TRADE, 2, 16), List.of(0, 2), 1234, Rng.of(2));
+        Tag tag = FleetData.CODEC.encodeStart(NbtOps.INSTANCE, data).getOrThrow();
+        FleetData back = FleetData.CODEC.parse(NbtOps.INSTANCE, tag).getOrThrow();
+        Fleet read = back.find(owner).orElseThrow().fleet();
+        helper.assertValueEqual(read.freighter(), fleet.freighter(), "货船");
+        helper.assertValueEqual(read.frigates().size(), 3, "护卫舰数");
+        helper.assertTrue(read.frigate(1).damaged(), "受损没记住");
+        for (Frigate frigate : fleet.frigates()) {
+            Frigate other = read.frigate(frigate.id());
+            helper.assertTrue(other != null && other.total() == frigate.total() && other.traits().equals(frigate.traits())
+                    && other.designation().equals(frigate.designation()), frigate.designation() + " 读回来不一样");
+        }
+        helper.assertValueEqual(read.voyages(), List.of(voyage), "远征");
+        helper.assertTrue(read.taken(5, 1), "接过的任务");
+        helper.assertValueEqual(read.nextFrigate(), 3, "下一个编号");
+        helper.succeed();
+    }
+
+    /**
+     * 远征回来（ADR-0024）：五艘强的打一星任务全胜，领了以后远征没了、护卫舰都出勤一次；各种任务、各个难度带回来的
+     * 物品 ID 都认得出来（一样不丢），技术模块是飞船模块。
+     */
+    private static void fleetVoyageClaim(GameTestHelper helper) {
+        Fleet fleet = new Fleet();
+        fleet.setFreighter(new Fleet.Freighter(0, 7, Grade.C));
+        List<Integer> team = new ArrayList<>();
+        for (int i = 0; i < Expedition.MAX_TEAM; i++) {
+            team.add(fleet.hire(new Frigate(0, "GT-10" + i, FrigateType.SUPPORT, new int[] {30, 30, 30, 30}, List.of(), 2, 0, false)).id());
+        }
+        Fleet.Voyage voyage = fleet.launch(0, 0, new Expedition.Offer(Expedition.Kind.INDUSTRIAL, 1, 10), team, 0, Rng.of(3));
+        Fleet.Claim claim = fleet.claim(voyage);
+        helper.assertTrue(fleet.voyages().isEmpty(), "远征还在");
+        helper.assertTrue(voyage.events().stream().allMatch(Expedition.Event::success), "五艘强的没全胜");
+        for (Frigate frigate : fleet.frigates()) {
+            helper.assertValueEqual(frigate.expeditions(), 1, frigate.designation() + " 的出勤次数");
+        }
+        FleetTerminal.Haul haul = FleetTerminal.haul(voyage, claim.rewards());
+        helper.assertTrue(haul.credits() >= 500, "全胜的信用点没给");
+        // 各种任务、各个难度：每一样奖励都换得成东西
+        for (Expedition.Kind kind : Expedition.Kind.values()) {
+            for (int difficulty = 1; difficulty <= 5; difficulty++) {
+                for (long seed = 0; seed < 8; seed++) {
+                    Expedition.Offer offer = new Expedition.Offer(kind, difficulty, 10);
+                    Rng rng = Rng.of(seed);
+                    List<Expedition.Event> events = new ArrayList<>();
+                    for (int i = 0; i < 2 + difficulty; i++) {
+                        events.add(new Expedition.Event(rng.pick(io.github.sweetcornna.universe.core.fleet.Area.values()), true, -1,
+                                Expedition.Outcome.NONE));
+                    }
+                    Fleet.Voyage trip = new Fleet.Voyage(0, 0, offer, team, 0, events, seed);
+                    List<Expedition.Reward> rewards = Expedition.rewards(offer, events, rng);
+                    int expected = rewards.stream().filter(r -> !r.key().equals(Expedition.CREDITS) && !r.key().equals(Expedition.GLYPH))
+                            .mapToInt(Expedition.Reward::count).sum();
+                    FleetTerminal.Haul got = FleetTerminal.haul(trip, rewards);
+                    helper.assertValueEqual(got.count(), expected, kind + " " + difficulty + "★ 的奖励丢了东西");
+                    for (ItemStack stack : got.items()) {
+                        TechModule module = stack.get(UniverseDataComponents.TECH_MODULE.get());
+                        helper.assertTrue(module == null || module.type().host() == io.github.sweetcornna.universe.core.tech.ModuleHost.SHIP,
+                                "远征给了不是飞船的模块");
+                    }
+                }
+            }
+        }
+        helper.succeed();
+    }
+
+    /** 坠毁的飞船（ADR-0024）：损坏的驾驶台组装不了；修好以后整艘船组装起来，1 g 下飞得起来。 */
+    private static void crashedShipRepairs(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        long seed = 77;
+        ShipDesign design = CrashedShip.design(seed);
+        List<ShipDesign.Cell> wreck = CrashedShip.wreck(design, seed);
+        ShipDesign broken = new ShipDesign(design.type(), design.grade(), design.primary(), design.accent(), wreck);
+        BlockPos helm = null;
+        for (Map.Entry<BlockPos, BlockState> entry : ShipBlueprints.layout(broken, helper.absolutePos(new BlockPos(8, 1, 8)), Direction.NORTH)
+                .entrySet()) {
+            BlockState state = entry.getValue();
+            if (state.is(UniverseBlocks.SHIP_HELM.get())) {
+                helm = entry.getKey();
+                state = UniverseBlocks.DAMAGED_HELM.get().defaultBlockState()
+                        .setValue(HorizontalDirectionalBlock.FACING, state.getValue(HorizontalDirectionalBlock.FACING));
+            }
+            level.setBlock(entry.getKey(), state, 3);
+        }
+        helper.assertTrue(helm != null, "没有驾驶台");
+        helper.assertTrue(level.getBlockState(helm).is(UniverseBlocks.DAMAGED_HELM.get()), "驾驶台没坏");
+        PoiInteractions.fixHelm(level, helm, level.getBlockState(helm));
+        helper.assertTrue(level.getBlockState(helm).is(UniverseBlocks.SHIP_HELM.get()), "没修好");
+        ShipEntity ship = ShipAssembly.assemble(level, helm, null, message -> {
+        });
+        helper.assertTrue(ship != null && ship.structure() != null, "修好的船组装不起来");
+        helper.assertValueEqual(ship.structure().blocks().size(), wreck.size(), "方块数");
+        helper.assertTrue(ship.structure().stats().canLift(1), "飞不起来");
+        ship.discard();
+        helper.succeed();
+    }
+
+    /** 先驱者传送门（ADR-0024）：石环上刻着这颗星球的地址；拨自己、拨错的地址都不开；拨别的星球开门，环里填满光，关门撤掉。 */
+    private static void portalDialsAndCloses(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        MinecraftServer server = level.getServer();
+        BodyId home = Planets.bodyId(level.dimension()).orElseThrow();
+        int[] own = Portals.address(server, home);
+        Portals.Site site = new Portals.Site(helper.absolutePos(new BlockPos(6, 1, 5)), Direction.SOUTH);
+        Portals.build(level, site, own);
+        for (PortalLayout.Cell cell : PortalLayout.cells()) {
+            BlockState state = level.getBlockState(site.at(cell.x(), cell.y(), cell.z()));
+            switch (cell.part()) {
+                case STONE -> helper.assertTrue(state.is(UniverseBlocks.PORTAL_STONE.get()), "石环和石台");
+                case GLYPH -> helper.assertValueEqual(state.getValue(PortalGlyphBlock.GLYPH), own[cell.glyph()], "第 " + (cell.glyph() + 1) + " 个符文");
+                case DIAL -> helper.assertTrue(state.is(UniverseBlocks.PORTAL_DIAL.get()), "拨号台");
+                case FIELD -> helper.assertTrue(state.isAir(), "门关着，环里该是空的");
+            }
+        }
+        helper.assertTrue(Portals.dial(level, site, own) != null, "拨自己不该开门");
+        // 改一个符文，挑一个校验对不上的
+        int[] wrong = own.clone();
+        do {
+            wrong[PortalAddress.LENGTH - 1] = (wrong[PortalAddress.LENGTH - 1] + 1) % PortalAddress.GLYPHS;
+        } while (PortalAddress.decode(Planets.galaxy(server).seed(), wrong).isPresent());
+        helper.assertTrue(Portals.dial(level, site, wrong) != null, "拨错的地址不该开门");
+        BodyId target = null;
+        for (StarSystem system : Planets.galaxy(server).systems()) {
+            for (Planet planet : system.planets()) {
+                if (target == null && planet.landable() && !planet.id().equals(home)) {
+                    target = planet.id();
+                }
+            }
+        }
+        helper.assertTrue(target != null, "星团里没有别的能着陆的星球");
+        helper.assertTrue(Portals.dial(level, site, Portals.address(server, target)) == null, "拨别的星球该开门");
+        for (int[] c : PortalLayout.field()) {
+            helper.assertTrue(level.getBlockState(site.at(c[0], c[1], c[2])).is(UniverseBlocks.PORTAL_FIELD.get()), "门开了，环里该有光");
+        }
+        Portals.close(level, site);
+        for (int[] c : PortalLayout.field()) {
+            helper.assertTrue(level.getBlockState(site.at(c[0], c[1], c[2])).isAir(), "门关了，光该撤掉");
+        }
+        helper.succeed();
+    }
+
+    /** 一艘最小的船：驾驶台在 (3, y, 3) 朝北，东西两边各一个推进器，后面一个燃料舱。返回驾驶台的位置。 */
+    private static BlockPos smallShip(GameTestHelper helper, int y) {
+        BlockPos helm = new BlockPos(3, y, 3);
+        helper.setBlock(helm, UniverseBlocks.SHIP_HELM.get());
+        helper.setBlock(new BlockPos(2, y, 3), UniverseBlocks.SHIP_THRUSTER.get());
+        helper.setBlock(new BlockPos(4, y, 3), UniverseBlocks.SHIP_THRUSTER.get());
+        helper.setBlock(new BlockPos(3, y, 4), UniverseBlocks.FUEL_TANK.get());
+        return helm;
     }
 
     /** 场地西北角一座感应塔，东北角一台装了燃料棒的人造恒星，中间的设备都在塔的覆盖范围里。 */

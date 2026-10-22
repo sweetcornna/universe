@@ -5,11 +5,15 @@ import java.util.List;
 
 import io.github.sweetcornna.universe.advancement.MilestoneTrigger;
 import io.github.sweetcornna.universe.block.poi.DropPodBlock;
+import io.github.sweetcornna.universe.core.procgen.Rng;
 import io.github.sweetcornna.universe.core.research.Tech;
+import io.github.sweetcornna.universe.core.ship.CrashedShip;
 import io.github.sweetcornna.universe.core.story.Milestone;
 import io.github.sweetcornna.universe.core.tech.SuitSlots;
 import io.github.sweetcornna.universe.network.PoiTextPayload;
+import io.github.sweetcornna.universe.portal.PortalGlyphs;
 import io.github.sweetcornna.universe.registry.UniverseAttachments;
+import io.github.sweetcornna.universe.registry.UniverseBlocks;
 import io.github.sweetcornna.universe.registry.UniverseItems;
 import io.github.sweetcornna.universe.story.Story;
 import io.github.sweetcornna.universe.tech.ExosuitData;
@@ -27,6 +31,7 @@ import net.minecraft.util.Prediction;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.neoforge.network.PacketDistributor;
 
@@ -81,6 +86,35 @@ public final class PoiInteractions {
                 data.techSlots(), SuitSlots.TECH_MAX, data.cargoSlots(), SuitSlots.CARGO_MAX));
     }
 
+    /** 用材料修坠毁飞船上损坏的驾驶台（ADR-0024）：变回普通驾驶台，朝向不变，组装起来就能飞。 */
+    public static void repairHelm(ServerPlayer player, ServerLevel level, BlockPos pos, BlockState state) {
+        List<Tech.ItemCost> cost = CrashedShip.REPAIR;
+        Inventory inventory = player.getInventory();
+        if (!player.isCreative()) {
+            for (Tech.ItemCost c : cost) {
+                if (count(inventory, item(c)) < c.count()) {
+                    player.sendOverlayMessage(Component.translatable("message.universe.damaged_helm.needs", list(cost)));
+                    level.playSound(null, pos, SoundEvents.CHAIN_HIT, SoundSource.BLOCKS, 0.8F, 0.7F);
+                    return;
+                }
+            }
+            for (Tech.ItemCost c : cost) {
+                take(inventory, item(c), c.count());
+            }
+        }
+        fixHelm(level, pos, state);
+        level.playSound(null, pos, SoundEvents.ANVIL_USE, SoundSource.BLOCKS, 0.6F, 1.3F);
+        level.playSound(null, pos, SoundEvents.BEACON_ACTIVATE, SoundSource.BLOCKS, 0.7F, 1.5F);
+        level.sendParticles(ParticleTypes.HAPPY_VILLAGER, pos.getX() + 0.5, pos.getY() + 0.8, pos.getZ() + 0.5, 16, 0.5, 0.4, 0.5, 0);
+        player.sendOverlayMessage(Component.translatable("message.universe.damaged_helm.repaired"));
+    }
+
+    /** 损坏的驾驶台换成普通驾驶台，朝向不变（材料由调用方收）。 */
+    public static void fixHelm(ServerLevel level, BlockPos pos, BlockState state) {
+        level.setBlock(pos, UniverseBlocks.SHIP_HELM.get().defaultBlockState()
+                .setValue(HorizontalDirectionalBlock.FACING, state.getValue(HorizontalDirectionalBlock.FACING)), 3);
+    }
+
     /** 读数据终端：打开日志；每个玩家第一次读一台终端给一份导航数据。 */
     public static void readTerminal(ServerPlayer player, ServerLevel level, BlockPos pos) {
         long key = Pois.claimKey(level, pos);
@@ -105,6 +139,8 @@ public final class PoiInteractions {
         int lore = answered ? progress.nextResponse(RESPONSE_COUNT) : progress.monolithLore(key, LORE_COUNT);
         if (first) {
             give(player, new ItemStack(UniverseItems.SURVEY_DATA.get(), MONOLITH_SURVEY_DATA));
+            // 第一次碰的巨石教一个没学过的传送门符文（ADR-0024）
+            PortalGlyphs.learn(player, Rng.of(key ^ player.getUUID().getMostSignificantBits()));
             level.playSound(null, pos, SoundEvents.AMETHYST_BLOCK_RESONATE, SoundSource.BLOCKS, 1.0F, 0.6F);
             level.sendParticles(ParticleTypes.ENCHANT, pos.getX() + 0.5, pos.getY() + 1.2, pos.getZ() + 0.5, 60, 0.6, 0.8, 0.6, 0.6);
         } else {

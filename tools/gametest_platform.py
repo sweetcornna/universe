@@ -1,7 +1,10 @@
-"""生成游戏内测试（GameTest）用的场地结构：7×4×7，底层一层平滑石，其余是空气。
+"""生成游戏内测试（GameTest）用的场地结构：底层一层石台，其余是空气。
 
-用法：python tools/gametest_platform.py [输出文件] [数据版本]
-默认输出 src/main/resources/data/universe/structure/gametest/platform.nbt，数据版本 5023（26.3）。
+用法：python tools/gametest_platform.py [场地] [数据版本]
+场地有三种，默认 platform；数据版本默认 5023（26.3）。输出到 src/main/resources/data/universe/structure/gametest/<场地>.nbt。
+- platform：7×4×7，平滑石地面，测设备。
+- hangar：17×8×17，石头地面（石头不会被组装进飞船，ADR-0024），测整艘设计出来的船。
+- portal：13×12×11，石头地面，放得下一整座先驱者传送门（ADR-0024）。
 """
 import gzip
 import os
@@ -39,9 +42,17 @@ def int_list(values):
     return list_payload(INT, [int_payload(v) for v in values])
 
 
+SITES = {
+    "platform": ((7, 4, 7), "minecraft:smooth_stone"),
+    "hangar": ((17, 8, 17), "minecraft:stone"),
+    "portal": ((13, 12, 11), "minecraft:stone"),
+}
+site = sys.argv[1] if len(sys.argv) > 1 else "platform"
+(sx, sy, sz), floor = SITES[site]
+
 blocks = []
-for x in range(7):
-    for z in range(7):
+for x in range(sx):
+    for z in range(sz):
         blocks.append(compound_payload([
             (LIST, "pos", int_list([x, 0, z])),
             (INT, "state", int_payload(0)),
@@ -49,14 +60,14 @@ for x in range(7):
 
 root = compound_payload([
     (INT, "DataVersion", int_payload((int(sys.argv[2]) if len(sys.argv) > 2 else 5023))),
-    (LIST, "size", int_list([7, 4, 7])),
-    (LIST, "palette", list_payload(COMPOUND, [compound_payload([(STRING, "Name", string_payload("minecraft:smooth_stone"))])])),
+    (LIST, "size", int_list([sx, sy, sz])),
+    (LIST, "palette", list_payload(COMPOUND, [compound_payload([(STRING, "Name", string_payload(floor))])])),
     (LIST, "blocks", list_payload(COMPOUND, blocks)),
     (LIST, "entities", list_payload(COMPOUND, [])),
 ])
 data = struct.pack(">b", COMPOUND) + name("") + root
 
-out = sys.argv[1] if len(sys.argv) > 1 else os.path.join(os.path.dirname(__file__), "..", "src", "main", "resources", "data", "universe", "structure", "gametest", "platform.nbt")
+out = os.path.join(os.path.dirname(__file__), "..", "src", "main", "resources", "data", "universe", "structure", "gametest", site + ".nbt")
 os.makedirs(os.path.dirname(out), exist_ok=True)
 with open(out, "wb") as f:
     f.write(gzip.compress(data, mtime=0))

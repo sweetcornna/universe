@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column",
+  "textures": {
+    "end": "universe:block/portal_dial_top",
+    "side": "universe:block/portal_dial_side"
+  }
+}

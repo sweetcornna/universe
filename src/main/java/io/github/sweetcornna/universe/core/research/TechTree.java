@@ -59,7 +59,10 @@ public final class TechTree {
             Tech.handIn("tech_modules", List.of("electromagnetic_matrix"), List.of(cost("survey_data", 6), cost("circuit_board", 10)),
                     items("module_life_support", "module_cold_lining", "module_heat_lining", "module_toxin_filter",
                             "module_radiation_shield", "module_jet_booster", "module_servo", "module_shield", "module_beam_focus",
-                            "module_heat_sink", "module_scanner_array", "module_analyzer", "module_weapon_calibrator")),
+                            "module_heat_sink", "module_scanner_array", "module_analyzer", "module_weapon_calibrator",
+                            // 飞船模块（ADR-0024）
+                            "module_thrust_efficiency", "module_pulse_tuning", "module_hyperdrive_booster", "module_deflector",
+                            "module_hull_reinforcement", "module_fire_control")),
             Tech.lab("fluid_storage", List.of("electromagnetic_matrix"), List.of(BLUE), 20, items("water_pump")),
             Tech.lab("electromagnetic_drive", List.of("electromagnetic_matrix"), List.of(BLUE), 20, items("electric_motor")),
             Tech.lab("thermal_power", List.of("electromagnetic_matrix"), List.of(BLUE), 20, items("thermal_plant", "combustible_unit")),
@@ -166,6 +169,14 @@ public final class TechTree {
             Tech.lab("exocraft", List.of("energy_storage", "processor"), List.of(BLUE, RED), 60, items("exocraft")),
             // ---- M7：传送网络（ADR-0017）。基地信标不用研究
             Tech.lab("teleport_network", List.of("warp_drive"), List.of(BLUE, RED), 100, items("teleporter")),
+            // ---- M13：飞船与航行（ADR-0024）。着陆台电磁学阶段就能研究；三档驱动接在跃迁引擎后面，一档比一档要的矩阵多
+            Tech.handIn("landing_pad", List.of("electromagnetism"), List.of(cost("magnetic_coil", 8), cost("minecraft:iron_ingot", 16)),
+                    items("landing_pad")),
+            Tech.lab("cadmium_drive", List.of("warp_drive", "structure_matrix"), List.of(BLUE, RED, YELLOW), 160, items("cadmium_drive")),
+            Tech.lab("emeril_drive", List.of("cadmium_drive", "information_matrix"), List.of(BLUE, RED, YELLOW, PURPLE), 200,
+                    items("emeril_drive")),
+            Tech.lab("indium_drive", List.of("emeril_drive", "gravity_matrix"), List.of(BLUE, RED, YELLOW, PURPLE, GREEN), 300,
+                    items("indium_drive")),
             // ---- M8：蓝图（ADR-0018），蓝矩阵阶段就能研究
             Tech.lab("blueprint", List.of("basic_assembling", "electromagnetic_drive"), List.of(BLUE), 30, items("blueprint")),
             // ---- M8：终局（ADR-0018）

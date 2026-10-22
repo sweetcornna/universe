@@ -1,0 +1,18 @@
+{
+  "type": "universe:research_shaped",
+  "key": {
+    "C": "universe:casimir_crystal",
+    "D": "universe:cadmium_drive",
+    "G": "universe:titanium_glass",
+    "P": "universe:particle_broadband"
+  },
+  "pattern": [
+    "GCG",
+    "PDP",
+    "GCG"
+  ],
+  "research": "emeril_drive",
+  "result": {
+    "id": "universe:emeril_drive"
+  }
+}

@@ -21,6 +21,7 @@ import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.client.ClientGalaxy;
 import io.github.sweetcornna.universe.client.UniverseKeys;
 import io.github.sweetcornna.universe.client.discovery.ClientDiscoveries;
+import io.github.sweetcornna.universe.client.portal.PortalDialScreen;
 import io.github.sweetcornna.universe.client.factory.ClientResearch;
 import io.github.sweetcornna.universe.core.discovery.DiscoveryKey;
 import io.github.sweetcornna.universe.core.discovery.DiscoveryLog;
@@ -34,13 +35,16 @@ import io.github.sweetcornna.universe.core.galaxy.Star;
 import io.github.sweetcornna.universe.core.galaxy.StarClass;
 import io.github.sweetcornna.universe.core.galaxy.StarMapCamera;
 import io.github.sweetcornna.universe.core.galaxy.StarSystem;
+import io.github.sweetcornna.universe.core.portal.PortalAddress;
 import io.github.sweetcornna.universe.core.procgen.Rng;
 import io.github.sweetcornna.universe.core.research.Upgrades;
 import io.github.sweetcornna.universe.core.sky.BodyLook;
+import io.github.sweetcornna.universe.core.space.BlackHoles;
 import io.github.sweetcornna.universe.core.space.SpaceLayout;
 import io.github.sweetcornna.universe.core.space.Warp;
 import io.github.sweetcornna.universe.core.trade.Economy;
 import io.github.sweetcornna.universe.entity.ship.ShipEntity;
+import io.github.sweetcornna.universe.entity.ship.ShipWarp;
 import io.github.sweetcornna.universe.network.WarpRequestPayload;
 import io.github.sweetcornna.universe.registry.UniverseItems;
 import io.github.sweetcornna.universe.world.space.SpaceDimensions;
@@ -99,6 +103,9 @@ public class StarMapScreen extends Screen {
     private int hoveredPlanet = -1;
     /** 面板上的行星要不要列出资源（宇宙探索，ADR-0022）。 */
     private boolean showResources;
+    /** 选中的恒星系里有没有另外放的黑洞（ADR-0024），换了恒星系才重算。 */
+    private int holeSystem = -1;
+    private boolean holeHere;
     /** 缓存：哪个星系离最近的去过的星系多远。 */
     private int nearestFor = -1;
     private double nearestExplored = Double.POSITIVE_INFINITY;
@@ -313,7 +320,8 @@ public class StarMapScreen extends Screen {
             int color = ARGB.color(focused ? 0x90 : 0x40, system.star().color());
             line(graphics, star.x(), star.y(), foot.x(), foot.y(), 0.6F, color);
             boolean reachable = this.current.isPresent() && Warp.inReach(systems.get(this.current.getAsInt()), system, this.warpRange())
-                    && this.warpRange() > 0;
+                    && this.warpRange() > 0 && this.ship != null && this.ship.structure() != null
+                    && ShipWarp.missingDrive(this.ship.structure().stats().drive(), system) == null;
             sprite(graphics, DISC, foot.x(), foot.y(), reachable ? 3.2 : 2.2, reachable ? WARP : color);
         }
     }
@@ -534,6 +542,13 @@ public class StarMapScreen extends Screen {
             };
             y = this.smallText(graphics, line, x, y, width, color) + 3;
         }
+        if (system.index() != this.holeSystem) {
+            this.holeSystem = system.index();
+            this.holeHere = star.starClass() != StarClass.BLACK_HOLE && BlackHoles.in(system).isPresent();
+        }
+        if (this.holeHere) {
+            y = this.smallText(graphics, Component.translatable("gui.universe.star_map.black_hole"), x, y, width, WARN) + 3;
+        }
         y = this.drawStrip(graphics, system, x, y, width, mouseX, mouseY) + 4;
 
         graphics.text(this.font, Component.translatable("gui.universe.star_map.planets", system.planets().size()), x, y, TEXT, false);
@@ -603,6 +618,10 @@ public class StarMapScreen extends Screen {
         if (!Warp.inReach(from, target, range)) {
             return Component.translatable("message.universe.warp.out_of_range", GalaxyText.number(from.distanceTo(target), 1),
                     (int) range);
+        }
+        Component drive = ShipWarp.missingDrive(this.ship.structure().stats().drive(), target);
+        if (drive != null) {
+            return drive;
         }
         switch (Warp.check(this.currentBodies, this.ship.getX(), this.ship.getY(), this.ship.getZ())) {
             case NEAR_STAR -> {
@@ -730,6 +749,17 @@ public class StarMapScreen extends Screen {
             y = this.smallText(graphics, Component.translatable("gui.universe.star_map.sentinels",
                     GalaxyText.pick(sentinels.nameZh(), sentinels.nameEn())), x + 9, y, width - 9,
                     sentinels.ordinal() >= SentinelLevel.NORMAL.ordinal() ? WARN : DIM);
+        }
+        if (planet.landable() && ClientDiscoveries.known(DiscoveryKey.body(planet.id()))) {
+            // 发现过的星球：先驱者传送门的地址（ADR-0024）
+            Component label = Component.translatable("gui.universe.star_map.portal");
+            int next = this.smallText(graphics, label, x + 9, y, width - 9, DIM);
+            int glyphX = x + 9 + (int) Math.ceil(this.font.width(label) * 0.75F) + 3;
+            int[] glyphs = new PortalAddress(planet.id().system(), planet.id().planet(), planet.id().moon()).glyphs(this.galaxy.seed());
+            for (int i = 0; i < glyphs.length; i++) {
+                PortalDialScreen.glyph(graphics, glyphs[i], glyphX + i * 9, y - 1, 8, 0xFFC9A8FF);
+            }
+            y = Math.max(next, y + 8);
         }
         return y + 1;
     }

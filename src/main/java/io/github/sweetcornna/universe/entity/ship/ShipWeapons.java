@@ -211,7 +211,9 @@ public final class ShipWeapons {
                     ship.nextCannon(cannons.length);
                 }
             }
-            PlasmaBolt bolt = PlasmaBolt.shoot(level, pilot, muzzle, direction, ShipCombat.CANNON_DAMAGE, BOLT_COLOR, ShipCombat.BOLT_SPEED,
+            // 火控校准的技术和战斗机的专长（ADR-0024）
+            float damage = (float) (ShipCombat.CANNON_DAMAGE * ship.structure().stats().damage());
+            PlasmaBolt bolt = PlasmaBolt.shoot(level, pilot, muzzle, direction, damage, BOLT_COLOR, ShipCombat.BOLT_SPEED,
                     0.4F, ShipCombat.BOLT_LIFETIME);
             bolt.setDeltaMovement(bolt.getDeltaMovement().add(shipVelocity));
             level.addFreshEntity(bolt);
@@ -292,7 +294,7 @@ public final class ShipWeapons {
         Entity entity = hit.entity();
         if (entity instanceof ShipBeamTarget target) {
             // 几台光束照着同一处，伤害叠加
-            target.beamed(level, ship, pilot, ShipCombat.BEAM_DAMAGE * ship.structure().beams().length);
+            target.beamed(level, ship, pilot, (float) (ShipCombat.BEAM_DAMAGE * ship.structure().beams().length * ship.structure().stats().damage()));
         } else if (entity != null && ship.tickCount % BEAM_HURT_INTERVAL == 0) {
             entity.hurtServer(level, level.damageSources().source(PlasmaBolt.DAMAGE, ship, pilot), BEAM_HURT);
         }

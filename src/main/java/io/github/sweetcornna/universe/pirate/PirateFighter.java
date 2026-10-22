@@ -7,6 +7,8 @@ import org.jspecify.annotations.Nullable;
 import io.github.sweetcornna.universe.core.ship.PirateFlight;
 import io.github.sweetcornna.universe.core.ship.PirateRaid;
 import io.github.sweetcornna.universe.core.ship.ShipCombat;
+import io.github.sweetcornna.universe.core.space.Encounters;
+import io.github.sweetcornna.universe.encounter.SpaceEncounters;
 import io.github.sweetcornna.universe.entity.PlasmaBolt;
 import io.github.sweetcornna.universe.entity.ship.ShipEntity;
 import io.github.sweetcornna.universe.registry.UniverseEntities;
@@ -38,6 +40,9 @@ import net.minecraft.world.phys.Vec3;
  *
  * <p>战机由 {@link Pirates} 按袭击生成，不存档；袭击结束、找不到目标时撤走，飞远了消失。机头朝着速度的方向，
  * 偏航和俯仰由服务端按速度算好同步，客户端按偏航的变化算出转弯时的侧倾。
+ *
+ * <p>遇险信号（ADR-0024）里的海盗由 {@link SpaceEncounters} 生成：先围着遇险的货船打，玩家飞近或者开火才转过来打玩家。
+ * 太空守卫机的拦截机（{@link io.github.sweetcornna.universe.encounter.SentinelInterceptor}）是它的子类，飞法一样。
  */
 public class PirateFighter extends Entity implements Enemy {
     private static final EntityDataAccessor<Float> DATA_HULL = SynchedEntityData.defineId(PirateFighter.class, EntityDataSerializers.FLOAT);
@@ -64,10 +69,16 @@ public class PirateFighter extends Entity implements Enemy {
     private static final ColorParticleOption MUZZLE_FLASH = ColorParticleOption.create(ParticleTypes.FLASH, 0xFFFF6A8A);
     private static final DustParticleOptions ENGINE_DUST = new DustParticleOptions(0xFF5A3A, 0.8F);
 
-    private final ShipCombat combat = new ShipCombat(PirateRaid.FIGHTER_HULL, PirateRaid.FIGHTER_SHIELD);
+    private final double maxHull;
+    private final double maxShield;
+    private final ShipCombat combat;
     private @Nullable PirateFlight flight;
     /** 被袭击的玩家。 */
     private @Nullable UUID targetId;
+    /** 围攻的货船中心和半径（遇险信号）；被惹到以前只打它。 */
+    private @Nullable Vec3 siege;
+    private double siegeClearance;
+    private boolean provoked;
     private int leaveTicks = -1;
     /** 服务端：这一刻速度变了多少（飞船的自动瞄准按它预判转弯）。 */
     private Vec3 acceleration = Vec3.ZERO;
@@ -76,20 +87,40 @@ public class PirateFighter extends Entity implements Enemy {
     public float bankO;
 
     public PirateFighter(EntityType<? extends PirateFighter> type, Level level) {
+        this(type, level, PirateRaid.FIGHTER_HULL, PirateRaid.FIGHTER_SHIELD);
+    }
+
+    protected PirateFighter(EntityType<? extends PirateFighter> type, Level level, double hull, double shield) {
         super(type, level);
+        this.maxHull = hull;
+        this.maxShield = shield;
+        this.combat = new ShipCombat(hull, shield);
         this.noPhysics = false;
     }
 
     /** 服务端：为袭击 {@code targetId} 造一架（第 {@code slot} 架，一共 {@code count} 架）。 */
     static PirateFighter create(ServerLevel level, UUID targetId, int slot, int count, Vec3 pos, Vec3 velocity) {
         PirateFighter fighter = new PirateFighter(UniverseEntities.PIRATE_FIGHTER.get(), level);
-        fighter.targetId = targetId;
-        fighter.flight = new PirateFlight(level.getRandom().nextLong(), slot, count);
-        fighter.setPos(pos);
-        fighter.setDeltaMovement(velocity);
-        fighter.face(velocity);
-        fighter.syncCombat();
+        fighter.launch(targetId, new PirateFlight(level.getRandom().nextLong(), slot, count), pos, velocity);
         return fighter;
+    }
+
+    /** 服务端：遇险信号里围攻货船的一架（ADR-0024）。{@code targetId} 是收到信号的玩家。 */
+    public static PirateFighter raider(ServerLevel level, UUID targetId, int slot, int count, Vec3 pos, Vec3 siege, double clearance) {
+        PirateFighter fighter = create(level, targetId, slot, count, pos, siege.subtract(pos).normalize().scale(PirateFlight.SPEED));
+        fighter.siege = siege;
+        fighter.siegeClearance = clearance;
+        return fighter;
+    }
+
+    /** 放到 {@code pos}，带上飞法和目标。 */
+    protected void launch(UUID targetId, PirateFlight flight, Vec3 pos, Vec3 velocity) {
+        this.targetId = targetId;
+        this.flight = flight;
+        this.setPos(pos);
+        this.setDeltaMovement(velocity);
+        this.face(velocity);
+        this.syncCombat();
     }
 
     @Override
@@ -107,6 +138,19 @@ public class PirateFighter extends Entity implements Enemy {
         return this.entityData.get(DATA_SHIELD);
     }
 
+    public double maxHull() {
+        return this.maxHull;
+    }
+
+    public double maxShield() {
+        return this.maxShield;
+    }
+
+    /** 围攻货船的海盗还没被惹到。 */
+    public boolean besieging() {
+        return this.siege != null && !this.provoked;
+    }
+
     public boolean leaving() {
         return this.entityData.get(DATA_LEAVING);
     }
@@ -116,12 +160,12 @@ public class PirateFighter extends Entity implements Enemy {
         return this.acceleration;
     }
 
-    @Nullable UUID targetId() {
+    public @Nullable UUID targetId() {
         return this.targetId;
     }
 
     /** 袭击结束：撤走，飞一会儿后消失。 */
-    void leave() {
+    public void leave() {
         if (this.leaveTicks < 0) {
             this.leaveTicks = 0;
             this.entityData.set(DATA_LEAVING, true);
@@ -168,6 +212,8 @@ public class PirateFighter extends Entity implements Enemy {
         if (this.isRemoved() || this.leaving() || damage <= 0 || source.getEntity() instanceof PirateFighter) {
             return false;
         }
+        // 围攻货船的海盗挨了打就转过来
+        this.provoked = true;
         ShipCombat.Hit hit = this.combat.damage(damage);
         this.syncCombat();
         if (hit == ShipCombat.Hit.DESTROYED) {
@@ -190,8 +236,23 @@ public class PirateFighter extends Entity implements Enemy {
         level.sendParticles(ParticleTypes.LAVA, c.x, c.y, c.z, 8, 0.4, 0.2, 0.4, 0);
         level.sendParticles(ParticleTypes.ELECTRIC_SPARK, c.x, c.y, c.z, 24, 0.5, 0.3, 0.5, 0.4);
         level.playSound(null, c.x, c.y, c.z, SoundEvents.GENERIC_EXPLODE, SoundSource.HOSTILE, 2.0F, 1.3F);
-        Pirates.onDestroyed(this, level, source);
+        this.destroyed(level, source);
         this.discard();
+    }
+
+    /** 被打下来以后：记战绩、给赏金、掉残骸。 */
+    protected void destroyed(ServerLevel level, DamageSource source) {
+        Pirates.onDestroyed(this, level, source);
+    }
+
+    /** 还属于一场没结束的袭击（不属于的会撤走）。 */
+    protected boolean belongs() {
+        return Pirates.belongs(this) || SpaceEncounters.belongs(this);
+    }
+
+    /** 炮火的颜色。 */
+    protected int boltColor() {
+        return BOLT_COLOR;
     }
 
     @Override
@@ -210,14 +271,14 @@ public class PirateFighter extends Entity implements Enemy {
             return;
         }
         Entity target = this.targetId == null ? null : level.getPlayerByUUID(this.targetId);
-        if (target == null || !target.isAlive() || target.level() != level || this.flight == null || !Pirates.belongs(this)) {
+        if (target == null || !target.isAlive() || target.level() != level || this.flight == null || !this.belongs()) {
             this.leave();
         }
         if (this.flight == null) {
             this.vanish(level);
             return;
         }
-        this.combat.tick(PirateRaid.FIGHTER_SHIELD, false, 0, false);
+        this.combat.tick(this.maxShield, false, 0, false);
         if (this.tickCount % 5 == 0) {
             this.syncCombat();
         }
@@ -228,7 +289,15 @@ public class PirateFighter extends Entity implements Enemy {
         Vec3 targetPos;
         Vec3 targetVel;
         double clearance;
-        if (aim instanceof ShipEntity ship && ship.structure() != null) {
+        if (this.siege != null && !this.provoked && aim != null && aim.distanceToSqr(this) < Encounters.PROVOKE_RANGE * Encounters.PROVOKE_RANGE) {
+            this.provoked = true;
+        }
+        if (this.siege != null && this.besieging() && !this.leaving()) {
+            // 围着遇险的货船打
+            targetPos = this.siege;
+            targetVel = Vec3.ZERO;
+            clearance = this.siegeClearance;
+        } else if (aim instanceof ShipEntity ship && ship.structure() != null) {
             targetPos = ship.position().add(0, ship.structure().shape().height() / 2.0, 0);
             targetVel = ship.getDeltaMovement();
             clearance = ship.structure().shape().radius() + 1;
@@ -243,7 +312,7 @@ public class PirateFighter extends Entity implements Enemy {
             clearance = 0;
         }
         PirateFlight.Step step = this.flight.step(arr(pos), arr(vel), arr(targetPos), arr(targetVel), clearance,
-                this.combat.hull() / PirateRaid.FIGHTER_HULL, this.combat.shield() / PirateRaid.FIGHTER_SHIELD);
+                this.combat.hull() / this.maxHull, this.combat.shield() / this.maxShield);
         Vec3 next = vec(step.velocity());
         this.acceleration = next.subtract(vel);
         this.setDeltaMovement(next);
@@ -258,7 +327,7 @@ public class PirateFighter extends Entity implements Enemy {
             this.setPos(this.getX(), y, this.getZ());
         }
         this.face(this.getDeltaMovement());
-        if (step.fire() && aim != null) {
+        if (step.fire() && (aim != null || this.besieging())) {
             this.fire(level, targetPos, targetVel);
         }
     }
@@ -283,7 +352,7 @@ public class PirateFighter extends Entity implements Enemy {
         Vec3 relative = targetVel.subtract(this.getDeltaMovement());
         Vec3 to = targetPos.subtract(from);
         Vec3 direction = vec(ShipCombat.lead(arr(to), arr(relative), PirateFlight.BOLT_SPEED));
-        PlasmaBolt bolt = PlasmaBolt.shoot(level, this, from, direction, BOLT_DAMAGE, BOLT_COLOR, PirateFlight.BOLT_SPEED, BOLT_SPREAD,
+        PlasmaBolt bolt = PlasmaBolt.shoot(level, this, from, direction, BOLT_DAMAGE, this.boltColor(), PirateFlight.BOLT_SPEED, BOLT_SPREAD,
                 BOLT_LIFETIME);
         bolt.setDeltaMovement(bolt.getDeltaMovement().add(this.getDeltaMovement()));
         level.addFreshEntity(bolt);

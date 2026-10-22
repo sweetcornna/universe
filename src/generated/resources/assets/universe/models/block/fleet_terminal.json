@@ -1,0 +1,9 @@
+{
+  "parent": "minecraft:block/orientable_with_bottom",
+  "textures": {
+    "bottom": "universe:block/fleet_terminal_top",
+    "front": "universe:block/fleet_terminal_front",
+    "side": "universe:block/fleet_terminal_side",
+    "top": "universe:block/fleet_terminal_top"
+  }
+}

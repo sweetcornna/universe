@@ -9,8 +9,10 @@ import org.jspecify.annotations.Nullable;
 
 import io.github.sweetcornna.universe.core.discovery.DiscoveryKey;
 import io.github.sweetcornna.universe.core.galaxy.Galaxy;
+import io.github.sweetcornna.universe.core.galaxy.StarClass;
 import io.github.sweetcornna.universe.core.galaxy.StarSystem;
 import io.github.sweetcornna.universe.core.procgen.NameGenerator.Name;
+import io.github.sweetcornna.universe.core.space.DriveTier;
 import io.github.sweetcornna.universe.core.space.SpaceLayout;
 import io.github.sweetcornna.universe.core.space.Warp;
 import io.github.sweetcornna.universe.discovery.Discoveries;
@@ -84,6 +86,10 @@ public final class ShipWarp {
             return Component.translatable("message.universe.warp.out_of_range",
                     String.format(Locale.ROOT, "%.1f", from.get().distanceTo(to.get())), (int) range);
         }
+        Component drive = missingDrive(ship.structure().stats().drive(), to.get());
+        if (drive != null) {
+            return drive;
+        }
         List<SpaceLayout.Body> bodies = ShipTransit.layout(server, here.getAsInt());
         switch (Warp.check(bodies, ship.getX(), ship.getY(), ship.getZ())) {
             case NEAR_STAR -> {
@@ -101,6 +107,17 @@ public final class ShipWarp {
             return Component.translatable("message.universe.warp.no_warper");
         }
         return null;
+    }
+
+    /** 驱动的档次不够去那颗恒星时说缺哪一档（ADR-0024）；够时返回 null。星图上也用这一句。 */
+    public static @Nullable Component missingDrive(DriveTier drive, StarSystem target) {
+        StarClass star = target.star().starClass();
+        if (drive.reaches(star)) {
+            return null;
+        }
+        return Component.translatable("message.universe.warp.needs_drive",
+                Component.translatable("ship.universe.drive." + DriveTier.required(star).name().toLowerCase(Locale.ROOT)),
+                star.nameZh(), star.nameEn());
     }
 
     /** 充能满了：再查一遍翘曲器，扣掉一个，登记传送。 */

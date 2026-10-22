@@ -178,10 +178,21 @@ vec3 disk(float rd, float phi, float inner, float outer, vec3 hot, vec3 cool, fl
     }
     float t = clamp((rd - inner) / (outer - inner), 0.0, 1.0);
     vec3 color = mix(hot, cool, smoothstep(0.0, 0.8, t));
-    float bright = 1.7 * pow(1.0 - t, 1.6) + 0.1;
+    float bright = 1.3 * pow(1.0 - t, 1.6) + 0.08;
     float omega = 0.5 * pow(max(rd / inner, 1.0), -1.5);
-    float a = phi - spin * time * omega;
-    float streak = fbm(vec3(rd * 3.0 + seed * 13.0, cos(a) * 1.6, sin(a) * 1.6), 3);
+    // 里圈转得快、外圈慢，花纹会越卷越紧，时间一长卷成密密的一圈圈细线（屏幕上是摩尔纹）。真实的盘是湍流，花纹本来也留不久：
+    // 每 24 秒重新开始，两层错开半个周期交替淡入淡出，看不出接缝（ADR-0025）
+    const float PERIOD = 24.0;
+    float t0 = mod(time, PERIOD);
+    float t1 = mod(time + PERIOD * 0.5, PERIOD);
+    float w0 = 1.0 - abs(t0 / PERIOD * 2.0 - 1.0);
+    float a0 = phi - spin * t0 * omega;
+    float a1 = phi - spin * t1 * omega;
+    float s0 = fbm(vec3(rd * 3.0 + seed * 13.0, cos(a0) * 1.6, sin(a0) * 1.6), 3);
+    float s1 = fbm(vec3(rd * 3.0 + seed * 13.0 + 7.3, cos(a1) * 1.6, sin(a1) * 1.6), 3);
+    float streak = mix(s1, s0, w0);
+    // 远处一个像素跨过好几道条纹时淡成平均
+    streak = mix(0.5, streak, clamp(1.0 - fwidth(rd) * 3.0, 0.0, 1.0));
     float fade = smoothstep(inner * 0.85, inner * 1.08, rd) * (1.0 - smoothstep(outer * 0.75, outer * 1.05, rd));
     return color * bright * (0.45 + 1.1 * streak) * fade;
 }
@@ -231,6 +242,8 @@ void blackHole(vec2 p, vec3 cool, vec3 hot, vec4 shape, float spin, float time, 
     color = primary * near + behind * (1.0 - nearOpacity);
     // 盘外一圈淡淡的散射光
     color += cool * 0.06 * exp(-max(rho - 1.0, 0.0) * 0.8) * (1.0 - shadow);
+    // 亮处压一压，免得整片盘糊成白的、看不出条纹；暗处基本不变
+    color = vec3(1.0) - exp(-color * 1.15);
     alpha = max(shadow, nearOpacity * 0.5) * occlusion;
 }
 
@@ -261,25 +274,19 @@ void main() {
         }
     } else {
         bool giant = style == RED_GIANT;
-        // 我的世界的样子：圆盘按像素块画，边缘是一级级的台阶，像原版的太阳贴图；外面的日冕和光晕还是平滑的（ADR-0021）。
-        // 一块三四个像素，取 2 的幂，圆盘至少分成十六块宽
-        float cell = exp2(ceil(log2(max(max(fwidth(p.x), fwidth(p.y)) * 3.5, 1e-5))));
-        cell = min(cell, 0.125);
-        vec2 pq = (floor(p / cell) + 0.5) * cell;
-        float rq = length(pq);
         float edgeRadius = r;
-        float edgeBlock = rq;
         if (giant) {
             // 红巨星的边缘不是正圆，被对流顶得起伏
-            vec2 around = pq / max(rq, 1e-3);
+            vec2 around = p / max(r, 1e-3);
             float wobble = fbm(vec3(around * 2.0 + seed * 9.0, time * 0.01), 3) - 0.5;
             edgeRadius = r / (1.0 + 0.05 * wobble);
-            edgeBlock = rq / (1.0 + 0.05 * wobble);
         }
         // 真空里直接看恒星，圆盘亮得发白，黑子几乎看不出；隔着大气才看得清
         float spotDepth = mix(0.2, 1.0, clamp(scatter * 2.0, 0.0, 1.0));
-        vec3 core = surface(pq, min(edgeBlock, 1.0), tint, first, TextureMat[1].y, spotDepth, seed, time, giant);
-        alpha = step(edgeBlock, 1.0);
+        vec3 core = surface(p, min(edgeRadius, 1.0), tint, first, TextureMat[1].y, spotDepth, seed, time, giant);
+        // 圆盘的边缘按一个像素的宽度抗锯齿（ADR-0025）
+        float aa = max(fwidth(edgeRadius), 1e-4);
+        alpha = 1.0 - smoothstep(1.0 - aa, 1.0 + aa, edgeRadius);
         color = mix(corona(max(edgeRadius, 1.0), extent, scatter, glow, giant), core, alpha);
     }
     if (TextureMat[1].z > 0.0) {

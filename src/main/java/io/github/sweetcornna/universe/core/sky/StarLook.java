@@ -97,13 +97,8 @@ public record StarLook(
                     Colors.lerp(0xFF9050, 0xFFC070, rng.nextDouble()), rng.range(14, 20), rng.range(1.0, 2.6),
                     Math.toRadians(rng.range(30, 65)), Math.toRadians(rng.range(55, 80)), rng.range(0, 2 * Math.PI),
                     0, 0, 0, 1, seed);
-            case BLACK_HOLE -> {
-                // 阴影大小随质量（5–30 个太阳）；吸积盘接近侧视，像《星际穿越》里的卡冈图雅
-                double shadow = 100 + 2.4 * (star.mass() - 5);
-                yield new StarLook(Style.BLACK_HOLE, shadow, color, 0, 0, 0, 0, 0, 0, 0, 0,
-                        Math.toRadians(rng.range(76, 86)), Math.toRadians(rng.range(-18, 18)),
-                        rng.range(1.25, 1.5), rng.range(5.2, 6.8), Colors.lerp(color, 0xFFF4DC, 0.75), rng.chance(0.5) ? 1 : -1, seed);
-            }
+            // 阴影大小随质量（5–30 个太阳）
+            case BLACK_HOLE -> blackHole(rng, 100 + 2.4 * (star.mass() - 5), color, seed);
             default -> {
                 // 主序星：越冷的米粒越粗、黑子越多（红矮星是耀斑星），蓝巨星表面干净，日冕亮、带衍射星芒
                 double heat = mainSequenceHeat(type);
@@ -122,6 +117,19 @@ public record StarLook(
                         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, seed);
             }
         };
+    }
+
+    /**
+     * 黑洞：吸积盘接近侧视，像《星际穿越》里的卡冈图雅。恒星是黑洞的系和太空里另外放的黑洞（{@code BlackHoles}）都用这个。
+     *
+     * @param rng    依次取盘面的倾角、方位、内外半径和转向
+     * @param shadow 阴影的半径（格）
+     * @param color  吸积盘外圈的颜色
+     */
+    public static StarLook blackHole(Rng rng, double shadow, int color, double seed) {
+        return new StarLook(Style.BLACK_HOLE, shadow, color, 0, 0, 0, 0, 0, 0, 0, 0,
+                Math.toRadians(rng.range(76, 86)), Math.toRadians(rng.range(-18, 18)),
+                rng.range(1.25, 1.5), rng.range(5.2, 6.8), Colors.lerp(color, 0xFFF4DC, 0.75), rng.chance(0.5) ? 1 : -1, seed);
     }
 
     /** 主序星从冷到热排成 0–1（M 为 0，O 为 1）。 */

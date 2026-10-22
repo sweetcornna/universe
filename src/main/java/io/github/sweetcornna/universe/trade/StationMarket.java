@@ -117,7 +117,7 @@ final class StationMarket {
         int rarity = ModuleLoot.rarity(this.system.star().starClass());
         List<ModuleOffer> out = new ArrayList<>();
         for (int i = 0; i < (wealthy ? 3 : 2); i++) {
-            TechModule module = ModuleLoot.roll(rng, List.of(ModuleType.values()), rarity, wealthy ? 1 : 0);
+            TechModule module = ModuleLoot.roll(rng, ModuleType.personal(), rarity, wealthy ? 1 : 0);
             ItemStack stack = new ItemStack(UniverseItems.MODULES.get(module.type()).get());
             stack.set(UniverseDataComponents.TECH_MODULE.get(), module);
             double base = ItemValues.value(server, stack.getItem()).orElse(MODULE_FALLBACK);

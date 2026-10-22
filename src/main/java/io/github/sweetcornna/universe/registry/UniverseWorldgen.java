@@ -14,6 +14,7 @@ import io.github.sweetcornna.universe.world.planet.gen.PlanetLavaCondition;
 import io.github.sweetcornna.universe.world.planet.gen.PlanetOreFeature;
 import io.github.sweetcornna.universe.world.planet.gen.PlanetPoiFeature;
 import io.github.sweetcornna.universe.world.planet.gen.PlanetSteepCondition;
+import io.github.sweetcornna.universe.world.freighter.FreighterChunkGenerator;
 import io.github.sweetcornna.universe.world.space.SpaceChunkGenerator;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.level.biome.BiomeSource;
@@ -35,7 +36,7 @@ public final class UniverseWorldgen {
             DeferredRegister.create(Registries.MATERIAL_CONDITION_TYPE, Universe.MOD_ID);
     public static final DeferredRegister<MapCodec<? extends Feature>> FEATURE_TYPES =
             DeferredRegister.create(Registries.FEATURE_TYPE, Universe.MOD_ID);
-    /** 区块生成器：太空维度带空间站的虚空（ADR-0017）。 */
+    /** 区块生成器：太空维度带空间站的虚空（ADR-0017），货船的船舱（ADR-0024）。 */
     public static final DeferredRegister<MapCodec<? extends ChunkGenerator>> CHUNK_GENERATORS =
             DeferredRegister.create(Registries.CHUNK_GENERATOR, Universe.MOD_ID);
     /** 战利品函数：兴趣点里随机生成模块（ADR-0014）。 */
@@ -55,6 +56,7 @@ public final class UniverseWorldgen {
         FEATURE_TYPES.register("planet_poi", () -> PlanetPoiFeature.CODEC);
         LOOT_FUNCTION_TYPES.register("random_module", () -> RandomModuleFunction.MAP_CODEC);
         CHUNK_GENERATORS.register("space", () -> SpaceChunkGenerator.CODEC);
+        CHUNK_GENERATORS.register("freighter", () -> FreighterChunkGenerator.CODEC);
     }
 
     private UniverseWorldgen() {

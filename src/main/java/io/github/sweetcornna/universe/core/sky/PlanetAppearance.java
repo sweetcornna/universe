@@ -121,7 +121,8 @@ public record PlanetAppearance(
             }
             case MOON -> {
                 a = linear(Colors.lerp(palette.rock(), 0x9A968F, 0.7), 0.12, 0.16);
-                b = linear(Colors.lerp(palette.rock(), 0x4A4845, 0.7), 0.15, 0.06);
+                // 月海的反照率约 0.08，高地约 0.15（ADR-0025）
+                b = linear(Colors.lerp(palette.rock(), 0x4A4845, 0.7), 0.15, 0.08);
                 c = a;
                 relief = rng.range(0.8, 1.3);
                 if (planet.type() == PlanetType.SCORCHED) {

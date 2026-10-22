@@ -7,12 +7,12 @@ import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
-/** 把一个物品列表包成容器，内容变了调回调（外骨骼的技术槽、货舱，多功能工具的模块）。 */
-class ListContainer implements Container {
+/** 把一个物品列表包成容器，内容变了调回调（外骨骼的技术槽、货舱，多功能工具的模块，飞船驾驶台的技术槽）。 */
+public class ListContainer implements Container {
     private final List<ItemStack> items;
     private final Runnable onChange;
 
-    ListContainer(List<ItemStack> items, Runnable onChange) {
+    public ListContainer(List<ItemStack> items, Runnable onChange) {
         this.items = items;
         this.onChange = onChange;
     }

@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "universe:item/module_fire_control",
+    "layer1": "universe:item/module_fire_control_overlay"
+  }
+}

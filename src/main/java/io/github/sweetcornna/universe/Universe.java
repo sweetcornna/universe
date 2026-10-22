@@ -14,6 +14,15 @@ import io.github.sweetcornna.universe.discovery.Discoveries;
 import io.github.sweetcornna.universe.dyson.Dyson;
 import io.github.sweetcornna.universe.entity.FaunaSpawner;
 import io.github.sweetcornna.universe.entity.TamedCreatures;
+import io.github.sweetcornna.universe.entity.ship.ShipDealer;
+import io.github.sweetcornna.universe.fleet.FleetCommand;
+import io.github.sweetcornna.universe.world.space.BlackHoleCommand;
+import io.github.sweetcornna.universe.portal.PortalCommand;
+import io.github.sweetcornna.universe.encounter.EncounterCommand;
+import io.github.sweetcornna.universe.encounter.SpaceEncounters;
+import io.github.sweetcornna.universe.portal.Portals;
+import io.github.sweetcornna.universe.fleet.Freighters;
+import io.github.sweetcornna.universe.entity.ship.ShipSummon;
 import io.github.sweetcornna.universe.entity.ship.ShipTransit;
 import io.github.sweetcornna.universe.entity.ship.ShipWeapons;
 import io.github.sweetcornna.universe.exocraft.Exocrafts;
@@ -97,6 +106,10 @@ public final class Universe {
         Teleporters.registerEvents(gameBus);
         Missions.registerEvents(gameBus);
         ShipTransit.registerEvents(gameBus);
+        ShipSummon.registerEvents(gameBus);
+        ShipDealer.registerEvents(gameBus);
+        Freighters.registerEvents(gameBus);
+        Portals.registerEvents(gameBus);
         PlayerSurvival.registerEvents(gameBus);
         CrashSite.registerEvents(gameBus);
         LevelPower.registerEvents(gameBus);
@@ -115,6 +128,7 @@ public final class Universe {
         Trading.registerEvents(gameBus);
         ShipWeapons.registerEvents(gameBus);
         Pirates.registerEvents(gameBus);
+        SpaceEncounters.registerEvents(gameBus);
         Asteroids.registerEvents(gameBus);
         Exocrafts.registerEvents(gameBus);
         ShipRepair.registerEvents(gameBus);
@@ -128,6 +142,10 @@ public final class Universe {
         BenchCommand.registerEvents(gameBus);
         gameBus.addListener(RegisterCommandsEvent.class, event -> DimensionCommand.register(event.getDispatcher()));
         gameBus.addListener(RegisterCommandsEvent.class, event -> SpaceCommand.register(event.getDispatcher()));
+        gameBus.addListener(RegisterCommandsEvent.class, event -> FleetCommand.register(event.getDispatcher()));
+        gameBus.addListener(RegisterCommandsEvent.class, event -> BlackHoleCommand.register(event.getDispatcher()));
+        gameBus.addListener(RegisterCommandsEvent.class, event -> PortalCommand.register(event.getDispatcher()));
+        gameBus.addListener(RegisterCommandsEvent.class, event -> EncounterCommand.register(event.getDispatcher()));
     }
 
     private void commonSetup(FMLCommonSetupEvent event) {

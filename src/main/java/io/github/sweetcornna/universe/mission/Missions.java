@@ -247,7 +247,7 @@ public final class Missions {
                 MinecraftServer server = player.level().getServer();
                 int rarity = Planets.galaxy(server).system(mission.system()).map(star -> ModuleLoot.rarity(star.star().starClass())).orElse(0);
                 Rng rng = Rng.of(Seeds.derive(Seeds.derive(player.getUUID().getLeastSignificantBits(), "mission_module"), mission.id()));
-                TechModule module = ModuleLoot.roll(rng, List.of(ModuleType.values()), rarity, 0);
+                TechModule module = ModuleLoot.roll(rng, ModuleType.personal(), rarity, 0);
                 ItemStack moduleStack = new ItemStack(UniverseItems.MODULES.get(module.type()).get());
                 moduleStack.set(UniverseDataComponents.TECH_MODULE.get(), module);
                 yield moduleStack;

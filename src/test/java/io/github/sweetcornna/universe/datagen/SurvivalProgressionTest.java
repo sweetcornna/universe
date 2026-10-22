@@ -60,7 +60,11 @@ class SurvivalProgressionTest {
     private static final Set<String> UNOBTAINABLE = Set.of(NS + "crude_oil_seep", NS + "damaged_multitool", NS + "drop_pod",
             NS + "monolith", NS + "trade_terminal",
             NS + "station_hull", NS + "station_floor", NS + "station_glass", NS + "station_light", NS + "station_pad", NS + "station_trim",
-            NS + "station_solar_panel", NS + "ship_repair", NS + "station_teleporter", NS + "mission_board",
+            NS + "station_solar_panel", NS + "ship_repair", NS + "station_teleporter", NS + "mission_board", NS + "ship_dealer",
+            // 货船的外壳和船舱里打不坏的方块（ADR-0024）
+            NS + "freighter_plate", NS + "freighter_engine", NS + "freighter_console", NS + "fleet_terminal",
+            // 先驱者传送门挖不掉（ADR-0024）
+            NS + "portal_stone", NS + "portal_glyph", NS + "portal_dial",
             // Mk.II 部件只能在空间站买、在坠毁飞船里拆到（ADR-0017）
             NS + "ship_thruster_mk2", NS + "fuel_tank_mk2", NS + "impulse_engine_mk2", NS + "warp_drive_mk2", NS + "alloy_hull_plating",
             // 建造无人机是机甲自带的，物品只用来画在世界里飞的样子（ADR-0023）
@@ -74,7 +78,7 @@ class SurvivalProgressionTest {
             "universe:particle", new int[] {3, 2});
     /** 兴趣点的建筑里天然放着的方块（ADR-0014），挖了按各自的战利品表掉落。 */
     private static final Set<String> STRUCTURE_BLOCKS = Set.of(NS + "data_terminal", NS + "supply_crate", NS + "tech_cache",
-            NS + "smoldering_wreck");
+            NS + "smoldering_wreck", NS + "damaged_ship_helm");
 
     private record Recipe(String name, List<List<String>> ingredients, String research) {
     }

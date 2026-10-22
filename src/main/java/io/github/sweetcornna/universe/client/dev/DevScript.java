@@ -38,6 +38,8 @@ import io.github.sweetcornna.universe.survival.SuitHud;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Screenshot;
+import net.minecraft.client.gui.components.AbstractButton;
+import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.advancements.AdvancementsScreen;
 import net.minecraft.client.input.CharacterEvent;
@@ -83,6 +85,9 @@ import net.neoforged.neoforge.client.network.ClientPacketDistributor;
  * <li>{@code approach <方块 ID>}：传送到 16 格内最近的这种方块正面两格的地方，面朝它
  * <li>{@code button <编号>}：按当前设备界面的第几个按钮
  * <li>{@code click <x> <y> [shift] [ctrl]}：在当前界面上点一下，坐标相对界面中心（界面缩放后的像素）
+ * <li>{@code push <序号>|<文字>|^<开头>}：按当前界面上第几个按钮，或者文字里带这一段的第一个；{@code buttons}：把界面上的按钮写进日志
+ * <li>{@code heading <偏航> [最多等几刻]}：按左右键把所乘的飞船转到这个偏航
+ * <li>{@code awaitdim <维度 ID 的一段>|! [最多等几刻]}：等玩家到了那个维度再往下走；写 {@code !} 是等离开现在这个维度（不知道会被甩到哪里时用）
  * <li>{@code type <文字>}：往当前界面里有焦点的输入框打字；{@code enter}：按一下回车
  * <li>{@code await launch|shot <x> <y> <z> [最多等几刻]}：等那里的发射井发射、弹射器射出一次再往下走
  * <li>{@code dyson}：打开戴森球编辑器；{@code close}：关掉当前界面
@@ -115,9 +120,19 @@ public final class DevScript {
     private final Set<KeyMapping> held = new HashSet<>();
     private @Nullable Near near;
     private @Nullable Players players;
+    private @Nullable Heading heading;
+    private @Nullable Dimension dimension;
 
     /** 在等在线人数变成某个数（多人测试：主机等第二个客户端连上、再等它退出）。 */
     private record Players(int count, long deadline) {
+    }
+
+    /** 在等玩家到了某个维度（维度 ID 里带这一段）。 */
+    private record Dimension(String part, long deadline) {
+    }
+
+    /** 在把所乘的飞船转到某个偏航。 */
+    private record Heading(float yaw, long deadline) {
     }
 
     /** 在等某种实体靠近。 */
@@ -201,7 +216,35 @@ public final class DevScript {
             Universe.LOGGER.info("Dev script: players done ({} online)", online);
             this.players = null;
         }
-        while (!this.lines.isEmpty() && this.waiting <= 0 && this.await == null && this.near == null && this.players == null) {
+        if (this.dimension != null) {
+            // 换维度时客户端的世界会换掉，这里按游戏刻算超时会跟着重来，改按现实时间
+            String here = minecraft.level.dimension().identifier().toString();
+            String part = this.dimension.part();
+            boolean there = part.startsWith("!") ? !here.equals(part.substring(1)) : here.contains(part);
+            if (!there && System.currentTimeMillis() < this.dimension.deadline()) {
+                return;
+            }
+            Universe.LOGGER.info("Dev script: awaitdim done ({}, in {})", there ? "there" : "timeout", minecraft.level.dimension().identifier());
+            this.dimension = null;
+        }
+        if (this.heading != null) {
+            Entity vehicle = player.getVehicle();
+            float diff = vehicle == null ? 0 : Mth.wrapDegrees(this.heading.yaw() - vehicle.getYRot());
+            boolean there = Math.abs(diff) < 4;
+            if (!there && minecraft.level.getGameTime() < this.heading.deadline()) {
+                // 偏航往右转是变大
+                minecraft.options.keyRight.setDown(diff > 0);
+                minecraft.options.keyLeft.setDown(diff < 0);
+                return;
+            }
+            minecraft.options.keyRight.setDown(this.held.contains(minecraft.options.keyRight));
+            minecraft.options.keyLeft.setDown(this.held.contains(minecraft.options.keyLeft));
+            Universe.LOGGER.info("Dev script: heading done ({}, yaw {})", there ? "there" : "timeout",
+                    vehicle == null ? "-" : String.format(Locale.ROOT, "%.1f", vehicle.getYRot()));
+            this.heading = null;
+        }
+        while (!this.lines.isEmpty() && this.waiting <= 0 && this.await == null && this.near == null && this.players == null
+                && this.heading == null && this.dimension == null) {
             String line = this.lines.poll().strip();
             if (line.isEmpty() || line.startsWith("#")) {
                 continue;
@@ -317,10 +360,26 @@ public final class DevScript {
                 int timeout = args.length > 2 ? Integer.parseInt(args[2]) : 1200;
                 this.near = new Near(Identifier.parse(args[0]), Double.parseDouble(args[1]), minecraft.level.getGameTime() + timeout);
             }
+            case "awaitdim" -> {
+                // awaitdim <维度 ID 的一段> [最多等几刻]：等玩家到了那个维度（飞进货船机库之类）
+                int timeout = args.length > 1 ? Integer.parseInt(args[1]) : 1200;
+                String part = args[0].equals("!") ? "!" + minecraft.level.dimension().identifier() : args[0];
+                this.dimension = new Dimension(part, System.currentTimeMillis() + timeout * 50L);
+            }
+            case "heading" -> {
+                // heading <偏航> [超时]：按左右键把所乘的飞船转到这个偏航（0 朝 +z，90 朝 -x）
+                int timeout = args.length > 1 ? Integer.parseInt(args[1]) : 200;
+                this.heading = new Heading(Float.parseFloat(args[0]), minecraft.level.getGameTime() + timeout);
+            }
             case "look" -> {
                 // look <偏航> <俯仰> | look ship：顺着所乘的飞船的朝向看，水平
-                boolean ship = args[0].equals("ship") && player.getVehicle() != null;
-                player.setYRot(ship ? player.getVehicle().getYRot() : Float.parseFloat(args[0]));
+                boolean ship = args[0].equals("ship");
+                Entity vehicle = player.getVehicle();
+                if (ship && vehicle == null) {
+                    Universe.LOGGER.info("Dev script: look ship, but not aboard anything");
+                    return;
+                }
+                player.setYRot(ship ? vehicle.getYRot() : Float.parseFloat(args[0]));
                 player.setXRot(ship ? 0 : Float.parseFloat(args[1]));
                 player.yRotO = player.getYRot();
                 player.xRotO = player.getXRot();
@@ -403,6 +462,7 @@ public final class DevScript {
                     case "discovery" -> UniverseKeys.DISCOVERY_LOG;
                     case "stats" -> UniverseKeys.STATS;
                     case "mecha" -> UniverseKeys.MECHA;
+                    case "summon" -> UniverseKeys.SUMMON;
                     default -> throw new IllegalArgumentException("unknown key " + args[0]);
                 };
                 KeyMapping.click(key.getKey());
@@ -446,6 +506,46 @@ public final class DevScript {
                     screen.mouseClicked(click, false);
                     // 手上拿着东西点格子时，原版要等松开鼠标才放下去
                     screen.mouseReleased(click);
+                }
+            }
+            case "push" -> {
+                // push 序号|文字：按界面上第几个按钮（从 0 数），或者文字里带这一段的第一个（^ 开头时按开头比）。
+                // 列表长短会改面板的高度，按钮的位置不固定，这时比 click 好用
+                Screen screen = minecraft.gui.screen();
+                if (screen != null) {
+                    List<AbstractButton> buttons = buttons(screen);
+                    AbstractButton target = null;
+                    if (rest.matches("\\d+")) {
+                        int index = Integer.parseInt(rest);
+                        target = index < buttons.size() ? buttons.get(index) : null;
+                    } else {
+                        boolean start = rest.startsWith("^");
+                        String text = start ? rest.substring(1) : rest;
+                        for (AbstractButton button : buttons) {
+                            String label = button.getMessage().getString();
+                            if (start ? label.startsWith(text) : label.contains(text)) {
+                                target = button;
+                                break;
+                            }
+                        }
+                    }
+                    if (target == null) {
+                        Universe.LOGGER.info("Dev script push: no button {} among {}", rest,
+                                buttons.stream().map(b -> b.getMessage().getString()).toList());
+                    } else {
+                        Universe.LOGGER.info("Dev script push: {} (active: {})", target.getMessage().getString(), target.active);
+                        MouseButtonEvent click = new MouseButtonEvent(target.getX() + target.getWidth() / 2.0, target.getY() + target.getHeight() / 2.0,
+                                new MouseButtonInfo(InputConstants.MOUSE_BUTTON_LEFT, 0));
+                        screen.mouseClicked(click, false);
+                        screen.mouseReleased(click);
+                    }
+                }
+            }
+            case "buttons" -> {
+                Screen screen = minecraft.gui.screen();
+                if (screen != null) {
+                    Universe.LOGGER.info("Dev script buttons: {}", buttons(screen).stream()
+                            .map(b -> b.getMessage().getString() + (b.active ? "" : " (off)")).toList());
                 }
             }
             case "scroll" -> {
@@ -547,6 +647,17 @@ public final class DevScript {
             return ejector.lastShot();
         }
         return Long.MIN_VALUE;
+    }
+
+    /** 界面上看得见的按钮，按加进去的顺序。 */
+    private static List<AbstractButton> buttons(Screen screen) {
+        List<AbstractButton> buttons = new ArrayList<>();
+        for (GuiEventListener child : screen.children()) {
+            if (child instanceof AbstractButton button && button.visible) {
+                buttons.add(button);
+            }
+        }
+        return buttons;
     }
 
     private static @Nullable String name(String[] args) {

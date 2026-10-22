@@ -3,6 +3,7 @@ package io.github.sweetcornna.universe.registry;
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.core.logistics.StationKind;
 import io.github.sweetcornna.universe.dyson.EmRailEjectorBlockEntity;
+import io.github.sweetcornna.universe.entity.ship.ShipPanelMenu;
 import io.github.sweetcornna.universe.dyson.LaunchSiloBlockEntity;
 import io.github.sweetcornna.universe.dyson.RayReceiverBlockEntity;
 import io.github.sweetcornna.universe.factory.FractionatorBlockEntity;
@@ -127,6 +128,9 @@ public final class UniverseMenus {
     /** 机甲面板（ADR-0023）。 */
     public static final DeferredHolder<MenuType<?>, MenuType<MechaMenu>> MECHA = MENUS.register("mecha",
             () -> IMenuTypeExtension.create(MechaMenu::new));
+    /** 飞船面板：评级、数值、驾驶台的技术槽（ADR-0024）。 */
+    public static final DeferredHolder<MenuType<?>, MenuType<ShipPanelMenu>> SHIP_PANEL = MENUS.register("ship_panel",
+            () -> IMenuTypeExtension.create(ShipPanelMenu::new));
 
     private UniverseMenus() {
     }

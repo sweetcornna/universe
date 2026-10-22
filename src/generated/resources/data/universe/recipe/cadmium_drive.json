@@ -1,0 +1,18 @@
+{
+  "type": "universe:research_shaped",
+  "key": {
+    "P": "universe:processor",
+    "S": "universe:super_magnetic_ring",
+    "T": "universe:titanium_alloy",
+    "W": "universe:warp_drive"
+  },
+  "pattern": [
+    "TST",
+    "PWP",
+    "TST"
+  ],
+  "research": "cadmium_drive",
+  "result": {
+    "id": "universe:cadmium_drive"
+  }
+}

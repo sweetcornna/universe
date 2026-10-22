@@ -10,6 +10,7 @@ import org.jspecify.annotations.Nullable;
 import io.github.sweetcornna.universe.core.sentinel.Offense;
 import io.github.sweetcornna.universe.core.sentinel.SentinelLevel;
 import io.github.sweetcornna.universe.core.sentinel.Wanted;
+import io.github.sweetcornna.universe.encounter.SpaceEncounters;
 import io.github.sweetcornna.universe.entity.AlienCreature;
 import io.github.sweetcornna.universe.perf.ServerPerf;
 import io.github.sweetcornna.universe.registry.UniverseAttachments;
@@ -42,7 +43,8 @@ import net.neoforged.neoforge.event.tick.PlayerTickEvent;
  *   <li>有守卫的星球上，按守卫强度在每个玩家附近保持几架巡逻的守卫机（玩家在地下深处时不补）。</li>
  *   <li>违规行为（{@link Offense}）提高玩家的警戒值；通缉后附近的守卫机都转为敌对，并按级别从远处传送来增援，
  *       三级通缉有重型守卫机。</li>
- *   <li>敌对的守卫机都看不见玩家 20 秒、离开星球或者死亡，通缉解除，追捕的守卫机撤退。</li>
+ *   <li>敌对的守卫机都看不见玩家 20 秒、离开星球或者死亡，通缉解除，追捕的守卫机撤退。三星通缉时飞上太空，
+ *       太空守卫机的拦截机接着追（ADR-0024，{@link SpaceEncounters}）。</li>
  *   <li>创造、旁观模式和和平难度下不会被通缉。</li>
  * </ul>
  */
@@ -162,7 +164,10 @@ public final class Sentinels {
         SentinelAlert alert = player.getData(UniverseAttachments.SENTINEL_ALERT);
         Wanted wanted = alert.wanted();
         Session session = session(player);
-        if (alert.moveTo(level.dimension().identifier().toString())) {
+        int wantedBefore = wanted.level();
+        if (alert.moveTo(level.dimension().identifier().toString())
+                && !SpaceEncounters.pursueIntoSpace(player, wantedBefore)) {
+            // 三星通缉飞上太空的，太空守卫机接着追（ADR-0024）
             player.sendOverlayMessage(Component.translatable("message.universe.sentinel.left_planet"));
         }
         SentinelLevel sentinels = level(level);

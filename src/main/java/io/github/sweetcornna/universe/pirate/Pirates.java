@@ -126,7 +126,7 @@ public final class Pirates {
         return TIMERS.get(player.getUUID());
     }
 
-    static boolean raiding(ServerPlayer player) {
+    public static boolean raiding(ServerPlayer player) {
         Raid raid = RAIDS.get(player.getUUID());
         return raid != null && !raid.over;
     }
@@ -325,6 +325,24 @@ public final class Pirates {
             raid.fighters.remove(fighter);
         }
         ServerPlayer killer = killer(source);
+        boolean stowed = salvage(fighter, level, source, killer);
+        if (killer == null) {
+            return;
+        }
+        killer.awardStat(UniverseStats.PIRATES_DESTROYED.get());
+        long bounty = PirateRaid.bounty(raid != null ? raid.wealthTier : wealthTier(level));
+        Credits.add(killer, bounty);
+        killer.sendSystemMessage(Component.translatable(stowed ? "message.universe.pirate.destroyed_stowed" : "message.universe.pirate.destroyed",
+                Credits.format(bounty)).withStyle(ChatFormatting.GOLD));
+        level.playSound(null, killer.getX(), killer.getY(), killer.getZ(), SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 0.7F, 0.8F);
+    }
+
+    /**
+     * 打下来的战机掉的东西：装进击落它的人的船里，装不下就飘在原地。
+     *
+     * @return 有东西装进了船里
+     */
+    public static boolean salvage(PirateFighter fighter, ServerLevel level, DamageSource source, @Nullable ServerPlayer killer) {
         List<ItemStack> loot = new ArrayList<>();
         fighter.getType().getDefaultLootTable().ifPresent(key -> {
             LootTable table = level.getServer().reloadableRegistries().getLootTable(key);
@@ -350,19 +368,11 @@ public final class Pirates {
                 level.addFreshEntity(item);
             }
         }
-        if (killer == null) {
-            return;
-        }
-        killer.awardStat(UniverseStats.PIRATES_DESTROYED.get());
-        long bounty = PirateRaid.bounty(raid != null ? raid.wealthTier : wealthTier(level));
-        Credits.add(killer, bounty);
-        killer.sendSystemMessage(Component.translatable(stowed ? "message.universe.pirate.destroyed_stowed" : "message.universe.pirate.destroyed",
-                Credits.format(bounty)).withStyle(ChatFormatting.GOLD));
-        level.playSound(null, killer.getX(), killer.getY(), killer.getZ(), SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 0.7F, 0.8F);
+        return stowed;
     }
 
     /** 打下战机的玩家：直接打的，或者开炮的驾驶员（光子弹的主人）。 */
-    private static @Nullable ServerPlayer killer(DamageSource source) {
+    public static @Nullable ServerPlayer killer(DamageSource source) {
         Entity entity = source.getEntity();
         if (entity instanceof ServerPlayer player) {
             return player;

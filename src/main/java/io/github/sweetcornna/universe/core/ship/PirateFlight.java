@@ -51,6 +51,9 @@ public final class PirateFlight {
     private static final double[] UP = {0, 1, 0};
 
     private final SplittableRandom random;
+    /** 这一架的巡航速度和每刻最多改变的速度（拦截机比海盗快，转弯也跟着利索）。 */
+    private final double speed;
+    private final double accel;
     /** 从哪个侧面切进来（绕着视线的角度，弧度）。 */
     private final double side;
     /** 后撤时绕圈的方向。 */
@@ -69,6 +72,13 @@ public final class PirateFlight {
      * @param count 这一波一共几架：几架平分切入的侧面
      */
     public PirateFlight(long seed, int slot, int count) {
+        this(seed, slot, count, 1);
+    }
+
+    /** @param speedFactor 速度倍率：海盗是 1，太空守卫机的拦截机快一些 */
+    public PirateFlight(long seed, int slot, int count, double speedFactor) {
+        this.speed = SPEED * speedFactor;
+        this.accel = ACCEL * speedFactor;
         this.random = new SplittableRandom(seed);
         this.side = Math.PI * 2 * slot / Math.max(1, count) + this.random.nextDouble() * 0.6;
         this.orbit = this.random.nextBoolean() ? 1 : -1;
@@ -123,14 +133,14 @@ public final class PirateFlight {
 
         double[] lateral = this.lateral(dir);
         double[] desired;
-        double maxSpeed = SPEED;
+        double maxSpeed = this.speed;
         switch (this.mode) {
             case ATTACK -> {
-                double lead = Math.min(40, distance / SPEED);
+                double lead = Math.min(40, distance / this.speed);
                 double[] aim = add(target, scale(targetVel, lead));
                 // 远处散开，近处收拢：几架从不同的方向同时切过来
                 double offset = Math.min(14, distance * 0.15);
-                desired = scale(ShipCombat.normalize(sub(add(aim, scale(lateral, offset)), pos)), SPEED);
+                desired = scale(ShipCombat.normalize(sub(add(aim, scale(lateral, offset)), pos)), this.speed);
                 if (gap < BREAK_DISTANCE) {
                     this.mode = Mode.EXTEND;
                     this.timer = 0;
@@ -140,7 +150,7 @@ public final class PirateFlight {
             }
             case EXTEND -> {
                 this.timer++;
-                desired = scale(this.extendDirection, SPEED);
+                desired = scale(this.extendDirection, this.speed);
                 if (this.timer > 20 && gap > EXTEND_DISTANCE || this.timer > EXTEND_MAX_TICKS) {
                     this.mode = Mode.ATTACK;
                 }
@@ -149,9 +159,9 @@ public final class PirateFlight {
                 this.timer++;
                 double[] tangent = scale(ShipCombat.normalize(cross(dir, UP)), this.orbit);
                 if (distance < REGROUP_RANGE) {
-                    desired = scale(ShipCombat.normalize(add(scale(dir, -1), scale(tangent, 0.4))), SPEED);
+                    desired = scale(ShipCombat.normalize(add(scale(dir, -1), scale(tangent, 0.4))), this.speed);
                 } else {
-                    desired = scale(ShipCombat.normalize(add(tangent, scale(dir, (distance - REGROUP_RANGE) / 20))), SPEED * 0.8);
+                    desired = scale(ShipCombat.normalize(add(tangent, scale(dir, (distance - REGROUP_RANGE) / 20))), this.speed * 0.8);
                 }
                 if (this.timer > REGROUP_MIN_TICKS && shield >= 0.999) {
                     this.mode = Mode.ATTACK;
@@ -165,11 +175,11 @@ public final class PirateFlight {
         }
         // 别撞上目标
         if (gap < 5 && this.mode != Mode.LEAVE) {
-            desired = add(desired, scale(dir, -SPEED * 1.5));
+            desired = add(desired, scale(dir, -this.speed * 1.5));
         }
 
         double[] change = sub(desired, vel);
-        double limit = this.mode == Mode.LEAVE ? ACCEL * 1.5 : ACCEL;
+        double limit = this.mode == Mode.LEAVE ? this.accel * 1.5 : this.accel;
         double length = ShipCombat.length(change);
         if (length > limit) {
             change = scale(change, limit / length);

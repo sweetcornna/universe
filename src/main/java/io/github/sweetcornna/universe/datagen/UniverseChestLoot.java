@@ -1,6 +1,7 @@
 package io.github.sweetcornna.universe.datagen;
 
 import io.github.sweetcornna.universe.core.tech.ModuleType;
+import io.github.sweetcornna.universe.encounter.SpaceEncounters;
 import io.github.sweetcornna.universe.poi.PoiStructures;
 import io.github.sweetcornna.universe.poi.RandomModuleFunction;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
@@ -19,7 +20,7 @@ import net.minecraft.world.level.storage.loot.providers.number.ints.ContextIntPr
 
 /**
  * 兴趣点补给箱的战利品（ADR-0014）：坠毁飞船里多是飞船的物资，据点里多是生存物资；都有机会出导航数据和模块，
- * 坠毁飞船的模块品级高一档。
+ * 坠毁飞船的模块品级高一档。太空里废弃货船的货箱和保险箱也在这里（ADR-0024）。
  */
 final class UniverseChestLoot implements LootTableSubProvider {
     private final LootTableSubProvider.Context context;
@@ -53,6 +54,34 @@ final class UniverseChestLoot implements LootTableSubProvider {
                         .add(item(UniverseItems.ALLOY_HULL_PLATING.get(), 2, 6, 3))
                         .add(item(UniverseItems.IMPULSE_ENGINE_MK2.get(), 1, 1, 1))
                         .add(item(UniverseItems.WARP_DRIVE_MK2.get(), 1, 1, 1))));
+        // 废弃货船（ADR-0024）：货箱里多是材料和飞船的物资，还有信用点芯片；船长的保险箱里是芯片、导航数据、飞船模块，
+        // 偶尔有 Mk.II 部件和下一台应急信号接收器
+        this.context.accept(SpaceEncounters.DERELICT_CARGO, LootTable.lootTable()
+                .withPool(LootPool.lootPool().setRolls(ContextIntProviders.between(3, 5))
+                        .add(item(Items.IRON_INGOT, 3, 8, 8))
+                        .add(item(Items.COPPER_INGOT, 3, 8, 6))
+                        .add(item(Items.GOLD_INGOT, 1, 3, 3))
+                        .add(item(UniverseItems.CIRCUIT_BOARD.get(), 1, 4, 6))
+                        .add(item(UniverseItems.MAGNETIC_COIL.get(), 1, 3, 5))
+                        .add(item(UniverseItems.LAUNCH_FUEL.get(), 1, 3, 5))
+                        .add(item(UniverseItems.OXYGEN_CAPSULE.get(), 1, 3, 4))
+                        .add(item(UniverseItems.HAZARD_CELL.get(), 1, 2, 3))
+                        .add(item(UniverseItems.ALLOY_HULL_PLATING.get(), 2, 6, 3))
+                        .add(item(UniverseItems.CREDIT_CHIP.get(), 1, 3, 6))
+                        .add(item(UniverseItems.PIRATE_SCRAP.get(), 1, 2, 2)))
+                .withPool(chance(item(UniverseItems.NAVIGATION_DATA.get(), 1, 2, 1), 0.3F)));
+        this.context.accept(SpaceEncounters.DERELICT_SAFE, LootTable.lootTable()
+                .withPool(LootPool.lootPool().setRolls(ContextIntProviders.exactly(1)).add(item(UniverseItems.CREDIT_CHIP.get(), 4, 10, 1)))
+                .withPool(LootPool.lootPool().setRolls(ContextIntProviders.exactly(1)).add(item(UniverseItems.NAVIGATION_DATA.get(), 1, 3, 1)))
+                .withPool(chance(LootItem.lootTableItem(UniverseItems.MODULES.get(ModuleType.FIRE_CONTROL).get())
+                        .apply(RandomModuleFunction.randomShipModule(1)), 0.8F))
+                .withPool(LootPool.lootPool().setRolls(ContextIntProviders.exactly(1))
+                        .when(LootItemRandomChanceCondition.randomChance(0.3F))
+                        .add(item(UniverseItems.SHIP_THRUSTER_MK2.get(), 1, 2, 4))
+                        .add(item(UniverseItems.FUEL_TANK_MK2.get(), 1, 1, 4))
+                        .add(item(UniverseItems.IMPULSE_ENGINE_MK2.get(), 1, 1, 2))
+                        .add(item(UniverseItems.WARP_DRIVE_MK2.get(), 1, 1, 1)))
+                .withPool(chance(item(UniverseItems.EMERGENCY_RECEIVER.get(), 1, 1, 1), 0.25F)));
         this.context.accept(PoiStructures.OUTPOST_LOOT, LootTable.lootTable()
                 .withPool(LootPool.lootPool().setRolls(ContextIntProviders.between(3, 5))
                         .add(item(Items.BREAD, 2, 4, 6))

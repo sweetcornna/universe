@@ -76,6 +76,7 @@ final class UniverseBlockTagsProvider extends BlockTagsProvider {
         // 飞船部件
         this.tag(BlockTags.MINEABLE_WITH_PICKAXE).add(
                 UniverseBlocks.SHIP_HELM.key(),
+                UniverseBlocks.DAMAGED_HELM.key(),
                 UniverseBlocks.SHIP_THRUSTER.key(),
                 UniverseBlocks.FUEL_TANK.key(),
                 UniverseBlocks.IMPULSE_ENGINE.key(),
@@ -112,7 +113,7 @@ final class UniverseBlockTagsProvider extends BlockTagsProvider {
                 UniverseBlocks.TRAFFIC_MONITOR, UniverseBlocks.PILE_SORTER, UniverseBlocks.WIRELESS_POWER_TOWER, UniverseBlocks.SATELLITE_SUBSTATION,
                 UniverseBlocks.GEOTHERMAL_POWER_STATION, UniverseBlocks.ENERGY_EXCHANGER, UniverseBlocks.NEGENTROPY_SMELTER,
                 UniverseBlocks.RECOMPOSING_ASSEMBLER, UniverseBlocks.QUANTUM_CHEMICAL_PLANT, UniverseBlocks.SELF_EVOLUTION_LAB,
-                UniverseBlocks.LOGISTICS_DISTRIBUTOR)) {
+                UniverseBlocks.LOGISTICS_DISTRIBUTOR, UniverseBlocks.LANDING_PAD)) {
             this.tag(BlockTags.MINEABLE_WITH_PICKAXE).add(block.key());
             this.tag(ShipParts.EXCLUDED).add(block.key());
         }
@@ -140,6 +141,19 @@ final class UniverseBlockTagsProvider extends BlockTagsProvider {
                 UniverseBlocks.DATA_TERMINAL.key(),
                 UniverseBlocks.TECH_CACHE.key(),
                 UniverseBlocks.SUPPLY_CRATE.key());
+        // 先驱者传送门（ADR-0024）：石头都是实心的，整座门不会被组装进飞船
+        this.tag(BlockTags.BLOCKS_MOTION_NO_LEAVES).add(
+                UniverseBlocks.PORTAL_STONE.key(),
+                UniverseBlocks.PORTAL_GLYPH.key(),
+                UniverseBlocks.PORTAL_DIAL.key());
+        this.tag(ShipParts.EXCLUDED).add(
+                UniverseBlocks.PORTAL_STONE.key(),
+                UniverseBlocks.PORTAL_GLYPH.key(),
+                UniverseBlocks.PORTAL_DIAL.key(),
+                UniverseBlocks.PORTAL_FIELD.key());
+        // 废弃货船里漏电的线管（ADR-0024）
+        this.tag(BlockTags.BLOCKS_MOTION_NO_LEAVES).add(UniverseBlocks.LIVE_CONDUIT.key());
+        this.tag(ShipParts.EXCLUDED).add(UniverseBlocks.LIVE_CONDUIT.key());
         // 星球矿石：进原版的 ores（它已经在"阻挡移动"里）和通用的 c:ores，按矿种要求镐的等级
         UniverseBlocks.ORES.forEach((kind, block) -> {
             this.tag(BlockTags.MINEABLE_WITH_PICKAXE).add(block.key());

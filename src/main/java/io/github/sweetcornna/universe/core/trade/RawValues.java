@@ -86,7 +86,9 @@ public final class RawValues {
             Map.entry("universe:fuel_tank_mk2", 220.0),
             Map.entry("universe:impulse_engine_mk2", 1400.0),
             Map.entry("universe:warp_drive_mk2", 2200.0),
-            Map.entry("universe:alloy_hull_plating", 24.0));
+            Map.entry("universe:alloy_hull_plating", 24.0),
+            // 应急信号接收器只在空间站买、在废弃货船里找到（ADR-0024）
+            Map.entry("universe:emergency_receiver", 500.0));
 
     private RawValues() {
     }

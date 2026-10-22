@@ -28,5 +28,6 @@ final class UniverseDamageTypeTagsProvider extends DamageTypeTagsProvider {
         }
         this.tag(DamageTypeTags.IS_PROJECTILE).add(PlasmaBolt.DAMAGE);
         this.tag(DamageTypeTags.NO_KNOCKBACK).add(PlasmaBolt.DAMAGE);
+        this.tag(DamageTypeTags.NO_KNOCKBACK).add(SurvivalDamage.SHOCK);
     }
 }

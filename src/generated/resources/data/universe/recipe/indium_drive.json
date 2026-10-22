@@ -1,0 +1,18 @@
+{
+  "type": "universe:research_shaped",
+  "key": {
+    "D": "universe:emeril_drive",
+    "F": "universe:frame_material",
+    "L": "universe:graviton_lens",
+    "Q": "universe:quantum_chip"
+  },
+  "pattern": [
+    "LQL",
+    "FDF",
+    "LQL"
+  ],
+  "research": "indium_drive",
+  "result": {
+    "id": "universe:indium_drive"
+  }
+}

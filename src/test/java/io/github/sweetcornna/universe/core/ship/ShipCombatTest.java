@@ -102,6 +102,20 @@ class ShipCombatTest {
     }
 
     @Test
+    void fireControlRaisesTheRate() {
+        ShipCombat normal = new ShipCombat(100, 0);
+        ShipCombat tuned = new ShipCombat(100, 0);
+        int base = 0;
+        int faster = 0;
+        for (int i = 0; i < 20; i++) {
+            base += normal.tick(0, true, 2, false);
+            faster += tuned.tick(0, true, 2, false, 1.5);
+        }
+        // 射速 ×1.5：一秒 9 发左右
+        assertTrue(faster >= base + 2, base + " vs " + faster);
+    }
+
+    @Test
     void cannonsFireThreeShotsPerSecondEachAndOverheat() {
         ShipCombat combat = new ShipCombat(100, 0);
         int shots = 0;

@@ -1,0 +1,9 @@
+{
+    "parent": "universe:block/ship_helm",
+    "textures": {
+        "particle": "universe:block/damaged_ship_hull_panel",
+        "hull": "universe:block/damaged_ship_hull_panel",
+        "screen": "universe:block/damaged_ship_helm_screen",
+        "seat": "universe:block/ship_seat_fabric"
+    }
+}

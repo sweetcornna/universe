@@ -4,7 +4,10 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
+import java.util.function.Consumer;
 
+import org.jspecify.annotations.Nullable;
 import org.slf4j.Logger;
 
 import com.mojang.logging.LogUtils;
@@ -55,12 +58,37 @@ public final class ShipAssembly {
         if (player.isPassenger()) {
             return;
         }
+        ShipEntity ship = assemble(level, helmPos, player.getUUID(), player::sendOverlayMessage);
+        if (ship == null) {
+            return;
+        }
+        ship.departures().putAll(player.getData(UniverseAttachments.DEPARTURES));
+        player.startRiding(ship);
+        // 组装的人就是主人，这艘成了他的主力船（ADR-0024）
+        ShipOwners.get(level.getServer()).piloted(player.getUUID(), ship);
+        MilestoneTrigger.reach(player, MilestoneTrigger.SHIP);
+        ShipStats stats = ship.structure().stats();
+        double twr = stats.thrustToWeight(ShipEnvironment.of(level).space() ? 0 : ShipEnvironment.of(level).gravity());
+        ship.noticeLater(Component.translatable("message.universe.ship.assembled",
+                stats.blocks(), String.format("%.0f", stats.mass()), Double.isInfinite(twr) ? "∞" : String.format("%.2f", twr),
+                Math.round(ship.fuelServer()), Math.round(stats.fuelCapacity())));
+        if (!stats.canLift(ShipEnvironment.of(level).gravity())) {
+            player.sendSystemMessage(Component.translatable("message.universe.ship.too_heavy"));
+        }
+    }
+
+    /**
+     * 把和驾驶台相连的方块组装成飞船放进世界，不上船（买船、测试也用）。失败时用 {@code feedback} 说明原因，返回 {@code null}。
+     *
+     * @param owner 主人
+     */
+    public static @Nullable ShipEntity assemble(ServerLevel level, BlockPos helmPos, @Nullable UUID owner, Consumer<Component> feedback) {
         ShipAssembler.Result result = ShipAssembler.assemble(
                 (x, y, z) -> ShipParts.canAssemble(level, new BlockPos(x, y, z)),
                 helmPos.getX(), helmPos.getY(), helmPos.getZ(), ShipAssembler.MAX_BLOCKS);
         if (result.tooLarge()) {
-            player.sendOverlayMessage(Component.translatable("message.universe.ship.too_large", ShipAssembler.MAX_BLOCKS));
-            return;
+            feedback.accept(Component.translatable("message.universe.ship.too_large", ShipAssembler.MAX_BLOCKS));
+            return null;
         }
         Set<BlockPos> positions = new HashSet<>();
         for (long packed : result.positions()) {
@@ -73,13 +101,13 @@ public final class ShipAssembly {
                 helms++;
             }
             if (state.getRelocability(level, pos) instanceof BlockRelocability.Multiblock multiblock && !multiblock.isRelocatable(positions)) {
-                player.sendOverlayMessage(Component.translatable("message.universe.ship.split_multiblock", state.getBlock().getName()));
-                return;
+                feedback.accept(Component.translatable("message.universe.ship.split_multiblock", state.getBlock().getName()));
+                return null;
             }
         }
         if (helms > 1) {
-            player.sendOverlayMessage(Component.translatable("message.universe.ship.two_helms"));
-            return;
+            feedback.accept(Component.translatable("message.universe.ship.two_helms"));
+            return null;
         }
 
         ShipShape.Placed placed = ShipShape.fromWorld(result.positions());
@@ -101,8 +129,8 @@ public final class ShipAssembly {
         ShipStructure structure = new ShipStructure(blocks);
         ShipStats stats = structure.stats();
         if (stats.thrusters() == 0) {
-            player.sendOverlayMessage(Component.translatable("message.universe.ship.no_thrusters"));
-            return;
+            feedback.accept(Component.translatable("message.universe.ship.no_thrusters"));
+            return null;
         }
 
         // 方块搬走：先拆方块实体，免得箱子把东西倒出来
@@ -111,18 +139,10 @@ public final class ShipAssembly {
         }
         float yaw = structure.helmFacing().toYRot();
         ShipEntity ship = ShipEntity.create(level, structure, placed.originX() + 0.5, placed.originY(), placed.originZ() + 0.5, yaw, fuel);
-        ship.departures().putAll(player.getData(UniverseAttachments.DEPARTURES));
+        ship.setOwner(owner);
         level.addFreshEntity(ship);
-        player.startRiding(ship);
-        MilestoneTrigger.reach(player, MilestoneTrigger.SHIP);
         level.playSound(null, helmPos, SoundEvents.BEACON_ACTIVATE, SoundSource.BLOCKS, 0.8F, 1.6F);
-        double twr = stats.thrustToWeight(ShipEnvironment.of(level).space() ? 0 : ShipEnvironment.of(level).gravity());
-        ship.noticeLater(Component.translatable("message.universe.ship.assembled",
-                stats.blocks(), String.format("%.0f", stats.mass()), Double.isInfinite(twr) ? "∞" : String.format("%.2f", twr),
-                Math.round(fuel), Math.round(stats.fuelCapacity())));
-        if (!stats.canLift(ShipEnvironment.of(level).gravity())) {
-            player.sendSystemMessage(Component.translatable("message.universe.ship.too_heavy"));
-        }
+        return ship;
     }
 
     /**
@@ -211,6 +231,7 @@ public final class ShipAssembly {
             passenger.teleportTo(pos.getX() + 0.5, pos.getY() + height, pos.getZ() + 0.5);
         }
         level.playSound(null, BlockPos.containing(ship.position()), SoundEvents.BEACON_DEACTIVATE, SoundSource.BLOCKS, 0.8F, 1.6F);
+        ShipOwners.get(level.getServer()).parked(ship);
         ship.discard();
         return true;
     }

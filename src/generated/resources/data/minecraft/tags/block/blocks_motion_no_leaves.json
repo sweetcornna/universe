@@ -50,6 +50,10 @@
     "universe:tech_cache",
     "universe:signal_booster",
     "universe:supply_crate",
-    "universe:smoldering_wreck"
+    "universe:smoldering_wreck",
+    "universe:portal_stone",
+    "universe:portal_glyph",
+    "universe:portal_dial",
+    "universe:live_conduit"
   ]
 }

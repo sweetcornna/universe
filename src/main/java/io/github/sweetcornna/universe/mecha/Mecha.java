@@ -12,6 +12,8 @@ import io.github.sweetcornna.universe.core.factory.Proliferation;
 import io.github.sweetcornna.universe.core.mecha.LogisticsSlot;
 import io.github.sweetcornna.universe.core.mecha.MechaEnergy;
 import io.github.sweetcornna.universe.core.research.Upgrades;
+import io.github.sweetcornna.universe.entity.ship.ShipEntity;
+import io.github.sweetcornna.universe.entity.ship.ShipPanel;
 import io.github.sweetcornna.universe.factory.research.Research;
 import io.github.sweetcornna.universe.network.MechaPayloads;
 import io.github.sweetcornna.universe.perf.ServerPerf;
@@ -352,6 +354,11 @@ public final class Mecha {
 
     /** 客户端按了机甲面板键。 */
     public static void handleOpen(MechaPayloads.Open payload, IPayloadContext context) {
+        // 驾驶飞船时打开的是飞船面板（ADR-0024）
+        if (context.player() instanceof ServerPlayer player && player.getVehicle() instanceof ShipEntity ship && ship.pilot() == player) {
+            ShipPanel.openFlying(player, ship);
+            return;
+        }
         if (context.player() instanceof ServerPlayer player && player.isAlive()) {
             player.openMenu(new SimpleMenuProvider((id, inventory, p) -> MechaMenu.server(id, inventory, player),
                     Component.translatable("gui.universe.mecha.title")));

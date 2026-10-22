@@ -9,6 +9,9 @@ import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.block.OreKind;
 import io.github.sweetcornna.universe.blueprint.BlueprintItem;
 import io.github.sweetcornna.universe.core.ecology.PlantForm;
+import io.github.sweetcornna.universe.core.space.DriveTier;
+import io.github.sweetcornna.universe.encounter.CreditChipItem;
+import io.github.sweetcornna.universe.encounter.EmergencyReceiverItem;
 import io.github.sweetcornna.universe.core.tech.ModuleType;
 import io.github.sweetcornna.universe.exocraft.ExocraftItem;
 import io.github.sweetcornna.universe.factory.belt.StorageTankItem;
@@ -17,6 +20,7 @@ import io.github.sweetcornna.universe.logistics.StationItem;
 import io.github.sweetcornna.universe.survival.Exosuit;
 import io.github.sweetcornna.universe.survival.MultitoolItem;
 import io.github.sweetcornna.universe.survival.SuitRefillItem;
+import io.github.sweetcornna.universe.tech.DriveItem;
 import io.github.sweetcornna.universe.tech.TechModuleItem;
 import net.minecraft.core.HolderGetter;
 import net.minecraft.core.component.DataComponents;
@@ -94,6 +98,8 @@ public final class UniverseItems {
 
     // ---- 飞船
     public static final DeferredItem<BlockItem> SHIP_HELM = ITEMS.registerSimpleBlockItem(UniverseBlocks.SHIP_HELM);
+    public static final DeferredItem<BlockItem> LANDING_PAD = ITEMS.registerSimpleBlockItem(UniverseBlocks.LANDING_PAD);
+    public static final DeferredItem<BlockItem> DAMAGED_HELM = ITEMS.registerSimpleBlockItem(UniverseBlocks.DAMAGED_HELM);
     public static final DeferredItem<BlockItem> SHIP_THRUSTER = ITEMS.registerSimpleBlockItem(UniverseBlocks.SHIP_THRUSTER);
     public static final DeferredItem<BlockItem> FUEL_TANK = ITEMS.registerSimpleBlockItem(UniverseBlocks.FUEL_TANK);
     public static final DeferredItem<BlockItem> IMPULSE_ENGINE = ITEMS.registerSimpleBlockItem(UniverseBlocks.IMPULSE_ENGINE);
@@ -132,6 +138,10 @@ public final class UniverseItems {
     public static final DeferredItem<Item> SENTINEL_SCRAP = ITEMS.registerSimpleItem("sentinel_scrap");
     /** 海盗残骸：打下海盗战机掉的，空间站收（ADR-0017）。 */
     public static final DeferredItem<Item> PIRATE_SCRAP = ITEMS.registerSimpleItem("pirate_scrap");
+    /** 太空遭遇（ADR-0024）：信用点芯片、应急信号接收器。 */
+    public static final DeferredItem<CreditChipItem> CREDIT_CHIP = ITEMS.registerItem("credit_chip", CreditChipItem::new);
+    public static final DeferredItem<EmergencyReceiverItem> EMERGENCY_RECEIVER = ITEMS.registerItem("emergency_receiver",
+            EmergencyReceiverItem::new, properties -> properties.stacksTo(16));
     public static final DeferredItem<SpawnEggItem> SENTINEL_SPAWN_EGG = ITEMS.registerItem("sentinel_spawn_egg",
             SpawnEggItem::new, properties -> properties.spawnEgg(UniverseEntities.SENTINEL.get()));
     public static final DeferredItem<SpawnEggItem> HEAVY_SENTINEL_SPAWN_EGG = ITEMS.registerItem("heavy_sentinel_spawn_egg",
@@ -142,6 +152,9 @@ public final class UniverseItems {
     public static final DeferredItem<BlockItem> DROP_POD = ITEMS.registerSimpleBlockItem(UniverseBlocks.DROP_POD);
     public static final DeferredItem<BlockItem> DATA_TERMINAL = ITEMS.registerSimpleBlockItem(UniverseBlocks.DATA_TERMINAL);
     public static final DeferredItem<BlockItem> MONOLITH = ITEMS.registerSimpleBlockItem(UniverseBlocks.MONOLITH);
+    public static final DeferredItem<BlockItem> PORTAL_STONE = ITEMS.registerSimpleBlockItem(UniverseBlocks.PORTAL_STONE);
+    public static final DeferredItem<BlockItem> PORTAL_GLYPH = ITEMS.registerSimpleBlockItem(UniverseBlocks.PORTAL_GLYPH);
+    public static final DeferredItem<BlockItem> PORTAL_DIAL = ITEMS.registerSimpleBlockItem(UniverseBlocks.PORTAL_DIAL);
     public static final DeferredItem<BlockItem> TECH_CACHE = ITEMS.registerSimpleBlockItem(UniverseBlocks.TECH_CACHE);
     public static final DeferredItem<BlockItem> SMOLDERING_WRECK = ITEMS.registerSimpleBlockItem(UniverseBlocks.SMOLDERING_WRECK);
     // ---- 空间站（ADR-0017）
@@ -156,6 +169,12 @@ public final class UniverseItems {
     public static final DeferredItem<BlockItem> SHIP_REPAIR = ITEMS.registerSimpleBlockItem(UniverseBlocks.SHIP_REPAIR);
     public static final DeferredItem<BlockItem> STATION_TELEPORTER = ITEMS.registerSimpleBlockItem(UniverseBlocks.STATION_TELEPORTER);
     public static final DeferredItem<BlockItem> MISSION_BOARD = ITEMS.registerSimpleBlockItem(UniverseBlocks.MISSION_BOARD);
+    public static final DeferredItem<BlockItem> SHIP_DEALER = ITEMS.registerSimpleBlockItem(UniverseBlocks.SHIP_DEALER);
+    // ---- 货船（ADR-0024）
+    public static final DeferredItem<BlockItem> FREIGHTER_PLATE = ITEMS.registerSimpleBlockItem(UniverseBlocks.FREIGHTER_PLATE);
+    public static final DeferredItem<BlockItem> FREIGHTER_ENGINE = ITEMS.registerSimpleBlockItem(UniverseBlocks.FREIGHTER_ENGINE);
+    public static final DeferredItem<BlockItem> FREIGHTER_CONSOLE = ITEMS.registerSimpleBlockItem(UniverseBlocks.FREIGHTER_CONSOLE);
+    public static final DeferredItem<BlockItem> FLEET_TERMINAL = ITEMS.registerSimpleBlockItem(UniverseBlocks.FLEET_TERMINAL);
     public static final DeferredItem<BlockItem> BASE_BEACON = ITEMS.registerSimpleBlockItem(UniverseBlocks.BASE_BEACON);
     public static final DeferredItem<BlockItem> TELEPORTER = ITEMS.registerSimpleBlockItem(UniverseBlocks.TELEPORTER);
 
@@ -376,6 +395,17 @@ public final class UniverseItems {
         }
     }
 
+    /** 镉、翠金、铟驱动（ADR-0024），装进驾驶台的技术槽。 */
+    public static final Map<DriveTier, DeferredItem<DriveItem>> DRIVES = new EnumMap<>(DriveTier.class);
+
+    static {
+        for (DriveTier tier : DriveTier.values()) {
+            if (tier != DriveTier.BASIC) {
+                DRIVES.put(tier, ITEMS.registerItem(DriveItem.itemName(tier), properties -> new DriveItem(tier, properties)));
+            }
+        }
+    }
+
     public static final List<DeferredItem<?>> CREATIVE_ORDER = creativeOrder();
 
     private static List<DeferredItem<?>> creativeOrder() {
@@ -393,9 +423,13 @@ public final class UniverseItems {
         order.addAll(List.of(EXOSUIT_HELMET, EXOSUIT_CHESTPLATE, EXOSUIT_LEGGINGS, EXOSUIT_BOOTS, OXYGEN_CAPSULE, HAZARD_CELL,
                 MULTITOOL, DAMAGED_MULTITOOL));
         order.addAll(MODULES.values());
+        order.addAll(DRIVES.values());
+        order.add(LANDING_PAD);
+        order.add(DAMAGED_HELM);
         order.addAll(List.of(NAVIGATION_DATA, SIGNAL_BOOSTER, SUPPLY_CRATE, DROP_POD, DATA_TERMINAL, MONOLITH, TECH_CACHE, SMOLDERING_WRECK));
+        order.addAll(List.of(PORTAL_STONE, PORTAL_GLYPH, PORTAL_DIAL));
         order.addAll(List.of(BASE_BEACON, TELEPORTER));
-        order.addAll(List.of(TRADE_TERMINAL, MISSION_BOARD, SHIP_REPAIR, STATION_TELEPORTER, STATION_HULL, STATION_FLOOR, STATION_GLASS, STATION_LIGHT, STATION_PAD, STATION_TRIM, STATION_SOLAR_PANEL));
+        order.addAll(List.of(TRADE_TERMINAL, MISSION_BOARD, SHIP_REPAIR, SHIP_DEALER, FREIGHTER_CONSOLE, FLEET_TERMINAL, STATION_TELEPORTER, STATION_HULL, STATION_FLOOR, STATION_GLASS, STATION_LIGHT, STATION_PAD, STATION_TRIM, STATION_SOLAR_PANEL, FREIGHTER_PLATE, FREIGHTER_ENGINE));
         order.addAll(List.of(SENTINEL_SCRAP, SENTINEL_SPAWN_EGG, HEAVY_SENTINEL_SPAWN_EGG, PIRATE_SCRAP));
         order.addAll(ORES.values());
         order.addAll(ORE_DROPS.values());

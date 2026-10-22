@@ -49,6 +49,16 @@ final class UniverseEntityLoot extends EntityLootSubProvider {
                         .add(LootItem.lootTableItem(UniverseItems.MODULES.get(ModuleType.WEAPON_CALIBRATOR).get())
                                 .apply(RandomModuleFunction.randomModule(1)))
                         .when(LootItemRandomChanceCondition.randomChance(0.3F))));
+        // 太空守卫机的拦截机：守卫机残骸，偶尔有导航数据、飞船模块（ADR-0024）
+        this.add(UniverseEntities.SENTINEL_INTERCEPTOR.get(), LootTable.lootTable()
+                .withPool(this.scrap(2, 4))
+                .withPool(LootPool.lootPool().setRolls(ContextIntProviders.exactly(1))
+                        .add(LootItem.lootTableItem(UniverseItems.NAVIGATION_DATA.get()))
+                        .when(LootItemRandomChanceCondition.randomChance(0.25F)))
+                .withPool(LootPool.lootPool().setRolls(ContextIntProviders.exactly(1))
+                        .add(LootItem.lootTableItem(UniverseItems.MODULES.get(ModuleType.FIRE_CONTROL).get())
+                                .apply(RandomModuleFunction.randomShipModule(0)))
+                        .when(LootItemRandomChanceCondition.randomChance(0.12F))));
         // 海盗战机：海盗残骸，偶尔有导航数据（ADR-0017）
         this.add(UniverseEntities.PIRATE_FIGHTER.get(), LootTable.lootTable()
                 .withPool(LootPool.lootPool().setRolls(ContextIntProviders.exactly(1))

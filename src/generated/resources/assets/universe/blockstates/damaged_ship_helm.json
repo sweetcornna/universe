@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "universe:block/damaged_ship_helm",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "universe:block/damaged_ship_helm"
+    },
+    "facing=south": {
+      "model": "universe:block/damaged_ship_helm",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "universe:block/damaged_ship_helm",
+      "y": 270
+    }
+  }
+}

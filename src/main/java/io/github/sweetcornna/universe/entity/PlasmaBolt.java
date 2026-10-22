@@ -2,6 +2,7 @@ package io.github.sweetcornna.universe.entity;
 
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.core.survival.PlasmaWeapon;
+import io.github.sweetcornna.universe.encounter.SpaceEncounters;
 import io.github.sweetcornna.universe.pirate.PirateFighter;
 import io.github.sweetcornna.universe.registry.UniverseEntities;
 import io.github.sweetcornna.universe.sentinel.Sentinel;
@@ -26,6 +27,7 @@ import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.projectile.ThrowableProjectile;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
@@ -177,8 +179,10 @@ public class PlasmaBolt extends ThrowableProjectile {
     protected void onHit(HitResult hitResult) {
         super.onHit(hitResult);
         if (!this.level().isClientSide()) {
-            if (hitResult.getType() == HitResult.Type.BLOCK) {
+            if (hitResult instanceof BlockHitResult block && hitResult.getType() == HitResult.Type.BLOCK) {
                 this.playSound(SoundEvents.FIRE_EXTINGUISH, 0.25F, 2.0F);
+                // 打中遇险的货船（ADR-0024）
+                SpaceEncounters.onBoltHit((ServerLevel) this.level(), this.getOwner(), block.getBlockPos());
             }
             this.level().broadcastEntityEvent(this, EVENT_IMPACT);
             this.discard();

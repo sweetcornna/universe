@@ -5,6 +5,8 @@ import java.util.function.Supplier;
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.block.poi.SupplyCrateBlockEntity;
 import io.github.sweetcornna.universe.block.ship.FuelTankBlockEntity;
+import io.github.sweetcornna.universe.block.ship.HelmBlockEntity;
+import io.github.sweetcornna.universe.block.ship.LandingPadBlockEntity;
 import io.github.sweetcornna.universe.dyson.EmRailEjectorBlockEntity;
 import io.github.sweetcornna.universe.dyson.LaunchSiloBlockEntity;
 import io.github.sweetcornna.universe.dyson.RayReceiverBlockEntity;
@@ -49,6 +51,11 @@ public final class UniverseBlockEntities {
 
     public static final Supplier<BlockEntityType<FuelTankBlockEntity>> FUEL_TANK = BLOCK_ENTITIES.register("fuel_tank",
             () -> new BlockEntityType<>(FuelTankBlockEntity::new, UniverseBlocks.FUEL_TANK.get(), UniverseBlocks.FUEL_TANK_MK2.get()));
+    // 驾驶台里的技术槽、着陆台（ADR-0024）
+    public static final Supplier<BlockEntityType<HelmBlockEntity>> SHIP_HELM = BLOCK_ENTITIES.register("ship_helm",
+            () -> new BlockEntityType<>(HelmBlockEntity::new, UniverseBlocks.SHIP_HELM.get()));
+    public static final Supplier<BlockEntityType<LandingPadBlockEntity>> LANDING_PAD = BLOCK_ENTITIES.register("landing_pad",
+            () -> new BlockEntityType<>(LandingPadBlockEntity::new, UniverseBlocks.LANDING_PAD.get()));
     public static final Supplier<BlockEntityType<SupplyCrateBlockEntity>> SUPPLY_CRATE = BLOCK_ENTITIES.register("supply_crate",
             () -> new BlockEntityType<>(SupplyCrateBlockEntity::new, UniverseBlocks.SUPPLY_CRATE.get()));
 

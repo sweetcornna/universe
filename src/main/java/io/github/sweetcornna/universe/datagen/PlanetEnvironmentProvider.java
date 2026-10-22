@@ -19,6 +19,7 @@ import com.google.gson.JsonPrimitive;
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.core.galaxy.DayCycle;
 import io.github.sweetcornna.universe.world.planet.PlanetDimensionTypes;
+import io.github.sweetcornna.universe.world.freighter.FreighterDimensions;
 import io.github.sweetcornna.universe.world.space.SpaceDimensions;
 import net.minecraft.data.CachedOutput;
 import net.minecraft.data.DataProvider;
@@ -69,6 +70,7 @@ final class PlanetEnvironmentProvider implements DataProvider {
                     this.dimensionTypes.json(PlanetDimensionTypes.forCycle(cycle).identifier())));
         }
         writes.add(DataProvider.saveStable(cache, spaceType(overworld), this.dimensionTypes.json(SpaceDimensions.TYPE.identifier())));
+        writes.add(DataProvider.saveStable(cache, freighterType(overworld), this.dimensionTypes.json(FreighterDimensions.TYPE.identifier())));
         return CompletableFuture.allOf(writes.toArray(CompletableFuture[]::new));
     }
 
@@ -104,6 +106,17 @@ final class PlanetEnvironmentProvider implements DataProvider {
         music.add("default", track);
         attributes.add("minecraft:audio/background_music", music);
         attributes.addProperty("neoforge:custom_skybox", Universe.id("space").toString());
+        return type;
+    }
+
+    /** 货船的船舱（ADR-0024）：和太空一样，只是床能设重生点（还是睡不了觉，船上没有昼夜）。 */
+    private static JsonObject freighterType(JsonObject overworld) {
+        JsonObject type = spaceType(overworld);
+        JsonObject bedRule = type.getAsJsonObject("attributes").getAsJsonObject("minecraft:gameplay/bed_rule");
+        bedRule.addProperty("can_set_spawn", "always");
+        JsonObject message = new JsonObject();
+        message.addProperty("translate", "universe.bed.no_sleep_on_freighter");
+        bedRule.add("error_message", message);
         return type;
     }
 

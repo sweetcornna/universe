@@ -9,6 +9,7 @@ import java.util.TreeMap;
 
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.block.OreKind;
+import io.github.sweetcornna.universe.core.space.DriveTier;
 import io.github.sweetcornna.universe.core.tech.ModuleType;
 import io.github.sweetcornna.universe.factory.recipe.MachineRecipe;
 import io.github.sweetcornna.universe.factory.recipe.MachineRecipe.Kind;
@@ -634,8 +635,28 @@ final class UniverseRecipes extends RecipeProvider {
         modules.put(ModuleType.SCANNER_ARRAY, in(scrap, 2, survey, 2, board, 2, coil, 1));
         modules.put(ModuleType.ANALYZER, in(scrap, 2, survey, 3, Items.SPYGLASS, 1, board, 2));
         modules.put(ModuleType.WEAPON_CALIBRATOR, in(scrap, 3, survey, 2, gear, 2, coil, 1));
+        // 飞船技术（ADR-0024）
+        modules.put(ModuleType.THRUST_EFFICIENCY, in(scrap, 2, survey, 2, UniverseItems.SHIP_THRUSTER.get(), 1, UniverseItems.LAUNCH_FUEL.get(), 2));
+        modules.put(ModuleType.PULSE_TUNING, in(scrap, 2, survey, 2, coil, 2, UniverseItems.LAUNCH_FUEL.get(), 1));
+        modules.put(ModuleType.HYPERDRIVE_BOOSTER, in(scrap, 3, survey, 3, UniverseItems.NAVIGATION_DATA.get(), 2, prism, 1));
+        modules.put(ModuleType.DEFLECTOR, in(scrap, 3, survey, 2, coil, 2, prism, 1));
+        modules.put(ModuleType.HULL_REINFORCEMENT, in(scrap, 2, survey, 2, UniverseItems.STEEL.get(), 3, gear, 1));
+        modules.put(ModuleType.FIRE_CONTROL, in(scrap, 3, survey, 2, board, 2, prism, 1));
         modules.forEach((type, ingredients) -> this.machine(Kind.ASSEMBLING, type.itemName(), 100, "tech_modules", ingredients,
                 out(UniverseItems.MODULES.get(type).get(), 1)));
+        // ---- M13：着陆台和三档驱动（ADR-0024）。驱动一档套一档：做高一档的要用掉低一档的
+        this.researchShaped("landing_pad", RecipeCategory.TRANSPORTATION, UniverseItems.LANDING_PAD.get(), 1,
+                List.of("SYS", "CBC", "III"), Map.of('S', Items.SMOOTH_STONE_SLAB, 'Y', Items.DYE.yellow(), 'C', coil, 'B', board,
+                        'I', Items.IRON_INGOT));
+        this.researchShaped("cadmium_drive", RecipeCategory.TRANSPORTATION, UniverseItems.DRIVES.get(DriveTier.CADMIUM).get(), 1,
+                List.of("TST", "PWP", "TST"), Map.of('T', UniverseItems.TITANIUM_ALLOY.get(), 'S', UniverseItems.SUPER_MAGNETIC_RING.get(),
+                        'P', UniverseItems.PROCESSOR.get(), 'W', UniverseItems.WARP_DRIVE.get()));
+        this.researchShaped("emeril_drive", RecipeCategory.TRANSPORTATION, UniverseItems.DRIVES.get(DriveTier.EMERIL).get(), 1,
+                List.of("GCG", "PDP", "GCG"), Map.of('G', UniverseItems.TITANIUM_GLASS.get(), 'C', UniverseItems.CASIMIR_CRYSTAL.get(),
+                        'P', UniverseItems.PARTICLE_BROADBAND.get(), 'D', UniverseItems.DRIVES.get(DriveTier.CADMIUM).get()));
+        this.researchShaped("indium_drive", RecipeCategory.TRANSPORTATION, UniverseItems.DRIVES.get(DriveTier.INDIUM).get(), 1,
+                List.of("LQL", "FDF", "LQL"), Map.of('L', UniverseItems.GRAVITON_LENS.get(), 'Q', UniverseItems.QUANTUM_CHIP.get(),
+                        'F', UniverseItems.FRAME_MATERIAL.get(), 'D', UniverseItems.DRIVES.get(DriveTier.EMERIL).get()));
         this.machine(Kind.ASSEMBLING, "matrix_lab", 60, "electromagnetic_matrix",
                 in(Items.IRON_INGOT, 4, Items.GLASS, 2, board, 2, coil, 1), out(UniverseItems.MATRIX_LAB.get(), 1));
         this.machine(Kind.ASSEMBLING, "sorter", 20, "basic_logistics", in(Items.IRON_INGOT, 1, board, 1),

@@ -1,0 +1,9 @@
+{
+  "parent": "minecraft:block/orientable_with_bottom",
+  "textures": {
+    "bottom": "universe:block/machine_casing_top",
+    "front": "universe:block/landing_pad_front",
+    "side": "universe:block/landing_pad_side",
+    "top": "universe:block/landing_pad_top"
+  }
+}

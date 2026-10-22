@@ -37,6 +37,9 @@ public final class UniverseKeys {
     /** 机甲面板：能量核心、燃烧室、物流栏位（默认 B，ADR-0023）。 */
     public static final KeyMapping MECHA = new KeyMapping("key.universe.mecha", InputConstants.Type.KEYBOARD, InputConstants.KEY_B, CATEGORY);
 
+    /** 召唤飞船；在太空里开船时打开自动驾驶的目的地（默认 N，ADR-0024）。 */
+    public static final KeyMapping SUMMON = new KeyMapping("key.universe.summon", InputConstants.Type.KEYBOARD, InputConstants.KEY_N, CATEGORY);
+
     private UniverseKeys() {
     }
 
@@ -53,6 +56,7 @@ public final class UniverseKeys {
             event.register(TOOL_MODE);
             event.register(ROTATE_BLUEPRINT);
             event.register(MECHA);
+            event.register(SUMMON);
         });
     }
 }

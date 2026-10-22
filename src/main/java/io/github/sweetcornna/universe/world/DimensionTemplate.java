@@ -7,6 +7,8 @@ import java.util.OptionalLong;
 
 import io.github.sweetcornna.universe.core.galaxy.Planet;
 import io.github.sweetcornna.universe.station.Stations;
+import io.github.sweetcornna.universe.world.freighter.FreighterChunkGenerator;
+import io.github.sweetcornna.universe.world.freighter.FreighterDimensions;
 import io.github.sweetcornna.universe.world.planet.PlanetDimensionTypes;
 import io.github.sweetcornna.universe.world.planet.Planets;
 import io.github.sweetcornna.universe.world.planet.gen.PlanetChunkGenerators;
@@ -57,7 +59,9 @@ public enum DimensionTemplate {
     /** 原版主世界的地形生成器，开发时用来对照星球地形的生成速度（{@code /universe planet bench}）。 */
     VANILLA,
     /** 太空：一个恒星系一个，虚空里只有一座空间站（{@link SpaceDimensions}，ADR-0017）。 */
-    SPACE;
+    SPACE,
+    /** 货船的船舱：一艘货船一个，虚空里一套机库、舰桥和甲板（{@link FreighterDimensions}，ADR-0024）。 */
+    FREIGHTER;
 
     private static final List<Block> SURFACE_PALETTE = List.of(
             Blocks.GRASS_BLOCK, Blocks.SAND, Blocks.SNOW_BLOCK, Blocks.RED_SAND, Blocks.END_STONE,
@@ -84,6 +88,7 @@ public enum DimensionTemplate {
             case PLANET -> planet(server, key);
             case VANILLA -> vanilla(server.registryAccess());
             case SPACE -> space(server, key);
+            case FREIGHTER -> freighter(server);
         };
     }
 
@@ -114,6 +119,15 @@ public enum DimensionTemplate {
         Holder<Biome> biome = registries.lookupOrThrow(Registries.BIOME).getOrThrow(Biomes.THE_VOID);
         FlatLevelGeneratorSettings settings = new FlatLevelGeneratorSettings(Optional.of(HolderSet.empty()), biome, List.of());
         return new LevelStem(type, new SpaceChunkGenerator(settings, Stations.site(server, key)));
+    }
+
+    /** 和太空一样是不下雨的虚空，维度类型换成货船的（床能设重生点）。 */
+    private static LevelStem freighter(MinecraftServer server) {
+        RegistryAccess registries = server.registryAccess();
+        Holder<DimensionType> type = registries.lookupOrThrow(Registries.DIMENSION_TYPE).getOrThrow(FreighterDimensions.TYPE);
+        Holder<Biome> biome = registries.lookupOrThrow(Registries.BIOME).getOrThrow(Biomes.THE_VOID);
+        FlatLevelGeneratorSettings settings = new FlatLevelGeneratorSettings(Optional.of(HolderSet.empty()), biome, List.of());
+        return new LevelStem(type, new FreighterChunkGenerator(settings));
     }
 
     private static LevelStem flat(RegistryAccess registries, Identifier id) {

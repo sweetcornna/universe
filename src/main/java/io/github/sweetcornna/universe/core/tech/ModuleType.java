@@ -20,7 +20,14 @@ public enum ModuleType {
     HEAT_SINK(ModuleHost.MULTITOOL, "散热片", "Heat Sink", Stat.COOLING),
     SCANNER_ARRAY(ModuleHost.MULTITOOL, "扫描阵列", "Scanner Array", Stat.SCAN_RADIUS, Stat.SCAN_COOLDOWN),
     ANALYZER(ModuleHost.MULTITOOL, "分析处理器", "Analysis Processor", Stat.ANALYSIS),
-    WEAPON_CALIBRATOR(ModuleHost.MULTITOOL, "武器校准", "Weapon Calibrator", Stat.DAMAGE, Stat.FIRE_RATE);
+    WEAPON_CALIBRATOR(ModuleHost.MULTITOOL, "武器校准", "Weapon Calibrator", Stat.DAMAGE, Stat.FIRE_RATE),
+    // ---- 飞船（ADR-0024）：只加在后面，网络和存档按序号认
+    THRUST_EFFICIENCY(ModuleHost.SHIP, "推进效率", "Thrust Efficiency", Stat.FUEL_USE),
+    PULSE_TUNING(ModuleHost.SHIP, "脉冲调校", "Pulse Tuning", Stat.PULSE_SPEED),
+    HYPERDRIVE_BOOSTER(ModuleHost.SHIP, "超空间增幅", "Hyperdrive Booster", Stat.WARP_RANGE),
+    DEFLECTOR(ModuleHost.SHIP, "偏导护盾", "Deflector Shield", Stat.SHIP_SHIELD),
+    HULL_REINFORCEMENT(ModuleHost.SHIP, "船体加固", "Hull Reinforcement", Stat.HULL),
+    FIRE_CONTROL(ModuleHost.SHIP, "火控校准", "Fire Control", Stat.DAMAGE, Stat.FIRE_RATE);
 
     /** 同一种模块最多几个叠加生效。 */
     public static final int MAX_STACK = 3;
@@ -56,6 +63,19 @@ public enum ModuleType {
     /** 物品 ID 里用的名字，比如 {@code module_life_support}。 */
     public String itemName() {
         return "module_" + this.name().toLowerCase(Locale.ROOT);
+    }
+
+    /**
+     * 外骨骼和多功能工具的模块，按原来的顺序。任务、兴趣点、交易终端从这里抽，飞船模块加进来以后老存档抽到的东西不变。
+     */
+    public static List<ModuleType> personal() {
+        List<ModuleType> types = new ArrayList<>();
+        for (ModuleType type : values()) {
+            if (type.host != ModuleHost.SHIP) {
+                types.add(type);
+            }
+        }
+        return types;
     }
 
     public static List<ModuleType> of(ModuleHost host) {

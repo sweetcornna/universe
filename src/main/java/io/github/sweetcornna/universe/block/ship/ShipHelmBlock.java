@@ -2,7 +2,10 @@ package io.github.sweetcornna.universe.block.ship;
 
 import java.util.Map;
 
+import org.jspecify.annotations.Nullable;
+
 import io.github.sweetcornna.universe.entity.ship.ShipAssembly;
+import io.github.sweetcornna.universe.entity.ship.ShipPanel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
@@ -13,7 +16,9 @@ import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.phys.BlockHitResult;
@@ -22,9 +27,10 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
- * 驾驶台：一艘船的核心。朝向就是船头，右键把和它相连的方块组装成飞船并坐上去。
+ * 驾驶台：一艘船的核心。朝向就是船头，右键把和它相连的方块组装成飞船并坐上去；空手潜行右键打开飞船面板，
+ * 看评级、装技术（ADR-0024，技术存在 {@link HelmBlockEntity} 里）。
  */
-public class ShipHelmBlock extends HorizontalDirectionalBlock {
+public class ShipHelmBlock extends HorizontalDirectionalBlock implements EntityBlock {
     /** 座面的高度（格），驾驶员坐在这里，停船后也站在这里。 */
     public static final double SEAT_HEIGHT = 7 / 16.0;
     private static final Map<Direction, VoxelShape> SHAPES = Shapes.rotateHorizontal(Shapes.or(
@@ -56,9 +62,18 @@ public class ShipHelmBlock extends HorizontalDirectionalBlock {
     }
 
     @Override
+    public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+        return new HelmBlockEntity(pos, state);
+    }
+
+    @Override
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
         if (level instanceof ServerLevel serverLevel && player instanceof ServerPlayer serverPlayer) {
-            ShipAssembly.assembleAndBoard(serverLevel, pos, serverPlayer);
+            if (player.isShiftKeyDown()) {
+                ShipPanel.openParked(serverLevel, pos, serverPlayer);
+            } else {
+                ShipAssembly.assembleAndBoard(serverLevel, pos, serverPlayer);
+            }
         }
         return InteractionResult.SUCCESS;
     }

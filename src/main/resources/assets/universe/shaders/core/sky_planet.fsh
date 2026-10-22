@@ -110,68 +110,6 @@ float visibleAt(float f) {
     return clamp(log2(0.35 / max(footprint * f, 1e-6)), 0.0, 1.0);
 }
 
-// ---------------------------------------------------------------- 像素块（ADR-0021）
-
-// 我的世界的样子：表面按等角立方体贴图分成格子，一格一种颜色、一个朝向。一格在屏幕上大约占竖直视野的这么多
-const float TEXEL_SCREEN = 1.0 / 260.0;
-
-// 在距离 t、视线和表面夹角余弦 cosView 处，立方体每个面一边分几格：2 的幂，飞近一倍格子细一倍，像换一级纹理
-float texelCount(float t, float cosView) {
-    float arc = TEXEL_SCREEN * 2.0 / ProjMat[1][1] * t / pow(max(cosView, 0.15), 0.6);
-    return exp2(clamp(floor(log2(PI * 0.5 / max(arc, 1e-7))), 4.0, 21.0));
-}
-
-// 把球面方向 q 归到它所在格子的中心；cell 是格子的编号（换一级格子编号也换）
-vec3 snapToTexel(vec3 q, float n, out vec3 cell) {
-    vec3 a = abs(q);
-    vec3 major;
-    vec3 u;
-    vec3 v;
-    vec2 uv;
-    float face;
-    if (a.x >= a.y && a.x >= a.z) {
-        major = vec3(sign(q.x), 0.0, 0.0);
-        u = vec3(0.0, 1.0, 0.0);
-        v = vec3(0.0, 0.0, 1.0);
-        uv = q.yz / a.x;
-        face = q.x > 0.0 ? 0.0 : 1.0;
-    } else if (a.y >= a.z) {
-        major = vec3(0.0, sign(q.y), 0.0);
-        u = vec3(1.0, 0.0, 0.0);
-        v = vec3(0.0, 0.0, 1.0);
-        uv = q.xz / a.y;
-        face = q.y > 0.0 ? 2.0 : 3.0;
-    } else {
-        major = vec3(0.0, 0.0, sign(q.z));
-        u = vec3(1.0, 0.0, 0.0);
-        v = vec3(0.0, 1.0, 0.0);
-        uv = q.xy / a.z;
-        face = q.z > 0.0 ? 4.0 : 5.0;
-    }
-    // 等角坐标：格子在面中间和角上差不多大
-    vec2 e = atan(uv) * (4.0 / PI);
-    vec2 index = clamp(floor((e * 0.5 + 0.5) * n), 0.0, n - 1.0);
-    vec2 g = tan(((index + 0.5) / n * 2.0 - 1.0) * (PI / 4.0));
-    cell = vec3(index, face + log2(n) * 8.0);
-    return normalize(major + u * g.x + v * g.y);
-}
-
-// 云按几档透明度画，像原版的云那样一块一块，没有柔边
-float blockyCloud(float c) {
-    return floor(c * 3.0 + 0.45) / 3.0;
-}
-
-// 颜色按档取，像方块纹理那样只用有限的几种深浅（在接近感知亮度的平方根空间里分档）
-vec3 palette(vec3 albedo) {
-    vec3 a = floor(sqrt(max(albedo, 0.0)) * 20.0 + 0.5) / 20.0;
-    return a * a;
-}
-
-// 光照按原版的 16 级亮度取
-float lightLevel(float light) {
-    return light <= 0.0 ? 0.0 : ceil(light * 15.0) / 15.0;
-}
-
 float fbm(vec3 p, float oct) {
     float value = 0.0;
     float amplitude = 0.5;
@@ -253,7 +191,7 @@ float craterLayer(vec3 q, float scale, float density, float seed, inout vec3 til
         float fresh = step(0.85, h.z);
         albedo *= 1.0 - 0.06 * floorDark * h.z + 0.05 * rim * (1.0 - h.z) + fresh * 0.22 * (1.0 - smoothstep(0.9, 1.6, d));
         // 坡度：坑里朝中心倾斜，坑缘外朝外倾斜
-        float slope = d < 1.0 ? -d * 0.9 : -(d - 1.0) * 2.2 * exp(-(d - 1.0) * 3.0) + 0.0;
+        float slope = d < 1.0 ? -d * 0.9 : -(d - 1.0) * 2.2 * exp(-(d - 1.0) * 3.0) * (1.0 - smoothstep(1.2, 1.6, d));
         slope += rim * 0.6 * sign(1.0 - d);
         tilt += normalize(delta + vec3(1e-5)) * slope * strength;
     }
@@ -274,32 +212,74 @@ float lat(vec3 q) {
     return q.z;
 }
 
-// 云：沿经度拉长，几个气旋把云卷成旋涡；赤道和中高纬多云，副热带少云
-float cloudField(vec3 q, float coverage, float stretch) {
+// cloudField 顺带算出来的两个量：云有多厚（0 到 1，厚的地方白，薄的边上发灰、透出下面），
+// 和云顶向阳还是背阴（-1 到 1，近处看得出一团团积云的明暗）
+float cloudThick;
+float cloudRelief;
+// 太阳在星球坐标里的方向
+vec3 sunBody;
+
+// 云：沿经度拉长。中纬度的温带气旋把云卷成逗号，低纬度的热带气旋卷得紧、中间有眼；
+// 赤道和中纬度的风暴带多云，副热带少云。近处云的边缘收紧，碎成一团团积云
+float cloudField(vec3 q, float coverage, float stretch, bool shade) {
     vec3 p = q;
-    for (int k = 0; k < 4; k++) {
-        vec3 c = seededDirection(10.0 + float(k));
-        c.z *= 0.7;
-        c = normalize(c);
-        float d = distance(p, c);
-        float twist = (3.5 + 2.0 * hash11(Style.y * 13.0 + float(k))) * exp(-d * d / 0.018) * sign(c.z + 1e-3);
-        p = rotateAbout(p, c, twist);
+    float storm = 0.0;
+    for (int k = 0; k < 8; k++) {
+        bool tropical = k >= 6;
+        float h1 = hash11(Style.y * 13.0 + float(k));
+        float h2 = hash11(Style.y * 29.0 + float(k) * 1.7);
+        // 南北半球各一半；北半球的气旋逆时针转，南半球顺时针
+        float hemi = (k & 1) == 0 ? 1.0 : -1.0;
+        float z = hemi * (tropical ? 0.22 + 0.14 * h2 : 0.55 + 0.3 * h2);
+        float lon = h1 * 2.0 * PI + float(k) * 2.4;
+        vec3 c = vec3(sqrt(1.0 - z * z) * vec2(cos(lon), sin(lon)), z);
+        float d2 = dot(p - c, p - c);
+        // 温带气旋一千公里上下，热带气旋小一圈
+        float size = tropical ? 0.0035 : 0.02 + 0.015 * h1;
+        float pull = exp(-d2 / size);
+        p = rotateAbout(p, c, (tropical ? 4.5 : 2.5 + 1.5 * h1) * pull * hemi);
+        storm += (tropical ? 0.2 : 0.1) * pull;
+        if (tropical) {
+            storm += 0.3 * exp(-d2 / (size * 0.35));
+            // 风眼，几十公里宽
+            storm -= 0.9 * exp(-d2 / 0.00004);
+        }
     }
     vec3 o = seedOffset(40.0);
     vec3 warp = vec3(fbm(p * 1.6 + o, 3.0), fbm(p * 1.6 + o + 5.3, 3.0), fbm(p * 1.6 + o + 9.1, 3.0)) - 0.5;
     vec3 s = p * vec3(2.4, 2.4, 2.4 * stretch) + warp * 2.2 + o;
     float large = fbm(s, octaves(2.4 * stretch));
-    // 赤道辐合带多云，副热带（纬度二三十度）晴，中纬度的风暴带又多云
+    // 赤道辐合带多云，副热带（纬度二三十度）晴，中纬度的风暴带又多云，极地偏少
     float a = abs(lat(q));
-    float zonal = 0.07 * exp(-a * a / 0.006) - 0.07 * exp(-pow((a - 0.45) / 0.12, 2.0)) + 0.05 * exp(-pow((a - 0.8) / 0.12, 2.0));
+    float zonal = 0.12 * exp(-a * a / 0.008) - 0.11 * exp(-pow((a - 0.45) / 0.12, 2.0))
+            + 0.07 * exp(-pow((a - 0.78) / 0.1, 2.0)) - 0.04 * smoothstep(0.9, 1.0, a);
     // 积云一团一团的纹理和被风拉出来的丝
     float detail = fbm(p * 13.0 + warp * 3.0 + o * 0.3, octaves(13.0));
     float wisps = ridged(p * vec3(5.0, 5.0, 5.0 * stretch) + warp * 4.0 + o, octaves(5.0 * stretch));
     // 近地轨道上才看得出的积云团，边缘也跟着收紧
     float near = visibleAt(90.0);
     float cells = near > 0.0 ? fbm(p * 90.0 + warp * 8.0 + o * 0.7, octaves(90.0)) : 0.5;
-    float v = large + zonal + (detail - 0.5) * 0.5 + (wisps - 0.35) * 0.12 + (cells - 0.5) * 0.3 * near;
-    return smoothstep(1.0 - coverage - 0.02, 1.0 - coverage + 0.2 - 0.08 * near, v);
+    // 再近：几公里大的积云，一粒一粒的
+    float close = visibleAt(600.0);
+    float puffs = close > 0.0 ? fbm(p * 600.0 + o * 0.9, octaves(600.0)) : 0.5;
+    float v = large + zonal + storm + (detail - 0.5) * 0.5 + (wisps - 0.35) * 0.12
+            + (cells - 0.5) * 0.3 * near + (puffs - 0.5) * 0.2 * close;
+    float edge = 1.0 - coverage;
+    float soft = mix(0.2, 0.1, max(near * 0.6, close));
+    float body = smoothstep(edge - 0.02, edge + soft, v);
+    cloudThick = clamp((v - edge) / 0.3, 0.0, 1.0);
+    // 卷云：高处被风拉成的薄纱，透得过光，多半挨着大片的云
+    float cirrus = smoothstep(0.45, 0.75, wisps + (detail - 0.5) * 0.3) * 0.22 * smoothstep(edge - 0.25, edge, v);
+    // 卷云是冰晶，薄但白
+    cloudThick = max(cloudThick, cirrus > body ? 0.6 : 0.0);
+    cloudRelief = 0.0;
+    if (shade && near > 0.0) {
+        // 云顶的明暗：往太阳那边挪一点再取一次积云，那边更厚说明这里在背阴的一面
+        vec3 toSun = sunBody - q * dot(sunBody, q);
+        float cellsSun = fbm((p + toSun * 0.004) * 90.0 + warp * 8.0 + o * 0.7, octaves(90.0));
+        cloudRelief = clamp((cells - cellsSun) * 6.0, -1.0, 1.0) * near;
+    }
+    return max(body, cirrus);
 }
 
 Surface earthlike(vec3 q, bool waterWorld) {
@@ -310,8 +290,8 @@ Surface earthlike(vec3 q, bool waterWorld) {
     vec3 warp = vec3(fbm(q * 1.4 + o, 4.0), fbm(q * 1.4 + o + 5.2, 4.0), fbm(q * 1.4 + o + 9.7, 4.0)) - 0.5;
     float h = fbm(q * 1.7 + warp * 1.1 + o, octaves(1.7));
     float sea = Style.w;
-    // 按格子取样，海岸线不做柔边，一格要么是海要么是陆地
-    float coast = 0.0006;
+    // 海岸线按一个像素的宽度过渡，远处不出锯齿
+    float coast = max(0.0006, footprint * 3.0);
     float land = smoothstep(sea - coast, sea + coast, h);
     float depth = clamp((sea - h) / 0.045, 0.0, 1.0);
     vec3 shallow = mix(ColorA.rgb, vec3(0.06, 0.26, 0.3), 0.35) * 1.3;
@@ -352,7 +332,7 @@ Surface earthlike(vec3 q, bool waterWorld) {
     s.albedo = albedo;
     s.ocean = (1.0 - land) * (1.0 - cap);
     float coverage = Style.z;
-    s.cloud = coverage > 0.0 ? cloudField(q, coverage, 2.2) : 0.0;
+    s.cloud = coverage > 0.0 ? cloudField(q, coverage, 2.2, true) : 0.0;
     return s;
 }
 
@@ -363,15 +343,32 @@ Surface moonlike(vec3 q) {
     s.ocean = 0.0;
     s.cloud = 0.0;
     vec3 o = seedOffset(0.0);
-    // 月海：大片的暗色玄武岩，边缘弯弯曲曲，里面也有深浅
+    // 月海：几个大撞击盆地灌满了玄武岩，大体是圆的（像雨海、澄海、危海），边缘被后来的坑和熔岩流啃得弯弯曲曲；
+    // 再加一片不规则的大洋（像风暴洋）。月海和高地的分界很清楚
     vec3 warp = vec3(fbm(q * 2.0 + o, 3.0), fbm(q * 2.0 + o + 4.1, 3.0), fbm(q * 2.0 + o + 8.3, 3.0)) - 0.5;
-    float maria = smoothstep(0.51, 0.62, fbm(q * 1.1 + warp * 0.7 + o, 5.0) + 0.06 * (fbm(q * 5.0 + o, 3.0) - 0.5));
+    float ragged = (fbm(q * 7.0 + o, octaves(7.0)) - 0.5) * 0.5 + (fbm(q * 25.0 + o * 0.7, octaves(25.0)) - 0.5) * 0.15;
+    float aa = max(0.02, footprint * 1.5);
+    float maria = smoothstep(0.585 - aa, 0.585 + aa, fbm(q * 1.1 + warp * 0.7 + o, 5.0) + ragged * 0.12);
+    int basins = 2 + int(hash11(Style.y * 41.0) * 4.0);
+    for (int k = 0; k < 5; k++) {
+        if (k >= basins) {
+            break;
+        }
+        vec3 c = seededDirection(70.0 + float(k));
+        float radius = 0.14 + 0.22 * hash11(Style.y * 31.0 + float(k));
+        float d = acos(clamp(dot(q, c), -1.0, 1.0)) / radius + ragged;
+        maria = max(maria, 1.0 - smoothstep(1.0 - aa / radius, 1.0 + aa / radius, d));
+    }
     float tone = fbm(q * 6.0 + o, octaves(6.0));
     float fine = fbm(q * 28.0 + o * 0.5, octaves(28.0));
-    vec3 highland = ColorA.rgb * clamp(1.0 + (tone - 0.5) * 2.2, 0.55, 1.5) * (0.85 + 0.3 * fine);
-    vec3 mare = ColorB.rgb * (0.8 + 0.4 * fbm(q * 4.0 + o + 3.0, octaves(4.0))) * (0.92 + 0.16 * fine);
+    // 高地亮，深浅起伏不大；月海暗，不同年代的熔岩流颜色有点差别（含钛多的发蓝，少的发褐）
+    vec3 highland = ColorA.rgb * (0.82 + 0.36 * tone) * (0.88 + 0.24 * fine);
+    float flow = fbm(q * 3.0 + warp + o + 3.0, octaves(3.0));
+    vec3 mare = ColorB.rgb * (0.85 + 0.3 * flow) * mix(vec3(1.04, 1.0, 0.95), vec3(0.95, 0.98, 1.06), smoothstep(0.4, 0.6, flow))
+            * (0.95 + 0.1 * fine);
     vec3 albedo = mix(highland, mare, maria);
-    float relief = ColorC.w;
+    // 坑壁二三十度陡，晨昏线附近一个个坑看得很清楚
+    float relief = ColorC.w * 3.0;
     float c = craterLayer(q, 5.0, 0.55, 1.0, s.tilt, 0.08 * relief);
     float fade = clamp(octaves(14.0) - 2.0, 0.0, 1.0);
     c *= mix(1.0, craterLayer(q, 14.0, 0.7, 2.0, s.tilt, 0.05 * relief * fade), fade);
@@ -387,16 +384,27 @@ Surface moonlike(vec3 q) {
         }
         c *= mix(1.0, 0.9 + 0.2 * fbm(q * 150.0 + o, octaves(150.0)), fade3);
     }
-    // 一个年轻的大坑拖出细长的放射纹（像第谷坑）
-    {
-        vec3 center = seededDirection(30.0);
+    // 月海比高地年轻，坑少一些
+    c = mix(c, 1.0, maria * 0.5);
+    // 年轻的坑拖出细长的放射纹（像第谷坑、哥白尼坑、开普勒坑），满月时最显眼
+    for (int k = 0; k < 3; k++) {
+        vec3 center = seededDirection(30.0 + float(k));
+        float reach = 0.5 / (1.0 + float(k));
         float d = acos(clamp(dot(q, center), -1.0, 1.0));
+        if (d > reach * 4.0) {
+            continue;
+        }
         vec3 t = normalize(q - center * dot(q, center) + vec3(1e-5));
         vec3 ref = normalize(cross(center, vec3(0.3, 0.5, 0.8)));
-        float angle = atan(dot(t, cross(center, ref)), dot(t, ref));
-        float streak = pow(noise1(angle * 23.0), 6.0) + 0.6 * pow(noise1(angle * 57.0 + 9.0), 8.0);
-        float rays = streak * exp(-d / 0.5) * smoothstep(0.03, 0.08, d) * (0.6 + 0.4 * fbm(q * 9.0, 3.0));
-        albedo *= 1.0 + rays * 0.55 + 0.3 * exp(-d * d / 0.0012);
+        // 在一个圆上取噪声，绕一圈首尾接得上
+        vec2 around = normalize(vec2(dot(t, ref), dot(t, cross(center, ref))) + vec2(1e-5));
+        float streak = pow(vnoise(vec3(around * 6.0, float(k) * 5.0)), 4.0)
+                + 0.6 * pow(vnoise(vec3(around * 13.0, 9.0 + float(k) * 5.0)), 6.0);
+        // 每一道放射纹长短不一
+        float rayLength = reach * (0.35 + 1.1 * vnoise(vec3(around * 4.0, 20.0 + float(k) * 5.0)));
+        float rays = streak * exp(-d / rayLength) * smoothstep(0.06 * reach, 0.16 * reach, d) * (0.6 + 0.4 * fbm(q * 9.0, 3.0));
+        float bowl = 0.07 * reach;
+        albedo *= 1.0 + rays * 1.4 + 0.3 * exp(-d * d / (bowl * bowl));
     }
     s.albedo = albedo * c;
     return s;
@@ -423,7 +431,7 @@ Surface marslike(vec3 q) {
     float capEdge = 1.0 - ColorB.w + (fbm(q * 6.0 + o, 4.0) - 0.5) * 0.08;
     float cap = smoothstep(capEdge - 0.01, capEdge + 0.01, a);
     s.albedo = mix(albedo * c, ColorC.rgb, cap);
-    s.cloud = Style.z > 0.0 ? cloudField(q, Style.z * 0.6, 3.0) * 0.6 : 0.0;
+    s.cloud = Style.z > 0.0 ? cloudField(q, Style.z * 0.6, 3.0, true) * 0.6 : 0.0;
     return s;
 }
 
@@ -531,14 +539,15 @@ Surface giant(vec3 q, int style) {
     float contrast = style == SATURN ? 0.55 : style == ICE_GIANT ? 0.22 : 1.0;
     float bandCount = style == SATURN ? 16.0 : style == ICE_GIANT ? 6.0 : 11.0 + 5.0 * Style.y;
     vec3 shear = vec3(fbm(p * vec3(3.0, 3.0, 14.0) + o, 4.0), fbm(p * vec3(3.0, 3.0, 14.0) + o + 3.3, 4.0), 0.0) - 0.5;
-    float turb = fbm(p * vec3(5.0, 5.0, 24.0) + shear * 2.2 + o, octaves(24.0));
-    float jet = l * bandCount + 0.6 * sin(l * 3.1 + Style.y * 6.0) + (noise1(l * 40.0 + Style.y * 9.0) - 0.5) * 0.8;
+    // octaves 至少画一层，远处和边缘一个像素盖住好几条细纹时干脆淡掉，不出摩尔纹
+    float turb = mix(0.5, fbm(p * vec3(5.0, 5.0, 24.0) + shear * 2.2 + o, octaves(24.0)), visibleAt(24.0));
+    float jet = l * bandCount + 0.6 * sin(l * 3.1 + Style.y * 6.0) + (noise1(l * 40.0 + Style.y * 9.0) - 0.5) * 0.8 * visibleAt(40.0);
     float band = sin(jet * PI + (turb - 0.5) * 3.2 * contrast);
     vec3 color = mix(ColorB.rgb, ColorA.rgb, smoothstep(-0.5, 0.5, band));
     color = mix(mix(ColorA.rgb, ColorB.rgb, 0.5), color, contrast);
     // 细的丝状结构
     float filaments = fbm(p * vec3(14.0, 14.0, 60.0) + shear * 4.0 + o, octaves(60.0));
-    color *= 1.0 + (filaments - 0.5) * 0.35 * mix(0.4, 1.0, contrast);
+    color *= 1.0 + (filaments - 0.5) * 0.35 * mix(0.4, 1.0, contrast) * (style == SATURN ? 0.6 : 1.0) * visibleAt(60.0);
     // 大红斑一样的大风暴，周围的云绕着它转
     vec3 spot = normalize(vec3(cos(Style.y * 6.28), sin(Style.y * 6.28), style == ICE_GIANT ? -0.35 : -0.38));
     vec3 local = p - spot * dot(p, spot);
@@ -824,10 +833,7 @@ void main() {
             float t = dot(c, axis) / denom;
             if (t > 0.0) {
                 vec3 p = d * t - c;
-                // 环也按像素块画：半径方向一圈圈的台阶，宽度取 2 的幂，飞近了不会一直滑动
-                float ringStep = TEXEL_SCREEN * 2.0 / ProjMat[1][1] * t / pow(max(abs(denom), 0.15), 0.6);
-                ringStep = exp2(ceil(log2(max(ringStep, 1e-6))));
-                float r = (floor(length(p) / ringStep) + 0.5) * ringStep;
+                float r = length(p);
                 float density = ringDensity(r);
                 if (density > 0.0) {
                     tRing = t;
@@ -843,25 +849,23 @@ void main() {
     float planetA = 0.0;
     if (surfaceHit) {
         vec3 p = d * tSurface - c;
-        vec3 smoothNormal = normalize(p);
+        vec3 n = normalize(p);
         mat3 toBody = mat3(BodyRot);
-        // 取样、光照都按所在格子的中心算：一格一种颜色，晨昏线和坑里的阴影是一级级的台阶
-        float texels = texelCount(tSurface, abs(dot(smoothNormal, -d)));
-        vec3 cellId;
-        vec3 q = snapToTexel(toBody * smoothNormal, texels, cellId);
-        vec3 n = transpose(toBody) * q;
-        footprint = PI * 0.5 / texels;
+        vec3 q = toBody * n;
+        // 一个像素在球面上跨过的弧度（星球半径为 1）：斜着看的边缘一个像素盖住的地面更多，细节相应少画几层，不闪
+        footprint = pixel * tSurface / max(abs(dot(n, -d)), 0.05);
+        sunBody = toBody * L;
+        cloudThick = 0.0;
+        cloudRelief = 0.0;
         Surface s = surfaceAt(q, style);
-        // 同一种颜色的格子之间也有深浅，像手画的方块纹理
-        s.albedo = palette(s.albedo * (0.9 + 0.2 * hash13(cellId)));
-        vec3 dTexel = normalize(c + n);
-        s.cloud = blockyCloud(s.cloud);
+        float thick = cloudThick;
+        float cloudTop = cloudRelief;
         // 陨石坑让法线倾斜（在星球坐标里算的，换回世界坐标）
         vec3 shading = normalize(n + transpose(toBody) * s.tilt);
         vec3 tSun = sunTransmittance(n * 1.0005, L);
         float ndl = dot(shading, L);
         float mu0 = max(ndl, 0.0);
-        float mu = max(dot(shading, -dTexel), 0.02);
+        float mu = max(dot(shading, -d), 0.02);
         vec3 albedo = s.albedo;
         float brdf;
         if (top <= 0.0 && style != JUPITER && style != SATURN && style != ICE_GIANT) {
@@ -875,14 +879,13 @@ void main() {
         }
         // 晨昏线：没有大气的一刀切，有大气的过渡宽一点
         brdf *= smoothstep(-0.02 - top * 2.0, 0.02, ndl);
-        brdf = lightLevel(brdf);
         // 云和云影
         float cloud = s.cloud;
         float cloudShadow = 0.0;
         if (cloud > 0.0 || Style.z > 0.0) {
-            vec3 shadowCell;
-            vec3 shadowDir = snapToTexel(toBody * normalize(n + L * 0.012), texels, shadowCell);
-            cloudShadow = (style == EARTH || style == OCEAN) ? blockyCloud(cloudField(shadowDir, Style.z, 2.2)) : 0.0;
+            // 云影：往太阳的方向挪一点再取一次云
+            vec3 shadowDir = toBody * normalize(n + L * 0.012);
+            cloudShadow = (style == EARTH || style == OCEAN) ? cloudField(shadowDir, Style.z, 2.2, false) : 0.0;
         }
         // 环的影子落在星球上
         float ringShadow = 1.0;
@@ -900,17 +903,19 @@ void main() {
         // 海面反光：海浪把太阳的倒影摊成一大片，中间亮、往外慢慢变暗（Beckmann 分布，坡度方差 0.02，
         // 相当于七八米每秒的风）；越靠近边缘反射率越高，所以晨昏线和边上的反光更亮
         if (s.ocean > 0.0 && ndl > 0.0) {
-            vec3 h = normalize(L - dTexel);
+            vec3 h = normalize(L - d);
             float c2 = max(dot(n, h), 1e-3);
             c2 *= c2;
             float m2 = 0.02;
             float beckmann = exp((c2 - 1.0) / (c2 * m2)) / (PI * m2 * c2 * c2);
-            float fresnel = 0.02 + 0.98 * pow(1.0 - max(dot(h, -dTexel), 0.0), 5.0);
+            float fresnel = 0.02 + 0.98 * pow(1.0 - max(dot(h, -d), 0.0), 5.0);
             float spec = min(PI * beckmann * fresnel / (4.0 * mu) * 1.5, 4.0);
             ground += vec3(spec) * s.ocean * (1.0 - cloud);
         }
         vec3 cloudSun = top > 0.0 ? sunTransmittance(n * (1.0 + top * 0.25), L) : vec3(1.0);
-        vec3 cloudLit = vec3(0.92) * (lightLevel(max(ndl, 0.0) * smoothstep(-0.05, 0.05, ndl)) * cloudSun
+        // 厚的云白，薄的边上灰一些；近处积云向阳的一面亮、背阴的一面暗
+        float cloudAlbedo = mix(0.72, 0.95, sqrt(thick)) * (1.0 + 0.3 * cloudTop);
+        vec3 cloudLit = vec3(cloudAlbedo) * (max(ndl, 0.0) * smoothstep(-0.05, 0.05, ndl) * cloudSun
                 + Atmos.rgb * 1.5 * clamp(ndl + 0.2, 0.0, 1.0)) * sunLight * ringShadow;
         vec3 lit = mix(ground * direct, cloudLit, cloud);
         // 大气里的天光把暗面边上照亮一点

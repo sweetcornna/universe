@@ -64,6 +64,7 @@ final class UniverseBlockLoot extends BlockLootSubProvider {
         this.dropSelf(UniverseBlocks.PLANET_BLOOM.get());
         // 飞船部件拆下来原样掉落（燃料舱里的燃料不保留）
         this.dropSelf(UniverseBlocks.SHIP_HELM.get());
+        this.dropSelf(UniverseBlocks.DAMAGED_HELM.get());
         this.dropSelf(UniverseBlocks.SHIP_THRUSTER.get());
         this.dropSelf(UniverseBlocks.FUEL_TANK.get());
         this.dropSelf(UniverseBlocks.IMPULSE_ENGINE.get());
@@ -135,6 +136,7 @@ final class UniverseBlockLoot extends BlockLootSubProvider {
         // 基地和传送（ADR-0017）：空间站传送器挖不掉
         this.dropSelf(UniverseBlocks.BASE_BEACON.get());
         this.dropSelf(UniverseBlocks.TELEPORTER.get());
+        this.dropSelf(UniverseBlocks.LANDING_PAD.get());
         this.dropSelf(UniverseBlocks.SUPPLY_CRATE.get());
         this.add(UniverseBlocks.SMOLDERING_WRECK.get(), this.createSingleItemTable(UniverseBlocks.HULL_PLATING.get(DyeColor.GRAY).get()));
         this.add(UniverseBlocks.TECH_CACHE.get(), LootTable.lootTable()

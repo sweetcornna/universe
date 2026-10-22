@@ -1,0 +1,52 @@
+{
+  "variants": {
+    "glyph=0": {
+      "model": "universe:block/portal_glyph_0"
+    },
+    "glyph=1": {
+      "model": "universe:block/portal_glyph_1"
+    },
+    "glyph=10": {
+      "model": "universe:block/portal_glyph_10"
+    },
+    "glyph=11": {
+      "model": "universe:block/portal_glyph_11"
+    },
+    "glyph=12": {
+      "model": "universe:block/portal_glyph_12"
+    },
+    "glyph=13": {
+      "model": "universe:block/portal_glyph_13"
+    },
+    "glyph=14": {
+      "model": "universe:block/portal_glyph_14"
+    },
+    "glyph=15": {
+      "model": "universe:block/portal_glyph_15"
+    },
+    "glyph=2": {
+      "model": "universe:block/portal_glyph_2"
+    },
+    "glyph=3": {
+      "model": "universe:block/portal_glyph_3"
+    },
+    "glyph=4": {
+      "model": "universe:block/portal_glyph_4"
+    },
+    "glyph=5": {
+      "model": "universe:block/portal_glyph_5"
+    },
+    "glyph=6": {
+      "model": "universe:block/portal_glyph_6"
+    },
+    "glyph=7": {
+      "model": "universe:block/portal_glyph_7"
+    },
+    "glyph=8": {
+      "model": "universe:block/portal_glyph_8"
+    },
+    "glyph=9": {
+      "model": "universe:block/portal_glyph_9"
+    }
+  }
+}

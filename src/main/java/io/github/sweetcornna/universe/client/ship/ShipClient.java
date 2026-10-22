@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.OptionalInt;
 
 import org.jspecify.annotations.Nullable;
@@ -17,7 +18,9 @@ import io.github.sweetcornna.universe.client.asteroid.AsteroidClient;
 import io.github.sweetcornna.universe.client.galaxy.GalaxyText;
 import io.github.sweetcornna.universe.client.pirate.PirateClient;
 import io.github.sweetcornna.universe.core.ship.ShipStats;
+import io.github.sweetcornna.universe.core.galaxy.StarSystem;
 import io.github.sweetcornna.universe.core.space.AsteroidField;
+import io.github.sweetcornna.universe.core.space.BlackHoles;
 import io.github.sweetcornna.universe.core.space.SpaceLayout;
 import io.github.sweetcornna.universe.entity.ship.ShipEntity;
 import io.github.sweetcornna.universe.entity.ship.ShipStructure;
@@ -26,6 +29,7 @@ import io.github.sweetcornna.universe.network.ShipControlPayload;
 import io.github.sweetcornna.universe.pirate.PirateFighter;
 import io.github.sweetcornna.universe.registry.UniverseEntities;
 import io.github.sweetcornna.universe.registry.UniverseItems;
+import io.github.sweetcornna.universe.world.freighter.FreighterDimensions;
 import io.github.sweetcornna.universe.world.space.SpaceDimensions;
 import net.minecraft.client.Camera;
 import net.minecraft.client.CameraType;
@@ -62,6 +66,8 @@ public final class ShipClient {
     private static int layoutSystem = -1;
     private static List<SpaceLayout.Body> layout = List.of();
     private static List<AsteroidField.Belt> belts = List.of();
+    private static BlackHoles.@Nullable BlackHole hole;
+    private static double holeHorizon = BlackHoles.HORIZON;
     /** 开发脚本：当作一直按着开火键（无头验收用）。 */
     public static boolean forceFire;
     private static boolean sentFiring;
@@ -316,18 +322,24 @@ public final class ShipClient {
         boolean space = spaceSystem.isPresent();
 
         List<Component> lines = new ArrayList<>();
+        // 货船的船舱：上面是天花板，出口是机库门，不报高度
+        boolean freighter = FreighterDimensions.isInterior(ship.level().dimension());
         Component status = ship.impulseActive() ? Component.translatable("hud.universe.ship.status.impulse")
                 : space ? Component.translatable("hud.universe.ship.status.space")
+                : freighter && !ship.isLanded() ? Component.translatable("hud.universe.ship.status.hangar")
                 : ship.isLanded() ? Component.translatable("hud.universe.ship.status.landed")
                 : Component.translatable("hud.universe.ship.status.flying");
         lines.add(Component.translatable("hud.universe.ship.speed", String.format("%.1f", ship.clientSpeed * 20)));
+        if (ship.autopilotActive()) {
+            lines.add(Component.translatable("hud.universe.ship.autopilot"));
+        }
         if (space) {
             nearest(spaceSystem.getAsInt(), ship, lines);
             if (stats.warpDrives() > 0) {
                 lines.add(Component.translatable("hud.universe.ship.warp", (int) stats.warpRange(), warpers(minecraft),
                         UniverseKeys.STAR_MAP.getTranslatedKeyMessage()));
             }
-        } else {
+        } else if (!freighter) {
             lines.add(Component.translatable("hud.universe.ship.altitude", (int) Math.floor(ship.getY()),
                     ship.level().getMaxY() + ShipEntity.SPACE_ALTITUDE));
             double twr = stats.thrustToWeight(ship.gravity());
@@ -336,12 +348,16 @@ public final class ShipClient {
         lines.add(Component.translatable("hud.universe.ship.mass", stats.blocks(), String.format("%.0f", stats.mass())));
 
         Component title = Component.translatable("hud.universe.ship.title").append(" · ").append(status);
+        // 类型和档次（ADR-0024）
+        lines.add(0, Component.translatable("hud.universe.ship.rating", Component.translatable("ship.universe.type." + structure.rating().type().key()),
+                structure.rating().grade().letter()));
         float capacity = (float) Math.max(1, stats.fuelCapacity());
         Component fuelText = Component.translatable("hud.universe.ship.fuel", Math.round(ship.fuel()), Math.round(capacity));
         Component keys = Component.translatable(space ? "hud.universe.ship.keys.space" : "hud.universe.ship.keys");
         String hintKey = ship.isLanded() ? "hud.universe.ship.hint.park"
                 : ship.fuel() <= 0 && !minecraft.player.hasInfiniteMaterials() ? "hud.universe.ship.hint.no_fuel"
                 : space ? "hud.universe.ship.hint.land"
+                : freighter ? "hud.universe.ship.hint.hangar"
                 : "hud.universe.ship.hint.space";
         Component hint = Component.translatable(hintKey);
         // 船体、护盾、武器（ADR-0017）
@@ -437,8 +453,11 @@ public final class ShipClient {
     /** 太空里列出最近的三个天体：名字、距离和方位。 */
     private static void nearest(int system, ShipEntity ship, List<Component> lines) {
         if (system != layoutSystem) {
-            layout = ClientGalaxy.galaxy().flatMap(galaxy -> galaxy.system(system)).map(SpaceLayout::of).orElse(List.of());
-            belts = ClientGalaxy.galaxy().flatMap(galaxy -> galaxy.system(system)).map(AsteroidField::belts).orElse(List.of());
+            Optional<StarSystem> found = ClientGalaxy.galaxy().flatMap(galaxy -> galaxy.system(system));
+            layout = found.map(SpaceLayout::of).orElse(List.of());
+            belts = found.map(AsteroidField::belts).orElse(List.of());
+            hole = found.flatMap(BlackHoles::in).orElse(null);
+            holeHorizon = found.map(BlackHoles::horizon).orElse(BlackHoles.HORIZON);
             layoutSystem = system;
         }
         LocalPlayer player = Minecraft.getInstance().player;
@@ -476,6 +495,17 @@ public final class ShipClient {
                         .append(target(Component.translatable("hud.universe.ship.belt"), belt.distanceTo(ship.getX(), ship.getY(), ship.getZ())))
                         .append(vertical));
             }
+        }
+        // 这个系的黑洞：距离算到视界
+        if (hole != null) {
+            float bearing = (float) Math.toDegrees(Math.atan2(-(hole.x() - ship.getX()), hole.z() - ship.getZ()));
+            float relative = Mth.wrapDegrees(bearing - viewYaw);
+            double distance = Math.max(0, hole.distanceTo(ship.getX(), ship.getY(), ship.getZ()) - holeHorizon);
+            double dy = hole.y() - ship.getY();
+            Component vertical = Math.abs(dy) < holeHorizon ? Component.empty()
+                    : Component.translatable(dy > 0 ? "hud.universe.ship.above" : "hud.universe.ship.below", (int) Math.abs(dy));
+            lines.add(Component.literal(arrow(relative) + " ").append(target(Component.translatable("hud.universe.ship.black_hole"), distance))
+                    .append(vertical));
         }
     }
 

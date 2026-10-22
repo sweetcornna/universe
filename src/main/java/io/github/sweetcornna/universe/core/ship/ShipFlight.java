@@ -58,6 +58,41 @@ public final class ShipFlight {
         this.yaw = yaw;
     }
 
+    // ---- 太空里的几个速度，和 step 里的算法一致；自动驾驶按这些估刹车距离（ADR-0024）
+
+    /** 太空里不开脉冲引擎时的巡航速度。 */
+    public static double spaceCruise(ShipStats stats) {
+        return 2.5 * clamp(stats.thrust() / Math.max(1, stats.mass()), 0.3, 2);
+    }
+
+    /** 太空里松开前进键时的减速度。 */
+    public static double spaceCoast(ShipStats stats) {
+        double agility = clamp(stats.thrust() / Math.max(1, stats.mass()) / 2, 0, 1);
+        return (0.02 + 0.04 * agility) * 0.6;
+    }
+
+    /** 太空里升降的加速度（松开升降键时也按这个减到零）。 */
+    public static double spaceLift(ShipStats stats) {
+        double agility = clamp(stats.thrust() / Math.max(1, stats.mass()) / 2, 0, 1);
+        return 0.02 + 0.04 * agility;
+    }
+
+    /** 关掉脉冲引擎后高于巡航速度时的反推减速度。 */
+    public static double spaceBrake(ShipStats stats) {
+        return stats.impulseSpeed() / 30;
+    }
+
+    /** 太空里从这个速度松开所有键到停下要飞多远。 */
+    public static double stoppingDistance(ShipStats stats, double speed) {
+        double cruise = spaceCruise(stats);
+        double coast = Math.max(1e-4, spaceCoast(stats));
+        double brake = Math.max(coast, spaceBrake(stats));
+        if (speed <= cruise) {
+            return speed * speed / (2 * coast);
+        }
+        return (speed * speed - cruise * cruise) / (2 * brake) + cruise * cruise / (2 * coast);
+    }
+
     /**
      * 推进一刻，返回这一刻消耗的燃料。算出的速度就是这一刻想移动的距离，碰撞由调用方处理（见 {@link #collided}）。
      *
@@ -185,7 +220,8 @@ public final class ShipFlight {
         if (boostImpulse && controls.forward()) {
             fuel += FUEL_PER_IMPULSE * stats.impulse();
         }
-        return fuel;
+        // 推进效率的技术和穿梭机的专长（ADR-0024）
+        return fuel * stats.fuelUse();
     }
 
     /** 碰撞后把被挡住方向上的速度清零。 */

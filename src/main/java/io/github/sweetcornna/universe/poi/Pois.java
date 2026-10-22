@@ -4,6 +4,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.OptionalInt;
 
 import io.github.sweetcornna.universe.core.galaxy.Planet;
 import io.github.sweetcornna.universe.core.galaxy.StarClass;
@@ -17,6 +18,7 @@ import io.github.sweetcornna.universe.registry.UniverseAttachments;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
 import io.github.sweetcornna.universe.registry.UniverseItems;
 import io.github.sweetcornna.universe.world.planet.Planets;
+import io.github.sweetcornna.universe.world.space.SpaceDimensions;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
@@ -74,11 +76,15 @@ public final class Pois {
         return Planets.planet(level).flatMap(Pois::layout);
     }
 
-    /** 这颗星球所在恒星的稀有程度，决定模块品级的概率（{@link ModuleLoot#rarity}）。 */
+    /** 这颗星球（太空里是这个恒星系）的恒星的稀有程度，决定模块品级的概率（{@link ModuleLoot#rarity}）。 */
     public static int rarity(ServerLevel level) {
-        return Planets.planet(level)
-                .flatMap(planet -> Planets.galaxy(level.getServer()).system(planet.id().system()))
-                .map(system -> ModuleLoot.rarity(system.star().starClass()))
+        OptionalInt system = Planets.planet(level).map(planet -> OptionalInt.of(planet.id().system()))
+                .orElseGet(() -> SpaceDimensions.system(level.dimension()));
+        if (system.isEmpty()) {
+            return ModuleLoot.rarity(StarClass.G);
+        }
+        return Planets.galaxy(level.getServer()).system(system.getAsInt())
+                .map(star -> ModuleLoot.rarity(star.star().starClass()))
                 .orElse(ModuleLoot.rarity(StarClass.G));
     }
 

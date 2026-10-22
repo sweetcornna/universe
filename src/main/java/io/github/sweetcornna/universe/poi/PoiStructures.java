@@ -1,12 +1,18 @@
 package io.github.sweetcornna.universe.poi;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.block.poi.DropPodBlock;
 import io.github.sweetcornna.universe.block.poi.SupplyCrateBlock;
 import io.github.sweetcornna.universe.core.poi.Poi;
 import io.github.sweetcornna.universe.core.poi.PoiType;
+import io.github.sweetcornna.universe.core.ship.CrashedShip;
+import io.github.sweetcornna.universe.core.ship.ShipDesign;
+import io.github.sweetcornna.universe.core.ship.ShipDesign.Cell;
+import io.github.sweetcornna.universe.entity.ship.ShipBlueprints;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -39,8 +45,6 @@ import net.minecraft.world.level.storage.loot.LootTable;
 public final class PoiStructures {
     public static final ResourceKey<LootTable> CRASHED_SHIP_LOOT = loot("chests/crashed_ship");
     public static final ResourceKey<LootTable> OUTPOST_LOOT = loot("chests/outpost");
-    private static final DyeColor[] HULL_COLORS = {DyeColor.WHITE, DyeColor.LIGHT_GRAY, DyeColor.GRAY, DyeColor.ORANGE, DyeColor.CYAN,
-            DyeColor.BLUE, DyeColor.RED, DyeColor.YELLOW, DyeColor.GREEN, DyeColor.PURPLE};
     private static final DyeColor[] ACCENTS = {DyeColor.ORANGE, DyeColor.CYAN, DyeColor.YELLOW, DyeColor.RED, DyeColor.BLUE, DyeColor.LIME};
 
     private PoiStructures() {
@@ -63,7 +67,7 @@ public final class PoiStructures {
         }
         Placer p = new Placer(level, center, poi.rotation(), RandomSource.create(poi.seed()));
         switch (poi.type()) {
-            case CRASHED_SHIP -> crashedShip(p);
+            case CRASHED_SHIP -> crashedShip(p, poi.seed());
             case DROP_POD -> dropPod(p);
             case OUTPOST -> outpost(p);
             case RUINS -> ruins(p);
@@ -287,121 +291,115 @@ public final class PoiStructures {
     }
 
     /**
-     * 坠毁飞船：机头扎进陨坑、机尾翘起的残骸。机身三格宽，一侧有破口能进货舱；两片机翼一片断了；
-     * 尾部的推进器、燃料罐能拆，少数还有脉冲引擎、跃迁引擎；机身上几处还在冒烟，后面拖着一道烧焦的痕迹。
+     * 坠毁飞船（ADR-0024）：飞船设计器生成的一艘完整的船，肚子贴着烧焦的地面，摔掉了一些船体板，驾驶台坏了
+     * （拿钛锭和电路板修好就能开走）。来的方向（船尾后面）犁出一道沟，四周散着冒烟的残骸，船边一个补给箱，
+     * 运输船的货箱里也有东西。船底和四周一圈的地面换成灰烬、黑石，组装时不会把地面带上。
      */
-    private static void crashedShip(Placer p) {
+    private static void crashedShip(Placer p, long seed) {
         RandomSource random = p.random;
-        DyeColor mainColor = HULL_COLORS[random.nextInt(HULL_COLORS.length)];
-        DyeColor accentColor = ACCENTS[random.nextInt(ACCENTS.length)];
-        if (accentColor == mainColor) {
-            accentColor = DyeColor.WHITE;
+        ShipDesign design = CrashedShip.design(seed);
+        List<Cell> cells = CrashedShip.wreck(design, seed);
+        int minX = Integer.MAX_VALUE;
+        int maxX = Integer.MIN_VALUE;
+        int minZ = Integer.MAX_VALUE;
+        int maxZ = Integer.MIN_VALUE;
+        int maxY = Integer.MIN_VALUE;
+        for (Cell cell : design.cells()) {
+            minX = Math.min(minX, cell.x());
+            maxX = Math.max(maxX, cell.x());
+            minZ = Math.min(minZ, cell.z());
+            maxZ = Math.max(maxZ, cell.z());
+            maxY = Math.max(maxY, cell.y());
         }
-        BlockState main = plating(mainColor);
-        BlockState accent = plating(accentColor);
-        BlockState dark = plating(DyeColor.GRAY);
-        BlockState glass = Blocks.STAINED_GLASS.lightBlue().defaultBlockState();
-        BlockState smolder = UniverseBlocks.SMOLDERING_WRECK.get().defaultBlockState();
+        int cx = Math.floorDiv(minX + maxX, 2);
+        int cz = Math.floorDiv(minZ + maxZ, 2);
+        int minY = design.minY();
+        int height = maxY - minY + 1;
         p.clearVegetation(PoiType.CRASHED_SHIP.radius(), 12);
         p.scorch(11, 0.75);
-        // 陨坑：在机头一带，中间深 3 格
-        int craterZ = -3;
-        double craterR = 4.6;
-        for (int dx = -6; dx <= 6; dx++) {
-            for (int dz = craterZ - 6; dz <= craterZ + 6; dz++) {
-                double d = Math.sqrt(dx * dx + (dz - craterZ) * (dz - craterZ)) + random.nextDouble() * 0.5;
+        // 船底：外扩一格的范围里地面压平到中心的高度，上面清空
+        int base = p.ground(0, 0);
+        Set<Long> footprint = new HashSet<>();
+        for (Cell cell : cells) {
+            footprint.add(column(cell.x() - cx, cell.z() - cz));
+        }
+        for (int dx = minX - cx - 1; dx <= maxX - cx + 1; dx++) {
+            for (int dz = minZ - cz - 1; dz <= maxZ - cz + 1; dz++) {
+                if (!near(footprint, dx, dz, 1)) {
+                    continue;
+                }
                 int ground = p.ground(dx, dz);
-                if (d < craterR) {
-                    int floor = -(int) Math.round(3 * (1 - d * d / (craterR * craterR)));
-                    p.clear(dx, dz, floor + 1, Math.max(ground, 0) + 3);
-                    p.set(dx, floor, dz, p.scorched());
-                } else if (d < craterR + 1.5 && random.nextFloat() < 0.7F) {
-                    p.set(dx, ground + 1, dz, random.nextBoolean() ? UniverseBlocks.PLANET_ASH.get().defaultBlockState() : p.scorched());
+                p.clear(dx, dz, base + 1, Math.max(ground, base) + height + 2);
+                for (int y = Math.min(ground, base); y <= base; y++) {
+                    p.set(dx, y, dz, safeGround(random));
                 }
             }
         }
-        // 机身：z = -5（机头）到 5（机尾），机头低、机尾高
-        int[] base = new int[11];
-        for (int i = 0; i <= 10; i++) {
-            int dz = i - 5;
-            // 陨坑一带按原来的地面算，坑外跟着地形走
-            int ground = dz <= craterZ + 4 ? 0 : Math.clamp(p.ground(0, dz), -4, 4);
-            base[i] = ground + (int) Math.round(-2 + i * 0.3);
-        }
-        for (int i = 0; i <= 10; i++) {
-            int dz = i - 5;
-            int y = base[i];
-            if (i == 0) {
-                p.set(0, y, dz, main);
-                continue;
+        for (Cell cell : cells) {
+            BlockState state = ShipBlueprints.state(design, cell);
+            if (cell.role() == ShipDesign.Role.HELM) {
+                state = UniverseBlocks.DAMAGED_HELM.get().defaultBlockState()
+                        .setValue(HorizontalDirectionalBlock.FACING, state.getValue(HorizontalDirectionalBlock.FACING));
             }
+            int dx = cell.x() - cx;
+            int dy = base + 1 + cell.y() - minY;
+            int dz = cell.z() - cz;
+            p.set(dx, dy, dz, state);
+            if (cell.role() == ShipDesign.Role.CARGO) {
+                p.loot(dx, dy, dz, CRASHED_SHIP_LOOT);
+            }
+        }
+        // 来的方向拖出一道烧焦的沟
+        int tail = maxZ - cz + 2;
+        for (int dz = tail; dz <= tail + 7; dz++) {
             for (int dx = -1; dx <= 1; dx++) {
-                p.set(dx, y, dz, dark);
-                boolean cockpit = i <= 2;
-                p.set(dx, y + 1, dz, cockpit && dx == 0 ? glass : dx == 0 ? accent : main);
-                if (i >= 3) {
-                    p.set(dx, y + 2, dz, cockpit ? glass : main);
-                }
-            }
-            if (i <= 2) {
-                p.set(-1, y + 1, dz, glass);
-                p.set(1, y + 1, dz, glass);
-            }
-        }
-        // 货舱：中段掏空，右侧撞出一个破口
-        for (int i = 5; i <= 7; i++) {
-            p.set(0, base[i] + 1, i - 5, Blocks.AIR.defaultBlockState());
-        }
-        p.set(1, base[6] + 1, 1, Blocks.AIR.defaultBlockState());
-        p.set(1, base[6] + 2, 1, Blocks.AIR.defaultBlockState());
-        p.crate(0, base[6] + 1, 1, Direction.EAST, CRASHED_SHIP_LOOT);
-        // 机翼：左边完整，右边断成两截，外面那截掉在地上
-        for (int w = 2; w <= 4; w++) {
-            for (int dz = 0; dz <= 1; dz++) {
-                p.set(-w, base[dz + 5], dz, w == 4 ? accent : main);
-                if (w <= 3) {
-                    p.set(w, base[dz + 5], dz, w == 3 ? accent : main);
-                }
-            }
-        }
-        int fallenX = 6 + random.nextInt(2);
-        int fallenZ = random.nextInt(3) - 1;
-        p.set(fallenX, p.ground(fallenX, fallenZ) + 1, fallenZ, accent);
-        p.set(fallenX, p.ground(fallenX, fallenZ + 1) + 1, fallenZ + 1, main);
-        // 尾部：两台推进器朝后，中间燃料罐，可能还有引擎
-        int tail = base[10];
-        p.set(-1, tail + 1, 6, UniverseBlocks.SHIP_THRUSTER.get().defaultBlockState().setValue(BlockStateProperties.FACING, Direction.SOUTH));
-        p.set(1, tail + 1, 6, UniverseBlocks.SHIP_THRUSTER.get().defaultBlockState().setValue(BlockStateProperties.FACING, Direction.SOUTH));
-        p.set(0, tail + 1, 4, UniverseBlocks.FUEL_TANK.get().defaultBlockState());
-        p.set(0, base[8] + 1, 3, UniverseBlocks.FUEL_TANK.get().defaultBlockState());
-        if (random.nextInt(4) == 0) {
-            p.set(0, tail + 1, 5, UniverseBlocks.IMPULSE_ENGINE.get().defaultBlockState().setValue(HorizontalDirectionalBlock.FACING, Direction.SOUTH));
-        }
-        if (random.nextInt(12) == 0) {
-            p.set(0, base[8] + 1, 2, UniverseBlocks.WARP_DRIVE.get().defaultBlockState().setValue(HorizontalDirectionalBlock.FACING, Direction.NORTH));
-        }
-        // 冒烟的地方
-        int smoke = 2 + random.nextInt(3);
-        for (int k = 0; k < smoke; k++) {
-            int i = 3 + random.nextInt(8);
-            int dx = random.nextInt(3) - 1;
-            p.set(dx, base[i] + 2, i - 5, smolder);
-        }
-        // 来的方向（机尾后面）拖出一道烧焦的痕迹，沿途散着碎片
-        for (int dz = 7; dz <= 13; dz++) {
-            for (int dx = -1; dx <= 1; dx++) {
-                if (Math.abs(dx) == 1 && dz > 10) {
+                if (Math.abs(dx) == 1 && dz > tail + 4) {
                     continue;
                 }
                 int ground = p.ground(dx, dz);
                 p.clear(dx, dz, ground + 1, ground + 4);
                 p.set(dx, ground, dz, p.scorched());
             }
-            if (dz % 3 == 0) {
-                int dx = random.nextBoolean() ? 2 : -2;
-                p.set(dx, p.ground(dx, dz) + 1, dz, random.nextInt(3) == 0 ? smolder : random.nextBoolean() ? main : dark);
+        }
+        // 冒烟的残骸和掉下来的船体板，离船至少隔一格，不会被组装进去
+        BlockState smolder = UniverseBlocks.SMOLDERING_WRECK.get().defaultBlockState();
+        BlockState main = ShipBlueprints.state(design, new Cell(0, 0, 0, ShipDesign.Role.HULL, ShipDesign.Face.NORTH));
+        BlockState accent = ShipBlueprints.state(design, new Cell(0, 0, 0, ShipDesign.Role.TRIM, ShipDesign.Face.NORTH));
+        int debris = 5 + random.nextInt(4);
+        for (int k = 0, tries = 0; k < debris && tries < 60; tries++) {
+            int dx = random.nextInt(21) - 10;
+            int dz = random.nextInt(21) - 10;
+            if (near(footprint, dx, dz, 2) || dx * dx + dz * dz > 110) {
+                continue;
+            }
+            int ground = p.ground(dx, dz);
+            p.set(dx, ground + 1, dz, k % 3 == 0 ? smolder : random.nextBoolean() ? main : accent);
+            k++;
+        }
+        // 补给箱放在船的一侧
+        int side = maxX - cx + 3;
+        p.crate(side, p.ground(side, 0) + 1, 0, Direction.WEST, CRASHED_SHIP_LOOT);
+    }
+
+    private static long column(int dx, int dz) {
+        return ((long) dx << 32) ^ (dz & 0xFFFFFFFFL);
+    }
+
+    /** (dx, dz) 离船的投影不超过 {@code reach} 格（切比雪夫距离）。 */
+    private static boolean near(Set<Long> footprint, int dx, int dz, int reach) {
+        for (int x = -reach; x <= reach; x++) {
+            for (int z = -reach; z <= reach; z++) {
+                if (footprint.contains(column(dx + x, dz + z))) {
+                    return true;
+                }
             }
         }
+        return false;
+    }
+
+    /** 船底的地面：灰烬或黑石，都在 {@code ship_excluded} 里。 */
+    private static BlockState safeGround(RandomSource random) {
+        return random.nextInt(3) == 0 ? Blocks.BLACKSTONE.defaultBlockState() : UniverseBlocks.PLANET_ASH.get().defaultBlockState();
     }
 
     // ---- 工具
@@ -554,6 +552,11 @@ public final class PoiStructures {
                     this.set(dx, ground + 1, dz, blocks.get(this.random.nextInt(blocks.size())));
                 }
             }
+        }
+
+        /** 给已经放好的容器设战利品表，第一次打开时装东西。 */
+        void loot(int dx, int dy, int dz, ResourceKey<LootTable> loot) {
+            RandomizableContainer.setBlockEntityLootTable(this.level, this.random, this.at(dx, dy, dz).immutable(), loot);
         }
 
         /** 放一个补给箱，第一次打开时按战利品表装东西。 */

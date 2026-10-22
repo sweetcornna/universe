@@ -18,12 +18,15 @@ import io.github.sweetcornna.universe.core.galaxy.Planet;
 import io.github.sweetcornna.universe.core.procgen.NameGenerator.Name;
 import io.github.sweetcornna.universe.core.space.SpaceLayout;
 import io.github.sweetcornna.universe.core.story.Milestone;
+import io.github.sweetcornna.universe.core.fleet.FreighterInterior;
 import io.github.sweetcornna.universe.discovery.Discoveries;
+import io.github.sweetcornna.universe.fleet.Freighters;
 import io.github.sweetcornna.universe.perf.ServerPerf;
 import io.github.sweetcornna.universe.registry.UniverseAttachments;
 import io.github.sweetcornna.universe.story.Story;
 import io.github.sweetcornna.universe.world.DimensionTemplate;
 import io.github.sweetcornna.universe.world.RuntimeDimensions;
+import io.github.sweetcornna.universe.world.freighter.FreighterDimensions;
 import io.github.sweetcornna.universe.world.planet.PlanetCommand;
 import io.github.sweetcornna.universe.world.planet.Planets;
 import io.github.sweetcornna.universe.world.space.SpaceDimensions;
@@ -69,6 +72,10 @@ public final class ShipTransit {
 
     /** {@link Pending#warp()} 的特殊值：被击毁后拖回空间站（ADR-0017）。 */
     private static final int TOW = -2;
+    /** {@link Pending#warp()} 的特殊值：飞进货船的机库（ADR-0024）。 */
+    private static final int BOARD_FREIGHTER = -3;
+    /** {@link Pending#warp()} 的特殊值：从货船的机库门飞出去。 */
+    private static final int LEAVE_FREIGHTER = -4;
     private static final List<Pending> PENDING = new ArrayList<>();
     private static final Map<Integer, List<SpaceLayout.Body>> LAYOUTS = new HashMap<>();
     private static final Map<Integer, Double> STAR_RADII = new HashMap<>();
@@ -82,6 +89,7 @@ public final class ShipTransit {
             PENDING.clear();
             LAYOUTS.clear();
             STAR_RADII.clear();
+            ShipBlackHole.clear();
         });
     }
 
@@ -100,6 +108,11 @@ public final class ShipTransit {
         OptionalInt space = SpaceDimensions.system(level.dimension());
         if (space.isPresent()) {
             checkSpace(ship, level, space.getAsInt());
+            return;
+        }
+        OptionalInt freighter = FreighterDimensions.id(level.dimension());
+        if (freighter.isPresent()) {
+            checkInterior(ship, level, freighter.getAsInt());
             return;
         }
         if (ship.getY() < level.getMaxY() + ShipEntity.SPACE_ALTITUDE) {
@@ -129,6 +142,10 @@ public final class ShipTransit {
     }
 
     private static void checkSpace(ShipEntity ship, ServerLevel level, int system) {
+        // 飞进黑洞的视界：被甩到星团另一头（ADR-0024）。恒星本身是黑洞时视界就是恒星的球，所以在"太热"之前查
+        if (ShipBlackHole.check(ship, level, system)) {
+            return;
+        }
         // 恒星挡住飞船
         double ds = Math.sqrt(ship.getX() * ship.getX() + ship.getY() * ship.getY() + ship.getZ() * ship.getZ());
         double starRadius = STAR_RADII.computeIfAbsent(system,
@@ -136,6 +153,12 @@ public final class ShipTransit {
         if (ds < starRadius) {
             pushOut(ship, 0, 0, 0, starRadius, ds);
             notifyPilot(ship, Component.translatable("message.universe.ship.too_hot"));
+            return;
+        }
+        // 飞进货船的机库口
+        OptionalInt hangar = Freighters.hangar(level.getServer(), system, ship.getX(), ship.getY(), ship.getZ());
+        if (hangar.isPresent()) {
+            PENDING.add(new Pending(ship, FreighterDimensions.key(hangar.getAsInt()), Optional.empty(), Vec3.ZERO, 0, BOARD_FREIGHTER));
             return;
         }
         Optional<SpaceLayout.Body> inside = SpaceLayout.inside(layout(level.getServer(), system), ship.getX(), ship.getY(), ship.getZ());
@@ -162,6 +185,44 @@ public final class ShipTransit {
             z = offset[1];
         }
         PENDING.add(new Pending(ship, target, Optional.of(body.id()), new Vec3(x, Double.NaN, z), Float.NaN, -1));
+    }
+
+    /** 货船的船舱里：飞出机库门就回到外壳的机库口外（ADR-0024）。 */
+    private static void checkInterior(ShipEntity ship, ServerLevel level, int freighter) {
+        if (!FreighterInterior.outside(ship.getZ())) {
+            return;
+        }
+        Optional<Freighters.Exit> exit = Freighters.exit(level.getServer(), freighter);
+        if (exit.isEmpty()) {
+            // 货船没了（不该发生）：推回机库里
+            ship.setPos(ship.getX(), ship.getY(), -FreighterInterior.HANGAR_HALF + 2);
+            ship.flight().restore(0, 0, 0, ship.getYRot());
+            return;
+        }
+        PENDING.add(new Pending(ship, SpaceDimensions.key(exit.get().system()), Optional.empty(), exit.get().position(), exit.get().yaw(),
+                LEAVE_FREIGHTER));
+    }
+
+    /**
+     * 船舱机库里放得下这艘船的地方：机库中间、离地一格，船头朝里（+z）。放不下就前后挪、往上抬，实在不行就用中间。
+     */
+    private static Vec3 hangarSpot(ServerLevel interior, ShipEntity ship) {
+        ShipStructure structure = ship.structure();
+        int floor = FreighterInterior.ORIGIN_Y + 1;
+        if (structure == null) {
+            return new Vec3(0.5, floor + 1, 0.5);
+        }
+        ShipCollider collider = new ShipCollider(interior);
+        float relative = -ship.baseYaw();
+        for (int lift = 1; lift <= 3; lift++) {
+            for (int z : new int[] {-2, 1, 4, -5}) {
+                Vec3 spot = new Vec3(0.5, floor + lift, z + 0.5);
+                if (collider.fits(ShipCollider.boxes(structure, spot.x, spot.y, spot.z, relative))) {
+                    return spot;
+                }
+            }
+        }
+        return new Vec3(0.5, floor + 1, 0.5);
     }
 
     /** 跃迁充能满了：登记去目标恒星系的太空（ADR-0012）。 */
@@ -221,10 +282,15 @@ public final class ShipTransit {
             target = server.overworld();
         } else if (SpaceDimensions.isSpace(key)) {
             target = SpaceDimensions.getOrCreate(server, SpaceDimensions.system(key).getAsInt());
+        } else if (FreighterDimensions.isInterior(key)) {
+            target = FreighterDimensions.getOrCreate(server, FreighterDimensions.id(key).getAsInt());
         } else {
             target = RuntimeDimensions.getOrCreate(server, key, DimensionTemplate.PLANET);
         }
         Vec3 pos = pending.position();
+        if (pending.warp() == BOARD_FREIGHTER) {
+            pos = hangarSpot(target, ship);
+        }
         if (Double.isNaN(pos.y)) {
             // 降落：没起飞过的星球以着陆中心为基准
             double x = pos.x;
@@ -241,20 +307,33 @@ public final class ShipTransit {
         // 进出大气时把速度降下来，免得一头扎进地里或者冲出太远；跃迁出来时朝着恒星滑行一段
         Vec3 calmed = pending.warp() >= 0
                 ? new Vec3(-Math.sin(Math.toRadians(yaw)) * 2.5, 0, Math.cos(Math.toRadians(yaw)) * 2.5)
-                : pending.warp() == TOW ? Vec3.ZERO
+                : pending.warp() == TOW || pending.warp() == BOARD_FREIGHTER ? Vec3.ZERO
+                : pending.warp() == LEAVE_FREIGHTER ? new Vec3(-Math.sin(Math.toRadians(yaw)) * 0.4, 0, Math.cos(Math.toRadians(yaw)) * 0.4)
                 : new Vec3(velocity.x * 0.2, 0, velocity.z * 0.2);
         Entity moved = ship.teleport(new TeleportTransition(target, pos, calmed, yaw, 0, TeleportTransition.DO_NOTHING));
         if (moved instanceof ShipEntity arrived) {
             arrived.flight().restore(calmed.x, 0, calmed.z, yaw);
+            ShipOwners.get(server).moved(arrived);
             if (pending.warp() == TOW) {
                 arrived.noticeLater(Component.translatable("message.universe.ship.towed"));
                 return;
             }
+            if (pending.warp() == BOARD_FREIGHTER) {
+                arrived.noticeLater(Component.translatable("message.universe.freighter.boarded"));
+                return;
+            }
+            if (pending.warp() == LEAVE_FREIGHTER) {
+                arrived.latchVertical();
+                arrived.noticeLater(Component.translatable("message.universe.freighter.left"));
+                return;
+            }
             arrived.latchVertical();
             if (pending.warp() >= 0) {
+                boolean flung = ShipBlackHole.landed(arrived.getUUID());
                 Planets.galaxy(server).system(pending.warp()).ifPresent(system -> {
                     Name name = Discoveries.resolve(server, DiscoveryKey.system(system.index()), system.name());
-                    arrived.noticeLater(Component.translatable("message.universe.warp.arrived", name.zh(), name.en()));
+                    arrived.noticeLater(Component.translatable(flung ? "message.universe.black_hole.flung" : "message.universe.warp.arrived",
+                            name.zh(), name.en()));
                 });
                 ShipWarp.arrived(arrived, pending.warp());
                 Story.reach(server, Milestone.FIRST_WARP);

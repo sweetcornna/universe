@@ -2,9 +2,14 @@ package io.github.sweetcornna.universe.datagen;
 
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.block.OreKind;
+import io.github.sweetcornna.universe.core.fleet.Area;
+import io.github.sweetcornna.universe.core.fleet.FrigateTrait;
+import io.github.sweetcornna.universe.core.fleet.FrigateType;
 import io.github.sweetcornna.universe.core.guide.Guide;
 import io.github.sweetcornna.universe.core.terrain.BiomeKind;
 import io.github.sweetcornna.universe.core.poi.PoiType;
+import io.github.sweetcornna.universe.core.ship.ShipType;
+import io.github.sweetcornna.universe.core.space.DriveTier;
 import io.github.sweetcornna.universe.core.tech.ModuleType;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
 import io.github.sweetcornna.universe.registry.UniverseItems;
@@ -104,6 +109,10 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         this.teleport();
         this.missions();
         this.endgame();
+        this.voyages();
+        this.fleet();
+        this.portal();
+        this.encounters();
     }
 
     /** 终局（ADR-0018）：反物质、宇宙矩阵、两种发电设备和它们的科技。 */
@@ -237,6 +246,7 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         block(UniverseBlocks.STATION_SOLAR_PANEL.get(), "空间站太阳能板", "Station Solar Array");
         both("hud.universe.station", "空间站 · %s 格", "Station · %s m");
         both("gui.universe.star_map.economy", "空间站：%s · %s", "Station: %s · %s");
+        both("gui.universe.star_map.black_hole", "有黑洞：飞进视界会被甩到星团另一头", "Black hole: fly in to be thrown across the cluster");
         both("hud.universe.station.credits", "%s 信用点", "%s credits");
         both("message.universe.station.welcome", "欢迎来到%s空间站", "Welcome to %s Station");
         both("gui.universe.trade.title", "交易终端", "Trade Terminal");
@@ -483,6 +493,7 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("message.universe.warp.not_in_space", "需要先进入太空", "You must be in space");
         both("message.universe.warp.busy", "跃迁引擎正在充能", "The warp drive is already spooling");
         both("message.universe.warp.no_drive", "飞船上没有跃迁引擎", "This ship has no warp drive");
+        both("message.universe.warp.needs_drive", "要装%1$s才去得了这颗%2$s", "You need a %1$s to reach this %3$s");
         both("message.universe.warp.bad_target", "无效的跃迁目标", "Invalid warp destination");
         both("message.universe.warp.out_of_range", "超出跃迁射程（%s / %s 光年）", "Out of warp range (%s / %s ly)");
         both("message.universe.warp.near_star", "离恒星太近，无法跃迁", "Too close to the star to warp");
@@ -636,18 +647,20 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("hud.universe.ship.status.space", "太空", "Space");
         both("hud.universe.ship.status.landed", "已着陆", "Landed");
         both("hud.universe.ship.status.flying", "飞行中", "Flying");
+        both("hud.universe.ship.status.hangar", "货船机库", "Freighter hangar");
         both("hud.universe.ship.speed", "速度 %s 格/秒", "Speed %s m/s");
         both("hud.universe.ship.altitude", "高度 %s（%s 进入太空）", "Altitude %s (space at %s)");
         both("hud.universe.ship.thrust", "推重比 %s  重力 %s g", "Thrust/weight %s  Gravity %s g");
         both("hud.universe.ship.mass", "%s 个方块  %s 吨", "%s blocks  %s t");
         both("hud.universe.ship.fuel", "燃料 %s / %s", "Fuel %s / %s");
         both("hud.universe.ship.keys", "WASD 推进转向  空格 上升  Shift 下降", "WASD move  Space up  Shift down");
-        both("hud.universe.ship.keys.space", "WASD 推进转向  空格/Shift 升降  疾跑键 脉冲引擎",
-                "WASD move  Space/Shift up/down  Sprint: impulse");
+        both("hud.universe.ship.keys.space", "WASD 推进转向  空格/Shift 升降  疾跑键 脉冲引擎  N 自动驾驶",
+                "WASD move  Space/Shift up/down  Sprint: impulse  N: autopilot");
         both("hud.universe.ship.parking", "停船中", "Parking");
         both("hud.universe.ship.hint.park", "按住 Shift 停船", "Hold Shift to park");
         both("hud.universe.ship.hint.space", "向上飞进入太空，按住 Shift 降落", "Climb to reach space, hold Shift to land");
         both("hud.universe.ship.hint.land", "飞入行星大气层即可降落", "Fly into a planet's atmosphere to land");
+        both("hud.universe.ship.hint.hangar", "从机库门飞出去回到太空，按住 Shift 停船", "Fly out the hangar door to leave. Hold Shift to park");
         both("hud.universe.ship.hint.no_fuel", "燃料耗尽", "Out of fuel");
         both("hud.universe.ship.target", "%s  %s 格", "%s  %s m");
         both("commands.universe.space.unknown", "没有这个天体：%s", "Unknown body: %s");
@@ -1458,6 +1471,38 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("guide.universe.ship.warp",
                 "M 键打开星图，选一个星系，点跃迁。\n\n条件：在太空里开船，船上有跃迁引擎，背包里有空间翘曲器\n位置：离恒星 1200 格以外，离星球大气 150 格以外\n充能：3.5 秒，用掉 1 个空间翘曲器\n航程：5 光年，每台跃迁引擎 +5（Mk.II +10），最多算 4 台\n\n空间翘曲器在制造台里做，空间站也卖。",
                 "Press M for the star map, pick a system and press Warp.\n\nNeeds: piloting in space, a warp drive aboard, a space warper in your inventory\nPosition: 1,200 blocks from the star, 150 from any atmosphere\nCharge: 3.5 s, uses 1 warper\nRange: 5 ly, +5 per warp drive (+10 for Mk.II), up to 4 drives\n\nSpace warpers come from assemblers or station shops.");
+        both("guide.universe.ship.rating.title", "评级和技术", "Rating and Tech");
+        both("guide.universe.ship.rating",
+                "组装时按部件给船评级。开船时按 B，或者潜行右键停着的驾驶台，打开飞船面板。\n\n类型：战斗机、运输船、探索船、穿梭机，看炮、货舱、跃迁引擎各有多少\n档次：C、B、A、S，看 Mk.II 部件和合金船体板占多少\n专长加成：B +10%，A +20%，S +35%\n技术槽：C 3 格，B 4，A 5，S 6\n\n飞船模块：推进效率、脉冲调校、超空间增幅、偏导护盾、船体加固、火控校准",
+                "Ships are rated when assembled. Press B while flying, or sneak + right-click a parked helm, for the ship panel.\n\nClass: fighter, hauler, explorer or shuttle, from guns, cargo and warp drives\nGrade: C, B, A, S, from Mk.II parts and alloy plating\nSpecialty bonus: B +10%, A +20%, S +35%\nTech slots: C 3, B 4, A 5, S 6\n\nShip modules: thrust efficiency, pulse tuning, hyperdrive booster, deflector, hull reinforcement, fire control");
+        both("guide.universe.ship.drives.title", "驱动档次", "Drive Tiers");
+        both("guide.universe.ship.drives",
+                "有些恒星光靠跃迁引擎去不了，要在技术槽里装一台驱动，星图上写着缺哪种。高一档的驱动也能去下面几档。\n\n跃迁引擎：M、K、G、F 型\n镉驱动：红巨星\n翠金驱动：A 型白星、白矮星\n铟驱动：B、O 型蓝星、中子星、黑洞\n\n驱动研究以后在制造台里做。",
+                "Some stars are out of reach with a plain warp drive. Fit a drive in a tech slot; the star map says which one. Each drive also covers the tiers below it.\n\nWarp drive: M, K, G, F stars\nCadmium drive: red giants\nEmeril drive: A-type white stars, white dwarfs\nIndium drive: B and O blue stars, neutron stars, black holes\n\nResearch a drive, then make it in an assembler.");
+        both("guide.universe.ship.black_hole.title", "黑洞", "Black Holes");
+        both("guide.universe.ship.black_hole",
+                "六分之一的星系里有一个黑洞，离恒星 3 到 4.5 万格。自动驾驶列表里有它，太空 HUD 上写着方位。\n\n飞进视界 150 格内：不用翘曲器、不看驱动，被甩到星团里很远的一个星系\n代价：船体掉 30%，护盾清空\n\n星图上有黑洞的星系会写出来。",
+                "One system in six has a black hole, 30,000 to 45,000 blocks from the star. It's in the autopilot list and on the space HUD.\n\nFly within 150 blocks of the horizon: no warper, no drive tier, and you're thrown to a far-off system\nCost: 30% hull, shields emptied\n\nThe star map marks systems with a black hole.");
+        both("guide.universe.ship.dealer.title", "买船和召唤", "Buying and Summoning");
+        both("guide.universe.ship.dealer",
+                "空间站机库里的飞船交易终端每天挂 4 艘船，价钱按方块价值和档次算。买下的船停在起降台上，燃料是满的。自己的船停进机库能卖，给六成。\n\n召唤（N）：在地面或空间站里叫主力船过来，64 格内有着陆台就停在台上\n自动驾驶（太空里按 N）：选星球、空间站、货船或信号，动方向键退出\n着陆台：接电，给台上 4 格内的船加燃料\n坠毁的飞船：拿着 4 个钛锭和 2 个电路板右键损坏的驾驶台",
+                "Each station hangar has a ship dealer with 4 ships a day, priced by blocks and grade. Bought ships wait fueled on the pad. Ships you park in the hangar sell for 60%.\n\nSummon (N): call your main ship on the ground or in a station; it lands on a pad within 64 blocks\nAutopilot (N in space): pick a planet, station, freighter or signal; steer to cancel\nLanding pad: powered; refuels ships up to 4 blocks above it\nCrashed ships: right-click the damaged helm with 4 titanium ingots and 2 circuit boards");
+        both("guide.universe.ship.freighter.title", "货船", "Freighters");
+        both("guide.universe.ship.freighter",
+                "货船一人一艘：救下遇险的货船，或者在飞船交易终端买（12 万信用点起）。飞进左舷的机库口就到了船里，里面是一大片随你建的甲板。\n\n舰桥控制台：带着整艘船跃迁，用 3 个翘曲器，航程 C 40、B 45、A 50、S 60 光年\n召唤货船：太空里按 N 选它，停到船头前 220 格，冷却 5 分钟\n\n从甲板边上掉下去会被拉回机库。床能设重生点。",
+                "One freighter per player: rescue one in distress or buy one from a ship dealer (from 120,000 credits). Fly into the port-side hangar to go aboard; inside is a big deck to build on.\n\nBridge console: warp the whole ship for 3 warpers; range C 40, B 45, A 50, S 60 ly\nSummon freighter: press N in space and pick it; it arrives 220 blocks ahead, 5 min cooldown\n\nFall off the deck and you're pulled back to the hangar. Beds set your spawn.");
+        both("guide.universe.ship.fleet.title", "护卫舰和远征", "Frigates and Expeditions");
+        both("guide.universe.ship.fleet",
+                "有货船以后能在飞船交易终端雇护卫舰，最多 12 艘。舰队指挥室的终端每天给 3 个远征。\n\n种类：战斗、探索、工业、贸易、支援\n远征：1–5 星，10–40 分钟，最多派 5 艘，付发射燃料\n每段按队伍那一项属性判定，失败让一艘受损，再损就沉\n奖励：信用点、材料、模块，偶尔有传送门符文\n\n每出 4 次远征升一级。",
+                "With a freighter you can hire frigates at a ship dealer, up to 12. The fleet terminal offers 3 expeditions a day.\n\nTypes: combat, exploration, industry, trade, support\nExpeditions: 1–5 stars, 10–40 min, up to 5 frigates, paid in launch fuel\nEach leg checks the team's stat; a failure damages a frigate, a second one sinks it\nRewards: credits, materials, modules, sometimes a portal glyph\n\nFrigates level up every 4 expeditions.");
+        both("guide.universe.ship.encounters.title", "太空遭遇", "Space Encounters");
+        both("guide.universe.ship.encounters",
+                "开船在离空间站 600 格以外时，每 6 到 10 分钟可能收到信号。HUD 上标出来，自动驾驶列表里叫\"信号\"。\n\n废弃货船：从机库口飞进去搜货箱，保险箱在最前面那间。船里失重、没空气，别站到冒火花的线管底下。30 分钟后消失\n遇险信号：3 分钟内打光围攻货船的海盗。还没有货船的，船长把这艘送你；有的给 15000 信用点。别打货船",
+                "Piloting more than 600 blocks from a station, you may pick up a signal every 6 to 10 minutes. It's marked on the HUD and listed as Signal in the autopilot.\n\nDerelict freighter: fly into the hangar and search the crates; the captain's safe is at the front. No gravity or air inside. Keep out from under sparking conduits. Gone after 30 min\nDistress call: clear the pirates within 3 min. No freighter yet? The captain gives you this one; otherwise 15,000 credits. Don't hit the freighter");
+        both("guide.universe.ship.space_sentinels.title", "太空守卫机", "Space Sentinels");
+        both("guide.universe.ship.space_sentinels",
+                "在星球上被通缉到三星还飞上太空，或者朝遇险的货船开火打中 8 下，守卫机的拦截机就从身后追来，脉冲引擎被干扰。打光它们、甩开 1200 格，或者躲到空间站 600 格内就脱身。打下的拦截机掉守卫机残骸，偶尔有导航数据和飞船模块。\n\n应急信号接收器：科技商人卖，在太空里开船时用，找一艘废弃货船\n信用点芯片：右键兑换，一枚 1000",
+                "Leave a planet at 3 wanted stars, or hit a freighter in distress 8 times, and Sentinel interceptors chase you, jamming your pulse drive. Destroy them, get 1,200 blocks away or reach a station. Wrecks drop Sentinel scrap, sometimes nav data or a ship module.\n\nEmergency broadcast receiver: sold by tech merchants. Use it while flying in space to find a derelict\nCredit chips: right-click to cash in, 1,000 each");
         both("guide.universe.survival.hazards.title", "危害", "Hazards");
         both("guide.universe.survival.hazards",
                 "星球最多两种危害：寒冷、高温、毒性、辐射。HUD 上每种一条防护。\n\n全套外骨骼：撑 5 分钟，离开 25 秒充满\n用完：防护每 2 秒掉 1 血，氧气每秒掉 2 血\n室内 ×1/3，风暴 ×2，火或冰挡相反的危害\n氧气罐、防护电池：各回 50%，低于 20% 自动用",
@@ -1476,12 +1521,16 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
                 "Press K for the discovery log. Systems are logged when you enter space, planets when you land.\nDiscoverers can rename them, up to 24 characters.\n\nNew system: 5 to 20 survey data (black holes the most)\nNew planet: 3 or 4\n\nSurvey data goes into hand-in research (Interstellar Survey, Technology Modules, Warp Calibration) and grade C modules, and it sells.");
         both("guide.universe.exploration.poi.title", "兴趣点", "Points of Interest");
         both("guide.universe.exploration.poi",
-                "扫描能标出附近的兴趣点。\n\n掉落舱：右键修理，外骨骼扩容\n先驱者石碑：第一次碰给 3 个勘探数据\n科技储藏箱：挖开掉模块\n信号增强器：1 份导航数据找 2000 格内的兴趣点",
-                "Scans mark nearby points of interest.\n\nDrop pod: repair to expand your exosuit\nMonolith: 3 survey data the first time\nTech cache: break it for a module\nSignal booster: finds one within 2,000 blocks");
+                "扫描能标出附近的兴趣点。\n\n掉落舱：右键修理，外骨骼扩容\n先驱者石碑：第一次碰给 3 个勘探数据和一个传送门符文\n科技储藏箱：挖开掉模块\n信号增强器：1 份导航数据找 2000 格内的兴趣点",
+                "Scans mark nearby points of interest.\n\nDrop pod: repair to expand your exosuit\nMonolith: 3 survey data and a portal glyph the first time\nTech cache: break it for a module\nSignal booster: finds one within 2,000 blocks");
         both("guide.universe.exploration.bases.title", "基地和传送", "Bases and Teleporters");
         both("guide.universe.exploration.bases",
                 "基地信标放下就登记成你的基地，右键改名，不用研究。\n\n传送器能去你的基地和进去过的空间站。\n每次传送：12 kJ，10 秒充满\n使用距离：6 格内\n宠物：24 格内的一起过去\n研究：传送网络",
                 "Place a base beacon to register a base; right-click to rename. No research.\n\nTeleporters reach your bases and stations you've visited.\nCost: 12 kJ per jump, 10 s to recharge\nRange: stand within 6 blocks\nPets within 24 blocks come along\nResearch: Teleport Network");
+        both("guide.universe.exploration.portals.title", "先驱者传送门", "Precursor Portals");
+        both("guide.universe.exploration.portals",
+                "每颗能降落的星球都有一座先驱者传送门，门上刻着这颗星球的地址：6 个符文，一共 16 种。船不跟着过去。\n\n学符文：每座先驱者石碑第一次碰、每座传送门第一次走近，各学一个；探索远征偶尔带回一个\n拨号：右键拨号台，按 6 个认识的符文，门开 30 秒，走进光里就到了\n星图上去过的星球写着地址",
+                "Every landable planet has a Precursor portal carved with its address: 6 glyphs out of 16. Your ship can't follow you through.\n\nLearning glyphs: each monolith's first touch and each portal's first visit teach one; exploration expeditions may bring one back\nDialing: right-click the dial and enter 6 known glyphs; the portal opens for 30 s, walk into the light\nThe star map shows the address of planets you've visited");
         both("guide.universe.trade.stations.title", "空间站", "Space Stations");
         both("guide.universe.trade.stations",
                 "每个星系有一座空间站，在第一颗能降落的星球外 700 格。从机库口飞进去，停在起降台上。\n\n交易终端：买卖\n任务板：接任务\n飞船维修台：修船，每点船体 2 信用点\n空间站传送器：不用电\n\n站内有重力和空气。站外失重：跳跃上升，潜行下降。",
@@ -1733,6 +1782,388 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("story.universe.ending.continue", "升级科技可以一直研究下去。", "Upgrades can be researched forever.");
         both("story.universe.ending.thanks", "感谢游玩", "Thanks for playing");
         both("story.universe.ending.skip", "按住空格加速，Esc 关闭", "Hold Space to speed up, Esc to close");
+    }
+
+    /** M13 的飞船与航行（ADR-0024）：评级、飞船技术、驱动、着陆台、召唤和自动驾驶。 */
+    /** 货船、护卫舰和远征（ADR-0024）。 */
+    private void fleet() {
+        block(UniverseBlocks.FREIGHTER_PLATE.get(), "货船装甲板", "Freighter Armour Plate");
+        block(UniverseBlocks.FREIGHTER_ENGINE.get(), "货船引擎喷口", "Freighter Engine Nozzle");
+        block(UniverseBlocks.FREIGHTER_CONSOLE.get(), "货船控制台", "Freighter Console");
+        block(UniverseBlocks.FLEET_TERMINAL.get(), "舰队终端", "Fleet Terminal");
+        both("universe.bed.no_sleep_on_freighter", "重生点设在货船上了。船上没有昼夜，睡不了觉",
+                "Respawn point set on the freighter. There's no night aboard, so no sleeping");
+        for (FrigateType type : FrigateType.values()) {
+            both("gui.universe.fleet.type." + type.key(), type.nameZh() + "舰", type.nameEn());
+        }
+        both("gui.universe.fleet.type_short.combat", "战", "CMB");
+        both("gui.universe.fleet.type_short.exploration", "探", "EXP");
+        both("gui.universe.fleet.type_short.industrial", "工", "IND");
+        both("gui.universe.fleet.type_short.trade", "贸", "TRD");
+        both("gui.universe.fleet.type_short.support", "援", "SUP");
+        for (Area area : Area.values()) {
+            both("gui.universe.fleet.area." + area.key(), area.nameZh(), area.nameEn());
+        }
+        both("gui.universe.fleet.stat.combat", "战 %s", "CMB %s");
+        both("gui.universe.fleet.stat.exploration", "探 %s", "EXP %s");
+        both("gui.universe.fleet.stat.industry", "工 %s", "IND %s");
+        both("gui.universe.fleet.stat.trade", "贸 %s", "TRD %s");
+        for (FrigateTrait trait : FrigateTrait.values()) {
+            both("gui.universe.fleet.trait." + trait.key(), trait.nameZh(), trait.nameEn());
+        }
+        both("gui.universe.fleet.kind.combat", "战斗", "Combat");
+        both("gui.universe.fleet.kind.exploration", "探索", "Exploration");
+        both("gui.universe.fleet.kind.industrial", "工业", "Industrial");
+        both("gui.universe.fleet.kind.trade", "贸易", "Trade");
+        both("gui.universe.fleet.kind.balanced", "均衡", "Balanced");
+
+        // 舰队终端
+        both("gui.universe.fleet.title", "舰队终端", "Fleet Terminal");
+        both("gui.universe.fleet.tab.frigates", "护卫舰", "Frigates");
+        both("gui.universe.fleet.tab.offers", "远征任务", "Missions");
+        both("gui.universe.fleet.tab.voyages", "在外面", "Out on Missions");
+        both("gui.universe.fleet.count", "%s / %s 艘", "%s / %s ships");
+        both("gui.universe.fleet.no_frigates", "还没有护卫舰。在空间站的飞船交易终端雇", "No frigates yet. Hire them at a station's starship dealer");
+        both("gui.universe.fleet.frigate", "%1$s · %2$s · %3$s 级", "%1$s · %2$s · Rank %3$s");
+        both("gui.universe.fleet.busy", "出征中", "On mission");
+        both("gui.universe.fleet.damaged", "受损", "Damaged");
+        both("gui.universe.fleet.fuel", "燃料 %s 吨", "Fuel %s t");
+        both("gui.universe.fleet.traits", "✦%s", "✦%s");
+        both("gui.universe.fleet.trait", "%1$s：%2$s", "%1$s: %2$s");
+        both("gui.universe.fleet.trait_fuel", "燃料 %s 吨", "%s t fuel");
+        both("gui.universe.fleet.trait_stat", "%2$s %1$s", "%1$s %2$s");
+        both("gui.universe.fleet.repair", "修理 %s", "Repair %s");
+        both("gui.universe.fleet.dismiss", "解散", "Dismiss");
+        both("gui.universe.fleet.dismiss_confirm", "确认解散", "Confirm");
+        both("gui.universe.fleet.offer", "%1$s %2$s · %3$s 分钟", "%1$s %2$s · %3$s min");
+        both("gui.universe.fleet.offer_taken", "已接", "Taken");
+        both("gui.universe.fleet.no_offers", "要先有一艘货船", "You need a freighter first");
+        both("gui.universe.fleet.pick_offer", "左边选一个任务", "Pick a mission on the left");
+        both("gui.universe.fleet.team", "出征的护卫舰 %s/%s", "Team %s/%s");
+        both("gui.universe.fleet.pick", "□ %1$s %2$s", "□ %1$s %2$s");
+        both("gui.universe.fleet.picked", "■ %1$s %2$s", "■ %1$s %2$s");
+        both("gui.universe.fleet.none_ready", "没有能出发的护卫舰，受损的先修好", "No frigates ready. Repair the damaged ones first");
+        both("gui.universe.fleet.segments", "%s 段遭遇，每段要 %s 点", "%s encounters, %s points each");
+        both("gui.universe.fleet.chance", "%1$s %2$s（%3$s%%）", "%1$s %2$s (%3$s%%)");
+        both("gui.universe.fleet.fuel_cost", "发射燃料：要 %s 个，有 %s 个", "Launch fuel: %s needed, %s carried");
+        both("gui.universe.fleet.launch", "出发", "Launch");
+        both("gui.universe.fleet.launch_confirm", "胜算很低，确定？", "Low odds. Sure?");
+        both("gui.universe.fleet.expected", "平均每段的胜算 %s%%", "Average odds per leg: %s%%");
+        both("gui.universe.fleet.expected_low", "平均每段的胜算 %s%%，失败的段会让护卫舰受损，伤两次就沉",
+                "Average odds per leg: %s%%. Failed legs damage frigates; a second hit sinks one");
+        both("gui.universe.fleet.no_voyages", "没有在外面的远征", "No missions under way");
+        both("gui.universe.fleet.voyage", "%1$s %2$s", "%1$s %2$s");
+        both("gui.universe.fleet.voyage_back", "%1$s %2$s · 回来了", "%1$s %2$s · Back");
+        both("gui.universe.fleet.voyage_team", "出征：%s", "Team: %s");
+        both("gui.universe.fleet.back", "回来了，可以领取", "Back. Ready to claim");
+        both("gui.universe.fleet.remaining", "还有 %s 分 %s 秒", "%s min %s s left");
+        both("gui.universe.fleet.event_pending", "第 %s 段：……", "Encounter %s: ...");
+        both("gui.universe.fleet.event_won", "第 %1$s 段：%2$s，成功", "Encounter %1$s: %2$s, success");
+        both("gui.universe.fleet.event_lost", "第 %1$s 段：%2$s，失败", "Encounter %1$s: %2$s, failed");
+        both("gui.universe.fleet.event_hurt", "第 %1$s 段：%2$s，失败，%3$s 受损", "Encounter %1$s: %2$s, failed. %3$s damaged");
+        both("gui.universe.fleet.event_sunk", "第 %1$s 段：%2$s，失败，%3$s 沉没", "Encounter %1$s: %2$s, failed. %3$s lost");
+        both("gui.universe.fleet.claim", "领取", "Claim");
+        both("message.universe.fleet.returned", "%s远征回来了，到舰队终端领取", "A %s mission is back. Claim it at the fleet terminal");
+        both("message.universe.fleet.problem.no_freighter", "要先有一艘货船", "You need a freighter first");
+        both("message.universe.fleet.problem.fleet_full", "舰队满了", "Your fleet is full");
+        both("message.universe.fleet.problem.no_team", "至少派一艘", "Pick at least one frigate");
+        both("message.universe.fleet.problem.team_too_big", "一次最多派 5 艘", "Five frigates at most");
+        both("message.universe.fleet.problem.unknown_frigate", "舰队里没有这艘", "That frigate isn't in your fleet");
+        both("message.universe.fleet.problem.busy", "有护卫舰还在外面", "A frigate is still out");
+        both("message.universe.fleet.problem.damaged", "受损的护卫舰要先修好", "Repair the damaged frigates first");
+        both("message.universe.fleet.problem.too_many_voyages", "同时最多 3 支远征", "Three missions at a time at most");
+        both("message.universe.fleet.problem.taken", "这个任务已经接过了", "That mission's already taken");
+        both("message.universe.fleet.no_fuel", "要 %s 个发射燃料", "Needs %s launch fuel");
+        both("message.universe.fleet.launched", "%s 艘护卫舰出发了，%s 分钟后回来", "%s frigates launched. Back in %s minutes");
+        both("message.universe.fleet.not_back", "还没回来", "Not back yet");
+        both("message.universe.fleet.claimed", "成功 %1$s/%2$s 段，带回 %3$s 信用点和 %4$s 件东西。沉没 %5$s，受损 %6$s，升级 %7$s",
+                "%1$s/%2$s encounters won. Brought back %3$s credits and %4$s items. Lost %5$s, damaged %6$s, promoted %7$s");
+        both("message.universe.fleet.cannot_repair", "这艘不用修", "Nothing to repair");
+        both("message.universe.fleet.repaired", "%s 修好了", "%s repaired");
+        both("message.universe.fleet.cannot_dismiss", "出征中的护卫舰不能解散", "Can't dismiss a frigate on a mission");
+        both("message.universe.fleet.dismissed", "%s 解散了", "%s dismissed");
+        both("commands.universe.fleet.not_in_space", "先到太空里去", "Go to space first");
+        both("commands.universe.fleet.bad_grade", "没有这个等级：%s（C、B、A、S）", "Unknown grade: %s (C, B, A or S)");
+        both("commands.universe.fleet.granted", "给了你一艘 %2$s 级货船（#%1$s）", "Granted you a %2$s-class freighter (#%1$s)");
+        both("commands.universe.fleet.hired", "雇了 %s 艘护卫舰，现在一共 %s 艘", "Hired %s frigates, %s in the fleet now");
+        both("commands.universe.fleet.hurried", "%s 支远征都回来了", "%s expeditions are back");
+        both("commands.universe.blackhole.none", "%s 号恒星系没有黑洞", "System %s has no black hole");
+        both("commands.universe.blackhole.list", "%2$s 个恒星系里有 %1$s 个有黑洞：", "%1$s of %2$s systems have a black hole:");
+        both("commands.universe.blackhole.here", "黑洞在 %1$s，视界半径 %2$s 格，离视界还有 %3$s 格",
+                "Black hole at %1$s, horizon radius %2$s, %3$s blocks to the horizon");
+        both("commands.universe.blackhole.went", "到了 %1$s 号恒星系，离黑洞的视界 %2$s 格", "In system %1$s, %2$s blocks from the horizon");
+
+        // 货船控制台
+        both("gui.universe.freighter_console.title", "货船控制台", "Freighter Console");
+        both("gui.universe.freighter_console.here", "停在：%s", "Parked at: %s");
+        both("gui.universe.freighter_console.info", "%1$s 级 · 航程 %2$s 光年 · 空间翘曲器 %3$s（每次 %4$s 个）",
+                "Class %1$s · Range %2$s ly · Space Warpers %3$s (%4$s per jump)");
+        both("gui.universe.freighter_console.hint", "选一个恒星系，整艘货船跃迁过去", "Pick a system. The whole freighter jumps there");
+        both("gui.universe.freighter_console.spooling", "正在充能", "Charging");
+        both("gui.universe.freighter_console.no_warpers", "空间翘曲器不够 %s 个", "Needs %s Space Warpers");
+        both("gui.universe.freighter_console.empty", "航程内没有别的恒星系", "No other systems in range");
+        both("gui.universe.freighter_console.target", "%1$s · %2$s 光年", "%1$s · %2$s ly");
+        both("gui.universe.freighter_console.target_new", "%1$s · %2$s 光年 · 没去过", "%1$s · %2$s ly · Unvisited");
+        both("message.universe.freighter.none", "你还没有货船", "You don't own a freighter");
+        both("message.universe.freighter.cooldown", "货船还要 %s 秒才能再叫", "Freighter can be called again in %s s");
+        both("message.universe.freighter.not_in_space", "在太空里才能叫货船", "You can only call the freighter in space");
+        both("message.universe.freighter.no_room", "这里放不下货船，离星球和空间站远一点", "No room here. Get clear of planets and stations");
+        both("message.universe.freighter.summoned", "货船正跃迁过来", "Freighter inbound");
+        both("message.universe.freighter.vacuum", "机库门外是真空，开船才能出去", "Vacuum past the hangar door. Fly out in a ship");
+        both("message.universe.freighter.not_yours", "这不是你的货船", "This isn't your freighter");
+        both("message.universe.freighter.no_warpers", "货船跃迁要 %s 个空间翘曲器", "A freighter jump takes %s Space Warpers");
+        both("message.universe.freighter.spooling", "货船开始充能，目标%1$s", "Freighter charging for %2$s");
+        both("message.universe.freighter.arrived", "货船到了%1$s", "Freighter arrived at %2$s");
+        both("message.universe.freighter.boarded", "进了货船的机库", "Landed in the freighter hangar");
+        both("message.universe.freighter.left", "离开货船", "Left the freighter");
+        both("gui.universe.autopilot.summon_freighter", "召唤货船", "Summon freighter");
+        both("gui.universe.autopilot.freighter", "货船", "Freighter");
+
+        // 飞船交易终端的护卫舰、货船
+        both("gui.universe.dealer.tab.frigates", "护卫舰", "Frigates");
+        both("gui.universe.dealer.tab.freighter", "货船", "Freighter");
+        both("gui.universe.dealer.hire", "雇用 %s", "Hire %s");
+        both("gui.universe.dealer.hired_out", "今天这艘雇走了", "Already hired today");
+        both("gui.universe.dealer.no_traits", "没有特性", "No traits");
+        both("gui.universe.dealer.need_freighter", "要先有一艘货船才能雇护卫舰", "You need a freighter to hire frigates");
+        both("gui.universe.dealer.fleet_full", "舰队满了（%s 艘）", "Fleet full (%s ships)");
+        both("gui.universe.dealer.fleet", "舰队 %s / %s 艘", "Fleet %s / %s ships");
+        both("gui.universe.dealer.no_freighter", "今天没有货船卖，过几天再来看", "No freighter for sale today. Check back in a few days");
+        both("gui.universe.dealer.freighter", "%s 级货船", "Class %s Freighter");
+        both("gui.universe.dealer.freighter_size", "长 %s 宽 %s 高 %s", "%s long, %s wide, %s tall");
+        both("gui.universe.dealer.freighter_range", "跃迁 %s 光年，每次 %s 个翘曲器", "Jumps %s ly, %s Space Warpers each");
+        both("gui.universe.dealer.freighter_fleet", "能带 %s 艘护卫舰", "Carries up to %s frigates");
+        both("gui.universe.dealer.freighter_inside", "里面有机库、舰桥和大甲板", "Hangar, bridge and a big open deck");
+        both("gui.universe.dealer.freighter_hint", "停在离空间站 3000 格的地方", "Parks 3000 blocks off the station");
+        both("gui.universe.dealer.have_freighter", "你已经有一艘货船了", "You already own a freighter");
+        both("message.universe.dealer.hired", "雇下了 %1$s（%2$s），%3$s 信用点", "Hired %1$s (%2$s) for %3$s credits");
+        both("message.universe.dealer.have_freighter", "你已经有一艘货船了", "You already own a freighter");
+        both("message.universe.dealer.bought_freighter", "买下了 %1$s 级货船，%2$s 信用点。开船时按 N 选\"货船\"飞过去",
+                "Bought a class %1$s freighter for %2$s credits. Press N while flying and pick Freighter");
+
+        both("message.universe.glyph.learned", "学会了一个先驱者符文（%s/%s）", "Learned a Precursor glyph (%s/%s)");
+    }
+
+    /** 太空遭遇（ADR-0024）：废弃货船、遇险信号、太空守卫机。 */
+    private void encounters() {
+        item(UniverseItems.CREDIT_CHIP.get(), "信用点芯片", "Credit Chip");
+        item(UniverseItems.EMERGENCY_RECEIVER.get(), "应急信号接收器", "Emergency Broadcast Receiver");
+        block(UniverseBlocks.LIVE_CONDUIT.get(), "漏电的线管", "Live Conduit");
+        both("entity.universe.sentinel_interceptor", "守卫机拦截机", "Sentinel Interceptor");
+        both("stat.universe.freighters_rescued", "救下的遇险货船", "Freighters Rescued");
+        both("stat.universe.interceptors_destroyed", "击落的守卫机拦截机", "Sentinel Interceptors Destroyed");
+        both("death.attack.universe.shock", "%1$s触电了", "%1$s was electrocuted");
+        both("death.attack.universe.shock.player", "%1$s躲%2$s的时候触电了", "%1$s was electrocuted while fleeing %2$s");
+        both("gui.universe.autopilot.derelict", "废弃货船", "Derelict Freighter");
+        both("gui.universe.autopilot.distress", "遇险货船", "Freighter in Distress");
+        both("hud.universe.encounter.derelict", "废弃货船 · %s 格", "Derelict · %s m");
+        both("hud.universe.encounter.distress", "遇险货船 · %s 格", "Distress call · %s m");
+        both("hud.universe.encounter.distress_hull", "遇险货船 · 船体 %1$s%% · %2$s 格", "Distress call · hull %1$s%% · %2$s m");
+        both("hud.universe.encounter.interceptors", "守卫机拦截机 ×%s", "Sentinel interceptors ×%s");
+        both("hud.universe.encounter.interceptor_marker", "拦截机 · %s 格", "Interceptor · %s m");
+        both("message.universe.encounter.derelict", "收到一艘废弃货船的信标，在前方 %s 格", "Derelict freighter beacon, %s m ahead");
+        both("message.universe.encounter.distress", "收到遇险信号：前方 %s 格有艘货船遭海盗围攻",
+                "Distress call: a freighter is under pirate attack %s m ahead");
+        both("message.universe.encounter.under_attack", "%s 架海盗正在打货船", "%s pirates are attacking the freighter");
+        both("message.universe.encounter.signal_lost", "遇险信号断了", "The distress signal went dead");
+        both("message.universe.encounter.abandoned", "你走了，货船自己跳走了", "You left. The freighter jumped away on its own");
+        both("message.universe.encounter.freighter_fled", "货船撑不住，跳走了", "The freighter couldn't hold out and jumped away");
+        both("message.universe.encounter.rescued", "海盗打光了，货船得救了", "Pirates cleared. The freighter is safe");
+        both("message.universe.encounter.offer", "船长要把这艘 %1$s 级货船送给你。%2$s  %3$s",
+                "The captain offers you this class %1$s freighter. %2$s  %3$s");
+        both("message.universe.encounter.accept", "[收下货船]", "[Take the freighter]");
+        both("message.universe.encounter.accept_hint", "货船停在原地，飞进左舷的机库口就能上船",
+                "It stays where it is. Fly into the port-side hangar to board");
+        both("message.universe.encounter.decline", "[要 %s 信用点]", "[Take %s credits]");
+        both("message.universe.encounter.reward", "船长转来 %s 信用点", "The captain sent you %s credits");
+        both("message.universe.encounter.offer_expired", "船长没等到回话，转来 %s 信用点", "No answer. The captain sent %s credits instead");
+        both("message.universe.encounter.offer_gone", "这份报酬已经没了", "That offer is gone");
+        both("message.universe.encounter.freighter_yours", "货船归你了（%s 级）。飞进左舷的机库口就能上船",
+                "The freighter is yours (class %s). Fly into the port-side hangar to board");
+        both("message.universe.encounter.friendly_fire", "别打货船！", "Cease fire on the freighter!");
+        both("message.universe.encounter.betrayed", "你朝货船开了火，货船跳走了", "You fired on the freighter. It jumped away");
+        both("message.universe.encounter.sentinels_locked", "太空守卫机锁定了你的飞船", "Space Sentinels have locked onto your ship");
+        both("message.universe.encounter.sentinels_incoming", "%s 架守卫机拦截机追上来了", "%s Sentinel interceptors incoming");
+        both("message.universe.encounter.sentinels_escaped", "离开了这片太空，守卫机没追上来", "You left this sector. The Sentinels broke off");
+        both("message.universe.encounter.sentinels_station", "进了空间站的防区，守卫机撤了", "Inside station space. The Sentinels pulled back");
+        both("message.universe.encounter.sentinels_lost", "甩掉了守卫机", "You shook off the Sentinels");
+        both("message.universe.encounter.sentinels_gone", "守卫机撤了", "The Sentinels pulled back");
+        both("message.universe.encounter.sentinels_destroyed", "打下 %s 架拦截机，守卫机撤了", "Shot down %s interceptors. The Sentinels pulled back");
+        both("message.universe.encounter.interceptor_down", "打下一架拦截机", "Interceptor down");
+        both("message.universe.encounter.interceptor_down_stowed", "打下一架拦截机，残骸收进了货舱", "Interceptor down. Salvage stowed in the hold");
+        both("message.universe.encounter.chips_cashed", "兑换了 %s 信用点", "Cashed in %s credits");
+        both("message.universe.encounter.receiver_space", "要在太空里开着飞船才能用", "Use it while flying a ship in space");
+        both("message.universe.encounter.receiver_busy", "已经在追一个信号了", "You're already following a signal");
+        both("message.universe.encounter.receiver_nothing", "这里收不到信号，换个地方再试", "No signal here. Try somewhere else");
+        both("commands.universe.encounter.cleared", "收掉了 %s 处遭遇", "Removed %s encounters");
+        both("commands.universe.encounter.not_piloting", "要在太空里开着飞船", "You need to be flying a ship in space");
+        both("commands.universe.encounter.no_room", "前方找不到地方放", "No room ahead");
+        both("commands.universe.encounter.not_in_space", "要在太空里", "You need to be in space");
+        both("commands.universe.encounter.none", "你在这个星系里没有遭遇", "You have no encounter in this system");
+        both("commands.universe.encounter.status", "计时 %1$s · 遭遇 %2$s · 遇险 %3$s · 守卫机 %4$s",
+                "Timer %1$s · encounter %2$s · distress %3$s · sentinels %4$s");
+    }
+
+    /** 先驱者传送门（ADR-0024）。 */
+    private void portal() {
+        block(UniverseBlocks.PORTAL_STONE.get(), "先驱者石", "Precursor Stone");
+        block(UniverseBlocks.PORTAL_GLYPH.get(), "符文石", "Glyph Stone");
+        block(UniverseBlocks.PORTAL_DIAL.get(), "传送门拨号台", "Portal Dial");
+        block(UniverseBlocks.PORTAL_FIELD.get(), "传送门光幕", "Portal Field");
+        both("gui.universe.portal.title", "先驱者传送门", "Precursor Portal");
+        both("gui.universe.portal.here", "这座门：", "This portal:");
+        both("gui.universe.portal.back", "退格", "Back");
+        both("gui.universe.portal.dial", "拨号", "Dial");
+        both("gui.universe.portal.glyph", "符文 %s", "Glyph %s");
+        both("gui.universe.portal.known", "认识 %s/%s 个符文", "%s/%s glyphs known");
+        both("gui.universe.star_map.portal", "传送门：", "Portal:");
+        both("message.universe.portal.dormant", "传送门没有反应", "The portal doesn't respond");
+        both("message.universe.portal.unknown_glyph", "有的符文你还不认识", "You don't know all of those glyphs");
+        both("message.universe.portal.no_answer", "没有回应。这个地址没有传送门", "No answer. Nothing at that address");
+        both("message.universe.portal.same", "这就是这座门自己的地址", "That's this portal's own address");
+        both("message.universe.portal.opened", "门开了，通往 %1$s。%3$s 秒后关闭", "Portal open to %2$s. Closes in %3$s s");
+        both("message.universe.portal.arrived", "到了 %1$s", "Arrived at %2$s");
+        both("commands.universe.portal.no_portal", "这里没有传送门：不是能着陆的星球", "No portal here: not a landable planet");
+        both("commands.universe.portal.unknown_body", "没有这颗能着陆的星球：%s", "No landable body: %s");
+        both("commands.universe.portal.glyphs", "现在认识 %s 个符文", "You now know %s glyphs");
+        both("commands.universe.portal.went", "到了传送门前（%s）", "At the portal (%s)");
+        both("commands.universe.portal.dialed", "拨到了 %s", "Dialed %s");
+        both("commands.universe.portal.address", "%1$s 的地址：%2$s", "Address of %1$s: %2$s");
+    }
+
+    private void voyages() {
+        for (ShipType type : ShipType.values()) {
+            both("ship.universe.type." + type.key(), type.nameZh(), type.nameEn());
+        }
+        for (DriveTier tier : DriveTier.values()) {
+            both("ship.universe.drive." + tier.name().toLowerCase(java.util.Locale.ROOT), tier.nameZh(), tier.nameEn());
+            if (tier != DriveTier.BASIC) {
+                item(UniverseItems.DRIVES.get(tier).get(), tier.nameZh(), tier.nameEn());
+            }
+        }
+        both("tooltip.universe.drive.cadmium", "装上以后能跃迁到红巨星", "Lets the warp drive reach red giants");
+        both("tooltip.universe.drive.emeril", "装上以后能跃迁到红巨星、白星和白矮星", "Reaches red giants, white stars and white dwarfs");
+        both("tooltip.universe.drive.indium", "装上以后能跃迁到所有恒星，包括蓝星、中子星和黑洞",
+                "Reaches every star, blue stars, neutron stars and black holes included");
+        both("tooltip.universe.module.host.ship", "装在驾驶台上（开船时 B 键）", "Installs in the ship helm (B while flying)");
+        both("tooltip.universe.ship_helm.summary", "右键：组装飞船并坐上去\n空手潜行右键：飞船面板（评级、技术槽）",
+                "Right-click: assemble the ship and board\nSneak + right-click empty-handed: ship panel (class, tech slots)");
+        both("tech.universe.stat.fuel_use", "%s 燃料效率", "%s fuel efficiency");
+        both("tech.universe.stat.pulse_speed", "%s 脉冲速度", "%s pulse speed");
+        both("tech.universe.stat.warp_range", "%s 光年跃迁航程", "%s ly warp range");
+        both("tech.universe.stat.ship_shield", "%s 飞船护盾", "%s ship shield");
+        both("tech.universe.stat.hull", "%s 船体", "%s hull");
+
+        // 飞船面板
+        both("gui.universe.ship_panel.title", "飞船", "Starship");
+        both("gui.universe.ship_panel.rating", "%s · %s 级", "%s · Class %s");
+        both("gui.universe.ship_panel.quality", "用料 %s / 100", "Build quality %s / 100");
+        both("gui.universe.ship_panel.specialty.fighter", "专长：武器伤害 +%s%%", "Specialty: weapon damage +%s%%");
+        both("gui.universe.ship_panel.specialty.hauler", "专长：船体和护盾 +%s%%", "Specialty: hull and shield +%s%%");
+        both("gui.universe.ship_panel.specialty.explorer", "专长：跃迁航程 +%s%%", "Specialty: warp range +%s%%");
+        both("gui.universe.ship_panel.specialty.shuttle", "专长：燃料消耗 -%s%%", "Specialty: fuel use -%s%%");
+        both("gui.universe.ship_panel.specialty_none", "C 级没有专长加成", "No specialty bonus at class C");
+        both("gui.universe.ship_panel.stat.hull", "船体 %s", "Hull %s");
+        both("gui.universe.ship_panel.stat.shield", "护盾 %s", "Shield %s");
+        both("gui.universe.ship_panel.stat.fuel", "燃料舱 %s", "Fuel capacity %s");
+        both("gui.universe.ship_panel.stat.lift", "推重比 %s（1 g）", "Thrust/weight %s (1 g)");
+        both("gui.universe.ship_panel.stat.impulse", "脉冲 %s 格/秒", "Impulse %s blocks/s");
+        both("gui.universe.ship_panel.stat.warp", "跃迁 %s 光年", "Warp %s ly");
+        both("gui.universe.ship_panel.stat.damage", "武器伤害 %s", "Weapon damage %s");
+        both("gui.universe.ship_panel.stat.fire_rate", "射速 %s", "Fire rate %s");
+        both("gui.universe.ship_panel.stat.cargo", "货舱 %s 格", "Cargo %s slots");
+        both("gui.universe.ship_panel.drive", "驱动：%s", "Drive: %s");
+        both("gui.universe.ship_panel.slots", "技术槽 %s/%s", "Tech %s/%s");
+        both("gui.universe.ship_panel.hint_flying", "改了马上生效", "Changes apply at once");
+        both("gui.universe.ship_panel.hint_parked", "组装起飞时生效", "Applies when you assemble the ship");
+        both("hud.universe.ship.rating", "%s · %s 级", "%s · Class %s");
+        both("hud.universe.ship.autopilot", "自动驾驶中，按方向键接管", "Autopilot on. Steer to take over");
+
+        // 自动驾驶
+        both("gui.universe.autopilot.title", "自动驾驶", "Autopilot");
+        both("gui.universe.autopilot.hint", "选一个目的地，按方向键随时接管", "Pick a destination. Steer to take over");
+        both("gui.universe.autopilot.empty", "这个恒星系里没有能去的地方", "Nowhere to go in this system");
+        both("gui.universe.autopilot.entry", "%1$s · %2$s · %3$s 格", "%1$s · %2$s · %3$s blocks");
+        both("gui.universe.autopilot.entry_unnamed", "%1$s · %2$s 格", "%1$s · %2$s blocks");
+        both("gui.universe.autopilot.kind.planet", "星球", "Planet");
+        both("gui.universe.autopilot.kind.moon", "卫星", "Moon");
+        both("gui.universe.autopilot.kind.station", "空间站", "Station");
+        both("gui.universe.autopilot.kind.freighter", "货船", "Freighter");
+        both("gui.universe.autopilot.kind.signal", "信号", "Signal");
+        both("gui.universe.autopilot.kind.black_hole", "黑洞", "Black hole");
+        both("gui.universe.autopilot.black_hole", "黑洞", "Black Hole");
+        both("message.universe.black_hole.flung", "被黑洞甩到了 %1$s。船体受损，护盾耗尽", "The black hole threw you out at %2$s. Hull damaged, shields down");
+        both("hud.universe.ship.black_hole", "黑洞", "Black hole");
+        both("gui.universe.autopilot.station", "空间站", "Space Station");
+        both("gui.universe.autopilot.name", "%1$s", "%2$s");
+        both("message.universe.autopilot.engaged", "自动驾驶：前往 %s", "Autopilot: heading for %s");
+        both("message.universe.autopilot.off", "已退出自动驾驶", "Autopilot off");
+        both("message.universe.autopilot.arrived", "已到达 %s", "Arrived at %s");
+        both("message.universe.autopilot.blocked", "前面被挡住了，自动驾驶已退出", "Path blocked. Autopilot off");
+
+        // 召唤
+        both("key.universe.summon", "召唤飞船 / 自动驾驶", "Summon Ship / Autopilot");
+        both("message.universe.summon.cooldown", "还要 %s 秒才能再召唤", "Summon ready in %ss");
+        both("message.universe.summon.in_space", "在开阔的太空里叫不来飞船", "Can't summon a ship in open space");
+        both("message.universe.summon.none", "你还没有自己的飞船", "You don't have a ship yet");
+        both("message.universe.summon.parked", "你的船停成了方块，得走过去开", "Your ship is parked as blocks. Walk over and fly it");
+        both("message.universe.summon.other_system", "你的船在别的恒星系", "Your ship is in another system");
+        both("message.universe.summon.lost", "找不到你的船", "Couldn't find your ship");
+        both("message.universe.summon.calling", "正在呼叫飞船……", "Calling your ship...");
+        both("message.universe.summon.occupied", "有人在开你的船", "Someone is flying your ship");
+        both("message.universe.summon.no_room", "附近没有能停船的地方", "No room to land nearby");
+        both("message.universe.summon.arrived", "飞船到了", "Your ship has arrived");
+        both("message.universe.summon.aboard", "你已经在船上了", "You're already aboard");
+
+        // 着陆台
+        block(UniverseBlocks.LANDING_PAD.get(), "着陆台", "Landing Pad");
+        both("tooltip.universe.landing_pad.summary", "接入电网后给停在上面的船加燃料（600 W）\n召唤飞船时，船停到 64 格内你的着陆台上",
+                "Refuels ships parked on it when powered (600 W)\nSummoned ships land on your pad within 64 blocks");
+        both("message.universe.landing_pad.no_power", "着陆台没接电网", "The landing pad has no power");
+        both("message.universe.landing_pad.empty", "着陆台空着", "The landing pad is empty");
+        both("message.universe.landing_pad.fuel", "加燃料：%s / %s", "Refueling: %s / %s");
+
+        // 飞船交易终端
+        block(UniverseBlocks.SHIP_DEALER.get(), "飞船交易终端", "Starship Dealer");
+        both("gui.universe.dealer.title", "飞船交易终端", "Starship Dealer");
+        both("gui.universe.dealer.credits", "信用点 %s", "%s credits");
+        both("gui.universe.dealer.tab.ships", "在售", "For Sale");
+        both("gui.universe.dealer.tab.sell", "卖船", "Sell");
+        both("gui.universe.dealer.ship", "%1$s 级%2$s", "Class %1$s %2$s");
+        both("gui.universe.dealer.sold_out", "已售出", "Sold");
+        both("gui.universe.dealer.buy", "买下 · %s", "Buy · %s");
+        both("gui.universe.dealer.sell", "卖出 · %s", "Sell · %s");
+        both("gui.universe.dealer.none", "今天没有船卖", "No ships today");
+        both("gui.universe.dealer.slots", "技术槽 %s 格", "Tech slots: %s");
+        both("gui.universe.dealer.tech", "自带技术", "Installed");
+        both("gui.universe.dealer.no_tech", "没有自带技术", "No installed tech");
+        both("gui.universe.dealer.pad_busy", "起降台上有船", "Landing pad occupied");
+        both("gui.universe.dealer.poor", "信用点不够", "Not enough credits");
+        both("gui.universe.dealer.no_ships", "机库里没有你的船。把船开进来停好，下船以后再看", "None of your ships are in the hangar. Land one and step out");
+        both("gui.universe.dealer.has_cargo", "船上还有货", "Cargo still aboard");
+        both("gui.universe.dealer.blocks", "%s 个方块", "%s blocks");
+        both("gui.universe.dealer.sell_hint", "按方块价值的六成收购，驾驶台里的技术还给你", "Pays 60% of block value. Helm tech comes back to you");
+        both("message.universe.dealer.bought", "买下了 %2$s 级%1$s（%3$s 信用点），停在起降台上",
+                "Bought a class %2$s %1$s for %3$s credits. It's on the landing pad");
+        both("message.universe.dealer.sold", "卖掉了 %2$s 级%1$s，得到 %3$s 信用点", "Sold a class %2$s %1$s for %3$s credits");
+        both("message.universe.dealer.sold_out", "这艘已经卖掉了", "That ship is already sold");
+        both("message.universe.dealer.poor", "还差 %s 信用点", "%s credits short");
+        both("message.universe.dealer.pad_busy", "起降台上有东西，先清出来", "Clear the landing pad first");
+        both("message.universe.dealer.failed", "这艘船交付不了", "Couldn't deliver the ship");
+        both("message.universe.dealer.not_here", "那艘船不在机库里", "That ship isn't in the hangar");
+        both("message.universe.dealer.cargo", "先把船上的货卸了", "Unload the cargo first");
+
+        // 坠毁的飞船
+        block(UniverseBlocks.DAMAGED_HELM.get(), "损坏的驾驶台", "Damaged Ship Helm");
+        both("tooltip.universe.damaged_ship_helm.summary", "背包里有 4 个钛锭和 2 个电路板时右键修好", "Right-click with 4 titanium ingots and 2 circuit boards to repair");
+        both("message.universe.damaged_helm.needs", "修驾驶台要 %s", "Repairing the helm takes %s");
+        both("message.universe.damaged_helm.repaired", "驾驶台修好了，右键组装起飞", "Helm repaired. Right-click to assemble and fly");
+
+        // 研究
+        tech("landing_pad", "着陆台", "Landing Pad");
+        tech("cadmium_drive", "镉驱动", "Cadmium Drive");
+        tech("emeril_drive", "翠金驱动", "Emeril Drive");
+        tech("indium_drive", "铟驱动", "Indium Drive");
     }
 
     /** 技术模块和外骨骼的格子（ADR-0014）。 */

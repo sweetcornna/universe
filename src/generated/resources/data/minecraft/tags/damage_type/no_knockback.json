@@ -5,6 +5,7 @@
     "universe:heat",
     "universe:toxic",
     "universe:radiation",
-    "universe:plasma"
+    "universe:plasma",
+    "universe:shock"
   ]
 }

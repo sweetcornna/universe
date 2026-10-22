@@ -50,8 +50,14 @@ import io.github.sweetcornna.universe.core.sky.SkyColors;
 import io.github.sweetcornna.universe.core.sky.SkyModel;
 import io.github.sweetcornna.universe.core.sky.StarLook;
 import io.github.sweetcornna.universe.core.sky.StarField;
+import io.github.sweetcornna.universe.client.fleet.FleetClient;
+import io.github.sweetcornna.universe.core.fleet.FreighterLayout;
+import io.github.sweetcornna.universe.core.galaxy.StarClass;
+import io.github.sweetcornna.universe.core.space.BlackHoles;
 import io.github.sweetcornna.universe.core.space.SpaceLayout;
+import io.github.sweetcornna.universe.network.FleetPayloads;
 import io.github.sweetcornna.universe.world.planet.PlanetEnvironment;
+import io.github.sweetcornna.universe.world.freighter.FreighterDimensions;
 import io.github.sweetcornna.universe.world.space.SpaceDimensions;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
@@ -108,18 +114,31 @@ public final class PlanetSkyRenderer implements CustomSkyboxRenderer {
     private record SkyFrame(PlanetEnvironment.Context context, List<SkyBody> bodies, double days) {
     }
 
-    /** 太空维度的一帧：天体按真实的位置和大小画，观察者就是摄像机。 */
-    private record SpaceFrame(StarSystem system, List<SpaceLayout.Body> bodies, Vec3 camera, double days) {
+    /**
+     * 太空维度的一帧：天体按真实的位置和大小画，观察者就是摄像机。
+     *
+     * @param yaw 整片天绕竖轴转多少（弧度）：货船的船舱里机库门朝 -z，外壳的机库口朝 -x，转过来门外看到的才是机库口外面那片天
+     */
+    private record SpaceFrame(StarSystem system, List<SpaceLayout.Body> bodies, Vec3 camera, double days, float yaw) {
     }
+
+    /** 船舱的 +x 是外壳的 -z（船头），把外壳那边的方向转到船舱里。 */
+    private static final float INTERIOR_YAW = -HALF_PI;
 
     /** 太空维度的天空（维度类型的 {@code neoforge:custom_skybox} 指向它），和星球天空共用星空和天体的画法。 */
     public static final Identifier SPACE_ID = Universe.id("space");
     private static final ContextKey<SpaceFrame> SPACE_FRAME = new ContextKey<>(Universe.id("space_frame"));
+    /** 黑洞的阴影至少画多大（度）：再远也看得见吸积盘。 */
+    private static final float MIN_HOLE_DEGREES = 0.3F;
     private int spaceSystemIndex = -1;
     private @Nullable StarSystem spaceSystem;
     private List<SpaceLayout.Body> spaceBodies = List.of();
     private @Nullable StarSystem lookSystem;
     private @Nullable StarLook look;
+    /** 太空里另外放的黑洞（ADR-0024），恒星本身是黑洞的系没有（就是那颗恒星）。 */
+    private @Nullable StarSystem holeSystem;
+    private BlackHoles.@Nullable BlackHole hole;
+    private @Nullable StarLook holeLook;
     private final PlanetRenderer planets = new PlanetRenderer();
 
     public static void registerEvents(IEventBus modBus, IEventBus gameBus) {
@@ -142,7 +161,7 @@ public final class PlanetSkyRenderer implements CustomSkyboxRenderer {
      */
     private static void spaceFog(ViewportEvent.ComputeFogColor event) {
         ClientLevel level = Minecraft.getInstance().level;
-        if (level != null && SpaceDimensions.isSpace(level.dimension())) {
+        if (level != null && (SpaceDimensions.isSpace(level.dimension()) || FreighterDimensions.isInterior(level.dimension()))) {
             event.setRed(0.0F);
             event.setGreen(0.0F);
             event.setBlue(0.0F);
@@ -159,7 +178,16 @@ public final class PlanetSkyRenderer implements CustomSkyboxRenderer {
         OptionalInt space = SpaceDimensions.system(event.getLevel().dimension());
         if (space.isPresent()) {
             state.setRenderData(FRAME, null);
-            state.setRenderData(SPACE_FRAME, this.spaceFrame(space.getAsInt(), event.getCamera().position(), days));
+            state.setRenderData(SPACE_FRAME, this.spaceFrame(space.getAsInt(), event.getCamera().position(), days, 0));
+            return;
+        }
+        // 货船的船舱：画货船停的那片太空，观察者在外壳的机库里
+        Optional<FleetPayloads.Location> aboard = FleetClient.location(event.getLevel().dimension());
+        if (aboard.isPresent()) {
+            FleetPayloads.Location at = aboard.get();
+            state.setRenderData(FRAME, null);
+            state.setRenderData(SPACE_FRAME, this.spaceFrame(at.system(), new Vec3(at.x(), at.y() + FreighterLayout.HANGAR_MIDDLE, at.z()), days,
+                    INTERIOR_YAW));
             return;
         }
         state.setRenderData(SPACE_FRAME, null);
@@ -182,13 +210,13 @@ public final class PlanetSkyRenderer implements CustomSkyboxRenderer {
         return this.cachedContext;
     }
 
-    private @Nullable SpaceFrame spaceFrame(int systemIndex, Vec3 camera, double days) {
+    private @Nullable SpaceFrame spaceFrame(int systemIndex, Vec3 camera, double days, float yaw) {
         if (systemIndex != this.spaceSystemIndex || this.spaceSystem == null) {
             this.spaceSystem = ClientGalaxy.galaxy().flatMap(galaxy -> galaxy.system(systemIndex)).orElse(null);
             this.spaceBodies = this.spaceSystem == null ? List.of() : SpaceLayout.of(this.spaceSystem);
             this.spaceSystemIndex = this.spaceSystem == null ? -1 : systemIndex;
         }
-        return this.spaceSystem == null ? null : new SpaceFrame(this.spaceSystem, this.spaceBodies, camera, days);
+        return this.spaceSystem == null ? null : new SpaceFrame(this.spaceSystem, this.spaceBodies, camera, days, yaw);
     }
 
     @Override
@@ -243,6 +271,21 @@ public final class PlanetSkyRenderer implements CustomSkyboxRenderer {
      * 都画在天球上（深度不写），所以总在飞船和方块后面——飞船飞进大气球之前就会切换维度，不会穿进星球里。
      */
     private void renderSpace(SpaceFrame frame, GpuBufferSlice skyFog) {
+        if (frame.yaw() == 0) {
+            this.renderSpaceSky(frame, skyFog);
+            return;
+        }
+        Matrix4fStack stack = RenderSystem.getModelViewStack();
+        stack.pushMatrix();
+        stack.rotateY(frame.yaw());
+        try {
+            this.renderSpaceSky(frame, skyFog);
+        } finally {
+            stack.popMatrix();
+        }
+    }
+
+    private void renderSpaceSky(SpaceFrame frame, GpuBufferSlice skyFog) {
         this.ensureBuffers(frame.system().seed());
         RenderSystem.setShaderFog(skyFog);
         RenderTarget target = Minecraft.getInstance().gameRenderer.mainRenderTarget();
@@ -259,6 +302,10 @@ public final class PlanetSkyRenderer implements CustomSkyboxRenderer {
             toStar.normalize();
             float starAngular = (float) Math.max(0.8, Math.toDegrees(2 * Math.atan(SpaceLayout.starRadius(frame.system()) / Math.max(starDistance, 1))));
             boolean starDrawn = starDistance <= 1;
+            // 黑洞和星球一样按远近插进去；比恒星远时先画它
+            BlackHoles.BlackHole hole = this.blackHole(frame.system());
+            double holeDistance = hole == null ? -1 : hole.distanceTo(camera.x, camera.y, camera.z);
+            boolean holeDrawn = hole == null;
             // 由远及近地画，近的盖住远的；恒星按它的距离插在中间，整个躲在恒星背后的星球不画
             List<SpaceLayout.Body> bodies = new ArrayList<>(frame.bodies());
             bodies.sort(Comparator.comparingDouble(body -> -body.distanceTo(camera.x, camera.y, camera.z)));
@@ -271,9 +318,17 @@ public final class PlanetSkyRenderer implements CustomSkyboxRenderer {
                 if (distance <= body.radius()) {
                     continue;
                 }
+                if (!holeDrawn && distance < holeDistance && (starDrawn || holeDistance > starDistance)) {
+                    this.drawBlackHole(pass, hole, camera, seconds);
+                    holeDrawn = true;
+                }
                 if (!starDrawn && distance < starDistance) {
                     this.drawStarAt(pass, toStar, starAngular, look, frame.system().star().color(), seconds);
                     starDrawn = true;
+                }
+                if (!holeDrawn && distance < holeDistance) {
+                    this.drawBlackHole(pass, hole, camera, seconds);
+                    holeDrawn = true;
                 }
                 float angular = (float) Math.toDegrees(2 * Math.asin(Math.min(1, body.surface() / distance)));
                 Vector3f direction = new Vector3f((float) (body.x() - camera.x), (float) (body.y() - camera.y),
@@ -291,8 +346,15 @@ public final class PlanetSkyRenderer implements CustomSkyboxRenderer {
                     starVisible *= Eclipse.visible(Math.toRadians(starAngular) / 2, Math.toRadians(angular) / 2, apart);
                 }
             }
+            if (!holeDrawn && (starDrawn || holeDistance > starDistance)) {
+                this.drawBlackHole(pass, hole, camera, seconds);
+                holeDrawn = true;
+            }
             if (!starDrawn) {
                 this.drawStarAt(pass, toStar, starAngular, look, frame.system().star().color(), seconds);
+            }
+            if (!holeDrawn) {
+                this.drawBlackHole(pass, hole, camera, seconds);
             }
             SunGlare.update(toStar, starAngular, frame.system().star().color(), (float) starVisible);
             SkyTargets.end();
@@ -334,6 +396,29 @@ public final class PlanetSkyRenderer implements CustomSkyboxRenderer {
                 new Vector3f(scatter, extent, style.shaderId()),
                 parameters);
         this.drawQuad(pass, SkyPipelines.STAR, transform);
+    }
+
+    private BlackHoles.@Nullable BlackHole blackHole(StarSystem system) {
+        if (system != this.holeSystem) {
+            this.holeSystem = system;
+            boolean star = system.star().starClass() == StarClass.BLACK_HOLE;
+            this.hole = star ? null : BlackHoles.in(system).orElse(null);
+            this.holeLook = this.hole == null ? null : BlackHoles.look(system);
+        }
+        return this.hole;
+    }
+
+    /** 太空里的黑洞：阴影的半径就是视界（ADR-0025 照照片画）；很远时也至少画到看得出吸积盘。 */
+    private void drawBlackHole(RenderPass pass, BlackHoles.BlackHole hole, Vec3 camera, float seconds) {
+        StarLook look = this.holeLook;
+        if (look == null) {
+            return;
+        }
+        Vector3f direction = new Vector3f((float) (hole.x() - camera.x), (float) (hole.y() - camera.y), (float) (hole.z() - camera.z));
+        double distance = Math.max(direction.length(), 1);
+        direction.normalize();
+        float angular = (float) Math.max(MIN_HOLE_DEGREES, Math.toDegrees(2 * Math.atan(BlackHoles.HORIZON / distance)));
+        this.drawStarAt(pass, direction, angular, look, look.glowColor(), seconds);
     }
 
     private StarLook look(StarSystem system) {

@@ -96,6 +96,15 @@ public final class UniverseAttachments {
             () -> AttachmentType.builder(() -> 0L).serialize(Codec.LONG.fieldOf("credits")).copyOnDeath()
                     .sync((holder, player) -> holder == player, ByteBufCodecs.VAR_LONG).build());
 
+    /** 学会的先驱者符文（ADR-0024），16 位各一种：死亡不丢，同步给本人画拨号盘。 */
+    public static final Supplier<AttachmentType<Integer>> GLYPHS = ATTACHMENT_TYPES.register("glyphs",
+            () -> AttachmentType.builder(() -> 0).serialize(Codec.INT.fieldOf("known")).copyOnDeath()
+                    .sync((holder, player) -> holder == player, ByteBufCodecs.VAR_INT).build());
+
+    /** 被黑洞甩过几次（ADR-0024）：同一个人每次被甩到的地方都不一样。死亡不丢。 */
+    public static final Supplier<AttachmentType<Integer>> BLACK_HOLE_JUMPS = ATTACHMENT_TYPES.register("black_hole_jumps",
+            () -> AttachmentType.builder(() -> 0).serialize(Codec.INT.fieldOf("jumps")).copyOnDeath().build());
+
     /** 进过的空间站（恒星系序号，ADR-0017）：传送器能传过去。死亡不丢。 */
     public static final Supplier<AttachmentType<List<Integer>>> VISITED_STATIONS = ATTACHMENT_TYPES.register("visited_stations",
             () -> AttachmentType.builder(() -> List.<Integer>of()).serialize(Codec.INT.listOf().fieldOf("systems")).copyOnDeath().build());

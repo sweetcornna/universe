@@ -339,8 +339,13 @@ PIRATE_YELLOW = (222, 172, 44)
 
 def pirate_fighter():
     """深灰的机身，机翼上是红色的斜条纹，翼尖黄黑警示条；座舱暗红，引擎喷口和炮口在发光层里点亮。"""
+    fighter("pirate_fighter", PIRATE_HULL, PIRATE_RED, PIRATE_YELLOW, (34, 20, 24), (150, 110, 120))
+
+
+def fighter(name, hull, red, yellow, canopy_color, canopy_shine):
+    """海盗战机那副模型的皮肤：{@code red} 是涂装（机头、条纹、外段机翼），{@code yellow} 是翼尖的警示条。
+    守卫机的拦截机（tools/m13_textures.py）也用这副模型，换一套颜色。"""
     s = Skin(128, 64, 71)
-    hull = PIRATE_HULL
     dark = shade(hull, 0.6)
 
     # 机身：顶上一道脊线和横接缝，侧面一道红条，机头那端一圈红
@@ -351,10 +356,10 @@ def pirate_fighter():
     for y in range(y0 + 5, y0 + h, 6):
         s.hline(x0, x0 + w, y, dark)
     for y in range(y0, y0 + 3):
-        s.hline(x0, x0 + w, y, shade(PIRATE_RED, 1.0 + 0.05 * (y - y0)))
+        s.hline(x0, x0 + w, y, shade(red, 1.0 + 0.05 * (y - y0)))
     for key in ("left", "right"):
         x0, y0, w, h = body[key]
-        s.hline(x0, x0 + w, y0 + 1, PIRATE_RED)
+        s.hline(x0, x0 + w, y0 + 1, red)
         for x in range(x0 + 4, x0 + w, 6):
             s.vline(x, y0 + 2, y0 + h, dark)
     x0, y0, w, h = body["bottom"]
@@ -369,13 +374,13 @@ def pirate_fighter():
         s.hline(x0 + 1, x0 + w - 1, y, (36, 34, 40))
 
     # 机头：红色，尖上更暗
-    nose = s.box(60, 0, 4, 3, 5, PIRATE_RED)
+    nose = s.box(60, 0, 4, 3, 5, red)
     x0, y0, w, h = nose["front"]
     for y in range(y0, y0 + h):
-        s.hline(x0, x0 + w, y, shade(PIRATE_RED, 0.55))
+        s.hline(x0, x0 + w, y, shade(red, 0.55))
 
     # 座舱罩：暗红的玻璃，一道高光，发光层微微亮
-    canopy = s.box(80, 0, 4, 2, 7, (34, 20, 24), 0.03)
+    canopy = s.box(80, 0, 4, 2, 7, canopy_color, 0.03)
     for rect in canopy.values():
         x0, y0, w, h = rect
         for y in range(y0, y0 + h):
@@ -383,14 +388,14 @@ def pirate_fighter():
                 s.light(x, y, 0.3)
     x0, y0, w, h = canopy["top"]
     for y in range(y0 + 1, y0 + h - 1):
-        s.put(x0 + 1, y, (150, 110, 120))
+        s.put(x0 + 1, y, canopy_shine)
 
     # 垂直尾翼：上半截红
     fin = s.box(104, 0, 1, 6, 7, hull)
     for key in ("left", "right"):
         x0, y0, w, h = fin[key]
         for y in range(y0, y0 + 2):
-            s.hline(x0, x0 + w, y, PIRATE_RED)
+            s.hline(x0, x0 + w, y, red)
 
     # 机翼内段：红色斜条纹
     inner = s.box(0, 28, 11, 1, 12, hull)
@@ -398,18 +403,18 @@ def pirate_fighter():
     for y in range(y0, y0 + h):
         for x in range(x0, x0 + w):
             if (x - x0 + y - y0) % 6 < 2:
-                s.put(x, y, shade(PIRATE_RED, 1 + s.rng.uniform(-0.05, 0.05)))
+                s.put(x, y, shade(red, 1 + s.rng.uniform(-0.05, 0.05)))
     x0, y0, w, h = inner["bottom"]
     for y in range(y0, y0 + h):
         for x in range(x0, x0 + w):
             s.put(x, y, shade(s.get(x, y), 0.65))
 
     # 机翼外段：红色，翼尖一道黄黑警示条
-    outer = s.box(46, 28, 7, 1, 7, PIRATE_RED)
+    outer = s.box(46, 28, 7, 1, 7, red)
     x0, y0, w, h = outer["top"]
     for y in range(y0, y0 + h):
         for x in range(x0, x0 + 2):
-            s.put(x, y, PIRATE_YELLOW if (x + y) % 2 == 0 else (28, 26, 30))
+            s.put(x, y, yellow if (x + y) % 2 == 0 else (28, 26, 30))
     x0, y0, w, h = outer["bottom"]
     for y in range(y0, y0 + h):
         for x in range(x0, x0 + w):
@@ -450,8 +455,8 @@ def pirate_fighter():
             else:
                 s.light(x, y, max(0.0, 0.5 - d * 0.1))
 
-    save(s.img, ENTITY, "pirate_fighter")
-    save(s.glow, ENTITY, "pirate_fighter_glow")
+    save(s.img, ENTITY, name)
+    save(s.glow, ENTITY, name + "_glow")
 
 
 def pirate_scrap():

@@ -16,6 +16,8 @@ import io.github.sweetcornna.universe.factory.TallMachineBlock;
 import io.github.sweetcornna.universe.factory.belt.BeltBlock;
 import io.github.sweetcornna.universe.factory.belt.TrafficMonitorBlock;
 import io.github.sweetcornna.universe.factory.power.AccumulatorBlock;
+import io.github.sweetcornna.universe.block.portal.PortalGlyphBlock;
+import io.github.sweetcornna.universe.core.portal.PortalAddress;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
 import io.github.sweetcornna.universe.registry.UniverseItems;
 import net.minecraft.client.renderer.item.properties.select.DisplayContext;
@@ -108,6 +110,8 @@ final class UniverseModelProvider extends ModelProvider {
         itemModels.generateFlatItem(UniverseItems.MULTITOOL.get(), ModelTemplates.FLAT_HANDHELD_ITEM);
         // 技术模块：芯片加按品级染色的边框（ADR-0014）
         UniverseItems.MODULES.values().forEach(item -> itemModels.generateItemWithTintedOverlay(item.get(), ModuleGradeTint.INSTANCE));
+        // 镉、翠金、铟驱动（ADR-0024）
+        UniverseItems.DRIVES.values().forEach(item -> itemModels.generateFlatItem(item.get(), ModelTemplates.FLAT_ITEM));
         factory(blockModels, itemModels);
     }
 
@@ -367,7 +371,8 @@ final class UniverseModelProvider extends ModelProvider {
      * Mk.II 部件的手写模型继承普通版、换贴图，这里只出方块状态。
      */
     private static void ships(BlockModelGenerators blockModels) {
-        for (Block block : new Block[] {UniverseBlocks.SHIP_HELM.get(), UniverseBlocks.SHIP_SEAT.get(), UniverseBlocks.IMPULSE_ENGINE.get(),
+        for (Block block : new Block[] {UniverseBlocks.SHIP_HELM.get(), UniverseBlocks.DAMAGED_HELM.get(), UniverseBlocks.SHIP_SEAT.get(),
+                UniverseBlocks.IMPULSE_ENGINE.get(),
                 UniverseBlocks.WARP_DRIVE.get(), UniverseBlocks.PHOTON_CANNON.get(), UniverseBlocks.MINING_BEAM.get(),
                 UniverseBlocks.IMPULSE_ENGINE_MK2.get(), UniverseBlocks.WARP_DRIVE_MK2.get()}) {
             Identifier model = ModelLocationUtils.getModelLocation(block);
@@ -408,7 +413,8 @@ final class UniverseModelProvider extends ModelProvider {
                 .with(BlockModelGenerators.ROTATION_HORIZONTAL_FACING));
         blockModels.registerSimpleItemModel(pod, podModels[0]);
         for (Block block : List.of(UniverseBlocks.DATA_TERMINAL.get(), UniverseBlocks.SUPPLY_CRATE.get(), UniverseBlocks.TRADE_TERMINAL.get(),
-                UniverseBlocks.SHIP_REPAIR.get(), UniverseBlocks.MISSION_BOARD.get())) {
+                UniverseBlocks.SHIP_REPAIR.get(), UniverseBlocks.MISSION_BOARD.get(), UniverseBlocks.SHIP_DEALER.get(),
+                UniverseBlocks.FREIGHTER_CONSOLE.get(), UniverseBlocks.FLEET_TERMINAL.get())) {
             String name = BuiltInRegistries.BLOCK.getKey(block).getPath();
             Identifier model = ModelTemplates.CUBE_ORIENTABLE_TOP_BOTTOM.create(block, new TextureMapping()
                     .put(TextureSlot.FRONT, texture(name + "_front"))
@@ -422,12 +428,29 @@ final class UniverseModelProvider extends ModelProvider {
         // 空间站的建材（ADR-0017）
         for (Block block : List.of(UniverseBlocks.STATION_HULL.get(), UniverseBlocks.STATION_FLOOR.get(), UniverseBlocks.STATION_GLASS.get(),
                 UniverseBlocks.STATION_LIGHT.get(), UniverseBlocks.STATION_PAD.get(), UniverseBlocks.STATION_TRIM.get(),
-                UniverseBlocks.STATION_SOLAR_PANEL.get())) {
+                UniverseBlocks.STATION_SOLAR_PANEL.get(), UniverseBlocks.FREIGHTER_PLATE.get(), UniverseBlocks.FREIGHTER_ENGINE.get())) {
             blockModels.createTrivialCube(block);
         }
         for (Block block : List.of(UniverseBlocks.MONOLITH.get(), UniverseBlocks.TECH_CACHE.get(), UniverseBlocks.SMOLDERING_WRECK.get())) {
             blockModels.createTrivialBlock(block, TexturedModel.COLUMN);
         }
+        // 先驱者传送门（ADR-0024）：符文石按刻的是第几个符文换贴图；门开时环里那层光是半透明、会动的贴图
+        blockModels.createTrivialCube(UniverseBlocks.PORTAL_STONE.get());
+        blockModels.createTrivialBlock(UniverseBlocks.PORTAL_DIAL.get(), TexturedModel.COLUMN);
+        Block glyphStone = UniverseBlocks.PORTAL_GLYPH.get();
+        Identifier[] glyphModels = new Identifier[PortalAddress.GLYPHS];
+        for (int i = 0; i < glyphModels.length; i++) {
+            glyphModels[i] = ModelTemplates.CUBE_ALL.createWithSuffix(glyphStone, "_" + i, TextureMapping.cube(texture("portal_glyph_" + i)),
+                    blockModels.modelOutput);
+        }
+        blockModels.blockStateOutput.accept(MultiVariantGenerator.dispatch(glyphStone)
+                .with(PropertyDispatch.initial(PortalGlyphBlock.GLYPH).generate(glyph -> BlockModelGenerators.plainVariant(glyphModels[glyph]))));
+        blockModels.registerSimpleItemModel(glyphStone, glyphModels[0]);
+        // 废弃货船里漏电的线管（ADR-0024）
+        blockModels.createTrivialCube(UniverseBlocks.LIVE_CONDUIT.get());
+        Block field = UniverseBlocks.PORTAL_FIELD.get();
+        Identifier fieldModel = ModelTemplates.CUBE_ALL.create(field, TextureMapping.cube(texture("portal_field")), blockModels.modelOutput);
+        blockModels.blockStateOutput.accept(BlockModelGenerators.createSimpleBlock(field, BlockModelGenerators.plainVariant(fieldModel)));
         Block booster = UniverseBlocks.SIGNAL_BOOSTER.get();
         Identifier boosterModel = ModelLocationUtils.getModelLocation(booster);
         blockModels.blockStateOutput.accept(BlockModelGenerators.createSimpleBlock(booster, BlockModelGenerators.plainVariant(boosterModel)));
@@ -435,6 +458,8 @@ final class UniverseModelProvider extends ModelProvider {
         // 基地和传送（ADR-0017）：传送器充满电时台面发亮；基地信标的模型是手写的
         recipeMachine(blockModels, UniverseBlocks.TELEPORTER.get(), "teleporter", true, "machine_casing_top");
         recipeMachine(blockModels, UniverseBlocks.STATION_TELEPORTER.get(), "station_teleporter", true, "station_hull");
+        // 着陆台（ADR-0024）：加燃料时台面和侧面的灯亮
+        recipeMachine(blockModels, UniverseBlocks.LANDING_PAD.get(), "landing_pad", true, "machine_casing_top");
         Block beacon = UniverseBlocks.BASE_BEACON.get();
         Identifier beaconModel = ModelLocationUtils.getModelLocation(beacon);
         blockModels.blockStateOutput.accept(BlockModelGenerators.createSimpleBlock(beacon, BlockModelGenerators.plainVariant(beaconModel)));
@@ -443,6 +468,8 @@ final class UniverseModelProvider extends ModelProvider {
         // 守卫机（ADR-0014）
         itemModels.generateFlatItem(UniverseItems.SENTINEL_SCRAP.get(), ModelTemplates.FLAT_ITEM);
         itemModels.generateFlatItem(UniverseItems.PIRATE_SCRAP.get(), ModelTemplates.FLAT_ITEM);
+        itemModels.generateFlatItem(UniverseItems.CREDIT_CHIP.get(), ModelTemplates.FLAT_ITEM);
+        itemModels.generateFlatItem(UniverseItems.EMERGENCY_RECEIVER.get(), ModelTemplates.FLAT_ITEM);
         itemModels.generateFlatItem(UniverseItems.EXOCRAFT.get(), ModelTemplates.FLAT_ITEM);
         itemModels.generateFlatItem(UniverseItems.SENTINEL_SPAWN_EGG.get(), ModelTemplates.FLAT_ITEM);
         itemModels.generateFlatItem(UniverseItems.HEAVY_SENTINEL_SPAWN_EGG.get(), ModelTemplates.FLAT_ITEM);

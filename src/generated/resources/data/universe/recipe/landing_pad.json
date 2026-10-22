@@ -1,0 +1,19 @@
+{
+  "type": "universe:research_shaped",
+  "key": {
+    "B": "universe:circuit_board",
+    "C": "universe:magnetic_coil",
+    "I": "minecraft:iron_ingot",
+    "S": "minecraft:smooth_stone_slab",
+    "Y": "minecraft:yellow_dye"
+  },
+  "pattern": [
+    "SYS",
+    "CBC",
+    "III"
+  ],
+  "research": "landing_pad",
+  "result": {
+    "id": "universe:landing_pad"
+  }
+}

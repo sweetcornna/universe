@@ -17,6 +17,9 @@ public final class UniverseStats {
     /** 打下的海盗战机、打退的海盗袭击（ADR-0017）。 */
     public static final DeferredHolder<Identifier, Identifier> PIRATES_DESTROYED = stat("pirates_destroyed");
     public static final DeferredHolder<Identifier, Identifier> PIRATE_RAIDS_REPELLED = stat("pirate_raids_repelled");
+    /** 救下的遇险货船、打下的守卫机拦截机（ADR-0024）。 */
+    public static final DeferredHolder<Identifier, Identifier> FREIGHTERS_RESCUED = stat("freighters_rescued");
+    public static final DeferredHolder<Identifier, Identifier> INTERCEPTORS_DESTROYED = stat("interceptors_destroyed");
     /** 打碎的小行星（ADR-0017）。 */
     public static final DeferredHolder<Identifier, Identifier> ASTEROIDS_MINED = stat("asteroids_mined");
 

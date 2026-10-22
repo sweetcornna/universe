@@ -333,6 +333,14 @@ io.github.sweetcornna.universe
 | 物品的燃烧时间是数据组件：`ResolvableInt.getFromItem(物品, DataComponents.COOKING_FUEL, CookingFuel::burnTime, 战利品上下文, 0)`。给玩家用的上下文是 `LootContextParamSets.EQUIPMENT`（`ORIGIN`、`THIS_ENTITY`），别的模组的燃料可能要别的参数，要接住异常 | 已确认，`mecha.Mecha.fuelEnergy` |
 | `ContainerData` 按 short 发给客户端，超过 32767 的数要拆成两格（`MachineMenu.low/high/join`） | 已确认 |
 | 游戏内测试里的玩家：`GameTestHelper.makeMockServerPlayerInLevel()` 标了待删除，它的连接没协商过模组的频道，`PacketDistributor.sendToPlayer` 会抛 `UnsupportedOperationException`（may not be sent to the client）。发之前用 `player.connection.hasChannel(TYPE)` 查；`Inventory` 没有 `countItem` 了 | 已确认，`mecha.Flyers` |
+| 上一条的模拟玩家一进服务器就会收到登录时的同步包（天气、物流飞行之类），别的系统没查频道就整个游戏内测试服务器崩掉。游戏内测试不要建模拟玩家，把要测的逻辑拆成不依赖玩家的部分来测 | 已确认，`fleet_voyage_claim` |
+| 染料改成一组颜色的集合：`Items.DYE` 是 `ColorCollection<Item>`，取黄色染料用 `Items.DYE.yellow()` | 已确认，配方在用 |
+| 床的规则是维度类型属性 `minecraft:gameplay/bed_rule`：`can_sleep`、`can_set_spawn` 取 `always`、`when_dark`、`never`，可选 `destroy_on_use`、`destroy_on_leave`、`error_message`（文本组件） | 已确认，太空和货船船舱的维度类型 |
+| 嵌套类型上的 `@Nullable`（JSpecify）要写在内层类名前面：`FreighterLayout.@Nullable Exterior`，写成 `@Nullable FreighterLayout.Exterior` 编译不过 | 已确认 |
+| `Screen` 自己有 `width`、`height` 字段，子类再声明同名字段会把它遮住，居中算错，面板高度另起名字（`panelHeight`） | 已确认，货船控制台界面 |
+| 聊天栏里能点、又不走命令的按钮：`new ClickEvent.Custom(Identifier, Optional<Tag>)`，点了客户端发 `ServerboundCustomClickActionPacket`，服务端在 NeoForge 的 `CustomClickActionEvent` 里接（`getPlayer()` 可能是 null，`getIdentifier()`、`getPayload()`，处理了就取消）。悬停文字是 `new HoverEvent.ShowText(Component)` | 已确认，`encounter.SpaceEncounters` 船长的报价 |
+| 服务端改玩家朝向要用 `ServerPlayer.teleportTo(ServerLevel, x, y, z, Set<Relative>, yaw, pitch, resetCamera)`，只 `setYRot` 不会同步给客户端 | 已确认，`/universe encounter visit` |
+| 给箱子设战利品表：`RandomizableContainer.setBlockEntityLootTable(BlockGetter, RandomSource, BlockPos, ResourceKey<LootTable>)`；拆方块不掉东西、不触发方块实体的副作用：`Block.UPDATE_CLIENTS`、`UPDATE_SUPPRESS_DROPS`、`UPDATE_SKIP_BLOCK_ENTITY_SIDEEFFECTS` 三个标志合起来（2、32、256） | 已确认，废弃货船 |
 拿不准的 API 先查源码再写，核实后把结果补进这张表。源码在：
 
 - Minecraft（含 NeoForge 补丁）：`build/moddev/artifacts/minecraft-patched-26.3.0.95-sources.jar`，IDE 里可以直接跳转。

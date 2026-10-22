@@ -3,7 +3,10 @@ package io.github.sweetcornna.universe.core.ship;
 import java.util.EnumMap;
 import java.util.Map;
 
+import io.github.sweetcornna.universe.core.space.DriveTier;
 import io.github.sweetcornna.universe.core.space.Warp;
+import io.github.sweetcornna.universe.core.tech.Stat;
+import io.github.sweetcornna.universe.core.tech.TechBonuses;
 
 /**
  * 由部件统计出的飞船性能。
@@ -22,9 +25,16 @@ import io.github.sweetcornna.universe.core.space.Warp;
  * @param shield             护盾上限
  * @param cannons            光子炮门数
  * @param beams              采矿光束台数
+ * @param fuelUse            燃料消耗的倍数（技术和穿梭机的专长，ADR-0024）
+ * @param damage             武器伤害的倍数
+ * @param fireRate           光子炮射速的倍数
+ * @param warpBonus          技术加的跃迁航程（光年）
+ * @param warpScale          跃迁航程的倍数（探索船的专长）
+ * @param drive              装着的跃迁驱动档次
  */
 public record ShipStats(int blocks, double mass, int thrusters, int fuelTanks, int impulse, double thrust, double fuelCapacity,
-        int warpDrives, int advancedWarpDrives, double impulseSpeed, double hull, double shield, int cannons, int beams) {
+        int warpDrives, int advancedWarpDrives, double impulseSpeed, double hull, double shield, int cannons, int beams,
+        double fuelUse, double damage, double fireRate, double warpBonus, double warpScale, DriveTier drive) {
     /** 一个推进器在 1 g 下托起的吨数。 */
     public static final double THRUST_PER_THRUSTER = 12;
     /** 一个 Mk.II 推进器在 1 g 下托起的吨数（ADR-0017）。 */
@@ -75,7 +85,24 @@ public record ShipStats(int blocks, double mass, int thrusters, int fuelTanks, i
                 thrusters * THRUST_PER_THRUSTER + thrustersMk2 * THRUST_PER_THRUSTER_MK2,
                 tanks * FUEL_PER_TANK + tanksMk2 * FUEL_PER_TANK_MK2,
                 warp + warpMk2, warpMk2, impulseSpeed, hull, count(counts, ShipPart.SHIELD_GENERATOR) * SHIELD_PER_GENERATOR,
-                count(counts, ShipPart.PHOTON_CANNON), count(counts, ShipPart.MINING_BEAM));
+                count(counts, ShipPart.PHOTON_CANNON), count(counts, ShipPart.MINING_BEAM), 1, 1, 1, 0, 1, DriveTier.BASIC);
+    }
+
+    /**
+     * 加上评级的专长和装着的技术（ADR-0024）。专长只加在类型对应的那一项上：战斗机加伤害，运输船加船体和护盾，
+     * 探索船加跃迁航程，穿梭机省燃料。
+     */
+    public ShipStats tuned(ShipRating rating, TechBonuses tech, DriveTier drive) {
+        double specialty = 1 + rating.bonus();
+        ShipType type = rating.type();
+        double fuelUse = tech.reduction(Stat.FUEL_USE) / (type == ShipType.SHUTTLE ? specialty : 1);
+        double damage = tech.boost(Stat.DAMAGE) * (type == ShipType.FIGHTER ? specialty : 1);
+        double hauler = type == ShipType.HAULER ? specialty : 1;
+        return new ShipStats(this.blocks, this.mass, this.thrusters, this.fuelTanks, this.impulse, this.thrust, this.fuelCapacity,
+                this.warpDrives, this.advancedWarpDrives, this.impulseSpeed * tech.boost(Stat.PULSE_SPEED),
+                this.hull * tech.boost(Stat.HULL) * hauler, this.shield * tech.boost(Stat.SHIP_SHIELD) * hauler, this.cannons, this.beams,
+                fuelUse, damage, tech.boost(Stat.FIRE_RATE), tech.get(Stat.WARP_RANGE),
+                type == ShipType.EXPLORER ? specialty : 1, drive);
     }
 
     private static int count(Map<ShipPart, Integer> counts, ShipPart part) {
@@ -104,9 +131,12 @@ public record ShipStats(int blocks, double mass, int thrusters, int fuelTanks, i
         return this.thrustToWeight(gravity) > 1.0;
     }
 
-    /** 跃迁射程（光年）；没有跃迁引擎时为 0。 */
+    /** 跃迁射程（光年）；没有跃迁引擎时为 0。技术加的光年和探索船的倍数也算上。 */
     public double warpRange() {
-        return Warp.range(this.warpDrives - this.advancedWarpDrives, this.advancedWarpDrives);
+        if (this.warpDrives <= 0) {
+            return 0;
+        }
+        return (Warp.range(this.warpDrives - this.advancedWarpDrives, this.advancedWarpDrives) + this.warpBonus) * this.warpScale;
     }
 
     /** 有没有武器（光子炮或采矿光束）。 */

@@ -29,7 +29,8 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 public final class UniverseDataComponents {
     public static final DeferredRegister.DataComponents COMPONENTS = DeferredRegister.createDataComponents(Registries.DATA_COMPONENT_TYPE, Universe.MOD_ID);
 
-    private static final Codec<TechModule> TECH_MODULE_CODEC = RecordCodecBuilder.create(i -> i.group(
+    /** 技术模块按名字存（飞船驾驶台的技术摘要也用它，ADR-0024）。 */
+    public static final Codec<TechModule> TECH_MODULE_CODEC = RecordCodecBuilder.create(i -> i.group(
             enumCodec(ModuleType.class).fieldOf("type").forGetter(TechModule::type),
             enumCodec(Grade.class).fieldOf("grade").forGetter(TechModule::grade),
             Codec.DOUBLE.listOf().fieldOf("values").forGetter(TechModule::values)
@@ -86,7 +87,7 @@ public final class UniverseDataComponents {
         COMPONENTS.register(modBus);
     }
 
-    private static <E extends Enum<E>> Codec<E> enumCodec(Class<E> type) {
+    public static <E extends Enum<E>> Codec<E> enumCodec(Class<E> type) {
         return Codec.STRING.comapFlatMap(name -> {
             try {
                 return DataResult.success(Enum.valueOf(type, name.toUpperCase(Locale.ROOT)));
