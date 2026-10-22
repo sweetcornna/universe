@@ -95,6 +95,9 @@ public class DiscoveryLogScreen extends Screen {
     private @Nullable Button saveButton;
     /** 改名框现在对着的东西；切换选中时清空重填。 */
     private @Nullable DiscoveryKey editing;
+    /** 标题栏上的两页：发现、文明（ADR-0027）。 */
+    private boolean civTab;
+    private @Nullable CivPage civPage;
 
     public DiscoveryLogScreen() {
         super(Component.translatable("gui.universe.discovery.title"));
@@ -211,7 +214,8 @@ public class DiscoveryLogScreen extends Screen {
         }
         DiscoveryKey key = this.selectedKey();
         Optional<DiscoveryLog.Entry> entry = key == null ? Optional.empty() : ClientDiscoveries.entry(key);
-        boolean renamable = entry.isPresent() && this.minecraft.player != null && entry.get().renamableBy(this.minecraft.player.getUUID());
+        boolean renamable = !this.civTab && entry.isPresent() && this.minecraft.player != null
+                && entry.get().renamableBy(this.minecraft.player.getUUID());
         this.nameBox.visible = renamable;
         this.saveButton.visible = renamable;
         if (!Objects.equals(key, this.editing)) {
@@ -273,25 +277,61 @@ public class DiscoveryLogScreen extends Screen {
             graphics.centeredText(this.font, Component.translatable("gui.universe.star_map.unknown"), this.width / 2, this.height / 2, DIM);
             return;
         }
-        this.drawHeader(graphics);
-        this.drawSystems(graphics, mouseX, mouseY);
-        this.drawBodies(graphics, mouseX, mouseY);
-        this.drawDetail(graphics);
+        this.drawHeader(graphics, mouseX, mouseY);
+        if (this.civTab) {
+            this.civPage().draw(graphics, HEADER, this.listBottom(), this.width, mouseX, mouseY);
+        } else {
+            this.drawSystems(graphics, mouseX, mouseY);
+            this.drawBodies(graphics, mouseX, mouseY);
+            this.drawDetail(graphics);
+        }
         graphics.fill(0, this.height - FOOTER, this.width, this.height, 0xE0050A0E);
-        Component hint = Component.translatable("gui.universe.discovery.footer");
+        Component hint = Component.translatable(this.civTab ? "gui.universe.civ.footer" : "gui.universe.discovery.footer");
         graphics.text(this.font, hint, 6, this.height - FOOTER + 3, DIM, false);
         super.extractRenderState(graphics, mouseX, mouseY, a);
     }
 
-    private void drawHeader(GuiGraphicsExtractor graphics) {
+    private void drawHeader(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
         graphics.fill(0, 0, this.width, HEADER, 0xE0050A0E);
         graphics.fill(0, HEADER - 1, this.width, HEADER, LINE);
         graphics.text(this.font, this.title, 6, 5, ACCENT, false);
+        for (int tab = 0; tab < 2; tab++) {
+            int[] span = this.tabSpan(tab);
+            boolean active = (tab == 1) == this.civTab;
+            boolean hover = !active && mouseY < HEADER && mouseX >= span[0] && mouseX < span[1];
+            if (active) {
+                graphics.fill(span[0], HEADER - 3, span[1], HEADER - 1, ACCENT);
+            }
+            graphics.text(this.font, this.tabName(tab), span[0] + 4, 5, active ? 0xFFFFFFFF : hover ? TEXT : DIM, false);
+        }
+        if (this.civTab) {
+            return;
+        }
         DiscoveryLog log = ClientDiscoveries.log();
         int species = log.count(DiscoveryKey.Kind.CREATURE) + log.count(DiscoveryKey.Kind.PLANT) + log.count(DiscoveryKey.Kind.TREE);
         Component totals = Component.translatable("gui.universe.discovery.totals", log.count(DiscoveryKey.Kind.SYSTEM),
                 log.count(DiscoveryKey.Kind.BODY), species, log.count(DiscoveryKey.Kind.MINERAL));
         graphics.text(this.font, totals, this.width - this.font.width(totals) - 6, 5, DIM, false);
+    }
+
+    private Component tabName(int tab) {
+        return Component.translatable(tab == 0 ? "gui.universe.discovery.tab.log" : "gui.universe.discovery.tab.civ");
+    }
+
+    /** 标题栏上第几页的左右边界（标题后面依次排开）。 */
+    private int[] tabSpan(int tab) {
+        int x = 6 + this.font.width(this.title) + 10;
+        for (int i = 0; i < tab; i++) {
+            x += this.font.width(this.tabName(i)) + 8;
+        }
+        return new int[] {x, x + this.font.width(this.tabName(tab)) + 8};
+    }
+
+    private CivPage civPage() {
+        if (this.civPage == null) {
+            this.civPage = new CivPage(this.font);
+        }
+        return this.civPage;
     }
 
     private void columnTitle(GuiGraphicsExtractor graphics, Component title, int left, int right) {
@@ -686,6 +726,24 @@ public class DiscoveryLogScreen extends Screen {
         }
         double x = event.x();
         double y = event.y();
+        if (event.button() == InputConstants.MOUSE_BUTTON_LEFT && y < HEADER) {
+            for (int tab = 0; tab < 2; tab++) {
+                int[] span = this.tabSpan(tab);
+                if (x >= span[0] && x < span[1] && (tab == 1) != this.civTab) {
+                    this.civTab = tab == 1;
+                    this.updateRename();
+                    this.click();
+                    return true;
+                }
+            }
+        }
+        if (this.civTab) {
+            if (event.button() == InputConstants.MOUSE_BUTTON_LEFT && y < this.listBottom() && this.civPage().click(x, y)) {
+                this.click();
+                return true;
+            }
+            return false;
+        }
         if (event.button() != InputConstants.MOUSE_BUTTON_LEFT || y < this.listTop() || y >= this.listBottom()) {
             return false;
         }
@@ -709,7 +767,9 @@ public class DiscoveryLogScreen extends Screen {
 
     @Override
     public boolean mouseScrolled(double x, double y, double scrollX, double scrollY) {
-        if (x < this.bodyLeft()) {
+        if (this.civTab) {
+            this.civPage().scroll(x, scrollY);
+        } else if (x < this.bodyLeft()) {
             this.systemScroll = this.clampScroll(this.systemScroll - scrollY * ROW, this.systems.size() * ROW);
         } else if (x < this.detailLeft()) {
             this.bodyScroll = this.clampScroll(this.bodyScroll - scrollY * ROW, this.bodies.size() * ROW);

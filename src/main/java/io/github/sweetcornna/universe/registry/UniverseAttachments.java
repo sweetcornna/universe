@@ -12,6 +12,8 @@ import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import io.github.sweetcornna.universe.mission.MissionState;
+import io.github.sweetcornna.universe.civ.CivCodecs;
+import io.github.sweetcornna.universe.core.civ.CivState;
 import io.github.sweetcornna.universe.mecha.MechaData;
 import io.github.sweetcornna.universe.mecha.MechaSettings;
 import io.github.sweetcornna.universe.sentinel.SentinelHud;
@@ -95,7 +97,7 @@ public final class UniverseAttachments {
     /** 信用点（ADR-0017）：死亡不丢，同步给本人，交易界面和 HUD 上显示。 */
     public static final Supplier<AttachmentType<Long>> CREDITS = ATTACHMENT_TYPES.register("credits",
             () -> AttachmentType.builder(() -> 0L).serialize(Codec.LONG.fieldOf("credits")).copyOnDeath()
-                    .sync((holder, player) -> holder == player, ByteBufCodecs.VAR_LONG).build());
+                    .sync((holder, player) -> holder == player && player.connection != null, ByteBufCodecs.VAR_LONG).build());
 
     /** 学会的先驱者符文（ADR-0024），16 位各一种：死亡不丢，同步给本人画拨号盘。 */
     public static final Supplier<AttachmentType<Integer>> GLYPHS = ATTACHMENT_TYPES.register("glyphs",
@@ -114,6 +116,14 @@ public final class UniverseAttachments {
     public static final Supplier<AttachmentType<MissionState>> MISSIONS = ATTACHMENT_TYPES.register("missions",
             () -> AttachmentType.builder(() -> MissionState.NONE).serialize(MissionState.CODEC).copyOnDeath()
                     .sync((holder, player) -> holder == player, MissionState.STREAM_CODEC).build());
+
+    /**
+     * 和外星文明的关系（ADR-0027）：种族和公会的声望、认识的词、碰过的知识石。死亡不丢，同步给本人
+     * （没有连接的假玩家不发，GameTest 里的模拟玩家就是这样）。
+     */
+    public static final Supplier<AttachmentType<CivState>> CIVILIZATION = ATTACHMENT_TYPES.register("civilization",
+            () -> AttachmentType.builder(() -> new CivState()).serialize(CivCodecs.CODEC).copyOnDeath()
+                    .sync((holder, player) -> holder == player && player.connection != null, CivCodecs.STREAM_CODEC).build());
 
     /** 太空维度的区块存过盘（有过方块，ADR-0017）：以后方块拆光了也要再存一次。 */
     public static final Supplier<AttachmentType<Boolean>> SPACE_BUILT = ATTACHMENT_TYPES.register("space_built",

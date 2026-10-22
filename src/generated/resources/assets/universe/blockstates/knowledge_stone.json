@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "half=lower": {
+      "model": "universe:block/knowledge_stone_lower"
+    },
+    "half=upper": {
+      "model": "universe:block/knowledge_stone_upper"
+    }
+  }
+}

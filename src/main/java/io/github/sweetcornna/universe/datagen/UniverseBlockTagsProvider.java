@@ -157,6 +157,9 @@ final class UniverseBlockTagsProvider extends BlockTagsProvider {
             this.tag(BlockTags.BLOCKS_MOTION_NO_LEAVES).add(block.key());
             this.tag(ShipParts.EXCLUDED).add(block.key());
         }
+        // 知识石（ADR-0027 §五）：实心，挖不掉，不会被组装进飞船
+        this.tag(BlockTags.BLOCKS_MOTION_NO_LEAVES).add(UniverseBlocks.KNOWLEDGE_STONE.key());
+        this.tag(ShipParts.EXCLUDED).add(UniverseBlocks.KNOWLEDGE_STONE.key());
         // 野外的地标（ADR-0026）：化石土用铲子，打捞舱和雷击石用镐子；打捞舱固定在原地
         this.tag(BlockTags.BLOCKS_MOTION_NO_LEAVES).add(
                 UniverseBlocks.FOSSIL_DIRT.key(), UniverseBlocks.SALVAGE_CAPSULE.key(), UniverseBlocks.FULGURITE.key());

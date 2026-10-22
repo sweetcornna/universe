@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import io.github.sweetcornna.universe.block.landmark.KnowledgeStoneBlock;
 import io.github.sweetcornna.universe.block.landmark.ReinforcedDoorBlock;
 import io.github.sweetcornna.universe.block.poi.DropPodBlock;
 import io.github.sweetcornna.universe.block.poi.SalvageCapsuleBlock;
@@ -147,6 +148,7 @@ final class UniverseModelProvider extends ModelProvider {
         underwater(blockModels, itemModels);
         wildLandmarks(blockModels, itemModels);
         outpostLandmarks(blockModels);
+        civLandmarks(blockModels);
         factory(blockModels, itemModels);
     }
 
@@ -184,6 +186,18 @@ final class UniverseModelProvider extends ModelProvider {
         blockModels.blockStateOutput.accept(MultiVariantGenerator.dispatch(door).with(PropertyDispatch.initial(ReinforcedDoorBlock.HALF)
                 .generate(half -> BlockModelGenerators.plainVariant(half == DoubleBlockHalf.LOWER ? lower : upper))));
         blockModels.registerSimpleItemModel(door, lower);
+    }
+
+    /** 知识石（ADR-0027 §五）：上下两半各一张侧面贴图，顶和底共用一张。 */
+    private static void civLandmarks(BlockModelGenerators blockModels) {
+        Block stone = UniverseBlocks.KNOWLEDGE_STONE.get();
+        Identifier lower = ModelTemplates.CUBE_COLUMN.createWithSuffix(stone, "_lower",
+                TextureMapping.column(texture("knowledge_stone_lower"), texture("knowledge_stone_top")), blockModels.modelOutput);
+        Identifier upper = ModelTemplates.CUBE_COLUMN.createWithSuffix(stone, "_upper",
+                TextureMapping.column(texture("knowledge_stone_upper"), texture("knowledge_stone_top")), blockModels.modelOutput);
+        blockModels.blockStateOutput.accept(MultiVariantGenerator.dispatch(stone).with(PropertyDispatch.initial(KnowledgeStoneBlock.HALF)
+                .generate(half -> BlockModelGenerators.plainVariant(half == DoubleBlockHalf.LOWER ? lower : upper))));
+        blockModels.registerSimpleItemModel(stone, lower);
     }
 
     /** 野外的地标（ADR-0026）：化石土、雷击石是普通方块；打捞舱顶上是舱门，分关着和开着两种；化石和废料是平面物品。 */

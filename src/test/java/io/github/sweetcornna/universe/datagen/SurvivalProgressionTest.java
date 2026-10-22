@@ -74,6 +74,8 @@ class SurvivalProgressionTest {
             // 交易站、制造设施、观测站的终端和加固外壳、加固门挖不掉（ADR-0026）
             NS + "outpost_trade_terminal", NS + "facility_terminal", NS + "observatory_terminal", NS + "reinforced_plating",
             NS + "reinforced_door",
+            // 知识石挖不掉，读过的记录按坐标记（ADR-0027）
+            NS + "knowledge_stone",
             // Mk.II 部件只能在空间站买、在坠毁飞船里拆到（ADR-0017）
             NS + "ship_thruster_mk2", NS + "fuel_tank_mk2", NS + "impulse_engine_mk2", NS + "warp_drive_mk2", NS + "alloy_hull_plating",
             // 建造无人机是机甲自带的，物品只用来画在世界里飞的样子（ADR-0023）

@@ -236,6 +236,8 @@ public final class UniverseItems {
     public static final DeferredItem<BlockItem> REINFORCED_PLATING = ITEMS.registerSimpleBlockItem(UniverseBlocks.REINFORCED_PLATING);
     public static final DeferredItem<BlockItem> FACILITY_TERMINAL = ITEMS.registerSimpleBlockItem(UniverseBlocks.FACILITY_TERMINAL);
     public static final DeferredItem<BlockItem> OBSERVATORY_TERMINAL = ITEMS.registerSimpleBlockItem(UniverseBlocks.OBSERVATORY_TERMINAL);
+    // 知识石（ADR-0027 §五）
+    public static final DeferredItem<BlockItem> KNOWLEDGE_STONE = ITEMS.registerSimpleBlockItem(UniverseBlocks.KNOWLEDGE_STONE);
     public static final DeferredItem<BlockItem> STATION_HULL = ITEMS.registerSimpleBlockItem(UniverseBlocks.STATION_HULL);
     public static final DeferredItem<BlockItem> STATION_FLOOR = ITEMS.registerSimpleBlockItem(UniverseBlocks.STATION_FLOOR);
     public static final DeferredItem<BlockItem> STATION_GLASS = ITEMS.registerSimpleBlockItem(UniverseBlocks.STATION_GLASS);
@@ -539,7 +541,7 @@ public final class UniverseItems {
                 CREDIT_CHIP, EMERGENCY_RECEIVER));
         order.addAll(List.of(PORTAL_STONE, PORTAL_GLYPH, PORTAL_DIAL));
         order.addAll(List.of(FOSSIL_DIRT, SHELL_FOSSIL, ARTHROPOD_FOSSIL, SKULL_FOSSIL, SALVAGE_CAPSULE, SALVAGED_SCRAP, FULGURITE));
-        order.addAll(List.of(OUTPOST_TRADE_TERMINAL, REINFORCED_DOOR, REINFORCED_PLATING, FACILITY_TERMINAL, OBSERVATORY_TERMINAL));
+        order.addAll(List.of(OUTPOST_TRADE_TERMINAL, REINFORCED_DOOR, REINFORCED_PLATING, FACILITY_TERMINAL, OBSERVATORY_TERMINAL, KNOWLEDGE_STONE));
         order.addAll(List.of(SENTINEL_PILLAR_PLATING, SENTINEL_PILLAR_LIGHT, SENTINEL_PILLAR_TERMINAL));
         order.addAll(List.of(BASE_BEACON, TELEPORTER));
         order.addAll(List.of(TRADE_TERMINAL, MISSION_BOARD, SHIP_REPAIR, SHIP_DEALER, MULTITOOL_CABINET, FREIGHTER_CONSOLE, FLEET_TERMINAL, STATION_TELEPORTER, STATION_HULL, STATION_FLOOR, STATION_GLASS, STATION_LIGHT, STATION_PAD, STATION_TRIM, STATION_SOLAR_PANEL, FREIGHTER_PLATE, FREIGHTER_ENGINE));

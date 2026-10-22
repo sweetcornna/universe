@@ -5,6 +5,7 @@ import io.github.sweetcornna.universe.client.ItemSummaries;
 import io.github.sweetcornna.universe.client.asteroid.AsteroidClient;
 import io.github.sweetcornna.universe.client.blueprint.BlueprintClient;
 import io.github.sweetcornna.universe.client.blueprint.GhostClient;
+import io.github.sweetcornna.universe.client.civ.NpcClient;
 import io.github.sweetcornna.universe.client.mecha.MechaClient;
 import io.github.sweetcornna.universe.client.dev.DevScript;
 import io.github.sweetcornna.universe.client.exocraft.ExoMechClient;
@@ -96,6 +97,7 @@ public final class UniverseClient {
         TradeClient.registerEvents(modBus);
         StationClient.registerEvents(modBus, NeoForge.EVENT_BUS);
         PirateClient.registerEvents(modBus);
+        NpcClient.registerEvents(modBus);
         AsteroidClient.registerEvents(modBus);
         ExocraftClient.registerEvents(modBus, NeoForge.EVENT_BUS);
         SubmarineClient.registerEvents(modBus, NeoForge.EVENT_BUS);

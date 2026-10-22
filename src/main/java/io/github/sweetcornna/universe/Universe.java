@@ -7,6 +7,8 @@ import com.mojang.logging.LogUtils;
 import io.github.sweetcornna.universe.asteroid.Asteroids;
 import io.github.sweetcornna.universe.blueprint.Blueprints;
 import io.github.sweetcornna.universe.blueprint.Construction;
+import io.github.sweetcornna.universe.civ.CivCommand;
+import io.github.sweetcornna.universe.civ.NpcSpawner;
 import io.github.sweetcornna.universe.logistics.Distributors;
 import io.github.sweetcornna.universe.mecha.Flyers;
 import io.github.sweetcornna.universe.mecha.Mecha;
@@ -140,6 +142,7 @@ public final class Universe {
         Pirates.registerEvents(gameBus);
         SpaceEncounters.registerEvents(gameBus);
         Asteroids.registerEvents(gameBus);
+        NpcSpawner.registerEvents(gameBus);
         Exocrafts.registerEvents(gameBus);
         VehicleSummoning.registerEvents(gameBus);
         ShipRepair.registerEvents(gameBus);
@@ -158,6 +161,7 @@ public final class Universe {
         gameBus.addListener(RegisterCommandsEvent.class, event -> PortalCommand.register(event.getDispatcher()));
         gameBus.addListener(RegisterCommandsEvent.class, event -> ResourcesCommand.register(event.getDispatcher()));
         gameBus.addListener(RegisterCommandsEvent.class, event -> EncounterCommand.register(event.getDispatcher()));
+        gameBus.addListener(RegisterCommandsEvent.class, event -> CivCommand.register(event.getDispatcher()));
     }
 
     private void commonSetup(FMLCommonSetupEvent event) {

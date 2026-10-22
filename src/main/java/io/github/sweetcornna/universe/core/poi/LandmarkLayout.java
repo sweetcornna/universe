@@ -115,7 +115,7 @@ public final class LandmarkLayout {
             return Fauna.hasSea(planet.liquid());
         }
         return switch (type) {
-            case TRADING_POST -> planet.atmosphere().present() && planet.type() != PlanetType.BARREN;
+            case TRADING_POST, SETTLEMENT -> planet.atmosphere().present() && planet.type() != PlanetType.BARREN;
             case MANUFACTURING_FACILITY -> SentinelLevel.of(planet).present();
             case FOSSIL_PIT -> switch (planet.type()) {
                 case HABITABLE, BARREN, SCORCHED, FROZEN -> true;

@@ -14,6 +14,9 @@ import java.util.function.Supplier;
 import org.jspecify.annotations.Nullable;
 
 import io.github.sweetcornna.universe.advancement.MilestoneTrigger;
+import io.github.sweetcornna.universe.civ.Civ;
+import io.github.sweetcornna.universe.core.civ.Race;
+import io.github.sweetcornna.universe.core.civ.Standing;
 import io.github.sweetcornna.universe.core.galaxy.StarSystem;
 import io.github.sweetcornna.universe.core.trade.Economy;
 import io.github.sweetcornna.universe.core.trade.Goods;
@@ -198,7 +201,8 @@ public final class Trading {
             return;
         }
         long now = now(server);
-        Component notice = payload.buy() ? buy(player, station.get(), payload.key(), payload.mode(), now, session.outpost())
+        Component notice = payload.buy()
+                ? buy(player, station.get(), payload.key(), payload.mode(), now, session.outpost(), priceFactor(player, session.system()))
                 : sell(player, station.get(), payload.key(), payload.mode(), now);
         send(player, session.system(), session.outpost(), false, notice);
     }
@@ -267,15 +271,21 @@ public final class Trading {
 
     // ---- 购买
 
-    private static long cost(Market market, Market.Listing listing, int count, long now) {
-        double quote = market.buyQuote(listing, count, now);
-        return quote < 0 ? -1 : (long) Math.ceil(quote - 1e-9);
+    /** 声望打折（ADR-0027 §四）：买东西的价钱按这个恒星系主导种族的声望档乘上去，卖出不变。 */
+    private static double priceFactor(ServerPlayer player, int system) {
+        return Planets.galaxy(player.level().getServer()).system(system).map(Race::dominant)
+                .map(race -> Standing.priceFactor(Civ.state(player).tier(race))).orElse(1.0);
     }
 
-    private static Component buy(ServerPlayer player, StationMarket station, String key, int mode, long now, long outpost) {
+    private static long cost(Market market, Market.Listing listing, int count, long now, double factor) {
+        double quote = market.buyQuote(listing, count, now);
+        return quote < 0 ? -1 : (long) Math.ceil(quote * factor - 1e-9);
+    }
+
+    private static Component buy(ServerPlayer player, StationMarket station, String key, int mode, long now, long outpost, double factor) {
         MinecraftServer server = player.level().getServer();
         if (key.startsWith("m")) {
-            return buyModule(player, station, key, now, moduleLimit(outpost));
+            return buyModule(player, station, key, now, moduleLimit(outpost), factor);
         }
         int index;
         try {
@@ -296,14 +306,14 @@ public final class Trading {
         }
         int count = mode == TradeActionPayload.STACK ? Math.min(stock, item.get().getDefaultMaxStackSize()) : 1;
         long credits = Credits.get(player);
-        long cost = cost(market, listing, count, now);
+        long cost = cost(market, listing, count, now, factor);
         // 钱不够一组时买得起几件买几件
         while (count > 1 && cost > credits) {
             count--;
-            cost = cost(market, listing, count, now);
+            cost = cost(market, listing, count, now, factor);
         }
         if (cost < 0 || cost > credits) {
-            return fail("message.universe.trade.not_enough", cost(market, listing, 1, now));
+            return fail("message.universe.trade.not_enough", cost(market, listing, 1, now, factor));
         }
         market.buy(listing, count, now);
         Credits.spend(player, cost);
@@ -320,7 +330,7 @@ public final class Trading {
         return outpost == 0 ? Integer.MAX_VALUE : OutpostStock.MODULES;
     }
 
-    private static Component buyModule(ServerPlayer player, StationMarket station, String key, long now, int limit) {
+    private static Component buyModule(ServerPlayer player, StationMarket station, String key, long now, int limit, double factor) {
         int index;
         try {
             index = Integer.parseInt(key.substring(1));
@@ -332,7 +342,7 @@ public final class Trading {
             return fail("message.universe.trade.out_of_stock");
         }
         StationMarket.ModuleOffer offer = offers.get(index);
-        long cost = (long) Math.ceil(station.offerPrice(offer, now) - 1e-9);
+        long cost = (long) Math.ceil(station.offerPrice(offer, now) * factor - 1e-9);
         if (!Credits.spend(player, cost)) {
             return fail("message.universe.trade.not_enough", cost);
         }
@@ -355,6 +365,7 @@ public final class Trading {
         StationMarket station = found.get();
         long now = now(server);
         Market market = station.market();
+        double factor = priceFactor(player, system);
         // 卖出：背包里能卖的东西按键归在一起；按一件的基准价排（不随压价变），连着点同一行卖的总是同一样东西
         Map<String, List<ItemStack>> groups = new LinkedHashMap<>();
         for (ItemStack stack : player.getInventory().getNonEquipmentItems()) {
@@ -391,14 +402,14 @@ public final class Trading {
             }
             int stock = listing.stock(now);
             buy.add(new TradeStatePayload.Row(new ItemStack(item.get()), String.valueOf(i), stock, listing.capacity(),
-                    market.buyUnitPrice(listing, now), cost(market, listing, 1, now),
-                    cost(market, listing, Math.max(1, Math.min(stock, item.get().getDefaultMaxStackSize())), now), -1,
+                    market.buyUnitPrice(listing, now) * factor, cost(market, listing, 1, now, factor),
+                    cost(market, listing, Math.max(1, Math.min(stock, item.get().getDefaultMaxStackSize())), now, factor), -1,
                     listing.category().ordinal()));
         }
         List<StationMarket.ModuleOffer> offers = station.offers();
         for (int i = 0; i < Math.min(offers.size(), moduleLimit(outpost)); i++) {
             StationMarket.ModuleOffer offer = offers.get(i);
-            double price = station.offerPrice(offer, now);
+            double price = station.offerPrice(offer, now) * factor;
             boolean sold = station.sold(i);
             long cost = (long) Math.ceil(price - 1e-9);
             buy.add(new TradeStatePayload.Row(offer.stack().copy(), "m" + i, sold ? 0 : 1, 1, price, sold ? -1 : cost, sold ? -1 : cost, -1,

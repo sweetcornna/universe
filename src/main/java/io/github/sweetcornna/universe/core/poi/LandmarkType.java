@@ -27,7 +27,11 @@ public enum LandmarkType {
     /** 打捞点：保护壳下面埋着打捞舱。 */
     SALVAGE_SITE("salvage_site", 700, 0.5, 6, 6, false, 0xC0C8D0),
     /** 废弃建筑：门坏了的小屋，终端给导航数据。 */
-    ABANDONED_BUILDING("abandoned_building", 800, 0.4, 7, 5, false, 0xB8A890);
+    ABANDONED_BUILDING("abandoned_building", 800, 0.4, 7, 5, false, 0xB8A890),
+    /** 知识石（ADR-0027 §五）：刻字的石柱，碰一下学一个这个恒星系主导种族的词。能登陆的星球都有。 */
+    KNOWLEDGE_STONE("knowledge_stone", 500, 0.5, 2, 3, false, 0xC8A0FF),
+    /** 聚落（ADR-0027 §五）：主导种族的几间小屋、交易终端、知识石，3 个 NPC。有大气、不是荒芜的星球。 */
+    SETTLEMENT("settlement", 1400, 0.4, 13, 6, false, 0xF0C060);
 
     private final String id;
     private final int grid;

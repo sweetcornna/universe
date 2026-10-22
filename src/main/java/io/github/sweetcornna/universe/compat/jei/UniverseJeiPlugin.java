@@ -114,6 +114,8 @@ public final class UniverseJeiPlugin implements IModPlugin {
         // 生物卵和卵序列仪（ADR-0026 §九）
         info(registration, UniverseItems.CREATURE_EGG.get(), "creature_egg");
         info(registration, UniverseItems.EGG_SEQUENCER.get(), "egg_sequencer");
+        // 知识石（ADR-0027 §五）
+        info(registration, UniverseItems.KNOWLEDGE_STONE.get(), "knowledge_stone");
         // 多功能工具的武器（ADR-0026 §六）：怎么装、怎么切换
         UniverseItems.WEAPONS.values().forEach(item -> info(registration, item.get(), "tool_weapon"));
     }

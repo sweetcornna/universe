@@ -8,6 +8,7 @@ import java.util.Optional;
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.block.FloraBlocks;
 import io.github.sweetcornna.universe.block.landmark.FacilityTerminalBlock;
+import io.github.sweetcornna.universe.block.landmark.KnowledgeStoneBlock;
 import io.github.sweetcornna.universe.block.landmark.ObservatoryTerminalBlock;
 import io.github.sweetcornna.universe.block.landmark.OutpostTradeTerminalBlock;
 import io.github.sweetcornna.universe.block.landmark.ReinforcedDoorBlock;
@@ -338,6 +339,10 @@ public final class UniverseBlocks {
     public static final DeferredBlock<ObservatoryTerminalBlock> OBSERVATORY_TERMINAL = BLOCKS.registerBlock("observatory_terminal",
             ObservatoryTerminalBlock::new, p -> p.mapColor(MapColor.METAL).strength(-1.0F, 3600000.0F).sound(SoundType.METAL).noLootTable()
                     .lightLevel(state -> 9).pushReaction(PushReaction.IMMOVEABLE));
+    /** 知识石（ADR-0027 §五）：两格高，刻着发光的外星文字。挖不掉：每块按坐标记，搬走了就能再学一次。 */
+    public static final DeferredBlock<KnowledgeStoneBlock> KNOWLEDGE_STONE = BLOCKS.registerBlock("knowledge_stone", KnowledgeStoneBlock::new,
+            p -> p.mapColor(MapColor.DEEPSLATE).strength(-1.0F, 3600000.0F).sound(SoundType.DEEPSLATE_TILES).noLootTable()
+                    .lightLevel(state -> 6).pushReaction(PushReaction.IMMOVEABLE).isValidSpawn(Blocks::never));
     /** 任务板：挖不掉，只在空间站的大厅里有。 */
     public static final DeferredBlock<MissionBoardBlock> MISSION_BOARD = BLOCKS.registerBlock("mission_board", MissionBoardBlock::new,
             p -> p.mapColor(MapColor.METAL).strength(-1.0F, 3600000.0F).sound(SoundType.METAL).noLootTable().lightLevel(state -> 10)

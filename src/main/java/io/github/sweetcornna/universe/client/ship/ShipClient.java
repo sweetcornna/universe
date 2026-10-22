@@ -12,6 +12,7 @@ import org.jspecify.annotations.Nullable;
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.asteroid.Asteroid;
 import io.github.sweetcornna.universe.client.ClientGalaxy;
+import io.github.sweetcornna.universe.client.HudRegions;
 import io.github.sweetcornna.universe.client.ScreenProjection;
 import io.github.sweetcornna.universe.client.UniverseKeys;
 import io.github.sweetcornna.universe.client.asteroid.AsteroidClient;
@@ -398,6 +399,7 @@ public final class ShipClient {
                 + (pilot ? 22 + (weaponKeys != null ? 10 : 0) : 0);
         int y = graphics.guiHeight() / 2 - height / 2;
         graphics.fill(x - 3, y - 3, x + panelWidth, y + height, 0x90000000);
+        HudRegions.claim("ship", x - 3, y - 3, x + panelWidth, y + height);
         graphics.text(font, title, x, y, 0xFF9FE6FF, false);
         y += 13;
         for (Component line : lines) {

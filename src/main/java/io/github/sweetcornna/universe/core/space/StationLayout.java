@@ -49,6 +49,11 @@ public final class StationLayout {
     /** 多功能工具柜（ADR-0026）：大厅里传送器那一侧靠墙，面朝大厅中间。 */
     public static final int CABINET_X = -6;
     public static final int CABINET_Z = -15;
+    /**
+     * 外星 NPC（ADR-0027 §三）在大厅里站的地方（本地 x、z，脚下是地板）：主导种族的访客、随机种族的访客、技术商、公会使者。
+     * 避开柱子、设备前面那一格和传送器的落脚点。
+     */
+    public static final int[][] NPC_SPOTS = {{-11, -2}, {-8, 5}, {-9, -13}, {-12, 9}};
     /** 离别的天体至少这么远。 */
     private static final double CLEARANCE = 400;
     /** 机库开口前的引导灯从外墙往外排多远（ADR-0021）。 */

@@ -6,6 +6,7 @@ import java.util.List;
 import org.jspecify.annotations.Nullable;
 
 import io.github.sweetcornna.universe.Universe;
+import io.github.sweetcornna.universe.client.HudRegions;
 import io.github.sweetcornna.universe.client.ship.ShipClient;
 import io.github.sweetcornna.universe.exocraft.ExoMech;
 import io.github.sweetcornna.universe.network.ExocraftControlPayload;
@@ -147,6 +148,7 @@ public final class ExoMechClient {
         int height = 13 + lines.size() * 10 + 16 + 16 + 10 + (hint != null ? 10 : 0);
         int y = graphics.guiHeight() / 2 - height / 2;
         graphics.fill(x - 3, y - 3, x + panelWidth, y + height, 0x90000000);
+        HudRegions.claim("exo_mech", x - 3, y - 3, x + panelWidth, y + height);
         graphics.text(font, title, x, y, 0xFFFFB866, false);
         y += 13;
         for (Component line : lines) {

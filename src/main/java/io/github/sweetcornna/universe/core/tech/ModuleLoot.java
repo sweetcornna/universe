@@ -33,11 +33,11 @@ public final class ModuleLoot {
      * 抽一个品级。
      *
      * @param rarity 恒星的稀有程度（0–2）
-     * @param bonus  来源的加成（0 普通，1 好一档：权重表往后挪一格的一半）
+     * @param bonus  来源的加成（0 普通，1 好一档：权重表往后挪一格的一半；2 再挪一次）
      */
     public static Grade grade(Rng rng, int rarity, int bonus) {
         double[] weights = (rarity >= 2 ? EXOTIC : rarity == 1 ? RARE : COMMON).clone();
-        if (bonus > 0) {
+        for (int b = 0; b < bonus; b++) {
             // 把每一档一半的权重挪到下一档
             for (int i = weights.length - 2; i >= 0; i--) {
                 double moved = weights[i] / 2;

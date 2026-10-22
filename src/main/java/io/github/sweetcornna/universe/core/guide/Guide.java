@@ -124,6 +124,16 @@ public final class Guide {
                     page("trading", ""),
                     page("missions", ""),
                     page("pirates", "", "universe:photon_cannon", "universe:shield_generator")),
+            // 外星文明（ADR-0027）
+            chapter("civilization", "universe:portal_glyph",
+                    page("races", ""),
+                    page("language", ""),
+                    page("standing", ""),
+                    // 对话（ADR-0027 §四）
+                    page("dialogue", ""),
+                    // 知识石和聚落（ADR-0027 §五）
+                    page("stones", "", "universe:knowledge_stone"),
+                    page("settlements", "", "universe:outpost_trade_terminal", "universe:knowledge_stone")),
             chapter("husbandry", "universe:herbivore_feed",
                     page("taming", "universe:herbivore_feed", "minecraft:wheat", "universe:herbivore_feed", "minecraft:beef",
                             "universe:carnivore_feed"),

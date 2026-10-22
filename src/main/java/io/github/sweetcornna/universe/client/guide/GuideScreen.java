@@ -36,7 +36,7 @@ public class GuideScreen extends Screen {
     private static final int WIDTH = 344;
     private static final int HEIGHT = 216;
     private static final int LIST_WIDTH = 96;
-    private static final int ROW = 13;
+    private static final int ROW = 12;
     private static final int PAGE_X = LIST_WIDTH + 10;
     private static final int PAGE_WIDTH = WIDTH - PAGE_X - 10;
     private static final int BORDER = 0xFF2A6A8C;

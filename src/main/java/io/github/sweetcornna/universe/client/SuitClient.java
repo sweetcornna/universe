@@ -202,6 +202,7 @@ public final class SuitClient {
         int y = 6;
         int height = 12 + bars.size() * 15 + notes.size() * 10 + (planet.isPresent() ? 10 : 0);
         graphics.fill(x - 3, y - 3, x + PANEL_WIDTH, y + height, 0x90000000);
+        HudRegions.claim("suit", x - 3, y - 3, x + PANEL_WIDTH, y + height);
         Component title = Component.translatable("hud.universe.suit.title");
         if (hud.has(SuitHud.SUPPLIED)) {
             title = title.copy().append(" · ").append(Component.translatable("hud.universe.suit.cabin"));

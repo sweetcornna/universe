@@ -1,6 +1,7 @@
 package io.github.sweetcornna.universe.network;
 
 import io.github.sweetcornna.universe.blueprint.Blueprints;
+import io.github.sweetcornna.universe.civ.Dialogues;
 import io.github.sweetcornna.universe.dyson.Dyson;
 import io.github.sweetcornna.universe.entity.CompanionMenu;
 import io.github.sweetcornna.universe.entity.ship.ShipWeapons;
@@ -37,7 +38,7 @@ import net.neoforged.neoforge.server.ServerLifecycleHooks;
  */
 public final class UniverseNetwork {
     /** 协议版本：任何包的格式改动都要加一，版本不同的客户端和服务端会拒绝连接。 */
-    private static final String PROTOCOL_VERSION = "26";
+    private static final String PROTOCOL_VERSION = "27";
 
     private UniverseNetwork() {
     }
@@ -124,6 +125,9 @@ public final class UniverseNetwork {
                 .playToClient(PortalPayloads.Open.TYPE, PortalPayloads.Open.STREAM_CODEC)
                 .playToServer(PortalPayloads.Dial.TYPE, PortalPayloads.Dial.STREAM_CODEC, Portals::handleDial)
                 // M13：太空遭遇（ADR-0024）
-                .playToClient(EncounterPayloads.Signal.TYPE, EncounterPayloads.Signal.STREAM_CODEC);
+                .playToClient(EncounterPayloads.Signal.TYPE, EncounterPayloads.Signal.STREAM_CODEC)
+                // M15：和外星 NPC 对话（ADR-0027 §四）
+                .playToClient(DialoguePayloads.State.TYPE, DialoguePayloads.State.STREAM_CODEC)
+                .playToServer(DialoguePayloads.Action.TYPE, DialoguePayloads.Action.STREAM_CODEC, Dialogues::handleAction);
     }
 }

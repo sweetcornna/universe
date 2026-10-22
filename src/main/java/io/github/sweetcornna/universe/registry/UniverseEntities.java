@@ -20,6 +20,7 @@ import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.entity.AlienCreature;
 import io.github.sweetcornna.universe.entity.AlienFlyer;
 import io.github.sweetcornna.universe.entity.AquaticCreature;
+import io.github.sweetcornna.universe.entity.civ.AlienNpc;
 import io.github.sweetcornna.universe.entity.ship.ShipEntity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
@@ -117,6 +118,10 @@ public final class UniverseEntities {
     public static final DeferredHolder<EntityType<?>, EntityType<SentinelInterceptor>> SENTINEL_INTERCEPTOR = ENTITIES.registerEntityType(
             "sentinel_interceptor", SentinelInterceptor::new, MobCategory.MISC,
             builder -> builder.sized(2.6F, 1.2F).clientTrackingRange(16).updateInterval(1).noSave().fireImmune());
+    /** 外星文明的 NPC（ADR-0027 §三）：不存档，由管理器放；尺寸按种族在实体里定，这里是商旅族的。 */
+    public static final DeferredHolder<EntityType<?>, EntityType<AlienNpc>> ALIEN_NPC = ENTITIES.registerEntityType(
+            "alien_npc", AlienNpc::new, MobCategory.MISC,
+            builder -> builder.sized(0.6F, 1.3F).eyeHeight(1.15F).clientTrackingRange(10).noSave().noLootTable().fireImmune());
 
     private UniverseEntities() {
     }
@@ -133,6 +138,7 @@ public final class UniverseEntities {
             event.put(SUMMONER_SENTINEL.get(), SummonerSentinel.createAttributes().build());
             event.put(QUADRUPED_SENTINEL.get(), QuadrupedSentinel.createAttributes().build());
             event.put(WALKER_SENTINEL.get(), WalkerSentinel.createAttributes().build());
+            event.put(ALIEN_NPC.get(), AlienNpc.createAttributes().build());
         });
     }
 }

@@ -15,6 +15,7 @@ import org.jspecify.annotations.Nullable;
 
 import com.mojang.blaze3d.platform.InputConstants;
 
+import io.github.sweetcornna.universe.civ.Civ;
 import io.github.sweetcornna.universe.client.TextWrap;
 import io.github.sweetcornna.universe.core.sentinel.SentinelLevel;
 import io.github.sweetcornna.universe.Universe;
@@ -23,6 +24,7 @@ import io.github.sweetcornna.universe.client.UniverseKeys;
 import io.github.sweetcornna.universe.client.discovery.ClientDiscoveries;
 import io.github.sweetcornna.universe.client.portal.PortalDialScreen;
 import io.github.sweetcornna.universe.client.factory.ClientResearch;
+import io.github.sweetcornna.universe.core.civ.Race;
 import io.github.sweetcornna.universe.core.discovery.DiscoveryKey;
 import io.github.sweetcornna.universe.core.discovery.DiscoveryLog;
 import io.github.sweetcornna.universe.core.galaxy.Galaxy;
@@ -541,6 +543,10 @@ public class StarMapScreen extends Screen {
                 case WEALTHY -> 0xFFF2C94C;
             };
             y = this.smallText(graphics, line, x, y, width, color) + 3;
+            // 主导种族（ADR-0027）
+            Race race = Race.dominant(system);
+            y = this.smallText(graphics, Component.translatable("gui.universe.star_map.civilization", Civ.raceName(race)), x, y, width,
+                    ARGB.opaque(race.color())) + 3;
         }
         if (system.index() != this.holeSystem) {
             this.holeSystem = system.index();

@@ -3,12 +3,16 @@ package io.github.sweetcornna.universe.client.trade;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.StringJoiner;
 
+import io.github.sweetcornna.universe.civ.Civ;
 import io.github.sweetcornna.universe.client.ClientGalaxy;
 import io.github.sweetcornna.universe.client.TextWrap;
+import io.github.sweetcornna.universe.client.civ.ClientCiv;
 import io.github.sweetcornna.universe.client.factory.MachineScreen;
 import io.github.sweetcornna.universe.client.galaxy.GalaxyText;
+import io.github.sweetcornna.universe.core.civ.Race;
 import io.github.sweetcornna.universe.core.trade.Economy;
 import io.github.sweetcornna.universe.core.trade.TradeCategory;
 import io.github.sweetcornna.universe.network.TradeActionPayload;
@@ -19,6 +23,7 @@ import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
+import net.minecraft.util.ARGB;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 
@@ -151,8 +156,13 @@ public class TradeScreen extends Screen {
                 .orElse(this.title);
         Component credits = Component.translatable("gui.universe.trade.credits", credits(this.state.credits()));
         int creditsWidth = this.font.width(credits);
-        String name = this.font.plainSubstrByWidth(station.getString(), WIDTH - 30 - creditsWidth);
+        // 标题后面跟着主导种族（ADR-0027）
+        Optional<Race> race = ClientCiv.dominant(this.state.system());
+        Component raceText = race.<Component>map(r -> Component.translatable("gui.universe.trade.race", Civ.raceName(r))).orElse(Component.empty());
+        int raceWidth = this.font.width(raceText);
+        String name = this.font.plainSubstrByWidth(station.getString(), WIDTH - 30 - creditsWidth - raceWidth);
         graphics.text(this.font, name, x + 8, y + 6, MachineScreen.ACCENT, false);
+        race.ifPresent(r -> graphics.text(this.font, raceText, x + 8 + this.font.width(name), y + 6, ARGB.opaque(r.color()), false));
         graphics.text(this.font, credits, x + WIDTH - 8 - creditsWidth, y + 6, CREDIT_COLOR, false);
         Component economy = Component.translatable("gui.universe.trade.economy",
                 Component.translatable("gui.universe.trade.economy." + this.type().key()),

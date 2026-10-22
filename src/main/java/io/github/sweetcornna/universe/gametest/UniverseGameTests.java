@@ -84,6 +84,7 @@ import io.github.sweetcornna.universe.registry.UniverseItems;
 import io.github.sweetcornna.universe.world.planet.Planets;
 import io.github.sweetcornna.universe.block.ClamBlock;
 import io.github.sweetcornna.universe.block.poi.SalvageCapsuleBlock;
+import io.github.sweetcornna.universe.block.landmark.KnowledgeStoneBlock;
 import io.github.sweetcornna.universe.block.landmark.ReinforcedDoorBlock;
 import io.github.sweetcornna.universe.core.poi.DoorBreach;
 import io.github.sweetcornna.universe.poi.OutpostInteractions;
@@ -105,6 +106,15 @@ import io.github.sweetcornna.universe.exocraft.VehicleSummoning;
 import io.github.sweetcornna.universe.exocraft.Torpedo;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.GameType;
+import io.github.sweetcornna.universe.civ.Civ;
+import io.github.sweetcornna.universe.civ.CivCodecs;
+import io.github.sweetcornna.universe.core.civ.CivState;
+import io.github.sweetcornna.universe.core.civ.Guild;
+import io.github.sweetcornna.universe.core.civ.Lexicon;
+import io.github.sweetcornna.universe.core.civ.Race;
+import io.github.sweetcornna.universe.core.civ.Standing;
+import io.netty.buffer.ByteBuf;
+import io.netty.buffer.Unpooled;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.core.BlockPos;
@@ -262,6 +272,16 @@ public final class UniverseGameTests {
             UniverseGameTests::hatchedBabyIsCompanion);
     private static final ResourceKey<Consumer<GameTestHelper>> COMPANION_DIGS_ONCE_A_DAY = function("companion_digs_once_a_day",
             UniverseGameTests::companionDigsOnceADay);
+    private static final ResourceKey<Consumer<GameTestHelper>> CIV_TEACHES_WORDS = function("civ_teaches_words",
+            UniverseGameTests::civTeachesWords);
+    private static final ResourceKey<Consumer<GameTestHelper>> KNOWLEDGE_STONE_TEACHES_ONCE = function("knowledge_stone_teaches_once",
+            UniverseGameTests::knowledgeStoneTeachesOnce);
+    // 外星 NPC 和对话（ADR-0027 §三、§四），测试写在 NpcGameTests
+    private static final ResourceKey<Consumer<GameTestHelper>> NPC_RIGHT_ANSWER_TEACHES = function("npc_right_answer_teaches",
+            NpcGameTests::rightAnswerTeachesWord);
+    private static final ResourceKey<Consumer<GameTestHelper>> NPC_GIFT_ONCE_A_DAY = function("npc_gift_once_a_day", NpcGameTests::giftOnceADay);
+    private static final ResourceKey<Consumer<GameTestHelper>> NPC_HIT_COSTS_STANDING = function("npc_hit_costs_standing",
+            NpcGameTests::hitCostsStanding);
 
     private UniverseGameTests() {
     }
@@ -326,6 +346,11 @@ public final class UniverseGameTests {
         test(event, environment, HEAVY_ROVER_REFINES, 200);
         test(event, environment, HATCHED_BABY_IS_COMPANION, 20);
         test(event, environment, COMPANION_DIGS_ONCE_A_DAY, 120);
+        test(event, environment, CIV_TEACHES_WORDS, 20);
+        test(event, environment, KNOWLEDGE_STONE_TEACHES_ONCE, 20);
+        test(event, environment, NPC_RIGHT_ANSWER_TEACHES, 20);
+        test(event, environment, NPC_GIFT_ONCE_A_DAY, 20);
+        test(event, environment, NPC_HIT_COSTS_STANDING, 20);
         test(event, environment, GIANT_NEEDS_ROOM, HANGAR, 20);
     }
 
@@ -1306,6 +1331,90 @@ public final class UniverseGameTests {
         tall(helper, star, UniverseBlocks.ARTIFICIAL_STAR.get().defaultBlockState());
         helper.getBlockEntity(star, FuelGeneratorBlockEntity.class)
                 .setItem(FuelGeneratorBlockEntity.FUEL_SLOT, new ItemStack(UniverseItems.ANTIMATTER_FUEL_ROD.get(), 4));
+    }
+
+    /**
+     * 外星文明（ADR-0027）：只教没学过的词，教完返回 -1；声望夹在 −20 到 100；每天一次按游戏日记；
+     * 附件的存档格式和同步格式来回一趟不丢东西；主世界算母星系，主导种族是商旅族。
+     */
+    private static void civTeachesWords(GameTestHelper helper) {
+        ServerPlayer player = (ServerPlayer) helper.makeMockServerPlayer(GameType.SURVIVAL);
+        CivState state = Civ.state(player);
+        helper.assertTrue(state.knownCount(Race.SCHOLAR) == Lexicon.INNATE, "一开始认识的词不是 8 个");
+        long mask = 1L << 30 | 1L << 31;
+        int first = Civ.teachWord(player, Race.SCHOLAR, mask, 1);
+        int second = Civ.teachWord(player, Race.SCHOLAR, mask, 1);
+        helper.assertTrue(first >= 30 && second >= 30 && first != second, "没从给的两个词里各教一个：" + first + "、" + second);
+        helper.assertTrue(Civ.teachWord(player, Race.SCHOLAR, mask, 1) == -1, "两个词都会了还在教");
+        int taught = 0;
+        while (Civ.teachWord(player, Race.WARDEN, -1L, taught) >= 0) {
+            taught++;
+        }
+        helper.assertTrue(taught == Lexicon.SIZE - Lexicon.INNATE, "整张词表教了 " + taught + " 个");
+        helper.assertTrue(Civ.state(player).knownCount(Race.WARDEN) == Lexicon.SIZE, "词表没学全");
+        helper.assertTrue(!Civ.state(player).knows(Race.TRADER, first), "教了学者族的词，商旅族的也会了");
+
+        Civ.changeStanding(player, Race.TRADER, 250);
+        helper.assertTrue(Civ.state(player).standing(Race.TRADER) == Standing.MAX, "声望没夹在 100");
+        helper.assertTrue(Civ.state(player).tier(Race.TRADER) == Standing.Tier.KINDRED, "100 不是至交");
+        Civ.changeStanding(player, Guild.EXPLORERS, -250);
+        helper.assertTrue(Civ.state(player).standing(Guild.EXPLORERS) == Standing.MIN, "公会声望没夹在 -20");
+
+        helper.assertTrue(!Civ.usedToday(player, "talk:test"), "没做过就算做过了");
+        Civ.markUsed(player, "talk:test");
+        helper.assertTrue(Civ.usedToday(player, "talk:test"), "做过了没记下");
+
+        CivState saved = CivCodecs.CODEC.codec()
+                .parse(NbtOps.INSTANCE, CivCodecs.CODEC.codec().encodeStart(NbtOps.INSTANCE, state).getOrThrow()).getOrThrow();
+        helper.assertTrue(saved.knownCount(Race.WARDEN) == Lexicon.SIZE && saved.knows(Race.SCHOLAR, first) && saved.standing(Race.TRADER) == Standing.MAX
+                && saved.standing(Guild.EXPLORERS) == Standing.MIN && saved.daily().equals(state.daily()), "存档来回一趟丢了东西");
+        ByteBuf buf = Unpooled.buffer();
+        CivCodecs.STREAM_CODEC.encode(buf, state);
+        CivState synced = CivCodecs.STREAM_CODEC.decode(buf);
+        helper.assertTrue(synced.knownCount(Race.SCHOLAR) == state.knownCount(Race.SCHOLAR) && synced.standing(Race.TRADER) == Standing.MAX,
+                "同步来回一趟丢了东西");
+
+        helper.assertTrue(Civ.dominant(helper.getLevel().getServer().overworld()).orElse(null) == Race.TRADER, "母星系不是商旅族");
+        helper.succeed();
+    }
+
+    /**
+     * 知识石（ADR-0027 §五）：第一次摸学会一个主导种族的词，记下这一块；再摸（上半也算这一块）不教。另一块还能学。
+     * 主世界算母星系，主导种族是商旅族。场地的地面不会放，自己铺一块。
+     */
+    private static void knowledgeStoneTeachesOnce(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        for (int x = 0; x <= 6; x++) {
+            for (int z = 2; z <= 4; z++) {
+                helper.setBlock(new BlockPos(x, 0, z), Blocks.SMOOTH_STONE);
+            }
+        }
+        BlockState lower = UniverseBlocks.KNOWLEDGE_STONE.get().defaultBlockState();
+        BlockState upper = lower.setValue(KnowledgeStoneBlock.HALF, DoubleBlockHalf.UPPER);
+        BlockPos first = new BlockPos(2, 1, 3);
+        BlockPos second = new BlockPos(5, 1, 3);
+        for (BlockPos pos : List.of(first, second)) {
+            helper.setBlock(pos, lower);
+            helper.setBlock(pos.above(), upper);
+        }
+        helper.assertTrue(Civ.dominant(level).equals(Optional.of(Race.TRADER)), "主世界的主导种族不是商旅族");
+        ServerPlayer player = (ServerPlayer) helper.makeMockServerPlayer(GameType.SURVIVAL);
+        int known = Civ.state(player).knownCount(Race.TRADER);
+        BlockPos at = helper.absolutePos(first);
+        helper.assertTrue(KnowledgeStoneBlock.touch(player, level, at) == KnowledgeStoneBlock.Reading.LEARNED, "第一次摸没教词");
+        helper.assertTrue(Civ.state(player).knownCount(Race.TRADER) == known + 1, "认识的词没多一个");
+        helper.assertTrue(Civ.state(player).stones().contains(KnowledgeStoneBlock.key(level, at)), "没记下摸过这一块");
+        // 右键上半，算同一块
+        helper.useBlock(first.above(), player);
+        helper.assertTrue(Civ.state(player).knownCount(Race.TRADER) == known + 1, "摸上半又教了一个词");
+        helper.assertTrue(KnowledgeStoneBlock.touch(player, level, at) == KnowledgeStoneBlock.Reading.READ_BEFORE, "第二次摸没说读过了");
+        helper.assertTrue(Civ.state(player).knownCount(Race.TRADER) == known + 1, "第二次摸又教了一个词");
+        helper.assertTrue(Civ.state(player).stones().size() == 1, "记了不止一块");
+        helper.useBlock(second, player);
+        helper.assertTrue(Civ.state(player).knownCount(Race.TRADER) == known + 2, "另一块没教词");
+        // 挖不掉
+        helper.assertTrue(level.getBlockState(at).getDestroySpeed(level, at) < 0, "知识石能挖");
+        helper.succeed();
     }
 
     /** 一台选好齿轮配方、放了一组铁锭的一型制造台。 */

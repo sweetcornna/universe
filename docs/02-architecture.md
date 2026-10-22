@@ -370,6 +370,12 @@ io.github.sweetcornna.universe
 | 键码是 SDL 扫描码：`InputConstants.KEY_RETURN` 是 40、`KEY_ESCAPE` 是 41；`KeyEvent.isConfirmation()` 只认回车 | 已确认 |
 | 界面里画实体：`InventoryScreen.extractEntityInInventoryFollowsMouse(...)`，会把渲染状态的 `scale` 设成 1；整只生物染色覆盖 `LivingEntityRenderer.getModelTint(state)` | 已确认，伙伴界面 |
 | `PushReaction` 没有 `DESTROY`，用 `POPPED`；方块染色的 `BlockAndTintGetter` 挪到了 `net.minecraft.client.renderer.block`（只在客户端），能 `getBlockEntity`；染料物品带 `DataComponents.DYE`，颜色用 `DyeColor.getTextureDiffuseColor()`；`BlockItem.place` 先 `updateBlockEntityComponents` 再 `setPlacedBy` | 已确认，生物卵 |
+| `GameTestHelper.makeMockServerPlayer()` 的玩家 `connection` 是 null：`sendSystemMessage`、`sendOverlayMessage`、`Inventory.placeItemBackInInventory`（会发格子更新）都会空指针；NeoForge 同步附件时直接调 `player.connection.hasChannel`，同步条件里要先判断 `player.connection != null`。放物品用三参数的 `placeItemBackInInventory(stack, sendPacket, prediction)` | 已确认，外星文明 |
+| 附件的 `copyOnDeath()` 要先设好 `serialize(...)`；`ByteBufCodecs.list(int)` 带长度上限；`MutableComponent.withColor(int)`；HUD 前后的事件是 `RenderGuiEvent.Pre`、`Post` | 已确认 |
+| 有颜色的方块成了 `ColorCollection<Block>`：`Blocks.WOOL.orange()`、`.pick(DyeColor)`，`CONCRETE`、`DYED_TERRACOTTA`、`CARPET`、`STAINED_GLASS` 同样；原版加了 `WOOL_STAIRS`、`WOOL_SLAB`、`CONCRETE_STAIRS`、`CONCRETE_SLAB`；`Blocks.CHAIN` 改名 `IRON_CHAIN` | 已确认，聚落 |
+| 高度图和窒息判定看方块标签 `blocks_motion(_no_leaves)`，本模组的实心方块要自己加进去；`TextureMapping.column(Material, Material)` 配 `ModelTemplates.CUBE_COLUMN` | 已确认，知识石 |
+| `Entity.hurtMarked` 没了：`push(x, y, z)` 自己置 `needsSync`，要把速度同步给客户端用 `markHurt()`；`ChunkAccess.getHeight(type, x, z)` 返回最高方块的 y | 已确认，NPC |
+| 实体数据有 `EntityDataSerializers.LONG`（变长）；`Model.setupAnim` 先 `resetPose()`；`/kill` 的伤害带 `DamageTypeTags.BYPASSES_INVULNERABILITY`；`DefaultRandomPos.getPosAway(PathfinderMob, int, int, Vec3)`、`DamageSources.playerAttack(Player)`、`EntityType.create(Level, EntitySpawnReason)` | 已确认，NPC |
 
 拿不准的 API 先查源码再写，核实后把结果补进这张表。源码在：
 

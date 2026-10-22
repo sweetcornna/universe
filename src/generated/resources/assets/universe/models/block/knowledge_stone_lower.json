@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column",
+  "textures": {
+    "end": "universe:block/knowledge_stone_top",
+    "side": "universe:block/knowledge_stone_lower"
+  }
+}

@@ -35,7 +35,8 @@ public final class HudMarker {
             MultitoolClient.diamond(graphics, point[0], point[1], color, 0xA0000000);
             MultitoolClient.diamond(graphics, point[0], point[1] - 2, color & 0x60FFFFFF, 0);
             int w = font.width(label);
-            graphics.text(font, label, point[0] - w / 2, point[1] + 8, 0xFF000000 | rgb, true);
+            graphics.text(font, label, HudRegions.avoid(point[0] - w / 2, point[1] + 8, w, font.lineHeight), point[1] + 8,
+                    0xFF000000 | rgb, true);
             return;
         }
         int[] edge = projection.edge(target, EDGE);
@@ -57,6 +58,6 @@ public final class HudMarker {
         int w = font.width(label);
         int tx = Math.clamp(edge[0] - w / 2, 4, width - w - 4);
         int ty = edge[1] < height / 2 ? edge[1] + 10 : edge[1] - 18;
-        graphics.text(font, label, tx, ty, 0xFF000000 | rgb, true);
+        graphics.text(font, label, HudRegions.avoid(tx, ty, w, font.lineHeight), ty, 0xFF000000 | rgb, true);
     }
 }

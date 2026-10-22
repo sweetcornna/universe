@@ -155,6 +155,9 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         this.fleet();
         this.portal();
         this.encounters();
+        this.civilization();
+        this.civLandmarks();
+        this.civDialogue();
     }
 
     /** 终局（ADR-0018）：反物质、宇宙矩阵、两种发电设备和它们的科技。 */
@@ -2433,6 +2436,12 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("message.universe.encounter.receiver_busy", "已经在追一个信号了", "You're already following a signal");
         both("message.universe.encounter.receiver_nothing", "这里收不到信号，换个地方再试", "No signal here. Try somewhere else");
         both("commands.universe.encounter.cleared", "收掉了 %s 处遭遇", "Removed %s encounters");
+        both("commands.universe.civ.unknown_race", "没有这个种族：%s", "No such race: %s");
+        both("commands.universe.civ.status", "%s：声望 %s（%s），认识 %s/%s 个词", "%s: standing %s (%s), %s/%s words");
+        both("commands.universe.civ.dominant", "这里的主导种族：%s", "Dominant race here: %s");
+        both("commands.universe.civ.standing_set", "%s的声望设为 %s", "Set %s standing to %s");
+        both("commands.universe.civ.newday", "今天的对话和请教次数清掉了", "Cleared today's talks and questions");
+        both("commands.universe.civ.reset", "声望、词和知识石都清空了", "Cleared standing, words and knowledge stones");
         both("commands.universe.encounter.not_piloting", "要在太空里开着飞船", "You need to be flying a ship in space");
         both("commands.universe.encounter.no_room", "前方找不到地方放", "No room ahead");
         both("commands.universe.encounter.not_in_space", "要在太空里", "You need to be in space");
@@ -2893,6 +2902,190 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("gui.universe.dyson.waiting", "正在接收戴森球的数据……", "Waiting for Dyson sphere data…");
         both("gui.universe.dyson.hint", "拖动旋转 · 滚轮缩放 · Y 关闭", "Drag to rotate · scroll to zoom · Y to close");
         both("gui.universe.dyson.full", "满了：最多 %s 个", "Full: at most %s");
+    }
+
+    /** 外星文明（ADR-0027）：种族、声望档、公会、词的意思、对话题目（占位）、文明页、手册一章。 */
+    private void civilization() {
+        both("civ.universe.race.trader", "商旅族", "Traders");
+        both("civ.universe.race.scholar", "学者族", "Scholars");
+        both("civ.universe.race.warden", "戍卫族", "Wardens");
+        both("civ.universe.standing.hostile", "敌视", "Hostile");
+        both("civ.universe.standing.stranger", "陌生", "Stranger");
+        both("civ.universe.standing.acquainted", "认识", "Acquainted");
+        both("civ.universe.standing.regular", "熟客", "Regular");
+        both("civ.universe.standing.friend", "朋友", "Friend");
+        both("civ.universe.standing.kindred", "至交", "Kindred");
+        both("civ.universe.guild.merchants", "商会", "Merchants' Guild");
+        both("civ.universe.guild.mercenaries", "佣兵会", "Mercenaries' Guild");
+        both("civ.universe.guild.explorers", "探险会", "Explorers' Guild");
+        both("civ.universe.guild_standing.hostile", "除名", "Expelled");
+        both("civ.universe.guild_standing.stranger", "新人", "Novice");
+        both("civ.universe.guild_standing.acquainted", "会员", "Member");
+        both("civ.universe.guild_standing.regular", "资深", "Veteran");
+        both("civ.universe.guild_standing.friend", "精英", "Elite");
+        both("civ.universe.guild_standing.kindred", "大师", "Master");
+
+        // 词的意思，顺序同 core.civ.Lexicon
+        String[][] words = {
+                {"one", "一", "one"}, {"two", "二", "two"}, {"three", "三", "three"}, {"hydrogen", "氢", "hydrogen"},
+                {"carbon", "碳", "carbon"}, {"oxygen", "氧", "oxygen"}, {"star", "星", "star"}, {"light", "光", "light"},
+                {"trade", "交易", "trade"}, {"price", "价钱", "price"}, {"gift", "礼物", "gift"}, {"friend", "朋友", "friend"},
+                {"enemy", "敌人", "enemy"}, {"danger", "危险", "danger"}, {"help", "帮助", "help"}, {"ship", "船", "ship"},
+                {"planet", "星球", "planet"}, {"home", "家", "home"}, {"water", "水", "water"}, {"food", "食物", "food"},
+                {"metal", "金属", "metal"}, {"machine", "机器", "machine"}, {"knowledge", "知识", "knowledge"}, {"discovery", "发现", "discovery"},
+                {"ancient", "远古", "ancient"}, {"ruin", "废墟", "ruin"}, {"sentinel", "守卫机", "sentinel"}, {"weapon", "武器", "weapon"},
+                {"strength", "力量", "strength"}, {"honor", "荣誉", "honor"}, {"fear", "恐惧", "fear"}, {"peace", "和平", "peace"},
+                {"war", "战争", "war"}, {"travel", "旅行", "travel"}, {"path", "路", "path"}, {"sky", "天空", "sky"},
+                {"ground", "地面", "ground"}, {"life", "生命", "life"}, {"death", "死亡", "death"}, {"time", "时间", "time"},
+                {"old", "旧", "old"}, {"new", "新", "new"}, {"good", "好", "good"}, {"bad", "坏", "bad"},
+                {"yes", "是", "yes"}, {"no", "不", "no"}, {"give", "给", "give"}, {"take", "拿", "take"},
+                {"want", "想要", "want"}, {"see", "看", "see"}, {"speak", "说", "speak"}, {"learn", "学", "learn"},
+                {"build", "建造", "build"}, {"break", "弄坏", "break"}, {"hunt", "狩猎", "hunt"}, {"guard", "守护", "guard"},
+                {"wealth", "财富", "wealth"}, {"credits", "信用点", "credits"}, {"data", "数据", "data"}, {"signal", "信号", "signal"},
+                {"fuel", "燃料", "fuel"}, {"storm", "风暴", "storm"}, {"stone", "石头", "stone"}, {"creature", "生物", "creature"}};
+        for (String[] word : words) {
+            both("civ.universe.word." + word[0], word[1], word[2]);
+        }
+
+        // 对话题目：占位，剧情讨论后重写
+        civEncounter("damaged_hull", "对方指着一块烧黑的船壳，说了一串话。", "They point at a scorched hull plate and say something.",
+                "问这块船壳卖多少钱。", "Ask what they want for the plate.",
+                "凑近看看是怎么烧坏的。", "Look closer at how it burned.",
+                "帮忙把它抬到一边。", "Help haul it out of the way.");
+        civEncounter("storm_coming", "对方抬头看了看天，说得很急。", "They glance at the sky and speak quickly.",
+                "说可以替对方把货收进来，收点辛苦费。", "Offer to bring their cargo in, for a fee.",
+                "问风暴从哪边来、多久到。", "Ask where the storm is coming from, and when.",
+                "说你出去看看。", "Say you'll go out and take a look.");
+        civEncounter("old_stone", "对方摸着一块刻满花纹的石头，慢慢地说着。", "They trace the carvings on an old stone as they talk.",
+                "问这块石头值不值钱。", "Ask if the stone is worth anything.",
+                "请对方讲讲上面刻的是什么。", "Ask what the carvings say.",
+                "说你会帮着守住它。", "Promise to help guard it.");
+        civEncounter("the_hunt", "对方比划着一只大家伙的样子，又指了指远处。", "They mime something big, then point into the distance.",
+                "问打到了肉怎么分。", "Ask how the meat would be split.",
+                "问这种生物吃什么、在哪儿出没。", "Ask what it eats and where it roams.",
+                "说你打头阵。", "Offer to go first.");
+        civEncounter("odd_signal", "对方把一台嘀嘀响的仪器递过来。", "They hold out a beeping device.",
+                "问信号那头有没有值钱的东西。", "Ask if there's anything valuable at the source.",
+                "记下信号的频率。", "Note down the frequency.",
+                "说你去信号那边看看。", "Say you'll go find the source.");
+        civEncounter("offered_gift", "对方递过来一个小包，等着看你怎么做。", "They hand you a small bundle and wait.",
+                "先估估值多少，再想回什么礼。", "Size up what it's worth before giving anything back.",
+                "问这东西是从哪儿来的。", "Ask where it came from.",
+                "郑重地收下，说以后有事尽管找你。", "Accept it and pledge your help.");
+        both("civ.universe.reply.trader.right", "对方很满意，点了点头。", "They look pleased and nod.");
+        both("civ.universe.reply.trader.wrong", "对方摇摇头，转身忙别的去了。", "They shake their head and turn away.");
+        both("civ.universe.reply.scholar.right", "对方记下了什么，看起来很感兴趣。", "They note something down, clearly interested.");
+        both("civ.universe.reply.scholar.wrong", "对方沉默了一会儿，没再说话。", "They go quiet and say nothing more.");
+        both("civ.universe.reply.warden.right", "对方拍了拍胸甲，算是认可。", "They thump their chest plate in approval.");
+        both("civ.universe.reply.warden.wrong", "对方哼了一声，移开了视线。", "They grunt and look away.");
+
+        both("message.universe.civ.tier", "%s：%s", "%s: %s");
+        both("message.universe.civ.word", "学会了一个词：%s = %s", "Learned a word: %s = %s");
+
+        // 星图、交易终端、发现日志的"文明"页
+        both("gui.universe.star_map.civilization", "主导种族：%s", "Dominant race: %s");
+        both("gui.universe.trade.race", "（%s）", " (%s)");
+        both("gui.universe.discovery.tab.log", "日志", "Log");
+        both("gui.universe.discovery.tab.civ", "文明", "Civilizations");
+        both("gui.universe.civ.races", "种族", "Races");
+        both("gui.universe.civ.guilds", "公会", "Guilds");
+        both("gui.universe.civ.here", "本星系", "here");
+        both("gui.universe.civ.words_known", "认识 %s / %s 个词", "%s / %s words known");
+        both("gui.universe.civ.lexicon", "%s的语言", "Words of the %s");
+        both("gui.universe.civ.lexicon_hint", "知识石、对话、送礼都能学到新词。", "Knowledge stones, talking and gifts teach new words.");
+        both("gui.universe.civ.unknown_word", "？？？", "???");
+        both("gui.universe.civ.footer", "点种族看词表 · K 关闭", "Click a race to see its words · K to close");
+
+        // 手册
+        both("guide.universe.civilization", "外星文明", "Civilizations");
+        both("guide.universe.civilization.races.title", "种族", "Races");
+        both("guide.universe.civilization.races",
+                "星团里有三个种族。有空间站的恒星系各由一个种族主导，空间站和聚落里多是这个种族的人。星图和交易终端上写着是哪个。\n\n商旅族：看重利\n学者族：看重知\n戍卫族：看重勇\n\n母星系是商旅族。",
+                "Three races share the cluster. Each system with a station is run by one of them, and most people you meet there belong to it. The star map and trade terminals show which.\n\nTraders: profit\nScholars: knowledge\nWardens: valor\n\nThe home system belongs to the Traders.");
+        both("guide.universe.civilization.language.title", "语言", "Language");
+        both("guide.universe.civilization.language",
+                "每个种族一种语言，各 64 个词。一、二、三、氢、碳、氧、星、光这 8 个一开始就认识。\n\n学新词：\n知识石：一块一个\n对话选对：从那段话里学一个\n送对礼物：回教一个\n声望到\"认识\"：每人每天请教一个\n\n认识的词在对话里显示成意思。发现日志的\"文明\"页能查词表。",
+                "Each race has its own language of 64 words. You start out knowing eight: one, two, three, hydrogen, carbon, oxygen, star and light.\n\nNew words come from:\nKnowledge stones: one each\nRight answers: one from that speech\nGifts they like: one in return\nAcquainted or better: ask each person for one a day\n\nKnown words show up translated when people talk. The Civilizations tab of the discovery log lists them.");
+        both("guide.universe.civilization.standing.title", "声望", "Standing");
+        both("guide.universe.civilization.standing",
+                "声望按种族、按公会分开记，从 0 开始，最低 -20，最高 100。\n\n对话选对 +3，选错 -1\n送对礼物：+2\n打他们的人：-5\n\n敌视（< -5）：不理你，买东西贵 10%\n陌生（-5）\n认识（10）：能请教词\n熟客（25）：便宜 5%\n朋友（45）：便宜 10%\n至交（70）：便宜 15%\n\n价钱看恒星系主导种族的声望，空间站和交易站都算。",
+                "Standing is kept per race and per guild, from -20 to 100, starting at 0.\n\nRight answer +3, wrong answer -1\nA gift they like: +2\nHitting one of them: -5\n\nHostile (< -5): won't talk, prices +10%\nStranger (-5)\nAcquainted (10): ask for words\nRegular (25): 5% off\nFriend (45): 10% off\nKindred (70): 15% off\n\nPrices follow the system's dominant race, at stations and trading posts alike.");
+    }
+
+    /** 知识石和聚落（ADR-0027 §五）：地标的名字、知识石的提示、手册"外星文明"一章的两页。 */
+    private void civLandmarks() {
+        both("landmark.universe.knowledge_stone", "知识石", "Knowledge Stone");
+        both("landmark.universe.settlement", "聚落", "Settlement");
+        block(UniverseBlocks.KNOWLEDGE_STONE.get(), "知识石", "Knowledge Stone");
+        both("tooltip.universe.knowledge_stone.summary", "刻着发光的外星文字\n右键：学会一个这个星系主导种族的词\n每块每人一次",
+                "Carved with glowing alien script\nRight-click: learn a word of this system's dominant race\nOnce per stone per player");
+        both("message.universe.knowledge_stone.read", "这块石头上的字你已经读过了", "You've already read this stone");
+        both("message.universe.knowledge_stone.all_known", "上面的词你都认识了", "You already know every word on it");
+        both("message.universe.knowledge_stone.unreadable", "认不出这是谁的文字", "You can't tell whose script this is");
+        both("jei.universe.info.knowledge_stone", "能登陆的星球上都有，聚落的广场上也有一块。右键学会这个恒星系主导种族的一个词，每块每人一次。挖不掉。",
+                "Found on every planet you can land on, and in every settlement's plaza. Right-click to learn a word of the system's dominant race, once per stone per player. Can't be mined.");
+        both("guide.universe.civilization.stones.title", "知识石", "Knowledge Stones");
+        both("guide.universe.civilization.stones",
+                "刻着发光文字的石柱。能登陆的星球上都有，荒芜的也有，扫描能标出来。\n\n右键摸一下，学会这个恒星系主导种族的一个词。每块每人只能学一次，再摸只会告诉你读过了。\n\n挖不掉，也推不动。",
+                "Stone pillars carved with glowing script. Every planet you can land on has them, barren ones included, and scans mark them.\n\nRight-click one to learn a word of the system's dominant race. Each stone teaches each player once; after that it just tells you you've read it.\n\nThey can't be mined or moved.");
+        both("guide.universe.civilization.settlements.title", "聚落", "Settlements");
+        both("guide.universe.civilization.settlements",
+                "有大气、不荒芜的星球上有聚落，扫描能标出来。几间小屋围着一片广场，样子随这个恒星系的主导种族：商旅族搭帐篷，学者族住白墙玻璃房，戍卫族住厚墙石堡。\n\n广场上立着一块知识石\n货摊里的交易终端和交易站的一样\n两个访客站在广场两边\n技术商在货摊旁边",
+                "Found on planets with an atmosphere that aren't barren. Scans mark them. The huts follow the system's dominant race: tents for Traders, white glass houses for Scholars, stone forts for Wardens.\n\nA Knowledge Stone stands in the plaza\nThe stall's terminal works like a trading post's\nTwo visitors wait by the plaza\nA tech merchant stands at the stall");
+    }
+
+    /** 外星 NPC 和对话（ADR-0027 §三、§四）：角色、头顶的名字、对话界面、送礼的反应、手册"外星文明"一章的对话页。 */
+    private void civDialogue() {
+        both("entity.universe.alien_npc", "外星人", "Alien");
+        both("entity.universe.alien_npc.label", "%s · %s", "%s · %s");
+        both("civ.universe.role.visitor", "访客", "Visitor");
+        both("civ.universe.role.tech_merchant", "技术商", "Tech Merchant");
+        both("civ.universe.role.guild_envoy", "公会使者", "Guild Envoy");
+        both("message.universe.npc.hit", "%1$s 躲开了 · %2$s声望 %3$s", "%1$s backs off · %2$s standing %3$s");
+        both("message.universe.npc.refuses", "%s 不理你", "%s won't talk to you");
+
+        both("gui.universe.dialogue.heading", "%s · %s", "%s · %s");
+        both("gui.universe.dialogue.tier", "%s %s", "%s %s");
+        both("gui.universe.dialogue.known", "认识 %s/%s", "%s/%s known");
+        both("gui.universe.dialogue.gift", "送礼", "Give Gift");
+        both("gui.universe.dialogue.ask", "请教一个词", "Ask a Word");
+        both("gui.universe.dialogue.leave", "离开", "Leave");
+        both("gui.universe.dialogue.gift_hint", "把手里的%s送一个", "Give one %s");
+        both("gui.universe.dialogue.empty_hand", "主手拿着要送的东西", "Hold the gift in your main hand");
+        both("gui.universe.dialogue.gifted_today", "今天已经送过了", "Already gave a gift today");
+        both("gui.universe.dialogue.ask_hint", "教你一个还不认识的词", "Learn a word you don't know yet");
+        both("gui.universe.dialogue.ask_locked", "声望到\"认识\"才能请教", "Needs Acquainted standing");
+        both("gui.universe.dialogue.asked_today", "今天已经请教过了", "Already asked today");
+        both("gui.universe.dialogue.answered_today", "今天已经回答过了", "Already answered today");
+        both("gui.universe.dialogue.gave", "送出：%s", "Gave: %s");
+        both("gui.universe.dialogue.standing", "声望 %s", "Standing %s");
+        both("gui.universe.dialogue.learned", "学会：%s = %s", "Learned: %s = %s");
+        both("gui.universe.dialogue.no_new_word", "能教的词你都认识了", "You already know every word they could teach");
+        both("gui.universe.dialogue.credits", "信用点 +%s", "+%s credits");
+        both("gui.universe.dialogue.item", "得到 %s ×%s", "Got %s ×%s");
+
+        // 送礼的反应：占位，剧情讨论后重写
+        both("civ.universe.gift.trader.liked", "对方掂了掂，眼睛一亮，收进了挎包。", "They weigh it in one hand, eyes lighting up, and tuck it away.");
+        both("civ.universe.gift.trader.plain", "对方看了看，还是收下了。", "They look it over and keep it anyway.");
+        both("civ.universe.gift.scholar.liked", "对方翻来覆去地看，嘴里念叨着什么。", "They turn it over and over, muttering.");
+        both("civ.universe.gift.scholar.plain", "对方礼貌地收下，放到一边。", "They accept it politely and set it aside.");
+        both("civ.universe.gift.warden.liked", "对方掂了掂分量，用力点了点头。", "They test the weight and nod firmly.");
+        both("civ.universe.gift.warden.plain", "对方收下了，没说什么。", "They take it without a word.");
+
+        both("guide.universe.civilization.dialogue.title", "对话", "Talking");
+        both("guide.universe.civilization.dialogue",
+                "空间站、交易站和聚落里有外星人，右键和他们说话。\n\n每人每天：\n答一道题：选这个种族看重的那一项\n收一次礼：主手拿着要送的东西\n教一个词：声望到\"认识\"以后\n\n选对：声望 +3，学一个词，给一份奖励\n商旅族给信用点、贸易品\n学者族给数据，偶尔一个技术模块\n戍卫族给守卫机残骸、电磁线圈，偶尔一个武器模块\n\n商旅族喜欢值钱的东西和吃的，学者族喜欢数据、化石、遗物，戍卫族喜欢守卫机零件和武器。",
+                "Aliens hang around stations, trading posts and settlements. Right-click to talk.\n\nOnce a day each:\nAnswer: pick what their race values\nGift: hold it in your main hand\nAsk a word: once Acquainted\n\nRight answer: +3 standing, a word and a reward. Traders pay credits, Scholars give data, Wardens give salvage. Sometimes a module.\n\nTraders like valuables and food. Scholars like data and relics. Wardens like sentinel parts and weapons.");
+    }
+
+    /** 一道对话题目：旁白，三个选项依次是利、知、勇。 */
+    private void civEncounter(String id, String zhScene, String enScene, String zhProfit, String enProfit, String zhKnowledge, String enKnowledge,
+            String zhValor, String enValor) {
+        String base = "civ.universe.encounter." + id;
+        both(base + ".scene", zhScene, enScene);
+        both(base + ".option.profit", zhProfit, enProfit);
+        both(base + ".option.knowledge", zhKnowledge, enKnowledge);
+        both(base + ".option.valor", zhValor, enValor);
     }
 
     private void tech(String id, String zh, String en) {
