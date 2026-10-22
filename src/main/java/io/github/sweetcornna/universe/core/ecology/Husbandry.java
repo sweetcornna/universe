@@ -17,6 +17,8 @@ public final class Husbandry {
     public static final double RIDE_MIN_SIZE = 1.2;
     /** 吃饱了还喂（驯服的、受了伤的）回多少血。 */
     public static final float FEED_HEAL = 4;
+    /** 巨型物种骑着起跳的竖直速度。 */
+    static final double GIANT_JUMP = 0.46;
 
     private Husbandry() {
     }
@@ -58,8 +60,11 @@ public final class Husbandry {
         };
     }
 
-    /** 一次产几个：体型不到 1.2 产 1 个，1.2 起 2 个，2 起 3 个。 */
+    /** 一次产几个：体型不到 1.2 产 1 个，1.2 起 2 个，2 起 3 个；巨型的 3 个。 */
     public static int productCount(CreatureSpecies species) {
+        if (species.index() >= Fauna.GIANT_INDEX) {
+            return 3;
+        }
         return Math.clamp((int) Math.floor(species.size() * 1.25 + 0.5), 1, 3);
     }
 
@@ -76,8 +81,14 @@ public final class Husbandry {
         return Math.clamp(species.speed(), 0.16, 0.32);
     }
 
-    /** 骑着蓄满力起跳的竖直速度（格/刻）：两足兽腿长跳得最高（约 4 格），四足兽约 3 格，六足虫约 2 格（原版不蓄力的跳是 0.42，1.25 格）。 */
+    /**
+     * 骑着蓄满力起跳的竖直速度（格/刻）：两足兽腿长跳得最高（约 4 格），四足兽约 3 格，六足虫约 2 格（原版不蓄力的跳是 0.42，1.25 格）。
+     * 巨型的身子太沉，只蹬得起约 1.5 格，平时靠一步跨过一格高的坎（{@link Fauna#stepHeight}）。
+     */
     public static double rideJump(CreatureSpecies species) {
+        if (species.index() >= Fauna.GIANT_INDEX) {
+            return GIANT_JUMP;
+        }
         return switch (species.plan()) {
             case BIPED -> 0.8;
             case QUADRUPED -> 0.68;

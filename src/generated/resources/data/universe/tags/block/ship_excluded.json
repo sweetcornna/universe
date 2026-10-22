@@ -57,6 +57,8 @@
     "universe:logistics_distributor",
     "universe:landing_pad",
     "universe:vehicle_summoner",
+    "universe:egg_sequencer",
+    "universe:creature_egg",
     "universe:crude_oil_seep",
     "universe:drop_pod",
     "universe:monolith",

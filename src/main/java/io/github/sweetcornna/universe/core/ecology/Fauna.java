@@ -34,19 +34,34 @@ import io.github.sweetcornna.universe.core.ecology.CreatureSpecies.Voice;
  *
  * <p>有海的星球另有 3–6 种水生动物（ADR-0026），用自己的派生键 {@code fauna/aquatic}，陆地上的物种一个不变。
  * 水生物种的序号从 {@link #MARINE_INDEX} 起，和陆地物种的序号、发现记录不会撞上。
+ *
+ * <p>宜居、奇异、海洋星球有四成机会另有一种巨型陆地物种（ADR-0026 §九），派生键 {@code fauna/giant}，序号从
+ * {@link #GIANT_INDEX} 起。它不进 {@link #pick} 的候选，由刷怪器单独刷，陆地和水里的物种也一个不变。
  */
 public final class Fauna {
-    /** 不在星球上时（例如在主世界用命令召唤）用的一套动物。 */
-    public static final Fauna FALLBACK = generate(new Ecology(1, 1, 1, 0, 6, 0x5EED), PlanetType.HABITABLE, Palette.NEUTRAL, Liquid.WATER);
     /** 水生物种的第一个序号。 */
     public static final int MARINE_INDEX = 64;
+    /** 巨型陆地物种的第一个序号。 */
+    public static final int GIANT_INDEX = 96;
+    /** 野生的巨型物种站着有多高（格，算上个体的体型差异）。 */
+    public static final double GIANT_MIN_HEIGHT = 3.5;
+    public static final double GIANT_MAX_HEIGHT = 6.0;
+    /** 野生的巨型物种的生命上限（算上个体的体型差异）。 */
+    public static final double GIANT_MIN_HEALTH = 120;
+    public static final double GIANT_MAX_HEALTH = 200;
+    /** 宜居、奇异、海洋星球多一种巨型物种的机会。 */
+    static final double GIANT_CHANCE = 0.4;
+    /** 不在星球上时（例如在主世界用命令召唤）用的一套动物，一定有巨型物种。 */
+    public static final Fauna FALLBACK = generate(new Ecology(1, 1, 1, 0, 6, 0x5EED), PlanetType.HABITABLE, Palette.NEUTRAL, Liquid.WATER, true);
 
     private final List<CreatureSpecies> species;
     private final List<CreatureSpecies> marine;
+    private final List<CreatureSpecies> giants;
 
-    private Fauna(List<CreatureSpecies> species, List<CreatureSpecies> marine) {
+    private Fauna(List<CreatureSpecies> species, List<CreatureSpecies> marine, List<CreatureSpecies> giants) {
         this.species = List.copyOf(species);
         this.marine = List.copyOf(marine);
+        this.giants = List.copyOf(giants);
     }
 
     public static Fauna of(Planet planet) {
@@ -63,13 +78,19 @@ public final class Fauna {
         return this.marine;
     }
 
-    /** 全部物种：陆地的在前，水里的在后。 */
+    /** 巨型陆地物种，没有的星球是空的（目前最多一种）。 */
+    public List<CreatureSpecies> giants() {
+        return this.giants;
+    }
+
+    /** 全部物种：陆地的在前，然后是水里的、巨型的。 */
     public List<CreatureSpecies> all() {
-        if (this.marine.isEmpty()) {
+        if (this.marine.isEmpty() && this.giants.isEmpty()) {
             return this.species;
         }
         List<CreatureSpecies> all = new ArrayList<>(this.species);
         all.addAll(this.marine);
+        all.addAll(this.giants);
         return List.copyOf(all);
     }
 
@@ -77,8 +98,14 @@ public final class Fauna {
         return this.species.isEmpty();
     }
 
-    /** 按序号取物种，越界时取模（存档里的序号对不上时也有个物种可用）。水生的序号找不到水生物种时退回陆地的。 */
+    /**
+     * 按序号取物种，越界时取模（存档里的序号对不上时也有个物种可用）。水生的序号找不到水生物种时退回陆地的；
+     * 巨型的序号要正好对上，对不上的按水生的序号处理（和加巨型物种之前一样）。
+     */
     public CreatureSpecies get(int index) {
+        if (index >= GIANT_INDEX && index - GIANT_INDEX < this.giants.size()) {
+            return this.giants.get(index - GIANT_INDEX);
+        }
         if (index >= MARINE_INDEX && !this.marine.isEmpty() || this.species.isEmpty()) {
             return this.marine.get(Math.floorMod(index - MARINE_INDEX, this.marine.size()));
         }
@@ -87,8 +114,8 @@ public final class Fauna {
 
     /** 序号正好对得上的物种（发现记录用），没有就是空。 */
     public Optional<CreatureSpecies> find(int index) {
-        List<CreatureSpecies> list = index >= MARINE_INDEX ? this.marine : this.species;
-        int i = index >= MARINE_INDEX ? index - MARINE_INDEX : index;
+        List<CreatureSpecies> list = index >= GIANT_INDEX ? this.giants : index >= MARINE_INDEX ? this.marine : this.species;
+        int i = index >= GIANT_INDEX ? index - GIANT_INDEX : index >= MARINE_INDEX ? index - MARINE_INDEX : index;
         return i >= 0 && i < list.size() ? Optional.of(list.get(i)) : Optional.empty();
     }
 
@@ -125,12 +152,33 @@ public final class Fauna {
 
     /** 只住在深水里的：鳗和巨型乌贼。 */
     public static boolean deepWater(CreatureSpecies species) {
-        return species.plan() == BodyPlan.EEL || giant(species);
+        return species.plan() == BodyPlan.EEL || species.plan() == BodyPlan.SQUID && giant(species);
     }
 
-    /** 巨型的（乌贼里少数长到普通的 2–6 倍）。 */
+    /** 巨型的：乌贼里少数长到普通的 2–6 倍，还有陆地上的巨型物种。 */
     public static boolean giant(CreatureSpecies species) {
-        return species.plan() == BodyPlan.SQUID && species.size() >= GIANT_SIZE;
+        return species.index() >= GIANT_INDEX || species.plan() == BodyPlan.SQUID && species.size() >= GIANT_SIZE;
+    }
+
+    /**
+     * 这个群系里能不能刷巨型物种，能的话是哪种。巨型物种只住在开阔的生境里（草原、荒漠、冻原、湿地、晶簇原），
+     * 刷怪器另外还看树密不密。
+     *
+     * @return 没有巨型物种或者它不住这里时返回 null
+     */
+    public @Nullable CreatureSpecies pickGiant(BiomeKind biome) {
+        Biotope biotope = Biotope.of(biome);
+        for (CreatureSpecies s : this.giants) {
+            if (biotope != null && s.biotopes().contains(biotope)) {
+                return s;
+            }
+        }
+        return null;
+    }
+
+    /** 能迈上多高的坎（格，原版生物是 0.6）：巨型的一步跨过一格高的坎，不用跳，栅栏还是拦得住。 */
+    public static double stepHeight(CreatureSpecies species) {
+        return species.index() >= GIANT_INDEX ? GIANT_STEP : 0.6;
     }
 
     /**
@@ -166,9 +214,20 @@ public final class Fauna {
     }
 
     public static Fauna generate(Ecology ecology, PlanetType type, Palette palette, Liquid liquid) {
+        return generate(ecology, type, palette, liquid, false);
+    }
+
+    /** @param forceGiant 不抽签，一定有巨型物种（给 {@link #FALLBACK} 用） */
+    private static Fauna generate(Ecology ecology, PlanetType type, Palette palette, Liquid liquid, boolean forceGiant) {
         List<CreatureSpecies> land = land(ecology, type, palette);
         List<CreatureSpecies> marine = land.isEmpty() || !hasSea(liquid) ? List.of() : marine(ecology, type, palette);
-        return new Fauna(land, marine);
+        List<CreatureSpecies> giants = land.isEmpty() ? List.of() : giants(ecology, type, palette, forceGiant);
+        return new Fauna(land, marine, giants);
+    }
+
+    /** 这类星球上会不会有巨型物种：宜居、奇异、海洋星球（还要有动物）。 */
+    public static boolean giantsPossible(PlanetType type) {
+        return type == PlanetType.HABITABLE || type == PlanetType.EXOTIC || type == PlanetType.OCEAN;
     }
 
     private static List<CreatureSpecies> land(Ecology ecology, PlanetType type, Palette palette) {
@@ -532,5 +591,128 @@ public final class Fauna {
             eye = 0x80F0FF;
         }
         return new Skin(base, belly, pattern, eye, patternType, glowing, glowingEyes);
+    }
+
+    // ---------------------------------------------------------------- 巨型陆地物种（ADR-0026 §九）
+
+    /** 巨型物种能迈上的坎（格）。 */
+    static final double GIANT_STEP = 1.1;
+    /** 巨型物种（体型系数为 1 时）碰撞箱最宽多少格。 */
+    static final double GIANT_MAX_WIDTH = 4.2;
+    /** 巨型物种住的开阔生境：林子里转不开身。（不写成静态集合：{@link #FALLBACK} 先初始化，那时它还是 null） */
+    private static boolean open(Biotope biotope) {
+        return switch (biotope) {
+            case MEADOW, ARID, COLD, WETLAND, CRYSTAL -> true;
+            case FOREST, FUNGAL, WASTE -> false;
+        };
+    }
+
+    /**
+     * 宜居、奇异、海洋星球四成机会有一种巨型物种：四足的像象和蜥脚类，六足的像放大的甲虫，两足的像鸭嘴龙。
+     * 温顺或者有领地意识，走得慢，单独活动。先按普通的比例拼出模型，再按要的身高定缩放，碰撞箱跟着模型走。
+     */
+    private static List<CreatureSpecies> giants(Ecology ecology, PlanetType type, Palette palette, boolean force) {
+        Rng rng = Rng.of(Seeds.derive(ecology.seed(), "fauna/giant"));
+        boolean lucky = rng.chance(GIANT_CHANCE);
+        if (!force && (!giantsPossible(type) || !lucky)) {
+            return List.of();
+        }
+        Rng r = rng.fork("species/0");
+        boolean earthlike = type == PlanetType.HABITABLE || type == PlanetType.OCEAN;
+        BodyPlan plan = r.weighted(List.of(BodyPlan.QUADRUPED, BodyPlan.HEXAPOD, BodyPlan.BIPED), p -> switch (p) {
+            case QUADRUPED -> 3.0;
+            case HEXAPOD -> earthlike ? 0.6 : 1.6;
+            default -> 1.2;
+        });
+        Temperament temperament = r.chance(type == PlanetType.EXOTIC ? 0.5 : 0.4) ? Temperament.TERRITORIAL : Temperament.DOCILE;
+        List<Biotope> open = Biotope.forPlanet(type).stream().filter(Fauna::open).toList();
+        if (open.isEmpty()) {
+            open = List.of(Biotope.MEADOW);
+        }
+        Set<Biotope> lives = EnumSet.of(open.get(0), open.get(r.nextInt(open.size())));
+        Body body = giantBody(r, plan, earthlike);
+        Skin skin = skin(r, palette, temperament, earthlike, type);
+        // 野生个体的身高和生命上限还要乘 0.85–1.15 的体型系数：物种的取在中间一段，乘完还在 3.5–6 格、120–200 点
+        double low = GIANT_MIN_HEIGHT / CreatureTraits.NATURAL_MIN;
+        double high = GIANT_MAX_HEIGHT / CreatureTraits.NATURAL_MAX;
+        double height = r.range(low, high);
+        double minHealth = GIANT_MIN_HEALTH / CreatureTraits.NATURAL_MIN;
+        double maxHealth = GIANT_MAX_HEALTH / CreatureTraits.NATURAL_MAX;
+        double health = Math.round(minHealth + (maxHealth - minHealth) * (height - low) / (high - low));
+        double speed = plan == BodyPlan.HEXAPOD ? r.range(0.17, 0.21) : r.range(0.16, 0.2);
+        // 被惹急了一脚踩下来，比劫掠兽（12）轻一点
+        double attack = temperament == Temperament.TERRITORIAL ? Math.round((3 + 1.5 * height) * 2) / 2.0 : 0;
+        Voice voice = switch (plan) {
+            case HEXAPOD -> r.pick(new Voice[] {Voice.HUM, Voice.HISS});
+            case BIPED -> r.pick(new Voice[] {Voice.LOW, Voice.CROAK});
+            default -> r.pick(new Voice[] {Voice.LOW, Voice.GRUNT});
+        };
+        Name base = NameGenerator.generate(r, 2, 3);
+        Name name = new Name(base.en() + " Giant " + plan.nameEn(), base.zh() + "巨型" + plan.nameZh());
+        // 按普通比例拼出模型，量出一格高的模型有多高，再缩放到要的身高。碰撞箱是正方形、取宽和（打折的）长里大的，
+        // 头尾太长的放大以后宽得走不动：先截尾巴，再缩吻部和身长
+        while (true) {
+            CreatureAnatomy anatomy = CreatureAnatomy.of(new CreatureSpecies(GIANT_INDEX, name, plan, temperament, 1, body, skin, health,
+                    speed, attack, 1, 1, Set.copyOf(lives), 0.2, voice));
+            double size = height / anatomy.hitHeight();
+            Body shorter = shorter(body);
+            if (anatomy.hitWidth() * size <= GIANT_MAX_WIDTH || shorter == null) {
+                return List.of(new CreatureSpecies(GIANT_INDEX, name, plan, temperament, size, body, skin, health, speed, attack, 1, 1,
+                        Set.copyOf(lives), 0.2, voice));
+            }
+            body = shorter;
+        }
+    }
+
+    /** 短一截的身体：尾巴先短 2 像素，尾巴短到 2 以后吻部短 1，再然后身子短 1；都到底了返回 null。 */
+    private static @Nullable Body shorter(Body b) {
+        int tail = b.tailLength();
+        int snout = b.snoutLength();
+        int length = b.length();
+        if (tail > 2) {
+            tail = Math.max(2, tail - 2);
+        } else if (snout > 0) {
+            snout--;
+        } else if (length > 10) {
+            length--;
+        } else {
+            return null;
+        }
+        return new Body(length, b.width(), b.height(), b.legLength(), b.legWidth(), b.legPairs(), b.neckLength(), b.headWidth(),
+                b.headHeight(), b.headDepth(), snout, tail, b.tailSegments(), b.horns(), b.hornLength(), b.crest(), b.dorsal(), b.eyes(),
+                b.wingSpan(), b.segments());
+    }
+
+    /** 巨型物种的身体（模型像素）：腿粗得像柱子，身子厚实；四足的一半是长脖子长尾巴，一半是短脖子大脑袋。 */
+    private static Body giantBody(Rng r, BodyPlan plan, boolean earthlike) {
+        int eyes = earthlike || r.chance(0.6) ? 2 : 4;
+        Crest crest = r.weighted(List.of(Crest.values()), c -> switch (c) {
+            case NONE -> 1.5;
+            case EARS -> plan == BodyPlan.QUADRUPED ? 1.2 : 0.2;
+            case ANTENNAE -> plan == BodyPlan.HEXAPOD ? 2.0 : 0;
+            case FRILL -> plan == BodyPlan.HEXAPOD ? 0.2 : 0.6;
+        });
+        Dorsal dorsal = r.weighted(List.of(Dorsal.values()), d -> switch (d) {
+            case NONE -> 2.0;
+            case PLATES -> 1.0;
+            case SPIKES -> 0.6;
+            case FIN -> 0.3;
+        });
+        int horns = r.chance(plan == BodyPlan.QUADRUPED ? 0.4 : 0.2) ? r.range(1, 3) : 0;
+        return switch (plan) {
+            case HEXAPOD -> new Body(r.range(16, 21), r.range(8, 10), r.range(6, 9), r.range(12, 16), 3, 3,
+                    0, r.range(6, 8), r.range(4, 6), r.range(4, 6), r.chance(0.4) ? r.range(1, 3) : 0,
+                    r.chance(0.4) ? r.range(3, 6) : 0, 1, horns, r.range(3, 5), crest, dorsal, eyes, 0, 1);
+            case BIPED -> new Body(r.range(10, 14), r.range(7, 10), r.range(8, 11), r.range(12, 17), r.range(3, 4), 1,
+                    r.range(3, 8), r.range(5, 7), r.range(5, 7), r.range(5, 7), r.range(2, 5),
+                    r.range(12, 18), 3, horns, r.range(2, 4), crest, dorsal, eyes, 0, 1);
+            default -> {
+                boolean longNeck = r.chance(0.5);
+                yield new Body(r.range(13, 18), r.range(8, 12), r.range(8, 11), longNeck ? r.range(10, 14) : r.range(11, 15), r.range(3, 5), 2,
+                        longNeck ? r.range(9, 14) : r.range(2, 4), r.range(5, 8), r.range(5, 7), r.range(5, 8),
+                        longNeck ? r.range(0, 2) : r.range(2, 5), longNeck ? r.range(10, 16) : r.range(4, 8),
+                        longNeck ? r.range(3, 4) : r.range(1, 2), horns, r.range(3, 6), crest, dorsal, eyes, 0, 1);
+            }
+        };
     }
 }

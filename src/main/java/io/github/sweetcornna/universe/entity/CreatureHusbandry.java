@@ -5,6 +5,7 @@ import io.github.sweetcornna.universe.core.ecology.CreatureSpecies;
 import io.github.sweetcornna.universe.core.ecology.Husbandry;
 import io.github.sweetcornna.universe.core.ecology.Husbandry.Diet;
 import io.github.sweetcornna.universe.core.ecology.Husbandry.Product;
+import io.github.sweetcornna.universe.core.ecology.Temperament;
 import io.github.sweetcornna.universe.registry.UniverseItems;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
@@ -37,7 +38,12 @@ public final class CreatureHusbandry {
     }
 
     public static boolean eats(CreatureSpecies species, ItemStack stack) {
-        return stack.is(food(Husbandry.diet(species.temperament())));
+        return eats(species.temperament(), stack);
+    }
+
+    /** 按这一只的性情（卵序列仪能改）看吃不吃。 */
+    public static boolean eats(Temperament temperament, ItemStack stack) {
+        return stack.is(food(Husbandry.diet(temperament)));
     }
 
     public static Component dietName(Diet diet) {

@@ -794,6 +794,9 @@ final class UniverseRecipes extends RecipeProvider {
         this.researchShaped("hydroponics", RecipeCategory.MISC, UniverseItems.HYDROPONIC_TRAY.get(), 1,
                 List.of("GLG", "IWI", "IBI"), Map.of('G', Items.GLASS_PANE, 'L', Items.GLOWSTONE_DUST, 'I', Items.IRON_INGOT,
                         'W', Items.WATER_BUCKET, 'B', board));
+        // 卵序列仪（ADR-0026 §九）：玻璃罩下面两个加热线圈和一块电路板
+        this.researchShaped("gene_editing", RecipeCategory.MISC, UniverseItems.EGG_SEQUENCER.get(), 1,
+                List.of("GGG", "CBC", "III"), Map.of('G', Items.GLASS_PANE, 'C', coil, 'B', board, 'I', Items.IRON_INGOT));
         this.researchShaped("cadmium_drive", RecipeCategory.TRANSPORTATION, UniverseItems.DRIVES.get(DriveTier.CADMIUM).get(), 1,
                 List.of("TST", "PWP", "TST"), Map.of('T', UniverseItems.TITANIUM_ALLOY.get(), 'S', UniverseItems.SUPER_MAGNETIC_RING.get(),
                         'P', UniverseItems.PROCESSOR.get(), 'W', UniverseItems.WARP_DRIVE.get()));

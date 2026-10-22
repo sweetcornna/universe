@@ -179,6 +179,9 @@ public final class TechTree {
             // ---- M14：星球生活（ADR-0026）。水培槽电磁学阶段就能研究，要交野外采来的氧气
             Tech.handIn("hydroponics", List.of("electromagnetism"), List.of(cost("oxygen", 12), cost("circuit_board", 6)),
                     items("hydroponic_tray")),
+            // 基因编辑（ADR-0026 §九）：卵序列仪接在水培后面，要交异星兽皮
+            Tech.handIn("gene_editing", List.of("hydroponics"), List.of(cost("alien_hide", 8), cost("circuit_board", 6)),
+                    items("egg_sequencer")),
             // 多功能工具的武器（ADR-0026 §六）：等离子武器电磁学阶段就能研究，要交守卫机残骸；重武器要蓝矩阵
             Tech.handIn("plasma_weapons", List.of("electromagnetism"), List.of(cost("sentinel_scrap", 8), cost("magnetic_coil", 10)),
                     items("scatter_blaster", "pulse_spitter")),

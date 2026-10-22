@@ -93,14 +93,48 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("discovery.universe.diet.herbivore", "草食", "Herbivore");
         both("discovery.universe.diet.carnivore", "肉食", "Carnivore");
         both("message.universe.creature.wrong_food", "%s不吃这个", "%s won't eat that");
-        both("message.universe.creature.not_hungry", "%1$s还不饿（%2$s秒）", "%1$s isn't hungry (%2$ss)");
         both("message.universe.creature.tamed", "%s已被驯服", "%s has been tamed");
         both("message.universe.creature.staying", "%s：待命", "%s: Staying");
         both("message.universe.creature.following", "%s：跟随", "%s: Following");
-        both("tooltip.universe.herbivore_feed.summary", "温顺、易受惊的动物吃\n喂动物有机会驯服，5 分钟产出一次\n驯服后空手潜行右键：待命 / 跟随\n驯服后空手右键：骑乘（体型较大的走兽）",
-                "Eaten by docile and skittish creatures\nFeeding can tame them; they produce once every 5 minutes\nTamed, sneak + right-click empty-handed: stay / follow\nTamed, right-click empty-handed: ride (larger walkers)");
-        both("tooltip.universe.carnivore_feed.summary", "有领地意识的动物和捕食者吃\n喂动物有机会驯服，5 分钟产出一次\n驯服后空手潜行右键：待命 / 跟随\n驯服后空手右键：骑乘（体型较大的走兽）",
-                "Eaten by territorial creatures and predators\nFeeding can tame them; they produce once every 5 minutes\nTamed, sneak + right-click empty-handed: stay / follow\nTamed, right-click empty-handed: ride (larger walkers)");
+        // 伙伴（ADR-0026 §九）
+        both("message.universe.companion.full", "%s吃饱了", "%s is full");
+        both("message.universe.companion.grown", "%s长大了", "%s has grown up");
+        both("message.universe.companion.dug", "%s刨出了东西", "%s dug something up");
+        both("message.universe.companion.dig_tomorrow", "%s今天挖过了", "%s already dug today");
+        both("message.universe.companion.released", "%s回到了野外", "%s returns to the wild");
+        both("gui.universe.companion.title", "伙伴", "Companion");
+        both("gui.universe.companion.name", "名字", "Name");
+        both("gui.universe.companion.name_hint", "起个名字", "Give it a name");
+        both("gui.universe.companion.save", "保存", "Save");
+        both("gui.universe.companion.species", "物种", "Species");
+        both("gui.universe.companion.size", "体型", "Size");
+        both("gui.universe.companion.young", "幼崽 %s", "Young %s");
+        both("gui.universe.companion.trust", "信任", "Trust");
+        both("gui.universe.companion.satiety", "饱食", "Fed");
+        both("gui.universe.companion.mood", "心情", "Mood");
+        both("gui.universe.companion.mood.happy", "开心", "Happy");
+        both("gui.universe.companion.mood.calm", "平静", "Calm");
+        both("gui.universe.companion.mood.sad", "难过", "Sad");
+        both("gui.universe.companion.eggs", "下蛋", "Eggs");
+        both("gui.universe.companion.eggs_in", "%s 天后", "In %s days");
+        both("gui.universe.companion.eggs_hungry", "吃饱了才下", "Needs feeding");
+        both("gui.universe.companion.eggs_trust", "信任不够", "Needs more trust");
+        both("gui.universe.companion.eggs_young", "还没长大", "Too young");
+        both("gui.universe.companion.follow", "跟随", "Follow");
+        both("gui.universe.companion.stay", "待命", "Stay");
+        both("gui.universe.companion.ride", "骑乘", "Ride");
+        both("gui.universe.companion.ride_small", "个子太小，骑不了", "Too small to ride");
+        both("gui.universe.companion.ride_young", "还没长大", "Too young");
+        both("gui.universe.companion.dig", "挖掘", "Dig");
+        both("gui.universe.companion.digging", "刨土中", "Digging");
+        both("gui.universe.companion.dig_hint", "原地刨几秒，每天一次", "Digs on the spot. Once a day");
+        both("gui.universe.companion.dig_wait", "今天挖过了，%s 分钟后再来", "Dug today. Back in %s min");
+        both("gui.universe.companion.release", "放生", "Release");
+        both("gui.universe.companion.release_confirm", "确定？", "Sure?");
+        both("tooltip.universe.herbivore_feed.summary", "温顺、易受惊的动物吃\n喂动物有机会驯服，5 分钟产出一次\n驯服后空手潜行右键：伙伴界面\n驯服后空手右键：骑乘（体型较大的走兽）",
+                "Eaten by docile and skittish creatures\nFeeding can tame them; they produce once every 5 minutes\nTamed, sneak + right-click empty-handed: companion screen\nTamed, right-click empty-handed: ride (larger walkers)");
+        both("tooltip.universe.carnivore_feed.summary", "有领地意识的动物和捕食者吃\n喂动物有机会驯服，5 分钟产出一次\n驯服后空手潜行右键：伙伴界面\n驯服后空手右键：骑乘（体型较大的走兽）",
+                "Eaten by territorial creatures and predators\nFeeding can tame them; they produce once every 5 minutes\nTamed, sneak + right-click empty-handed: companion screen\nTamed, right-click empty-handed: ride (larger walkers)");
         both("tooltip.universe.hold_shift", "按住 %s 查看说明", "Hold %s for details");
         item(UniverseItems.ALIEN_CREATURE_SPAWN_EGG.get(), "异星生物刷怪蛋", "Alien Creature Spawn Egg");
         item(UniverseItems.ALIEN_FLYER_SPAWN_EGG.get(), "异星飞兽刷怪蛋", "Alien Flyer Spawn Egg");
@@ -837,6 +871,7 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("commands.universe.resources.not_found", "%s 格内没有 %s", "No %2$s within %1$s blocks");
         both("commands.universe.resources.unknown", "没有叫 %s 的资源植物", "No resource plant called %s");
         this.kitchen();
+        this.eggs();
     }
 
     /** 水下（ADR-0026）：水生动物、生鱼、海带囊、甲壳蚌、沉船和海底遗迹、潜艇。 */
@@ -996,6 +1031,51 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
                 "Found in salvage capsules, buried under 3 shell plates at salvage sites. Sell-only.");
         both("jei.universe.info.fulgurite", "雷暴时雷打在沙、土、石头上熔成的。用镐挖，在空间站能卖。",
                 "Fused where lightning hits sand, soil or rock in a thunderstorm. Mine it with a pickaxe; sells at space stations.");
+    }
+
+    /** 生物卵、卵序列仪、基因编辑（ADR-0026 §九）。 */
+    private void eggs() {
+        block(UniverseBlocks.CREATURE_EGG.get(), "生物卵", "Creature Egg");
+        both("item.universe.creature_egg.of", "%s的卵", "%s Egg");
+        both("tooltip.universe.creature_egg.size", "体型：%s 倍", "Size: ×%s");
+        both("tooltip.universe.creature_egg.color", "颜色：%s", "Color: %s");
+        both("tooltip.universe.creature_egg.temperament", "性情：%s", "Temperament: %s");
+        both("tooltip.universe.creature_egg.infertile", "空卵，孵不出来", "Empty. It won't hatch");
+        both("tooltip.universe.creature_egg.summary",
+                "放在实心方块上，5 分钟孵出幼崽\n幼崽归卵的主人，主人不在线就等着\n挖下来还是这个卵，进度清零\n卵序列仪能改体型、颜色和性情",
+                "Place on a solid block; hatches in 5 minutes\nThe hatchling belongs to the egg's owner\nA ready egg waits for its owner to be online\nMining it gives it back, progress lost\nAn egg sequencer edits size, color and temperament");
+        both("message.universe.creature_egg.infertile", "这个卵孵不出来", "This egg won't hatch");
+        both("message.universe.creature_egg.incubating", "%s的卵：孵了 %s%%", "%s egg: %s%% incubated");
+        both("message.universe.creature_egg.hatched", "%s孵出来了", "%s hatched");
+        block(UniverseBlocks.EGG_SEQUENCER.get(), "卵序列仪", "Egg Sequencer");
+        both("tooltip.universe.egg_sequencer.summary",
+                "放进生物卵和一份材料，5 秒改一项\n生物胶质：体型 +0.1\n骨粉：体型 -0.1\n染料：换成那种颜色\n草食饲料：变温顺\n生肉：变得有领地意识\n体型在 0.5 到 1.5 倍之间，不用通电",
+                "Insert a creature egg and one material; 5 s per change\nBio gel: size +0.1\nBone meal: size -0.1\nDye: that color\nHerbivore feed: docile\nRaw meat: territorial\nSize stays within ×0.5–×1.5. Needs no power");
+        both("gui.universe.egg_sequencer.grow", "体型 +0.1", "Size +0.1");
+        both("gui.universe.egg_sequencer.shrink", "体型 -0.1", "Size -0.1");
+        both("gui.universe.egg_sequencer.recolor", "颜色改成 %s", "Color: %s");
+        both("gui.universe.egg_sequencer.temper", "性情改成%s", "Temper: %s");
+        both("gui.universe.egg_sequencer.change", "%s → %s", "%s → %s");
+        both("gui.universe.egg_sequencer.natural", "原色", "natural");
+        both("gui.universe.egg_sequencer.no_egg", "放进一个生物卵", "Insert a creature egg");
+        both("gui.universe.egg_sequencer.infertile", "空卵改不了", "Can't edit an empty egg");
+        both("gui.universe.egg_sequencer.no_material", "放进改造材料", "Add a material");
+        both("gui.universe.egg_sequencer.no_change", "这一项改不动了", "Nothing left to change");
+        both("gui.universe.egg_sequencer.output_full", "产物格满了", "Output is full");
+        both("gui.universe.egg_sequencer.egg", "%s · 体型 %s · %s", "%s · ×%s · %s");
+        tech("gene_editing", "基因编辑", "Gene Editing");
+        both("jei.universe.info.creature_egg", "吃饱了、信任够的伙伴会下卵。放在实心方块上 5 分钟孵出幼崽，幼崽一出来就是伙伴。卵上记着物种、体型、颜色和性情。",
+                "Well-fed companions that trust you lay eggs. Placed on a solid block, an egg hatches in 5 minutes into a companion. It carries species, size, color and temperament.");
+        both("jei.universe.info.egg_sequencer", "改生物卵的性状，一份材料改一项：生物胶质变大，骨粉变小，染料换颜色，草食饲料变温顺，生肉变得有领地意识。",
+                "Edits a creature egg, one trait per material: bio gel makes it bigger, bone meal smaller, dye recolors it, herbivore feed makes it docile, raw meat territorial.");
+        both("guide.universe.husbandry.eggs.title", "生物卵", "Creature Eggs");
+        both("guide.universe.husbandry.eggs",
+                "吃饱了、信任够的伙伴隔一阵会下一个卵。\n\n放在实心方块上，蛋壳裂两道，5 分钟孵出来\n幼崽归母亲的主人，一出来就是伙伴\n主人不在线时，孵好的卵等主人上线\n挖下来还是那个卵，进度清零\n\n卵上记着物种、体型、颜色和性情，幼崽照着长。",
+                "Well-fed companions that trust you lay an egg now and then.\n\nPlace it on a solid block. It cracks twice and hatches in 5 minutes\nThe hatchling is a companion of the mother's owner\nA ready egg waits until its owner is online\nMining it gives it back, progress lost\n\nThe egg carries species, size, color and temperament, and the hatchling takes after it.");
+        both("guide.universe.husbandry.sequencer.title", "卵序列仪", "Egg Sequencer");
+        both("guide.universe.husbandry.sequencer",
+                "卵放上格，材料放下格，5 秒改好一项。改不动的不收材料。\n\n生物胶质：体型 +0.1（最大 1.5 倍）\n骨粉：体型 -0.1（最小 0.5 倍）\n染料：换成那种颜色\n草食饲料：变温顺\n生肉：变得有领地意识",
+                "Egg in the top slot, material below. Each change takes 5 s; nothing is used up if there's nothing to change.\n\nBio gel: size +0.1 (up to ×1.5)\nBone meal: size -0.1 (down to ×0.5)\nDye: that color\nHerbivore feed: docile\nRaw meat: territorial");
     }
 
     /** 营养处理器、菜、便携精炼机、防护凝胶（ADR-0026）。 */
@@ -1896,8 +1976,12 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
                 "The visor shows what a creature eats. Feed it once a second; each bite may tame it.\n\nHerbivores: wheat, carrots, apples, feed\nCarnivores: raw meat, carnivore feed\nChance: docile 35%, skittish 25%, territorial 15%, predator 8%");
         both("guide.universe.husbandry.produce.title", "产物和骑乘", "Produce and Riding");
         both("guide.universe.husbandry.produce",
-                "驯服的动物会产东西、跟着你，体型大的能骑。\n\n产物：饿了喂一口，30 秒后产出，5 分钟后再饿\n跟随：10 格外跟上，超过 12 格直接传送过来\n空手潜行右键：跟随 / 待命\n骑乘：体型大的四足、六足、两足动物，空手右键上去，按住跳跃蓄力",
-                "Tamed creatures produce items, follow you, and the big ones can be ridden.\n\nProduce: feed when hungry, drops after 30 s, hungry again after 5 min\nFollow: from 10 blocks, teleports past 12\nSneak + empty hand: follow / stay\nRiding: large quadrupeds, hexapods and bipeds; right-click with an empty hand, hold jump to charge");
+                "驯服的动物会产东西、跟着你，体型大的能骑。\n\n产物：喂一口，30 秒后产出，5 分钟内只产一次\n跟随：10 格外跟上，超过 12 格直接传送过来\n空手潜行右键：伙伴界面（见下一页）\n骑乘：体型大的四足、六足、两足动物，空手右键上去，按住跳跃蓄力",
+                "Tamed creatures produce items, follow you, and the big ones can be ridden.\n\nProduce: drops 30 s after a meal, once every 5 min\nFollow: from 10 blocks, teleports past 12\nSneak + empty hand: companion screen (next page)\nRiding: large quadrupeds, hexapods and bipeds; right-click with an empty hand, hold jump to charge");
+        both("guide.universe.husbandry.companions.title", "伙伴", "Companions");
+        both("guide.universe.husbandry.companions",
+                "驯服的动物就是伙伴。空手潜行右键打开伙伴界面：改名、跟随 / 待命、骑乘、挖掘、放生。\n\n信任：驯服时 50，喂一口 +5，每天最多 +10\n饱食：两天吃空，喂一口补一半。饿着会掉信任\n心情：吃饱、信任 70 以上就开心\n挖掘：每天一次，出矿石、勘测数据，偶尔有技术模块。开心的挖得多\n下蛋：饱食过半、信任 50 以上，每两天下一个生物卵",
+                "Tamed creatures become companions. Sneak + right-click one empty-handed to open its screen.\n\nTrust: 50 when tamed, +5 a meal, up to +10 a day\nFed: lasts two days; a meal fills half. Hunger costs trust\nMood: happy when fed and trust is 70+\nDig: once a day for ore, survey data or a rare tech module. Happy ones find more\nEggs: one every two days if over half fed and trust is 50+");
         both("guide.universe.husbandry.exocraft.title", "探索车", "Exocraft");
         both("guide.universe.husbandry.exocraft",
                 "探索车是能开的采矿车。对着地面使用物品放下，拿镐敲三下收回，燃料和货物留在物品里。\n\n右键上车，潜行下车\nW / S：油门，A / D：转向\n按住左键：采矿激光，射程 12 格\n车上拿多功能工具右键：扫描 64 格内的矿脉\n\n油箱 1000（和飞船燃料通用），货箱 27 格",
@@ -2379,6 +2463,11 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("guide.universe.exploration.pillars",
                 "有守卫机的星球上都有一座守卫塔，在降落点 400–900 格外，二十多格高，塔身亮着琥珀色的灯带。\n\n塔下的终端：右键关停这颗星球的守卫机 20 分钟\n一个游戏日只能关停一次\n被通缉时终端不响应\n拿着步行机主脑右键：换一把守卫机型多功能工具，每座塔一次\n\n打光五级通缉的那一波，HUD 上会标出守卫塔。",
                 "Every planet with sentinels has one Sentinel Pillar, 400–900 blocks from the landing site: a tall tower with amber light strips.\n\nBase terminal: right-click to shut down this planet's sentinels for 20 minutes\nOnce per in-game day\nNo response while you are wanted\nRight-click with a Walker Brain: trade it for a Sentinel multitool, once per pillar\n\nClear the level 5 wave and the pillar is marked on your HUD.");
+        // 巨型生物（ADR-0026 §九）
+        both("guide.universe.exploration.giants.title", "巨型生物", "Giants");
+        both("guide.universe.exploration.giants",
+                "宜居、奇异、海洋星球上，有的住着一种巨型生物，站起来 3.5 到 6 格高。总是单独一只，只在草原、荒漠、冻原、湿地这类开阔地上。\n\n走路时 24 格内地面会震\n生命 120 到 200，走得慢\n温顺的挨打就逃，有领地意识的会踩回来\n第一次扫描：5 个勘探数据\n\n驯服和别的动物一样，驯服后能骑。骑着一步能跨上一格高的坎，跳不高。",
+                "Some habitable, exotic and ocean worlds have a giant species, 3.5 to 6 blocks tall. Giants roam alone on open ground.\n\nThe ground shakes within 24 blocks as they walk\nHealth 120 to 200, slow\nDocile ones flee when hit; territorial ones stomp back\nFirst scan: 5 survey data\n\nTame and ride one like any other creature. It steps up one-block ledges but barely jumps.");
         both("gui.universe.portal.title", "先驱者传送门", "Precursor Portal");
         both("gui.universe.portal.here", "这座门：", "This portal:");
         both("gui.universe.portal.back", "退格", "Back");

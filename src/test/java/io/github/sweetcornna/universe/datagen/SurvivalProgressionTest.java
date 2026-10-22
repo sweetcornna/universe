@@ -48,7 +48,7 @@ class SurvivalProgressionTest {
     /**
      * 不靠配方、由设备从世界里抽出来的东西；勘探数据靠多功能工具的分析目镜发现新东西拿到；重氢由分馏塔从氢里分出来
      * （轨道采集器也能采，但它本身要更晚的科技）；临界光子由射线接收站在光子模式下产出（戴森云有帆就行）。
-     * 蛋、绒毛、胶质是驯服的异星动物产的，喂得起饲料就能养。
+     * 蛋、绒毛、胶质是驯服的异星动物产的，喂得起饲料就能养；生物卵是喂饱的伙伴下的（ADR-0026 §九）。
      */
     private static final Map<String, String> EXTRACTED = Map.of(
             NS + "crude_oil", NS + "oil_extractor",
@@ -58,7 +58,8 @@ class SurvivalProgressionTest {
             NS + "critical_photon", NS + "ray_receiver",
             NS + "alien_egg", NS + "herbivore_feed",
             NS + "alien_fluff", NS + "herbivore_feed",
-            NS + "bio_gel", NS + "carnivore_feed");
+            NS + "bio_gel", NS + "carnivore_feed",
+            NS + "creature_egg", NS + "herbivore_feed");
     /** 生存里本来就拿不到的：挖不掉的涌泉、掉落舱和石碑、空间站的交易终端和建材，只在坠毁点箱子里的损坏工具，机甲的建造无人机。刷怪蛋另算。 */
     private static final Set<String> UNOBTAINABLE = Set.of(NS + "crude_oil_seep", NS + "damaged_multitool", NS + "drop_pod",
             NS + "monolith", NS + "trade_terminal",

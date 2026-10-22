@@ -27,13 +27,14 @@ public final class Survey {
                 default -> 5;
             }).orElse(0);
             case BODY -> galaxy.body(key.body()).map(planet -> planet.landable() ? 4 : 3).orElse(0);
-            case CREATURE -> 2;
+            // 巨型物种一颗星球最多一种，又少见，多给一些
+            case CREATURE -> key.index() >= Fauna.GIANT_INDEX ? 5 : 2;
             case PLANT, TREE, MINERAL -> 1;
         };
     }
 
     /**
-     * 一颗星球上有几种动物（陆地的加水里的）、地面植物和树。
+     * 一颗星球上有几种动物（陆地的、水里的、巨型的）、地面植物和树。
      */
     public record Census(int creatures, int plants, int trees) {
         public static final Census NONE = new Census(0, 0, 0);

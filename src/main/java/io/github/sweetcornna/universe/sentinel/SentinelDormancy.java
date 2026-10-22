@@ -45,6 +45,13 @@ public final class SentinelDormancy extends SavedData {
         return this.until.getOrDefault(dimension, 0L);
     }
 
+    /** 提前结束这颗星球的停机。 */
+    public void clear(String dimension) {
+        if (this.until.remove(dimension) != null) {
+            this.setDirty();
+        }
+    }
+
     /** 停到 {@code time}；已经停得更久就不变。顺手清掉过期的。 */
     public void extend(String dimension, long time, long now) {
         this.until.values().removeIf(t -> t <= now);

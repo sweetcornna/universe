@@ -14,4 +14,6 @@ public class AlienCreatureRenderState extends LivingEntityRenderState {
     public float attackAnim;
     /** 水生动物游动的俯仰角（度，正数朝下）。 */
     public float swimPitch;
+    /** 这一只的颜色（RGB，乘在贴图上，ADR-0026 §九）。 */
+    public int tint = 0xFFFFFF;
 }

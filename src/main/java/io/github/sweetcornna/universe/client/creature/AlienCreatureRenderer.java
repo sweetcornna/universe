@@ -38,6 +38,13 @@ public class AlienCreatureRenderer extends MobRenderer<AlienCreature, AlienCreat
         state.species = entity.species();
         state.flying = entity instanceof AlienFlyer flyer && flyer.isFlying();
         state.attackAnim = entity.getSwingAnimation(partialTicks);
+        state.tint = entity.traits().tint();
+    }
+
+    /** 个体的色差、卵序列仪染的颜色乘在贴图上；发光层不染。 */
+    @Override
+    protected int getModelTint(AlienCreatureRenderState state) {
+        return 0xFF000000 | state.tint;
     }
 
     @Override

@@ -4,6 +4,7 @@ import io.github.sweetcornna.universe.block.OreKind;
 import io.github.sweetcornna.universe.block.poi.SalvageCapsuleBlock;
 import io.github.sweetcornna.universe.core.tech.ModuleType;
 import io.github.sweetcornna.universe.encounter.SpaceEncounters;
+import io.github.sweetcornna.universe.entity.AlienCreature;
 import io.github.sweetcornna.universe.poi.LandmarkStructures;
 import io.github.sweetcornna.universe.poi.OutpostStructures;
 import io.github.sweetcornna.universe.poi.PoiStructures;
@@ -21,11 +22,13 @@ import net.minecraft.world.level.storage.loot.entries.LootItem;
 import net.minecraft.world.level.storage.loot.entries.UniformContainerBase;
 import net.minecraft.world.level.storage.loot.functions.SetItemCountFunction;
 import net.minecraft.world.level.storage.loot.predicates.LootItemRandomChanceCondition;
+import net.minecraft.world.level.storage.loot.providers.number.floats.ContextFloatProviders;
 import net.minecraft.world.level.storage.loot.providers.number.ints.ContextIntProviders;
 
 /**
  * 兴趣点补给箱的战利品（ADR-0014）：坠毁飞船里多是飞船的物资，据点里多是生存物资；都有机会出导航数据和模块，
- * 坠毁飞船的模块品级高一档。太空里废弃货船的货箱和保险箱（ADR-0024）、海底的沉船和遗迹（ADR-0026）也在这里。
+ * 坠毁飞船的模块品级高一档。太空里废弃货船的货箱和保险箱（ADR-0024）、海底的沉船和遗迹（ADR-0026）、
+ * 伙伴挖出来的东西（ADR-0026 §九）也在这里。
  */
 final class UniverseChestLoot implements LootTableSubProvider {
     private final LootTableSubProvider.Context context;
@@ -191,6 +194,25 @@ final class UniverseChestLoot implements LootTableSubProvider {
                 .withPool(chance(item(UniverseItems.NAVIGATION_DATA.get(), 1, 1, 1), 0.5F))
                 .withPool(chance(LootItem.lootTableItem(UniverseItems.MODULES.get(ModuleType.LIFE_SUPPORT).get())
                         .apply(RandomModuleFunction.randomModule(0)), 0.25F)));
+        this.companionDig();
+    }
+
+    /** 伙伴挖出来的（ADR-0026 §九）：一份矿石，心情好的（幸运 1）多一份；常有勘测数据，偶尔有技术模块。 */
+    private void companionDig() {
+        this.context.accept(AlienCreature.DIG_LOOT, LootTable.lootTable()
+                .withPool(LootPool.lootPool().setRolls(ContextIntProviders.exactly(1)).setBonusRolls(ContextFloatProviders.exactly(1))
+                        .add(item(Items.RAW_IRON, 1, 3, 8))
+                        .add(item(Items.RAW_COPPER, 2, 5, 8))
+                        .add(item(Items.COAL, 1, 4, 6))
+                        .add(item(UniverseItems.oreDrop(OreKind.TITANIUM), 1, 2, 5))
+                        .add(item(UniverseItems.oreDrop(OreKind.SILICON), 1, 3, 5))
+                        .add(item(UniverseItems.oreDrop(OreKind.SULFUR), 1, 3, 4))
+                        .add(item(UniverseItems.oreDrop(OreKind.SALT), 2, 4, 4))
+                        .add(item(UniverseItems.oreDrop(OreKind.ORGANIC_CRYSTAL), 1, 2, 2))
+                        .add(item(UniverseItems.oreDrop(OreKind.OPTICAL_CRYSTAL), 1, 1, 1)))
+                .withPool(chance(item(UniverseItems.SURVEY_DATA.get(), 1, 2, 1), 0.35F))
+                .withPool(chance(LootItem.lootTableItem(UniverseItems.MODULES.get(ModuleType.LIFE_SUPPORT).get())
+                        .apply(RandomModuleFunction.randomModule(0)), 0.05F)));
     }
 
     private static UniformContainerBase.Builder<?> item(ItemLike item, int min, int max, int weight) {

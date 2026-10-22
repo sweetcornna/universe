@@ -1,0 +1,18 @@
+{
+  "type": "universe:research_shaped",
+  "key": {
+    "B": "universe:circuit_board",
+    "C": "universe:magnetic_coil",
+    "G": "minecraft:glass_pane",
+    "I": "minecraft:iron_ingot"
+  },
+  "pattern": [
+    "GGG",
+    "CBC",
+    "III"
+  ],
+  "research": "gene_editing",
+  "result": {
+    "id": "universe:egg_sequencer"
+  }
+}

@@ -105,6 +105,8 @@ public final class Guide {
                     page("bases", "", "universe:base_beacon", "universe:teleporter"),
                     page("portals", "", "universe:portal_dial", "universe:portal_glyph"),
                     page("pillars", "", "universe:sentinel_pillar_terminal", "universe:sentinel_pillar_light"),
+                    // 巨型生物（ADR-0026 §九）
+                    page("giants", "", "universe:herbivore_feed", "universe:carnivore_feed"),
                     // 水下（ADR-0026）
                     page("underwater", "", "universe:kelp_pod", "universe:clam", "universe:living_pearl", "universe:alien_fish"),
                     page("submarine", "universe:submarine"),
@@ -126,6 +128,11 @@ public final class Guide {
                     page("taming", "universe:herbivore_feed", "minecraft:wheat", "universe:herbivore_feed", "minecraft:beef",
                             "universe:carnivore_feed"),
                     page("produce", "", "universe:alien_egg", "universe:alien_fluff", "universe:bio_gel"),
+                    // 伙伴（ADR-0026 §九）
+                    page("companions", "", "universe:herbivore_feed", "universe:carnivore_feed", "universe:survey_data"),
+                    // 生物卵和卵序列仪（ADR-0026 §九）
+                    page("eggs", "", "universe:creature_egg"),
+                    page("sequencer", "universe:egg_sequencer"),
                     page("exocraft", "universe:exocraft"),
                     // 别的载具和召唤台（ADR-0026）
                     page("vehicles", "", "universe:hover_car", "universe:heavy_rover", "universe:exo_mech"),

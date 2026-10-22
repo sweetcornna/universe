@@ -159,6 +159,11 @@ public final class Sentinels {
     }
 
     /** 这颗星球的守卫机停着没有。 */
+    /** 提前结束停机（游戏内测试用：测试世界只有一个维度，别的测试还要用守卫机）。 */
+    public static void wake(ServerLevel level) {
+        SentinelDormancy.get(level.getServer()).clear(key(level));
+    }
+
     public static boolean dormant(ServerLevel level) {
         return dormantTicks(level) > 0;
     }

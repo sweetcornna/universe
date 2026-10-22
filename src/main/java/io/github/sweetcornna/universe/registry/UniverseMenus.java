@@ -1,8 +1,10 @@
 package io.github.sweetcornna.universe.registry;
 
 import io.github.sweetcornna.universe.Universe;
+import io.github.sweetcornna.universe.block.EggSequencerBlockEntity;
 import io.github.sweetcornna.universe.core.logistics.StationKind;
 import io.github.sweetcornna.universe.dyson.EmRailEjectorBlockEntity;
+import io.github.sweetcornna.universe.entity.CompanionMenu;
 import io.github.sweetcornna.universe.entity.ship.ShipPanelMenu;
 import io.github.sweetcornna.universe.dyson.LaunchSiloBlockEntity;
 import io.github.sweetcornna.universe.dyson.RayReceiverBlockEntity;
@@ -81,6 +83,9 @@ public final class UniverseMenus {
             new SlotSpec(136, 54, Role.FUEL)));
     public static final MachineMenu.Type PORTABLE_REFINER = machine("portable_refiner", new MachineMenu.Type(
             FuelRecipeMachineBlockEntity.DATA_COUNT, RECIPE_WIDTH, RECIPE_HEIGHT, input(127, 36), output(190, 45), new SlotSpec(127, 54, Role.FUEL)));
+    // 卵序列仪（ADR-0026 §九）：左边卵格、材料格，右边产物格，中间是改什么和进度
+    public static final MachineMenu.Type EGG_SEQUENCER = machine("egg_sequencer", new MachineMenu.Type(
+            EggSequencerBlockEntity.DATA_COUNT, 200, 176, input(8, 26), input(8, 50), output(176, 38)));
     // 高级设备（ADR-0022）：布局和低一级的一样
     public static final MachineMenu.Type NEGENTROPY_SMELTER = machine("negentropy_smelter", new MachineMenu.Type(
             RecipeMachineBlockEntity.DATA_COUNT, RECIPE_WIDTH, RECIPE_HEIGHT, input(118, 36), input(136, 36), input(118, 54), output(190, 45)));
@@ -142,6 +147,9 @@ public final class UniverseMenus {
     /** 制造设施的终端：三个技术模块挑一个（ADR-0026）。 */
     public static final DeferredHolder<MenuType<?>, MenuType<FacilityTerminalMenu>> FACILITY_TERMINAL = MENUS.register("facility_terminal",
             () -> IMenuTypeExtension.create(FacilityTerminalMenu::new));
+    /** 伙伴界面（ADR-0026 §九）。 */
+    public static final DeferredHolder<MenuType<?>, MenuType<CompanionMenu>> COMPANION = MENUS.register("companion",
+            () -> IMenuTypeExtension.create(CompanionMenu::new));
 
     private UniverseMenus() {
     }

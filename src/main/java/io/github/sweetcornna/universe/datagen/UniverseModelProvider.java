@@ -9,9 +9,11 @@ import io.github.sweetcornna.universe.block.poi.DropPodBlock;
 import io.github.sweetcornna.universe.block.poi.SalvageCapsuleBlock;
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.block.ClamBlock;
+import io.github.sweetcornna.universe.block.CreatureEggBlock;
 import io.github.sweetcornna.universe.block.FloraBlocks;
 import io.github.sweetcornna.universe.block.ResourcePlantBlock;
 import io.github.sweetcornna.universe.client.PlanetTints;
+import io.github.sweetcornna.universe.client.creature.EggClient;
 import io.github.sweetcornna.universe.client.tech.ModuleGradeTint;
 import io.github.sweetcornna.universe.client.tech.MultitoolClassProperty;
 import io.github.sweetcornna.universe.core.survival.MultitoolClass;
@@ -74,6 +76,8 @@ final class UniverseModelProvider extends ModelProvider {
     private static final TextureSlot INNER = TextureSlot.create("inner");
     private static final ModelTemplate CLAM = template("clam_template", TextureSlot.TOP, TextureSlot.SIDE);
     private static final ModelTemplate CLAM_OPEN = template("clam_open_template", TextureSlot.TOP, TextureSlot.SIDE, INNER);
+    /** 生物卵（ADR-0026 §九）：八格宽、十格高的卵，每个面都带染色索引 0。 */
+    private static final ModelTemplate CREATURE_EGG = template("creature_egg_template", TextureSlot.SIDE, TextureSlot.TOP);
     /** 地衣：贴地的一片。 */
     private static final ModelTemplate PLANT_PATCH = template("plant_patch", BODY, DETAIL);
     private static final ModelTemplate PLANT_PATCH_EMISSIVE = template("plant_patch_emissive", BODY, DETAIL);
@@ -137,6 +141,7 @@ final class UniverseModelProvider extends ModelProvider {
         smallMachine(blockModels, UniverseBlocks.HYDROPONIC_TRAY.get(), TRAY, "hydroponic_tray", "machine_casing_top");
         smallMachine(blockModels, UniverseBlocks.PORTABLE_REFINER.get(), SMALL_BOX, "portable_refiner", "portable_refiner_bottom");
         recipeMachine(blockModels, UniverseBlocks.NUTRIENT_PROCESSOR.get(), "nutrient_processor", true, "nutrient_processor_side");
+        eggs(blockModels, itemModels);
         UniverseItems.DISHES.values().forEach(item -> itemModels.generateFlatItem(item.get(), ModelTemplates.FLAT_ITEM));
         UniverseItems.GELS.values().forEach(item -> itemModels.generateFlatItem(item.get(), ModelTemplates.FLAT_ITEM));
         underwater(blockModels, itemModels);
@@ -200,6 +205,25 @@ final class UniverseModelProvider extends ModelProvider {
                 UniverseItems.SALVAGED_SCRAP)) {
             itemModels.generateFlatItem(item.get(), ModelTemplates.FLAT_ITEM);
         }
+    }
+
+    /**
+     * 生物卵和卵序列仪（ADR-0026 §九）：卵按孵化的进度换三张侧面贴图（完好、裂一道、裂两道），方块和物品都按卵的颜色染色；
+     * 卵序列仪是一台配方设备的样子，干活时正面亮。
+     */
+    private static void eggs(BlockModelGenerators blockModels, ItemModelGenerators itemModels) {
+        Block egg = UniverseBlocks.CREATURE_EGG.get();
+        Identifier[] stages = new Identifier[CreatureEggBlock.HATCH.getPossibleValues().size()];
+        for (int i = 0; i < stages.length; i++) {
+            TextureMapping textures = new TextureMapping()
+                    .put(TextureSlot.SIDE, texture("creature_egg_side_" + i))
+                    .put(TextureSlot.TOP, texture("creature_egg_top"));
+            stages[i] = CREATURE_EGG.createWithSuffix(egg, "_" + i, textures, blockModels.modelOutput);
+        }
+        blockModels.blockStateOutput.accept(MultiVariantGenerator.dispatch(egg)
+                .with(PropertyDispatch.initial(CreatureEggBlock.HATCH).generate(stage -> BlockModelGenerators.plainVariant(stages[stage]))));
+        itemModels.itemModelOutput.accept(UniverseItems.CREATURE_EGG.get(), ItemModelUtils.tintedModel(stages[0], EggClient.EggItemTint.INSTANCE));
+        recipeMachine(blockModels, UniverseBlocks.EGG_SEQUENCER.get(), "egg_sequencer", false, "machine_casing_top");
     }
 
     /**

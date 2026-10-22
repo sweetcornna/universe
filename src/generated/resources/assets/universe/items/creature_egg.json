@@ -1,0 +1,11 @@
+{
+  "model": {
+    "type": "minecraft:model",
+    "model": "universe:block/creature_egg_0",
+    "tints": [
+      {
+        "type": "universe:creature_egg"
+      }
+    ]
+  }
+}

@@ -2,6 +2,8 @@ package io.github.sweetcornna.universe.registry;
 
 import java.util.function.Supplier;
 
+import io.github.sweetcornna.universe.block.CreatureEggBlockEntity;
+import io.github.sweetcornna.universe.block.EggSequencerBlockEntity;
 import io.github.sweetcornna.universe.block.HydroponicTrayBlockEntity;
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.block.landmark.FacilityTerminalBlockEntity;
@@ -65,6 +67,11 @@ public final class UniverseBlockEntities {
             "nutrient_processor", UniverseBlocks.NUTRIENT_PROCESSOR, RecipeMachines.NUTRIENT_PROCESSOR, false);
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<FuelRecipeMachineBlockEntity>> PORTABLE_REFINER = fuelRecipeMachine(
             "portable_refiner", UniverseBlocks.PORTABLE_REFINER, RecipeMachines.PORTABLE_REFINER, true);
+    // 生物卵和卵序列仪（ADR-0026 §九）
+    public static final Supplier<BlockEntityType<CreatureEggBlockEntity>> CREATURE_EGG = BLOCK_ENTITIES.register("creature_egg",
+            () -> new BlockEntityType<>(CreatureEggBlockEntity::new, UniverseBlocks.CREATURE_EGG.get()));
+    public static final Supplier<BlockEntityType<EggSequencerBlockEntity>> EGG_SEQUENCER = BLOCK_ENTITIES.register("egg_sequencer",
+            () -> new BlockEntityType<>(EggSequencerBlockEntity::new, UniverseBlocks.EGG_SEQUENCER.get()));
     public static final Supplier<BlockEntityType<SupplyCrateBlockEntity>> SUPPLY_CRATE = BLOCK_ENTITIES.register("supply_crate",
             () -> new BlockEntityType<>(SupplyCrateBlockEntity::new, UniverseBlocks.SUPPLY_CRATE.get(), UniverseBlocks.SEALED_CRATE.get()));
     /** 制造设施的终端（ADR-0026）：记着门外的守卫放过没有。 */

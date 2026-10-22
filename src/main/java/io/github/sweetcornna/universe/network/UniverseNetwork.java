@@ -2,6 +2,7 @@ package io.github.sweetcornna.universe.network;
 
 import io.github.sweetcornna.universe.blueprint.Blueprints;
 import io.github.sweetcornna.universe.dyson.Dyson;
+import io.github.sweetcornna.universe.entity.CompanionMenu;
 import io.github.sweetcornna.universe.entity.ship.ShipWeapons;
 import io.github.sweetcornna.universe.exocraft.Exocrafts;
 import io.github.sweetcornna.universe.exocraft.VehicleSummoning;
@@ -36,7 +37,7 @@ import net.neoforged.neoforge.server.ServerLifecycleHooks;
  */
 public final class UniverseNetwork {
     /** 协议版本：任何包的格式改动都要加一，版本不同的客户端和服务端会拒绝连接。 */
-    private static final String PROTOCOL_VERSION = "25";
+    private static final String PROTOCOL_VERSION = "26";
 
     private UniverseNetwork() {
     }
@@ -108,6 +109,8 @@ public final class UniverseNetwork {
                 // M14：多功能工具柜（ADR-0026）
                 .playToClient(CabinetPayloads.State.TYPE, CabinetPayloads.State.STREAM_CODEC)
                 .playToServer(CabinetPayloads.Buy.TYPE, CabinetPayloads.Buy.STREAM_CODEC, MultitoolCabinet::handleBuy)
+                // M14：伙伴界面（ADR-0026 §九）
+                .playToServer(CompanionPayloads.Rename.TYPE, CompanionPayloads.Rename.STREAM_CODEC, CompanionMenu::handleRename)
                 // M14：载具召唤台（ADR-0026）
                 .playToClient(VehiclePayloads.Listing.TYPE, VehiclePayloads.Listing.STREAM_CODEC)
                 .playToServer(VehiclePayloads.Summon.TYPE, VehiclePayloads.Summon.STREAM_CODEC, VehicleSummoning::handleSummon)

@@ -39,6 +39,8 @@ final class UniverseItemTagsProvider extends ItemTagsProvider {
                 UniverseItems.HERBIVORE_FEED.key());
         this.tag(CreatureHusbandry.CARNIVORE_FOOD).add(vanilla(Items.BEEF), vanilla(Items.PORKCHOP), vanilla(Items.MUTTON),
                 vanilla(Items.CHICKEN), vanilla(Items.RABBIT), UniverseItems.ALIEN_MEAT.key(), UniverseItems.CARNIVORE_FEED.key());
+        // 异星肉算生肉：卵序列仪拿生肉改性情（ADR-0026 §九）
+        this.tag(Tags.Items.FOODS_RAW_MEAT).add(UniverseItems.ALIEN_MEAT.key());
         // 异星的鱼（ADR-0026）：算鱼、生鱼和熟鱼，肉食动物也吃生鱼
         this.tag(ItemTags.FISHES).add(UniverseItems.ALIEN_FISH.key(), UniverseItems.COOKED_ALIEN_FISH.key());
         this.tag(Tags.Items.FOODS_RAW_FISH).add(UniverseItems.ALIEN_FISH.key());

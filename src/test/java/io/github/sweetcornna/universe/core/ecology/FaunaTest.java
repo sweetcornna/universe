@@ -242,7 +242,7 @@ class FaunaTest {
             seas++;
             int count = fauna.marine().size();
             assertTrue(count >= (planet.type() == PlanetType.OCEAN ? 5 : 3) && count <= 6, id + ": " + count);
-            assertEquals(fauna.species().size() + count, fauna.all().size());
+            assertEquals(fauna.species().size() + count + fauna.giants().size(), fauna.all().size());
         }
         assertTrue(seas >= 5, "too few sea planets: " + seas);
         assertTrue(Fauna.hasSea(Liquid.WATER) && Fauna.hasSea(Liquid.ICE));

@@ -3,12 +3,15 @@ package io.github.sweetcornna.universe.gametest;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 
 import io.github.sweetcornna.universe.factory.MachineBlock;
+import io.github.sweetcornna.universe.block.CreatureEggBlockEntity;
+import io.github.sweetcornna.universe.block.EggSequencerBlockEntity;
 import io.github.sweetcornna.universe.block.HydroponicTrayBlockEntity;
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.block.portal.PortalGlyphBlock;
@@ -102,6 +105,7 @@ import io.github.sweetcornna.universe.exocraft.VehicleSummoning;
 import io.github.sweetcornna.universe.exocraft.Torpedo;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -143,6 +147,15 @@ import io.github.sweetcornna.universe.tech.TechMenu;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.inventory.ContainerInput;
 import net.minecraft.world.item.component.ItemContainerContents;
+import io.github.sweetcornna.universe.core.ecology.CreatureSpecies;
+import io.github.sweetcornna.universe.core.ecology.Fauna;
+import io.github.sweetcornna.universe.core.ecology.Husbandry;
+import io.github.sweetcornna.universe.entity.AlienCreature;
+import io.github.sweetcornna.universe.entity.CreatureEggs;
+import io.github.sweetcornna.universe.core.ecology.CreatureTraits;
+import io.github.sweetcornna.universe.core.ecology.Companion;
+import io.github.sweetcornna.universe.core.ecology.Temperament;
+import io.github.sweetcornna.universe.entity.FaunaSpawner;
 
 /**
  * 游戏内测试（ADR-0019）：在真的世界里搭几台设备，看电网、配方、传送带、研究站连起来能不能转。单元测试只管 core，
@@ -189,6 +202,10 @@ public final class UniverseGameTests {
             UniverseGameTests::landingPadRefuelsShip);
     private static final ResourceKey<Consumer<GameTestHelper>> HYDROPONIC_TRAY_GROWS = function("hydroponic_tray_grows",
             UniverseGameTests::hydroponicTrayGrows);
+    private static final ResourceKey<Consumer<GameTestHelper>> SEQUENCER_GROWS_EGG = function("sequencer_grows_egg",
+            UniverseGameTests::sequencerGrowsEgg);
+    private static final ResourceKey<Consumer<GameTestHelper>> EGG_HATCHES_OWNED = function("egg_hatches_owned",
+            UniverseGameTests::eggHatchesOwned);
     private static final ResourceKey<Consumer<GameTestHelper>> FUEL_MACHINES_COOK = function("fuel_machines_cook",
             UniverseGameTests::fuelMachinesCook);
     private static final ResourceKey<Consumer<GameTestHelper>> FLEET_SAVE_ROUND_TRIP = function("fleet_save_round_trip",
@@ -239,6 +256,12 @@ public final class UniverseGameTests {
             UniverseGameTests::summonerFetchesVehicle);
     private static final ResourceKey<Consumer<GameTestHelper>> HEAVY_ROVER_REFINES = function("heavy_rover_refines",
             UniverseGameTests::heavyRoverRefines);
+    private static final ResourceKey<Consumer<GameTestHelper>> GIANT_NEEDS_ROOM = function("giant_needs_room",
+            UniverseGameTests::giantNeedsRoom);
+    private static final ResourceKey<Consumer<GameTestHelper>> HATCHED_BABY_IS_COMPANION = function("hatched_baby_is_companion",
+            UniverseGameTests::hatchedBabyIsCompanion);
+    private static final ResourceKey<Consumer<GameTestHelper>> COMPANION_DIGS_ONCE_A_DAY = function("companion_digs_once_a_day",
+            UniverseGameTests::companionDigsOnceADay);
 
     private UniverseGameTests() {
     }
@@ -258,6 +281,8 @@ public final class UniverseGameTests {
 
     private static void registerTests(RegisterGameTestsEvent event) {
         Holder<TestEnvironmentDefinition<?>> environment = event.registerEnvironment(Universe.id("default"));
+        // 关停守卫机对整个维度生效，单独一批跑，免得别的测试里的守卫机跟着撤走
+        Holder<TestEnvironmentDefinition<?>> alone = event.registerEnvironment(Universe.id("sentinels_off"));
         test(event, environment, ASSEMBLER_MAKES_GEARS, 200);
         test(event, environment, ASSEMBLER_WAITS_FOR_POWER, 100);
         test(event, environment, BELT_DELIVERS_TO_DEPOT, 200);
@@ -272,6 +297,8 @@ public final class UniverseGameTests {
         test(event, environment, HELM_TECH_TUNES_SHIP, 40);
         test(event, environment, LANDING_PAD_REFUELS_SHIP, 300);
         test(event, environment, HYDROPONIC_TRAY_GROWS, 200);
+        test(event, environment, SEQUENCER_GROWS_EGG, 200);
+        test(event, environment, EGG_HATCHES_OWNED, 40);
         test(event, environment, FUEL_MACHINES_COOK, 200);
         test(event, environment, DEALER_SHIPS_ASSEMBLE, HANGAR, 40);
         test(event, environment, CRASHED_SHIP_REPAIRS, HANGAR, 40);
@@ -287,7 +314,7 @@ public final class UniverseGameTests {
         test(event, environment, LIGHTNING_FUSES_FULGURITE, 20);
         test(event, environment, QUAD_BACK_HIT_DOUBLES, 20);
         test(event, environment, GROUND_SENTINELS_WALK, 60);
-        test(event, environment, PILLAR_TERMINAL_SHUTS_DOWN, 20);
+        test(event, alone, PILLAR_TERMINAL_SHUTS_DOWN, 20);
         test(event, environment, PILLAR_GIVES_SENTINEL_TOOL, 20);
         test(event, environment, CABINET_MOVES_MODULES, 20);
         test(event, environment, REPAIR_DRONE_HEALS, 80);
@@ -297,6 +324,9 @@ public final class UniverseGameTests {
         test(event, environment, HOVER_CAR_FLOATS_ON_WATER, 80);
         test(event, environment, SUMMONER_FETCHES_VEHICLE, 20);
         test(event, environment, HEAVY_ROVER_REFINES, 200);
+        test(event, environment, HATCHED_BABY_IS_COMPANION, 20);
+        test(event, environment, COMPANION_DIGS_ONCE_A_DAY, 120);
+        test(event, environment, GIANT_NEEDS_ROOM, HANGAR, 20);
     }
 
     private static void test(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition<?>> environment, ResourceKey<Consumer<GameTestHelper>> function,
@@ -590,6 +620,52 @@ public final class UniverseGameTests {
         });
     }
 
+    /** 卵序列仪（ADR-0026 §九）：泥土放不进材料格；放进卵和两份生物胶质，5 秒后产物格里是大一级的卵，胶质只用掉一份。 */
+    private static void sequencerGrowsEgg(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(3, 1, 3);
+        helper.setBlock(pos, UniverseBlocks.EGG_SEQUENCER.get());
+        EggSequencerBlockEntity sequencer = helper.getBlockEntity(pos, EggSequencerBlockEntity.class);
+        CreatureEggs.Egg egg = new CreatureEggs.Egg("-", 0, new CreatureTraits(1, CreatureTraits.NO_TINT, Temperament.SKITTISH), Optional.empty(),
+                "测试兽", "Testbeast");
+        helper.assertFalse(sequencer.canPlaceItem(EggSequencerBlockEntity.MATERIAL, new ItemStack(Items.DIRT)), "泥土不该能放进材料格");
+        sequencer.setItem(EggSequencerBlockEntity.EGG, CreatureEggs.stack(egg));
+        sequencer.setItem(EggSequencerBlockEntity.MATERIAL, new ItemStack(UniverseItems.BIO_GEL.get(), 2));
+        helper.succeedWhen(() -> {
+            CreatureEggs.Egg out = sequencer.output();
+            helper.assertTrue(out != null && out.traits().size() == 1.1, "产物格里没有大一级的卵：" + out);
+            helper.assertTrue(out.traits().temperament() == Temperament.SKITTISH && out.species() == 0, "别的性状变了：" + out);
+            helper.assertTrue(sequencer.getItem(EggSequencerBlockEntity.EGG).isEmpty(), "卵还在卵格里");
+            helper.assertTrue(sequencer.getItem(EggSequencerBlockEntity.MATERIAL).getCount() == 1, "胶质不是只用掉一份");
+        });
+    }
+
+    /** 生物卵（ADR-0026 §九）：孵够了的卵孵出一只幼崽，归卵上的主人，性状照着卵；方块没了。 */
+    private static void eggHatchesOwned(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(3, 1, 3);
+        helper.setBlock(pos.below(), Blocks.SMOOTH_STONE);
+        helper.setBlock(pos, UniverseBlocks.CREATURE_EGG.get());
+        // 主人不在线（不在玩家列表里）也照样孵
+        Player owner = helper.makeMockPlayer(GameType.SURVIVAL);
+        CreatureTraits traits = new CreatureTraits(1.2, 0xB02E26, Temperament.DOCILE);
+        CreatureEggBlockEntity egg = helper.getBlockEntity(pos, CreatureEggBlockEntity.class);
+        egg.applyComponentsFromItemStack(CreatureEggs.stack(new CreatureEggs.Egg("-", 0, traits, Optional.of(owner.getUUID()), "测试兽",
+                "Testbeast")));
+        egg.skipToHatch();
+        helper.succeedWhen(() -> {
+            helper.assertBlockPresent(Blocks.AIR, pos);
+            // 会飞的物种孵出来是飞兽，也是异星生物
+            List<AlienCreature> babies = helper.getLevel().getEntitiesOfClass(AlienCreature.class, new AABB(helper.absolutePos(pos)).inflate(3));
+            helper.assertTrue(babies.size() == 1, "孵出来的不是一只：" + babies.size());
+            AlienCreature baby = babies.getFirst();
+            helper.assertTrue(baby.isOwnedBy(owner), "幼崽不归卵的主人");
+            CreatureTraits hatched = baby.traits();
+            // 体型系数在实体上按 float 同步
+            helper.assertTrue(Math.abs(hatched.size() - traits.size()) < 1e-4 && hatched.tint() == traits.tint()
+                    && hatched.temperament() == traits.temperament(), "幼崽的性状和卵不一样：" + hatched);
+            baby.discard();
+        });
+    }
+
     /** 化石坑（ADR-0026）：挖开化石土（没有精准采集）掉一块化石。 */
     private static void fossilDirtGivesFossil(GameTestHelper helper) {
         BlockPos pos = new BlockPos(3, 1, 3);
@@ -802,6 +878,7 @@ public final class UniverseGameTests {
         helper.assertTrue(SentinelPillars.use(level, false) == SentinelPillars.Use.SHUT_DOWN, "终端没有关停守卫机");
         helper.assertTrue(Sentinels.dormant(level), "关停以后守卫机还在");
         helper.assertTrue(SentinelPillars.use(level, false) == SentinelPillars.Use.USED_TODAY, "同一天能关停两次");
+        Sentinels.wake(level);
         helper.succeed();
     }
 
@@ -901,6 +978,80 @@ public final class UniverseGameTests {
                 ItemStack.EMPTY, new ItemStack(UniverseItems.PLANET_LOG.get()))), "universe:portable_refining/iron_ingot", 0, 0));
         helper.succeedWhen(() -> helper.assertTrue(rover.refiner().getItem(1).is(Items.IRON_INGOT),
                 "重型车的精炼机没有炼出铁锭：" + rover.refiner().getItems()));
+    }
+
+    /**
+     * 巨型生物（ADR-0026 §九）：刷怪器在空地上刷得出备用物种表里的巨型物种，3.5–6 格高、血 120 以上、驯服后能骑，
+     * 刷出来以后附近就算"已经有一只"；头顶两格有方块的地方装不下，不刷。地板自己铺，场地的地板在测试世界里放不出来。
+     */
+    private static void giantNeedsRoom(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        CreatureSpecies species = Fauna.FALLBACK.giants().get(0);
+        for (BlockPos pos : BlockPos.betweenClosed(9, 0, 9, 13, 0, 13)) {
+            helper.setBlock(pos, Blocks.STONE);
+        }
+        for (BlockPos pos : BlockPos.betweenClosed(2, 0, 2, 4, 0, 4)) {
+            helper.setBlock(pos, Blocks.STONE);
+        }
+        helper.setBlock(new BlockPos(3, 3, 3), Blocks.STONE);
+        helper.assertTrue(FaunaSpawner.spawn(level, species, helper.absolutePos(new BlockPos(3, 1, 3)), level.getRandom()) == null,
+                "头顶有方块也刷出了巨型生物");
+        AlienCreature giant = FaunaSpawner.spawn(level, species, helper.absolutePos(new BlockPos(11, 1, 11)), level.getRandom());
+        helper.assertTrue(giant != null, "空地上没刷出巨型生物");
+        helper.assertValueEqual(giant.species().index(), Fauna.GIANT_INDEX, "物种序号");
+        helper.assertTrue(Fauna.giant(giant.species()) && Husbandry.rideable(giant.species()), "不是能骑的巨型物种");
+        float height = giant.getBbHeight();
+        helper.assertTrue(height >= Fauna.GIANT_MIN_HEIGHT - 0.01 && height <= Fauna.GIANT_MAX_HEIGHT + 0.01, "身高 " + height);
+        helper.assertTrue(giant.getMaxHealth() >= 120, "生命 " + giant.getMaxHealth());
+        helper.assertTrue(FaunaSpawner.giantNearby(level, giant.getX(), giant.getZ()), "刷怪器没认出附近已经有巨型生物");
+        helper.succeed();
+    }
+
+    /** 卵孵出的幼崽（ADR-0026 §九）：直接是主人的伙伴（信任 50、吃饱的），体型是成年的一半，还不能骑、不下蛋。 */
+    private static void hatchedBabyIsCompanion(GameTestHelper helper) {
+        companionFloor(helper);
+        Player owner = helper.makeMockPlayer(GameType.SURVIVAL);
+        CreatureSpecies species = Fauna.FALLBACK.get(0);
+        CreatureTraits traits = CreatureTraits.of(species).withSize(1.2);
+        AlienCreature baby = AlienCreature.hatch(helper.getLevel(), helper.absoluteVec(new Vec3(3.5, 1, 3.5)), "-", species.index(), traits, owner.getUUID());
+        helper.assertTrue(baby != null, "幼崽没孵出来");
+        helper.assertTrue(baby.isOwnedBy(owner) && baby.isYoung(), "幼崽不归主人，或者一孵出来就成年了");
+        Companion companion = baby.companion();
+        helper.assertTrue(companion != null && companion.trust() == Companion.TAME_TRUST && !companion.hungry(), "幼崽不是刚驯服的伙伴");
+        double expected = species.size() * 1.2 * 0.5;
+        helper.assertTrue(Math.abs(baby.getScale() - expected) < 0.01, "体型 " + baby.getScale() + "，应该是 " + expected);
+        helper.assertFalse(baby.canBeRidden(), "幼崽能骑");
+        baby.discard();
+        helper.succeed();
+    }
+
+    /** 伙伴挖掘（ADR-0026 §九）：原地刨 3 秒挖出东西；刨的时候、同一个游戏日里都不能再挖。 */
+    private static void companionDigsOnceADay(GameTestHelper helper) {
+        companionFloor(helper);
+        ServerLevel level = helper.getLevel();
+        Player owner = helper.makeMockPlayer(GameType.SURVIVAL);
+        AlienCreature pet = AlienCreature.hatch(level, helper.absoluteVec(new Vec3(3.5, 1, 3.5)), "-", 0,
+                CreatureTraits.of(Fauna.FALLBACK.get(0)), owner.getUUID());
+        helper.assertTrue(pet != null, "伙伴没放出来");
+        pet.setNoAi(true);
+        helper.assertTrue(pet.startDig(level) == AlienCreature.DigResult.STARTED, "没开始挖");
+        helper.assertTrue(pet.startDig(level) == AlienCreature.DigResult.BUSY, "刨着的时候又挖了一次");
+        helper.runAfterDelay(AlienCreature.DIG_TICKS + 10, () -> {
+            helper.assertFalse(pet.isDigging(), "三秒了还在刨");
+            List<ItemEntity> found = level.getEntitiesOfClass(ItemEntity.class, pet.getBoundingBox().inflate(4));
+            helper.assertFalse(found.isEmpty(), "什么也没挖出来");
+            helper.assertTrue(pet.startDig(level) == AlienCreature.DigResult.NOT_READY, "一天挖了两次");
+            found.forEach(ItemEntity::discard);
+            pet.discard();
+            helper.succeed();
+        });
+    }
+
+    /** 伙伴的测试铺一块地：场地的地板在测试世界里放不出来。 */
+    private static void companionFloor(GameTestHelper helper) {
+        for (BlockPos pos : BlockPos.betweenClosed(1, 0, 1, 5, 0, 5)) {
+            helper.setBlock(pos, Blocks.GRASS_BLOCK);
+        }
     }
 
     /** 测试场地里这一块（含两端，相对坐标）灌满水。 */

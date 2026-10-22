@@ -59,7 +59,7 @@ public class RepairSentinel extends Sentinel {
         return 11;
     }
 
-    /** 16 格内伤得最重的守卫机（不算自己、不算在撤退的）。 */
+    /** 16 格内看得见的、伤得最重的守卫机（不算自己、不算在撤退的）。 */
     private @Nullable Sentinel patient() {
         if (!(this.level() instanceof ServerLevel level)) {
             return null;
@@ -67,7 +67,7 @@ public class RepairSentinel extends Sentinel {
         Sentinel best = null;
         float worst = 1;
         for (Sentinel other : Sentinel.near(level, this.position(), RANGE)) {
-            if (other == this || !other.isAlive() || other.retreating()) {
+            if (other == this || !other.isAlive() || other.retreating() || !this.hasLineOfSight(other)) {
                 continue;
             }
             float share = other.getHealth() / other.getMaxHealth();

@@ -13,9 +13,11 @@ import net.minecraft.world.entity.ai.targeting.TargetingConditions;
 import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.pathfinder.PathType;
 import net.minecraft.world.level.pathfinder.WalkNodeEvaluator;
+import net.minecraft.world.phys.Vec3;
 
 /**
- * 驯服的异星动物的行为（ADR-0017）：原地待命、跟着主人（离得太远就传送到主人身边）、会打架的帮主人打。
+ * 驯服的异星动物的行为（ADR-0017）：原地待命、跟着主人（离得太远就传送到主人身边）、会打架的帮主人打；
+ * 伙伴挖掘时站着低头刨（ADR-0026 §九）。
  * 原版的这几个目标只认 {@code TamableAnimal}，异星动物不是原版的动物，照着原版的写法另写一份。
  */
 final class TamedGoals {
@@ -51,6 +53,37 @@ final class TamedGoals {
         @Override
         public void start() {
             this.creature.getNavigation().stop();
+        }
+    }
+
+    /** 挖掘：刨完之前站着不动，低头看着刨的地方。占着移动、跳跃和视线，优先级排在最前面。 */
+    static final class Dig extends Goal {
+        private final AlienCreature creature;
+
+        Dig(AlienCreature creature) {
+            this.creature = creature;
+            this.setFlags(EnumSet.of(Goal.Flag.MOVE, Goal.Flag.JUMP, Goal.Flag.LOOK));
+        }
+
+        @Override
+        public boolean canUse() {
+            return this.creature.isDigging() && !this.creature.isVehicle();
+        }
+
+        @Override
+        public void start() {
+            this.creature.getNavigation().stop();
+        }
+
+        @Override
+        public boolean requiresUpdateEveryTick() {
+            return true;
+        }
+
+        @Override
+        public void tick() {
+            Vec3 spot = this.creature.digSpot();
+            this.creature.getLookControl().setLookAt(spot.x, this.creature.getY(), spot.z, 30, this.creature.getMaxHeadXRot());
         }
     }
 

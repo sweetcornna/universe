@@ -362,6 +362,15 @@ io.github.sweetcornna.universe
 | SavedData：`new SavedDataType<>(id, ctor, CODEC)` 加 `server.getDataStorage().computeIfAbsent(TYPE)`；燃料值没有 `Level.fuelValues()`，用 `ResolvableInt.getFromItem(stack, DataComponents.COOKING_FUEL, CookingFuel::burnTime, LootContext, 0)` | 已确认，载具名册、重型车的精炼机在用 |
 | GameTest 的场地罩在屏障里，顶上也有一层屏障（`skyAccess` 默认 false）；本模组 `gametest/platform` 的石头地板在测试世界里放不出来，脚下只有屏障，要地板的测试自己铺 | 已确认 |
 | `GameTestHelper.makeMockServerPlayer(GameType)` 给出真的 `ServerPlayer`，但没有网络连接：`sendOverlayMessage`、`placeItemBackInInventory` 这些要发包的方法不能用 | 已确认 |
+| `GameTestHelper.makeMockServerPlayerInLevel()` 把假玩家放进玩家列表，服务器广播的包（天气、物流飞行）发给它会抛 `UnsupportedOperationException`，整个测试服务器崩掉；要主人的测试用 `makeMockPlayer`，逻辑按 UUID 找人 | 已确认，生物卵 |
+| 带 NBT 的 `/summon` 不调 `Mob.finalizeSpawn`（`SummonCommand.createEntity` 的 `finalize` 只在没给数据时为真），照物种定属性要在 `readAdditionalSaveData` 里补；读档时属性在 `attributes`（`LivingEntity.TAG_ATTRIBUTES`）里 | 已确认，巨型生物 |
+| 相机：`ViewportEvent.ComputeCameraAngles` 每帧在 `Camera.alignWithEntity` 里发，能改 yaw、pitch、roll；屏幕晃动的幅度乘 `Options.screenEffectScale()` | 已确认，巨兽的脚步 |
+| `LivingEntity.maxUpStep()` 读 `STEP_HEIGHT` 属性，不乘 `SCALE`；改 `SCALE` 后 `onAttributeUpdated` 自己会 `refreshDimensions` | 已确认 |
+| `LivingEntity.swing(hand)` 没有了，生物用 `Mob.swingForAttack(hand)` 或 `swing(hand, SwingAnimation)` | 已确认 |
+| 键码是 SDL 扫描码：`InputConstants.KEY_RETURN` 是 40、`KEY_ESCAPE` 是 41；`KeyEvent.isConfirmation()` 只认回车 | 已确认 |
+| 界面里画实体：`InventoryScreen.extractEntityInInventoryFollowsMouse(...)`，会把渲染状态的 `scale` 设成 1；整只生物染色覆盖 `LivingEntityRenderer.getModelTint(state)` | 已确认，伙伴界面 |
+| `PushReaction` 没有 `DESTROY`，用 `POPPED`；方块染色的 `BlockAndTintGetter` 挪到了 `net.minecraft.client.renderer.block`（只在客户端），能 `getBlockEntity`；染料物品带 `DataComponents.DYE`，颜色用 `DyeColor.getTextureDiffuseColor()`；`BlockItem.place` 先 `updateBlockEntityComponents` 再 `setPlacedBy` | 已确认，生物卵 |
+
 拿不准的 API 先查源码再写，核实后把结果补进这张表。源码在：
 
 - Minecraft（含 NeoForge 补丁）：`build/moddev/artifacts/minecraft-patched-26.3.0.95-sources.jar`，IDE 里可以直接跳转。

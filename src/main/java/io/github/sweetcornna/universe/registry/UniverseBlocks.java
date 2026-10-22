@@ -19,6 +19,7 @@ import io.github.sweetcornna.universe.block.PlanetLeavesBlock;
 import io.github.sweetcornna.universe.block.PlanetLogBlock;
 import io.github.sweetcornna.universe.block.PlanetPlantBlock;
 import io.github.sweetcornna.universe.block.ClamBlock;
+import io.github.sweetcornna.universe.block.CreatureEggBlock;
 import io.github.sweetcornna.universe.block.ResourcePlantBlock;
 import io.github.sweetcornna.universe.block.WaterResourcePlantBlock;
 import io.github.sweetcornna.universe.block.encounter.LiveConduitBlock;
@@ -258,6 +259,14 @@ public final class UniverseBlocks {
     public static final DeferredBlock<PortableRefinerBlock> PORTABLE_REFINER = BLOCKS.registerBlock("portable_refiner", PortableRefinerBlock::new,
             p -> p.mapColor(MapColor.METAL).strength(1.5F, 6.0F).sound(SoundType.METAL).pushReaction(PushReaction.IMMOVEABLE).noOcclusion()
                     .lightLevel(state -> state.getValue(MachineBlock.WORKING) ? 10 : 0));
+    // ---- 生物卵和卵序列仪（ADR-0026 §九）
+    /** 放在地上的生物卵：5 分钟孵出幼崽。物品是 {@link UniverseItems#CREATURE_EGG}。 */
+    public static final DeferredBlock<CreatureEggBlock> CREATURE_EGG = BLOCKS.registerBlock("creature_egg", CreatureEggBlock::new,
+            p -> p.mapColor(MapColor.SAND).strength(0.5F).sound(SoundType.BONE_BLOCK).noOcclusion().pushReaction(PushReaction.POPPED));
+    /** 卵序列仪：改卵上的体型、颜色、性情，不接电网。 */
+    public static final DeferredBlock<MachineBlock> EGG_SEQUENCER = BLOCKS.registerBlock("egg_sequencer",
+            p -> new MachineBlock(p, UniverseBlockEntities.EGG_SEQUENCER),
+            p -> machine(p).lightLevel(state -> state.getValue(MachineBlock.WORKING) ? 8 : 0));
     /** 科技储藏箱：埋在地下，挖开掉一个随机模块。 */
     public static final DeferredBlock<Block> TECH_CACHE = BLOCKS.registerSimpleBlock("tech_cache",
             p -> p.mapColor(MapColor.COLOR_CYAN).strength(2.5F, 6.0F).sound(SoundType.METAL).lightLevel(state -> 5));

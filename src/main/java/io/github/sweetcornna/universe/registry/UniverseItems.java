@@ -9,6 +9,7 @@ import java.util.Map;
 import org.jspecify.annotations.Nullable;
 
 import io.github.sweetcornna.universe.Universe;
+import io.github.sweetcornna.universe.block.CreatureEggItem;
 import io.github.sweetcornna.universe.block.OreKind;
 import io.github.sweetcornna.universe.blueprint.BlueprintItem;
 import io.github.sweetcornna.universe.core.ecology.PlantForm;
@@ -111,6 +112,10 @@ public final class UniverseItems {
     public static final DeferredItem<Item> ALIEN_FLUFF = ITEMS.registerSimpleItem("alien_fluff");
     /** 生物胶质：六足虫、节蠕虫分泌的，当黏液球用，在化工厂里做有机晶体。 */
     public static final DeferredItem<Item> BIO_GEL = ITEMS.registerSimpleItem("bio_gel");
+    /** 生物卵（ADR-0026 §九）：伙伴下的，记着物种、性状和主人，放在地上孵出幼崽。 */
+    public static final DeferredItem<CreatureEggItem> CREATURE_EGG = ITEMS.registerItem("creature_egg",
+            properties -> new CreatureEggItem(UniverseBlocks.CREATURE_EGG.get(), properties),
+            () -> new Item.Properties().useBlockDescriptionPrefix().stacksTo(16));
     /** 刷怪蛋：按脚下的群系挑一种本星球的动物。 */
     public static final DeferredItem<SpawnEggItem> ALIEN_CREATURE_SPAWN_EGG = ITEMS.registerItem("alien_creature_spawn_egg",
             SpawnEggItem::new, properties -> properties.spawnEgg(UniverseEntities.ALIEN_CREATURE.get()));
@@ -272,6 +277,8 @@ public final class UniverseItems {
     /** 便携精炼机拆下来带着里面的东西，和潜影盒一样不叠。 */
     public static final DeferredItem<BlockItem> PORTABLE_REFINER = ITEMS.registerSimpleBlockItem(UniverseBlocks.PORTABLE_REFINER,
             properties -> properties.stacksTo(1));
+    /** 卵序列仪（ADR-0026 §九）。 */
+    public static final DeferredItem<BlockItem> EGG_SEQUENCER = ITEMS.registerSimpleBlockItem(UniverseBlocks.EGG_SEQUENCER);
     /** 营养处理器做的半成品和菜，按 {@link Dish} 的顺序。 */
     public static final Map<Dish, DeferredItem<DishItem>> DISHES = registerDishes();
     /** 便携精炼机做的防护凝胶，各补一条危害防护。 */
@@ -520,7 +527,7 @@ public final class UniverseItems {
         order.addAll(List.of(EXOSUIT_HELMET, EXOSUIT_CHESTPLATE, EXOSUIT_LEGGINGS, EXOSUIT_BOOTS, OXYGEN_CAPSULE, HAZARD_CELL,
                 MULTITOOL, DAMAGED_MULTITOOL));
         order.addAll(RESOURCES.values());
-        order.addAll(List.of(HYDROPONIC_TRAY, NUTRIENT_PROCESSOR, PORTABLE_REFINER));
+        order.addAll(List.of(HYDROPONIC_TRAY, NUTRIENT_PROCESSOR, PORTABLE_REFINER, EGG_SEQUENCER));
         order.addAll(GELS.values());
         order.addAll(DISHES.values());
         order.addAll(MODULES.values());

@@ -1,0 +1,7 @@
+{
+  "parent": "universe:block/creature_egg_template",
+  "textures": {
+    "side": "universe:block/creature_egg_side_0",
+    "top": "universe:block/creature_egg_top"
+  }
+}

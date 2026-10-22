@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "hatch=0": {
+      "model": "universe:block/creature_egg_0"
+    },
+    "hatch=1": {
+      "model": "universe:block/creature_egg_1"
+    },
+    "hatch=2": {
+      "model": "universe:block/creature_egg_2"
+    }
+  }
+}

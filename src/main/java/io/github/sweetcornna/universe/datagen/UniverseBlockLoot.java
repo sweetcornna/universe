@@ -185,6 +185,12 @@ final class UniverseBlockLoot extends BlockLootSubProvider {
                 LootPool.lootPool().setRolls(ContextIntProviders.exactly(1)).add(LootItem.lootTableItem(block)
                         .apply(CopyComponentsFunction.copyComponentsFromBlockEntity(LootContextParams.BLOCK_ENTITY)
                                 .include(DataComponents.CONTAINER).include(DataComponents.CUSTOM_DATA))))));
+        // 生物卵：挖下来还是那个卵（ADR-0026 §九）
+        this.add(UniverseBlocks.CREATURE_EGG.get(), block -> LootTable.lootTable().withPool(this.applyExplosionCondition(block,
+                LootPool.lootPool().setRolls(ContextIntProviders.exactly(1)).add(LootItem.lootTableItem(block)
+                        .apply(CopyComponentsFunction.copyComponentsFromBlockEntity(LootContextParams.BLOCK_ENTITY)
+                                .include(UniverseDataComponents.CREATURE_EGG.get()))))));
+        this.dropSelf(UniverseBlocks.EGG_SEQUENCER.get());
         // 星球矿石：和原版矿石一样，精准采集掉本体，时运加成掉落
         UniverseBlocks.ORES.forEach((kind, block) -> this.add(block.get(), this.createOreDrops(block.get(), kind)));
     }

@@ -6,31 +6,41 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.function.BooleanSupplier;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 import org.jspecify.annotations.Nullable;
 
+import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.advancement.MilestoneTrigger;
+import io.github.sweetcornna.universe.core.discovery.DiscoveryLog;
 import io.github.sweetcornna.universe.core.ecology.BodyPlan;
+import io.github.sweetcornna.universe.core.ecology.Companion;
 import io.github.sweetcornna.universe.core.ecology.CreatureAnatomy;
 import io.github.sweetcornna.universe.core.ecology.CreatureSpecies;
+import io.github.sweetcornna.universe.core.ecology.CreatureTraits;
 import io.github.sweetcornna.universe.core.ecology.Fauna;
 import io.github.sweetcornna.universe.core.ecology.Husbandry;
 import io.github.sweetcornna.universe.core.ecology.Temperament;
 import io.github.sweetcornna.universe.core.galaxy.BodyId;
 import io.github.sweetcornna.universe.core.terrain.BiomeKind;
+import io.github.sweetcornna.universe.registry.UniverseEntities;
 import io.github.sweetcornna.universe.registry.UniverseItems;
 import io.github.sweetcornna.universe.world.planet.Planets;
 import io.github.sweetcornna.universe.world.planet.gen.PlanetBiomes;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
+import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
@@ -41,6 +51,7 @@ import net.minecraft.world.Difficulty;
 import net.minecraft.world.DifficultyInstance;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
@@ -73,10 +84,15 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.ServerLevelAccessor;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 import net.minecraft.world.level.gamerules.GameRules;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.level.storage.loot.LootTable;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.neoforge.common.CommonHooks;
 
@@ -86,7 +102,11 @@ import net.neoforged.neoforge.common.CommonHooks;
  *
  * <p>喂养（ADR-0017）：按食性喂对东西，冒爱心，30 秒后产出一份产物，5 分钟后才肯再吃；每喂一次有机会驯服。
  * 驯服后记下主人和出生的星球（物种从此按出生的星球算，带到别处也不变），不会消失，跟着主人走、帮主人打架；
- * 空手潜行右键切换跟随和待命，够大的走兽空手右键骑上去（跳跃键蓄力跳）。
+ * 够大的走兽空手右键骑上去（跳跃键蓄力跳）。
+ *
+ * <p>个体差异和伙伴（ADR-0026 §九）：每只有自己的性状（{@link CreatureTraits}：体型系数、颜色、性情），出生时按 UUID 定；
+ * 驯服的是伙伴（{@link Companion}：信任、饱食、心情），空手潜行右键打开伙伴界面，每天能挖一次，吃饱了每两天下一个卵。
+ * 卵孵出的幼崽是成年的一半大，两个游戏日长成。
  */
 public class AlienCreature extends PathfinderMob implements OwnableEntity, PlayerRideableJumping {
     private static final EntityDataAccessor<Integer> DATA_SPECIES = SynchedEntityData.defineId(AlienCreature.class,
@@ -97,7 +117,17 @@ public class AlienCreature extends PathfinderMob implements OwnableEntity, Playe
     private static final EntityDataAccessor<String> DATA_HOME = SynchedEntityData.defineId(AlienCreature.class, EntityDataSerializers.STRING);
     private static final EntityDataAccessor<Boolean> DATA_STAYING = SynchedEntityData.defineId(AlienCreature.class,
             EntityDataSerializers.BOOLEAN);
+    /** 个体的性状：体型系数、颜色；性情是 -1 时还没定（老存档的第一刻之前），按物种的。 */
+    private static final EntityDataAccessor<Float> DATA_TRAIT_SIZE = SynchedEntityData.defineId(AlienCreature.class,
+            EntityDataSerializers.FLOAT);
+    private static final EntityDataAccessor<Integer> DATA_TINT = SynchedEntityData.defineId(AlienCreature.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<Byte> DATA_TEMPERAMENT = SynchedEntityData.defineId(AlienCreature.class,
+            EntityDataSerializers.BYTE);
     private static final String FALLBACK_HOME = "-";
+    /** 伙伴挖出东西的战利品表（ADR-0026 §九）。 */
+    public static final ResourceKey<LootTable> DIG_LOOT = ResourceKey.create(Registries.LOOT_TABLE, Universe.id("gameplay/companion_dig"));
+    /** 挖掘时原地刨多少刻。 */
+    public static final int DIG_TICKS = 60;
     /** 牧群受惊后多少 tick 内会一起逃。 */
     private static final int ALARM_TICKS = 100;
     /** 物种对应的碰撞箱（格，未乘大小），两端共用。 */
@@ -128,6 +158,17 @@ public class AlienCreature extends PathfinderMob implements OwnableEntity, Playe
     private float jumpPending;
     private @Nullable CreatureSpecies saddleSpecies;
     private float saddleHeight;
+    /** 性状定下来了（生成时、读档时、卵孵出时）；没定的在第一刻按 UUID 补上。 */
+    private boolean traitsSet;
+    private @Nullable CreatureTraits cachedTraits;
+    /** 体型要重算（读档、长大）。 */
+    private boolean bodyDirty;
+    /** 伙伴的状态，只在服务端、只有驯服的才有。 */
+    private @Nullable Companion companion;
+    /** 幼崽出生了多少刻，-1 是成年的。 */
+    private int youngAge = -1;
+    /** 还要刨多少刻。 */
+    private int digTicks;
 
     public AlienCreature(EntityType<? extends AlienCreature> type, Level level) {
         super(type, level);
@@ -160,21 +201,29 @@ public class AlienCreature extends PathfinderMob implements OwnableEntity, Playe
         builder.define(DATA_OWNER, Optional.empty());
         builder.define(DATA_HOME, "");
         builder.define(DATA_STAYING, false);
+        builder.define(DATA_TRAIT_SIZE, 1F);
+        builder.define(DATA_TINT, CreatureTraits.NO_TINT);
+        builder.define(DATA_TEMPERAMENT, (byte) -1);
     }
 
     /** 这只动物的物种表：驯服的按出生的星球；没驯服的按所在的世界，服务端按星球维度算，客户端用当前星球的。 */
     public Fauna fauna() {
         String home = this.entityData.get(DATA_HOME);
-        if (!home.isEmpty()) {
-            if (home.equals(FALLBACK_HOME)) {
-                return Fauna.FALLBACK;
-            }
-            return this.level() instanceof ServerLevel server ? Planets.fauna(server.getServer(), home) : clientHomeFauna.apply(home);
-        }
         if (this.level() instanceof ServerLevel server) {
-            return Planets.fauna(server).orElse(Fauna.FALLBACK);
+            return faunaFor(server, home);
+        }
+        if (!home.isEmpty()) {
+            return home.equals(FALLBACK_HOME) ? Fauna.FALLBACK : clientHomeFauna.apply(home);
         }
         return clientFauna.get();
+    }
+
+    /** 服务端：出生地（见 {@link #homeKey()}）对应的物种表，空的按这个世界的。 */
+    private static Fauna faunaFor(ServerLevel level, String home) {
+        if (home.isEmpty()) {
+            return Planets.fauna(level).orElse(Fauna.FALLBACK);
+        }
+        return home.equals(FALLBACK_HOME) ? Fauna.FALLBACK : Planets.fauna(level.getServer(), home);
     }
 
     public int speciesIndex() {
@@ -194,14 +243,18 @@ public class AlienCreature extends PathfinderMob implements OwnableEntity, Playe
         return species;
     }
 
+    /** 这一只的性情：随物种，卵序列仪能改（ADR-0026 §九）。 */
     public Temperament temperament() {
-        return this.species().temperament();
+        return this.traits().temperament();
     }
 
-    /** 设定物种，并按物种设置生命、速度、攻击和体型。 */
+    /** 设定物种，并按物种设置生命、速度、攻击和体型；还没定性状的按 UUID 定一份野生的。 */
     public void setSpecies(CreatureSpecies species) {
         this.entityData.set(DATA_SPECIES, species.index());
         this.speciesAssigned = true;
+        if (!this.traitsSet) {
+            this.setTraitsData(CreatureTraits.natural(species, this.traitSeed()));
+        }
         this.applyStats(species);
     }
 
@@ -209,11 +262,73 @@ public class AlienCreature extends PathfinderMob implements OwnableEntity, Playe
         this.setBase(Attributes.MAX_HEALTH, species.health());
         this.setBase(Attributes.MOVEMENT_SPEED, species.speed());
         this.setBase(Attributes.ATTACK_DAMAGE, Math.max(1, species.attack()));
-        this.setBase(Attributes.SCALE, species.size());
+        this.setBase(Attributes.SCALE, this.bodyScale(species));
+        // 巨型物种一步跨得上一格高的坎
+        this.setBase(Attributes.STEP_HEIGHT, Fauna.stepHeight(species));
         // 能骑的蓄满力一跳有三四格高，落地不该摔伤
         this.setBase(Attributes.SAFE_FALL_DISTANCE, Husbandry.rideable(species) ? 6 : 3);
         this.setHealth(this.getMaxHealth());
         this.refreshDimensions();
+    }
+
+    /** 体型：物种的大小 × 个体的体型系数；幼崽按长大的进度从一半长到一倍。 */
+    private double bodyScale(CreatureSpecies species) {
+        double scale = species.size() * this.traits().size();
+        return this.youngAge >= 0 ? scale * Companion.youngScale(this.youngAge) : scale;
+    }
+
+    /** 性状、年龄变了：重算体型。 */
+    private void refreshBody() {
+        this.setBase(Attributes.SCALE, this.bodyScale(this.species()));
+    }
+
+    // ---------------------------------------------------------------- 性状
+
+    /** 这只动物自己的性状（ADR-0026 §九）。还没定的（老存档的第一刻之前）按物种的默认。 */
+    public CreatureTraits traits() {
+        CreatureTraits traits = this.cachedTraits;
+        if (traits != null) {
+            return traits;
+        }
+        int temperament = this.entityData.get(DATA_TEMPERAMENT);
+        Temperament[] values = Temperament.values();
+        if (temperament < 0 || temperament >= values.length) {
+            return CreatureTraits.of(this.species());
+        }
+        traits = new CreatureTraits(this.entityData.get(DATA_TRAIT_SIZE), this.entityData.get(DATA_TINT), values[temperament]);
+        this.cachedTraits = traits;
+        return traits;
+    }
+
+    /** 换一份性状（卵序列仪改的、卵上带的），体型跟着变。 */
+    public void setTraits(CreatureTraits traits) {
+        this.setTraitsData(traits);
+        this.refreshBody();
+    }
+
+    private void setTraitsData(CreatureTraits traits) {
+        this.entityData.set(DATA_TRAIT_SIZE, (float) traits.size());
+        this.entityData.set(DATA_TINT, traits.tint());
+        this.entityData.set(DATA_TEMPERAMENT, (byte) traits.temperament().ordinal());
+        // 服务端留着原样的（同步过去的体型系数是 float）
+        this.cachedTraits = traits;
+        this.traitsSet = true;
+    }
+
+    /** 野生性状的种子：按 UUID，同一只每次算出来一样。 */
+    private long traitSeed() {
+        UUID id = this.getUUID();
+        return id.getMostSignificantBits() ^ Long.rotateLeft(id.getLeastSignificantBits(), 31);
+    }
+
+    /** 还没长大。 */
+    public boolean isYoung() {
+        return this.youngAge >= 0;
+    }
+
+    /** 长大的进度（0–1），成年的是 1。 */
+    public double growth() {
+        return this.youngAge < 0 ? 1 : Math.min(1, this.youngAge / (double) Companion.GROW_TIME);
     }
 
     protected void setBase(Holder<Attribute> attribute, double value) {
@@ -228,6 +343,9 @@ public class AlienCreature extends PathfinderMob implements OwnableEntity, Playe
         super.onSyncedDataUpdated(accessor);
         if (DATA_SPECIES.equals(accessor)) {
             this.refreshDimensions();
+        }
+        if (DATA_TRAIT_SIZE.equals(accessor) || DATA_TINT.equals(accessor) || DATA_TEMPERAMENT.equals(accessor)) {
+            this.cachedTraits = null;
         }
     }
 
@@ -286,6 +404,27 @@ public class AlienCreature extends PathfinderMob implements OwnableEntity, Playe
         output.putBoolean("Staying", this.isStaying());
         output.putInt("FeedCooldown", this.feedCooldown);
         output.putInt("ProduceTimer", this.produceTimer);
+        if (this.traitsSet) {
+            CreatureTraits traits = this.traits();
+            ValueOutput out = output.child("Traits");
+            out.putDouble("Size", traits.size());
+            out.putInt("Tint", traits.tint());
+            out.putString("Temperament", traits.temperament().name());
+        }
+        if (this.youngAge >= 0) {
+            output.putInt("Age", this.youngAge);
+        }
+        Companion companion = this.companion();
+        if (companion != null) {
+            ValueOutput out = output.child("Companion");
+            out.putInt("Trust", companion.trust());
+            out.putInt("Satiety", companion.satiety());
+            out.putLong("TrustDay", companion.trustDay());
+            out.putInt("TrustToday", companion.trustToday());
+            out.putInt("LayProgress", companion.layProgress());
+            out.putInt("Starving", companion.starving());
+            out.putLong("DigReadyAt", companion.digReadyAt());
+        }
     }
 
     @Override
@@ -302,6 +441,27 @@ public class AlienCreature extends PathfinderMob implements OwnableEntity, Playe
         this.entityData.set(DATA_STAYING, input.getBooleanOr("Staying", false));
         this.feedCooldown = input.getIntOr("FeedCooldown", 0);
         this.produceTimer = input.getIntOr("ProduceTimer", 0);
+        // 老存档没有性状：第一刻按 UUID 补上，体型跟着重算
+        input.child("Traits").ifPresent(traits -> this.setTraitsData(new CreatureTraits(traits.getDoubleOr("Size", 1),
+                traits.getIntOr("Tint", CreatureTraits.NO_TINT), this.readTemperament(traits.getStringOr("Temperament", "")))));
+        this.youngAge = Math.max(-1, input.getIntOr("Age", -1));
+        this.companion = input.child("Companion").map(c -> Companion.restore(c.getIntOr("Trust", Companion.TAME_TRUST),
+                c.getIntOr("Satiety", Companion.FULL), c.getLongOr("TrustDay", Long.MIN_VALUE), c.getIntOr("TrustToday", 0),
+                c.getIntOr("LayProgress", 0), c.getIntOr("Starving", 0), c.getLongOr("DigReadyAt", 0))).orElse(null);
+        this.bodyDirty = true;
+        // 带物种数据的 /summon 不走 finalizeSpawn，也没有存过的属性：照物种定生命、速度、体型这些（读档时属性已经读回来了）
+        if (this.speciesAssigned && input.read(TAG_ATTRIBUTES, AttributeInstance.Packed.LIST_CODEC).isEmpty()) {
+            this.applyStats(this.species());
+        }
+    }
+
+    private Temperament readTemperament(String name) {
+        for (Temperament temperament : Temperament.values()) {
+            if (temperament.name().equals(name)) {
+                return temperament;
+            }
+        }
+        return this.species().temperament();
     }
 
     // ---------------------------------------------------------------- 行为
@@ -310,6 +470,7 @@ public class AlienCreature extends PathfinderMob implements OwnableEntity, Playe
     protected void registerGoals() {
         this.goalSelector.addGoal(0, new FloatGoal(this));
         this.goalSelector.addGoal(0, new TamedGoals.Stay(this));
+        this.goalSelector.addGoal(0, new TamedGoals.Dig(this));
         this.goalSelector.addGoal(1, new HerdPanicGoal(this, 1.7));
         this.goalSelector.addGoal(2, when(this::fights, new MeleeAttackGoal(this, 1.3, true)));
         this.goalSelector.addGoal(3, when(() -> this.temperament() == Temperament.SKITTISH && !this.isTamed(),
@@ -373,6 +534,44 @@ public class AlienCreature extends PathfinderMob implements OwnableEntity, Playe
     }
 
     @Override
+    public void tick() {
+        super.tick();
+        if (this.level() instanceof ServerLevel level && this.isAlive()) {
+            this.tickLife(level);
+        }
+    }
+
+    private void tickLife(ServerLevel level) {
+        if (!this.traitsSet && this.speciesAssigned) {
+            this.setTraitsData(CreatureTraits.natural(this.species(), this.traitSeed()));
+            this.bodyDirty = true;
+        }
+        if (this.youngAge >= 0) {
+            if (++this.youngAge >= Companion.GROW_TIME) {
+                this.youngAge = -1;
+                this.bodyDirty = true;
+                if (this.getOwner() instanceof ServerPlayer owner) {
+                    owner.sendOverlayMessage(Component.translatable("message.universe.companion.grown", this.getDisplayName()));
+                }
+            } else if (this.youngAge % 20 == 0) {
+                // 一秒长一点，看着是慢慢变大的
+                this.bodyDirty = true;
+            }
+        }
+        if (this.bodyDirty) {
+            this.bodyDirty = false;
+            this.refreshBody();
+        }
+        Companion companion = this.companion();
+        if (companion != null && companion.tick(this.youngAge < 0)) {
+            CreatureEggs.lay(level, this);
+        }
+        if (this.digTicks > 0) {
+            this.tickDig(level);
+        }
+    }
+
+    @Override
     protected void customServerAiStep(ServerLevel level) {
         super.customServerAiStep(level);
         if (this.alarm > 0 && --this.alarm == 0) {
@@ -396,7 +595,7 @@ public class AlienCreature extends PathfinderMob implements OwnableEntity, Playe
         ItemStack stack = player.getItemInHand(hand);
         CreatureSpecies species = this.species();
         if (CreatureHusbandry.isFood(stack)) {
-            if (!CreatureHusbandry.eats(species, stack)) {
+            if (!CreatureHusbandry.eats(this.temperament(), stack)) {
                 if (!this.level().isClientSide()) {
                     player.sendOverlayMessage(Component.translatable("message.universe.creature.wrong_food", this.getDisplayName()));
                 }
@@ -406,24 +605,15 @@ public class AlienCreature extends PathfinderMob implements OwnableEntity, Playe
         }
         if (stack.isEmpty() && this.isOwnedBy(player)) {
             if (player.isSecondaryUseActive()) {
-                if (!this.level().isClientSide()) {
-                    boolean stay = !this.isStaying();
-                    this.entityData.set(DATA_STAYING, stay);
-                    this.getNavigation().stop();
-                    if (stay) {
-                        this.setTarget(null);
-                    }
-                    player.sendOverlayMessage(Component.translatable(stay ? "message.universe.creature.staying" : "message.universe.creature.following",
-                            this.getDisplayName()));
+                // 空手潜行右键：伙伴界面（跟随 / 待命挪到了界面的按钮上）
+                if (player instanceof ServerPlayer serverPlayer) {
+                    this.openCompanionScreen(serverPlayer);
                 }
                 return InteractionResult.SUCCESS;
             }
-            if (Husbandry.rideable(species) && !this.isVehicle() && !player.isPassenger()) {
+            if (this.canBeRidden() && !this.isVehicle() && !player.isPassenger()) {
                 if (!this.level().isClientSide()) {
-                    this.entityData.set(DATA_STAYING, false);
-                    this.setTarget(null);
-                    this.getNavigation().stop();
-                    player.startRiding(this);
+                    this.mount(player);
                 }
                 return InteractionResult.SUCCESS;
             }
@@ -444,16 +634,24 @@ public class AlienCreature extends PathfinderMob implements OwnableEntity, Playe
         }
         boolean hurt = this.getHealth() < this.getMaxHealth();
         boolean hungry = this.feedCooldown == 0;
-        if (this.isTamed() && !hungry) {
-            if (hurt) {
-                this.eat(player, stack);
-                this.heal(Husbandry.FEED_HEAL);
-                this.particles(level, ParticleTypes.HAPPY_VILLAGER, 5);
-                return InteractionResult.SUCCESS_SERVER;
+        Companion companion = this.companion();
+        if (companion != null) {
+            // 伙伴：九成饱以上不吃（受了伤照样吃），每口补饱食、涨信任；五分钟里第一口才产出
+            if (!companion.hungry() && !hurt) {
+                player.sendOverlayMessage(Component.translatable("message.universe.companion.full", this.getDisplayName()));
+                return InteractionResult.FAIL;
             }
-            player.sendOverlayMessage(Component.translatable("message.universe.creature.not_hungry", this.getDisplayName(),
-                    (this.feedCooldown + 19) / 20));
-            return InteractionResult.FAIL;
+            this.eat(player, stack);
+            if (hurt) {
+                this.heal(Husbandry.FEED_HEAL);
+            }
+            companion.feed(level.getGameTime());
+            if (hungry) {
+                this.feedCooldown = Husbandry.FEED_COOLDOWN;
+                this.produceTimer = Husbandry.PRODUCE_DELAY;
+            }
+            this.particles(level, ParticleTypes.HEART, 3);
+            return InteractionResult.SUCCESS_SERVER;
         }
         if (!this.isTamed() && this.tameCooldown > 0) {
             // 还在嚼上一口
@@ -466,10 +664,6 @@ public class AlienCreature extends PathfinderMob implements OwnableEntity, Playe
         if (hungry) {
             this.feedCooldown = Husbandry.FEED_COOLDOWN;
             this.produceTimer = Husbandry.PRODUCE_DELAY;
-        }
-        if (this.isTamed()) {
-            this.particles(level, ParticleTypes.HEART, 3);
-            return InteractionResult.SUCCESS_SERVER;
         }
         this.tameCooldown = Husbandry.TAME_INTERVAL;
         if (this.random.nextDouble() < Husbandry.tameChance(this.temperament())) {
@@ -491,6 +685,7 @@ public class AlienCreature extends PathfinderMob implements OwnableEntity, Playe
     public void tame(ServerLevel level, Player player) {
         this.entityData.set(DATA_OWNER, Optional.of(EntityReference.of(player)));
         this.entityData.set(DATA_HOME, homeOf(level));
+        this.companion = Companion.tamed();
         this.setPersistenceRequired();
         this.setTarget(null);
         this.setLastHurtByMob(null);
@@ -556,6 +751,199 @@ public class AlienCreature extends PathfinderMob implements OwnableEntity, Playe
         return BodyId.parse(this.entityData.get(DATA_HOME));
     }
 
+    /** 记在卵上的出生地（ADR-0026 §九）：驯服的记出生的星球，野生的记所在的世界。孵出来的幼崽按它找物种表。 */
+    public String homeKey() {
+        String home = this.entityData.get(DATA_HOME);
+        return home.isEmpty() && this.level() instanceof ServerLevel level ? homeOf(level) : home;
+    }
+
+    /**
+     * 卵孵出一只幼崽（ADR-0026 §九）：归 {@code owner}（主人不在线也行），直接是伙伴，过两个游戏日长大。
+     *
+     * @param home    出生地，见 {@link #homeKey()}
+     * @param species 物种序号
+     * @return 放不下时是 null
+     */
+    public static @Nullable AlienCreature hatch(ServerLevel level, Vec3 pos, String home, int species, CreatureTraits traits,
+            @Nullable UUID owner) {
+        Optional<CreatureSpecies> kind = faunaFor(level, home).find(species);
+        if (kind.isEmpty() || kind.get().plan().aquatic()) {
+            return null;
+        }
+        EntityType<? extends AlienCreature> type = kind.get().plan().flying() ? UniverseEntities.ALIEN_FLYER.get()
+                : UniverseEntities.ALIEN_CREATURE.get();
+        AlienCreature baby = type.create(level, EntitySpawnReason.BREEDING);
+        if (baby == null) {
+            return null;
+        }
+        baby.entityData.set(DATA_HOME, home);
+        baby.youngAge = 0;
+        baby.setTraitsData(traits);
+        baby.setSpecies(kind.get());
+        baby.snapTo(pos.x, pos.y, pos.z, level.getRandom().nextFloat() * 360, 0);
+        if (!level.noCollision(baby)) {
+            baby.discard();
+            return null;
+        }
+        if (owner != null) {
+            baby.entityData.set(DATA_OWNER, Optional.of(EntityReference.of(owner)));
+            baby.companion = Companion.tamed();
+        }
+        baby.setPersistenceRequired();
+        level.addFreshEntity(baby);
+        return baby;
+    }
+
+    // ---------------------------------------------------------------- 伙伴（ADR-0026 §九）
+
+    /** 伙伴的状态；没驯服的是 null。老存档里驯服的第一次用到时补一份刚驯服的。 */
+    public @Nullable Companion companion() {
+        if (!this.isTamed() || this.level().isClientSide()) {
+            return null;
+        }
+        if (this.companion == null) {
+            this.companion = Companion.tamed();
+        }
+        return this.companion;
+    }
+
+    /** 打开伙伴界面。 */
+    public void openCompanionScreen(ServerPlayer player) {
+        player.openMenu(new SimpleMenuProvider((id, inventory, p) -> new CompanionMenu(id, inventory, this), this.getDisplayName()),
+                buf -> buf.writeVarInt(this.getId()));
+    }
+
+    /** 跟随 / 待命切换。 */
+    public void toggleStay(Player player) {
+        boolean stay = !this.isStaying();
+        this.entityData.set(DATA_STAYING, stay);
+        this.getNavigation().stop();
+        if (stay) {
+            this.setTarget(null);
+        }
+        player.sendOverlayMessage(Component.translatable(stay ? "message.universe.creature.staying" : "message.universe.creature.following",
+                this.getDisplayName()));
+    }
+
+    /** 能骑：够大的走兽，长大了的。 */
+    public boolean canBeRidden() {
+        return Husbandry.rideable(this.species()) && !this.isYoung();
+    }
+
+    /** 主人骑上去。 */
+    public boolean mount(Player player) {
+        if (!this.canBeRidden() || this.isVehicle() || player.isPassenger()) {
+            return false;
+        }
+        this.entityData.set(DATA_STAYING, false);
+        this.setTarget(null);
+        this.getNavigation().stop();
+        return player.startRiding(this);
+    }
+
+    public enum DigResult {
+        STARTED,
+        /** 今天挖过了。 */
+        NOT_READY,
+        /** 正在刨、被骑着、在水里。 */
+        BUSY
+    }
+
+    /** 开始挖：原地刨 {@link #DIG_TICKS} 刻，刨完按战利品表挖出东西。每只每个游戏日一次。 */
+    public DigResult startDig(ServerLevel level) {
+        Companion companion = this.companion();
+        if (companion == null || this.digTicks > 0 || this.isVehicle() || this.isPassenger() || this.isInWater()) {
+            return DigResult.BUSY;
+        }
+        long time = level.getGameTime();
+        if (!companion.canDig(time)) {
+            return DigResult.NOT_READY;
+        }
+        companion.dig(time);
+        this.digTicks = DIG_TICKS;
+        this.getNavigation().stop();
+        this.setTarget(null);
+        return DigResult.STARTED;
+    }
+
+    public boolean isDigging() {
+        return this.digTicks > 0;
+    }
+
+    /** 还要刨多少刻（给界面和开发脚本用）。 */
+    public int digTicks() {
+        return this.digTicks;
+    }
+
+    /** 刨的地方：身子前面半个身位的地面。 */
+    Vec3 digSpot() {
+        return this.position().add(Vec3.directionFromRotation(0, this.getYRot()).scale(this.getBbWidth() * 0.6));
+    }
+
+    private void tickDig(ServerLevel level) {
+        Vec3 spot = this.digSpot();
+        BlockPos below = BlockPos.containing(spot.x, this.getY() - 0.2, spot.z);
+        BlockState ground = level.getBlockState(below);
+        if (ground.isAir()) {
+            ground = level.getBlockState(this.getOnPos());
+        }
+        if (this.digTicks % 4 == 0 && !ground.isAir()) {
+            level.sendParticles(new BlockParticleOption(ParticleTypes.BLOCK, ground), spot.x, this.getY() + 0.1, spot.z, 6,
+                    this.getBbWidth() * 0.2, 0.05, this.getBbWidth() * 0.2, 0.15);
+        }
+        if (this.digTicks % 8 == 0) {
+            this.playSound(ground.getSoundType().getHitSound(), 0.9F, 0.8F + this.random.nextFloat() * 0.4F);
+            this.swingForAttack(InteractionHand.MAIN_HAND);
+        }
+        if (--this.digTicks == 0) {
+            this.finishDig(level, ground);
+        }
+    }
+
+    /** 刨完了：按战利品表掉东西，心情好的多挖一份。 */
+    private void finishDig(ServerLevel level, BlockState ground) {
+        Companion companion = this.companion();
+        LootTable table = level.getServer().reloadableRegistries().getLootTable(DIG_LOOT);
+        LootParams params = new LootParams.Builder(level)
+                .withParameter(LootContextParams.ORIGIN, this.digSpot())
+                .withOptionalParameter(LootContextParams.THIS_ENTITY, this.getOwner())
+                .withLuck(companion != null && companion.mood() == Companion.Mood.HAPPY ? 1 : 0)
+                .create(LootContextParamSets.CHEST);
+        table.getRandomItems(params, stack -> this.spawnAtLocation(level, stack));
+        if (!ground.isAir()) {
+            this.playSound(ground.getSoundType().getBreakSound(), 1, 1);
+        }
+        this.particles(level, ParticleTypes.HAPPY_VILLAGER, 6);
+        if (this.getOwner() instanceof ServerPlayer owner) {
+            owner.sendOverlayMessage(Component.translatable("message.universe.companion.dug", this.getDisplayName()));
+        }
+    }
+
+    /** 放生：不再归谁，不跟着走，伙伴的状态清掉；出生的星球留着（物种不变）。 */
+    public void release(ServerPlayer player) {
+        if (!this.isOwnedBy(player)) {
+            return;
+        }
+        this.ejectPassengers();
+        this.entityData.set(DATA_OWNER, Optional.empty());
+        this.entityData.set(DATA_STAYING, false);
+        this.companion = null;
+        this.digTicks = 0;
+        this.getNavigation().stop();
+        this.particles(player.level(), ParticleTypes.POOF, 8);
+        player.sendOverlayMessage(Component.translatable("message.universe.companion.released", this.getDisplayName()));
+    }
+
+    /** 改名：服务端再整理、校验一遍（最多 {@link DiscoveryLog#MAX_NAME} 个字），空的恢复物种名。 */
+    public void rename(ServerPlayer player, String raw) {
+        Optional<String> clean = DiscoveryLog.cleanName(raw);
+        if (clean.isEmpty()) {
+            player.sendOverlayMessage(Component.translatable("message.universe.discovery.rename_invalid_name"));
+            return;
+        }
+        this.setCustomName(clean.get().isEmpty() ? null : Component.literal(clean.get()));
+    }
+
     /** 驯服的不打主人，也不打同一个主人的别的动物。 */
     @Override
     public boolean canAttack(LivingEntity target) {
@@ -584,8 +972,14 @@ public class AlienCreature extends PathfinderMob implements OwnableEntity, Playe
 
     @Override
     public boolean removeWhenFarAway(double distSqr) {
+        // 巨型生物远远看得见，不随机消失，走出 128 格才收走（刷怪器保证 160 格内只有一只）
+        if (Fauna.giant(this.species()) && distSqr <= DESPAWN_FAR * DESPAWN_FAR) {
+            return false;
+        }
         return !this.isTamed() && super.removeWhenFarAway(distSqr);
     }
+
+    private static final double DESPAWN_FAR = 128;
 
     /** 驯服的死了告诉主人一声（和原版的狼一样）。 */
     @Override
@@ -779,10 +1173,10 @@ public class AlienCreature extends PathfinderMob implements OwnableEntity, Playe
         return sounds(this.species().voice())[2];
     }
 
-    /** 个子越大叫声越低。 */
+    /** 个子越大叫声越低（按这一只的体型，幼崽叫得尖）。 */
     @Override
     public float getVoicePitch() {
-        double size = this.species().size();
+        double size = this.getScale();
         return (float) ((this.random.nextFloat() - this.random.nextFloat()) * 0.15 + 1.25 / Math.sqrt(Math.max(0.3, size)));
     }
 
@@ -812,7 +1206,7 @@ public class AlienCreature extends PathfinderMob implements OwnableEntity, Playe
     @Override
     protected void dropCustomDeathLoot(ServerLevel level, DamageSource source, boolean killedByPlayer) {
         super.dropCustomDeathLoot(level, source, killedByPlayer);
-        double size = this.species().size();
+        double size = this.getScale();
         int extra = (int) Math.floor((size - 0.9) * 2.2 + this.random.nextDouble());
         if (extra > 0) {
             boolean cooked = this.isOnFire();

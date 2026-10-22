@@ -27,12 +27,16 @@ import net.minecraft.world.level.CustomSpawner;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.event.level.ModifyCustomSpawnersEvent;
 
 /**
  * 星球上的动物刷新：每隔两秒看一眼每个玩家周围，动物不够就在 24–56 格外刷一群。有海的星球另外刷水生动物（ADR-0026），
  * 名额和地上的分开算：在 20–56 格外找一列水，按水深挑物种，深水里才有鳗和巨型乌贼。
+ *
+ * <p>有巨型陆地物种的星球（ADR-0026 §九）偶尔刷一只：玩家周围 {@value #GIANT_AREA} 格内最多一只野生的，
+ * 只在开阔的群系里，刷在 40–64 格外、不在任何玩家眼前，一次一只。
  *
  * <p>原版的自然刷怪按群系的刷怪表来，而星球的物种是程序生成的、群系里没有登记，所以单独写一个刷怪器，
  * 通过 {@link ModifyCustomSpawnersEvent} 挂到星球维度上（运行时创建的维度也会触发这个事件）。
@@ -49,6 +53,14 @@ public final class FaunaSpawner implements CustomSpawner {
     private static final int GIANT_DEPTH = 20;
     /** 挑中巨型乌贼时只有这么大的机会真的刷出来，而且一个玩家周围最多一只。 */
     private static final float GIANT_CHANCE = 0.25F;
+    /** 巨型生物：一个玩家周围这么远以内最多一只野生的。 */
+    public static final int GIANT_AREA = 160;
+    /** 每次检查（两秒一次）有这么大的机会试着刷一只巨型生物，平均一分钟左右试一次，还要碰上开阔地、没人看着。 */
+    private static final float GIANT_ATTEMPT = 1 / 30F;
+    /** 群系的树密度系数到这么多以下才算开阔：林子里转不开身。 */
+    private static final double OPEN_TREES = 0.3;
+    /** 玩家朝这个方向看的视野半角（度）：巨型生物不在人眼前凭空冒出来。 */
+    private static final double VIEW_HALF_ANGLE = 70;
 
     private int cooldown;
 
@@ -85,6 +97,9 @@ public final class FaunaSpawner implements CustomSpawner {
                 // 飞兽到处乱飞、不会被地形挡住，单独限一个份额，免得天上全是飞兽
                 long flyers = around.stream().filter(c -> c instanceof AlienFlyer).count();
                 spawnGroup(level, player, fauna.get(), random, flyers < Math.max(2, cap * 0.35));
+            }
+            if (!fauna.get().giants().isEmpty() && random.nextFloat() < GIANT_ATTEMPT) {
+                spawnGiant(level, player, fauna.get(), random);
             }
             if (sea) {
                 List<AquaticCreature> swimmers = aroundMarine(level, player.getX(), player.getZ());
@@ -228,6 +243,56 @@ public final class FaunaSpawner implements CustomSpawner {
                 spawn(level, species, pos, random);
             }
         }
+    }
+
+    /** 刷一只巨型生物：附近已经有野生的、地方不开阔、有人看着这边时这次不刷。 */
+    private static void spawnGiant(ServerLevel level, ServerPlayer player, Fauna fauna, RandomSource random) {
+        if (giantNearby(level, player.getX(), player.getZ())) {
+            return;
+        }
+        double angle = random.nextDouble() * Math.PI * 2;
+        double distance = 40 + random.nextDouble() * 24;
+        int x = Mth.floor(player.getX() + Math.cos(angle) * distance);
+        int z = Mth.floor(player.getZ() + Math.sin(angle) * distance);
+        BlockPos pos = surface(level, x, z);
+        if (pos == null || watched(level, pos.getX() + 0.5, pos.getZ() + 0.5)) {
+            return;
+        }
+        BiomeKind biome = PlanetBiomes.kind(level.getBiome(pos));
+        CreatureSpecies species = biome == null || Biotope.treeDensity(biome) > OPEN_TREES ? null : fauna.pickGiant(biome);
+        if (species != null) {
+            // 碰撞箱好几格宽，spawn 里的 noCollision 顺带保证了周围是空地
+            spawn(level, species, pos, random);
+        }
+    }
+
+    /** 这一点周围 {@value #GIANT_AREA} 格内有没有野生的巨型生物（驯服的不算）。 */
+    public static boolean giantNearby(ServerLevel level, double x, double z) {
+        AABB column = new AABB(x - GIANT_AREA, level.getMinY(), z - GIANT_AREA, x + GIANT_AREA, level.getMaxY(), z + GIANT_AREA);
+        return !level.getEntitiesOfClass(AlienCreature.class, column, c -> !c.isTamed() && Fauna.giant(c.species())).isEmpty();
+    }
+
+    /** 有玩家离这里不到 32 格，或者 96 格内正朝这边看（水平方向的视野内）。 */
+    static boolean watched(ServerLevel level, double x, double z) {
+        double cone = Math.cos(Math.toRadians(VIEW_HALF_ANGLE));
+        for (ServerPlayer p : level.players()) {
+            if (p.isSpectator()) {
+                continue;
+            }
+            double dx = x - p.getX();
+            double dz = z - p.getZ();
+            double d = Math.sqrt(dx * dx + dz * dz);
+            if (d < 32) {
+                return true;
+            }
+            Vec3 look = p.getLookAngle();
+            double horizontal = Math.sqrt(look.x * look.x + look.z * look.z);
+            // 低头看脚下、抬头看天时看不到远处的地面
+            if (d < 96 && horizontal > 0.2 && (dx * look.x + dz * look.z) / (d * horizontal) > cone) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /** 在这一处地面上生成一只；地方不合适时返回 null。 */

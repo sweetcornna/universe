@@ -16,6 +16,7 @@ import io.github.sweetcornna.universe.core.survival.ToolMode;
 import io.github.sweetcornna.universe.core.tech.Grade;
 import io.github.sweetcornna.universe.core.tech.ModuleType;
 import io.github.sweetcornna.universe.core.tech.TechModule;
+import io.github.sweetcornna.universe.entity.CreatureEggs;
 import io.github.sweetcornna.universe.exocraft.VehicleRefiner;
 import io.github.sweetcornna.universe.factory.belt.StorageTankBlockEntity;
 import io.github.sweetcornna.universe.logistics.StationContents;
@@ -98,6 +99,9 @@ public final class UniverseDataComponents {
     public static final Supplier<DataComponentType<VehicleRefiner.Contents>> VEHICLE_REFINER = COMPONENTS.registerComponentType(
             "vehicle_refiner", builder -> builder.persistent(VehicleRefiner.Contents.CODEC)
                     .networkSynchronized(VehicleRefiner.Contents.STREAM_CODEC).cacheEncoding());
+    /** 生物卵上记着的物种、性状和主人（ADR-0026 §九）。 */
+    public static final Supplier<DataComponentType<CreatureEggs.Egg>> CREATURE_EGG = COMPONENTS.registerComponentType("creature_egg",
+            builder -> builder.persistent(CreatureEggs.Egg.CODEC).networkSynchronized(CreatureEggs.Egg.STREAM_CODEC).cacheEncoding());
 
     private UniverseDataComponents() {
     }
