@@ -193,6 +193,35 @@ final class UniverseBlockLoot extends BlockLootSubProvider {
         this.dropSelf(UniverseBlocks.EGG_SEQUENCER.get());
         // 星球矿石：和原版矿石一样，精准采集掉本体，时运加成掉落
         UniverseBlocks.ORES.forEach((kind, block) -> this.add(block.get(), this.createOreDrops(block.get(), kind)));
+        this.darkFogBases();
+        this.darkFogFacilities();
+        this.darkFogTurrets();
+        this.darkFogSupport();
+    }
+
+    /** 黑雾基地的方块（子代理 P）。 */
+    private void darkFogBases() {
+    }
+
+    /** 残影、战场分析基地（子代理 Q）。 */
+    private void darkFogFacilities() {
+        this.dropSelf(UniverseBlocks.BATTLEFIELD_ANALYSIS_BASE.get());
+    }
+
+    /** 炮塔（子代理 R1）。 */
+    private void darkFogTurrets() {
+        this.dropSelf(UniverseBlocks.GAUSS_TURRET.get());
+        this.dropSelf(UniverseBlocks.LASER_TURRET.get());
+        this.dropSelf(UniverseBlocks.IMPLOSION_CANNON.get());
+        this.dropSelf(UniverseBlocks.MISSILE_TURRET.get());
+    }
+
+    /** 信号塔、干扰塔（子代理 R2）。 */
+    private void darkFogSupport() {
+        // 两格高，只认下半截
+        for (Block block : List.of(UniverseBlocks.SIGNAL_TOWER.get(), UniverseBlocks.JAMMER_TOWER.get())) {
+            this.add(block, this.createSinglePropConditionTable(block, TallMachineBlock.HALF, DoubleBlockHalf.LOWER));
+        }
     }
 
     private void station(Block block, boolean tall) {

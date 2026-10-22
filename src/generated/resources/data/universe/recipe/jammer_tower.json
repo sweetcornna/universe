@@ -1,0 +1,20 @@
+{
+  "type": "universe:research_shaped",
+  "category": "redstone",
+  "key": {
+    "B": "universe:circuit_board",
+    "E": "universe:plasma_exciter",
+    "P": "universe:processor",
+    "R": "universe:super_magnetic_ring",
+    "S": "universe:steel"
+  },
+  "pattern": [
+    "RER",
+    "PSP",
+    "SBS"
+  ],
+  "research": "jammer_tower",
+  "result": {
+    "id": "universe:jammer_tower"
+  }
+}

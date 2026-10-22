@@ -417,7 +417,7 @@ public final class Blueprints {
     }
 
     /** 从背包、再从外骨骼货舱里拿一个。 */
-    static boolean take(ServerPlayer player, Item item) {
+    public static boolean take(ServerPlayer player, Item item) {
         Inventory inventory = player.getInventory();
         for (int i = 0; i < inventory.getContainerSize(); i++) {
             ItemStack stack = inventory.getItem(i);

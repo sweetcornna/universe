@@ -352,12 +352,17 @@ public class PirateFighter extends Entity implements Enemy {
         Vec3 relative = targetVel.subtract(this.getDeltaMovement());
         Vec3 to = targetPos.subtract(from);
         Vec3 direction = vec(ShipCombat.lead(arr(to), arr(relative), PirateFlight.BOLT_SPEED));
-        PlasmaBolt bolt = PlasmaBolt.shoot(level, this, from, direction, BOLT_DAMAGE, this.boltColor(), PirateFlight.BOLT_SPEED, BOLT_SPREAD,
+        PlasmaBolt bolt = PlasmaBolt.shoot(level, this, from, direction, this.boltDamage(level), this.boltColor(), PirateFlight.BOLT_SPEED, BOLT_SPREAD,
                 BOLT_LIFETIME);
         bolt.setDeltaMovement(bolt.getDeltaMovement().add(this.getDeltaMovement()));
         level.addFreshEntity(bolt);
         level.playSound(null, from.x, from.y, from.z, SoundEvents.BLAZE_SHOOT, SoundSource.HOSTILE, 0.5F, 1.6F + this.random.nextFloat() * 0.2F);
         level.broadcastEntityEvent(this, EVENT_FIRE);
+    }
+
+    /** 一发等离子弹的伤害。 */
+    protected float boltDamage(ServerLevel level) {
+        return BOLT_DAMAGE;
     }
 
     /** 飞远了、撤走了：一团粒子后消失。 */

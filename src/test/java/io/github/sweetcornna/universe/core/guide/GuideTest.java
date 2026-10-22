@@ -39,7 +39,7 @@ class GuideTest {
 
     @Test
     void fitsInTheChapterList() {
-        // 界面左边一列 12 像素一行，从 22 像素起排，216 高的面板（底下留 6 像素）放得下 15 章
-        assertTrue(Guide.CHAPTERS.size() <= 15);
+        // 界面左边一列一屏放得下 15 章，再多要滚动；超过 24 章就该把章合并了
+        assertTrue(Guide.CHAPTERS.size() <= 24);
     }
 }

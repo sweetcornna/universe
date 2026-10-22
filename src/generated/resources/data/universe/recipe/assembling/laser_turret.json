@@ -1,0 +1,28 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 4,
+      "ingredient": "universe:steel"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:plasma_exciter"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:prism"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:circuit_board"
+    }
+  ],
+  "research": "laser_turret",
+  "results": [
+    {
+      "id": "universe:laser_turret"
+    }
+  ],
+  "time": 80
+}

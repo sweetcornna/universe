@@ -163,6 +163,18 @@ public final class Guide {
                             "universe:quantum_chemical_plant", "universe:self_evolution_lab"),
                     page("white", "universe:universe_matrix"),
                     page("finale", "")),
+            // 黑雾（ADR-0028）
+            chapter("dark_fog", "universe:dark_fog_matrix",
+                    page("bases", ""),
+                    page("attacks", ""),
+                    page("turrets", "", "universe:gauss_turret", "universe:laser_turret", "universe:implosion_cannon", "universe:missile_turret"),
+                    page("ammo", "", "universe:magnum_ammo_box", "universe:shell_set", "universe:missile_set"),
+                    page("support", "", "universe:signal_tower", "universe:jammer_tower", "universe:explosive_unit"),
+                    page("damage", ""),
+                    page("repair", "universe:battlefield_analysis_base"),
+                    page("loot", "", "universe:energy_shard", "universe:silicon_neuron", "universe:matter_recombinator",
+                            "universe:negentropy_singularity", "universe:core_element", "universe:dark_fog_matrix"),
+                    page("world_options", "")),
             chapter(LOG, "minecraft:writable_book"),
             chapter(ENDING, "minecraft:nether_star"));
 

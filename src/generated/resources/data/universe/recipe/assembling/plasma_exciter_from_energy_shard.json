@@ -1,0 +1,21 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 2,
+      "ingredient": "universe:energy_shard"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:magnetic_coil"
+    }
+  ],
+  "research": "plasma_refining",
+  "results": [
+    {
+      "count": 2,
+      "id": "universe:plasma_exciter"
+    }
+  ],
+  "time": 40
+}

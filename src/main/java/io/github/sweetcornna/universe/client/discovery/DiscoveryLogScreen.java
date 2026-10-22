@@ -548,7 +548,7 @@ public class DiscoveryLogScreen extends Screen {
                     x, y, width, WARN);
         }
         if (planet.landable()) {
-            SentinelLevel sentinels = SentinelLevel.of(planet);
+            SentinelLevel sentinels = ClientGalaxy.sentinels(planet);
             y = this.wrap(graphics, Component.translatable("gui.universe.star_map.sentinels", GalaxyText.pick(sentinels.nameZh(), sentinels.nameEn())),
                     x, y, width, sentinels.ordinal() >= SentinelLevel.NORMAL.ordinal() ? WARN : DIM);
         }

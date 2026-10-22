@@ -1,0 +1,24 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 2,
+      "ingredient": "universe:combustible_unit"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:circuit_board"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:steel"
+    }
+  ],
+  "research": "missile_turret",
+  "results": [
+    {
+      "id": "universe:missile_set"
+    }
+  ],
+  "time": 60
+}

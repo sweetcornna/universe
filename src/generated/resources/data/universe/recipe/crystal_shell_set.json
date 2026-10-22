@@ -1,0 +1,17 @@
+{
+  "type": "universe:research_shaped",
+  "category": "equipment",
+  "key": {
+    "S": "universe:high_explosive_shell_set",
+    "X": "universe:crystal_explosive_unit"
+  },
+  "pattern": [
+    "X",
+    "S",
+    "X"
+  ],
+  "research": "crystal_shells",
+  "result": {
+    "id": "universe:crystal_shell_set"
+  }
+}

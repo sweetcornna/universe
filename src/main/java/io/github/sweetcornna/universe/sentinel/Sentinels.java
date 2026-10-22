@@ -13,6 +13,7 @@ import org.jspecify.annotations.Nullable;
 import io.github.sweetcornna.universe.core.sentinel.Offense;
 import io.github.sweetcornna.universe.core.sentinel.SentinelKind;
 import io.github.sweetcornna.universe.core.sentinel.SentinelLevel;
+import io.github.sweetcornna.universe.core.sentinel.SentinelStrength;
 import io.github.sweetcornna.universe.core.sentinel.Wanted;
 import io.github.sweetcornna.universe.core.sentinel.Wave;
 import io.github.sweetcornna.universe.encounter.SpaceEncounters;
@@ -20,6 +21,7 @@ import io.github.sweetcornna.universe.entity.AlienCreature;
 import io.github.sweetcornna.universe.perf.ServerPerf;
 import io.github.sweetcornna.universe.registry.UniverseAttachments;
 import io.github.sweetcornna.universe.registry.UniverseEntities;
+import io.github.sweetcornna.universe.rules.UniverseRules;
 import io.github.sweetcornna.universe.world.planet.Planets;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -35,12 +37,15 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntitySpawnReason;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.entity.EntityTypeTest;
 import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
+import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 
@@ -120,7 +125,13 @@ public final class Sentinels {
             }
         });
         gameBus.addListener(LivingDeathEvent.class, Sentinels::onDeath);
+        gameBus.addListener(LivingIncomingDamageEvent.class, Sentinels::onIncomingDamage);
         gameBus.addListener(PlayerEvent.PlayerLoggedOutEvent.class, event -> SESSIONS.remove(event.getEntity().getUUID()));
+    }
+
+    /** 建世界时定的守卫机强度（ADR-0028 §七）：血量、伤害和每波的架数乘它；0 时守卫机不出现。 */
+    public static double strength(ServerLevel level) {
+        return UniverseRules.sentinelStrength(level.getServer());
     }
 
     /** 这个世界的守卫强度；母星、不是星球的维度没有守卫。 */
@@ -178,7 +189,7 @@ public final class Sentinels {
     public static void offend(ServerPlayer player, Offense offense) {
         ServerLevel level = player.level();
         SentinelLevel sentinels = level(level);
-        if (!sentinels.present() || !accountable(player) || dormant(level)) {
+        if (!sentinels.present() || !accountable(player) || dormant(level) || !SentinelStrength.present(strength(level))) {
             return;
         }
         SentinelAlert alert = alert(player);
@@ -213,7 +224,8 @@ public final class Sentinels {
     /** 守卫机挨了玩家的打。 */
     static void onAttacked(ServerPlayer player, Sentinel sentinel) {
         offend(player, Offense.ATTACK_SENTINEL);
-        if (accountable(player) && level(player.level()).present() && !dormant(player.level())) {
+        if (accountable(player) && level(player.level()).present() && !dormant(player.level())
+                && SentinelStrength.present(strength(player.level()))) {
             sentinel.setHostile(player);
         }
     }
@@ -227,6 +239,16 @@ public final class Sentinels {
             offend(player, Offense.DESTROY_SENTINEL);
             Session session = session(player);
             session.patrolCooldown = Math.max(session.patrolCooldown, PATROL_AFTER_LOSS);
+        }
+    }
+
+    /** 守卫机打出的伤害（弹丸、扑击、踩踏、光束）乘守卫机强度。 */
+    private static void onIncomingDamage(LivingIncomingDamageEvent event) {
+        if (event.getSource().getEntity() instanceof Sentinel sentinel && sentinel.level() instanceof ServerLevel level) {
+            double strength = strength(level);
+            if (strength != 1) {
+                event.setAmount((float) SentinelStrength.scale(event.getAmount(), strength));
+            }
         }
     }
 
@@ -261,6 +283,24 @@ public final class Sentinels {
         }
         SentinelLevel sentinels = level(level);
         if (!sentinels.present()) {
+            hud(player, SentinelHud.NONE);
+            return;
+        }
+        if (!SentinelStrength.present(strength(level))) {
+            // 守卫机强度 0（ADR-0028 §七）：通缉撤销，附近的守卫机撤走，不再出来
+            if (wanted.wanted()) {
+                wanted.clear();
+                calm(player, true);
+            }
+            session.resetWave();
+            session.seen = false;
+            if (player.tickCount % 20 == 3) {
+                for (Sentinel sentinel : Sentinel.near(level, player.position(), NEAR)) {
+                    if (!sentinel.retreating()) {
+                        sentinel.retreat();
+                    }
+                }
+            }
             hud(player, SentinelHud.NONE);
             return;
         }
@@ -406,7 +446,7 @@ public final class Sentinels {
 
     /** 开始这一级的一波：附近已经在追捕的守卫机先算进去，差的从远处传送来。 */
     private static void startWave(ServerPlayer player, SentinelLevel sentinels, int level, Session session, List<Sentinel> near) {
-        Wave wave = Wave.of(level, sentinels);
+        Wave wave = Wave.of(level, sentinels, strength(player.level()));
         session.waveLevel = level;
         Arrays.fill(session.failures, 0);
         for (Sentinel sentinel : near) {
@@ -469,13 +509,15 @@ public final class Sentinels {
      */
     public static @Nullable Sentinel spawnAt(ServerLevel level, Vec3 pos, SentinelKind kind, @Nullable ServerPlayer target) {
         EntityType<? extends Sentinel> type = type(kind);
-        if (!level.noCollision(type.getSpawnAABB(pos.x, pos.y, pos.z))) {
+        double strength = strength(level);
+        if (!SentinelStrength.present(strength) || !level.noCollision(type.getSpawnAABB(pos.x, pos.y, pos.z))) {
             return null;
         }
         Sentinel sentinel = type.create(level, EntitySpawnReason.EVENT);
         if (sentinel == null) {
             return null;
         }
+        applyStrength(sentinel, strength);
         float yaw = target != null ? yawTowards(pos, target.position()) : level.getRandom().nextFloat() * 360;
         sentinel.snapTo(pos.x, pos.y, pos.z, yaw, 0);
         level.addFreshEntity(sentinel);
@@ -499,6 +541,10 @@ public final class Sentinels {
      */
     public static @Nullable Sentinel spawn(ServerLevel level, ServerPlayer player, SentinelKind kind, boolean hostile) {
         EntityType<? extends Sentinel> type = type(kind);
+        double strength = strength(level);
+        if (!SentinelStrength.present(strength)) {
+            return null;
+        }
         for (int attempt = 0; attempt < 10; attempt++) {
             double angle = level.getRandom().nextDouble() * Math.PI * 2;
             double distance;
@@ -535,6 +581,7 @@ public final class Sentinels {
             if (sentinel == null) {
                 return null;
             }
+            applyStrength(sentinel, strength);
             sentinel.snapTo(x, y, z, yawTowards(new Vec3(x, y, z), player.position()), 0);
             level.addFreshEntity(sentinel);
             if (hostile) {
@@ -544,6 +591,15 @@ public final class Sentinels {
             return sentinel;
         }
         return null;
+    }
+
+    /** 血量乘守卫机强度，满血放出来。 */
+    private static void applyStrength(Sentinel sentinel, double strength) {
+        AttributeInstance health = sentinel.getAttribute(Attributes.MAX_HEALTH);
+        if (health != null && strength != 1) {
+            health.setBaseValue(Math.max(1, SentinelStrength.scale(health.getBaseValue(), strength)));
+            sentinel.setHealth(sentinel.getMaxHealth());
+        }
     }
 
     private static float yawTowards(Vec3 from, Vec3 to) {

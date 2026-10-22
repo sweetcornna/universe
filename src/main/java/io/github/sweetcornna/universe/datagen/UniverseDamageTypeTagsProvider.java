@@ -29,5 +29,7 @@ final class UniverseDamageTypeTagsProvider extends DamageTypeTagsProvider {
         this.tag(DamageTypeTags.IS_PROJECTILE).add(PlasmaBolt.DAMAGE);
         this.tag(DamageTypeTags.NO_KNOCKBACK).add(PlasmaBolt.DAMAGE);
         this.tag(DamageTypeTags.NO_KNOCKBACK).add(SurvivalDamage.SHOCK);
+        // 黑雾的电弧、激光、炮弹（ADR-0028）：和等离子弹一样不往上抛
+        this.tag(DamageTypeTags.NO_KNOCKBACK).add(io.github.sweetcornna.universe.darkfog.entity.DarkFogDamage.KEY);
     }
 }

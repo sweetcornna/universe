@@ -1,0 +1,19 @@
+{
+  "type": "universe:research_shaped",
+  "category": "equipment",
+  "key": {
+    "B": "universe:circuit_board",
+    "E": "universe:plasma_exciter",
+    "M": "universe:electric_motor",
+    "S": "universe:steel"
+  },
+  "pattern": [
+    "SES",
+    "MBM",
+    "SSS"
+  ],
+  "research": "implosion_cannon",
+  "result": {
+    "id": "universe:implosion_cannon"
+  }
+}

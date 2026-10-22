@@ -1,0 +1,25 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 4,
+      "ingredient": "universe:explosive_unit"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:titanium_crystal"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:crystal_silicon"
+    }
+  ],
+  "research": "crystal_explosives",
+  "results": [
+    {
+      "count": 4,
+      "id": "universe:crystal_explosive_unit"
+    }
+  ],
+  "time": 160
+}

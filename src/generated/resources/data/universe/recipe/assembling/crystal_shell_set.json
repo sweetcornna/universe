@@ -1,0 +1,20 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:high_explosive_shell_set"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:crystal_explosive_unit"
+    }
+  ],
+  "research": "crystal_shells",
+  "results": [
+    {
+      "id": "universe:crystal_shell_set"
+    }
+  ],
+  "time": 80
+}

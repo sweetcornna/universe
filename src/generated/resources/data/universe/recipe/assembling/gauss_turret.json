@@ -1,0 +1,28 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 4,
+      "ingredient": "minecraft:iron_ingot"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:gear"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:magnetic_coil"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:circuit_board"
+    }
+  ],
+  "research": "gauss_turret",
+  "results": [
+    {
+      "id": "universe:gauss_turret"
+    }
+  ],
+  "time": 60
+}

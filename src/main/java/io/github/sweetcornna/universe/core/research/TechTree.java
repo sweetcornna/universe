@@ -26,8 +26,10 @@ public final class TechTree {
     private static final String PURPLE = NS + "information_matrix";
     private static final String GREEN = NS + "gravity_matrix";
     private static final String WHITE = NS + "universe_matrix";
+    /** 黑雾矩阵（ADR-0028 §六）：只从黑雾掉落得到，研究黑雾那一支科技。 */
+    public static final String DARK_FOG = NS + "dark_fog_matrix";
     /** 研究站认的矩阵，顺序就是研究站格子的顺序。以后加新的矩阵只能往后加，免得存档里的格子对不上。 */
-    public static final List<String> MATRICES = List.of(BLUE, RED, YELLOW, PURPLE, GREEN, WHITE);
+    public static final List<String> MATRICES = List.of(BLUE, RED, YELLOW, PURPLE, GREEN, WHITE, DARK_FOG);
 
     /**
      * M3 的科技：电磁学阶段上交物品，之后用蓝矩阵、再用蓝红两种矩阵研究；M4 加了上交勘探数据的科技（ADR-0012）；
@@ -206,7 +208,38 @@ public final class TechTree {
             Tech.lab("universe_matrix", List.of("dirac_inversion", "gravity_matrix"), List.of(BLUE, RED, YELLOW, PURPLE, GREEN), 500,
                     items("composite_matrix", "universe_matrix")),
             // 研究完就是通关
-            Tech.lab("mission_complete", List.of("universe_matrix"), List.of(WHITE), 3000, items())),
+            Tech.lab("mission_complete", List.of("universe_matrix"), List.of(WHITE), 3000, items()),
+            // ---- M16：防御（ADR-0028 §五）。高斯炮塔和机枪弹箱电磁学阶段就能研究，要上交物品；后面的按材料的档次挂
+            Tech.handIn("gauss_turret", List.of("electromagnetism"), List.of(cost("magnetic_coil", 10), cost("gear", 10),
+                    cost("minecraft:iron_ingot", 20)), items("gauss_turret", "magnum_ammo_box")),
+            Tech.lab("explosives", List.of("gauss_turret", "basic_chemical"), List.of(BLUE, RED), 60, items("explosive_unit")),
+            Tech.lab("laser_turret", List.of("gauss_turret", "energy_matrix"), List.of(BLUE, RED), 60, items("laser_turret")),
+            Tech.lab("signal_tower", List.of("laser_turret", "wireless_power"), List.of(BLUE, RED), 80, items("signal_tower")),
+            Tech.lab("titanium_ammo", List.of("gauss_turret", "titanium_alloy"), List.of(BLUE, RED, YELLOW), 120, items("titanium_ammo_box")),
+            Tech.lab("missile_turret", List.of("laser_turret", "structure_matrix"), List.of(BLUE, RED, YELLOW), 120,
+                    items("missile_turret", "missile_set")),
+            Tech.lab("jammer_tower", List.of("signal_tower", "structure_matrix"), List.of(BLUE, RED, YELLOW), 100, items("jammer_tower")),
+            Tech.lab("battlefield_analysis", List.of("signal_tower", "structure_matrix"), List.of(BLUE, RED, YELLOW), 120,
+                    items("battlefield_analysis_base")),
+            Tech.lab("crystal_explosives", List.of("explosives", "structure_matrix"), List.of(BLUE, RED, YELLOW), 120,
+                    items("crystal_explosive_unit")),
+            Tech.lab("superalloy_ammo", List.of("titanium_ammo", "information_matrix"), List.of(BLUE, RED, YELLOW, PURPLE), 180,
+                    items("superalloy_ammo_box")),
+            // ---- M16：黑雾（ADR-0028 §六）。交上黑雾的掉落才认得黑雾矩阵，后面的科技每点都要黑雾矩阵
+            Tech.handIn("dark_fog_analysis", List.of("gauss_turret"), List.of(cost("energy_shard", 10), cost("dark_fog_matrix", 5)),
+                    items("dark_fog_matrix")),
+            Tech.lab("implosion_cannon", List.of("dark_fog_analysis", "energy_matrix"), List.of(BLUE, RED, DARK_FOG), 60,
+                    items("implosion_cannon", "shell_set")),
+            Tech.lab("high_explosive_shells", List.of("implosion_cannon", "explosives", "structure_matrix"), List.of(BLUE, RED, YELLOW, DARK_FOG),
+                    100, items("high_explosive_shell_set")),
+            Tech.lab("jamming_capsules", List.of("jammer_tower", "dark_fog_analysis"), List.of(BLUE, RED, YELLOW, DARK_FOG), 100,
+                    items("jamming_capsule")),
+            Tech.lab("supersonic_missiles", List.of("missile_turret", "dark_fog_analysis"), List.of(BLUE, RED, YELLOW, DARK_FOG), 120,
+                    items("supersonic_missile_set")),
+            Tech.lab("crystal_shells", List.of("high_explosive_shells", "crystal_explosives", "information_matrix"),
+                    List.of(BLUE, RED, YELLOW, PURPLE, DARK_FOG), 160, items("crystal_shell_set")),
+            Tech.lab("gravity_missiles", List.of("supersonic_missiles", "gravity_matrix"), List.of(BLUE, RED, YELLOW, PURPLE, GREEN, DARK_FOG), 200,
+                    items("gravity_missile_set"))),
             // 升级科技：前几级用低档矩阵，之后用白矩阵无限研究
             List.of(
                     new Upgrade(Upgrades.VEIN_UTILIZATION, NS + "mining_machine", List.of("electromagnetic_matrix"), List.of(

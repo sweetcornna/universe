@@ -7,6 +7,7 @@ import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.block.FloraBlocks;
 import io.github.sweetcornna.universe.block.OreKind;
 import io.github.sweetcornna.universe.entity.ship.ShipParts;
+import io.github.sweetcornna.universe.darkfog.Facilities;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
 import io.github.sweetcornna.universe.world.planet.Fulgurites;
 import net.minecraft.core.HolderLookup;
@@ -251,5 +252,103 @@ final class UniverseBlockTagsProvider extends BlockTagsProvider {
                         UniverseBlocks.PLANET_ROCK.key(),
                         UniverseBlocks.PLANET_STRATA.key(),
                         UniverseBlocks.PLANET_CRYSTAL.key());
+        this.darkFogBases();
+        this.darkFogFacilities();
+        this.darkFogTurrets();
+        this.darkFogSupport();
+    }
+
+    /** 黑雾基地的方块（子代理 P）。 */
+    private void darkFogBases() {
+        // 底板和导轨用镐子挖（很硬，挖了基地会补）；地核挖不掉。都是实心的，不会被组装进飞船
+        this.tag(BlockTags.MINEABLE_WITH_PICKAXE).add(UniverseBlocks.DARK_FOG_PLATING.key(), UniverseBlocks.DARK_FOG_CONDUIT.key());
+        this.tag(BlockTags.NEEDS_DIAMOND_TOOL).add(UniverseBlocks.DARK_FOG_PLATING.key(), UniverseBlocks.DARK_FOG_CONDUIT.key());
+        for (var block : List.of(UniverseBlocks.DARK_FOG_PLATING, UniverseBlocks.DARK_FOG_CONDUIT, UniverseBlocks.DARK_FOG_CORE_REMNANT)) {
+            this.tag(BlockTags.BLOCKS_MOTION_NO_LEAVES).add(block.key());
+            this.tag(ShipParts.EXCLUDED).add(block.key());
+        }
+    }
+
+    /** 设施标签、残影、战场分析基地（子代理 Q）。 */
+    private void darkFogFacilities() {
+        // 黑雾会打的设施（ADR-0028 §四）：模组的工厂方块
+        this.tag(Facilities.TAG).add(
+                UniverseBlocks.TESLA_TOWER.key(),
+                UniverseBlocks.WIND_TURBINE.key(),
+                UniverseBlocks.SOLAR_PANEL.key(),
+                UniverseBlocks.THERMAL_PLANT.key(),
+                UniverseBlocks.ACCUMULATOR.key(),
+                UniverseBlocks.WIRELESS_POWER_TOWER.key(),
+                UniverseBlocks.SATELLITE_SUBSTATION.key(),
+                UniverseBlocks.GEOTHERMAL_POWER_STATION.key(),
+                UniverseBlocks.ENERGY_EXCHANGER.key(),
+                UniverseBlocks.MINI_FUSION_POWER_PLANT.key(),
+                UniverseBlocks.ARTIFICIAL_STAR.key(),
+                UniverseBlocks.RAY_RECEIVER.key(),
+                UniverseBlocks.MINING_MACHINE.key(),
+                UniverseBlocks.ADVANCED_MINING_MACHINE.key(),
+                UniverseBlocks.WATER_PUMP.key(),
+                UniverseBlocks.OIL_EXTRACTOR.key(),
+                UniverseBlocks.ORBITAL_COLLECTOR.key(),
+                UniverseBlocks.ARC_SMELTER.key(),
+                UniverseBlocks.PLANE_SMELTER.key(),
+                UniverseBlocks.NEGENTROPY_SMELTER.key(),
+                UniverseBlocks.ASSEMBLER.key(),
+                UniverseBlocks.ASSEMBLER_MK2.key(),
+                UniverseBlocks.ASSEMBLER_MK3.key(),
+                UniverseBlocks.RECOMPOSING_ASSEMBLER.key(),
+                UniverseBlocks.OIL_REFINERY.key(),
+                UniverseBlocks.CHEMICAL_PLANT.key(),
+                UniverseBlocks.QUANTUM_CHEMICAL_PLANT.key(),
+                UniverseBlocks.FRACTIONATOR.key(),
+                UniverseBlocks.MINIATURE_PARTICLE_COLLIDER.key(),
+                UniverseBlocks.MATRIX_LAB.key(),
+                UniverseBlocks.SELF_EVOLUTION_LAB.key(),
+                UniverseBlocks.CONVEYOR_BELT.key(),
+                UniverseBlocks.CONVEYOR_BELT_MK2.key(),
+                UniverseBlocks.CONVEYOR_BELT_MK3.key(),
+                UniverseBlocks.SORTER.key(),
+                UniverseBlocks.SORTER_MK2.key(),
+                UniverseBlocks.SORTER_MK3.key(),
+                UniverseBlocks.PILE_SORTER.key(),
+                UniverseBlocks.SPLITTER.key(),
+                UniverseBlocks.STORAGE_DEPOT.key(),
+                UniverseBlocks.STORAGE_TANK.key(),
+                UniverseBlocks.SPRAY_COATER.key(),
+                UniverseBlocks.AUTOMATIC_PILER.key(),
+                UniverseBlocks.TRAFFIC_MONITOR.key(),
+                UniverseBlocks.PLANETARY_LOGISTICS_STATION.key(),
+                UniverseBlocks.INTERSTELLAR_LOGISTICS_STATION.key(),
+                UniverseBlocks.LOGISTICS_DISTRIBUTOR.key(),
+                UniverseBlocks.FACTORY_ANCHOR.key(),
+                UniverseBlocks.EM_RAIL_EJECTOR.key(),
+                UniverseBlocks.VERTICAL_LAUNCHING_SILO.key(),
+                UniverseBlocks.HYDROPONIC_TRAY.key(),
+                UniverseBlocks.NUTRIENT_PROCESSOR.key(),
+                UniverseBlocks.PORTABLE_REFINER.key(),
+                UniverseBlocks.EGG_SEQUENCER.key(),
+                UniverseBlocks.BATTLEFIELD_ANALYSIS_BASE.key());
+        this.tag(BlockTags.MINEABLE_WITH_PICKAXE).add(UniverseBlocks.BATTLEFIELD_ANALYSIS_BASE.key());
+    }
+
+    /** 炮塔（子代理 R1）。 */
+    private void darkFogTurrets() {
+        // 炮塔：镐子挖，不跟着飞船走，黑雾会打
+        for (var block : List.of(UniverseBlocks.GAUSS_TURRET, UniverseBlocks.LASER_TURRET, UniverseBlocks.IMPLOSION_CANNON,
+                UniverseBlocks.MISSILE_TURRET)) {
+            this.tag(BlockTags.MINEABLE_WITH_PICKAXE).add(block.key());
+            this.tag(ShipParts.EXCLUDED).add(block.key());
+            this.tag(io.github.sweetcornna.universe.darkfog.Facilities.TAG).add(block.key());
+        }
+    }
+
+    /** 信号塔、干扰塔（子代理 R2）。 */
+    private void darkFogSupport() {
+        // 镐子挖，不跟着飞船走，黑雾会打
+        for (var block : List.of(UniverseBlocks.SIGNAL_TOWER, UniverseBlocks.JAMMER_TOWER)) {
+            this.tag(BlockTags.MINEABLE_WITH_PICKAXE).add(block.key());
+            this.tag(ShipParts.EXCLUDED).add(block.key());
+            this.tag(io.github.sweetcornna.universe.darkfog.Facilities.TAG).add(block.key());
+        }
     }
 }

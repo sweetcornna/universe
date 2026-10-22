@@ -67,6 +67,9 @@
     "universe:sentinel_pillar_plating",
     "universe:sentinel_pillar_light",
     "universe:sentinel_pillar_terminal",
-    "universe:live_conduit"
+    "universe:live_conduit",
+    "universe:dark_fog_plating",
+    "universe:dark_fog_conduit",
+    "universe:dark_fog_core_remnant"
   ]
 }

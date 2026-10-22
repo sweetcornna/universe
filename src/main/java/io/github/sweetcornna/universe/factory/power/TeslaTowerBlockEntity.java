@@ -15,6 +15,7 @@ import io.github.sweetcornna.universe.survival.Exosuit;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 
@@ -56,7 +57,12 @@ public class TeslaTowerBlockEntity extends MachineBlockEntity {
     private double mechaWanted;
 
     public TeslaTowerBlockEntity(BlockPos pos, BlockState state) {
-        super(UniverseBlockEntities.TESLA_TOWER.get(), pos, state, 0);
+        this(UniverseBlockEntities.TESLA_TOWER.get(), pos, state);
+    }
+
+    /** 自己有方块实体类型的塔（信号塔，ADR-0028 §五）。 */
+    protected TeslaTowerBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
+        super(type, pos, state, 0);
     }
 
     public PowerSystem.TowerSpec spec() {

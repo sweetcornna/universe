@@ -143,6 +143,8 @@ import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.event.RegisterGameTestsEvent;
 import net.neoforged.neoforge.gametest.GameTestHooks;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Rotation;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.neoforged.neoforge.transfer.transaction.Transaction;
@@ -176,6 +178,8 @@ import io.github.sweetcornna.universe.entity.FaunaSpawner;
  * 一块 7×4×7、底下一层石台的空结构（{@code data/universe/structure/gametest/platform.nbt}，由 {@code tools/gametest_platform.py} 生成）。
  */
 public final class UniverseGameTests {
+    /** 黑雾测试四周留的空地：比炮塔、信号塔、战场分析基地的范围都大。 */
+    private static final int DARK_FOG_PADDING = 48;
     private static final DeferredRegister<Consumer<GameTestHelper>> FUNCTIONS = DeferredRegister.create(Registries.TEST_FUNCTION, Universe.MOD_ID);
     private static final Identifier PLATFORM = Universe.id("gametest/platform");
     /** 17×8×17、石头地面的大场地，放整艘设计出来的船（ADR-0024）。 */
@@ -292,6 +296,56 @@ public final class UniverseGameTests {
             GuildGameTests::envoyOffersFixedForTheDay);
     private static final ResourceKey<Consumer<GameTestHelper>> GUILD_GIFT_ONCE_PER_RANK = function("guild_gift_once_per_rank",
             GuildGameTests::giftOncePerRank);
+    // M16 黑雾（ADR-0028）：各自的测试写在自己的类里，函数加在自己那行上面
+    private static final ResourceKey<Consumer<GameTestHelper>> DARK_FOG_CORE_LEAVES_REMNANT = function("dark_fog_core_leaves_remnant",
+            DarkFogBaseGameTests::coreDestroyedLeavesRemnant);
+    private static final ResourceKey<Consumer<GameTestHelper>> DARK_FOG_BASE_SAVES = function("dark_fog_base_saves",
+            DarkFogBaseGameTests::baseStateSurvivesSave);
+    private static final ResourceKey<Consumer<GameTestHelper>> DARK_FOG_SENDS_WAVE = function("dark_fog_sends_wave",
+            DarkFogBaseGameTests::fullThreatSendsWave);
+    // M16 黑雾：基地（P）的测试函数加在这行上面
+    // 黑雾的单位和建筑（ADR-0028 §二），测试写在 DarkFogUnitGameTests
+    private static final ResourceKey<Consumer<GameTestHelper>> DARK_FOG_RAIDER_CLIMBS = function("dark_fog_raider_climbs",
+            DarkFogUnitGameTests::raiderClimbsToRaisedTarget);
+    private static final ResourceKey<Consumer<GameTestHelper>> DARK_FOG_RAIDER_STRIKES_FACILITY = function("dark_fog_raider_strikes_facility",
+            DarkFogUnitGameTests::raiderStrikesFacility);
+    private static final ResourceKey<Consumer<GameTestHelper>> DARK_FOG_RANGER_SHOOTS_BACK = function("dark_fog_ranger_shoots_back",
+            DarkFogUnitGameTests::rangerShootsBack);
+    private static final ResourceKey<Consumer<GameTestHelper>> DARK_FOG_GUARDIAN_RETURNS_HOME = function("dark_fog_guardian_returns_home",
+            DarkFogUnitGameTests::guardianReturnsHome);
+    private static final ResourceKey<Consumer<GameTestHelper>> DARK_FOG_UNPOWERED_LASER_HOLDS_FIRE = function("dark_fog_unpowered_laser_holds_fire",
+            DarkFogUnitGameTests::unpoweredLaserTowerHoldsFire);
+    // M16 黑雾：单位（P2）的测试函数加在这行上面
+    // 设施的耐久、残影、战场分析基地（ADR-0028 §四、§五），测试写在 DarkFogFacilityGameTests
+    private static final ResourceKey<Consumer<GameTestHelper>> FACILITY_GHOST_RESTORES = function("facility_ghost_restores",
+            DarkFogFacilityGameTests::ghostKeepsAndRestores);
+    private static final ResourceKey<Consumer<GameTestHelper>> BATTLEFIELD_BASE_REPAIRS = function("battlefield_base_repairs",
+            DarkFogFacilityGameTests::baseRepairsAndRebuilds);
+    // M16 黑雾：设施（Q）的测试函数加在这行上面
+    // 炮塔（ADR-0028 §五），测试写在 DarkFogTurretGameTests
+    private static final ResourceKey<Consumer<GameTestHelper>> GAUSS_KILLS_RAIDER = function("gauss_kills_raider",
+            DarkFogTurretGameTests::gaussKillsRaider);
+    private static final ResourceKey<Consumer<GameTestHelper>> LASER_NEEDS_NO_AMMO = function("laser_needs_no_ammo",
+            DarkFogTurretGameTests::laserNeedsNoAmmo);
+    private static final ResourceKey<Consumer<GameTestHelper>> UNPOWERED_TURRET_HOLDS_FIRE = function("unpowered_turret_holds_fire",
+            DarkFogTurretGameTests::unpoweredHoldsFire);
+    private static final ResourceKey<Consumer<GameTestHelper>> CANNON_IGNORES_FLYERS = function("cannon_ignores_flyers",
+            DarkFogTurretGameTests::cannonIgnoresFlyers);
+    // M16 黑雾：炮塔（R1）的测试函数加在这行上面
+    private static final ResourceKey<Consumer<GameTestHelper>> JAMMER_SLOWS_RAIDER = function("jammer_slows_raider",
+            DarkFogSupportGameTests::jammerSlowsRaider);
+    private static final ResourceKey<Consumer<GameTestHelper>> SIGNAL_TOWER_DRAWS_DARK_FOG = function("signal_tower_draws_dark_fog",
+            DarkFogSupportGameTests::signalTowerDrawsDarkFog);
+    private static final ResourceKey<Consumer<GameTestHelper>> EXPLOSIVE_UNIT_SPARES_BLOCKS = function("explosive_unit_spares_blocks",
+            DarkFogSupportGameTests::explosiveUnitSparesBlocks);
+    // M16 黑雾：信号塔、干扰塔（R2）的测试函数加在这行上面
+    private static final ResourceKey<Consumer<GameTestHelper>> SENTINEL_STRENGTH_SCALES = function("sentinel_strength_scales",
+            WorldOptionsGameTests::sentinelStrengthScales);
+    private static final ResourceKey<Consumer<GameTestHelper>> RESOURCE_MULTIPLIER_SCALES_VEINS = function("resource_multiplier_scales_veins",
+            WorldOptionsGameTests::resourceMultiplierScalesVeins);
+    private static final ResourceKey<Consumer<GameTestHelper>> RULES_READ_INTO_SETTINGS = function("rules_read_into_settings",
+            WorldOptionsGameTests::rulesReadIntoSettings);
+    // M16 建世界的选项（S）的测试函数加在这行上面
 
     private UniverseGameTests() {
     }
@@ -366,6 +420,53 @@ public final class UniverseGameTests {
         test(event, environment, GUILD_ENVOY_OFFERS, 20);
         test(event, environment, GUILD_GIFT_ONCE_PER_RANK, 20);
         test(event, environment, GIANT_NEEDS_ROOM, HANGAR, 20);
+        spaced(event, environment, DARK_FOG_CORE_LEAVES_REMNANT, 20);
+        spaced(event, environment, DARK_FOG_BASE_SAVES, 20);
+        spaced(event, environment, DARK_FOG_SENDS_WAVE, 20);
+        // M16 黑雾：基地（P）的测试加在这行上面
+        spaced(event, environment, DARK_FOG_RAIDER_STRIKES_FACILITY, HANGAR, 300);
+        spaced(event, environment, DARK_FOG_RAIDER_CLIMBS, HANGAR, 300, true);
+        spaced(event, environment, DARK_FOG_RANGER_SHOOTS_BACK, HANGAR, 200);
+        spaced(event, environment, DARK_FOG_GUARDIAN_RETURNS_HOME, HANGAR, 200);
+        spaced(event, environment, DARK_FOG_UNPOWERED_LASER_HOLDS_FIRE, HANGAR, 200);
+        // M16 黑雾：单位（P2）的测试加在这行上面
+        test(event, environment, FACILITY_GHOST_RESTORES, 20);
+        spaced(event, environment, BATTLEFIELD_BASE_REPAIRS, 200);
+        // M16 黑雾：设施（Q）的测试加在这行上面
+        spaced(event, environment, GAUSS_KILLS_RAIDER, HANGAR, 200);
+        spaced(event, environment, LASER_NEEDS_NO_AMMO, HANGAR, 100);
+        spaced(event, environment, UNPOWERED_TURRET_HOLDS_FIRE, HANGAR, 100);
+        spaced(event, environment, CANNON_IGNORES_FLYERS, HANGAR, 100);
+        // M16 黑雾：炮塔（R1）的测试加在这行上面
+        spaced(event, environment, JAMMER_SLOWS_RAIDER, 200);
+        spaced(event, environment, SIGNAL_TOWER_DRAWS_DARK_FOG, 200);
+        spaced(event, environment, EXPLOSIVE_UNIT_SPARES_BLOCKS, 60);
+        // M16 黑雾：信号塔、干扰塔（R2）的测试加在这行上面
+        test(event, environment, SENTINEL_STRENGTH_SCALES, 20);
+        test(event, environment, RESOURCE_MULTIPLIER_SCALES_VEINS, 20);
+        test(event, environment, RULES_READ_INTO_SETTINGS, 20);
+        // M16 建世界的选项（S）的测试加在这行上面
+    }
+
+    /**
+     * 四周留出 {@link #DARK_FOG_PADDING} 格空地的测试。黑雾的单位会四处找人、找设施打，炮塔、信号塔、战场分析基地的范围都有几十格，
+     * 挨着别的测试放会互相干扰（连上隔壁的电网、被隔壁的信号塔引走、炮塔打掉隔壁的单位、修好隔壁掉血的设施）。
+     */
+    private static void spaced(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition<?>> environment, ResourceKey<Consumer<GameTestHelper>> function,
+            int maxTicks) {
+        spaced(event, environment, function, PLATFORM, maxTicks);
+    }
+
+    private static void spaced(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition<?>> environment, ResourceKey<Consumer<GameTestHelper>> function,
+            Identifier structure, int maxTicks) {
+        spaced(event, environment, function, structure, maxTicks, false);
+    }
+
+    /** {@code skyAccess}：场地上面不封屏障，单位能飞出场地。 */
+    private static void spaced(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition<?>> environment, ResourceKey<Consumer<GameTestHelper>> function,
+            Identifier structure, int maxTicks, boolean skyAccess) {
+        event.registerTest(function.identifier(), new FunctionGameTestInstance(function, new TestData<>(environment, Level.OVERWORLD, structure, maxTicks,
+                0, true, Rotation.NONE, false, 1, 1, skyAccess, DARK_FOG_PADDING)));
     }
 
     private static void test(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition<?>> environment, ResourceKey<Consumer<GameTestHelper>> function,

@@ -160,6 +160,314 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         this.civDialogue();
         this.civShop();
         this.civGuilds();
+        this.darkFogItems();
+        this.darkFogBases();
+        this.darkFogUnits();
+        this.darkFogFacilities();
+        this.darkFogTurrets();
+        this.darkFogSupport();
+        this.worldOptions();
+    }
+
+    /** 黑雾的掉落、弹药、投掷物（ADR-0028 §五、§六）：名字在这里，说明归各自的子代理。 */
+    private void darkFogItems() {
+        both("guide.universe.dark_fog", "黑雾", "Dark Fog");
+        item(UniverseItems.ENERGY_SHARD.get(), "能量碎片", "Energy Shard");
+        item(UniverseItems.SILICON_NEURON.get(), "硅基神经元", "Silicon-based Neuron");
+        item(UniverseItems.MATTER_RECOMBINATOR.get(), "物质重组器", "Matter Recombinator");
+        item(UniverseItems.NEGENTROPY_SINGULARITY.get(), "负熵奇点", "Negentropy Singularity");
+        item(UniverseItems.CORE_ELEMENT.get(), "核心素", "Core Element");
+        item(UniverseItems.DARK_FOG_MATRIX.get(), "黑雾矩阵", "Dark Fog Matrix");
+        item(UniverseItems.MAGNUM_AMMO_BOX.get(), "机枪弹箱", "Magnum Ammo Box");
+        item(UniverseItems.TITANIUM_AMMO_BOX.get(), "钛化弹箱", "Titanium Ammo Box");
+        item(UniverseItems.SUPERALLOY_AMMO_BOX.get(), "超合金弹箱", "Superalloy Ammo Box");
+        item(UniverseItems.SHELL_SET.get(), "炮弹组", "Shell Set");
+        item(UniverseItems.HIGH_EXPLOSIVE_SHELL_SET.get(), "高爆炮弹组", "High-Explosive Shell Set");
+        item(UniverseItems.CRYSTAL_SHELL_SET.get(), "晶石炮弹组", "Crystal Shell Set");
+        item(UniverseItems.MISSILE_SET.get(), "导弹组", "Missile Set");
+        item(UniverseItems.SUPERSONIC_MISSILE_SET.get(), "超音速导弹组", "Supersonic Missile Set");
+        item(UniverseItems.GRAVITY_MISSILE_SET.get(), "引力导弹组", "Gravity Missile Set");
+        item(UniverseItems.JAMMING_CAPSULE.get(), "干扰胶囊", "Jamming Capsule");
+        item(UniverseItems.EXPLOSIVE_UNIT.get(), "爆破单元", "Explosive Unit");
+        item(UniverseItems.CRYSTAL_EXPLOSIVE_UNIT.get(), "晶石爆破单元", "Crystal Explosive Unit");
+    }
+
+    /** 黑雾的地面基地、威胁、进攻、调试命令（子代理 P）。 */
+    private void darkFogBases() {
+        block(UniverseBlocks.DARK_FOG_PLATING.get(), "黑雾底板", "Dark Fog Plating");
+        block(UniverseBlocks.DARK_FOG_CONDUIT.get(), "黑雾导轨", "Dark Fog Conduit");
+        block(UniverseBlocks.DARK_FOG_CORE_REMNANT.get(), "地核", "Core Remnant");
+        both("message.universe.dark_fog.base_destroyed", "黑雾基地瓦解了", "Dark Fog base destroyed");
+        both("message.universe.dark_fog.relay_down", "中继站打掉了：基地存的能量用完就停摆", "Relay down: the base stalls once its stored energy runs out");
+        both("message.universe.dark_fog.repelled", "黑雾的进攻打退了", "Dark Fog attack repelled");
+        both("message.universe.dark_fog.retreated", "黑雾的进攻部队撤走了", "The Dark Fog attackers pulled back");
+        both("commands.universe.darkfog.unknown", "这颗星球上没有 %s 号基地", "No base #%s on this planet");
+        both("commands.universe.darkfog.none", "这颗星球上没有黑雾基地", "No Dark Fog bases on this planet");
+        both("commands.universe.darkfog.line", "#%s %s（%s, %s, %s） %s 级 威胁 %s%% 建筑 %s 突袭者 %s 游骑兵 %s 守卫者 %s %s%s",
+                "#%s %s (%s, %s, %s) level %s, threat %s%%, %s buildings, raiders %s, rangers %s, guardians %s, %s%s");
+        both("commands.universe.darkfog.powered", "有能量", "powered");
+        both("commands.universe.darkfog.unpowered", "停摆", "stalled");
+        both("commands.universe.darkfog.tp", "传到 %s 号基地", "Teleported to base #%s");
+        both("commands.universe.darkfog.created", "在（%2$s, %3$s）扎下了 %1$s 号基地", "Created base #%s at %s, %s");
+        both("commands.universe.darkfog.threat", "%s 号基地的威胁设为 %s%%", "Base #%s threat set to %s%%");
+        both("commands.universe.darkfog.level", "%s 号基地设为 %s 级", "Base #%s set to level %s");
+        both("commands.universe.darkfog.units", "%s 号基地的%s设为 %s 个", "Base #%s: %s set to %s");
+        both("commands.universe.darkfog.attack", "%s 号基地的威胁满了，30 秒后来袭", "Base #%s threat full: attack in 30 seconds");
+        both("commands.universe.darkfog.grow", "%s 号基地多长了 %s 分钟", "Base #%s grew for %s more minutes");
+        both("commands.universe.darkfog.removed", "收拾掉了 %s 号基地", "Removed base #%s");
+        both("commands.universe.darkfog.cleared", "收拾掉了 %s 处基地", "Removed %s bases");
+        both("guide.universe.dark_fog.bases.title", "黑雾基地", "Dark Fog Bases");
+        both("guide.universe.dark_fog.bases",
+                "黑雾在外星球上筑基地，母星上没有。基地离着陆点 600–2000 格：钻芯居中，上空悬着中继站，周围是营地和炮塔。\n\n"
+                        + "中继站给基地送能量。打掉它，基地存的能量用完就停摆：炮塔不打，营地不产兵。打掉的营地和炮塔过 3 分钟才补。\n\n"
+                        + "打掉钻芯，整个基地瓦解，原地留下地核。地热发电站放在地核上，发的电是熔岩上的两倍。\n\n"
+                        + "基地挨打会升级（0–30 级），越高越耐打，掉的东西越好。你走到 64 格内，营地超载，出兵快十倍。",
+                "The Dark Fog builds bases on other planets, never your home world, 600–2000 blocks from the landing site: "
+                        + "a core in the middle, a relay hovering above, camps and towers around. Bases level up when hit (0–30).\n\n"
+                        + "The relay powers the base; without it the base stalls once its stored energy runs out. "
+                        + "Lost camps and towers return after 3 minutes. Within 64 blocks of you, camps overdrive and make units ten times faster.\n\n"
+                        + "Destroy the core and the base collapses into a core remnant. A geothermal station on it makes twice the power of lava.");
+        both("guide.universe.dark_fog.attacks.title", "威胁和进攻", "Threat and Attacks");
+        both("guide.universe.dark_fog.attacks",
+                "工厂用电越多，同一颗星球上基地的威胁涨得越快；打它的建筑和单位也会涨。\n\n"
+                        + "威胁满了，基地派一波突袭者和游骑兵，打离它最近、用电最多的那片设施。来袭前 30 秒有预警，"
+                        + "部队从设施朝基地方向 80 格外出现。守卫者只守家。\n\n"
+                        + "打退一波，威胁清零，3 分钟内不涨。星球上没人时不进攻。",
+                "The more power your factory draws, the faster threat builds in bases on that planet. Hitting their buildings and units adds more.\n\n"
+                        + "At full threat a base sends raiders and rangers at the nearest, hungriest grid. You get a 30-second warning; "
+                        + "they show up 80 blocks out, on the base's side. Guardians stay home.\n\n"
+                        + "Repel a wave and threat resets, then holds for 3 minutes. No attacks while nobody is on the planet.");
+    }
+
+    /** 黑雾的单位、建筑的名字、HUD 预警（子代理 P2）。 */
+    private void darkFogUnits() {
+        both("entity.universe.dark_fog_raider", "突袭者", "Raider");
+        both("entity.universe.dark_fog_ranger", "游骑兵", "Ranger");
+        both("entity.universe.dark_fog_guardian", "守卫者", "Guardian");
+        both("entity.universe.dark_fog_building", "黑雾建筑", "Dark Fog Structure");
+        both("entity.universe.dark_fog_building.relay", "中继站", "Relay Station");
+        both("entity.universe.dark_fog_building.core", "钻芯", "Core Driller");
+        both("entity.universe.dark_fog_building.raider_camp", "突袭者营地", "Raider Camp");
+        both("entity.universe.dark_fog_building.ranger_camp", "游骑兵营地", "Ranger Camp");
+        both("entity.universe.dark_fog_building.guardian_camp", "守卫者营地", "Guardian Camp");
+        both("entity.universe.dark_fog_building.laser_tower", "高能激光塔", "High-Energy Laser Tower");
+        both("entity.universe.dark_fog_building.plasma_sentry", "等离子哨塔", "Plasma Sentry");
+        both("entity.universe.dark_fog_bolt", "黑雾激光弹", "Dark Fog Laser Bolt");
+        both("entity.universe.dark_fog_shell", "等离子炮弹", "Plasma Shell");
+        both("death.attack.universe.dark_fog", "%1$s被%2$s打倒了", "%1$s was struck down by %2$s");
+        both("death.attack.universe.dark_fog.item", "%1$s被%2$s打倒了", "%1$s was struck down by %2$s");
+        // 来袭预警（ADR-0028 §三）
+        both("message.universe.dark_fog.warning", "黑雾从%1$s边来袭：突袭者 ×%2$s，游骑兵 ×%3$s，%4$s 秒后到",
+                "Dark Fog attack from the %1$s: %2$s raiders, %3$s rangers, %4$ss out");
+        both("message.universe.dark_fog.over", "这一波黑雾结束了", "The Dark Fog attack is over");
+        both("hud.universe.dark_fog.incoming", "黑雾来袭 %s", "Dark Fog incoming %s");
+        both("hud.universe.dark_fog.arrived", "黑雾到了", "Dark Fog is here");
+        both("hud.universe.dark_fog.units", "突袭者 ×%s  游骑兵 ×%s", "Raiders ×%s  Rangers ×%s");
+        both("hud.universe.dark_fog.marker", "黑雾 · %s 格", "Dark Fog · %s m");
+        both("hud.universe.dark_fog.marker_eta", "黑雾 %s · %s 格", "Dark Fog %s · %s m");
+        String[] zh = {"北", "东北", "东", "东南", "南", "西南", "西", "西北"};
+        String[] en = {"north", "northeast", "east", "southeast", "south", "southwest", "west", "northwest"};
+        for (int i = 0; i < 8; i++) {
+            both("hud.universe.dark_fog.dir." + i, zh[i], en[i]);
+        }
+    }
+
+    /** 设施的耐久、残影、修复、战场分析基地（子代理 Q）。 */
+    private void darkFogFacilities() {
+        block(UniverseBlocks.BATTLEFIELD_ANALYSIS_BASE.get(), "战场分析基地", "Battlefield Analysis Base");
+        block(UniverseBlocks.FACILITY_GHOST.get(), "残影", "Facility Ghost");
+        both("tooltip.universe.battlefield_analysis_base.summary",
+                "接电网，修 30 格内掉血的设施\n储物格里有那种方块就按残影重建\n捡 45 格内地上的东西，界面上能设只捡哪些",
+                "Needs power. Repairs damaged facilities within 30 blocks\nRebuilds ghosts from blocks in its storage\n"
+                        + "Picks up items within 45 blocks; set a filter in the menu");
+        both("message.universe.facility_ghost.hint", "残影：拿着%s右键放回去", "Ghost: right-click with %s to put it back");
+        both("message.universe.facility_ghost.blocked", "放不回去：有东西挡着", "Can't put it back: something is in the way");
+        both("hud.universe.facility.health", "耐久 %s%%", "Integrity %s%%");
+        both("hud.universe.facility.ghost", "%s（残影）", "%s (ghost)");
+        both("gui.universe.battlefield_base.damaged", "待修：%s", "Damaged: %s");
+        both("gui.universe.battlefield_base.ghosts", "残影：%s", "Ghosts: %s");
+        both("gui.universe.battlefield_base.pickup.all", "拾取：全部", "Pick up: everything");
+        both("gui.universe.battlefield_base.pickup.dark_fog", "拾取：只要黑雾掉落", "Pick up: Dark Fog drops");
+        both("gui.universe.battlefield_base.pickup.stored", "拾取：只要已存的", "Pick up: stored items only");
+        both("gui.universe.battlefield_base.pickup.off", "拾取：关", "Pick up: off");
+        both("guide.universe.dark_fog.damage.title", "耐久和残影", "Damage and Ghosts");
+        both("guide.universe.dark_fog.damage",
+                "只有黑雾会打坏设施，爆炸炸不掉。准星对着掉了血的设施，下面有一条耐久。\n\n"
+                        + "耐久打光，设施就没了，里面的东西掉在地上，原地留下蓝色的残影。拿着同一种方块右键残影，照原来的朝向放回去。"
+                        + "物流站的货跟着残影，放回去还在。\n\n"
+                        + "建造无人机没有蓝图要建时，会去修附近掉血的设施；背包里有那种方块，也会按残影重建。",
+                "Only the Dark Fog can damage facilities; explosions can't. Look at a damaged facility to see its integrity bar.\n\n"
+                        + "At zero it breaks: its contents drop and a blue ghost stays behind. Right-click the ghost with the same block "
+                        + "to put it back facing the same way. A logistics station keeps its cargo in the ghost.\n\n"
+                        + "With no blueprint work, construction drones repair nearby facilities and rebuild ghosts from blocks you carry.");
+        both("guide.universe.dark_fog.repair.title", "战场分析基地", "Battlefield Analysis Base");
+        both("guide.universe.dark_fog.repair",
+                "接电网，修 30 格内的设施，用储物格里的方块重建残影，捡 45 格内地上的东西。\n\n"
+                        + "界面上能设只捡黑雾掉落、只捡已经存着的东西。分拣器能进出。耐打，可以当墙。",
+                "Needs power. Repairs facilities within 30 blocks, rebuilds ghosts from blocks in its storage and picks up items "
+                        + "within 45.\n\n"
+                        + "Set it to take only Dark Fog drops or only what it already stores. Sorters can load and unload it. "
+                        + "It is tough enough to use as a wall.");
+    }
+
+    /** 高斯、激光、聚爆、导弹炮塔和弹药（子代理 R1）。 */
+    private void darkFogTurrets() {
+        block(UniverseBlocks.GAUSS_TURRET.get(), "高斯炮塔", "Gauss Turret");
+        block(UniverseBlocks.LASER_TURRET.get(), "激光炮塔", "Laser Turret");
+        block(UniverseBlocks.IMPLOSION_CANNON.get(), "聚爆炮", "Implosion Cannon");
+        block(UniverseBlocks.MISSILE_TURRET.get(), "导弹炮塔", "Missile Turret");
+        both("entity.universe.turret_shell", "炮弹", "Shell");
+        both("entity.universe.turret_missile", "导弹", "Missile");
+        both("tooltip.universe.gauss_turret.summary", "接电网，装弹箱\n射程 32 格，每秒 6 发，打地面和低空\n远了会打偏",
+                "Needs power and ammo boxes\nRange 32, 6 shots/s, hits ground and air\nLess accurate at long range");
+        both("tooltip.universe.laser_turret.summary", "接电网，不用弹药\n射程 24 格，每秒 4 发，百发百中\n交战时很耗电",
+                "Needs power, no ammo\nRange 24, 4 shots/s, never misses\nDraws a lot of power in combat");
+        both("tooltip.universe.implosion_cannon.summary", "接电网，装炮弹组\n射程 40 格，只打地面，炮弹走弧线、范围伤害",
+                "Needs power and shell sets\nRange 40, ground targets only\nLobbed shells, area damage");
+        both("tooltip.universe.missile_turret.summary", "接电网，装导弹组\n射程 48 格，导弹会追，范围伤害带击退\n同一电网的信号塔范围里也能打",
+                "Needs power and missile sets\nRange 48, homing, area damage with knockback\nAlso covers signal towers on its grid");
+        both("tooltip.universe.ammo.turret", "用于：%s", "For: %s");
+        both("tooltip.universe.ammo.damage", "每发 %s 伤害，一个打 %s 发", "%s damage per shot, %s shots");
+        both("tooltip.universe.ammo.radius", "爆炸半径 %s 格", "%s-block blast");
+        both("tooltip.universe.ammo.pull", "爆炸半径 %s 格，把黑雾吸到一起", "%s-block blast, pulls the Dark Fog together");
+        both("gui.universe.turret.searching", "警戒中", "Scanning");
+        both("gui.universe.turret.engaging", "交战中", "Engaging");
+        both("gui.universe.turret.no_ammo", "没有弹药", "Out of ammo");
+        both("gui.universe.turret.ammo_slot", "弹药", "Ammo");
+        both("gui.universe.turret.loaded", "%s：%s/%s 发", "%s: %s/%s");
+        both("gui.universe.turret.empty", "没装弹药", "No ammo loaded");
+        both("gui.universe.turret.range", "射程 %s 格，每秒 %s 发", "Range %s, %s shots/s");
+        both("gui.universe.turret.kills", "击毁 %s", "Kills: %s");
+        both("gui.universe.turret.ground_only", "只打地面目标", "Ground targets only");
+        both("guide.universe.dark_fog.turrets.title", "炮塔", "Turrets");
+        both("guide.universe.dark_fog.turrets",
+                "炮塔要接电网，自己找射程里的黑雾打，先打正在打设施的。没电不打，电不够打得慢。\n\n"
+                        + "高斯炮塔：32 格，每秒 6 发，用弹箱，远了会打偏。最早能造。\n"
+                        + "激光炮塔：24 格，不用弹药，伤害低但不会偏，交战时很耗电。\n"
+                        + "聚爆炮：40 格，只打地面，炮弹走弧线、能越过矮墙，范围伤害。\n"
+                        + "导弹炮塔：48 格，导弹会追，范围伤害带击退。同一电网的信号塔附近也能打。\n\n"
+                        + "直射的炮塔要看得见目标，别用墙挡住炮口。",
+                "Turrets need power and pick targets in range on their own, Dark Fog attacking facilities first. "
+                        + "Low power means slow fire.\n\n"
+                        + "Gauss: range 32, 6 shots/s, ammo boxes, less accurate far out. Available first.\n"
+                        + "Laser: range 24, no ammo, weak but never misses, power-hungry.\n"
+                        + "Implosion cannon: range 40, ground only, arcing shells, area damage.\n"
+                        + "Missile: range 48, homing, area damage and knockback. Also hits targets near a signal tower on its grid.\n"
+                        + "Gauss and laser turrets need line of sight.");
+        both("guide.universe.dark_fog.ammo.title", "弹药", "Ammo");
+        both("guide.universe.dark_fog.ammo",
+                "弹药放进炮塔的弹药格，分拣器、传送带能送。一个弹药物品打好几发，界面上能看到还剩几发。\n\n"
+                        + "高斯炮塔：机枪弹箱、钛化弹箱、超合金弹箱，一箱 40 发，一级比一级疼。\n"
+                        + "聚爆炮：炮弹组、高爆炮弹组、晶石炮弹组，一组 10 发。\n"
+                        + "导弹炮塔：导弹组、超音速导弹组（飞得快）、引力导弹组（把黑雾吸到一起），一组 8 发。\n\n"
+                        + "机枪弹箱手搓就行，铜锭、铁锭、铜锭排一行。别的弹药在制造台里做更省事。",
+                "Load ammo into the turret's ammo slot by hand, sorter or belt. One item fires several rounds.\n\n"
+                        + "Gauss: magnum, titanium and superalloy boxes, 40 rounds, each tier stronger.\n"
+                        + "Implosion: shell, high-explosive and crystal shell sets, 10 rounds.\n"
+                        + "Missile: missile, supersonic (faster) and gravity (pulls enemies together) sets, 8 rounds.\n"
+                        + "Craft magnum boxes by hand: copper, iron, copper in a row. The rest are easier in an assembler.");
+    }
+
+    /** 信号塔、干扰塔、投掷物、黑雾矩阵和防御的科技、替代配方（子代理 R2）。 */
+    private void darkFogSupport() {
+        block(UniverseBlocks.SIGNAL_TOWER.get(), "信号塔", "Signal Tower");
+        block(UniverseBlocks.JAMMER_TOWER.get(), "干扰塔", "Jammer Tower");
+        both("entity.universe.thrown_unit", "扔出的单元", "Thrown Unit");
+        both("tooltip.universe.signal_tower.summary", "覆盖半径 12 格，相距 30 格内的塔自动相连\n通电时 48 格内的黑雾先打它\n同一电网的导弹炮塔能打它范围里的目标\n放在黑雾基地旁边，营地会超载",
+                "Range 12, links towers within 30\nWhen powered, Dark Fog within 48 attacks it first\nMissile turrets on its grid can hit targets in its range\n"
+                        + "Overdrives nearby Dark Fog camps");
+        both("tooltip.universe.jammer_tower.summary", "减慢范围里的黑雾，不造成伤害\n只用电：16 格，慢到七成\n装干扰胶囊：24 格，慢到四成",
+                "Slows Dark Fog in range, deals no damage\nPower only: 16 blocks, 70% speed\nWith jamming capsules: 24 blocks, 40% speed");
+        both("tooltip.universe.jamming_capsule.summary", "装进干扰塔：范围更大、减速更多\n一个管 10 秒", "Load into a jammer tower for more range and slow\nLasts 10 seconds");
+        both("tooltip.universe.explosive_unit.summary", "右键扔出去，落地炸开\n不破坏方块", "Right-click to throw; bursts on impact\nDoesn't break blocks");
+        both("tooltip.universe.crystal_explosive_unit.summary", "右键扔出去，落地炸开\n不破坏方块", "Right-click to throw; bursts on impact\nDoesn't break blocks");
+        both("item.universe.throwable_unit.tooltip", "扔出去：爆心 %s 伤害，半径 %s 格", "Thrown: %s damage at center, %s block radius");
+        both("gui.universe.signal_tower.unpowered", "没电：不嘲讽", "No power: not taunting");
+        both("gui.universe.signal_tower.taunting", "嘲讽中：48 格内 %s 个黑雾", "Taunting: %s Dark Fog within 48");
+        both("gui.universe.signal_tower.hint", "48 格内的黑雾先打它。同一电网的导弹炮塔能打它范围里的目标。",
+                "Dark Fog within 48 blocks attacks it first. Missile turrets on this grid can hit targets in its range.");
+        both("gui.universe.jammer_tower.capsule_slot", "胶囊", "Capsule");
+        both("gui.universe.jammer_tower.jamming", "干扰中：%s 个黑雾", "Jamming %s Dark Fog");
+        both("gui.universe.jammer_tower.idle", "待机：范围里没有黑雾", "Standby: no Dark Fog in range");
+        both("gui.universe.jammer_tower.no_power", "没电：不干扰", "No power: not jamming");
+        both("gui.universe.jammer_tower.effect", "半径 %s 格，慢到 %s%%", "Radius %s, slowed to %s%%");
+        both("gui.universe.jammer_tower.capsule", "干扰胶囊：这一个还能管 %s 次", "Capsule: %s pulses left");
+        both("gui.universe.jammer_tower.power_only", "没有干扰胶囊：只用电", "No capsule: power only");
+        both("gui.universe.jammer_tower.hint", "装上干扰胶囊范围更大、减速更多。", "Jamming capsules add range and slow harder.");
+        // 防御和黑雾两支科技（ADR-0028 §五、§六）
+        tech("gauss_turret", "高斯炮塔", "Gauss Turret");
+        tech("explosives", "爆破单元", "Explosives");
+        tech("laser_turret", "激光炮塔", "Laser Turret");
+        tech("signal_tower", "信号塔", "Signal Tower");
+        tech("titanium_ammo", "钛化弹箱", "Titanium Ammo");
+        tech("missile_turret", "导弹炮塔", "Missile Turret");
+        tech("jammer_tower", "干扰塔", "Jammer Tower");
+        tech("battlefield_analysis", "战场分析", "Battlefield Analysis");
+        tech("crystal_explosives", "晶石爆破单元", "Crystal Explosives");
+        tech("superalloy_ammo", "超合金弹箱", "Superalloy Ammo");
+        tech("dark_fog_analysis", "黑雾分析", "Dark Fog Analysis");
+        tech("implosion_cannon", "聚爆炮", "Implosion Cannon");
+        tech("high_explosive_shells", "高爆炮弹", "High-Explosive Shells");
+        tech("jamming_capsules", "干扰胶囊", "Jamming Capsules");
+        tech("supersonic_missiles", "超音速导弹", "Supersonic Missiles");
+        tech("crystal_shells", "晶石炮弹", "Crystal Shells");
+        tech("gravity_missiles", "引力导弹", "Gravity Missiles");
+        // 手册：信号塔、干扰塔、投掷物；掉落和黑雾矩阵
+        both("guide.universe.dark_fog.support.title", "信号塔、干扰塔、投掷物", "Towers and Throwables");
+        both("guide.universe.dark_fog.support",
+                "信号塔：当电线杆用，覆盖 12 格、连 30 格。通电时 48 格内的黑雾先打它，同一电网的导弹炮塔能打它范围里的目标。放在黑雾基地旁边，营地会超载。\n\n"
+                        + "干扰塔：不打伤害，减慢范围里的黑雾。只用电 16 格、慢到七成；装干扰胶囊 24 格、慢到四成，一个管 10 秒。\n\n"
+                        + "投掷物：右键扔，落地炸开，不破坏方块。燃烧单元 6 伤害、着火，爆破单元 16，晶石爆破单元 32。",
+                "Signal tower: power pole, range 12, links within 30. Powered, it draws Dark Fog within 48 blocks and lends its range to "
+                        + "missile turrets on its grid. Near a Dark Fog base it overdrives the camps.\n\n"
+                        + "Jammer tower: slows Dark Fog within 16 blocks to 70% speed; with capsules, 24 blocks and 40% (10 s per capsule).\n\n"
+                        + "Throwables: right-click to throw. They burst on impact without breaking blocks: 6 (+fire), 16, 32 damage.");
+        both("guide.universe.dark_fog.loot.title", "掉落和黑雾矩阵", "Drops and Dark Fog Matrices");
+        both("guide.universe.dark_fog.loot",
+                "黑雾死了掉沙土和零件，等级越高越好：能量碎片（0 级起）、硅基神经元和黑雾矩阵（3 级起）、物质重组器（6 级起）、"
+                        + "负熵奇点（12 级起）、核心素（18 级起）。掉在地上 2 分钟不捡就没了。\n\n"
+                        + "黑雾矩阵是第七种矩阵，先研究「黑雾分析」研究站才收它。\n\n"
+                        + "零件能换中间品：物质重组器做石墨烯，能量碎片做电浆激发器，硅基神经元做处理器。",
+                "Dark Fog drops sand and parts, better ones at higher levels: energy shards (0+), neurons and Dark Fog matrices (3+), "
+                        + "recombinators (6+), singularities (12+), core elements (18+). Drops vanish after 2 minutes.\n\n"
+                        + "The Dark Fog matrix is the seventh matrix. Research Dark Fog Analysis first.\n\n"
+                        + "Parts swap for intermediates: recombinators make graphene, shards make plasma exciters, neurons make processors.");
+    }
+
+    /** 建世界的选项：游戏规则（子代理 S）。 */
+    private void worldOptions() {
+        both("gamerule.category.universe.universe", "寰宇", "Universe");
+        rule("dark_fog", "黑雾", "生成黑雾基地。关掉后不再生成，已有的基地停摆。",
+                "Dark Fog", "Generate Dark Fog bases. When off, no new bases appear and existing ones go idle.");
+        rule("dark_fog_aggressiveness", "黑雾攻击性", "0 被动、1 迟钝、2 普通、3 敏锐、4 好斗、5 狂暴。被动的黑雾只守家，不进攻。",
+                "Dark Fog Aggressiveness", "0 Passive, 1 Torpid, 2 Normal, 3 Sharp, 4 Hostile, 5 Rampage. Passive Dark Fog only defends its bases.");
+        rule("dark_fog_initial_level", "黑雾初始等级", "新基地从几级开始，0–30。",
+                "Dark Fog Initial Level", "Level of newly placed bases, 0–30.");
+        rule("dark_fog_occupation", "黑雾初始占领（%）", "每颗星球上的基地有多少。100% 时母星系里保证有一处。0–300。",
+                "Dark Fog Occupation (%)", "How many bases each planet gets. At 100% the home system always has one. 0–300.");
+        rule("dark_fog_growth", "黑雾成长速度（%）", "基地攒物质、盖建筑、补单位的速度。25–400。",
+                "Dark Fog Growth (%)", "How fast bases gather matter, build and replace units. 25–400.");
+        rule("dark_fog_power_threat", "用电威胁系数（%）", "用电让基地的威胁涨得多快。0 时用电不招来进攻。0–400。",
+                "Power Threat Factor (%)", "How fast your power use raises threat. At 0, power use never draws attacks. 0–400.");
+        rule("dark_fog_combat_threat", "战斗威胁系数（%）", "打黑雾让基地的威胁涨得多快。0–400。",
+                "Combat Threat Factor (%)", "How fast fighting the Dark Fog raises threat. 0–400.");
+        rule("sentinel_strength", "守卫机强度（%）", "守卫机的血量、伤害和每波的架数。0 时守卫机不出现。0–300。",
+                "Sentinel Strength (%)", "Sentinel health, damage and wave size. At 0, sentinels never appear. 0–300.");
+        rule("resource_multiplier", "资源倍率（%）", "矿脉的储量和原油涌泉的产量。0 是无限。0–1000。",
+                "Resource Multiplier (%)", "Ore vein reserves and crude oil seep output. 0 means infinite. 0–1000.");
+        rule("star_systems", "恒星系数量", "星系里有几个恒星系，32–256。只在建世界时生效，之后改了也不变。",
+                "Star Systems", "Number of star systems in the galaxy, 32–256. Only read when the world is created.");
+        both("gui.universe.mining_machine.infinite", "无限", "infinite");
+        both("guide.universe.dark_fog.world_options.title", "建世界的选项", "World Options");
+        both("guide.universe.dark_fog.world_options",
+                "建世界时在\"更多\"→\"游戏规则\"里改，在\"寰宇\"一类下面；开好的世界用 /gamerule 改。\n\n黑雾：开关、攻击性、初始等级、初始占领、成长速度\n威胁系数：用电、战斗\n守卫机强度：0 时没有守卫机\n资源倍率：0 是无限\n恒星系数量：32–256\n\n恒星系数量建世界后就定了，别的随时能改。",
+                "Create World > More > Game Rules, under Universe. In an existing world use /gamerule.\n\nDark Fog: on/off, aggressiveness, initial level, occupation, growth\nThreat factors: power use, combat\nSentinel strength: 0 means no sentinels\nResource multiplier: 0 means infinite\nStar systems: 32 to 256\n\nThe star system count is fixed once the world exists. The rest can change any time.");
+    }
+
+    /** 一条游戏规则的名字和说明（建世界界面上显示）。 */
+    private void rule(String id, String zh, String zhDescription, String en, String enDescription) {
+        both("gamerule.universe." + id, zh, en);
+        both("gamerule.universe." + id + ".description", zhDescription, enDescription);
     }
 
     /** 终局（ADR-0018）：反物质、宇宙矩阵、两种发电设备和它们的科技。 */

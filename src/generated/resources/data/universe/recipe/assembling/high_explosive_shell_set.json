@@ -1,0 +1,20 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:shell_set"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:explosive_unit"
+    }
+  ],
+  "research": "high_explosive_shells",
+  "results": [
+    {
+      "id": "universe:high_explosive_shell_set"
+    }
+  ],
+  "time": 60
+}

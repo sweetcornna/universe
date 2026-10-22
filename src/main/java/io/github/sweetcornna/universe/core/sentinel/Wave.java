@@ -35,13 +35,21 @@ public final class Wave {
 
     /** 这一级通缉的一波；没被通缉、星球没有守卫机时是空的。 */
     public static Wave of(int level, SentinelLevel planet) {
-        if (level <= 0 || !planet.present()) {
+        return of(level, planet, 1);
+    }
+
+    /** 这一级通缉的一波，每种的架数按守卫机强度（{@link SentinelStrength}）调整；强度 0 时是空的。 */
+    public static Wave of(int level, SentinelLevel planet, double strength) {
+        if (level <= 0 || !planet.present() || !SentinelStrength.present(strength)) {
             return NONE;
         }
         int clamped = Math.min(level, Wanted.MAX_LEVEL);
         int[] counts = Arrays.copyOf(TABLE[clamped - 1], SentinelKind.values().length);
         if (planet == SentinelLevel.AGGRESSIVE) {
             counts[SentinelKind.DRONE.ordinal()]++;
+        }
+        for (int i = 0; i < counts.length; i++) {
+            counts[i] = SentinelStrength.count(counts[i], strength);
         }
         return new Wave(clamped, counts);
     }

@@ -1,0 +1,24 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:supersonic_missile_set"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:graviton_lens"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:crystal_explosive_unit"
+    }
+  ],
+  "research": "gravity_missiles",
+  "results": [
+    {
+      "id": "universe:gravity_missile_set"
+    }
+  ],
+  "time": 100
+}

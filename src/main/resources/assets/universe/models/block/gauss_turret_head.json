@@ -1,0 +1,354 @@
+{
+  "parent": "block/block",
+  "textures": {
+    "particle": "universe:block/turret_base",
+    "base": "universe:block/turret_base",
+    "base_top": "universe:block/turret_base_top",
+    "ring": "universe:block/turret_ring",
+    "housing": "universe:block/gauss_turret_housing",
+    "barrel": "universe:block/gauss_turret_barrel",
+    "accent": "universe:block/gauss_turret_accent"
+  },
+  "elements": [
+    {
+      "from": [
+        3.5,
+        7,
+        4
+      ],
+      "to": [
+        12.5,
+        9,
+        12
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            3.5,
+            7,
+            12.5,
+            9
+          ],
+          "texture": "#housing"
+        },
+        "south": {
+          "uv": [
+            3.5,
+            7,
+            12.5,
+            9
+          ],
+          "texture": "#housing"
+        },
+        "west": {
+          "uv": [
+            4,
+            7,
+            12,
+            9
+          ],
+          "texture": "#housing"
+        },
+        "east": {
+          "uv": [
+            4,
+            7,
+            12,
+            9
+          ],
+          "texture": "#housing"
+        },
+        "up": {
+          "uv": [
+            3.5,
+            4,
+            12.5,
+            12
+          ],
+          "texture": "#housing"
+        },
+        "down": {
+          "uv": [
+            3.5,
+            4,
+            12.5,
+            12
+          ],
+          "texture": "#housing"
+        }
+      }
+    },
+    {
+      "from": [
+        2.5,
+        8,
+        6
+      ],
+      "to": [
+        3.5,
+        12.5,
+        10.5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            12.5,
+            3.5,
+            13.5,
+            8
+          ],
+          "texture": "#accent"
+        },
+        "south": {
+          "uv": [
+            2.5,
+            3.5,
+            3.5,
+            8
+          ],
+          "texture": "#accent"
+        },
+        "west": {
+          "uv": [
+            6,
+            3.5,
+            10.5,
+            8
+          ],
+          "texture": "#accent"
+        },
+        "east": {
+          "uv": [
+            5.5,
+            3.5,
+            10,
+            8
+          ],
+          "texture": "#accent"
+        },
+        "up": {
+          "uv": [
+            2.5,
+            6,
+            3.5,
+            10.5
+          ],
+          "texture": "#accent"
+        },
+        "down": {
+          "uv": [
+            2.5,
+            5.5,
+            3.5,
+            10
+          ],
+          "texture": "#accent"
+        }
+      }
+    },
+    {
+      "from": [
+        12.5,
+        8,
+        6
+      ],
+      "to": [
+        13.5,
+        12.5,
+        10.5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            2.5,
+            3.5,
+            3.5,
+            8
+          ],
+          "texture": "#accent"
+        },
+        "south": {
+          "uv": [
+            12.5,
+            3.5,
+            13.5,
+            8
+          ],
+          "texture": "#accent"
+        },
+        "west": {
+          "uv": [
+            6,
+            3.5,
+            10.5,
+            8
+          ],
+          "texture": "#accent"
+        },
+        "east": {
+          "uv": [
+            5.5,
+            3.5,
+            10,
+            8
+          ],
+          "texture": "#accent"
+        },
+        "up": {
+          "uv": [
+            12.5,
+            6,
+            13.5,
+            10.5
+          ],
+          "texture": "#accent"
+        },
+        "down": {
+          "uv": [
+            12.5,
+            5.5,
+            13.5,
+            10
+          ],
+          "texture": "#accent"
+        }
+      }
+    },
+    {
+      "from": [
+        3.5,
+        9,
+        5
+      ],
+      "to": [
+        5,
+        13,
+        11
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            11,
+            3,
+            12.5,
+            7
+          ],
+          "texture": "#housing"
+        },
+        "south": {
+          "uv": [
+            3.5,
+            3,
+            5,
+            7
+          ],
+          "texture": "#housing"
+        },
+        "west": {
+          "uv": [
+            5,
+            3,
+            11,
+            7
+          ],
+          "texture": "#housing"
+        },
+        "east": {
+          "uv": [
+            5,
+            3,
+            11,
+            7
+          ],
+          "texture": "#housing"
+        },
+        "up": {
+          "uv": [
+            3.5,
+            5,
+            5,
+            11
+          ],
+          "texture": "#housing"
+        },
+        "down": {
+          "uv": [
+            3.5,
+            5,
+            5,
+            11
+          ],
+          "texture": "#housing"
+        }
+      }
+    },
+    {
+      "from": [
+        11,
+        9,
+        5
+      ],
+      "to": [
+        12.5,
+        13,
+        11
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            3.5,
+            3,
+            5,
+            7
+          ],
+          "texture": "#housing"
+        },
+        "south": {
+          "uv": [
+            11,
+            3,
+            12.5,
+            7
+          ],
+          "texture": "#housing"
+        },
+        "west": {
+          "uv": [
+            5,
+            3,
+            11,
+            7
+          ],
+          "texture": "#housing"
+        },
+        "east": {
+          "uv": [
+            5,
+            3,
+            11,
+            7
+          ],
+          "texture": "#housing"
+        },
+        "up": {
+          "uv": [
+            11,
+            5,
+            12.5,
+            11
+          ],
+          "texture": "#housing"
+        },
+        "down": {
+          "uv": [
+            11,
+            5,
+            12.5,
+            11
+          ],
+          "texture": "#housing"
+        }
+      }
+    }
+  ]
+}

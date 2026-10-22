@@ -1,0 +1,19 @@
+{
+  "type": "universe:research_shaped",
+  "category": "redstone",
+  "key": {
+    "B": "universe:circuit_board",
+    "E": "universe:plasma_exciter",
+    "S": "universe:steel",
+    "W": "universe:wireless_power_tower"
+  },
+  "pattern": [
+    " E ",
+    "SWS",
+    "SBS"
+  ],
+  "research": "signal_tower",
+  "result": {
+    "id": "universe:signal_tower"
+  }
+}

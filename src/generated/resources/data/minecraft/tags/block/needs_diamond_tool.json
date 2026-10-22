@@ -1,5 +1,7 @@
 {
   "values": [
-    "universe:strange_matter_ore"
+    "universe:strange_matter_ore",
+    "universe:dark_fog_plating",
+    "universe:dark_fog_conduit"
   ]
 }

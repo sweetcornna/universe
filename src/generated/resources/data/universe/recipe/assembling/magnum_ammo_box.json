@@ -1,0 +1,20 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 2,
+      "ingredient": "minecraft:copper_ingot"
+    },
+    {
+      "count": 1,
+      "ingredient": "minecraft:iron_ingot"
+    }
+  ],
+  "research": "gauss_turret",
+  "results": [
+    {
+      "id": "universe:magnum_ammo_box"
+    }
+  ],
+  "time": 20
+}

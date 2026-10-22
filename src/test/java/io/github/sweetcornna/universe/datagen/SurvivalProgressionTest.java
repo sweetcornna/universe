@@ -49,17 +49,24 @@ class SurvivalProgressionTest {
      * 不靠配方、由设备从世界里抽出来的东西；勘探数据靠多功能工具的分析目镜发现新东西拿到；重氢由分馏塔从氢里分出来
      * （轨道采集器也能采，但它本身要更晚的科技）；临界光子由射线接收站在光子模式下产出（戴森云有帆就行）。
      * 蛋、绒毛、胶质是驯服的异星动物产的，喂得起饲料就能养；生物卵是喂饱的伙伴下的（ADR-0026 §九）。
+     * 黑雾的零件和黑雾矩阵是打黑雾掉的（{@code DarkFogLoot}，不走战利品表），有多功能工具就打得动（ADR-0028 §六）。
      */
-    private static final Map<String, String> EXTRACTED = Map.of(
-            NS + "crude_oil", NS + "oil_extractor",
-            NS + "water", NS + "water_pump",
-            NS + "survey_data", NS + "multitool",
-            NS + "deuterium", NS + "fractionator",
-            NS + "critical_photon", NS + "ray_receiver",
-            NS + "alien_egg", NS + "herbivore_feed",
-            NS + "alien_fluff", NS + "herbivore_feed",
-            NS + "bio_gel", NS + "carnivore_feed",
-            NS + "creature_egg", NS + "herbivore_feed");
+    private static final Map<String, String> EXTRACTED = Map.ofEntries(
+            Map.entry(NS + "crude_oil", NS + "oil_extractor"),
+            Map.entry(NS + "water", NS + "water_pump"),
+            Map.entry(NS + "survey_data", NS + "multitool"),
+            Map.entry(NS + "deuterium", NS + "fractionator"),
+            Map.entry(NS + "critical_photon", NS + "ray_receiver"),
+            Map.entry(NS + "alien_egg", NS + "herbivore_feed"),
+            Map.entry(NS + "alien_fluff", NS + "herbivore_feed"),
+            Map.entry(NS + "bio_gel", NS + "carnivore_feed"),
+            Map.entry(NS + "creature_egg", NS + "herbivore_feed"),
+            Map.entry(NS + "energy_shard", NS + "multitool"),
+            Map.entry(NS + "silicon_neuron", NS + "multitool"),
+            Map.entry(NS + "matter_recombinator", NS + "multitool"),
+            Map.entry(NS + "negentropy_singularity", NS + "multitool"),
+            Map.entry(NS + "core_element", NS + "multitool"),
+            Map.entry(NS + "dark_fog_matrix", NS + "multitool"));
     /** 生存里本来就拿不到的：挖不掉的涌泉、掉落舱和石碑、空间站的交易终端和建材，只在坠毁点箱子里的损坏工具，机甲的建造无人机。刷怪蛋另算。 */
     private static final Set<String> UNOBTAINABLE = Set.of(NS + "crude_oil_seep", NS + "damaged_multitool", NS + "drop_pod",
             NS + "monolith", NS + "trade_terminal",

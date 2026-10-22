@@ -1,0 +1,28 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 6,
+      "ingredient": "universe:steel"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:plasma_exciter"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:electric_motor"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:circuit_board"
+    }
+  ],
+  "research": "implosion_cannon",
+  "results": [
+    {
+      "id": "universe:implosion_cannon"
+    }
+  ],
+  "time": 100
+}

@@ -24,6 +24,7 @@ import io.github.sweetcornna.universe.network.GhostsPayload;
 import io.github.sweetcornna.universe.perf.ServerPerf;
 import io.github.sweetcornna.universe.registry.UniverseAttachments;
 import io.github.sweetcornna.universe.tech.ExosuitData;
+import io.github.sweetcornna.universe.darkfog.facility.FacilityRepairs;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
@@ -410,6 +411,11 @@ public final class Construction {
                 }
             }
             if (first == null) {
+                // 蓝图的工地没活了：顺手修附近掉血的设施、按残影重建（ADR-0028 §四）
+                List<DroneFleet.Task> repairs = FacilityRepairs.droneTasks(this.player, x, y, z);
+                if (!repairs.isEmpty()) {
+                    return repairs;
+                }
                 this.crew.idleUntil = this.level.getGameTime() + IDLE;
                 return List.of();
             }
@@ -535,6 +541,9 @@ public final class Construction {
 
         @Override
         public boolean build(DroneFleet.Task task) {
+            if (task.site() < 0) {
+                return FacilityRepairs.droneBuild(this.player, task);
+            }
             BuildSite site = this.sites.site(task.site());
             int index = task.index();
             if (site == null) {
@@ -572,6 +581,10 @@ public final class Construction {
 
         @Override
         public void release(DroneFleet.Task task) {
+            if (task.site() < 0) {
+                FacilityRepairs.droneRelease(this.level, task);
+                return;
+            }
             BuildSite site = this.sites.site(task.site());
             if (site != null) {
                 site.claimed.clear(task.index());

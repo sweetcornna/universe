@@ -11,6 +11,7 @@ import io.github.sweetcornna.universe.core.galaxy.BodyId;
 import io.github.sweetcornna.universe.core.galaxy.Galaxy;
 import io.github.sweetcornna.universe.core.galaxy.GalaxyGenerator;
 import io.github.sweetcornna.universe.core.galaxy.Planet;
+import io.github.sweetcornna.universe.rules.UniverseRules;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
@@ -23,7 +24,7 @@ import net.minecraft.world.level.Level;
  * <p>星球维度的 ID 是 {@code universe:<天体路径>}，例如 {@code universe:s3/p2}；母星就是主世界。
  */
 public final class Planets {
-    /** 星团里的恒星系数量。暂时固定，以后做成世界生成时的配置项。 */
+    /** 星团里默认的恒星系数量。实际的数量建世界时定（游戏规则 {@code star_systems}，ADR-0028 §七），见 {@link #systemCount}。 */
     public static final int SYSTEM_COUNT = GalaxyGenerator.DEFAULT_SYSTEM_COUNT;
 
     /** 星球维度对应的星球，每个世界查一次。 */
@@ -79,7 +80,12 @@ public final class Planets {
 
     /** 服务端的星团。 */
     public static Galaxy galaxy(MinecraftServer server) {
-        return GalaxyGenerator.fromGalaxySeed(galaxySeed(server), SYSTEM_COUNT);
+        return GalaxyGenerator.fromGalaxySeed(galaxySeed(server), systemCount(server));
+    }
+
+    /** 这个存档的恒星系数量：建世界时定下，以后不变。 */
+    public static int systemCount(MinecraftServer server) {
+        return UniverseRules.starSystems(server);
     }
 
     /** 发给客户端的星团种子，由世界种子派生，反推不出世界种子。 */

@@ -83,4 +83,9 @@ public final class LevelPower {
     public PowerSystem.@Nullable Grid gridOfTower(BlockPos tower) {
         return this.system.gridOfTower(tower.asLong());
     }
+
+    /** 这个世界里所有的电网（只有已加载区块里的），黑雾找进攻目标用。 */
+    public java.util.List<PowerSystem.Grid> grids() {
+        return this.system.grids();
+    }
 }

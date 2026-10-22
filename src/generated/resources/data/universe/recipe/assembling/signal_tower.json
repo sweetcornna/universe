@@ -1,0 +1,28 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:wireless_power_tower"
+    },
+    {
+      "count": 4,
+      "ingredient": "universe:steel"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:plasma_exciter"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:circuit_board"
+    }
+  ],
+  "research": "signal_tower",
+  "results": [
+    {
+      "id": "universe:signal_tower"
+    }
+  ],
+  "time": 200
+}

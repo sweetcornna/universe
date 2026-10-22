@@ -1,0 +1,28 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 3,
+      "ingredient": "universe:steel"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:titanium_alloy"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:thruster"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:processor"
+    }
+  ],
+  "research": "missile_turret",
+  "results": [
+    {
+      "id": "universe:missile_turret"
+    }
+  ],
+  "time": 120
+}

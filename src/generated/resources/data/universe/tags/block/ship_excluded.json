@@ -105,6 +105,15 @@
     "universe:planet_strata",
     "universe:planet_crystal",
     "universe:planet_cap",
-    "universe:planet_bloom"
+    "universe:planet_bloom",
+    "universe:dark_fog_plating",
+    "universe:dark_fog_conduit",
+    "universe:dark_fog_core_remnant",
+    "universe:gauss_turret",
+    "universe:laser_turret",
+    "universe:implosion_cannon",
+    "universe:missile_turret",
+    "universe:signal_tower",
+    "universe:jammer_tower"
   ]
 }

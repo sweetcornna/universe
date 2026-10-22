@@ -13,6 +13,7 @@ import io.github.sweetcornna.universe.core.galaxy.Resource;
 import io.github.sweetcornna.universe.registry.UniverseAttachments;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
 import io.github.sweetcornna.universe.registry.UniverseItems;
+import io.github.sweetcornna.universe.rules.UniverseRules;
 import io.github.sweetcornna.universe.world.planet.Planets;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
@@ -27,7 +28,8 @@ import net.minecraft.world.level.chunk.LevelChunk;
  * 矿脉节点（ADR-0011）：采矿机眼里的矿石方块。原版矿石和星球矿石都算，每个方块有几百的储量；采完变回当地的石头。
  *
  * <p>没开采过的节点不存档，储量由世界种子和位置算出来（{@link Veins}）；开采过的在所在区块的附件里记开采了多少。
- * 原油涌泉也记在这里，记的是抽了多少，产量随之衰减。
+ * 原油涌泉也记在这里，记的是抽了多少，产量随之衰减。储量和产量乘建世界时定的资源倍率（ADR-0028 §七），倍率 0 时采不完，
+ * 也不再记开采了多少。
  */
 public final class VeinNodes {
     private static final Map<Block, Node> VANILLA = new IdentityHashMap<>();
@@ -88,7 +90,7 @@ public final class VeinNodes {
         return ores;
     }
 
-    /** 节点的初始储量：星球上按资源丰度调整（丰度 0 到 1 对应 0.5 到 1.5 倍）。 */
+    /** 节点的初始储量：星球上按资源丰度调整（丰度 0 到 1 对应 0.5 到 1.5 倍），再乘资源倍率；倍率 0 时是 {@link Veins#INFINITE}。 */
     public static int initialReserve(ServerLevel level, BlockPos pos, Node node) {
         double richness = 1;
         if (node.resource() != null) {
@@ -101,7 +103,11 @@ public final class VeinNodes {
                 }
             }
         }
-        return Veins.initialReserve(level.getSeed(), pos.getX(), pos.getY(), pos.getZ(), richness);
+        return Veins.initialReserve(level.getSeed(), pos.getX(), pos.getY(), pos.getZ(), richness, multiplier(level));
+    }
+
+    private static double multiplier(ServerLevel level) {
+        return UniverseRules.resourceMultiplier(level.getServer());
     }
 
     /** 节点还剩多少。 */
@@ -115,8 +121,12 @@ public final class VeinNodes {
      * @return 这个节点采完了（已经换成石头）
      */
     public static boolean extract(ServerLevel level, BlockPos pos, Node node) {
+        int reserve = initialReserve(level, pos, node);
+        if (reserve == Veins.INFINITE) {
+            return false;
+        }
         int used = used(level, pos) + 1;
-        if (used >= initialReserve(level, pos, node)) {
+        if (used >= reserve) {
             setUsed(level, pos, 0);
             level.setBlock(pos, node.depleted(), 3);
             return true;
@@ -130,12 +140,14 @@ public final class VeinNodes {
     /** 涌泉现在的产量（个/秒）。 */
     public static double seepRate(ServerLevel level, BlockPos pos) {
         double initial = Veins.initialSeepRate(level.getSeed(), pos.getX(), pos.getY(), pos.getZ());
-        return Veins.seepRate(initial, used(level, pos));
+        return Veins.seepRate(initial, used(level, pos), multiplier(level));
     }
 
     /** 从涌泉抽出一个。 */
     public static void extractSeep(ServerLevel level, BlockPos pos) {
-        setUsed(level, pos, used(level, pos) + 1);
+        if (!Veins.infinite(multiplier(level))) {
+            setUsed(level, pos, used(level, pos) + 1);
+        }
     }
 
     // ---- 区块附件

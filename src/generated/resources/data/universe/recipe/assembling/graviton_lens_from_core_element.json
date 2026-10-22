@@ -1,0 +1,20 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:core_element"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:synthetic_diamond"
+    }
+  ],
+  "research": "gravitational_wave_refraction",
+  "results": [
+    {
+      "id": "universe:graviton_lens"
+    }
+  ],
+  "time": 120
+}

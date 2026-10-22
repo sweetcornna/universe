@@ -1,0 +1,17 @@
+{
+  "type": "universe:research_shaped",
+  "category": "equipment",
+  "key": {
+    "L": "universe:graviton_lens",
+    "M": "universe:supersonic_missile_set",
+    "X": "universe:crystal_explosive_unit"
+  },
+  "pattern": [
+    " L ",
+    "XMX"
+  ],
+  "research": "gravity_missiles",
+  "result": {
+    "id": "universe:gravity_missile_set"
+  }
+}

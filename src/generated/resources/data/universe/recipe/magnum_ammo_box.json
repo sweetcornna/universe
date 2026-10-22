@@ -1,0 +1,15 @@
+{
+  "type": "universe:research_shaped",
+  "category": "equipment",
+  "key": {
+    "C": "minecraft:copper_ingot",
+    "I": "minecraft:iron_ingot"
+  },
+  "pattern": [
+    "CIC"
+  ],
+  "research": "gauss_turret",
+  "result": {
+    "id": "universe:magnum_ammo_box"
+  }
+}

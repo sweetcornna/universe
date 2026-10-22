@@ -6,6 +6,7 @@
     "universe:toxic",
     "universe:radiation",
     "universe:plasma",
-    "universe:shock"
+    "universe:shock",
+    "universe:dark_fog"
   ]
 }

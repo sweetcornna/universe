@@ -19,6 +19,7 @@ import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.core.fleet.FreighterLayout;
 import io.github.sweetcornna.universe.core.galaxy.StarSystem;
 import io.github.sweetcornna.universe.core.procgen.Rng;
+import io.github.sweetcornna.universe.core.sentinel.SentinelStrength;
 import io.github.sweetcornna.universe.core.ship.PirateFlight;
 import io.github.sweetcornna.universe.core.ship.PirateRaid;
 import io.github.sweetcornna.universe.core.space.Encounters;
@@ -38,6 +39,7 @@ import io.github.sweetcornna.universe.pirate.PirateFighter;
 import io.github.sweetcornna.universe.pirate.Pirates;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
 import io.github.sweetcornna.universe.registry.UniverseStats;
+import io.github.sweetcornna.universe.rules.UniverseRules;
 import io.github.sweetcornna.universe.station.Stations;
 import io.github.sweetcornna.universe.survival.SurvivalDamage;
 import io.github.sweetcornna.universe.trade.Credits;
@@ -803,6 +805,10 @@ public final class SpaceEncounters {
     /** 太空守卫机锁定玩家，几秒后 {@code count} 架拦截机从身后追来。{@code forced}（调试命令）时不管创造模式、和平难度、空间站。 */
     public static boolean pursue(ServerPlayer player, int count, boolean forced) {
         ServerLevel level = player.level();
+        if (!forced) {
+            // 守卫机强度（ADR-0028 §七）：架数跟着变，0 时不追
+            count = SentinelStrength.count(count, UniverseRules.sentinelStrength(level.getServer()));
+        }
         if (count <= 0 || !SpaceDimensions.isSpace(level.dimension())) {
             return false;
         }

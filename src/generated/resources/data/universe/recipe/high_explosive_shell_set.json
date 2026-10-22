@@ -1,0 +1,17 @@
+{
+  "type": "universe:research_shaped",
+  "category": "equipment",
+  "key": {
+    "S": "universe:shell_set",
+    "X": "universe:explosive_unit"
+  },
+  "pattern": [
+    "X",
+    "S",
+    "X"
+  ],
+  "research": "high_explosive_shells",
+  "result": {
+    "id": "universe:high_explosive_shell_set"
+  }
+}

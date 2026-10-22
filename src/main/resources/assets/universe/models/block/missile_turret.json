@@ -1,0 +1,225 @@
+{
+  "parent": "block/block",
+  "textures": {
+    "particle": "universe:block/turret_base",
+    "base": "universe:block/turret_base",
+    "base_top": "universe:block/turret_base_top",
+    "ring": "universe:block/turret_ring",
+    "housing": "universe:block/missile_turret_housing",
+    "barrel": "universe:block/missile_turret_barrel",
+    "accent": "universe:block/missile_turret_accent",
+    "pod_front": "universe:block/missile_turret_pod_front",
+    "lamp": "universe:block/missile_turret_lamp"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        4,
+        16
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            12,
+            16,
+            16
+          ],
+          "texture": "#base",
+          "cullface": "north"
+        },
+        "south": {
+          "uv": [
+            0,
+            12,
+            16,
+            16
+          ],
+          "texture": "#base",
+          "cullface": "south"
+        },
+        "west": {
+          "uv": [
+            0,
+            12,
+            16,
+            16
+          ],
+          "texture": "#base",
+          "cullface": "west"
+        },
+        "east": {
+          "uv": [
+            0,
+            12,
+            16,
+            16
+          ],
+          "texture": "#base",
+          "cullface": "east"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#base_top"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#base",
+          "cullface": "down"
+        }
+      }
+    },
+    {
+      "from": [
+        1.5,
+        4,
+        1.5
+      ],
+      "to": [
+        14.5,
+        5.5,
+        14.5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            1.5,
+            10.5,
+            14.5,
+            12
+          ],
+          "texture": "#ring"
+        },
+        "south": {
+          "uv": [
+            1.5,
+            10.5,
+            14.5,
+            12
+          ],
+          "texture": "#ring"
+        },
+        "west": {
+          "uv": [
+            1.5,
+            10.5,
+            14.5,
+            12
+          ],
+          "texture": "#ring"
+        },
+        "east": {
+          "uv": [
+            1.5,
+            10.5,
+            14.5,
+            12
+          ],
+          "texture": "#ring"
+        },
+        "up": {
+          "uv": [
+            1.5,
+            1.5,
+            14.5,
+            14.5
+          ],
+          "texture": "#ring"
+        },
+        "down": {
+          "uv": [
+            1.5,
+            1.5,
+            14.5,
+            14.5
+          ],
+          "texture": "#ring"
+        }
+      }
+    },
+    {
+      "from": [
+        4.5,
+        5.5,
+        4.5
+      ],
+      "to": [
+        11.5,
+        7,
+        11.5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            4.5,
+            9,
+            11.5,
+            10.5
+          ],
+          "texture": "#ring"
+        },
+        "south": {
+          "uv": [
+            4.5,
+            9,
+            11.5,
+            10.5
+          ],
+          "texture": "#ring"
+        },
+        "west": {
+          "uv": [
+            4.5,
+            9,
+            11.5,
+            10.5
+          ],
+          "texture": "#ring"
+        },
+        "east": {
+          "uv": [
+            4.5,
+            9,
+            11.5,
+            10.5
+          ],
+          "texture": "#ring"
+        },
+        "up": {
+          "uv": [
+            4.5,
+            4.5,
+            11.5,
+            11.5
+          ],
+          "texture": "#ring"
+        },
+        "down": {
+          "uv": [
+            4.5,
+            4.5,
+            11.5,
+            11.5
+          ],
+          "texture": "#ring"
+        }
+      }
+    }
+  ]
+}

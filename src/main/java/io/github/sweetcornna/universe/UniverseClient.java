@@ -1,5 +1,6 @@
 package io.github.sweetcornna.universe;
 
+import io.github.sweetcornna.universe.client.darkfog.TurretClient;
 import io.github.sweetcornna.universe.client.ClientConfig;
 import io.github.sweetcornna.universe.client.ItemSummaries;
 import io.github.sweetcornna.universe.client.asteroid.AsteroidClient;
@@ -111,6 +112,16 @@ public final class UniverseClient {
         TeleportClient.registerEvents(modBus);
         EggClient.registerEvents(modBus);
         MissionClient.registerEvents(modBus);
+        // M16 基地（P）的注册加在这行上面
+        io.github.sweetcornna.universe.client.darkfog.DarkFogClient.registerEvents(modBus);
+        // M16 单位（P2）的注册加在这行上面
+        io.github.sweetcornna.universe.client.facility.FacilityClient.registerEvents(modBus, NeoForge.EVENT_BUS);
+        // M16 设施（Q）的注册加在这行上面
+        TurretClient.registerEvents(modBus);
+        // M16 炮塔（R1）的注册加在这行上面
+        io.github.sweetcornna.universe.client.darkfog.DarkFogSupportClient.registerEvents(modBus);
+        // M16 信号塔、干扰塔（R2）的注册加在这行上面
+        // M16 建世界的选项（S）的注册加在这行上面
         ClientStory.registerEvents(modBus, NeoForge.EVENT_BUS);
         GuideItem.opener = () -> Minecraft.getInstance().gui.setScreen(new GuideScreen());
         BlueprintClient.registerEvents(modBus, NeoForge.EVENT_BUS);

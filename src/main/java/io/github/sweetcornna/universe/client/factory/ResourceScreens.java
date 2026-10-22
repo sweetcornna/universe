@@ -2,6 +2,7 @@ package io.github.sweetcornna.universe.client.factory;
 
 import java.util.Locale;
 
+import io.github.sweetcornna.universe.core.factory.Veins;
 import io.github.sweetcornna.universe.factory.FractionatorBlockEntity;
 import io.github.sweetcornna.universe.factory.MachineMenu;
 import io.github.sweetcornna.universe.factory.resource.MiningMachineBlockEntity;
@@ -60,8 +61,11 @@ public final class ResourceScreens {
             Item item = BuiltInRegistries.ITEM.byId((int) id);
             graphics.text(this.font, Component.translatable("gui.universe.mining_machine.vein", new ItemStack(item).getHoverName(), nodes),
                     8, 36, TEXT, false);
-            graphics.text(this.font, Component.translatable("gui.universe.mining_machine.remaining",
-                    String.format(Locale.ROOT, "%,d", this.menu.wide(MiningMachineBlockEntity.REMAINING))), 8, 48, TEXT, false);
+            long remaining = this.menu.wide(MiningMachineBlockEntity.REMAINING);
+            // 资源倍率 0（ADR-0028 §七）：每个节点的储量都是 Veins.INFINITE
+            Component reserve = remaining >= Veins.INFINITE ? Component.translatable("gui.universe.mining_machine.infinite")
+                    : Component.literal(String.format(Locale.ROOT, "%,d", remaining));
+            graphics.text(this.font, Component.translatable("gui.universe.mining_machine.remaining", reserve), 8, 48, TEXT, false);
             double perMinute = nodes * 1200.0 / MiningMachineBlockEntity.TICKS_PER_ITEM * this.menu.data(MiningMachineBlockEntity.SPEED) / 100;
             lastLine(this, graphics, Component.translatable("gui.universe.mining_machine.rate",
                     String.format(Locale.ROOT, "%.0f", perMinute)), 60);

@@ -1,5 +1,7 @@
 package io.github.sweetcornna.universe.registry;
 
+import io.github.sweetcornna.universe.darkfog.turret.AmmoItem;
+import io.github.sweetcornna.universe.core.darkfog.AmmoKind;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.LinkedHashMap;
@@ -12,6 +14,7 @@ import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.block.CreatureEggItem;
 import io.github.sweetcornna.universe.block.OreKind;
 import io.github.sweetcornna.universe.blueprint.BlueprintItem;
+import io.github.sweetcornna.universe.darkfog.defense.ThrowableUnitItem;
 import io.github.sweetcornna.universe.core.ecology.PlantForm;
 import io.github.sweetcornna.universe.core.galaxy.Hazard;
 import io.github.sweetcornna.universe.core.space.DriveTier;
@@ -408,7 +411,9 @@ public final class UniverseItems {
     public static final DeferredItem<Item> PROLIFERATOR_MK2 = ITEMS.registerSimpleItem("proliferator_mk2");
     public static final DeferredItem<Item> PROLIFERATOR_MK3 = ITEMS.registerSimpleItem("proliferator_mk3");
     /** 燃烧单元：三块煤压成一个，比高能石墨耐烧（戴森球计划 9 MJ）。 */
-    public static final DeferredItem<Item> COMBUSTIBLE_UNIT = ITEMS.registerSimpleItem("combustible_unit", properties -> fuel(properties, 5300));
+    /** 燃烧单元：燃料，右键也能扔（ADR-0028 §五）。 */
+    public static final DeferredItem<ThrowableUnitItem> COMBUSTIBLE_UNIT = ITEMS.registerItem("combustible_unit", ThrowableUnitItem::new,
+            properties -> fuel(properties, 5300));
     /** 液氢燃料棒：钛壳装氢（戴森球计划 54 MJ）。 */
     public static final DeferredItem<Item> HYDROGEN_FUEL_ROD = ITEMS.registerSimpleItem("hydrogen_fuel_rod",
             properties -> fuel(properties.stacksTo(32), 31700));
@@ -469,6 +474,42 @@ public final class UniverseItems {
     public static final DeferredItem<Item> ANTIMATTER_FUEL_ROD = ITEMS.registerSimpleItem("antimatter_fuel_rod", properties -> properties.stacksTo(32));
     public static final DeferredItem<Item> COMPOSITE_MATRIX = ITEMS.registerSimpleItem("composite_matrix");
     public static final DeferredItem<Item> UNIVERSE_MATRIX = ITEMS.registerSimpleItem("universe_matrix");
+    // M16 黑雾的掉落（ADR-0028 §六）
+    public static final DeferredItem<Item> ENERGY_SHARD = ITEMS.registerSimpleItem("energy_shard");
+    public static final DeferredItem<Item> SILICON_NEURON = ITEMS.registerSimpleItem("silicon_neuron");
+    public static final DeferredItem<Item> MATTER_RECOMBINATOR = ITEMS.registerSimpleItem("matter_recombinator");
+    public static final DeferredItem<Item> NEGENTROPY_SINGULARITY = ITEMS.registerSimpleItem("negentropy_singularity");
+    public static final DeferredItem<Item> CORE_ELEMENT = ITEMS.registerSimpleItem("core_element");
+    /** 第七种矩阵。 */
+    public static final DeferredItem<Item> DARK_FOG_MATRIX = ITEMS.registerSimpleItem("dark_fog_matrix");
+    // M16 弹药（ADR-0028 §五）
+    public static final DeferredItem<AmmoItem> MAGNUM_AMMO_BOX = ITEMS.registerItem("magnum_ammo_box", p -> new AmmoItem(AmmoKind.MAGNUM, p));
+    public static final DeferredItem<AmmoItem> TITANIUM_AMMO_BOX = ITEMS.registerItem("titanium_ammo_box", p -> new AmmoItem(AmmoKind.TITANIUM, p));
+    public static final DeferredItem<AmmoItem> SUPERALLOY_AMMO_BOX = ITEMS.registerItem("superalloy_ammo_box", p -> new AmmoItem(AmmoKind.SUPERALLOY, p));
+    public static final DeferredItem<AmmoItem> SHELL_SET = ITEMS.registerItem("shell_set", p -> new AmmoItem(AmmoKind.SHELL, p));
+    public static final DeferredItem<AmmoItem> HIGH_EXPLOSIVE_SHELL_SET = ITEMS.registerItem("high_explosive_shell_set", p -> new AmmoItem(AmmoKind.HIGH_EXPLOSIVE_SHELL, p));
+    public static final DeferredItem<AmmoItem> CRYSTAL_SHELL_SET = ITEMS.registerItem("crystal_shell_set", p -> new AmmoItem(AmmoKind.CRYSTAL_SHELL, p));
+    public static final DeferredItem<AmmoItem> MISSILE_SET = ITEMS.registerItem("missile_set", p -> new AmmoItem(AmmoKind.MISSILE, p));
+    public static final DeferredItem<AmmoItem> SUPERSONIC_MISSILE_SET = ITEMS.registerItem("supersonic_missile_set", p -> new AmmoItem(AmmoKind.SUPERSONIC_MISSILE, p));
+    public static final DeferredItem<AmmoItem> GRAVITY_MISSILE_SET = ITEMS.registerItem("gravity_missile_set", p -> new AmmoItem(AmmoKind.GRAVITY_MISSILE, p));
+    public static final DeferredItem<Item> JAMMING_CAPSULE = ITEMS.registerSimpleItem("jamming_capsule");
+    // M16 投掷物（ADR-0028 §五）
+    public static final DeferredItem<ThrowableUnitItem> EXPLOSIVE_UNIT = ITEMS.registerItem("explosive_unit", ThrowableUnitItem::new,
+            properties -> properties.stacksTo(32));
+    public static final DeferredItem<ThrowableUnitItem> CRYSTAL_EXPLOSIVE_UNIT = ITEMS.registerItem("crystal_explosive_unit",
+            ThrowableUnitItem::new, properties -> properties.stacksTo(32));
+    public static final DeferredItem<BlockItem> BATTLEFIELD_ANALYSIS_BASE = ITEMS.registerSimpleBlockItem(UniverseBlocks.BATTLEFIELD_ANALYSIS_BASE);
+    // M16 黑雾：设施（Q）的方块物品加在这行上面
+    public static final DeferredItem<BlockItem> GAUSS_TURRET = ITEMS.registerSimpleBlockItem(UniverseBlocks.GAUSS_TURRET);
+    public static final DeferredItem<BlockItem> LASER_TURRET = ITEMS.registerSimpleBlockItem(UniverseBlocks.LASER_TURRET);
+    public static final DeferredItem<BlockItem> IMPLOSION_CANNON = ITEMS.registerSimpleBlockItem(UniverseBlocks.IMPLOSION_CANNON);
+    public static final DeferredItem<BlockItem> MISSILE_TURRET = ITEMS.registerSimpleBlockItem(UniverseBlocks.MISSILE_TURRET);
+    // M16 黑雾：炮塔（R1）的方块物品加在这行上面
+    public static final DeferredItem<BlockItem> SIGNAL_TOWER = ITEMS.registerSimpleBlockItem(UniverseBlocks.SIGNAL_TOWER);
+    public static final DeferredItem<BlockItem> JAMMER_TOWER = ITEMS.registerSimpleBlockItem(UniverseBlocks.JAMMER_TOWER);
+    // M16 黑雾：信号塔、干扰塔（R2）的方块物品加在这行上面
+    // M16 黑雾：基地（P）的方块物品加在这行上面
+
     /** 蓝图（ADR-0018）。 */
     public static final DeferredItem<BlueprintItem> BLUEPRINT = ITEMS.registerItem("blueprint", BlueprintItem::new);
     /** 手册（ADR-0018）。 */
@@ -567,6 +608,17 @@ public final class UniverseItems {
                 PHOTON_COMBINER, SOLAR_SAIL, FRAME_MATERIAL, DYSON_SPHERE_COMPONENT, SMALL_CARRIER_ROCKET, DEUTERON_FUEL_ROD, TITANIUM_GLASS,
                 CASIMIR_CRYSTAL, PLANE_FILTER, QUANTUM_CHIP, GRAVITON_LENS, CRITICAL_PHOTON, GRAVITY_MATRIX,
                 ANTIMATTER, ANNIHILATION_CONSTRAINT_SPHERE, ANTIMATTER_FUEL_ROD, COMPOSITE_MATRIX, UNIVERSE_MATRIX));
+        // M16 黑雾（ADR-0028）
+        order.addAll(List.of(ENERGY_SHARD, SILICON_NEURON, MATTER_RECOMBINATOR, NEGENTROPY_SINGULARITY, CORE_ELEMENT, DARK_FOG_MATRIX,
+                MAGNUM_AMMO_BOX, TITANIUM_AMMO_BOX, SUPERALLOY_AMMO_BOX, SHELL_SET, HIGH_EXPLOSIVE_SHELL_SET, CRYSTAL_SHELL_SET,
+                MISSILE_SET, SUPERSONIC_MISSILE_SET, GRAVITY_MISSILE_SET, JAMMING_CAPSULE, EXPLOSIVE_UNIT, CRYSTAL_EXPLOSIVE_UNIT));
+        order.add(BATTLEFIELD_ANALYSIS_BASE);
+        // M16 黑雾：设施（Q）的创造物品栏顺序加在这行上面
+        order.addAll(List.of(GAUSS_TURRET, LASER_TURRET, IMPLOSION_CANNON, MISSILE_TURRET));
+        // M16 黑雾：炮塔（R1）的创造物品栏顺序加在这行上面
+        order.addAll(List.of(SIGNAL_TOWER, JAMMER_TOWER));
+        // M16 黑雾：信号塔、干扰塔（R2）的创造物品栏顺序加在这行上面
+        // M16 黑雾：基地（P）的创造物品栏顺序加在这行上面
         return List.copyOf(order);
     }
 

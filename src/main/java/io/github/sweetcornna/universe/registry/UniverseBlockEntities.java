@@ -1,10 +1,15 @@
 package io.github.sweetcornna.universe.registry;
 
+import io.github.sweetcornna.universe.darkfog.facility.BattlefieldBaseBlockEntity;
+import io.github.sweetcornna.universe.darkfog.facility.FacilityGhostBlockEntity;
+import io.github.sweetcornna.universe.darkfog.turret.TurretBlockEntity;
 import java.util.function.Supplier;
 
 import io.github.sweetcornna.universe.block.CreatureEggBlockEntity;
 import io.github.sweetcornna.universe.block.EggSequencerBlockEntity;
 import io.github.sweetcornna.universe.block.HydroponicTrayBlockEntity;
+import io.github.sweetcornna.universe.darkfog.defense.JammerTowerBlockEntity;
+import io.github.sweetcornna.universe.darkfog.defense.SignalTowerBlockEntity;
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.block.landmark.FacilityTerminalBlockEntity;
 import io.github.sweetcornna.universe.block.poi.SupplyCrateBlockEntity;
@@ -175,6 +180,27 @@ public final class UniverseBlockEntities {
             "recomposing_assembler", UniverseBlocks.RECOMPOSING_ASSEMBLER, RecipeMachines.RECOMPOSING_ASSEMBLER);
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<RecipeMachineBlockEntity>> QUANTUM_CHEMICAL_PLANT = recipeMachine(
             "quantum_chemical_plant", UniverseBlocks.QUANTUM_CHEMICAL_PLANT, RecipeMachines.QUANTUM_CHEMICAL_PLANT);
+    // M16 设施的残影、战场分析基地（ADR-0028 §四、§五）
+    public static final Supplier<BlockEntityType<FacilityGhostBlockEntity>> FACILITY_GHOST = BLOCK_ENTITIES.register("facility_ghost",
+            () -> new BlockEntityType<>(FacilityGhostBlockEntity::new, UniverseBlocks.FACILITY_GHOST.get()));
+    public static final Supplier<BlockEntityType<BattlefieldBaseBlockEntity>> BATTLEFIELD_ANALYSIS_BASE = BLOCK_ENTITIES.register(
+            "battlefield_analysis_base", () -> new BlockEntityType<>(BattlefieldBaseBlockEntity::new, UniverseBlocks.BATTLEFIELD_ANALYSIS_BASE.get()));
+    // M16 黑雾：设施（Q）的方块实体加在这行上面
+    // M16 炮塔（ADR-0028 §五）：四种共用一个方块实体类，按方块分种类
+    public static final Supplier<BlockEntityType<TurretBlockEntity>> GAUSS_TURRET = BLOCK_ENTITIES.register("gauss_turret",
+            () -> new BlockEntityType<>(TurretBlockEntity::new, UniverseBlocks.GAUSS_TURRET.get()));
+    public static final Supplier<BlockEntityType<TurretBlockEntity>> LASER_TURRET = BLOCK_ENTITIES.register("laser_turret",
+            () -> new BlockEntityType<>(TurretBlockEntity::new, UniverseBlocks.LASER_TURRET.get()));
+    public static final Supplier<BlockEntityType<TurretBlockEntity>> IMPLOSION_CANNON = BLOCK_ENTITIES.register("implosion_cannon",
+            () -> new BlockEntityType<>(TurretBlockEntity::new, UniverseBlocks.IMPLOSION_CANNON.get()));
+    public static final Supplier<BlockEntityType<TurretBlockEntity>> MISSILE_TURRET = BLOCK_ENTITIES.register("missile_turret",
+            () -> new BlockEntityType<>(TurretBlockEntity::new, UniverseBlocks.MISSILE_TURRET.get()));
+    // M16 黑雾：炮塔（R1）的方块实体加在这行上面
+    public static final Supplier<BlockEntityType<SignalTowerBlockEntity>> SIGNAL_TOWER = BLOCK_ENTITIES.register("signal_tower",
+            () -> new BlockEntityType<>(SignalTowerBlockEntity::new, UniverseBlocks.SIGNAL_TOWER.get()));
+    public static final Supplier<BlockEntityType<JammerTowerBlockEntity>> JAMMER_TOWER = BLOCK_ENTITIES.register("jammer_tower",
+            () -> new BlockEntityType<>(JammerTowerBlockEntity::new, UniverseBlocks.JAMMER_TOWER.get()));
+    // M16 黑雾：信号塔、干扰塔（R2）的方块实体加在这行上面
 
     private UniverseBlockEntities() {
     }

@@ -88,6 +88,7 @@ public final class UniverseDataGen {
         event.add(Registries.DAMAGE_TYPE, context -> {
             SurvivalDamage.bootstrap(context);
             PlasmaBolt.bootstrapDamage(context);
+            io.github.sweetcornna.universe.darkfog.entity.DarkFogDamage.bootstrap(context);
         });
     }
 }

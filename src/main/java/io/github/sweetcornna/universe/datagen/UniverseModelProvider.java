@@ -150,6 +150,58 @@ final class UniverseModelProvider extends ModelProvider {
         outpostLandmarks(blockModels);
         civLandmarks(blockModels);
         factory(blockModels, itemModels);
+        darkFogItems(itemModels);
+        darkFogBases(blockModels, itemModels);
+        darkFogFacilities(blockModels, itemModels);
+        darkFogTurrets(blockModels, itemModels);
+        darkFogSupport(blockModels, itemModels);
+    }
+
+    /** 黑雾的掉落、弹药、投掷物（ADR-0028）：平面物品。 */
+    private static void darkFogItems(ItemModelGenerators itemModels) {
+        for (DeferredItem<?> item : List.of(UniverseItems.ENERGY_SHARD, UniverseItems.SILICON_NEURON, UniverseItems.MATTER_RECOMBINATOR,
+                UniverseItems.NEGENTROPY_SINGULARITY, UniverseItems.CORE_ELEMENT, UniverseItems.DARK_FOG_MATRIX,
+                UniverseItems.MAGNUM_AMMO_BOX, UniverseItems.TITANIUM_AMMO_BOX, UniverseItems.SUPERALLOY_AMMO_BOX,
+                UniverseItems.SHELL_SET, UniverseItems.HIGH_EXPLOSIVE_SHELL_SET, UniverseItems.CRYSTAL_SHELL_SET,
+                UniverseItems.MISSILE_SET, UniverseItems.SUPERSONIC_MISSILE_SET, UniverseItems.GRAVITY_MISSILE_SET,
+                UniverseItems.JAMMING_CAPSULE, UniverseItems.EXPLOSIVE_UNIT, UniverseItems.CRYSTAL_EXPLOSIVE_UNIT)) {
+            itemModels.generateFlatItem(item.get(), ModelTemplates.FLAT_ITEM);
+        }
+    }
+
+    /** 黑雾基地的方块（子代理 P）。 */
+    private static void darkFogBases(BlockModelGenerators blockModels, ItemModelGenerators itemModels) {
+        blockModels.createTrivialCube(UniverseBlocks.DARK_FOG_PLATING.get());
+        blockModels.createTrivialCube(UniverseBlocks.DARK_FOG_CONDUIT.get());
+        blockModels.createTrivialCube(UniverseBlocks.DARK_FOG_CORE_REMNANT.get());
+    }
+
+    /** 残影、战场分析基地（子代理 Q）。 */
+    private static void darkFogFacilities(BlockModelGenerators blockModels, ItemModelGenerators itemModels) {
+        // 残影的样子由方块实体渲染器按原方块画，方块模型只给碎屑粒子用
+        blockModels.blockStateOutput.accept(BlockModelGenerators.createSimpleBlock(UniverseBlocks.FACILITY_GHOST.get(),
+                BlockModelGenerators.plainVariant(ModelTemplates.PARTICLE_ONLY.create(UniverseBlocks.FACILITY_GHOST.get(),
+                        TextureMapping.particle(texture("facility_ghost")), blockModels.modelOutput))));
+        recipeMachine(blockModels, UniverseBlocks.BATTLEFIELD_ANALYSIS_BASE.get(), "battlefield_analysis_base", true, "machine_casing_top");
+    }
+
+    /** 炮塔（子代理 R1）。 */
+    private static void darkFogTurrets(BlockModelGenerators blockModels, ItemModelGenerators itemModels) {
+        // 模型由 tools/m16_turret_models.py 生成：底座是方块模型，转台和炮管由渲染器画，物品模型拼在一起
+        for (Block block : List.of(UniverseBlocks.GAUSS_TURRET.get(), UniverseBlocks.LASER_TURRET.get(), UniverseBlocks.IMPLOSION_CANNON.get(),
+                UniverseBlocks.MISSILE_TURRET.get())) {
+            String name = BuiltInRegistries.BLOCK.getKey(block).getPath();
+            blockModels.blockStateOutput.accept(BlockModelGenerators.createSimpleBlock(block,
+                    BlockModelGenerators.plainVariant(Universe.id("block/" + name))));
+            itemModels.itemModelOutput.accept(block.asItem(), ItemModelUtils.plainModel(Universe.id("block/" + name + "_item")));
+        }
+    }
+
+    /** 信号塔、干扰塔（子代理 R2）。 */
+    private static void darkFogSupport(BlockModelGenerators blockModels, ItemModelGenerators itemModels) {
+        // 手写的两截模型见 tools/m16_support_models.py，工作时上半截亮
+        tall(blockModels, itemModels, UniverseBlocks.SIGNAL_TOWER.get(), "signal_tower", false, true);
+        tall(blockModels, itemModels, UniverseBlocks.JAMMER_TOWER.get(), "jammer_tower", false, true);
     }
 
     /**

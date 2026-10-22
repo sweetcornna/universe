@@ -378,6 +378,12 @@ io.github.sweetcornna.universe
 | 实体数据有 `EntityDataSerializers.LONG`（变长）；`Model.setupAnim` 先 `resetPose()`；`/kill` 的伤害带 `DamageTypeTags.BYPASSES_INVULNERABILITY`；`DefaultRandomPos.getPosAway(PathfinderMob, int, int, Vec3)`、`DamageSources.playerAttack(Player)`、`EntityType.create(Level, EntitySpawnReason)` | 已确认，NPC |
 | `FriendlyByteBuf.writeVarLong`、`readVarLong`；`ItemStack.OPTIONAL_STREAM_CODEC`、`ComponentSerialization.OPTIONAL_STREAM_CODEC`；`ItemStack.isSameItemSameComponents(a, b)`；`StreamCodec.composite` 最多 14 个字段 | 已确认，技术商、公会 |
 | `ResourceKey.identifier()`（没有 `location()`）；生物死亡事件是 `net.neoforged.neoforge.event.entity.living.LivingDeathEvent`；26.x 的游戏规则是注册表（`BuiltInRegistries.GAME_RULE`，`net.minecraft.world.level.gamerules.GameRule`），原版的建世界界面能改 | 已确认 |
+| 模组的游戏规则：`DeferredRegister.create(Registries.GAME_RULE, 模组)`，`new GameRule<>(分类, GameRuleType.INT, IntegerArgumentType.integer(min, max), GameRuleTypeVisitor::visitInteger, Codec.intRange(min, max), v -> v, 默认值, FeatureFlagSet.of())`；自己的分类 `new GameRuleCategory(Identifier)` 要在 mod 总线的 `RegisterGameRuleCategoryEvent` 里登记。语言键 `gamerule.<命名空间>.<路径>`、`.description`，分类 `gamerule.category.<命名空间>.<路径>`；命令写 `/gamerule universe:dark_fog false` | 已确认，`registry.UniverseGameRules` |
+| 飞行生物：`FlyingMoveControl` 把 `zza` 设成速度、`yya` 设成正负速度；在空中按 `getFlyingSpeed()` 乘输入加速，`LivingEntity` 默认 0.02，`FLYING_SPEED` 0.28 的生物一秒才飞一格多，要快就覆盖 `getFlyingSpeed()`。贴地飞的高度看 `WORLD_SURFACE`，`MOTION_BLOCKING` 不算玩家放的模组方块 | 已确认，黑雾单位 |
+| GameTest 的 `TestData` 完整构造：`(环境, Level.OVERWORLD, 结构, 最长刻数, 准备刻数, 必须通过, Rotation, 只手动跑, 最多尝试, 要通过几次, skyAccess, padding)`。padding（0–128）把相邻的测试隔开，炮塔、电网会管到隔壁时用；`skyAccess` 为 true 时顶上不罩屏障。同一批的测试一起摆出来，每批跑完取消全部强制加载的区块，下一批要等区块重新走实体刻，单个测试一批地排会卡住；结构外面的区块不保证走实体 | 已确认，黑雾的游戏内测试 |
+| `ChunkEvent.Load` 不一定在服务器主线程触发，`isNewChunk()` 区分新生成的区块，里面不能改世界（会死锁），先排队到下一刻；区块坐标打包用 `ChunkPos.pack(x, z)` 或 `chunkPos.pack()` | 已确认，黑雾基地 |
+| 物品：`Item.use(Level, Player, InteractionHand)` 返回 `InteractionResult`；`appendHoverText(ItemStack, TooltipContext, TooltipDisplay, Consumer<Component>, TooltipFlag)`；冷却按物品堆记，`getCooldowns().addCooldown(ItemStack, 刻)`；`ThrowableItemProjectile` 在 `net.minecraft.world.entity.projectile.throwableitemprojectile`；`ItemEntity.lifespan` 是公开字段 | 已确认，弹药、投掷物、黑雾掉落 |
+| 伤害类型 `new DamageType(消息键, DamageScaling.NEVER, 饥饿)`，`NEVER` 不随难度变；爆炸要护住方块，在 `ExplosionEvent.Detonate` 里从 `getAffectedBlocks()` 删掉；方块实体的物品能力用 `net.neoforged.neoforge.transfer.item.WorldlyContainerWrapper` | 已确认，黑雾伤害、设施 |
 
 拿不准的 API 先查源码再写，核实后把结果补进这张表。源码在：
 

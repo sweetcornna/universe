@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "key": {
+    "C": "universe:circuit_board",
+    "F": "universe:titanium_alloy",
+    "P": "universe:processor",
+    "S": "universe:steel",
+    "T": "universe:electromagnetic_turbine"
+  },
+  "pattern": [
+    "SPS",
+    "TFT",
+    "SCS"
+  ],
+  "result": {
+    "id": "universe:battlefield_analysis_base"
+  }
+}

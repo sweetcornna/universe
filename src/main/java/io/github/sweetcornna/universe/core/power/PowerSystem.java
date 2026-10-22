@@ -120,6 +120,29 @@ public final class PowerSystem {
         public double satisfaction() {
             return this.satisfaction;
         }
+
+        /** 离 (x, z) 最近的设备的编号（没有设备时看塔），电网是空的返回 {@link Long#MIN_VALUE}。黑雾找进攻目标用（ADR-0028 §三）。 */
+        public long nearest(double x, double z) {
+            long best = Long.MIN_VALUE;
+            double bestDistance = Double.MAX_VALUE;
+            for (Device device : this.devices) {
+                double d = (device.x - x) * (device.x - x) + (device.z - z) * (device.z - z);
+                if (d < bestDistance) {
+                    bestDistance = d;
+                    best = device.id;
+                }
+            }
+            if (best == Long.MIN_VALUE) {
+                for (Tower tower : this.towers) {
+                    double d = (tower.x - x) * (tower.x - x) + (tower.z - z) * (tower.z - z);
+                    if (d < bestDistance) {
+                        bestDistance = d;
+                        best = tower.id;
+                    }
+                }
+            }
+            return best;
+        }
     }
 
     private final Map<Long, Tower> towers = new HashMap<>();

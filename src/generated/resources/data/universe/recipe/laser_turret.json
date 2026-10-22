@@ -1,0 +1,19 @@
+{
+  "type": "universe:research_shaped",
+  "category": "equipment",
+  "key": {
+    "B": "universe:circuit_board",
+    "E": "universe:plasma_exciter",
+    "P": "universe:prism",
+    "S": "universe:steel"
+  },
+  "pattern": [
+    " P ",
+    "SES",
+    "SBS"
+  ],
+  "research": "laser_turret",
+  "result": {
+    "id": "universe:laser_turret"
+  }
+}

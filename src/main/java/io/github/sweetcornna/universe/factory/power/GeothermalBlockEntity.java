@@ -7,6 +7,7 @@ import io.github.sweetcornna.universe.core.galaxy.PlanetType;
 import io.github.sweetcornna.universe.factory.MachineBlockEntity;
 import io.github.sweetcornna.universe.factory.MachineMenu;
 import io.github.sweetcornna.universe.registry.UniverseBlockEntities;
+import io.github.sweetcornna.universe.registry.UniverseBlocks;
 import io.github.sweetcornna.universe.registry.UniverseMenus;
 import io.github.sweetcornna.universe.world.planet.Planets;
 import net.minecraft.core.BlockPos;
@@ -17,7 +18,7 @@ import net.minecraft.world.level.block.state.BlockState;
 
 /**
  * 地热发电站（ADR-0022）：放在熔岩上面（下面一格是熔岩）才发电，满功率是戴森球计划的 4.8 MW；灼热星球和下界这种
- * 地底更热的地方多五成。不烧燃料，一直发。
+ * 地底更热的地方多五成。放在黑雾钻芯留下的地核上（ADR-0028 §二）是两倍。不烧燃料，一直发。
  */
 public class GeothermalBlockEntity extends MachineBlockEntity {
     /** 满功率：戴森球计划的 4.8 MW。 */
@@ -25,6 +26,8 @@ public class GeothermalBlockEntity extends MachineBlockEntity {
     /** 界面数据：地热强度（百分数，0 是下面没有熔岩）。 */
     public static final int HEAT = BASE_DATA;
     public static final int DATA_COUNT = BASE_DATA + 1;
+    /** 地核上的地热强度。 */
+    public static final double CORE_REMNANT_HEAT = 2.0;
 
     private double heat;
 
@@ -50,8 +53,11 @@ public class GeothermalBlockEntity extends MachineBlockEntity {
         return this.heat > 0 && this.load > 0;
     }
 
-    /** 这个位置的地热：下面一格不是熔岩是 0。 */
+    /** 这个位置的地热：下面一格不是熔岩、也不是地核是 0。 */
     public static double heat(ServerLevel level, BlockPos pos) {
+        if (level.getBlockState(pos.below()).is(UniverseBlocks.DARK_FOG_CORE_REMNANT.get())) {
+            return CORE_REMNANT_HEAT;
+        }
         if (!level.getFluidState(pos.below()).is(FluidTags.LAVA)) {
             return 0;
         }

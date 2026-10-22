@@ -1,0 +1,17 @@
+{
+  "type": "universe:research_shaped",
+  "category": "equipment",
+  "key": {
+    "B": "universe:circuit_board",
+    "C": "universe:combustible_unit",
+    "S": "universe:steel"
+  },
+  "pattern": [
+    "CBC",
+    " S "
+  ],
+  "research": "missile_turret",
+  "result": {
+    "id": "universe:missile_set"
+  }
+}

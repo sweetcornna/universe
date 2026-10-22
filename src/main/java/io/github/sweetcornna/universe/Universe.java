@@ -1,5 +1,6 @@
 package io.github.sweetcornna.universe;
 
+import io.github.sweetcornna.universe.darkfog.turret.Turrets;
 import org.slf4j.Logger;
 
 import com.mojang.logging.LogUtils;
@@ -9,6 +10,8 @@ import io.github.sweetcornna.universe.blueprint.Blueprints;
 import io.github.sweetcornna.universe.blueprint.Construction;
 import io.github.sweetcornna.universe.civ.CivCommand;
 import io.github.sweetcornna.universe.civ.NpcSpawner;
+import io.github.sweetcornna.universe.darkfog.DarkFogBases;
+import io.github.sweetcornna.universe.darkfog.DarkFogCommand;
 import io.github.sweetcornna.universe.logistics.Distributors;
 import io.github.sweetcornna.universe.mecha.Flyers;
 import io.github.sweetcornna.universe.mecha.Mecha;
@@ -51,12 +54,14 @@ import io.github.sweetcornna.universe.registry.UniverseBlocks;
 import io.github.sweetcornna.universe.registry.UniverseCreativeTabs;
 import io.github.sweetcornna.universe.registry.UniverseDataComponents;
 import io.github.sweetcornna.universe.registry.UniverseEntities;
+import io.github.sweetcornna.universe.registry.UniverseGameRules;
 import io.github.sweetcornna.universe.registry.UniverseItems;
 import io.github.sweetcornna.universe.registry.UniverseMenus;
 import io.github.sweetcornna.universe.registry.UniverseRecipeTypes;
 import io.github.sweetcornna.universe.registry.UniverseStats;
 import io.github.sweetcornna.universe.registry.UniverseTriggers;
 import io.github.sweetcornna.universe.registry.UniverseWorldgen;
+import io.github.sweetcornna.universe.rules.GalaxySettings;
 import io.github.sweetcornna.universe.sentinel.SentinelPillars;
 import io.github.sweetcornna.universe.sentinel.Sentinels;
 import io.github.sweetcornna.universe.station.MultitoolCabinet;
@@ -162,6 +167,18 @@ public final class Universe {
         gameBus.addListener(RegisterCommandsEvent.class, event -> ResourcesCommand.register(event.getDispatcher()));
         gameBus.addListener(RegisterCommandsEvent.class, event -> EncounterCommand.register(event.getDispatcher()));
         gameBus.addListener(RegisterCommandsEvent.class, event -> CivCommand.register(event.getDispatcher()));
+        DarkFogBases.registerEvents(gameBus);
+        gameBus.addListener(RegisterCommandsEvent.class, event -> DarkFogCommand.register(event.getDispatcher()));
+        // M16 基地（P）的注册加在这行上面
+        // M16 单位（P2）的注册加在这行上面
+        io.github.sweetcornna.universe.darkfog.facility.FacilityRepairs.registerEvents(modBus, gameBus);
+        // M16 设施（Q）的注册加在这行上面
+        Turrets.registerEvents(modBus);
+        // M16 炮塔（R1）的注册加在这行上面
+        // M16 信号塔、干扰塔（R2）的注册加在这行上面
+        UniverseGameRules.register(modBus);
+        GalaxySettings.registerEvents(gameBus);
+        // M16 建世界的选项（S）的注册加在这行上面
     }
 
     private void commonSetup(FMLCommonSetupEvent event) {

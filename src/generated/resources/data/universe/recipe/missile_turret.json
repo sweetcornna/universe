@@ -1,0 +1,20 @@
+{
+  "type": "universe:research_shaped",
+  "category": "equipment",
+  "key": {
+    "H": "universe:titanium_alloy",
+    "M": "universe:electric_motor",
+    "P": "universe:processor",
+    "S": "universe:steel",
+    "T": "universe:thruster"
+  },
+  "pattern": [
+    "PTP",
+    "HMH",
+    "SSS"
+  ],
+  "research": "missile_turret",
+  "result": {
+    "id": "universe:missile_turret"
+  }
+}

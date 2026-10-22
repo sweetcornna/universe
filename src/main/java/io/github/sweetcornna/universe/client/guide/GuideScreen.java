@@ -37,6 +37,8 @@ public class GuideScreen extends Screen {
     private static final int HEIGHT = 216;
     private static final int LIST_WIDTH = 96;
     private static final int ROW = 12;
+    /** 左边一栏从 22 像素起排，底下留 6 像素，放得下这么多章；再多就滚动。 */
+    private static final int VISIBLE_ROWS = (HEIGHT - 6 - 22 + 2) / ROW;
     private static final int PAGE_X = LIST_WIDTH + 10;
     private static final int PAGE_WIDTH = WIDTH - PAGE_X - 10;
     private static final int BORDER = 0xFF2A6A8C;
@@ -58,6 +60,8 @@ public class GuideScreen extends Screen {
     /** 上次看到哪一章哪一页，下次打开接着看。 */
     private static int chapterIndex;
     private static int pageIndex;
+    /** 章节一栏滚到了第几章。 */
+    private static int listScroll;
 
     private int left;
     private int top;
@@ -83,6 +87,7 @@ public class GuideScreen extends Screen {
         this.left = (this.width - WIDTH) / 2;
         this.top = (this.height - HEIGHT) / 2;
         chapterIndex = Math.floorMod(chapterIndex, Guide.CHAPTERS.size());
+        reveal();
         this.pages = layout(this.font, this.minecraft.level, Guide.CHAPTERS.get(chapterIndex));
         pageIndex = Math.max(0, Math.min(pageIndex, this.pages.size() - 1));
         PageView page = this.pages.get(pageIndex);
@@ -213,6 +218,24 @@ public class GuideScreen extends Screen {
         }
     }
 
+    private static int maxScroll() {
+        return Math.max(0, Guide.CHAPTERS.size() - VISIBLE_ROWS);
+    }
+
+    /** 滚动章节一栏，让选中的那章露出来。 */
+    private static void reveal() {
+        if (chapterIndex < listScroll) {
+            listScroll = chapterIndex;
+        } else if (chapterIndex >= listScroll + VISIBLE_ROWS) {
+            listScroll = chapterIndex - VISIBLE_ROWS + 1;
+        }
+        listScroll = Math.max(0, Math.min(listScroll, maxScroll()));
+    }
+
+    private boolean overList(double mouseX, double mouseY) {
+        return mouseX >= this.left && mouseX < this.left + LIST_WIDTH && mouseY >= this.top && mouseY < this.top + HEIGHT;
+    }
+
     @Override
     public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
         int x = this.left;
@@ -222,8 +245,9 @@ public class GuideScreen extends Screen {
         graphics.fill(x + LIST_WIDTH, y + 6, x + LIST_WIDTH + 1, y + HEIGHT - 6, BORDER);
         graphics.text(this.font, this.title, x + 8, y + 8, TITLE, false);
         // 章节
-        for (int i = 0; i < Guide.CHAPTERS.size(); i++) {
-            int ry = y + 22 + i * ROW;
+        int last = Math.min(Guide.CHAPTERS.size(), listScroll + VISIBLE_ROWS);
+        for (int i = listScroll; i < last; i++) {
+            int ry = y + 22 + (i - listScroll) * ROW;
             boolean hovered = mouseX >= x + 4 && mouseX < x + LIST_WIDTH - 4 && mouseY >= ry - 2 && mouseY < ry + ROW - 2;
             if (i == chapterIndex) {
                 graphics.fill(x + 4, ry - 2, x + LIST_WIDTH - 4, ry + ROW - 2, SELECTED);
@@ -232,6 +256,15 @@ public class GuideScreen extends Screen {
             }
             Component name = Component.translatable("guide.universe." + Guide.CHAPTERS.get(i).id());
             graphics.text(this.font, name, x + 8, ry, i == chapterIndex ? TITLE : TEXT, false);
+        }
+        if (maxScroll() > 0) {
+            // 滚动条：一栏右边的一道细线
+            int trackTop = y + 20;
+            int trackHeight = VISIBLE_ROWS * ROW;
+            int thumb = Math.max(8, trackHeight * VISIBLE_ROWS / Guide.CHAPTERS.size());
+            int thumbTop = trackTop + (trackHeight - thumb) * listScroll / maxScroll();
+            graphics.fill(x + LIST_WIDTH - 3, trackTop, x + LIST_WIDTH - 2, trackTop + trackHeight, SLOT);
+            graphics.fill(x + LIST_WIDTH - 3, thumbTop, x + LIST_WIDTH - 2, thumbTop + thumb, BORDER);
         }
         // 正文
         PageView page = this.pages.get(pageIndex);
@@ -340,8 +373,8 @@ public class GuideScreen extends Screen {
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
         if (event.button() == InputConstants.MOUSE_BUTTON_LEFT && event.x() >= this.left + 4 && event.x() < this.left + LIST_WIDTH - 4) {
             int row = (int) Math.floor((event.y() - (this.top + 20)) / ROW);
-            if (row >= 0 && row < Guide.CHAPTERS.size()) {
-                this.open(row);
+            if (row >= 0 && row < VISIBLE_ROWS && listScroll + row < Guide.CHAPTERS.size()) {
+                this.open(listScroll + row);
                 return true;
             }
         }
@@ -350,6 +383,10 @@ public class GuideScreen extends Screen {
 
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+        if (scrollY != 0 && this.overList(mouseX, mouseY) && maxScroll() > 0) {
+            listScroll = Math.max(0, Math.min(listScroll + (scrollY < 0 ? 1 : -1), maxScroll()));
+            return true;
+        }
         if (scrollY != 0) {
             this.turn(scrollY < 0 ? 1 : -1);
             return true;

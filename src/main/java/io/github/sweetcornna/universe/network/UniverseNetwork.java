@@ -40,7 +40,7 @@ import net.neoforged.neoforge.server.ServerLifecycleHooks;
  */
 public final class UniverseNetwork {
     /** 协议版本：任何包的格式改动都要加一，版本不同的客户端和服务端会拒绝连接。 */
-    private static final String PROTOCOL_VERSION = "28";
+    private static final String PROTOCOL_VERSION = "30";
 
     private UniverseNetwork() {
     }
@@ -136,6 +136,15 @@ public final class UniverseNetwork {
                 .playToServer(TechShopPayloads.Buy.TYPE, TechShopPayloads.Buy.STREAM_CODEC, TechShop::handleBuy)
                 // M15：公会使者（ADR-0027 §六）
                 .playToClient(GuildEnvoyPayloads.Open.TYPE, GuildEnvoyPayloads.Open.STREAM_CODEC)
-                .playToServer(GuildEnvoyPayloads.Action.TYPE, GuildEnvoyPayloads.Action.STREAM_CODEC, GuildEnvoy::handleAction);
+                .playToServer(GuildEnvoyPayloads.Action.TYPE, GuildEnvoyPayloads.Action.STREAM_CODEC, GuildEnvoy::handleAction)
+                // M16：黑雾来袭的预警（ADR-0028 §三）
+                .playToClient(DarkFogPayloads.Warning.TYPE, DarkFogPayloads.Warning.STREAM_CODEC)
+                // M16：附近掉血的设施（ADR-0028 §四）
+                .playToClient(io.github.sweetcornna.universe.network.FacilityPayloads.Health.TYPE,
+                        io.github.sweetcornna.universe.network.FacilityPayloads.Health.STREAM_CODEC)
+                // M16 黑雾：设施（Q）的包加在这行上面
+                // M16 黑雾：炮塔（R1）的包加在这行上面
+                // M16 黑雾：信号塔、干扰塔（R2）的包加在这行上面
+                ;
     }
 }

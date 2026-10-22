@@ -16,6 +16,8 @@ import io.github.sweetcornna.universe.core.galaxy.Liquid;
 import io.github.sweetcornna.universe.core.galaxy.GalaxyGenerator;
 import io.github.sweetcornna.universe.core.galaxy.Palette;
 import io.github.sweetcornna.universe.core.galaxy.Planet;
+import io.github.sweetcornna.universe.core.sentinel.SentinelLevel;
+import io.github.sweetcornna.universe.core.sentinel.SentinelStrength;
 import io.github.sweetcornna.universe.core.terrain.Strata;
 import io.github.sweetcornna.universe.network.GalaxyInfoPayload;
 import io.github.sweetcornna.universe.world.planet.Planets;
@@ -47,6 +49,8 @@ public final class ClientGalaxy {
     private static @Nullable ResourceKey<Level> currentDimension;
     /** 按天体路径查过的动物（驯服的动物按出生的星球算物种），换星团时清掉。 */
     private static final Map<String, Fauna> HOME_FAUNA = new ConcurrentHashMap<>();
+    /** 建世界时定的守卫机强度，0 是没有守卫机。 */
+    private static volatile double sentinelStrength = 1;
 
     private ClientGalaxy() {
     }
@@ -59,6 +63,7 @@ public final class ClientGalaxy {
             currentPlanet = null;
             currentDimension = null;
             HOME_FAUNA.clear();
+            sentinelStrength = 1;
         });
         // 换维度时客户端会新建世界对象，在它开始渲染区块之前就换好配色
         gameBus.addListener(LevelEvent.Load.class, event -> {
@@ -72,6 +77,7 @@ public final class ClientGalaxy {
     private static void handle(GalaxyInfoPayload payload, IPayloadContext context) {
         long start = System.nanoTime();
         galaxy = GalaxyGenerator.fromGalaxySeed(payload.galaxySeed(), payload.systemCount());
+        sentinelStrength = SentinelStrength.clamp(payload.sentinelStrength());
         currentDimension = null;
         HOME_FAUNA.clear();
         Universe.LOGGER.debug("Client galaxy ready: {} systems, {} bodies, {} ms",
@@ -80,6 +86,11 @@ public final class ClientGalaxy {
 
     public static Optional<Galaxy> galaxy() {
         return Optional.ofNullable(galaxy);
+    }
+
+    /** 星球上的守卫机：世界选项关掉了守卫机就都是没有。 */
+    public static SentinelLevel sentinels(Planet planet) {
+        return SentinelStrength.present(sentinelStrength) ? SentinelLevel.of(planet) : SentinelLevel.NONE;
     }
 
     /** 玩家当前所在的星球（本模组生成的星球维度）；在主世界、下界或者还不知道星团时为空。 */

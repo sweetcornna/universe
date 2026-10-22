@@ -44,12 +44,21 @@ public final class Progression {
     /**
      * 不是采矿机挖的原料折合几个矿：一台设备一分钟的产量和一台采矿机比。原油按涌泉的平均产量，接收站按光子模式满功率、
      * 不带透镜。别的没有设备配方的东西都按 1 个矿算。
+     *
+     * <p>黑雾的掉落（ADR-0028 §六）是打黑雾刷来的，按刷一个要的工夫折成矿，定得比开采贵：用掉落的替代配方不会让
+     * 按开采算的进度变快。
      */
-    public static final Map<String, Double> EXTRACTED = Map.of(
-            NS + "crude_oil", MINER_ORE_PER_MINUTE / ((Veins.MIN_SEEP_RATE + Veins.MAX_SEEP_RATE) / 2 * 60),
-            NS + "water", MINER_ORE_PER_MINUTE / (1200.0 / Throughput.PUMP_TICKS_PER_ITEM),
-            RECEIVER, MINER_ORE_PER_MINUTE / (RayReceiver.PHOTON_DRAW_MAX * 1200 / RayReceiver.PHOTON_ENERGY),
-            FRACTIONATOR, MINER_ORE_PER_MINUTE / (Throughput.FRACTIONATOR_PER_TICK * Throughput.FRACTIONATOR_CHANCE * 1200));
+    public static final Map<String, Double> EXTRACTED = Map.ofEntries(
+            Map.entry(NS + "crude_oil", MINER_ORE_PER_MINUTE / ((Veins.MIN_SEEP_RATE + Veins.MAX_SEEP_RATE) / 2 * 60)),
+            Map.entry(NS + "water", MINER_ORE_PER_MINUTE / (1200.0 / Throughput.PUMP_TICKS_PER_ITEM)),
+            Map.entry(RECEIVER, MINER_ORE_PER_MINUTE / (RayReceiver.PHOTON_DRAW_MAX * 1200 / RayReceiver.PHOTON_ENERGY)),
+            Map.entry(FRACTIONATOR, MINER_ORE_PER_MINUTE / (Throughput.FRACTIONATOR_PER_TICK * Throughput.FRACTIONATOR_CHANCE * 1200)),
+            Map.entry(NS + "energy_shard", 20.0),
+            Map.entry(NS + "silicon_neuron", 40.0),
+            Map.entry(NS + "matter_recombinator", 60.0),
+            Map.entry(NS + "negentropy_singularity", 120.0),
+            Map.entry(NS + "core_element", 200.0),
+            Map.entry(NS + "dark_fog_matrix", 60.0));
 
     private static final String BLUE = TechTree.MATRICES.get(0);
     private static final String RED = TechTree.MATRICES.get(1);
@@ -57,6 +66,7 @@ public final class Progression {
     private static final String PURPLE = TechTree.MATRICES.get(3);
     private static final String GREEN = TechTree.MATRICES.get(4);
     private static final String WHITE = TechTree.MATRICES.get(5);
+    private static final String DARK_FOG = TechTree.DARK_FOG;
 
     /**
      * 一档矩阵的参考工厂。
@@ -199,6 +209,13 @@ public final class Progression {
         return this.shell;
     }
 
+    /**
+     * 黑雾那一支（ADR-0028 §六）：每点要黑雾矩阵，靠打黑雾刷，不在按开采算的进度里，也不是里程碑的前置。
+     */
+    public static boolean optional(Tech tech) {
+        return tech.matrices().contains(DARK_FOG);
+    }
+
     /** 每点要的矩阵对应的参考工厂。 */
     public Stage stage(List<String> matrices) {
         for (Stage stage : this.stages) {
@@ -251,7 +268,7 @@ public final class Progression {
             hours.put(stage, 0.0);
         }
         for (Tech tech : this.tree.techs()) {
-            if (!tech.isHandIn()) {
+            if (!tech.isHandIn() && !optional(tech)) {
                 hours.merge(this.stage(tech.matrices()), this.hours(tech), Double::sum);
             }
         }
@@ -295,7 +312,7 @@ public final class Progression {
             Set<String> need = this.prerequisites(target);
             int level = this.stageIndex(target);
             for (Tech tech : this.tree.techs()) {
-                if (this.stageIndex(tech) < level) {
+                if (!optional(tech) && this.stageIndex(tech) < level) {
                     need.add(tech.id());
                 }
             }
@@ -340,6 +357,15 @@ public final class Progression {
                     String.join("", stage.matrices().stream().map(Progression::name).toList()), stage.orePerMinute(), entry.getValue(),
                     medians.getOrDefault(stage, 0.0)));
         }
+        int darkFogTechs = 0;
+        int darkFogMatrices = 0;
+        for (Tech tech : this.tree.techs()) {
+            if (optional(tech)) {
+                darkFogTechs++;
+                darkFogMatrices += tech.points();
+            }
+        }
+        lines.add(String.format(Locale.ROOT, "黑雾一支：%d 个科技，一共要 %d 个黑雾矩阵", darkFogTechs, darkFogMatrices));
         lines.add(String.format(Locale.ROOT, "第一片球壳：%d 枚火箭、%d 张帆", this.shell.rockets(), this.shell.sails()));
         for (Window window : this.windows(MILESTONES)) {
             lines.add(String.format(Locale.ROOT, "到 %-24s %4.1f 小时里研究 %5.2f、建造 %5.2f，占 %3.0f%%", window.end().tech(), window.length(),
@@ -348,9 +374,9 @@ public final class Progression {
         return lines;
     }
 
-    /** 矩阵的简称：蓝、红、黄、紫、绿、白。 */
+    /** 矩阵的简称：蓝、红、黄、紫、绿、白、黑（黑雾）。 */
     private static String name(String matrix) {
         int index = TechTree.MATRICES.indexOf(matrix);
-        return index < 0 ? matrix : "蓝红黄紫绿白".substring(index, index + 1);
+        return index < 0 ? matrix : "蓝红黄紫绿白黑".substring(index, index + 1);
     }
 }

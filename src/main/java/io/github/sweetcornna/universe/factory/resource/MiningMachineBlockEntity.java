@@ -8,6 +8,7 @@ import java.util.Map;
 import org.jspecify.annotations.Nullable;
 
 import io.github.sweetcornna.universe.core.factory.Throughput;
+import io.github.sweetcornna.universe.core.factory.Veins;
 import io.github.sweetcornna.universe.core.research.Upgrades;
 import io.github.sweetcornna.universe.factory.MachineBlock;
 import io.github.sweetcornna.universe.factory.MachineBlockEntity;
@@ -135,7 +136,9 @@ public class MiningMachineBlockEntity extends MachineBlockEntity {
             if (VeinNodes.extract(level, pos, node)) {
                 this.nodes.remove(pos);
             }
-            this.remaining = Math.max(0, this.remaining - 1);
+            if (this.remaining < Veins.INFINITE) {
+                this.remaining = Math.max(0, this.remaining - 1);
+            }
         }
         ProductionLog.produced(level, node.item(), 1);
         this.addOutput(OUTPUT, new ItemStack(node.item()));

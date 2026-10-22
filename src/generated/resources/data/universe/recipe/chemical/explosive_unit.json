@@ -1,0 +1,25 @@
+{
+  "type": "universe:chemical",
+  "ingredients": [
+    {
+      "count": 2,
+      "ingredient": "universe:combustible_unit"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:plastic"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:sulfuric_acid"
+    }
+  ],
+  "research": "explosives",
+  "results": [
+    {
+      "count": 2,
+      "id": "universe:explosive_unit"
+    }
+  ],
+  "time": 120
+}

@@ -1,7 +1,11 @@
 package io.github.sweetcornna.universe.registry;
 
+import io.github.sweetcornna.universe.darkfog.facility.BattlefieldBaseBlockEntity;
+import io.github.sweetcornna.universe.darkfog.turret.TurretBlockEntity;
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.block.EggSequencerBlockEntity;
+import io.github.sweetcornna.universe.darkfog.defense.JammerTowerBlockEntity;
+import io.github.sweetcornna.universe.darkfog.defense.SignalTowerBlockEntity;
 import io.github.sweetcornna.universe.core.logistics.StationKind;
 import io.github.sweetcornna.universe.dyson.EmRailEjectorBlockEntity;
 import io.github.sweetcornna.universe.entity.CompanionMenu;
@@ -112,10 +116,10 @@ public final class UniverseMenus {
     // 分馏塔：左边读数，右边原料格（氢）和两个产物格（氢、重氢）
     public static final MachineMenu.Type FRACTIONATOR = machine("fractionator",
             new MachineMenu.Type(FractionatorBlockEntity.DATA_COUNT, RESOURCE_WIDTH, 166, input(136, 46), output(172, 36), output(172, 56)));
-    // 矩阵研究站：左边研究进度，右边每种矩阵一格（两排各三格，最后一格是白矩阵），再下面是打开科技树的按钮
+    // 矩阵研究站：左边研究进度，右边每种矩阵一格（上排蓝红黄紫，下排绿白和黑雾矩阵），再下面是打开科技树的按钮
     public static final MachineMenu.Type MATRIX_LAB = machine("matrix_lab",
-            new MachineMenu.Type(MatrixLabBlockEntity.DATA_COUNT, 176, 192, input(112, 30), input(130, 30), input(148, 30), input(112, 48),
-                    input(130, 48), input(148, 48)));
+            new MachineMenu.Type(MatrixLabBlockEntity.DATA_COUNT, 194, 192, input(112, 30), input(130, 30), input(148, 30), input(166, 30),
+                    input(112, 48), input(130, 48), input(148, 48)));
     // 物流站（ADR-0015）：布局见 StationBlockEntity#layout
     public static final MachineMenu.Type PLANETARY_LOGISTICS_STATION = machine("planetary_logistics_station",
             StationBlockEntity.layout(StationKind.PLANETARY));
@@ -150,6 +154,25 @@ public final class UniverseMenus {
     /** 伙伴界面（ADR-0026 §九）。 */
     public static final DeferredHolder<MenuType<?>, MenuType<CompanionMenu>> COMPANION = MENUS.register("companion",
             () -> IMenuTypeExtension.create(CompanionMenu::new));
+    /** 战场分析基地（ADR-0028 §五）：上面读数和拾取模式的按钮，下面 27 格储物。 */
+    public static final MachineMenu.Type BATTLEFIELD_ANALYSIS_BASE = machine("battlefield_analysis_base",
+            new MachineMenu.Type(BattlefieldBaseBlockEntity.DATA_COUNT, 218, grid(8, 70, 9, 3)));
+    // M16 黑雾：设施（Q）的界面加在这行上面
+    // 炮塔（ADR-0028 §五）：左边读数，右边一格弹药；激光炮塔不要弹药，只有读数
+    public static final MachineMenu.Type GAUSS_TURRET = machine("gauss_turret",
+            new MachineMenu.Type(TurretBlockEntity.DATA_COUNT, RESOURCE_WIDTH, 200, input(172, 46)));
+    public static final MachineMenu.Type LASER_TURRET = machine("laser_turret", new MachineMenu.Type(TurretBlockEntity.DATA_COUNT, RESOURCE_WIDTH, 84));
+    public static final MachineMenu.Type IMPLOSION_CANNON = machine("implosion_cannon",
+            new MachineMenu.Type(TurretBlockEntity.DATA_COUNT, RESOURCE_WIDTH, 200, input(172, 46)));
+    public static final MachineMenu.Type MISSILE_TURRET = machine("missile_turret",
+            new MachineMenu.Type(TurretBlockEntity.DATA_COUNT, RESOURCE_WIDTH, 200, input(172, 46)));
+    // M16 黑雾：炮塔（R1）的界面加在这行上面
+    // 信号塔只看读数；干扰塔左边读数，右边一个干扰胶囊格（ADR-0028 §五）
+    public static final MachineMenu.Type SIGNAL_TOWER = machine("signal_tower",
+            new MachineMenu.Type(SignalTowerBlockEntity.SIGNAL_DATA_COUNT, 118));
+    public static final MachineMenu.Type JAMMER_TOWER = machine("jammer_tower",
+            new MachineMenu.Type(JammerTowerBlockEntity.DATA_COUNT, RESOURCE_WIDTH, 206, input(172, 46)));
+    // M16 黑雾：信号塔、干扰塔（R2）的界面加在这行上面
 
     private UniverseMenus() {
     }

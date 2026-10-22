@@ -1,0 +1,17 @@
+{
+  "type": "universe:research_shaped",
+  "category": "equipment",
+  "key": {
+    "M": "universe:missile_set",
+    "T": "universe:thruster",
+    "X": "universe:explosive_unit"
+  },
+  "pattern": [
+    " T ",
+    "XMX"
+  ],
+  "research": "supersonic_missiles",
+  "result": {
+    "id": "universe:supersonic_missile_set"
+  }
+}

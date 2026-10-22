@@ -1,0 +1,20 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 4,
+      "ingredient": "universe:energy_shard"
+    },
+    {
+      "count": 2,
+      "ingredient": "minecraft:iron_ingot"
+    }
+  ],
+  "research": "energy_storage",
+  "results": [
+    {
+      "id": "universe:accumulator"
+    }
+  ],
+  "time": 80
+}

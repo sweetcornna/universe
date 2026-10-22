@@ -1,5 +1,7 @@
 package io.github.sweetcornna.universe.registry;
 
+import io.github.sweetcornna.universe.darkfog.turret.TurretBlock;
+import io.github.sweetcornna.universe.core.darkfog.TurretKind;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -63,6 +65,7 @@ import io.github.sweetcornna.universe.dyson.DysonBlocks;
 import io.github.sweetcornna.universe.exocraft.VehicleSummonerBlock;
 import io.github.sweetcornna.universe.factory.ArcSmelterBlock;
 import io.github.sweetcornna.universe.factory.FactoryAnchorBlock;
+import io.github.sweetcornna.universe.darkfog.facility.FacilityGhostBlock;
 import io.github.sweetcornna.universe.factory.MachineBlock;
 import io.github.sweetcornna.universe.factory.PortableRefinerBlock;
 import io.github.sweetcornna.universe.factory.ProcessingBlocks;
@@ -599,6 +602,43 @@ public final class UniverseBlocks {
         }
         return p;
     }
+
+    // ---- M16 设施的耐久（ADR-0028 §四、§五）
+    /** 残影：黑雾打掉的设施留下的，不挡路、一碰就碎、不掉东西，画面由方块实体渲染器按原方块画。 */
+    public static final DeferredBlock<FacilityGhostBlock> FACILITY_GHOST = BLOCKS.registerBlock("facility_ghost", FacilityGhostBlock::new,
+            p -> p.mapColor(MapColor.NONE).noCollision().noOcclusion().instabreak().sound(SoundType.GLASS).noLootTable()
+                    .pushReaction(PushReaction.POPPED).isValidSpawn((state, level, pos, type) -> false));
+    public static final DeferredBlock<MachineBlock> BATTLEFIELD_ANALYSIS_BASE = BLOCKS.registerBlock("battlefield_analysis_base",
+            p -> new MachineBlock(p, UniverseBlockEntities.BATTLEFIELD_ANALYSIS_BASE), p -> machine(p).strength(5.0F, 12.0F));
+    // M16 黑雾：设施（Q）的方块加在这行上面
+    // ---- M16 炮塔（ADR-0028 §五）：底座是方块模型，转台和炮管由方块实体渲染器画
+    public static final DeferredBlock<TurretBlock> GAUSS_TURRET = BLOCKS.registerBlock("gauss_turret",
+            p -> new TurretBlock(p, TurretKind.GAUSS, UniverseBlockEntities.GAUSS_TURRET), p -> machine(p).noOcclusion());
+    public static final DeferredBlock<TurretBlock> LASER_TURRET = BLOCKS.registerBlock("laser_turret",
+            p -> new TurretBlock(p, TurretKind.LASER, UniverseBlockEntities.LASER_TURRET), p -> machine(p).noOcclusion());
+    public static final DeferredBlock<TurretBlock> IMPLOSION_CANNON = BLOCKS.registerBlock("implosion_cannon",
+            p -> new TurretBlock(p, TurretKind.IMPLOSION, UniverseBlockEntities.IMPLOSION_CANNON), p -> machine(p).noOcclusion());
+    public static final DeferredBlock<TurretBlock> MISSILE_TURRET = BLOCKS.registerBlock("missile_turret",
+            p -> new TurretBlock(p, TurretKind.MISSILE, UniverseBlockEntities.MISSILE_TURRET), p -> machine(p).noOcclusion());
+    // M16 黑雾：炮塔（R1）的方块加在这行上面
+    /** 信号塔、干扰塔（ADR-0028 §五）：两格高，工作时上半截亮。 */
+    public static final DeferredBlock<TallMachineBlock> SIGNAL_TOWER = BLOCKS.registerBlock("signal_tower",
+            p -> new TallMachineBlock(p, UniverseBlockEntities.SIGNAL_TOWER), UniverseBlocks::tower);
+    public static final DeferredBlock<TallMachineBlock> JAMMER_TOWER = BLOCKS.registerBlock("jammer_tower",
+            p -> new TallMachineBlock(p, UniverseBlockEntities.JAMMER_TOWER), UniverseBlocks::tower);
+    // M16 黑雾：信号塔、干扰塔（R2）的方块加在这行上面
+    /** 黑雾基地的底板和导轨（ADR-0028 §二）：很硬，不掉落，挖掉了基地会补。 */
+    public static final DeferredBlock<Block> DARK_FOG_PLATING = BLOCKS.registerSimpleBlock("dark_fog_plating",
+            p -> p.mapColor(MapColor.COLOR_BLACK).strength(30.0F, 1200.0F).sound(SoundType.NETHERITE_BLOCK).noLootTable()
+                    .requiresCorrectToolForDrops().isValidSpawn(Blocks::never));
+    public static final DeferredBlock<Block> DARK_FOG_CONDUIT = BLOCKS.registerSimpleBlock("dark_fog_conduit",
+            p -> p.mapColor(MapColor.COLOR_PURPLE).strength(30.0F, 1200.0F).sound(SoundType.NETHERITE_BLOCK).noLootTable()
+                    .requiresCorrectToolForDrops().lightLevel(state -> 7).isValidSpawn(Blocks::never));
+    /** 地核（ADR-0028 §二）：钻芯打掉以后留下的，挖不掉；上面放地热电站能发电。 */
+    public static final DeferredBlock<Block> DARK_FOG_CORE_REMNANT = BLOCKS.registerSimpleBlock("dark_fog_core_remnant",
+            p -> p.mapColor(MapColor.COLOR_ORANGE).strength(-1.0F, 3600000.0F).sound(SoundType.NETHERITE_BLOCK).noLootTable()
+                    .lightLevel(state -> 12).pushReaction(PushReaction.IMMOVEABLE).isValidSpawn(Blocks::never));
+    // M16 黑雾：基地（P）的方块加在这行上面
 
     /**
      * 按星球配色染色的方块。

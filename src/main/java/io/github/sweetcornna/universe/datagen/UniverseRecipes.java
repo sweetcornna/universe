@@ -78,6 +78,10 @@ final class UniverseRecipes extends RecipeProvider {
         this.dyson();
         this.endgame();
         this.factoryDepth();
+        this.darkFogBases();
+        this.darkFogFacilities();
+        this.darkFogTurrets();
+        this.darkFogSupport();
         this.planetLife();
     }
 
@@ -1073,6 +1077,140 @@ final class UniverseRecipes extends RecipeProvider {
      * 喂养（ADR-0017）：星球植物压成草食饲料，生肉拌骨粉做肉食饲料；异星蛋烤着吃，绒毛搓线、压羊毛，生物胶质当黏液球用。
      * 生物胶质在化工厂里做有机晶体的配方放在化工那一段。
      */
+    /** 黑雾基地的方块（子代理 P）。 */
+    private void darkFogBases() {
+    }
+
+    /** 战场分析基地（子代理 Q）。 */
+    private void darkFogFacilities() {
+        // 战场分析基地（ADR-0028 §五）：钢和钛合金做外壳，处理器管修理和无人机，电磁涡轮驱动
+        this.shaped(RecipeCategory.MISC, UniverseItems.BATTLEFIELD_ANALYSIS_BASE.get())
+                .pattern("SPS").pattern("TFT").pattern("SCS")
+                .define('S', UniverseItems.STEEL.get())
+                .define('P', UniverseItems.PROCESSOR.get())
+                .define('T', UniverseItems.ELECTROMAGNETIC_TURBINE.get())
+                .define('F', UniverseItems.TITANIUM_ALLOY.get())
+                .define('C', UniverseItems.CIRCUIT_BOARD.get())
+                .unlockedBy(getHasName(UniverseItems.PROCESSOR.get()), this.has(UniverseItems.PROCESSOR.get()))
+                .save(this.output);
+    }
+
+    /** 炮塔和弹药（子代理 R1）。 */
+    private void darkFogTurrets() {
+        Item coil = UniverseItems.MAGNETIC_COIL.get();
+        Item gear = UniverseItems.GEAR.get();
+        Item board = UniverseItems.CIRCUIT_BOARD.get();
+        Item steel = UniverseItems.STEEL.get();
+        Item motor = UniverseItems.ELECTRIC_MOTOR.get();
+        Item exciter = UniverseItems.PLASMA_EXCITER.get();
+        Item alloy = UniverseItems.TITANIUM_ALLOY.get();
+        Item titanium = UniverseItems.ORE_SMELTED.get(OreKind.TITANIUM).get();
+        Item combustible = UniverseItems.COMBUSTIBLE_UNIT.get();
+        Item explosive = UniverseItems.EXPLOSIVE_UNIT.get();
+        Item crystalExplosive = UniverseItems.CRYSTAL_EXPLOSIVE_UNIT.get();
+        Item magnum = UniverseItems.MAGNUM_AMMO_BOX.get();
+        Item titaniumAmmo = UniverseItems.TITANIUM_AMMO_BOX.get();
+        Item shell = UniverseItems.SHELL_SET.get();
+        Item highExplosive = UniverseItems.HIGH_EXPLOSIVE_SHELL_SET.get();
+        Item missile = UniverseItems.MISSILE_SET.get();
+        Item supersonic = UniverseItems.SUPERSONIC_MISSILE_SET.get();
+
+        // ---- 炮塔（ADR-0028 §五）：手工合成，也能在制造台里做
+        this.researchShaped("gauss_turret", RecipeCategory.COMBAT, UniverseItems.GAUSS_TURRET.get(), 1,
+                List.of(" B ", "CGC", "III"), Map.of('B', board, 'C', coil, 'G', gear, 'I', Items.IRON_INGOT));
+        this.researchShaped("laser_turret", RecipeCategory.COMBAT, UniverseItems.LASER_TURRET.get(), 1,
+                List.of(" P ", "SES", "SBS"), Map.of('P', UniverseItems.PRISM.get(), 'S', steel, 'E', exciter, 'B', board));
+        this.researchShaped("implosion_cannon", RecipeCategory.COMBAT, UniverseItems.IMPLOSION_CANNON.get(), 1,
+                List.of("SES", "MBM", "SSS"), Map.of('S', steel, 'E', exciter, 'M', motor, 'B', board));
+        this.researchShaped("missile_turret", RecipeCategory.COMBAT, UniverseItems.MISSILE_TURRET.get(), 1,
+                List.of("PTP", "HMH", "SSS"), Map.of('P', UniverseItems.PROCESSOR.get(), 'T', UniverseItems.THRUSTER.get(), 'H', alloy,
+                        'M', motor, 'S', steel));
+        this.machine(Kind.ASSEMBLING, "gauss_turret", 60, "gauss_turret", in(Items.IRON_INGOT, 4, gear, 2, coil, 2, board, 1),
+                out(UniverseItems.GAUSS_TURRET.get(), 1));
+        this.machine(Kind.ASSEMBLING, "laser_turret", 80, "laser_turret", in(steel, 4, exciter, 1, UniverseItems.PRISM.get(), 1, board, 1),
+                out(UniverseItems.LASER_TURRET.get(), 1));
+        this.machine(Kind.ASSEMBLING, "implosion_cannon", 100, "implosion_cannon", in(steel, 6, exciter, 1, motor, 2, board, 1),
+                out(UniverseItems.IMPLOSION_CANNON.get(), 1));
+        this.machine(Kind.ASSEMBLING, "missile_turret", 120, "missile_turret",
+                in(steel, 3, alloy, 2, UniverseItems.THRUSTER.get(), 1, UniverseItems.PROCESSOR.get(), 2), out(UniverseItems.MISSILE_TURRET.get(), 1));
+
+        // ---- 弹药：机枪弹箱一开始就能手搓，别的在制造台里做（手工也行）
+        this.researchShaped("gauss_turret", RecipeCategory.COMBAT, magnum, 1,
+                List.of("CIC"), Map.of('C', Items.COPPER_INGOT, 'I', Items.IRON_INGOT));
+        this.researchShaped("titanium_ammo", RecipeCategory.COMBAT, titaniumAmmo, 1,
+                List.of("T", "M", "T"), Map.of('T', titanium, 'M', magnum));
+        this.researchShaped("superalloy_ammo", RecipeCategory.COMBAT, UniverseItems.SUPERALLOY_AMMO_BOX.get(), 1,
+                List.of("H", "M", "H"), Map.of('H', alloy, 'M', titaniumAmmo));
+        this.researchShaped("implosion_cannon", RecipeCategory.COMBAT, shell, 1,
+                List.of("CSC"), Map.of('C', combustible, 'S', steel));
+        this.researchShaped("high_explosive_shells", RecipeCategory.COMBAT, highExplosive, 1,
+                List.of("X", "S", "X"), Map.of('X', explosive, 'S', shell));
+        this.researchShaped("crystal_shells", RecipeCategory.COMBAT, UniverseItems.CRYSTAL_SHELL_SET.get(), 1,
+                List.of("X", "S", "X"), Map.of('X', crystalExplosive, 'S', highExplosive));
+        this.researchShaped("missile_turret", RecipeCategory.COMBAT, missile, 1,
+                List.of("CBC", " S "), Map.of('C', combustible, 'B', board, 'S', steel));
+        this.researchShaped("supersonic_missiles", RecipeCategory.COMBAT, supersonic, 1,
+                List.of(" T ", "XMX"), Map.of('T', UniverseItems.THRUSTER.get(), 'X', explosive, 'M', missile));
+        this.researchShaped("gravity_missiles", RecipeCategory.COMBAT, UniverseItems.GRAVITY_MISSILE_SET.get(), 1,
+                List.of(" L ", "XMX"), Map.of('L', UniverseItems.GRAVITON_LENS.get(), 'X', crystalExplosive, 'M', supersonic));
+        this.machine(Kind.ASSEMBLING, "magnum_ammo_box", 20, "gauss_turret", in(Items.COPPER_INGOT, 2, Items.IRON_INGOT, 1), out(magnum, 1));
+        this.machine(Kind.ASSEMBLING, "titanium_ammo_box", 40, "titanium_ammo", in(magnum, 1, titanium, 2), out(titaniumAmmo, 1));
+        this.machine(Kind.ASSEMBLING, "superalloy_ammo_box", 60, "superalloy_ammo", in(titaniumAmmo, 1, alloy, 2),
+                out(UniverseItems.SUPERALLOY_AMMO_BOX.get(), 1));
+        this.machine(Kind.ASSEMBLING, "shell_set", 40, "implosion_cannon", in(combustible, 2, steel, 1), out(shell, 1));
+        this.machine(Kind.ASSEMBLING, "high_explosive_shell_set", 60, "high_explosive_shells", in(shell, 1, explosive, 2), out(highExplosive, 1));
+        this.machine(Kind.ASSEMBLING, "crystal_shell_set", 80, "crystal_shells", in(highExplosive, 1, crystalExplosive, 2),
+                out(UniverseItems.CRYSTAL_SHELL_SET.get(), 1));
+        this.machine(Kind.ASSEMBLING, "missile_set", 60, "missile_turret", in(combustible, 2, board, 1, steel, 1), out(missile, 1));
+        this.machine(Kind.ASSEMBLING, "supersonic_missile_set", 80, "supersonic_missiles",
+                in(missile, 1, UniverseItems.THRUSTER.get(), 1, explosive, 2), out(supersonic, 1));
+        this.machine(Kind.ASSEMBLING, "gravity_missile_set", 100, "gravity_missiles",
+                in(supersonic, 1, UniverseItems.GRAVITON_LENS.get(), 1, crystalExplosive, 2), out(UniverseItems.GRAVITY_MISSILE_SET.get(), 1));
+    }
+
+    /** 信号塔、干扰塔、投掷物、黑雾矩阵、替代配方（子代理 R2）。 */
+    private void darkFogSupport() {
+        Item steel = UniverseItems.STEEL.get();
+        Item board = UniverseItems.CIRCUIT_BOARD.get();
+        Item coil = UniverseItems.MAGNETIC_COIL.get();
+        Item exciter = UniverseItems.PLASMA_EXCITER.get();
+        Item processor = UniverseItems.PROCESSOR.get();
+        Item ring = UniverseItems.SUPER_MAGNETIC_RING.get();
+        Item crystalSilicon = UniverseItems.CRYSTAL_SILICON.get();
+        Item plastic = UniverseItems.PLASTIC.get();
+        Item combustible = UniverseItems.COMBUSTIBLE_UNIT.get();
+        Item explosive = UniverseItems.EXPLOSIVE_UNIT.get();
+        // 信号塔：无线输电塔上架一圈天线；干扰塔：磁环绕着电浆激发器
+        this.researchShaped("signal_tower", RecipeCategory.REDSTONE, UniverseItems.SIGNAL_TOWER.get(), 1, List.of(" E ", "SWS", "SBS"),
+                Map.of('E', exciter, 'S', steel, 'W', UniverseItems.WIRELESS_POWER_TOWER.get(), 'B', board));
+        this.machine(Kind.ASSEMBLING, "signal_tower", 200, "signal_tower",
+                in(UniverseItems.WIRELESS_POWER_TOWER.get(), 1, steel, 4, exciter, 1, board, 2), out(UniverseItems.SIGNAL_TOWER.get(), 1));
+        this.researchShaped("jammer_tower", RecipeCategory.REDSTONE, UniverseItems.JAMMER_TOWER.get(), 1, List.of("RER", "PSP", "SBS"),
+                Map.of('R', ring, 'E', exciter, 'P', processor, 'S', steel, 'B', board));
+        this.machine(Kind.ASSEMBLING, "jammer_tower", 200, "jammer_tower", in(ring, 2, exciter, 1, processor, 2, steel, 4),
+                out(UniverseItems.JAMMER_TOWER.get(), 1));
+        this.machine(Kind.ASSEMBLING, "jamming_capsule", 120, "jamming_capsules", in(ring, 1, crystalSilicon, 2, plastic, 1),
+                out(UniverseItems.JAMMING_CAPSULE.get(), 2));
+        // 投掷物：燃烧单元加塑料、硫酸做成爆破单元；爆破单元嵌上钛晶石是晶石爆破单元
+        this.machine(Kind.CHEMICAL, "explosive_unit", 120, "explosives", in(combustible, 2, plastic, 2, UniverseItems.SULFURIC_ACID.get(), 1),
+                out(explosive, 2));
+        this.machine(Kind.ASSEMBLING, "crystal_explosive_unit", 160, "crystal_explosives",
+                in(explosive, 4, UniverseItems.TITANIUM_CRYSTAL.get(), 1, crystalSilicon, 2), out(UniverseItems.CRYSTAL_EXPLOSIVE_UNIT.get(), 4));
+        // 替代配方（ADR-0028 §六）：黑雾的零件换中间品，给不想开采的人一条刷怪的路；跟着各自产物的科技解锁
+        this.machine(Kind.CHEMICAL, "graphene_from_matter_recombinator", 60, "high_strength_materials",
+                in(UniverseItems.MATTER_RECOMBINATOR.get(), 1, UniverseItems.ENERGETIC_GRAPHITE.get(), 2), out(UniverseItems.GRAPHENE.get(), 3));
+        this.machine(Kind.ASSEMBLING, "plasma_exciter_from_energy_shard", 40, "plasma_refining",
+                in(UniverseItems.ENERGY_SHARD.get(), 2, coil, 1), out(exciter, 2));
+        this.machine(Kind.ASSEMBLING, "accumulator_from_energy_shard", 80, "energy_storage",
+                in(UniverseItems.ENERGY_SHARD.get(), 4, Items.IRON_INGOT, 2), out(UniverseItems.ACCUMULATOR.get(), 1));
+        this.machine(Kind.ASSEMBLING, "processor_from_silicon_neuron", 60, "processor",
+                in(UniverseItems.SILICON_NEURON.get(), 1, board, 2), out(processor, 2));
+        this.machine(Kind.ASSEMBLING, "casimir_crystal_from_negentropy_singularity", 80, "quantum_printing",
+                in(UniverseItems.NEGENTROPY_SINGULARITY.get(), 1, UniverseItems.TITANIUM_CRYSTAL.get(), 1), out(UniverseItems.CASIMIR_CRYSTAL.get(), 2));
+        this.machine(Kind.ASSEMBLING, "graviton_lens_from_core_element", 120, "gravitational_wave_refraction",
+                in(UniverseItems.CORE_ELEMENT.get(), 1, UniverseItems.SYNTHETIC_DIAMOND.get(), 2), out(UniverseItems.GRAVITON_LENS.get(), 1));
+    }
+
     private void husbandry() {
         List<Item> plants = new ArrayList<>();
         UniverseItems.PLANTS.values().forEach(item -> plants.add(item.get()));

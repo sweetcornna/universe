@@ -1,0 +1,19 @@
+{
+  "type": "universe:research_shaped",
+  "category": "equipment",
+  "key": {
+    "B": "universe:circuit_board",
+    "C": "universe:magnetic_coil",
+    "G": "universe:gear",
+    "I": "minecraft:iron_ingot"
+  },
+  "pattern": [
+    " B ",
+    "CGC",
+    "III"
+  ],
+  "research": "gauss_turret",
+  "result": {
+    "id": "universe:gauss_turret"
+  }
+}

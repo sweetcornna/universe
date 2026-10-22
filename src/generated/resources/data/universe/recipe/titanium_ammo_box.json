@@ -1,0 +1,17 @@
+{
+  "type": "universe:research_shaped",
+  "category": "equipment",
+  "key": {
+    "M": "universe:magnum_ammo_box",
+    "T": "universe:titanium_ingot"
+  },
+  "pattern": [
+    "T",
+    "M",
+    "T"
+  ],
+  "research": "titanium_ammo",
+  "result": {
+    "id": "universe:titanium_ammo_box"
+  }
+}

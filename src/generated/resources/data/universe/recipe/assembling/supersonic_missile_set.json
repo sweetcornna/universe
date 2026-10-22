@@ -1,0 +1,24 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:missile_set"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:thruster"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:explosive_unit"
+    }
+  ],
+  "research": "supersonic_missiles",
+  "results": [
+    {
+      "id": "universe:supersonic_missile_set"
+    }
+  ],
+  "time": 80
+}

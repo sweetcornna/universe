@@ -1,0 +1,21 @@
+{
+  "type": "universe:chemical",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:matter_recombinator"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:energetic_graphite"
+    }
+  ],
+  "research": "high_strength_materials",
+  "results": [
+    {
+      "count": 3,
+      "id": "universe:graphene"
+    }
+  ],
+  "time": 60
+}

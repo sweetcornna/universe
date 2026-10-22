@@ -1,0 +1,17 @@
+{
+  "type": "universe:research_shaped",
+  "category": "equipment",
+  "key": {
+    "H": "universe:titanium_alloy",
+    "M": "universe:titanium_ammo_box"
+  },
+  "pattern": [
+    "H",
+    "M",
+    "H"
+  ],
+  "research": "superalloy_ammo",
+  "result": {
+    "id": "universe:superalloy_ammo_box"
+  }
+}

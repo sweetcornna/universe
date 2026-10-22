@@ -751,7 +751,7 @@ public class StarMapScreen extends Screen {
                     String.join(GalaxyText.pick("、", ", "), names)), x + 9, y, width - 9, 0xFF9FD8A8);
         }
         if (planet.landable()) {
-            SentinelLevel sentinels = SentinelLevel.of(planet);
+            SentinelLevel sentinels = ClientGalaxy.sentinels(planet);
             y = this.smallText(graphics, Component.translatable("gui.universe.star_map.sentinels",
                     GalaxyText.pick(sentinels.nameZh(), sentinels.nameEn())), x + 9, y, width - 9,
                     sentinels.ordinal() >= SentinelLevel.NORMAL.ordinal() ? WARN : DIM);

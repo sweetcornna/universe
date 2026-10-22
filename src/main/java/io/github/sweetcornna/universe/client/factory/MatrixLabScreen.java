@@ -23,7 +23,8 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 
 /**
- * 矩阵研究站的界面（ADR-0011）：左边是全服当前在研究的科技和进度，右边每种矩阵一格（空着时画出该放的矩阵），
+ * 矩阵研究站的界面（ADR-0011）：左边是全服当前在研究的科技和进度，右边每种矩阵一格（七种，四个一排，第七格是黑雾矩阵，
+ * ADR-0028 §六；空着时画出该放的矩阵），
  * 下面一个按钮打开科技树。左下角的按钮切换增产剂的"额外产出"和"加速"（ADR-0022）。
  */
 public class MatrixLabScreen extends MachineScreen {

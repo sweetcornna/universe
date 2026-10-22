@@ -1,0 +1,21 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:silicon_neuron"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:circuit_board"
+    }
+  ],
+  "research": "processor",
+  "results": [
+    {
+      "count": 2,
+      "id": "universe:processor"
+    }
+  ],
+  "time": 60
+}

@@ -1,0 +1,21 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:negentropy_singularity"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:titanium_crystal"
+    }
+  ],
+  "research": "quantum_printing",
+  "results": [
+    {
+      "count": 2,
+      "id": "universe:casimir_crystal"
+    }
+  ],
+  "time": 80
+}
