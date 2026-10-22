@@ -7,6 +7,7 @@ import io.github.sweetcornna.universe.poi.RandomModuleFunction;
 import io.github.sweetcornna.universe.core.tech.ModuleType;
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.block.OreKind;
+import io.github.sweetcornna.universe.block.ResourcePlantBlock;
 import io.github.sweetcornna.universe.factory.TallMachineBlock;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
 import io.github.sweetcornna.universe.registry.UniverseDataComponents;
@@ -146,6 +147,14 @@ final class UniverseBlockLoot extends BlockLootSubProvider {
                 .withPool(LootPool.lootPool().setRolls(ContextIntProviders.exactly(1))
                         .add(LootItem.lootTableItem(UniverseItems.SURVEY_DATA.get()))
                         .when(LootItemRandomChanceCondition.randomChance(0.35F))));
+        // 资源植物（ADR-0026）：长熟的打掉也掉产物，收过的什么也不掉；植物本身拿不走
+        UniverseBlocks.RESOURCE_PLANTS.forEach((plant, block) -> this.add(block.get(), LootTable.lootTable()
+                .withPool(LootPool.lootPool().setRolls(ContextIntProviders.exactly(1))
+                        .add(LootItem.lootTableItem(UniverseItems.RESOURCES.get(plant.product()).get())
+                                .apply(SetItemCountFunction.setCount(ContextIntProviders.between(plant.wildMin(), plant.wildMax()))))
+                        .when(MatchBlock.blockMatches(this.blocks, block.get(),
+                                StatePropertiesPredicate.Builder.properties().hasProperty(ResourcePlantBlock.RIPE, true))))));
+        this.dropSelf(UniverseBlocks.HYDROPONIC_TRAY.get());
         // 星球矿石：和原版矿石一样，精准采集掉本体，时运加成掉落
         UniverseBlocks.ORES.forEach((kind, block) -> this.add(block.get(), this.createOreDrops(block.get(), kind)));
     }

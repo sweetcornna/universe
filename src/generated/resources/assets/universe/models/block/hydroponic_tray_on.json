@@ -1,0 +1,9 @@
+{
+  "parent": "universe:block/hydroponic_tray_template",
+  "textures": {
+    "bottom": "universe:block/machine_casing_top",
+    "front": "universe:block/hydroponic_tray_front_on",
+    "side": "universe:block/hydroponic_tray_side",
+    "top": "universe:block/hydroponic_tray_top"
+  }
+}

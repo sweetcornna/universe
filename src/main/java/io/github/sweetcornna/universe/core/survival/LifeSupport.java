@@ -14,8 +14,8 @@ import io.github.sweetcornna.universe.core.tech.TechBonuses;
  *   <li><b>氧气</b>：不能呼吸的地方持续消耗。穿着密封的外骨骼（头盔和胸甲）能撑 10 分钟，不穿只能憋 15 秒；
  *       耗尽后每秒掉 2 点血。能呼吸的大气里、飞船里很快补满。</li>
  *   <li><b>防护</b>：每种危害一条。暴露在危害里持续下降，整套外骨骼标准强度下撑 5 分钟，缺件更快，
- *       不穿只有半分钟；降到零后每两秒掉 1 点血。室内、旁边有热源（防寒）或冷源（防热）时慢下来，
- *       风暴时加快。离开危害后慢慢恢复。</li>
+ *       不穿只有半分钟；降到零后每两秒掉 1 点血。旁边有热源（防寒）或冷源（防热）时慢下来，
+ *       风暴时加快。离开危害后慢慢恢复；待在庇护所里（ADR-0026）不掉，20 秒回满。</li>
  *   <li><b>喷气背包</b>：胸甲上的，空中推进时消耗，落地很快充满。</li>
  * </ul>
  *
@@ -34,6 +34,8 @@ public final class LifeSupport {
     /** 整套外骨骼、标准强度：5 分钟耗尽。 */
     static final float HAZARD_DRAIN = HAZARD_MAX / (5 * 60 * 20);
     static final float HAZARD_RECOVER = HAZARD_MAX / (25 * 20);
+    /** 待在庇护所里：20 秒回满。 */
+    static final float SHELTER_RECOVER = HAZARD_MAX / (20 * 20);
     static final float HAZARD_REFILL = HAZARD_MAX / (5 * 20);
     /** 喷气背包连续推进 2.5 秒，落地 2 秒充满。 */
     public static final float JET_BURN = JET_MAX / 50;
@@ -139,6 +141,12 @@ public final class LifeSupport {
             this.hazardTimers.remove(hazard);
             return 0;
         }
+        // 庇护所（ADR-0026）：墙和岩石挡住了外面的环境，防护不掉，还会回满
+        if (env.sheltered()) {
+            this.protection.put(hazard, Math.min(HAZARD_MAX, value + SHELTER_RECOVER));
+            this.hazardTimers.remove(hazard);
+            return 0;
+        }
         Double severity = env.hazards().get(hazard);
         if (severity == null) {
             this.protection.put(hazard, Math.min(HAZARD_MAX, value + HAZARD_RECOVER));
@@ -159,21 +167,16 @@ public final class LifeSupport {
 
     /** 环境对消耗速度的影响。 */
     static double modifier(Hazard hazard, Environment env) {
+        // 室内不走到这里（见 tickHazard），只剩热源、冷源和天气
         double factor = 1;
-        if (env.sheltered()) {
-            // 毒气会渗进室内，遮挡帮助小一些
-            factor *= hazard == Hazard.TOXIC ? 0.6 : 1 / 3.0;
-        }
         if (hazard == Hazard.COLD && env.nearHeat() || hazard == Hazard.HEAT && env.nearCold()) {
             factor *= 0.25;
         }
-        if (!env.sheltered()) {
-            factor *= switch (env.storm()) {
-                case 0 -> 1.0;
-                case 1 -> 1.3;
-                default -> 2.0;
-            };
-        }
+        factor *= switch (env.storm()) {
+            case 0 -> 1.0;
+            case 1 -> 1.3;
+            default -> 2.0;
+        };
         return factor;
     }
 
@@ -206,6 +209,11 @@ public final class LifeSupport {
         for (Hazard hazard : Hazard.values()) {
             this.protection.put(hazard, clamp(this.protection.get(hazard) + amount, HAZARD_MAX));
         }
+    }
+
+    /** 防护凝胶：只补一条。 */
+    public void rechargeHazard(Hazard hazard, float amount) {
+        this.protection.put(hazard, clamp(this.protection.get(hazard) + amount, HAZARD_MAX));
     }
 
     /** 补满（重生、创造模式）。 */

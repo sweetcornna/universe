@@ -81,6 +81,17 @@ public final class RawValues {
             Map.entry("universe:alien_egg", 5.0),
             Map.entry("universe:alien_fluff", 5.0),
             Map.entry("universe:bio_gel", 6.0),
+            // 资源植物的产物（ADR-0026）：遍地都是的便宜，引力果是违禁品，卖得贵
+            Map.entry("universe:oxygen", 1.0),
+            Map.entry("universe:sodium", 1.2),
+            Map.entry("universe:star_bulb", 3.0),
+            Map.entry("universe:frost_crystal", 1.5),
+            Map.entry("universe:solanium", 6.0),
+            Map.entry("universe:gamma_root", 2.0),
+            Map.entry("universe:fungal_mould", 2.0),
+            Map.entry("universe:cactus_flesh", 3.0),
+            Map.entry("universe:gravitino_ball", 120.0),
+            Map.entry("universe:marrow_bulb", 4.0),
             // 只能在空间站买、在坠毁飞船里拆到的 Mk.II 部件（ADR-0017）
             Map.entry("universe:ship_thruster_mk2", 260.0),
             Map.entry("universe:fuel_tank_mk2", 220.0),

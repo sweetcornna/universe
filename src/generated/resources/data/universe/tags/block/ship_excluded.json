@@ -41,6 +41,7 @@
     "universe:base_beacon",
     "universe:spray_coater",
     "universe:automatic_piler",
+    "universe:hydroponic_tray",
     "universe:traffic_monitor",
     "universe:pile_sorter",
     "universe:wireless_power_tower",

@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "ripe=false": {
+      "model": "universe:block/solar_vine_harvested"
+    },
+    "ripe=true": {
+      "model": "universe:block/solar_vine"
+    }
+  }
+}

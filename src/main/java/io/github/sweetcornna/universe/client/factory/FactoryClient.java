@@ -29,6 +29,7 @@ public final class FactoryClient {
             event.registerBlockEntityRenderer(UniverseBlockEntities.MATRIX_LAB.get(), MatrixLabRenderer::new);
             event.registerBlockEntityRenderer(UniverseBlockEntities.STORAGE_TANK.get(), StorageTankRenderer::new);
             event.registerBlockEntityRenderer(UniverseBlockEntities.ARTIFICIAL_STAR.get(), ArtificialStarRenderer::new);
+            event.registerBlockEntityRenderer(UniverseBlockEntities.HYDROPONIC_TRAY.get(), HydroponicTrayRenderer::new);
         });
         modBus.addListener(ModelEvent.RegisterStandalone.class, WindTurbineRenderer::registerModels);
         modBus.addListener(ModelEvent.RegisterStandalone.class, SolarPanelRenderer::registerModels);

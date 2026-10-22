@@ -1,0 +1,19 @@
+{
+  "type": "universe:research_shaped",
+  "key": {
+    "B": "universe:circuit_board",
+    "G": "minecraft:glass_pane",
+    "I": "minecraft:iron_ingot",
+    "L": "minecraft:glowstone_dust",
+    "W": "minecraft:water_bucket"
+  },
+  "pattern": [
+    "GLG",
+    "IWI",
+    "IBI"
+  ],
+  "research": "hydroponics",
+  "result": {
+    "id": "universe:hydroponic_tray"
+  }
+}

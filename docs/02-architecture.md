@@ -341,6 +341,10 @@ io.github.sweetcornna.universe
 | 聊天栏里能点、又不走命令的按钮：`new ClickEvent.Custom(Identifier, Optional<Tag>)`，点了客户端发 `ServerboundCustomClickActionPacket`，服务端在 NeoForge 的 `CustomClickActionEvent` 里接（`getPlayer()` 可能是 null，`getIdentifier()`、`getPayload()`，处理了就取消）。悬停文字是 `new HoverEvent.ShowText(Component)` | 已确认，`encounter.SpaceEncounters` 船长的报价 |
 | 服务端改玩家朝向要用 `ServerPlayer.teleportTo(ServerLevel, x, y, z, Set<Relative>, yaw, pitch, resetCamera)`，只 `setYRot` 不会同步给客户端 | 已确认，`/universe encounter visit` |
 | 给箱子设战利品表：`RandomizableContainer.setBlockEntityLootTable(BlockGetter, RandomSource, BlockPos, ResourceKey<LootTable>)`；拆方块不掉东西、不触发方块实体的副作用：`Block.UPDATE_CLIENTS`、`UPDATE_SUPPRESS_DROPS`、`UPDATE_SKIP_BLOCK_ENTITY_SIDEEFFECTS` 三个标志合起来（2、32、256） | 已确认，废弃货船 |
+| 每个世界有自己的边界：`WorldBorder` 是存在世界数据里的 `SavedData`，`ServerLevel.getWorldBorder()` 从 `getDataStorage()` 取，不再从主世界转发；`isWithinBounds(x, z, margin)`、`getDistanceToBorder(entity)`，`setWarningBlocks` 控制屏幕边缘发红的距离 | 已确认，`world.planet.PlanetBorder` |
+| `PushReaction` 改了名：`PUSH_PULL`、`PUSH`、`POPPED`（原来的 `DESTROY`，活塞推了就掉）、`IMMOVEABLE`、`IGNORE_ENTITY` | 已确认，资源植物 |
+| `BlockState.blocksMotion()` 没有了，挡不挡路用 `isSolid()`（就是原来的 legacySolid）；`Player.drop(物品, 布尔)` 多了个 `Prediction` 参数，给玩家东西用 `getInventory().placeItemBackInInventory(物品, Prediction.SERVER_ONLY)`，背包满了自己掉在脚下 | 已确认，`survival.Shelters`、水培槽 |
+| 开发脚本里先 `cmd` 换手里的东西再右键，服务端可能先处理右键：聊天命令要排队验签（`chatMessageChain`），右键包当刻就处理。中间等几刻 | 已确认，M14 验收 |
 拿不准的 API 先查源码再写，核实后把结果补进这张表。源码在：
 
 - Minecraft（含 NeoForge 补丁）：`build/moddev/artifacts/minecraft-patched-26.3.0.95-sources.jar`，IDE 里可以直接跳转。

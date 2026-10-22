@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "ripe=false": {
+      "model": "universe:block/saltwort_harvested"
+    },
+    "ripe=true": {
+      "model": "universe:block/saltwort"
+    }
+  }
+}

@@ -2,6 +2,7 @@ package io.github.sweetcornna.universe.registry;
 
 import java.util.function.Supplier;
 
+import io.github.sweetcornna.universe.block.HydroponicTrayBlockEntity;
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.block.poi.SupplyCrateBlockEntity;
 import io.github.sweetcornna.universe.block.ship.FuelTankBlockEntity;
@@ -56,6 +57,8 @@ public final class UniverseBlockEntities {
             () -> new BlockEntityType<>(HelmBlockEntity::new, UniverseBlocks.SHIP_HELM.get()));
     public static final Supplier<BlockEntityType<LandingPadBlockEntity>> LANDING_PAD = BLOCK_ENTITIES.register("landing_pad",
             () -> new BlockEntityType<>(LandingPadBlockEntity::new, UniverseBlocks.LANDING_PAD.get()));
+    public static final Supplier<BlockEntityType<HydroponicTrayBlockEntity>> HYDROPONIC_TRAY = BLOCK_ENTITIES.register("hydroponic_tray",
+            () -> new BlockEntityType<>(HydroponicTrayBlockEntity::new, UniverseBlocks.HYDROPONIC_TRAY.get()));
     public static final Supplier<BlockEntityType<SupplyCrateBlockEntity>> SUPPLY_CRATE = BLOCK_ENTITIES.register("supply_crate",
             () -> new BlockEntityType<>(SupplyCrateBlockEntity::new, UniverseBlocks.SUPPLY_CRATE.get()));
 

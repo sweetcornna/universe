@@ -68,6 +68,8 @@ final class UniverseBlockTagsProvider extends BlockTagsProvider {
         this.tag(BlockTags.LOGS).add(UniverseBlocks.PLANET_LOG.key());
         this.tag(BlockTags.MINEABLE_WITH_AXE).add(UniverseBlocks.PLANET_LOG.key(), UniverseBlocks.PLANET_CAP.key());
         this.tag(BlockTags.MINEABLE_WITH_HOE).add(UniverseBlocks.PLANET_LEAVES.key(), UniverseBlocks.PLANET_BLOOM.key());
+        // 资源植物（ADR-0026）：剑砍得快；不算可替换，免得放方块时把它顶掉
+        UniverseBlocks.RESOURCE_PLANTS.values().forEach(block -> this.tag(BlockTags.SWORD_EFFICIENT).add(block.key()));
         for (var block : UniverseBlocks.PLANTS.values()) {
             this.tag(BlockTags.REPLACEABLE).add(block.key());
             this.tag(BlockTags.SWORD_EFFICIENT).add(block.key());
@@ -110,6 +112,7 @@ final class UniverseBlockTagsProvider extends BlockTagsProvider {
                 UniverseBlocks.VERTICAL_LAUNCHING_SILO, UniverseBlocks.RAY_RECEIVER, UniverseBlocks.MINIATURE_PARTICLE_COLLIDER,
                 UniverseBlocks.MINI_FUSION_POWER_PLANT, UniverseBlocks.ARTIFICIAL_STAR,
                 UniverseBlocks.TELEPORTER, UniverseBlocks.BASE_BEACON, UniverseBlocks.SPRAY_COATER, UniverseBlocks.AUTOMATIC_PILER,
+                UniverseBlocks.HYDROPONIC_TRAY,
                 UniverseBlocks.TRAFFIC_MONITOR, UniverseBlocks.PILE_SORTER, UniverseBlocks.WIRELESS_POWER_TOWER, UniverseBlocks.SATELLITE_SUBSTATION,
                 UniverseBlocks.GEOTHERMAL_POWER_STATION, UniverseBlocks.ENERGY_EXCHANGER, UniverseBlocks.NEGENTROPY_SMELTER,
                 UniverseBlocks.RECOMPOSING_ASSEMBLER, UniverseBlocks.QUANTUM_CHEMICAL_PLANT, UniverseBlocks.SELF_EVOLUTION_LAB,

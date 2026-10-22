@@ -2,8 +2,11 @@ package io.github.sweetcornna.universe.registry;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.jspecify.annotations.Nullable;
 
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.block.OreKind;
@@ -19,6 +22,7 @@ import io.github.sweetcornna.universe.guide.GuideItem;
 import io.github.sweetcornna.universe.logistics.StationItem;
 import io.github.sweetcornna.universe.survival.Exosuit;
 import io.github.sweetcornna.universe.survival.MultitoolItem;
+import io.github.sweetcornna.universe.survival.ResourceItem;
 import io.github.sweetcornna.universe.survival.SuitRefillItem;
 import io.github.sweetcornna.universe.tech.DriveItem;
 import io.github.sweetcornna.universe.tech.TechModuleItem;
@@ -46,6 +50,10 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 /** 物品注册。方块物品和方块同名。 */
 public final class UniverseItems {
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(Universe.MOD_ID);
+    /** 一个氧气补多少氧气（满 100）。 */
+    public static final float OXYGEN_AMOUNT = 10;
+    /** 一个钠给每条防护补多少（满 100）。 */
+    public static final float SODIUM_AMOUNT = 8;
 
     public static final DeferredItem<BlockItem> PLANET_ROCK = ITEMS.registerSimpleBlockItem(UniverseBlocks.PLANET_ROCK);
     public static final DeferredItem<BlockItem> PLANET_COBBLESTONE = ITEMS.registerSimpleBlockItem(UniverseBlocks.PLANET_COBBLESTONE);
@@ -187,6 +195,10 @@ public final class UniverseItems {
             properties -> properties.humanoidArmor(Exosuit.MATERIAL, ArmorType.LEGGINGS));
     public static final DeferredItem<Item> EXOSUIT_BOOTS = ITEMS.registerSimpleItem("exosuit_boots",
             properties -> properties.humanoidArmor(Exosuit.MATERIAL, ArmorType.BOOTS));
+    // ---- 星球生活（ADR-0026）
+    /** 资源植物的产物，按注册名：氧气、钠能直接补外骨骼，别的做菜、精炼、卖。 */
+    public static final Map<String, DeferredItem<? extends Item>> RESOURCES = registerResources();
+    public static final DeferredItem<BlockItem> HYDROPONIC_TRAY = ITEMS.registerSimpleBlockItem(UniverseBlocks.HYDROPONIC_TRAY);
     public static final DeferredItem<SuitRefillItem> OXYGEN_CAPSULE = ITEMS.registerItem("oxygen_capsule",
             properties -> new SuitRefillItem(SuitRefillItem.Kind.OXYGEN, properties), properties -> properties.stacksTo(16));
     public static final DeferredItem<SuitRefillItem> HAZARD_CELL = ITEMS.registerItem("hazard_cell",
@@ -452,6 +464,28 @@ public final class UniverseItems {
                 CASIMIR_CRYSTAL, PLANE_FILTER, QUANTUM_CHIP, GRAVITON_LENS, CRITICAL_PHOTON, GRAVITY_MATRIX,
                 ANTIMATTER, ANNIHILATION_CONSTRAINT_SPHERE, ANTIMATTER_FUEL_ROD, COMPOSITE_MATRIX, UNIVERSE_MATRIX));
         return List.copyOf(order);
+    }
+
+    private static Map<String, DeferredItem<? extends Item>> registerResources() {
+        Map<String, DeferredItem<? extends Item>> items = new LinkedHashMap<>();
+        items.put("oxygen", ITEMS.registerItem("oxygen",
+                properties -> new ResourceItem.Refill("oxygen", SuitRefillItem.Kind.OXYGEN, OXYGEN_AMOUNT, null, properties)));
+        items.put("sodium", ITEMS.registerItem("sodium",
+                properties -> new ResourceItem.Refill("sodium", SuitRefillItem.Kind.HAZARD, SODIUM_AMOUNT, null, properties)));
+        resource(items, "star_bulb", new FoodProperties.Builder().nutrition(2).saturationModifier(0.3F).build());
+        resource(items, "frost_crystal", null);
+        resource(items, "solanium", null);
+        resource(items, "gamma_root", null);
+        resource(items, "fungal_mould", null);
+        resource(items, "cactus_flesh", new FoodProperties.Builder().nutrition(2).saturationModifier(0.2F).build());
+        resource(items, "gravitino_ball", null);
+        resource(items, "marrow_bulb", new FoodProperties.Builder().nutrition(2).saturationModifier(0.4F).build());
+        return items;
+    }
+
+    private static void resource(Map<String, DeferredItem<? extends Item>> items, String name, @Nullable FoodProperties food) {
+        items.put(name, ITEMS.registerItem(name, properties -> new ResourceItem(name, properties),
+                properties -> food == null ? properties : properties.food(food)));
     }
 
     private UniverseItems() {

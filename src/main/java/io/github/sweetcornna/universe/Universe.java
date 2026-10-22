@@ -16,6 +16,8 @@ import io.github.sweetcornna.universe.entity.FaunaSpawner;
 import io.github.sweetcornna.universe.entity.TamedCreatures;
 import io.github.sweetcornna.universe.entity.ship.ShipDealer;
 import io.github.sweetcornna.universe.fleet.FleetCommand;
+import io.github.sweetcornna.universe.world.planet.PlanetBorder;
+import io.github.sweetcornna.universe.world.planet.ResourcesCommand;
 import io.github.sweetcornna.universe.world.space.BlackHoleCommand;
 import io.github.sweetcornna.universe.portal.PortalCommand;
 import io.github.sweetcornna.universe.encounter.EncounterCommand;
@@ -101,6 +103,7 @@ public final class Universe {
         IEventBus gameBus = NeoForge.EVENT_BUS;
         RuntimeDimensions.registerEvents(modBus, gameBus);
         PlanetWeather.registerEvents(gameBus);
+        PlanetBorder.registerEvents(gameBus);
         FaunaSpawner.registerEvents(gameBus);
         TamedCreatures.registerEvents(gameBus);
         Teleporters.registerEvents(gameBus);
@@ -145,6 +148,7 @@ public final class Universe {
         gameBus.addListener(RegisterCommandsEvent.class, event -> FleetCommand.register(event.getDispatcher()));
         gameBus.addListener(RegisterCommandsEvent.class, event -> BlackHoleCommand.register(event.getDispatcher()));
         gameBus.addListener(RegisterCommandsEvent.class, event -> PortalCommand.register(event.getDispatcher()));
+        gameBus.addListener(RegisterCommandsEvent.class, event -> ResourcesCommand.register(event.getDispatcher()));
         gameBus.addListener(RegisterCommandsEvent.class, event -> EncounterCommand.register(event.getDispatcher()));
     }
 

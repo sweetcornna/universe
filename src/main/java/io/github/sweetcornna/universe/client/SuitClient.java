@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import io.github.sweetcornna.universe.world.planet.PlanetBorder;
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.client.galaxy.GalaxyText;
 import io.github.sweetcornna.universe.client.station.StationClient;
@@ -139,6 +140,9 @@ public final class SuitClient {
     private record Bar(Component label, float value, float max, int color, Component note) {
     }
 
+    private record Note(Component text, int color) {
+    }
+
     private static void renderHud(GuiGraphicsExtractor graphics, DeltaTracker delta) {
         Minecraft minecraft = Minecraft.getInstance();
         LocalPlayer player = minecraft.player;
@@ -175,18 +179,24 @@ public final class SuitClient {
             Component note = hud.has(SuitHud.FLYING) ? Component.translatable("hud.universe.suit.flying") : Component.empty();
             bars.add(new Bar(Component.translatable("hud.universe.suit.energy"), hud.energy(), hud.energyMax(), 0xFF5BE0B0, note));
         }
-        List<Component> notes = new ArrayList<>();
+        List<Note> notes = new ArrayList<>();
         if (hud.build() > 0) {
-            notes.add(Component.translatable("hud.universe.suit.build", hud.build()));
+            notes.add(new Note(Component.translatable("hud.universe.suit.build", hud.build()), 0xFF7FE0F7));
             if (hud.missing() >= 0) {
-                notes.add(Component.translatable("hud.universe.suit.build_missing", new ItemStack(BuiltInRegistries.ITEM.byId(hud.missing())).getHoverName()));
+                notes.add(new Note(Component.translatable("hud.universe.suit.build_missing",
+                        new ItemStack(BuiltInRegistries.ITEM.byId(hud.missing())).getHoverName()), 0xFFFF8A6A));
             }
+        }
+        Optional<Planet> planet = ClientGalaxy.currentPlanet();
+        // 星球边界（ADR-0026）：快走到头了提示还有几格
+        double edge = player.level().getWorldBorder().getDistanceToBorder(player);
+        if (planet.isPresent() && edge < PlanetBorder.WARNING) {
+            notes.add(new Note(Component.translatable("hud.universe.suit.border", (int) Math.max(0, Math.ceil(edge))), 0xFFFF8A6A));
         }
         if (bars.isEmpty() && notes.isEmpty()) {
             return;
         }
         Font font = minecraft.font;
-        Optional<Planet> planet = ClientGalaxy.currentPlanet();
         int x = 6;
         int y = 6;
         int height = 12 + bars.size() * 15 + notes.size() * 10 + (planet.isPresent() ? 10 : 0);
@@ -224,8 +234,8 @@ public final class SuitClient {
             graphics.fill(x, y, x + Math.round(barWidth * share), y + 3, share < 0.2F ? 0xFFE5533D : bar.color());
             y += 5;
         }
-        for (int i = 0; i < notes.size(); i++) {
-            graphics.text(font, notes.get(i), x, y, i == 0 ? 0xFF7FE0F7 : 0xFFFF8A6A, false);
+        for (Note note : notes) {
+            graphics.text(font, note.text(), x, y, note.color(), false);
             y += 10;
         }
         warnings(graphics, font, hud, player);

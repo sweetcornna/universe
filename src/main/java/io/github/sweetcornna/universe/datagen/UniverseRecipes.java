@@ -648,6 +648,10 @@ final class UniverseRecipes extends RecipeProvider {
         this.researchShaped("landing_pad", RecipeCategory.TRANSPORTATION, UniverseItems.LANDING_PAD.get(), 1,
                 List.of("SYS", "CBC", "III"), Map.of('S', Items.SMOOTH_STONE_SLAB, 'Y', Items.DYE.yellow(), 'C', coil, 'B', board,
                         'I', Items.IRON_INGOT));
+        // ---- M14：水培槽（ADR-0026）：玻璃罩、补光灯、一桶营养液
+        this.researchShaped("hydroponics", RecipeCategory.MISC, UniverseItems.HYDROPONIC_TRAY.get(), 1,
+                List.of("GLG", "IWI", "IBI"), Map.of('G', Items.GLASS_PANE, 'L', Items.GLOWSTONE_DUST, 'I', Items.IRON_INGOT,
+                        'W', Items.WATER_BUCKET, 'B', board));
         this.researchShaped("cadmium_drive", RecipeCategory.TRANSPORTATION, UniverseItems.DRIVES.get(DriveTier.CADMIUM).get(), 1,
                 List.of("TST", "PWP", "TST"), Map.of('T', UniverseItems.TITANIUM_ALLOY.get(), 'S', UniverseItems.SUPER_MAGNETIC_RING.get(),
                         'P', UniverseItems.PROCESSOR.get(), 'W', UniverseItems.WARP_DRIVE.get()));

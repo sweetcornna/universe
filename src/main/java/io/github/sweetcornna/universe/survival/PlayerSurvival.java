@@ -3,6 +3,7 @@ package io.github.sweetcornna.universe.survival;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Predicate;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -95,6 +96,7 @@ public final class PlayerSurvival {
         gameBus.addListener(PlayerEvent.PlayerLoggedOutEvent.class, event -> {
             JETTING.remove(event.getEntity().getUUID());
             SOURCES.remove(event.getEntity().getUUID());
+            Shelters.forget(event.getEntity().getUUID());
             Multitool.forget(event.getEntity().getUUID());
         });
     }
@@ -237,7 +239,7 @@ public final class PlayerSurvival {
         }
         boolean breathable = planet.map(p -> p.atmosphere().breathable()).orElse(false) && !underwater;
         Map<Hazard, Double> hazards = planet.map(PlayerSurvival::hazards).orElse(Map.of());
-        boolean sheltered = supplied || !level.canSeeSky(BlockPos.containing(player.getEyePosition()));
+        boolean sheltered = supplied || Shelters.sheltered(player, level);
         int[] sources = sources(player, level, hazards);
         return new Environment(breathable, hazards, sheltered, PlanetWeather.severity(level), sources[0] > 0, sources[1] > 0, supplied);
     }
@@ -290,29 +292,45 @@ public final class PlayerSurvival {
         return state.is(BlockTags.ICE) || state.is(BlockTags.SNOW) || state.is(UniverseBlocks.PLANET_SNOW) || state.is(UniverseBlocks.PLANET_ICE);
     }
 
-    /** 数值低于两成时从背包里取一个氧气罐或防护电池。 */
+    /** 数值低于两成时从背包里取一个补给：氧气、氧气罐；防护凝胶、钠、防护电池。 */
     private static void autoRefill(ServerPlayer player, LifeSupport support, Environment env, Suit suit) {
         if (suit.sealed() && env.needsOxygen() && support.oxygen() < LifeSupport.OXYGEN_MAX * AUTO_REFILL) {
-            take(player, SuitRefillItem.Kind.OXYGEN, support);
+            take(player, support, refill -> refill.kind() == SuitRefillItem.Kind.OXYGEN);
         }
         if (suit.pieces() > 0) {
             for (Hazard hazard : Hazard.values()) {
                 if (support.low(hazard, env, AUTO_REFILL)) {
-                    take(player, SuitRefillItem.Kind.HAZARD, support);
+                    take(player, support, refill -> refill.covers(hazard));
                     break;
                 }
             }
         }
     }
 
-    private static void take(ServerPlayer player, SuitRefillItem.Kind kind, LifeSupport support) {
+    /**
+     * 从背包里挑一个用掉：只补这一条的凝胶优先，其次补得少的（采来的氧气、钠），最后才是罐子和电池，
+     * 省下做出来的东西。
+     */
+    private static void take(ServerPlayer player, LifeSupport support, Predicate<SuitRefillItem> fits) {
         Inventory inventory = player.getInventory();
+        ItemStack best = ItemStack.EMPTY;
         for (int slot = 0; slot < inventory.getContainerSize(); slot++) {
             ItemStack stack = inventory.getItem(slot);
-            if (stack.getItem() instanceof SuitRefillItem refill && refill.kind() == kind) {
-                SuitRefillItem.apply(player, stack, kind, support);
-                return;
+            if (stack.getItem() instanceof SuitRefillItem refill && fits.test(refill)
+                    && (best.isEmpty() || preferred(refill, (SuitRefillItem) best.getItem()))) {
+                best = stack;
             }
         }
+        if (!best.isEmpty()) {
+            SuitRefillItem.apply(player, best, support);
+        }
+    }
+
+    private static boolean preferred(SuitRefillItem candidate, SuitRefillItem current) {
+        boolean specific = candidate.only() != null;
+        if (specific != (current.only() != null)) {
+            return specific;
+        }
+        return candidate.amount() < current.amount();
     }
 }

@@ -6,6 +6,7 @@ import java.util.Optional;
 import io.github.sweetcornna.universe.block.poi.DropPodBlock;
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.block.FloraBlocks;
+import io.github.sweetcornna.universe.block.ResourcePlantBlock;
 import io.github.sweetcornna.universe.client.PlanetTints;
 import io.github.sweetcornna.universe.client.tech.ModuleGradeTint;
 import io.github.sweetcornna.universe.core.ecology.Flora;
@@ -56,6 +57,8 @@ final class UniverseModelProvider extends ModelProvider {
     private static final TextureSlot DETAIL = TextureSlot.create("detail");
     /** 植物：主体染索引 0、点缀染索引 1 的交叉面片；发光物种的点缀层自发光。 */
     private static final ModelTemplate PLANT_CROSS = template("plant_cross", BODY, DETAIL);
+    private static final ModelTemplate TRAY = template("hydroponic_tray_template", TextureSlot.FRONT, TextureSlot.SIDE, TextureSlot.TOP,
+            TextureSlot.BOTTOM);
     private static final ModelTemplate PLANT_CROSS_EMISSIVE = template("plant_cross_emissive", BODY, DETAIL);
     /** 地衣：贴地的一片。 */
     private static final ModelTemplate PLANT_PATCH = template("plant_patch", BODY, DETAIL);
@@ -112,6 +115,10 @@ final class UniverseModelProvider extends ModelProvider {
         UniverseItems.MODULES.values().forEach(item -> itemModels.generateItemWithTintedOverlay(item.get(), ModuleGradeTint.INSTANCE));
         // 镉、翠金、铟驱动（ADR-0024）
         UniverseItems.DRIVES.values().forEach(item -> itemModels.generateFlatItem(item.get(), ModelTemplates.FLAT_ITEM));
+        // 资源植物（ADR-0026）：长熟的和收过的两种样子，植物本身没有物品；产物是平面物品
+        UniverseBlocks.RESOURCE_PLANTS.values().forEach(block -> resourcePlant(blockModels, block.get()));
+        UniverseItems.RESOURCES.values().forEach(item -> itemModels.generateFlatItem(item.get(), ModelTemplates.FLAT_ITEM));
+        tray(blockModels, UniverseBlocks.HYDROPONIC_TRAY.get());
         factory(blockModels, itemModels);
     }
 
@@ -311,6 +318,32 @@ final class UniverseModelProvider extends ModelProvider {
                     .put(TextureSlot.TOP, texture(name + "_top" + (topLit ? suffix : "")))
                     .put(TextureSlot.BOTTOM, texture(bottom));
             models[on] = ModelTemplates.CUBE_ORIENTABLE_TOP_BOTTOM.createWithSuffix(block, suffix, textures, blockModels.modelOutput);
+        }
+        blockModels.blockStateOutput.accept(MultiVariantGenerator.dispatch(block)
+                .with(PropertyDispatch.initial(MachineBlock.WORKING).generate(on -> BlockModelGenerators.plainVariant(models[on ? 1 : 0])))
+                .with(BlockModelGenerators.ROTATION_HORIZONTAL_FACING));
+        blockModels.registerSimpleItemModel(block, models[0]);
+    }
+
+    private static void resourcePlant(BlockModelGenerators blockModels, Block block) {
+        Identifier ripe = ModelTemplates.CROSS.create(block, TextureMapping.cross(block), blockModels.modelOutput);
+        Identifier bare = ModelTemplates.CROSS.createWithSuffix(block, "_harvested",
+                TextureMapping.cross(TextureMapping.getBlockTexture(block, "_harvested")), blockModels.modelOutput);
+        blockModels.blockStateOutput.accept(MultiVariantGenerator.dispatch(block).with(BlockModelGenerators.createBooleanModelDispatch(
+                ResourcePlantBlock.RIPE, BlockModelGenerators.plainVariant(ripe), BlockModelGenerators.plainVariant(bare))));
+    }
+
+    /** 水培槽：十格高的槽子（手写的父模型），通电长着的时候正面补光灯亮；上面的植物由方块实体渲染器画。 */
+    private static void tray(BlockModelGenerators blockModels, Block block) {
+        Identifier[] models = new Identifier[2];
+        for (int on = 0; on < 2; on++) {
+            String suffix = on == 1 ? "_on" : "";
+            TextureMapping textures = new TextureMapping()
+                    .put(TextureSlot.FRONT, texture("hydroponic_tray_front" + suffix))
+                    .put(TextureSlot.SIDE, texture("hydroponic_tray_side"))
+                    .put(TextureSlot.TOP, texture("hydroponic_tray_top"))
+                    .put(TextureSlot.BOTTOM, texture("machine_casing_top"));
+            models[on] = TRAY.createWithSuffix(block, suffix, textures, blockModels.modelOutput);
         }
         blockModels.blockStateOutput.accept(MultiVariantGenerator.dispatch(block)
                 .with(PropertyDispatch.initial(MachineBlock.WORKING).generate(on -> BlockModelGenerators.plainVariant(models[on ? 1 : 0])))

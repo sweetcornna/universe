@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/cross",
+  "textures": {
+    "cross": "universe:block/solar_vine_harvested"
+  }
+}

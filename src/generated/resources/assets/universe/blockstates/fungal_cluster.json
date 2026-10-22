@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "ripe=false": {
+      "model": "universe:block/fungal_cluster_harvested"
+    },
+    "ripe=true": {
+      "model": "universe:block/fungal_cluster"
+    }
+  }
+}

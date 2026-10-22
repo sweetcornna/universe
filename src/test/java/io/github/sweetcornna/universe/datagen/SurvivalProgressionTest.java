@@ -22,6 +22,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import io.github.sweetcornna.universe.core.ecology.ResourcePlant;
 import io.github.sweetcornna.universe.core.research.Tech;
 import io.github.sweetcornna.universe.core.research.TechTree;
 
@@ -177,6 +178,10 @@ class SurvivalProgressionTest {
                     collectItems(read(loot), natural);
                 }
             }
+        }
+        // 资源植物（ADR-0026）：世界生成长在星球上，方块没有物品，收获和打掉都得到产物
+        for (ResourcePlant plant : ResourcePlant.values()) {
+            collectItems(read(DATA.resolve("loot_table/blocks/" + plant.id() + ".json")), natural);
         }
         for (Path loot : jsonFiles(DATA.resolve("loot_table/entities"))) {
             collectItems(read(loot), natural);

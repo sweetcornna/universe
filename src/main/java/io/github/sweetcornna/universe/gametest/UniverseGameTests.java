@@ -8,6 +8,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.function.Consumer;
 
+import io.github.sweetcornna.universe.factory.MachineBlock;
+import io.github.sweetcornna.universe.block.HydroponicTrayBlockEntity;
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.block.portal.PortalGlyphBlock;
 import io.github.sweetcornna.universe.block.ship.HelmBlockEntity;
@@ -141,6 +143,8 @@ public final class UniverseGameTests {
             UniverseGameTests::helmTechTunesShip);
     private static final ResourceKey<Consumer<GameTestHelper>> LANDING_PAD_REFUELS_SHIP = function("landing_pad_refuels_ship",
             UniverseGameTests::landingPadRefuelsShip);
+    private static final ResourceKey<Consumer<GameTestHelper>> HYDROPONIC_TRAY_GROWS = function("hydroponic_tray_grows",
+            UniverseGameTests::hydroponicTrayGrows);
     private static final ResourceKey<Consumer<GameTestHelper>> FLEET_SAVE_ROUND_TRIP = function("fleet_save_round_trip",
             UniverseGameTests::fleetSaveRoundTrip);
     private static final ResourceKey<Consumer<GameTestHelper>> FLEET_VOYAGE_CLAIM = function("fleet_voyage_claim",
@@ -183,6 +187,7 @@ public final class UniverseGameTests {
         test(event, environment, DISTRIBUTORS_SHARE_ITEMS, 200);
         test(event, environment, HELM_TECH_TUNES_SHIP, 40);
         test(event, environment, LANDING_PAD_REFUELS_SHIP, 300);
+        test(event, environment, HYDROPONIC_TRAY_GROWS, 200);
         test(event, environment, DEALER_SHIPS_ASSEMBLE, HANGAR, 40);
         test(event, environment, CRASHED_SHIP_REPAIRS, HANGAR, 40);
         test(event, environment, PORTAL_DIALS_AND_CLOSES, PORTAL, 20);
@@ -464,6 +469,20 @@ public final class UniverseGameTests {
             helper.assertTrue(helper.getBlockEntity(pad, LandingPadBlockEntity.class).shipAbove() == ship, "着陆台上没找到船");
             helper.assertTrue(ship.fuelServer() > 20, "燃料没加上去：" + ship.fuelServer());
             ship.discard();
+        });
+    }
+
+    /** 水培槽（ADR-0026）：洞穴髓球种不进去；种下氧囊草、接上电就开始长，补光灯亮。 */
+    private static void hydroponicTrayGrows(GameTestHelper helper) {
+        powerPlant(helper);
+        BlockPos pos = new BlockPos(3, 1, 3);
+        helper.setBlock(pos, UniverseBlocks.HYDROPONIC_TRAY.get());
+        HydroponicTrayBlockEntity tray = helper.getBlockEntity(pos, HydroponicTrayBlockEntity.class);
+        helper.assertFalse(tray.sow(new ItemStack(UniverseItems.RESOURCES.get("marrow_bulb").get())), "洞穴髓球不该能种进水培槽");
+        helper.assertTrue(tray.sow(new ItemStack(UniverseItems.RESOURCES.get("oxygen").get())), "氧气种不下去");
+        helper.succeedWhen(() -> {
+            helper.assertTrue(tray.growth() > 0.01, "没有长：" + tray.growth());
+            helper.assertBlockProperty(pos, MachineBlock.WORKING, true);
         });
     }
 

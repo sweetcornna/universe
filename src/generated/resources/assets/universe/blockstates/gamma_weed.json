@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "ripe=false": {
+      "model": "universe:block/gamma_weed_harvested"
+    },
+    "ripe=true": {
+      "model": "universe:block/gamma_weed"
+    }
+  }
+}

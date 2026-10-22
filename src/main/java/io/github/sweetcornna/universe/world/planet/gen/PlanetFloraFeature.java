@@ -11,7 +11,10 @@ import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.block.FloraBlocks;
 import io.github.sweetcornna.universe.core.ecology.Flora;
 import io.github.sweetcornna.universe.core.ecology.FloraLayout;
+import io.github.sweetcornna.universe.core.ecology.Biotope;
 import io.github.sweetcornna.universe.core.ecology.PlantSpecies;
+import io.github.sweetcornna.universe.core.ecology.ResourceFlora;
+import io.github.sweetcornna.universe.core.ecology.ResourcePlant;
 import io.github.sweetcornna.universe.core.ecology.TreeBuilder;
 import io.github.sweetcornna.universe.core.ecology.TreeSpecies;
 import io.github.sweetcornna.universe.core.galaxy.Planet;
@@ -34,7 +37,7 @@ import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.placement.PlacedFeature;
 
 /**
- * 星球植物（玩法设计 §8）：每个区块先长地面植物，再种树。物种、颜色、分布都由 {@code core.ecology} 按星球算，
+ * 星球植物（玩法设计 §8）：每个区块先长地面植物，再种树，最后放资源植物（ADR-0026）。物种、颜色、分布都由 {@code core.ecology} 按星球算，
  * 这里只负责找地面、放方块。
  *
  * <p>所有星球群系都在植被阶段登记这一个地物（放在区块角上，自己遍历 16×16 列），不是星球维度时什么也不做。
@@ -51,6 +54,16 @@ public record PlanetFloraFeature() implements Feature {
             return this.size() > 8;
         }
     };
+    private static final Map<Long, ResourceFlora> RESOURCES = new LinkedHashMap<>(8, 0.75F, true) {
+        @Override
+        protected boolean removeEldestEntry(Map.Entry<Long, ResourceFlora> eldest) {
+            return this.size() > 8;
+        }
+    };
+    /** 洞穴髓球从地表往下至少几格开始找。 */
+    private static final int CAVE_DEPTH = 8;
+    /** 洞顶最多几格高。 */
+    private static final int CAVE_ROOF = 8;
 
     @Override
     public MapCodec<PlanetFloraFeature> codec() {
@@ -68,11 +81,20 @@ public record PlanetFloraFeature() implements Feature {
 
     @Override
     public boolean place(WorldGenLevel level, ChunkGenerator chunkGenerator, RandomSource random, BlockPos origin) {
-        Optional<FloraLayout> found = Planets.planet(level.getLevel()).flatMap(PlanetFloraFeature::layout);
-        if (found.isEmpty()) {
+        Optional<Planet> planet = Planets.planet(level.getLevel());
+        if (planet.isEmpty()) {
             return false;
         }
-        FloraLayout layout = found.get();
+        Optional<FloraLayout> found = layout(planet.get());
+        if (found.isPresent()) {
+            this.flora(level, random, origin, found.get());
+        }
+        // 资源植物最后放，只占前面留下的空地（ADR-0026），原来的植物和树一株不变
+        this.resources(level, planet.get(), origin);
+        return true;
+    }
+
+    private void flora(WorldGenLevel level, RandomSource random, BlockPos origin, FloraLayout layout) {
         int x0 = origin.getX();
         int z0 = origin.getZ();
         // 先长地面植物，树再盖上去（树能挤掉植物）：反过来的话树冠下的地面找不到，林下就空了
@@ -114,7 +136,69 @@ public record PlanetFloraFeature() implements Feature {
                 this.grow(level, base, tree, random.nextLong());
             }
         }
-        return true;
+    }
+
+    private static ResourceFlora resourceFlora(Planet planet) {
+        synchronized (RESOURCES) {
+            return RESOURCES.computeIfAbsent(planet.seed(), seed -> new ResourceFlora(seed, planet.type(), planet.ecology().lifeless()));
+        }
+    }
+
+    /** 地表一丛丛的资源植物和洞里的髓球。用自己的随机数，不动世界生成的随机数。 */
+    private void resources(WorldGenLevel level, Planet planet, BlockPos origin) {
+        ResourceFlora flora = resourceFlora(planet);
+        int chunkX = origin.getX() >> 4;
+        int chunkZ = origin.getZ() >> 4;
+        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+        for (ResourceFlora.Spot spot : flora.spots(chunkX, chunkZ)) {
+            pos.set(spot.x(), level.getHeight(Heightmap.Types.WORLD_SURFACE_WG, spot.x(), spot.z()), spot.z());
+            if (!level.isEmptyBlock(pos)) {
+                continue;
+            }
+            // 岩石、风化层、沙子也算能长植物的地，先按矿物地面算（盐晶簇长在上面）
+            BlockState below = level.getBlockState(pos.below());
+            boolean rock = ground(below);
+            if (!rock && !soil(below)) {
+                continue;
+            }
+            BiomeKind biome = PlanetBiomes.kind(level.getBiome(pos));
+            ResourcePlant plant = flora.pick(biome == null ? null : Biotope.of(biome), rock, spot.roll());
+            if (plant != null) {
+                level.setBlock(pos, UniverseBlocks.RESOURCE_PLANTS.get(plant).get().defaultBlockState(), 2);
+            }
+        }
+        BlockState marrow = UniverseBlocks.RESOURCE_PLANTS.get(ResourcePlant.CAVE_MARROW).get().defaultBlockState();
+        for (ResourceFlora.Spot column : flora.caveColumns(chunkX, chunkZ)) {
+            int top = level.getHeight(Heightmap.Types.OCEAN_FLOOR_WG, column.x(), column.z()) - CAVE_DEPTH;
+            int bottom = level.getMinY() + 4;
+            // 从上往下找第一处洞穴的地面：脚下是岩石，头顶几格内有洞顶
+            for (int y = top; y > bottom; y--) {
+                pos.set(column.x(), y, column.z());
+                if (level.isEmptyBlock(pos) && ground(level.getBlockState(pos.below())) && roofed(level, pos)) {
+                    level.setBlock(pos, marrow, 2);
+                    break;
+                }
+            }
+        }
+    }
+
+    /** 洞顶在 {@link #CAVE_ROOF} 格以内。 */
+    private static boolean roofed(WorldGenLevel level, BlockPos floor) {
+        BlockPos.MutableBlockPos pos = floor.mutable();
+        for (int i = 1; i <= CAVE_ROOF; i++) {
+            pos.move(Direction.UP);
+            if (ground(level.getBlockState(pos))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** 星球的岩石、沙子、风化层这些地面（盐晶簇、髓球长在上面）。 */
+    private static boolean ground(BlockState state) {
+        return state.is(UniverseBlocks.PLANET_ROCK.get()) || state.is(UniverseBlocks.PLANET_REGOLITH.get())
+                || state.is(UniverseBlocks.PLANET_SAND.get()) || state.is(UniverseBlocks.PLANET_ASH.get())
+                || state.is(UniverseBlocks.PLANET_STRATA.get()) || state.is(UniverseBlocks.PLANET_COBBLESTONE.get());
     }
 
     private void grow(WorldGenLevel level, BlockPos base, TreeSpecies tree, long seed) {

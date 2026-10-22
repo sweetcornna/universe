@@ -61,10 +61,6 @@ class LifeSupportTest {
         int bare = ticksUntil(new LifeSupport(), COLD_VACUUM, Suit.NONE, s -> s.protection(Hazard.COLD) <= 0);
         assertEquals(30 * 20, bare, 2);
 
-        Environment indoors = new Environment(false, Map.of(Hazard.COLD, 1.0), true, 2, false, false, false);
-        int sheltered = ticksUntil(new LifeSupport(), indoors, Suit.FULL, s -> s.protection(Hazard.COLD) <= 0);
-        assertEquals(3 * full, sheltered, 60);
-
         Environment storm = new Environment(false, Map.of(Hazard.COLD, 1.0), false, 2, false, false, false);
         int stormy = ticksUntil(new LifeSupport(), storm, Suit.FULL, s -> s.protection(Hazard.COLD) <= 0);
         assertEquals(full / 2, stormy, 15);
@@ -74,6 +70,21 @@ class LifeSupportTest {
         assertEquals(4 * full, warm, 80);
         // 热源对高温没有帮助
         assertEquals(1.0, LifeSupport.modifier(Hazard.HEAT, campfire), 1e-9);
+    }
+
+    @Test
+    void shelterRefillsProtectionEvenInAStorm() {
+        // ADR-0026：屋里、洞里不再掉防护，20 秒回满；风暴照样
+        Environment indoors = new Environment(false, Map.of(Hazard.COLD, 2.0, Hazard.RADIATION, 1.0), true, 2, false, false, false);
+        LifeSupport support = new LifeSupport(LifeSupport.OXYGEN_MAX, Map.of(Hazard.COLD, 0F, Hazard.RADIATION, 10F), LifeSupport.JET_MAX);
+        int ticks = ticksUntil(support, indoors, Suit.FULL, s -> s.protection(Hazard.COLD) >= LifeSupport.HAZARD_MAX);
+        assertEquals(20 * 20, ticks, 2);
+        assertEquals(LifeSupport.HAZARD_MAX, support.protection(Hazard.RADIATION), 1e-3);
+        // 不会因为躲进屋里就掉血
+        LifeSupport empty = new LifeSupport(LifeSupport.OXYGEN_MAX, Map.of(Hazard.COLD, 0F), LifeSupport.JET_MAX);
+        assertFalse(empty.tick(indoors, Suit.FULL, false, true).any());
+        // 氧气照样消耗
+        assertTrue(empty.oxygen() < LifeSupport.OXYGEN_MAX);
     }
 
     @Test

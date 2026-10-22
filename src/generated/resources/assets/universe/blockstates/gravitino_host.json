@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "ripe=false": {
+      "model": "universe:block/gravitino_host_harvested"
+    },
+    "ripe=true": {
+      "model": "universe:block/gravitino_host"
+    }
+  }
+}

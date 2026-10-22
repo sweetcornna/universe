@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/cross",
+  "textures": {
+    "cross": "universe:block/salt_crystal_cluster_harvested"
+  }
+}

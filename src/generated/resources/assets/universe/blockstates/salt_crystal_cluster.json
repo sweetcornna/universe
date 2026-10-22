@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "ripe=false": {
+      "model": "universe:block/salt_crystal_cluster_harvested"
+    },
+    "ripe=true": {
+      "model": "universe:block/salt_crystal_cluster"
+    }
+  }
+}

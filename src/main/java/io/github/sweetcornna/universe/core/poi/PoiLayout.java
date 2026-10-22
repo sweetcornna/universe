@@ -76,9 +76,8 @@ public final class PoiLayout {
                 return (!liquid || model.sample(x, z).height() >= model.seaLevel() + 1) && !model.lavaLake(x, z);
             }
         };
-        // 星球的世界边界（玩法设计 §2.3）还没有实装，玩家走得多远都行，兴趣点也就先不按边界截断。
-        // 以后加上边界时传 planet.worldSize()：边界以内的兴趣点位置不会变。
-        return new PoiLayout(planet.seed(), planet.type(), ground, 0);
+        // 星球有世界边界（ADR-0026）：边界外的格子不出兴趣点，边界以内的位置和没有边界时一样
+        return new PoiLayout(planet.seed(), planet.type(), ground, planet.worldSize());
     }
 
     /** 一个格子出兴趣点的概率：宜居、奇异、毒雾星球多一些，荒芜星球少一些。 */

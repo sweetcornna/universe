@@ -172,6 +172,9 @@ public final class TechTree {
             // ---- M13：飞船与航行（ADR-0024）。着陆台电磁学阶段就能研究；三档驱动接在跃迁引擎后面，一档比一档要的矩阵多
             Tech.handIn("landing_pad", List.of("electromagnetism"), List.of(cost("magnetic_coil", 8), cost("minecraft:iron_ingot", 16)),
                     items("landing_pad")),
+            // ---- M14：星球生活（ADR-0026）。水培槽电磁学阶段就能研究，要交野外采来的氧气
+            Tech.handIn("hydroponics", List.of("electromagnetism"), List.of(cost("oxygen", 12), cost("circuit_board", 6)),
+                    items("hydroponic_tray")),
             Tech.lab("cadmium_drive", List.of("warp_drive", "structure_matrix"), List.of(BLUE, RED, YELLOW), 160, items("cadmium_drive")),
             Tech.lab("emeril_drive", List.of("cadmium_drive", "information_matrix"), List.of(BLUE, RED, YELLOW, PURPLE), 200,
                     items("emeril_drive")),

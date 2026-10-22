@@ -1,5 +1,6 @@
 package io.github.sweetcornna.universe.datagen;
 
+import io.github.sweetcornna.universe.core.ecology.ResourcePlant;
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.block.OreKind;
 import io.github.sweetcornna.universe.core.fleet.Area;
@@ -103,6 +104,7 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         this.ships();
         this.ores();
         this.suit();
+        this.resourcePlants();
         this.multitool();
         this.factory();
         this.trade();
@@ -739,11 +741,14 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("hud.universe.suit.cabin", "舱内供氧", "cabin air");
         both("hud.universe.suit.sheltered", "有遮挡", "sheltered");
         both("hud.universe.suit.storm", "风暴", "storm");
+        both("hud.universe.suit.border", "离星球边界 %s 格", "%s blocks to the planet's edge");
+        both("message.universe.planet_border.moved", "你在星球边界外，已挪回 %s", "You were outside the planet's edge and were moved to %s");
         both("hud.universe.suit.warning.oxygen", "氧气即将耗尽", "Oxygen low");
         both("hud.universe.suit.warning.no_oxygen", "氧气耗尽", "Out of oxygen");
         both("hud.universe.suit.warning.hazard", "%s防护即将耗尽", "%s protection low");
-        both("message.universe.suit.oxygen_used", "用掉一个氧气罐：氧气 +50%", "Used an oxygen capsule: oxygen +50%");
-        both("message.universe.suit.cell_used", "用掉一个防护电池：防护 +50%", "Used a hazard cell: protection +50%");
+        both("message.universe.suit.oxygen_used", "氧气 +%2$s%%（%1$s）", "Oxygen +%2$s%% (%1$s)");
+        both("message.universe.suit.cell_used", "防护 +%2$s%%（%1$s）", "Protection +%2$s%% (%1$s)");
+        both("message.universe.suit.gel_used", "%2$s防护 +%3$s%%（%1$s）", "%2$s protection +%3$s%% (%1$s)");
         both("death.attack.universe.vacuum", "%1$s耗尽了氧气", "%1$s ran out of oxygen");
         both("death.attack.universe.plasma", "%1$s被%2$s的等离子弹击中", "%1$s was shot down by %2$s's plasma");
         both("death.attack.universe.plasma.item", "%1$s被%2$s用%3$s打出的等离子弹击中", "%1$s was shot down by %2$s's plasma using %3$s");
@@ -751,6 +756,36 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("death.attack.universe.heat", "%1$s被高温烤熟了", "%1$s was cooked by the heat");
         both("death.attack.universe.toxic", "%1$s吸进了太多毒气", "%1$s breathed too much toxic air");
         both("death.attack.universe.radiation", "%1$s死于辐射", "%1$s died of radiation");
+    }
+
+    /** 资源植物和水培槽（ADR-0026）。 */
+    private void resourcePlants() {
+        for (ResourcePlant plant : ResourcePlant.values()) {
+            block(UniverseBlocks.RESOURCE_PLANTS.get(plant).get(), plant.nameZh(), plant.nameEn());
+        }
+        resource("oxygen", "氧气", "Oxygen");
+        resource("sodium", "钠", "Sodium");
+        resource("star_bulb", "星莓", "Star Bulb");
+        resource("frost_crystal", "霜晶", "Frost Crystal");
+        resource("solanium", "日焰果", "Solanium");
+        resource("gamma_root", "伽马根", "Gamma Root");
+        resource("fungal_mould", "霉菌", "Fungal Mould");
+        resource("cactus_flesh", "仙人掌肉", "Cactus Flesh");
+        resource("gravitino_ball", "引力果", "Gravitino Ball");
+        resource("marrow_bulb", "髓球", "Marrow Bulb");
+        both("message.universe.resource_plant.wrong_planet", "这颗星球上种不活", "It won't grow on this planet");
+        block(UniverseBlocks.HYDROPONIC_TRAY.get(), "水培槽", "Hydroponic Tray");
+        both("message.universe.hydroponic_tray.empty", "拿植物的产物右键种下", "Use a plant product on it to sow");
+        both("message.universe.hydroponic_tray.no_power", "没有通电", "No power");
+        both("message.universe.hydroponic_tray.growing", "%s：长了 %s%%", "%s: %s%% grown");
+        both("commands.universe.resources.scan", "%s 格内资源植物 %s 株（长熟 %s）：%s", "%s blocks around: %s resource plants (%s ripe): %s");
+        both("commands.universe.resources.goto", "到了 %s 旁边（%s）", "Next to %s (%s)");
+        both("commands.universe.resources.not_found", "%s 格内没有 %s", "No %2$s within %1$s blocks");
+        both("commands.universe.resources.unknown", "没有叫 %s 的资源植物", "No resource plant called %s");
+    }
+
+    private void resource(String product, String zh, String en) {
+        item(UniverseItems.RESOURCES.get(product).get(), zh, en);
     }
 
     private void ores() {
@@ -1505,8 +1540,20 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
                 "Leave a planet at 3 wanted stars, or hit a freighter in distress 8 times, and Sentinel interceptors chase you, jamming your pulse drive. Destroy them, get 1,200 blocks away or reach a station. Wrecks drop Sentinel scrap, sometimes nav data or a ship module.\n\nEmergency broadcast receiver: sold by tech merchants. Use it while flying in space to find a derelict\nCredit chips: right-click to cash in, 1,000 each");
         both("guide.universe.survival.hazards.title", "危害", "Hazards");
         both("guide.universe.survival.hazards",
-                "星球最多两种危害：寒冷、高温、毒性、辐射。HUD 上每种一条防护。\n\n全套外骨骼：撑 5 分钟，离开 25 秒充满\n用完：防护每 2 秒掉 1 血，氧气每秒掉 2 血\n室内 ×1/3，风暴 ×2，火或冰挡相反的危害\n氧气罐、防护电池：各回 50%，低于 20% 自动用",
-                "Up to two hazards per planet: cold, heat, toxicity, radiation.\n\nFull suit: 5 min, refills 25 s after\nEmpty: -1 HP/2 s; no oxygen -2 HP/s\nIndoors x1/3, storms x2\nFire or ice blocks the opposite hazard\nCapsules and cells: +50%, auto below 20%");
+                "星球最多两种危害：寒冷、高温、毒性、辐射。HUD 上每种一条防护。\n\n全套外骨骼：撑 5 分钟，离开 25 秒充满\n用完：防护每 2 秒掉 1 血，氧气每秒掉 2 血\n有顶有墙的地方：不掉，20 秒充满\n风暴 ×2，火或冰挡相反的危害\n氧气罐、防护电池：各回 50%，低于 20% 自动用",
+                "Up to two hazards per planet: cold, heat, toxicity, radiation.\n\nFull suit: 5 min, refills 25 s after\nEmpty: -1 HP/2 s; no oxygen -2 HP/s\nUnder a roof with walls: no drain, refills in 20 s\nStorms x2\nFire or ice blocks the opposite hazard\nCapsules and cells: +50%, auto below 20%");
+        both("guide.universe.survival.resources.title", "资源植物", "Resource Plants");
+        both("guide.universe.survival.resources",
+                "星球上一丛丛长着能采的植物，空手右键收获，15 分钟左右长回来。\n\n氧囊草：氧气，右键补 10% 氧气\n盐角草、盐晶簇：钠，右键补 8% 防护\n每类星球还有一种特产，洞穴里有髓球\n产物右键土地能种回去，只能种在本来长它的星球上\n采引力果会惊动守卫机",
+                "Patches of harvestable plants grow on planets. Right-click with an empty hand to harvest; they grow back in about 15 minutes.\n\nOxygen Bladderwort: oxygen, right-click for +10% oxygen\nSaltwort, salt crystals: sodium, +8% protection\nEach planet type has its own plant; caves have marrow\nPlant a product on soil where it grows wild\nPicking gravitino balls angers the Sentinels");
+        both("guide.universe.survival.hydroponics.title", "水培槽", "Hydroponic Tray");
+        both("guide.universe.survival.hydroponics",
+                "研究「水培」后能做。接电网（20 kW），拿产物右键种下，熟了空手右键收，潜行右键拔掉，分拣器也能取。哪颗星球都能种。\n\n氧气 3 分钟一熟，钠 5 分钟，特产 10–30 分钟\n一次 4–8 个",
+                "Unlocked by Hydroponics. Connect power (20 kW), use a plant product on it to sow, right-click to harvest, sneak to uproot. Sorters can take the harvest. Works on any planet.\n\nOxygen: 3 min, sodium: 5 min, others: 10-30 min\n4-8 per harvest");
+        both("guide.universe.survival.border.title", "星球边界", "Planet Edge");
+        both("guide.universe.survival.border",
+                "星球的地面有边界，以 (0, 0) 为中心：小卫星两千多格见方，大行星三万格。离边界 64 格以内外骨骼面板会提示，屏幕边缘发红。边界走不出去，去别处要开飞船。母星没有边界。",
+                "A planet's surface has an edge centered on (0, 0): about 2000 blocks across on small moons, up to 30000 on large planets. Within 64 blocks the suit panel warns you and the screen edges turn red. You can't walk past it; take your ship. The home planet has no edge.");
         both("guide.universe.survival.modules.title", "技术模块", "Tech Modules");
         both("guide.universe.survival.modules",
                 "U 键打开技术配置，在这里装模块、整理货舱。\n\n外骨骼：开始 4 个技术槽、9 格货舱，每修好一个掉落舱 +1 槽、+9 格，最多 12 槽、54 格\n多功能工具：6 个技术槽\n品质：C、B、A、S，同一种最多三个生效\n来源：制造台做 C 档，更好的从兴趣点和空间站拿\n\n喷气背包：空中再按一次跳跃，喷 2.5 秒，落地 2 秒充满",
@@ -2164,6 +2211,7 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         tech("cadmium_drive", "镉驱动", "Cadmium Drive");
         tech("emeril_drive", "翠金驱动", "Emeril Drive");
         tech("indium_drive", "铟驱动", "Indium Drive");
+        tech("hydroponics", "水培", "Hydroponics");
     }
 
     /** 技术模块和外骨骼的格子（ADR-0014）。 */

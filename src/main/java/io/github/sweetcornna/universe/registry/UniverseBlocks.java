@@ -8,11 +8,13 @@ import java.util.Optional;
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.block.FloraBlocks;
 import io.github.sweetcornna.universe.block.FloraVariantBlock;
+import io.github.sweetcornna.universe.block.HydroponicTrayBlock;
 import io.github.sweetcornna.universe.block.OreKind;
 import io.github.sweetcornna.universe.block.PlanetBloomBlock;
 import io.github.sweetcornna.universe.block.PlanetLeavesBlock;
 import io.github.sweetcornna.universe.block.PlanetLogBlock;
 import io.github.sweetcornna.universe.block.PlanetPlantBlock;
+import io.github.sweetcornna.universe.block.ResourcePlantBlock;
 import io.github.sweetcornna.universe.block.encounter.LiveConduitBlock;
 import io.github.sweetcornna.universe.block.poi.DataTerminalBlock;
 import io.github.sweetcornna.universe.block.poi.DropPodBlock;
@@ -40,6 +42,7 @@ import io.github.sweetcornna.universe.block.station.ShipDealerBlock;
 import io.github.sweetcornna.universe.block.station.ShipRepairBlock;
 import io.github.sweetcornna.universe.block.station.TradeTerminalBlock;
 import io.github.sweetcornna.universe.core.ecology.PlantForm;
+import io.github.sweetcornna.universe.core.ecology.ResourcePlant;
 import io.github.sweetcornna.universe.core.factory.BeltTier;
 import io.github.sweetcornna.universe.core.factory.SorterTier;
 import io.github.sweetcornna.universe.core.galaxy.Palette;
@@ -217,6 +220,11 @@ public final class UniverseBlocks {
                     .noOcclusion().randomTicks().lightLevel(state -> 12).pushReaction(PushReaction.IMMOVEABLE).isValidSpawn(Blocks::never)
                     .isRedstoneConductor((state, level, pos) -> false).isSuffocating((state, level, pos) -> false)
                     .isViewBlocking((state, level, pos, box) -> false));
+    // ---- 星球生活（ADR-0026）
+    /** 资源植物：每种一个方块，长熟时能收获。 */
+    public static final Map<ResourcePlant, DeferredBlock<ResourcePlantBlock>> RESOURCE_PLANTS = registerResourcePlants();
+    public static final DeferredBlock<HydroponicTrayBlock> HYDROPONIC_TRAY = BLOCKS.registerBlock("hydroponic_tray", HydroponicTrayBlock::new,
+            p -> machine(p).lightLevel(state -> state.getValue(MachineBlock.WORKING) ? 6 : 0));
     /** 科技储藏箱：埋在地下，挖开掉一个随机模块。 */
     public static final DeferredBlock<Block> TECH_CACHE = BLOCKS.registerSimpleBlock("tech_cache",
             p -> p.mapColor(MapColor.COLOR_CYAN).strength(2.5F, 6.0F).sound(SoundType.METAL).lightLevel(state -> 5));
@@ -467,6 +475,27 @@ public final class UniverseBlocks {
             plants.put(form, BLOCKS.registerBlock(form.blockName(), p -> new PlanetPlantBlock(form, p), p -> plantProperties(p, form)));
         }
         return plants;
+    }
+
+    private static Map<ResourcePlant, DeferredBlock<ResourcePlantBlock>> registerResourcePlants() {
+        Map<ResourcePlant, DeferredBlock<ResourcePlantBlock>> plants = new EnumMap<>(ResourcePlant.class);
+        for (ResourcePlant plant : ResourcePlant.values()) {
+            plants.put(plant, BLOCKS.registerBlock(plant.id(), p -> new ResourcePlantBlock(plant, p), p -> resourcePlantProperties(p, plant)));
+        }
+        return plants;
+    }
+
+    private static BlockBehaviour.Properties resourcePlantProperties(BlockBehaviour.Properties p, ResourcePlant plant) {
+        p.noCollision().instabreak().offsetType(BlockBehaviour.OffsetType.XZ).pushReaction(PushReaction.POPPED).randomTicks();
+        return switch (plant) {
+            case SALT_CRYSTAL -> p.mapColor(MapColor.QUARTZ).sound(SoundType.AMETHYST_CLUSTER);
+            case GRAVITINO_HOST -> p.mapColor(MapColor.COLOR_PURPLE).sound(SoundType.GRASS).lightLevel(state -> 8);
+            case CAVE_MARROW -> p.mapColor(MapColor.TERRACOTTA_WHITE).sound(SoundType.FUNGUS).lightLevel(state -> state.getValue(ResourcePlantBlock.RIPE) ? 6 : 2);
+            case FUNGAL_CLUSTER -> p.mapColor(MapColor.COLOR_LIGHT_GREEN).sound(SoundType.FUNGUS);
+            case FROSTWORT -> p.mapColor(MapColor.ICE).sound(SoundType.GRASS);
+            case SOLAR_VINE -> p.mapColor(MapColor.COLOR_ORANGE).sound(SoundType.GRASS).lightLevel(state -> state.getValue(ResourcePlantBlock.RIPE) ? 5 : 0);
+            default -> p.mapColor(MapColor.PLANT).sound(SoundType.GRASS);
+        };
     }
 
     private static BlockBehaviour.Properties plantProperties(BlockBehaviour.Properties p, PlantForm form) {

@@ -53,12 +53,13 @@ public final class Wanted {
             return false;
         }
         int before = this.level;
-        if (offense.provokes()) {
-            this.alert = Math.max(this.alert, THRESHOLDS[0]);
+        int jump = Math.min(offense.jumpTo(), MAX_LEVEL);
+        if (jump > 0) {
+            this.alert = Math.max(this.alert, THRESHOLDS[jump - 1]);
         }
         this.alert = Math.min(MAX, this.alert + offense.alert() * factor);
         this.sinceOffense = 0;
-        this.level = Math.max(this.level, levelFor(this.alert));
+        this.level = Math.max(this.level, Math.max(jump, levelFor(this.alert)));
         if (this.level > 0) {
             this.hidden = 0;
         }

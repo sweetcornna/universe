@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "ripe=false": {
+      "model": "universe:block/cave_marrow_harvested"
+    },
+    "ripe=true": {
+      "model": "universe:block/cave_marrow"
+    }
+  }
+}

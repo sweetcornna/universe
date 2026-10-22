@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "ripe=false": {
+      "model": "universe:block/oxygen_bladderwort_harvested"
+    },
+    "ripe=true": {
+      "model": "universe:block/oxygen_bladderwort"
+    }
+  }
+}

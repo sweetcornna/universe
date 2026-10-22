@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "ripe=false": {
+      "model": "universe:block/echinocactus_harvested"
+    },
+    "ripe=true": {
+      "model": "universe:block/echinocactus"
+    }
+  }
+}

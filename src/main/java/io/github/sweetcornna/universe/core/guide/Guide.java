@@ -82,6 +82,11 @@ public final class Guide {
                     page("space_sentinels", "", "universe:emergency_receiver", "universe:credit_chip")),
             chapter("survival", "universe:exosuit_helmet",
                     page("hazards", "universe:hazard_cell", "universe:oxygen_capsule", "universe:hazard_cell"),
+                    // M14（ADR-0026）
+                    page("resources", "", "universe:oxygen", "universe:sodium", "universe:star_bulb", "universe:solanium",
+                            "universe:cactus_flesh", "universe:marrow_bulb"),
+                    page("hydroponics", "universe:hydroponic_tray"),
+                    page("border", ""),
                     page("modules", "", "universe:drop_pod"),
                     page("core", "", "universe:exosuit_chestplate", "universe:combustible_unit", "universe:hydrogen_fuel_rod"),
                     page("flight", "")),
