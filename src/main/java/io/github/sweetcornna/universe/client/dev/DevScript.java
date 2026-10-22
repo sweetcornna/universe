@@ -401,7 +401,11 @@ public final class DevScript {
                 }
             }
             case "approach" -> {
-                BlockPos found = nearest(minecraft, player, Identifier.parse(args[0]), 16);
+                // approach <方块> [半径]：走到最近的那个方块跟前（默认找 16 格内）
+                BlockPos found = nearest(minecraft, player, Identifier.parse(args[0]), args.length > 1 ? Integer.parseInt(args[1]) : 16);
+                if (found == null) {
+                    Universe.LOGGER.info("Dev script: approach {}, none nearby", args[0]);
+                }
                 if (found != null) {
                     BlockState state = minecraft.level.getBlockState(found);
                     Direction facing = state.hasProperty(BlockStateProperties.HORIZONTAL_FACING)
@@ -409,6 +413,26 @@ public final class DevScript {
                     BlockPos stand = found.relative(facing, 2);
                     player.connection.sendCommand(String.format(Locale.ROOT, "tp @s %.1f %d %.1f %.1f 0", stand.getX() + 0.5, stand.getY(),
                             stand.getZ() + 0.5, facing.getOpposite().toYRot()));
+                }
+            }
+            case "aim" -> {
+                // aim <实体类型>：转过去看着最近的那个实体（96 格内）的身子中间
+                Identifier type = Identifier.parse(args[0]);
+                Entity target = null;
+                double best = 96 * 96;
+                for (Entity entity : minecraft.level.entitiesForRendering()) {
+                    double d = entity.distanceToSqr(player);
+                    if (entity != player && d < best && BuiltInRegistries.ENTITY_TYPE.getKey(entity.getType()).equals(type)) {
+                        best = d;
+                        target = entity;
+                    }
+                }
+                if (target != null) {
+                    Vec3 to = target.getBoundingBox().getCenter().subtract(player.getEyePosition());
+                    player.setYRot((float) Math.toDegrees(Math.atan2(-to.x, to.z)));
+                    player.setXRot((float) Math.toDegrees(-Math.atan2(to.y, Math.hypot(to.x, to.z))));
+                    player.yRotO = player.getYRot();
+                    player.xRotO = player.getXRot();
                 }
             }
             case "interact", "attack" -> {
