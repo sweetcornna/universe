@@ -21,7 +21,8 @@ import net.minecraft.network.codec.StreamCodec;
 
 /**
  * {@link CivState} 的存档和同步格式。存档里声望和词按种族、公会的 id 存（以后加种族、调顺序都不乱）；
- * 同步只发声望和词，知识石和每天一次的记录只在服务端用。
+ * 同步只发声望、词和公会礼物领到的档，知识石和每天一次的记录只在服务端用。
+ * 公会礼物（第二块加的）老存档没有，按新人补。
  */
 public final class CivCodecs {
     public static final MapCodec<CivState> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
@@ -32,24 +33,28 @@ public final class CivCodecs {
             Codec.unboundedMap(Codec.STRING, Codec.LONG).optionalFieldOf("words", Map.of())
                     .forGetter(state -> byId(Race.values(), Race::id, race -> state.words(race))),
             Codec.STRING.listOf().optionalFieldOf("stones", List.of()).forGetter(state -> List.copyOf(state.stones())),
-            Codec.unboundedMap(Codec.STRING, Codec.LONG).optionalFieldOf("daily", Map.of()).forGetter(CivState::daily)
+            Codec.unboundedMap(Codec.STRING, Codec.LONG).optionalFieldOf("daily", Map.of()).forGetter(CivState::daily),
+            Codec.unboundedMap(Codec.STRING, Codec.INT).optionalFieldOf("guild_gifts", Map.of())
+                    .forGetter(state -> byId(Guild.values(), Guild::id, guild -> state.guildGifts()[guild.ordinal()]))
     ).apply(i, CivCodecs::restore));
 
     public static final StreamCodec<ByteBuf, CivState> STREAM_CODEC = StreamCodec.composite(
             ByteBufCodecs.VAR_INT.apply(ByteBufCodecs.list(16)), state -> boxed(state.races()),
             ByteBufCodecs.VAR_INT.apply(ByteBufCodecs.list(16)), state -> boxed(state.guilds()),
             ByteBufCodecs.LONG.apply(ByteBufCodecs.list(16)), state -> boxed(state.wordMasks()),
-            (races, guilds, words) -> CivState.restore(
+            ByteBufCodecs.VAR_INT.apply(ByteBufCodecs.list(16)), state -> boxed(state.guildGifts()),
+            (races, guilds, words, gifts) -> CivState.restore(
                     races.stream().mapToInt(Integer::intValue).toArray(),
                     guilds.stream().mapToInt(Integer::intValue).toArray(),
                     words.stream().mapToLong(Long::longValue).toArray(),
-                    List.of(), Map.of()));
+                    List.of(), Map.of(),
+                    gifts.stream().mapToInt(Integer::intValue).toArray()));
 
     private CivCodecs() {
     }
 
     private static CivState restore(Map<String, Integer> races, Map<String, Integer> guilds, Map<String, Long> words,
-            List<String> stones, Map<String, Long> daily) {
+            List<String> stones, Map<String, Long> daily, Map<String, Integer> gifts) {
         int[] raceStanding = new int[Race.values().length];
         long[] wordMasks = new long[Race.values().length];
         for (Race race : Race.values()) {
@@ -57,10 +62,12 @@ public final class CivCodecs {
             wordMasks[race.ordinal()] = words.getOrDefault(race.id(), Lexicon.INNATE_MASK);
         }
         int[] guildStanding = new int[Guild.values().length];
+        int[] guildGifts = new int[Guild.values().length];
         for (Guild guild : Guild.values()) {
             guildStanding[guild.ordinal()] = guilds.getOrDefault(guild.id(), Standing.START);
+            guildGifts[guild.ordinal()] = gifts.getOrDefault(guild.id(), Standing.Tier.STRANGER.ordinal());
         }
-        return CivState.restore(raceStanding, guildStanding, wordMasks, stones, daily);
+        return CivState.restore(raceStanding, guildStanding, wordMasks, stones, daily, guildGifts);
     }
 
     private static <E, V> Map<String, V> byId(E[] values, Function<E, String> id, Function<E, V> value) {

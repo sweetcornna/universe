@@ -36,6 +36,8 @@ final class CivPage {
     private static final int WORD_COLUMN = 120;
     private static final int BAR_BACK = 0xFF1A262E;
     private static final int UNKNOWN = 0xFF5C666E;
+    /** 有礼物可领的标记。 */
+    private static final int GIFT = 0xFF8AE08A;
 
     private final Font font;
     private Race selected;
@@ -91,8 +93,16 @@ final class CivPage {
             Standing.Tier tier = state.tier(guild);
             graphics.text(this.font, Civ.guildName(guild), x, y + 3, TEXT, false);
             Component tierName = Civ.guildTierName(tier);
-            graphics.text(this.font, tierName, LEFT_WIDTH - PADDING - 2 - this.font.width(tierName), y + 3,
-                    tier == Standing.Tier.HOSTILE ? WARN : DIM, false);
+            int tierX = LEFT_WIDTH - PADDING - 2 - this.font.width(tierName);
+            graphics.text(this.font, tierName, tierX, y + 3, tier == Standing.Tier.HOSTILE ? WARN : DIM, false);
+            // 升了档还没去使者那儿领礼物（ADR-0027 §六）：名字后面标一下，挤不下就不标
+            if (tier != Standing.Tier.HOSTILE && state.giftClaimable(guild)) {
+                Component gift = Component.translatable("gui.universe.civ.gift");
+                int giftX = x + this.font.width(Civ.guildName(guild)) + 4;
+                if (giftX + Math.ceil(this.font.width(gift) * 0.75F) < tierX - 2) {
+                    this.small(graphics, gift, giftX, y + 4, GIFT);
+                }
+            }
             this.bar(graphics, state.standing(guild), tier, x, y + 14, LEFT_WIDTH - x - PADDING - 2, ACCENT);
             y += GUILD_ROW;
         }

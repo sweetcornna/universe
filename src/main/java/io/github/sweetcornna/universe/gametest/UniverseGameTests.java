@@ -282,6 +282,16 @@ public final class UniverseGameTests {
     private static final ResourceKey<Consumer<GameTestHelper>> NPC_GIFT_ONCE_A_DAY = function("npc_gift_once_a_day", NpcGameTests::giftOnceADay);
     private static final ResourceKey<Consumer<GameTestHelper>> NPC_HIT_COSTS_STANDING = function("npc_hit_costs_standing",
             NpcGameTests::hitCostsStanding);
+    // 技术商的货（ADR-0027 §六），测试写在 TechShopGameTests
+    private static final ResourceKey<Consumer<GameTestHelper>> TECH_SHOP_ONCE_A_DAY = function("tech_shop_once_a_day",
+            TechShopGameTests::merchantSellsOncePerDay);
+    // 公会（ADR-0027 §六），测试写在 GuildGameTests
+    private static final ResourceKey<Consumer<GameTestHelper>> GUILD_MISSION_STANDING = function("guild_mission_standing",
+            GuildGameTests::missionRaisesStanding);
+    private static final ResourceKey<Consumer<GameTestHelper>> GUILD_ENVOY_OFFERS = function("guild_envoy_offers",
+            GuildGameTests::envoyOffersFixedForTheDay);
+    private static final ResourceKey<Consumer<GameTestHelper>> GUILD_GIFT_ONCE_PER_RANK = function("guild_gift_once_per_rank",
+            GuildGameTests::giftOncePerRank);
 
     private UniverseGameTests() {
     }
@@ -351,6 +361,10 @@ public final class UniverseGameTests {
         test(event, environment, NPC_RIGHT_ANSWER_TEACHES, 20);
         test(event, environment, NPC_GIFT_ONCE_A_DAY, 20);
         test(event, environment, NPC_HIT_COSTS_STANDING, 20);
+        test(event, environment, TECH_SHOP_ONCE_A_DAY, 20);
+        test(event, environment, GUILD_MISSION_STANDING, 20);
+        test(event, environment, GUILD_ENVOY_OFFERS, 20);
+        test(event, environment, GUILD_GIFT_ONCE_PER_RANK, 20);
         test(event, environment, GIANT_NEEDS_ROOM, HANGAR, 20);
     }
 

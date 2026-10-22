@@ -2,6 +2,8 @@ package io.github.sweetcornna.universe.network;
 
 import io.github.sweetcornna.universe.blueprint.Blueprints;
 import io.github.sweetcornna.universe.civ.Dialogues;
+import io.github.sweetcornna.universe.civ.GuildEnvoy;
+import io.github.sweetcornna.universe.civ.TechShop;
 import io.github.sweetcornna.universe.dyson.Dyson;
 import io.github.sweetcornna.universe.entity.CompanionMenu;
 import io.github.sweetcornna.universe.entity.ship.ShipWeapons;
@@ -38,7 +40,7 @@ import net.neoforged.neoforge.server.ServerLifecycleHooks;
  */
 public final class UniverseNetwork {
     /** 协议版本：任何包的格式改动都要加一，版本不同的客户端和服务端会拒绝连接。 */
-    private static final String PROTOCOL_VERSION = "27";
+    private static final String PROTOCOL_VERSION = "28";
 
     private UniverseNetwork() {
     }
@@ -128,6 +130,12 @@ public final class UniverseNetwork {
                 .playToClient(EncounterPayloads.Signal.TYPE, EncounterPayloads.Signal.STREAM_CODEC)
                 // M15：和外星 NPC 对话（ADR-0027 §四）
                 .playToClient(DialoguePayloads.State.TYPE, DialoguePayloads.State.STREAM_CODEC)
-                .playToServer(DialoguePayloads.Action.TYPE, DialoguePayloads.Action.STREAM_CODEC, Dialogues::handleAction);
+                .playToServer(DialoguePayloads.Action.TYPE, DialoguePayloads.Action.STREAM_CODEC, Dialogues::handleAction)
+                // M15：技术商的货（ADR-0027 §六）
+                .playToClient(TechShopPayloads.State.TYPE, TechShopPayloads.State.STREAM_CODEC)
+                .playToServer(TechShopPayloads.Buy.TYPE, TechShopPayloads.Buy.STREAM_CODEC, TechShop::handleBuy)
+                // M15：公会使者（ADR-0027 §六）
+                .playToClient(GuildEnvoyPayloads.Open.TYPE, GuildEnvoyPayloads.Open.STREAM_CODEC)
+                .playToServer(GuildEnvoyPayloads.Action.TYPE, GuildEnvoyPayloads.Action.STREAM_CODEC, GuildEnvoy::handleAction);
     }
 }

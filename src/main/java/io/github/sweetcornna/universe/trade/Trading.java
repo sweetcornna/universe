@@ -7,6 +7,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.OptionalDouble;
 import java.util.OptionalInt;
 import java.util.UUID;
 import java.util.function.Supplier;
@@ -152,6 +153,15 @@ public final class Trading {
     /** 恒星系空间站的行情（任务、维修这些以后也用）。 */
     static Optional<StationMarket> station(MinecraftServer server, int system) {
         return Planets.galaxy(server).system(system).map(star -> TradeData.get(server).market(server, star, now(server)));
+    }
+
+    /**
+     * 技术商（ADR-0027 §六）：一个技术模块在这个恒星系的买价，和终端卖的模块一样算（存货满时一件的价钱），不算声望折扣。
+     * 没有这个恒星系时为空。
+     */
+    public static OptionalDouble modulePrice(MinecraftServer server, int system, ItemStack module) {
+        Optional<StationMarket> found = station(server, system);
+        return found.isEmpty() ? OptionalDouble.empty() : OptionalDouble.of(found.get().modulePrice(server, module, now(server)));
     }
 
     // ---- 终端

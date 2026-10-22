@@ -90,6 +90,15 @@ public final class Dialogues {
             player.sendOverlayMessage(Component.translatable("message.universe.npc.refuses", npc.label()).withStyle(ChatFormatting.RED));
             return;
         }
+        if (payload.action() == DialoguePayloads.Action.SERVICE) {
+            switch (npc.role()) {
+                case TECH_MERCHANT -> TechShop.open(player, npc);
+                case GUILD_ENVOY -> GuildEnvoy.open(player, npc);
+                default -> {
+                }
+            }
+            return;
+        }
         List<Component> notes = switch (payload.action()) {
             case DialoguePayloads.Action.ANSWER -> answer(player, npc, payload.option());
             case DialoguePayloads.Action.GIFT -> gift(player, npc);

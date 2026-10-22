@@ -125,13 +125,15 @@ public final class DialoguePayloads {
     /**
      * 客户端 → 服务端：对话里按了一个按钮。
      *
-     * @param action {@link Action#ANSWER}、{@link Action#GIFT}、{@link Action#ASK}
+     * @param action {@link Action#ANSWER}、{@link Action#GIFT}、{@link Action#ASK}、{@link Action#SERVICE}
      * @param option 选第几项（只有回答用）
      */
     public record Action(int entity, int action, int option) implements CustomPacketPayload {
         public static final int ANSWER = 0;
         public static final int GIFT = 1;
         public static final int ASK = 2;
+        /** 技术商看货、公会使者的任务（第二块）：服务端换成各自的界面。 */
+        public static final int SERVICE = 3;
         public static final Type<Action> TYPE = new Type<>(Universe.id("dialogue_action"));
         public static final StreamCodec<ByteBuf, Action> STREAM_CODEC = StreamCodec.composite(
                 ByteBufCodecs.VAR_INT, Action::entity,

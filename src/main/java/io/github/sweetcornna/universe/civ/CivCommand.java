@@ -12,6 +12,7 @@ import com.mojang.brigadier.suggestion.SuggestionProvider;
 
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.core.civ.CivState;
+import io.github.sweetcornna.universe.core.civ.Guild;
 import io.github.sweetcornna.universe.core.civ.Lexicon;
 import io.github.sweetcornna.universe.core.civ.Race;
 import io.github.sweetcornna.universe.registry.UniverseAttachments;
@@ -27,6 +28,7 @@ import net.minecraft.server.level.ServerPlayer;
  * <ul>
  *   <li>{@code status}：三个种族的声望、档和认识几个词，这里的主导种族。</li>
  *   <li>{@code standing <种族> <值>}：把声望设成这个值（档变了照常提示）。</li>
+ *   <li>{@code guild <公会> <值>}：把公会声望设成这个值。</li>
  *   <li>{@code teach <种族> [n]}：教 n 个词（默认 1）。</li>
  *   <li>{@code newday}：忘掉今天和谁说过话、请教过。</li>
  *   <li>{@code reset}：声望、词、知识石全部清空。</li>
@@ -35,6 +37,8 @@ import net.minecraft.server.level.ServerPlayer;
 public final class CivCommand {
     private static final SuggestionProvider<CommandSourceStack> RACES = (context, builder) -> SharedSuggestionProvider.suggest(
             Arrays.stream(Race.values()).map(Race::id), builder);
+    private static final SuggestionProvider<CommandSourceStack> GUILDS = (context, builder) -> SharedSuggestionProvider.suggest(
+            Arrays.stream(Guild.values()).map(Guild::id), builder);
 
     private CivCommand() {
     }
@@ -48,6 +52,10 @@ public final class CivCommand {
                                 .then(Commands.argument("race", StringArgumentType.word()).suggests(RACES)
                                         .then(Commands.argument("value", IntegerArgumentType.integer(-20, 100))
                                                 .executes(context -> standing(context, IntegerArgumentType.getInteger(context, "value"))))))
+                        .then(Commands.literal("guild")
+                                .then(Commands.argument("guild", StringArgumentType.word()).suggests(GUILDS)
+                                        .then(Commands.argument("value", IntegerArgumentType.integer(-20, 100))
+                                                .executes(context -> guild(context, IntegerArgumentType.getInteger(context, "value"))))))
                         .then(Commands.literal("teach")
                                 .then(Commands.argument("race", StringArgumentType.word()).suggests(RACES)
                                         .executes(context -> teach(context, 1))
@@ -85,6 +93,19 @@ public final class CivCommand {
         }
         Civ.changeStanding(player, race.get(), value - Civ.state(player).standing(race.get()));
         context.getSource().sendSuccess(() -> Component.translatable("commands.universe.civ.standing_set", Civ.raceName(race.get()), value), true);
+        return value;
+    }
+
+    private static int guild(CommandContext<CommandSourceStack> context, int value) throws CommandSyntaxException {
+        ServerPlayer player = context.getSource().getPlayerOrException();
+        String id = StringArgumentType.getString(context, "guild");
+        Optional<Guild> guild = Arrays.stream(Guild.values()).filter(g -> g.id().equals(id)).findFirst();
+        if (guild.isEmpty()) {
+            context.getSource().sendFailure(Component.translatable("commands.universe.civ.unknown_guild", id));
+            return 0;
+        }
+        Civ.changeStanding(player, guild.get(), value - Civ.state(player).standing(guild.get()));
+        context.getSource().sendSuccess(() -> Component.translatable("commands.universe.civ.standing_set", Civ.guildName(guild.get()), value), true);
         return value;
     }
 

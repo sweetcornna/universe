@@ -22,6 +22,8 @@ public final class UniverseStats {
     public static final DeferredHolder<Identifier, Identifier> INTERCEPTORS_DESTROYED = stat("interceptors_destroyed");
     /** 打碎的小行星（ADR-0017）。 */
     public static final DeferredHolder<Identifier, Identifier> ASTEROIDS_MINED = stat("asteroids_mined");
+    /** 打掉的守卫机（地上的，ADR-0027 §六的守卫机任务用；太空里的拦截机另记）。 */
+    public static final DeferredHolder<Identifier, Identifier> SENTINELS_DESTROYED = stat("sentinels_destroyed");
 
     private UniverseStats() {
     }

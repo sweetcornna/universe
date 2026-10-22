@@ -19,7 +19,7 @@ import net.neoforged.neoforge.client.network.ClientPacketDistributor;
  * 点了按钮服务端处理完会重新发一次界面内容。
  */
 public class MissionBoardScreen extends Screen {
-    private static final int WIDTH = 300;
+    private static final int WIDTH = 330;
     private static final int HEADER = 30;
     private static final int CARD = 40;
     private static final int ACTIVE = 52;
@@ -116,7 +116,14 @@ public class MissionBoardScreen extends Screen {
             Component kind = MissionText.kind(mission.kind());
             graphics.text(this.font, kind, this.left + 16, y + 6, MissionText.color(mission.kind()), false);
             graphics.text(this.font, MissionText.goal(mission), this.left + 20 + this.font.width(kind), y + 6, done ? GRAY : 0xFFE6EEF2, false);
-            graphics.text(this.font, MissionText.reward(mission), this.left + 16, y + 20, done ? GRAY : 0xFFF2C94C, false);
+            Component reward = MissionText.reward(mission);
+            graphics.text(this.font, reward, this.left + 16, y + 20, done ? GRAY : 0xFFF2C94C, false);
+            // 归哪个公会（ADR-0027 §六）：做完加这个公会的声望；挤不下就不写
+            Component guild = Component.literal("· ").append(MissionText.guild(mission.kind()));
+            int guildX = this.left + 20 + this.font.width(reward);
+            if (guildX + this.font.width(guild) < this.left + WIDTH - 76) {
+                graphics.text(this.font, guild, guildX, y + 20, GRAY, false);
+            }
         }
         int y = this.activeTop();
         graphics.fill(this.left + 8, y, this.left + WIDTH - 8, y + ACTIVE - 4, 0xFF0D1418);

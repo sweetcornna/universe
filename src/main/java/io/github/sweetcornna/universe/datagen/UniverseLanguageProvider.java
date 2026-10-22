@@ -158,6 +158,8 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         this.civilization();
         this.civLandmarks();
         this.civDialogue();
+        this.civShop();
+        this.civGuilds();
     }
 
     /** 终局（ADR-0018）：反物质、宇宙矩阵、两种发电设备和它们的科技。 */
@@ -2437,6 +2439,7 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("message.universe.encounter.receiver_nothing", "这里收不到信号，换个地方再试", "No signal here. Try somewhere else");
         both("commands.universe.encounter.cleared", "收掉了 %s 处遭遇", "Removed %s encounters");
         both("commands.universe.civ.unknown_race", "没有这个种族：%s", "No such race: %s");
+        both("commands.universe.civ.unknown_guild", "没有这个公会：%s", "No such guild: %s");
         both("commands.universe.civ.status", "%s：声望 %s（%s），认识 %s/%s 个词", "%s: standing %s (%s), %s/%s words");
         both("commands.universe.civ.dominant", "这里的主导种族：%s", "Dominant race here: %s");
         both("commands.universe.civ.standing_set", "%s的声望设为 %s", "Set %s standing to %s");
@@ -3050,6 +3053,8 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("gui.universe.dialogue.gift", "送礼", "Give Gift");
         both("gui.universe.dialogue.ask", "请教一个词", "Ask a Word");
         both("gui.universe.dialogue.leave", "离开", "Leave");
+        both("gui.universe.dialogue.service.tech_merchant", "看货", "Browse Wares");
+        both("gui.universe.dialogue.service.guild_envoy", "公会任务", "Guild Missions");
         both("gui.universe.dialogue.gift_hint", "把手里的%s送一个", "Give one %s");
         both("gui.universe.dialogue.empty_hand", "主手拿着要送的东西", "Hold the gift in your main hand");
         both("gui.universe.dialogue.gifted_today", "今天已经送过了", "Already gave a gift today");
@@ -3076,6 +3081,65 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("guide.universe.civilization.dialogue",
                 "空间站、交易站和聚落里有外星人，右键和他们说话。\n\n每人每天：\n答一道题：选这个种族看重的那一项\n收一次礼：主手拿着要送的东西\n教一个词：声望到\"认识\"以后\n\n选对：声望 +3，学一个词，给一份奖励\n商旅族给信用点、贸易品\n学者族给数据，偶尔一个技术模块\n戍卫族给守卫机残骸、电磁线圈，偶尔一个武器模块\n\n商旅族喜欢值钱的东西和吃的，学者族喜欢数据、化石、遗物，戍卫族喜欢守卫机零件和武器。",
                 "Aliens hang around stations, trading posts and settlements. Right-click to talk.\n\nOnce a day each:\nAnswer: pick what their race values\nGift: hold it in your main hand\nAsk a word: once Acquainted\n\nRight answer: +3 standing, a word and a reward. Traders pay credits, Scholars give data, Wardens give salvage. Sometimes a module.\n\nTraders like valuables and food. Scholars like data and relics. Wardens like sentinel parts and weapons.");
+    }
+
+    /** 技术商的货（ADR-0027 §六）：界面、提示、手册一页。 */
+    /** 公会（ADR-0027 §六）：两种新任务、任务板上的公会、使者的界面和礼物、手册"公会"一页。 */
+    private void civGuilds() {
+        both("gui.universe.mission.kind.sentinels", "守卫机", "Sentinels");
+        both("gui.universe.mission.kind.landmark", "探访", "Expedition");
+        both("gui.universe.mission.goal.sentinels", "打掉 %s 架守卫机", "Destroy %s sentinels");
+        both("gui.universe.mission.goal.landmark", "去%1$s的%2$s（%3$s, %4$s）", "Reach the %2$s on %1$s (%3$s, %4$s)");
+        both("gui.universe.mission.guild.merchants", "商会", "Merchants");
+        both("gui.universe.mission.guild.mercenaries", "佣兵会", "Mercenaries");
+        both("gui.universe.mission.guild.explorers", "探险会", "Explorers");
+        both("stat.universe.sentinels_destroyed", "打掉的守卫机", "Sentinels Destroyed");
+        both("message.universe.mission.standing", "%s声望 +%s", "%s standing +%s");
+        both("message.universe.mission.standing_both", "%s声望 +%s，%s声望 +%s", "Standing: %s +%s, %s +%s");
+        both("message.universe.guild.no_missions", "这里接不了公会任务", "No guild work here");
+        both("message.universe.guild.expelled", "%s把你除名了", "%s has expelled you");
+        both("message.universe.guild.no_gift", "没有可领的礼物", "No gift to collect");
+        both("message.universe.guild.gift", "%1$s：升到%2$s的礼物，%3$s 信用点", "%1$s: a gift for reaching %2$s, %3$s credits");
+        both("gui.universe.guild.title", "%s · 公会任务", "%s · Missions");
+        both("gui.universe.guild.envoy", "使者 %s", "Envoy %s");
+        both("gui.universe.guild.claim", "领礼物", "Collect Gift");
+        both("gui.universe.guild.gift_ready", "升到%s了，有一份礼物", "Reached %s: a gift is waiting");
+        both("gui.universe.guild.gift_next", "每升一档能来领一份礼物", "Each new rank earns a gift");
+        both("gui.universe.guild.gift_expelled", "除名的人没有礼物", "No gifts while expelled");
+        both("gui.universe.guild.expelled", "你被除名了：做任务板上这个公会的任务挽回声望", "Expelled. Win them back on the mission board.");
+        both("gui.universe.guild.no_offers", "今天没有任务", "No missions today");
+        both("gui.universe.civ.gift", "有礼物", "Gift");
+        both("guide.universe.civilization.guilds.title", "公会", "Guilds");
+        both("guide.universe.civilization.guilds",
+                "三个公会，任务各归一个：\n送货、采矿：商会\n清剿、守卫机：佣兵会\n测绘、探访：探险会\n\n做完任务：这个公会声望 +3，这个恒星系主导种族声望 +2。\n\n"
+                        + "空间站的公会使者每天给两个本会的任务，档越高报酬越多；每升一档能来领一份礼物。\n\n公会的档：除名、新人、会员、资深、精英、大师。",
+                "Every mission belongs to a guild:\nDelivery, mining: Merchants\nBounty, sentinels: Mercenaries\nSurvey, expeditions: Explorers\n\n"
+                        + "Done: +3 with the guild, +2 with the system's dominant race.\n\n"
+                        + "Station envoys offer two guild missions a day, better paid at higher ranks, and a gift for each new rank.\n\n"
+                        + "Ranks: Expelled, Novice, Member, Veteran, Elite, Master.");
+    }
+
+    private void civShop() {
+        both("gui.universe.tech_shop.buy", "买", "Buy");
+        both("gui.universe.tech_shop.bought_label", "已买", "Bought");
+        both("gui.universe.tech_shop.discount", "%s · 便宜 %s%%", "%s · %s%% off");
+        both("gui.universe.tech_shop.markup", "%s · 贵 %s%%", "%s · %s%% markup");
+        both("gui.universe.tech_shop.full_price", "%s · 原价", "%s · full price");
+        both("gui.universe.tech_shop.hint", "每样每天限买一件 · 指着模块看数值", "One of each per day · Hover for stats");
+        both("gui.universe.tech_shop.empty", "今天没货", "Nothing for sale today");
+        both("gui.universe.tech_shop.bought", "买下 %s，花了 %s 信用点", "Bought %s for %s credits");
+        both("gui.universe.tech_shop.sold_today", "今天买过了", "Already bought today");
+        both("gui.universe.tech_shop.not_enough", "信用点不够，要 %s", "Not enough credits, need %s");
+        both("gui.universe.tech_shop.changed", "货单变了，再看一眼", "The wares changed, take another look");
+
+        both("guide.universe.civilization.merchant.title", "技术商", "Tech Merchants");
+        both("guide.universe.civilization.merchant",
+                "空间站和聚落里各有一个技术商，对话里按\"看货\"。\n\n每天 3 样技术模块，多半是这个种族擅长的：\n商旅族：飞船模块\n学者族：扫描、外骨骼模块\n戍卫族：武器、护盾模块\n\n"
+                        + "声望越高货越好：熟客、朋友好一档，至交好两档，最后一样至少 A 级。价钱照空间站卖模块的价，再按声望打折。\n\n每样每人每天只能买一件。",
+                "Every station and settlement has one. Talk to them and pick Browse Wares.\n\nThree modules a day, mostly their race's specialty:\n"
+                        + "Traders: ship modules\nScholars: scanner and exosuit modules\nWardens: weapon and shield modules\n\n"
+                        + "Better standing, better stock: Regular and Friend get one grade up, Kindred two, with the last item A or better. "
+                        + "Prices follow the station, minus your discount.\n\nOne of each per player per day.");
     }
 
     /** 一道对话题目：旁白，三个选项依次是利、知、勇。 */

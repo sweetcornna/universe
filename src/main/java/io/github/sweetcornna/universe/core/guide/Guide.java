@@ -131,6 +131,10 @@ public final class Guide {
                     page("standing", ""),
                     // 对话（ADR-0027 §四）
                     page("dialogue", ""),
+                    // 技术商（ADR-0027 §六）
+                    page("merchant", ""),
+                    // 公会（ADR-0027 §六）
+                    page("guilds", ""),
                     // 知识石和聚落（ADR-0027 §五）
                     page("stones", "", "universe:knowledge_stone"),
                     page("settlements", "", "universe:outpost_trade_terminal", "universe:knowledge_stone")),

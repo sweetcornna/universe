@@ -134,7 +134,12 @@ public class DialogueScreen extends Screen {
     }
 
     private int fixedHeight() {
-        return HEADER + 8 + 3 * BUTTON_HEIGHT + 2 * BUTTON_GAP + 6 + BUTTON_HEIGHT + 10;
+        return HEADER + 8 + 3 * BUTTON_HEIGHT + 2 * BUTTON_GAP + 6 + BUTTON_HEIGHT + 10 + (this.hasService() ? BUTTON_HEIGHT + 6 : 0);
+    }
+
+    /** 技术商、公会使者多一个按钮：看货、公会任务。 */
+    private boolean hasService() {
+        return this.role == NpcRole.TECH_MERCHANT || this.role == NpcRole.GUILD_ENVOY;
     }
 
     @Override
@@ -175,6 +180,11 @@ public class DialogueScreen extends Screen {
             y += BUTTON_HEIGHT + BUTTON_GAP;
         }
         y += 6 - BUTTON_GAP;
+        if (this.hasService()) {
+            this.addRenderableWidget(Button.builder(Component.translatable("gui.universe.dialogue.service." + this.role.id()),
+                    b -> this.send(DialoguePayloads.Action.SERVICE, 0)).bounds(this.left + PAD, y, buttonWidth, BUTTON_HEIGHT).build());
+            y += BUTTON_HEIGHT + 6;
+        }
         int third = (buttonWidth - 2 * 4) / 3;
         this.gift = this.addRenderableWidget(Button.builder(Component.translatable("gui.universe.dialogue.gift"),
                 b -> this.send(DialoguePayloads.Action.GIFT, 0)).bounds(this.left + PAD, y, third, BUTTON_HEIGHT).build());

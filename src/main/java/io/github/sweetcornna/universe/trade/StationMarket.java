@@ -12,6 +12,7 @@ import org.jspecify.annotations.Nullable;
 import io.github.sweetcornna.universe.core.galaxy.StarSystem;
 import io.github.sweetcornna.universe.core.procgen.Rng;
 import io.github.sweetcornna.universe.core.procgen.Seeds;
+import io.github.sweetcornna.universe.core.tech.Grade;
 import io.github.sweetcornna.universe.core.tech.ModuleLoot;
 import io.github.sweetcornna.universe.core.tech.ModuleType;
 import io.github.sweetcornna.universe.core.tech.TechModule;
@@ -136,6 +137,13 @@ final class StationMarket {
 
     void markSold(int offer) {
         this.sold.add(offer);
+    }
+
+    /** 随便一个模块按这里的行情的卖价（技术商用，ADR-0027 §六）：基准价乘品级，和这一批的模块一样算。 */
+    double modulePrice(MinecraftServer server, ItemStack stack, long now) {
+        double base = ItemValues.value(server, stack.getItem()).orElse(MODULE_FALLBACK);
+        Grade grade = ItemValues.grade(stack);
+        return this.offerPrice(new ModuleOffer(stack, grade == null ? base : base * ItemValues.gradeFactor(grade)), now);
     }
 
     /** 模块的卖价：存货满的价钱（只有一件）。 */

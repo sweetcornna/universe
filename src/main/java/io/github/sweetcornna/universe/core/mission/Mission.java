@@ -7,8 +7,8 @@ import java.util.Locale;
  *
  * @param system     发任务的空间站所在的恒星系，回这里交付
  * @param day        哪一天的任务
- * @param slot       任务板上的第几格
- * @param item       送货要的物品 ID；别的种类为空串
+ * @param slot       任务板上的第几格；公会使者给的从 {@link MissionBoard#ENVOY_SLOT} 起
+ * @param item       送货要的物品 ID；地标任务是 {@link LandmarkTarget#encode()}；别的种类为空串
  * @param count      要多少：件数、架数、颗数或种数
  * @param reward     信用点
  * @param bonus      额外的奖励

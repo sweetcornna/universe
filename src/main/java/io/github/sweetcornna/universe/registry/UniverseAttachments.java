@@ -112,10 +112,10 @@ public final class UniverseAttachments {
     public static final Supplier<AttachmentType<List<Integer>>> VISITED_STATIONS = ATTACHMENT_TYPES.register("visited_stations",
             () -> AttachmentType.builder(() -> List.<Integer>of()).serialize(Codec.INT.listOf().fieldOf("systems")).copyOnDeath().build());
 
-    /** 空间站任务（ADR-0017）：接了的任务和今天做完的，死亡不丢，同步给本人画 HUD。 */
+    /** 空间站任务（ADR-0017）：接了的任务和今天做完的，死亡不丢，同步给本人画 HUD（没有连接的假玩家不发）。 */
     public static final Supplier<AttachmentType<MissionState>> MISSIONS = ATTACHMENT_TYPES.register("missions",
             () -> AttachmentType.builder(() -> MissionState.NONE).serialize(MissionState.CODEC).copyOnDeath()
-                    .sync((holder, player) -> holder == player, MissionState.STREAM_CODEC).build());
+                    .sync((holder, player) -> holder == player && player.connection != null, MissionState.STREAM_CODEC).build());
 
     /**
      * 和外星文明的关系（ADR-0027）：种族和公会的声望、认识的词、碰过的知识石。死亡不丢，同步给本人

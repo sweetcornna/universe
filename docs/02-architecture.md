@@ -376,6 +376,8 @@ io.github.sweetcornna.universe
 | 高度图和窒息判定看方块标签 `blocks_motion(_no_leaves)`，本模组的实心方块要自己加进去；`TextureMapping.column(Material, Material)` 配 `ModelTemplates.CUBE_COLUMN` | 已确认，知识石 |
 | `Entity.hurtMarked` 没了：`push(x, y, z)` 自己置 `needsSync`，要把速度同步给客户端用 `markHurt()`；`ChunkAccess.getHeight(type, x, z)` 返回最高方块的 y | 已确认，NPC |
 | 实体数据有 `EntityDataSerializers.LONG`（变长）；`Model.setupAnim` 先 `resetPose()`；`/kill` 的伤害带 `DamageTypeTags.BYPASSES_INVULNERABILITY`；`DefaultRandomPos.getPosAway(PathfinderMob, int, int, Vec3)`、`DamageSources.playerAttack(Player)`、`EntityType.create(Level, EntitySpawnReason)` | 已确认，NPC |
+| `FriendlyByteBuf.writeVarLong`、`readVarLong`；`ItemStack.OPTIONAL_STREAM_CODEC`、`ComponentSerialization.OPTIONAL_STREAM_CODEC`；`ItemStack.isSameItemSameComponents(a, b)`；`StreamCodec.composite` 最多 14 个字段 | 已确认，技术商、公会 |
+| `ResourceKey.identifier()`（没有 `location()`）；生物死亡事件是 `net.neoforged.neoforge.event.entity.living.LivingDeathEvent`；26.x 的游戏规则是注册表（`BuiltInRegistries.GAME_RULE`，`net.minecraft.world.level.gamerules.GameRule`），原版的建世界界面能改 | 已确认 |
 
 拿不准的 API 先查源码再写，核实后把结果补进这张表。源码在：
 
