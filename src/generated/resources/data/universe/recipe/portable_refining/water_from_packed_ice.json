@@ -1,0 +1,16 @@
+{
+  "type": "universe:portable_refining",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "minecraft:packed_ice"
+    }
+  ],
+  "results": [
+    {
+      "count": 4,
+      "id": "universe:water"
+    }
+  ],
+  "time": 80
+}

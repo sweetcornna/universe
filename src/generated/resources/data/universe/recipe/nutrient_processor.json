@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "key": {
+    "C": "minecraft:copper_ingot",
+    "F": "minecraft:furnace",
+    "G": "minecraft:glass_pane",
+    "I": "minecraft:iron_ingot"
+  },
+  "pattern": [
+    "III",
+    "GFG",
+    "ICI"
+  ],
+  "result": {
+    "id": "universe:nutrient_processor"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "type": "universe:portable_refining",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "minecraft:raw_gold"
+    }
+  ],
+  "results": [
+    {
+      "id": "minecraft:gold_ingot"
+    }
+  ],
+  "time": 120
+}

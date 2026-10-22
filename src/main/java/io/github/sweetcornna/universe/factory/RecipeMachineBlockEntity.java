@@ -22,6 +22,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Prediction;
+import net.minecraft.world.Containers;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemStackTemplate;
@@ -60,6 +61,8 @@ public class RecipeMachineBlockEntity extends MachineBlockEntity implements Mach
     public static final int OUTPUT_FULL = 3;
     public static final int NO_POWER = 4;
     public static final int LOCKED = 5;
+    /** 烧燃料的设备（ADR-0026）没有燃料了。 */
+    public static final int NO_FUEL = 6;
 
     /** 自动化最多往原料格里塞几次配方的量。 */
     private static final int INPUT_BUFFER = 4;
@@ -92,7 +95,12 @@ public class RecipeMachineBlockEntity extends MachineBlockEntity implements Mach
     }
 
     public RecipeMachineBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state, Spec spec) {
-        super(type, pos, state, spec.inputs() + spec.outputs());
+        this(type, pos, state, spec, 0);
+    }
+
+    /** 子类在产物格后面另加 {@code extraSlots} 个格子（比如燃料格）。 */
+    protected RecipeMachineBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state, Spec spec, int extraSlots) {
+        super(type, pos, state, spec.inputs() + spec.outputs() + extraSlots);
         this.spec = spec;
     }
 
@@ -185,7 +193,7 @@ public class RecipeMachineBlockEntity extends MachineBlockEntity implements Mach
 
     @Override
     protected boolean tickMachine() {
-        double rate = this.supplied;
+        double supplied = this.supplied;
         this.supplied = 0;
         RecipeHolder<MachineRecipe> holder = this.recipe();
         if (holder == null) {
@@ -204,8 +212,9 @@ public class RecipeMachineBlockEntity extends MachineBlockEntity implements Mach
             return this.idle(OUTPUT_FULL);
         }
         this.active = true;
+        double rate = this.workRate(supplied);
         if (rate <= 0) {
-            this.status = NO_POWER;
+            this.status = this.starvedStatus();
             return false;
         }
         this.status = RUNNING;
@@ -216,6 +225,20 @@ public class RecipeMachineBlockEntity extends MachineBlockEntity implements Mach
         }
         this.setChanged();
         return true;
+    }
+
+    /**
+     * 这一刻按多快干活（0–1）。原料齐了、产物放得下才会问。默认是电网的满足率；烧燃料的设备改成看炉膛。
+     *
+     * @param supplied 电网这一刻给的满足率
+     */
+    protected double workRate(double supplied) {
+        return supplied;
+    }
+
+    /** {@link #workRate} 是 0 时显示的状态。 */
+    protected int starvedStatus() {
+        return NO_POWER;
     }
 
     /** 停工：做到一半的进度留着，原料补上了接着做。 */
@@ -289,8 +312,14 @@ public class RecipeMachineBlockEntity extends MachineBlockEntity implements Mach
         List<SizedIngredient> ingredients = recipe.ingredients();
         int level = ingredients.isEmpty() ? 0 : Proliferation.MAX_LEVEL;
         for (int i = 0; i < ingredients.size(); i++) {
-            ProductionLog.consumed(this.level, this.getItem(i).getItem(), ingredients.get(i).count());
-            level = Math.min(level, this.consumeInput(i, ingredients.get(i).count()));
+            ItemStack input = this.getItem(i);
+            ItemStackTemplate remainder = input.getCraftingRemainder();
+            int count = ingredients.get(i).count();
+            ProductionLog.consumed(this.level, input.getItem(), count);
+            level = Math.min(level, this.consumeInput(i, count));
+            if (remainder != null) {
+                this.leaveRemainder(i, remainder.create().copyWithCount(remainder.count() * count));
+            }
         }
         int copies = 1 + (mode == Proliferation.Mode.EXTRA_PRODUCTS ? this.extra.craft(level) : 0);
         List<ItemStackTemplate> results = recipe.results();
@@ -308,6 +337,17 @@ public class RecipeMachineBlockEntity extends MachineBlockEntity implements Mach
         }
     }
 
+    /**
+     * 原料用完留下的东西（牛奶桶的空桶，ADR-0026）：原料格空了就放回原料格，等玩家或漏斗拿走；没空就掉在设备上面。
+     */
+    private void leaveRemainder(int slot, ItemStack remainder) {
+        if (this.getItem(slot).isEmpty()) {
+            this.setItem(slot, remainder);
+        } else if (this.level != null) {
+            Containers.dropItemStack(this.level, this.worldPosition.getX(), this.worldPosition.getY() + 1, this.worldPosition.getZ(), remainder);
+        }
+    }
+
     // ---- 物品栏
 
     @Override
@@ -317,7 +357,7 @@ public class RecipeMachineBlockEntity extends MachineBlockEntity implements Mach
 
     @Override
     protected boolean isOutput(int slot) {
-        return slot >= this.spec.inputs();
+        return slot >= this.spec.inputs() && slot < this.spec.inputs() + this.spec.outputs();
     }
 
     /** 原料格只收选定配方对应的那种原料。 */
@@ -325,6 +365,19 @@ public class RecipeMachineBlockEntity extends MachineBlockEntity implements Mach
     public boolean canPlaceItem(int slot, ItemStack stack) {
         SizedIngredient ingredient = this.ingredient(slot);
         return ingredient != null && ingredient.ingredient().test(stack);
+    }
+
+    /** 产物能抽走；原料格里留下的空桶这类不是原料的东西也能抽走。 */
+    @Override
+    public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) {
+        if (this.isOutput(slot)) {
+            return true;
+        }
+        if (slot >= this.spec.inputs()) {
+            return false;
+        }
+        SizedIngredient ingredient = this.ingredient(slot);
+        return ingredient == null || !ingredient.ingredient().test(stack);
     }
 
     /** 自动化只塞到几次配方的量，免得一台设备把传送带上的原料全吞了。 */
@@ -401,7 +454,7 @@ public class RecipeMachineBlockEntity extends MachineBlockEntity implements Mach
     private void shiftOutputs(int saved) {
         int shift = this.spec.inputs() - saved;
         var items = this.getItems();
-        for (int slot = items.size() - 1; slot >= saved + shift; slot--) {
+        for (int slot = this.spec.inputs() + this.spec.outputs() - 1; slot >= saved + shift; slot--) {
             items.set(slot, items.get(slot - shift));
         }
         for (int slot = saved; slot < saved + shift; slot++) {

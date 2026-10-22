@@ -1,0 +1,19 @@
+{
+  "type": "universe:nutrient",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:cake_base"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:custard"
+    }
+  ],
+  "results": [
+    {
+      "id": "universe:alien_cake"
+    }
+  ],
+  "time": 100
+}

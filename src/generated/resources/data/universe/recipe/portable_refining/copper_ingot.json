@@ -1,0 +1,15 @@
+{
+  "type": "universe:portable_refining",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "minecraft:raw_copper"
+    }
+  ],
+  "results": [
+    {
+      "id": "minecraft:copper_ingot"
+    }
+  ],
+  "time": 120
+}

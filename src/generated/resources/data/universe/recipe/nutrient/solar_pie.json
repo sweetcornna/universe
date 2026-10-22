@@ -1,0 +1,23 @@
+{
+  "type": "universe:nutrient",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:solar_sauce"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:pastry"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:cooked_alien_meat"
+    }
+  ],
+  "results": [
+    {
+      "id": "universe:solar_pie"
+    }
+  ],
+  "time": 100
+}

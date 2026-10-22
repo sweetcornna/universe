@@ -1,0 +1,15 @@
+{
+  "type": "universe:portable_refining",
+  "ingredients": [
+    {
+      "count": 2,
+      "ingredient": "universe:cactus_flesh"
+    }
+  ],
+  "results": [
+    {
+      "id": "universe:water"
+    }
+  ],
+  "time": 80
+}

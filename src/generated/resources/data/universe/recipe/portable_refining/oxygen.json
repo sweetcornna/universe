@@ -1,0 +1,21 @@
+{
+  "type": "universe:portable_refining",
+  "ingredients": [
+    {
+      "count": 4,
+      "ingredient": [
+        "universe:planet_rock",
+        "universe:planet_cobblestone",
+        "universe:planet_regolith",
+        "minecraft:stone",
+        "minecraft:cobblestone"
+      ]
+    }
+  ],
+  "results": [
+    {
+      "id": "universe:oxygen"
+    }
+  ],
+  "time": 160
+}

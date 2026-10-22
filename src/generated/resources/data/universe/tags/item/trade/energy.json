@@ -17,6 +17,10 @@
     "universe:antimatter",
     "universe:antimatter_fuel_rod",
     "universe:composite_matrix",
-    "universe:universe_matrix"
+    "universe:universe_matrix",
+    "universe:cold_gel",
+    "universe:heat_gel",
+    "universe:toxin_gel",
+    "universe:radiation_gel"
   ]
 }

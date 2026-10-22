@@ -1,0 +1,15 @@
+{
+  "type": "universe:portable_refining",
+  "ingredients": [
+    {
+      "count": 4,
+      "ingredient": "universe:sodium"
+    }
+  ],
+  "results": [
+    {
+      "id": "universe:hazard_cell"
+    }
+  ],
+  "time": 80
+}

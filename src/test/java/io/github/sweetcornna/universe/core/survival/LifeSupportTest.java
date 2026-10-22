@@ -88,6 +88,29 @@ class LifeSupportTest {
     }
 
     @Test
+    void warmDishesSlowColdForAWhile() {
+        // ADR-0026：根茎汤、辣烤肉保暖，寒冷防护掉得慢一半，别的危害不管
+        LifeSupport plain = new LifeSupport();
+        LifeSupport warm = new LifeSupport();
+        warm.warm(600);
+        warm.warm(100);
+        assertEquals(600, warm.warmth());
+        Environment coldAndToxic = new Environment(false, Map.of(Hazard.COLD, 1.0, Hazard.TOXIC, 1.0), false, 0, false, false, false);
+        for (int i = 0; i < 600; i++) {
+            plain.tick(coldAndToxic, Suit.FULL, false, true);
+            warm.tick(coldAndToxic, Suit.FULL, false, true);
+        }
+        float plainLoss = LifeSupport.HAZARD_MAX - plain.protection(Hazard.COLD);
+        assertEquals(plainLoss / 2, LifeSupport.HAZARD_MAX - warm.protection(Hazard.COLD), 0.01);
+        assertEquals(plain.protection(Hazard.TOXIC), warm.protection(Hazard.TOXIC), 1e-6);
+        // 时间到了就恢复原来的速度
+        assertEquals(0, warm.warmth());
+        float before = warm.protection(Hazard.COLD);
+        warm.tick(coldAndToxic, Suit.FULL, false, true);
+        assertEquals(LifeSupport.HAZARD_DRAIN, before - warm.protection(Hazard.COLD), 1e-5);
+    }
+
+    @Test
     void emptyProtectionHurtsAndRecoversOutside() {
         LifeSupport support = new LifeSupport(LifeSupport.OXYGEN_MAX, Map.of(Hazard.COLD, 0F), LifeSupport.JET_MAX);
         float total = 0;

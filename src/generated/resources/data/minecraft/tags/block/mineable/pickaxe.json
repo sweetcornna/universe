@@ -77,6 +77,8 @@
     "universe:spray_coater",
     "universe:automatic_piler",
     "universe:hydroponic_tray",
+    "universe:nutrient_processor",
+    "universe:portable_refiner",
     "universe:traffic_monitor",
     "universe:pile_sorter",
     "universe:wireless_power_tower",

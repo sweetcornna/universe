@@ -47,6 +47,9 @@ public final class RawValues {
             Map.entry("minecraft:feather", 1.0),
             Map.entry("minecraft:bone", 1.0),
             Map.entry("minecraft:egg", 1.0),
+            // 营养处理器用完把桶还回来（ADR-0026），只算牛奶
+            Map.entry("minecraft:milk_bucket", 2.0),
+            Map.entry("minecraft:cod", 2.0),
             Map.entry("minecraft:gunpowder", 4.0),
             Map.entry("minecraft:slime_ball", 4.0),
             Map.entry("minecraft:ender_pearl", 15.0),

@@ -1,0 +1,15 @@
+{
+  "type": "universe:nutrient",
+  "ingredients": [
+    {
+      "count": 2,
+      "ingredient": "universe:solanium"
+    }
+  ],
+  "results": [
+    {
+      "id": "universe:solar_sauce"
+    }
+  ],
+  "time": 50
+}

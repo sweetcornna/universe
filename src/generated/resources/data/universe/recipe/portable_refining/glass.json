@@ -1,0 +1,19 @@
+{
+  "type": "universe:portable_refining",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": [
+        "minecraft:sand",
+        "minecraft:red_sand",
+        "universe:planet_sand"
+      ]
+    }
+  ],
+  "results": [
+    {
+      "id": "minecraft:glass"
+    }
+  ],
+  "time": 80
+}

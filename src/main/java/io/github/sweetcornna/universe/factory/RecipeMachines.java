@@ -30,6 +30,11 @@ public final class RecipeMachines {
     /** 量子化工厂：2.16 MW，速度 2。 */
     public static final Spec QUANTUM_CHEMICAL_PLANT = new Spec(Kind.CHEMICAL, 3, 2, 108, 2.0, UniverseMenus.QUANTUM_CHEMICAL_PLANT);
 
+    /** 营养处理器（ADR-0026）：烧燃料，不要电，三种原料。 */
+    public static final Spec NUTRIENT_PROCESSOR = new Spec(Kind.NUTRIENT, 3, 1, 0, 1.0, UniverseMenus.NUTRIENT_PROCESSOR);
+    /** 便携精炼机：烧燃料，一种原料。 */
+    public static final Spec PORTABLE_REFINER = new Spec(Kind.PORTABLE_REFINING, 1, 1, 0, 1.0, UniverseMenus.PORTABLE_REFINER);
+
     private RecipeMachines() {
     }
 }

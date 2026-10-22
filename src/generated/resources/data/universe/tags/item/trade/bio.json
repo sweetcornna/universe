@@ -15,6 +15,19 @@
     "minecraft:feather",
     "minecraft:bone",
     "minecraft:slime_ball",
-    "minecraft:honeycomb"
+    "minecraft:honeycomb",
+    "universe:star_pie",
+    "universe:meat_pie",
+    "universe:spicy_roast",
+    "universe:braised_meat",
+    "universe:alien_cake",
+    "universe:star_custard",
+    "universe:egg_tart",
+    "universe:frost_tart",
+    "universe:solar_pie",
+    "universe:gravitino_pastry",
+    "universe:marrow_soup",
+    "universe:fish_pie",
+    "universe:star_cake"
   ]
 }

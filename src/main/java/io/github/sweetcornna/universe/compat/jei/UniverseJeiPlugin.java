@@ -67,6 +67,8 @@ public final class UniverseJeiPlugin implements IModPlugin {
             case REFINING -> List.of(UniverseBlocks.OIL_REFINERY.get());
             case CHEMICAL -> List.of(UniverseBlocks.CHEMICAL_PLANT.get(), UniverseBlocks.QUANTUM_CHEMICAL_PLANT.get());
             case PARTICLE -> List.of(UniverseBlocks.MINIATURE_PARTICLE_COLLIDER.get());
+            case NUTRIENT -> List.of(UniverseBlocks.NUTRIENT_PROCESSOR.get());
+            case PORTABLE_REFINING -> List.of(UniverseBlocks.PORTABLE_REFINER.get());
         };
     }
 

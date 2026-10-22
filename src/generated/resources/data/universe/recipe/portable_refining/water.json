@@ -1,0 +1,20 @@
+{
+  "type": "universe:portable_refining",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": [
+        "minecraft:ice",
+        "minecraft:snow_block",
+        "universe:planet_ice",
+        "universe:planet_snow"
+      ]
+    }
+  ],
+  "results": [
+    {
+      "id": "universe:water"
+    }
+  ],
+  "time": 80
+}

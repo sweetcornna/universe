@@ -42,7 +42,9 @@ class SurvivalProgressionTest {
             "universe:assembling", NS + "assembler",
             "universe:refining", NS + "oil_refinery",
             "universe:chemical", NS + "chemical_plant",
-            "universe:particle", NS + "miniature_particle_collider");
+            "universe:particle", NS + "miniature_particle_collider",
+            "universe:nutrient", NS + "nutrient_processor",
+            "universe:portable_refining", NS + "portable_refiner");
     /**
      * 不靠配方、由设备从世界里抽出来的东西；勘探数据靠多功能工具的分析目镜发现新东西拿到；重氢由分馏塔从氢里分出来
      * （轨道采集器也能采，但它本身要更晚的科技）；临界光子由射线接收站在光子模式下产出（戴森云有帆就行）。
@@ -76,7 +78,9 @@ class SurvivalProgressionTest {
             "universe:assembling", new int[] {4, 1},
             "universe:refining", new int[] {2, 2},
             "universe:chemical", new int[] {3, 2},
-            "universe:particle", new int[] {3, 2});
+            "universe:particle", new int[] {3, 2},
+            "universe:nutrient", new int[] {3, 1},
+            "universe:portable_refining", new int[] {1, 1});
     /** 兴趣点的建筑里天然放着的方块（ADR-0014），挖了按各自的战利品表掉落。 */
     private static final Set<String> STRUCTURE_BLOCKS = Set.of(NS + "data_terminal", NS + "supply_crate", NS + "tech_cache",
             NS + "smoldering_wreck", NS + "damaged_ship_helm");

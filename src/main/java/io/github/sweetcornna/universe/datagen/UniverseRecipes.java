@@ -9,7 +9,9 @@ import java.util.TreeMap;
 
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.block.OreKind;
+import io.github.sweetcornna.universe.core.galaxy.Hazard;
 import io.github.sweetcornna.universe.core.space.DriveTier;
+import io.github.sweetcornna.universe.core.survival.Dish;
 import io.github.sweetcornna.universe.core.tech.ModuleType;
 import io.github.sweetcornna.universe.factory.recipe.MachineRecipe;
 import io.github.sweetcornna.universe.factory.recipe.MachineRecipe.Kind;
@@ -69,6 +71,99 @@ final class UniverseRecipes extends RecipeProvider {
         this.dyson();
         this.endgame();
         this.factoryDepth();
+        this.planetLife();
+    }
+
+    /**
+     * 星球生活（ADR-0026）：营养处理器和便携精炼机开局在工作台上就能做，烧燃料、不要电。营养处理器一样原料的 2.5 秒一份，
+     * 组合菜 5 秒；精炼机按 ADR 的表。
+     */
+    private void planetLife() {
+        this.shaped(RecipeCategory.FOOD, UniverseItems.NUTRIENT_PROCESSOR.get())
+                .pattern("III").pattern("GFG").pattern("ICI")
+                .define('I', Items.IRON_INGOT).define('G', Items.GLASS_PANE).define('F', Items.FURNACE).define('C', Items.COPPER_INGOT)
+                .unlockedBy(getHasName(Items.FURNACE), this.has(Items.FURNACE))
+                .save(this.output);
+        this.shaped(RecipeCategory.MISC, UniverseItems.PORTABLE_REFINER.get())
+                .pattern("I I").pattern("IFI").pattern("CCC")
+                .define('I', Items.IRON_INGOT).define('F', Items.FURNACE).define('C', Items.COPPER_INGOT)
+                .unlockedBy(getHasName(Items.FURNACE), this.has(Items.FURNACE))
+                .save(this.output);
+
+        Item water = UniverseItems.WATER.get();
+        Item sugar = Items.SUGAR;
+        Item milk = Items.MILK_BUCKET;
+        Item egg = UniverseItems.ALIEN_EGG.get();
+        // 半成品
+        this.dish(Dish.FLOUR, 50, in(Items.WHEAT, 1));
+        this.dish(Dish.DOUGH, 50, in(dish(Dish.FLOUR), 1, water, 1));
+        this.dish(Dish.BUTTER, 50, in(milk, 1));
+        this.dish(Dish.PASTRY, 50, in(dish(Dish.BUTTER), 1, dish(Dish.FLOUR), 1));
+        this.dish(Dish.CAKE_BASE, 50, in(egg, 1, dish(Dish.FLOUR), 1, sugar, 1));
+        // 一样原料做的
+        this.dish(Dish.STAR_JAM, 50, in(resource("star_bulb"), 2));
+        this.dish(Dish.SOLAR_SAUCE, 50, in(resource("solanium"), 2));
+        this.dish(Dish.MOULD_PASTE, 50, in(resource("fungal_mould"), 2));
+        this.dish(Dish.CACTUS_JUICE, 50, in(resource("cactus_flesh"), 2));
+        this.dish(Dish.FROST_ICE_CREAM, 50, in(resource("frost_crystal"), 1, sugar, 1, milk, 1));
+        this.dish(Dish.ROOT_SOUP, 50, in(resource("gamma_root"), 2, water, 1));
+        this.dish(Dish.ROASTED_MARROW, 50, in(resource("marrow_bulb"), 2));
+        this.dish(Dish.GRAVITINO_JELLY, 50, in(resource("gravitino_ball"), 1, sugar, 1));
+        this.dish(Dish.CUSTARD, 50, in(egg, 1, milk, 1, sugar, 1));
+        this.dish(Dish.FLUFF_CANDY, 50, in(UniverseItems.ALIEN_FLUFF.get(), 2, sugar, 1));
+        // 组合菜
+        this.dish(Dish.STAR_PIE, 100, in(dish(Dish.STAR_JAM), 1, dish(Dish.DOUGH), 1));
+        this.dish(Dish.MEAT_PIE, 100, in(UniverseItems.ALIEN_MEAT.get(), 1, dish(Dish.DOUGH), 1));
+        this.dish(Dish.SPICY_ROAST, 100, in(dish(Dish.SOLAR_SAUCE), 1, UniverseItems.COOKED_ALIEN_MEAT.get(), 1));
+        this.dish(Dish.BRAISED_MEAT, 100, in(dish(Dish.MOULD_PASTE), 1, UniverseItems.ALIEN_MEAT.get(), 1));
+        this.dish(Dish.ALIEN_CAKE, 100, in(dish(Dish.CAKE_BASE), 1, dish(Dish.CUSTARD), 1));
+        this.dish(Dish.STAR_CUSTARD, 100, in(dish(Dish.CUSTARD), 1, dish(Dish.STAR_JAM), 1));
+        this.dish(Dish.EGG_TART, 100, in(dish(Dish.CUSTARD), 1, dish(Dish.PASTRY), 1));
+        this.dish(Dish.FROST_TART, 100, in(dish(Dish.FROST_ICE_CREAM), 1, dish(Dish.PASTRY), 1));
+        this.dish(Dish.SOLAR_PIE, 100, in(dish(Dish.SOLAR_SAUCE), 1, dish(Dish.PASTRY), 1, UniverseItems.COOKED_ALIEN_MEAT.get(), 1));
+        this.dish(Dish.CACTUS_JELLY, 100, in(dish(Dish.CACTUS_JUICE), 1, sugar, 1));
+        this.dish(Dish.GRAVITINO_PASTRY, 100, in(dish(Dish.GRAVITINO_JELLY), 1, dish(Dish.PASTRY), 1));
+        this.dish(Dish.MARROW_SOUP, 100, in(dish(Dish.ROASTED_MARROW), 1, dish(Dish.BUTTER), 1, water, 1));
+        this.dish(Dish.FISH_PIE, 100, in(Items.COD, 1, dish(Dish.PASTRY), 1));
+        this.dish(Dish.STAR_CAKE, 100, in(dish(Dish.ALIEN_CAKE), 1, dish(Dish.STAR_JAM), 1));
+
+        // 便携精炼机
+        Kind refining = Kind.PORTABLE_REFINING;
+        // 岩石和月壤里的氧（月壤制氧是把矿物里的氧还原出来）
+        this.machine(refining, "oxygen", 160, "", List.of(new SizedIngredient(Ingredient.of(UniverseItems.PLANET_ROCK.get(),
+                UniverseItems.PLANET_COBBLESTONE.get(), UniverseItems.PLANET_REGOLITH.get(), Items.STONE, Items.COBBLESTONE), 4)),
+                out(resource("oxygen"), 1));
+        this.machine(refining, "water", 80, "", List.of(new SizedIngredient(Ingredient.of(Items.ICE, Items.SNOW_BLOCK,
+                UniverseItems.PLANET_ICE.get(), UniverseItems.PLANET_SNOW.get()), 1)), out(water, 1));
+        this.machine(refining, "water_from_packed_ice", 80, "", in(Items.PACKED_ICE, 1), out(water, 4));
+        this.machine(refining, "water_from_cactus", 80, "", in(resource("cactus_flesh"), 2), out(water, 1));
+        this.machine(refining, "water_from_bucket", 80, "", in(Items.WATER_BUCKET, 1), out(water, 4));
+        this.machine(refining, "charcoal", 80, "", List.of(new SizedIngredient(this.tag(ItemTags.LOGS_THAT_BURN), 1)), out(Items.CHARCOAL, 1));
+        this.machine(refining, "glass", 80, "", List.of(new SizedIngredient(Ingredient.of(Items.SAND, Items.RED_SAND,
+                UniverseItems.PLANET_SAND.get()), 1)), out(Items.GLASS, 1));
+        this.machine(refining, "iron_ingot", 120, "", in(Items.RAW_IRON, 1), out(Items.IRON_INGOT, 1));
+        this.machine(refining, "copper_ingot", 120, "", in(Items.RAW_COPPER, 1), out(Items.COPPER_INGOT, 1));
+        this.machine(refining, "gold_ingot", 120, "", in(Items.RAW_GOLD, 1), out(Items.GOLD_INGOT, 1));
+        this.machine(refining, "oxygen_capsule", 80, "", in(resource("oxygen"), 4), out(UniverseItems.OXYGEN_CAPSULE.get(), 1));
+        this.machine(refining, "hazard_cell", 80, "", in(resource("sodium"), 4), out(UniverseItems.HAZARD_CELL.get(), 1));
+        // 防护凝胶：霜晶防寒、日焰果隔热、伽马根的黑色素挡辐射、霉菌解毒
+        this.machine(refining, "cold_gel", 120, "", in(resource("frost_crystal"), 2), out(UniverseItems.GELS.get(Hazard.COLD).get(), 1));
+        this.machine(refining, "heat_gel", 120, "", in(resource("solanium"), 2), out(UniverseItems.GELS.get(Hazard.HEAT).get(), 1));
+        this.machine(refining, "radiation_gel", 120, "", in(resource("gamma_root"), 2),
+                out(UniverseItems.GELS.get(Hazard.RADIATION).get(), 1));
+        this.machine(refining, "toxin_gel", 120, "", in(resource("fungal_mould"), 2), out(UniverseItems.GELS.get(Hazard.TOXIC).get(), 1));
+    }
+
+    private void dish(Dish dish, int time, List<SizedIngredient> ingredients) {
+        this.machine(Kind.NUTRIENT, dish.id(), time, "", ingredients, out(dish(dish), 1));
+    }
+
+    private static Item dish(Dish dish) {
+        return UniverseItems.DISHES.get(dish).get();
+    }
+
+    private static Item resource(String name) {
+        return UniverseItems.RESOURCES.get(name).get();
     }
 
     /**

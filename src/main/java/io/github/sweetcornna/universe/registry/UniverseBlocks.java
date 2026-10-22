@@ -51,6 +51,7 @@ import io.github.sweetcornna.universe.dyson.DysonBlocks;
 import io.github.sweetcornna.universe.factory.ArcSmelterBlock;
 import io.github.sweetcornna.universe.factory.FactoryAnchorBlock;
 import io.github.sweetcornna.universe.factory.MachineBlock;
+import io.github.sweetcornna.universe.factory.PortableRefinerBlock;
 import io.github.sweetcornna.universe.factory.ProcessingBlocks;
 import io.github.sweetcornna.universe.factory.TallMachineBlock;
 import io.github.sweetcornna.universe.factory.belt.BeltBlock;
@@ -225,6 +226,14 @@ public final class UniverseBlocks {
     public static final Map<ResourcePlant, DeferredBlock<ResourcePlantBlock>> RESOURCE_PLANTS = registerResourcePlants();
     public static final DeferredBlock<HydroponicTrayBlock> HYDROPONIC_TRAY = BLOCKS.registerBlock("hydroponic_tray", HydroponicTrayBlock::new,
             p -> machine(p).lightLevel(state -> state.getValue(MachineBlock.WORKING) ? 6 : 0));
+    /** 营养处理器（ADR-0026）：烧燃料做菜。 */
+    public static final DeferredBlock<MachineBlock> NUTRIENT_PROCESSOR = BLOCKS.registerBlock("nutrient_processor",
+            p -> new MachineBlock(p, UniverseBlockEntities.NUTRIENT_PROCESSOR),
+            p -> machine(p).lightLevel(state -> state.getValue(MachineBlock.WORKING) ? 8 : 0));
+    /** 便携精炼机：不用对的工具也能拆下来，里面的东西跟着走。 */
+    public static final DeferredBlock<PortableRefinerBlock> PORTABLE_REFINER = BLOCKS.registerBlock("portable_refiner", PortableRefinerBlock::new,
+            p -> p.mapColor(MapColor.METAL).strength(1.5F, 6.0F).sound(SoundType.METAL).pushReaction(PushReaction.IMMOVEABLE).noOcclusion()
+                    .lightLevel(state -> state.getValue(MachineBlock.WORKING) ? 10 : 0));
     /** 科技储藏箱：埋在地下，挖开掉一个随机模块。 */
     public static final DeferredBlock<Block> TECH_CACHE = BLOCKS.registerSimpleBlock("tech_cache",
             p -> p.mapColor(MapColor.COLOR_CYAN).strength(2.5F, 6.0F).sound(SoundType.METAL).lightLevel(state -> 5));

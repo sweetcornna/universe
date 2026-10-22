@@ -12,7 +12,9 @@ import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.block.OreKind;
 import io.github.sweetcornna.universe.blueprint.BlueprintItem;
 import io.github.sweetcornna.universe.core.ecology.PlantForm;
+import io.github.sweetcornna.universe.core.galaxy.Hazard;
 import io.github.sweetcornna.universe.core.space.DriveTier;
+import io.github.sweetcornna.universe.core.survival.Dish;
 import io.github.sweetcornna.universe.encounter.CreditChipItem;
 import io.github.sweetcornna.universe.encounter.EmergencyReceiverItem;
 import io.github.sweetcornna.universe.core.tech.ModuleType;
@@ -20,6 +22,7 @@ import io.github.sweetcornna.universe.exocraft.ExocraftItem;
 import io.github.sweetcornna.universe.factory.belt.StorageTankItem;
 import io.github.sweetcornna.universe.guide.GuideItem;
 import io.github.sweetcornna.universe.logistics.StationItem;
+import io.github.sweetcornna.universe.survival.DishItem;
 import io.github.sweetcornna.universe.survival.Exosuit;
 import io.github.sweetcornna.universe.survival.MultitoolItem;
 import io.github.sweetcornna.universe.survival.ResourceItem;
@@ -37,6 +40,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.world.item.Rarity;
 import net.minecraft.world.item.SpawnEggItem;
+import net.minecraft.world.item.component.Consumables;
 import net.minecraft.world.item.component.CookingFuel;
 import net.minecraft.world.item.component.Tool;
 import net.minecraft.world.level.storage.loot.providers.number.floats.ResolvableFloat;
@@ -54,6 +58,8 @@ public final class UniverseItems {
     public static final float OXYGEN_AMOUNT = 10;
     /** 一个钠给每条防护补多少（满 100）。 */
     public static final float SODIUM_AMOUNT = 8;
+    /** 一支防护凝胶给它那一条防护补多少（满 100）。 */
+    public static final float GEL_AMOUNT = 40;
 
     public static final DeferredItem<BlockItem> PLANET_ROCK = ITEMS.registerSimpleBlockItem(UniverseBlocks.PLANET_ROCK);
     public static final DeferredItem<BlockItem> PLANET_COBBLESTONE = ITEMS.registerSimpleBlockItem(UniverseBlocks.PLANET_COBBLESTONE);
@@ -70,10 +76,12 @@ public final class UniverseItems {
     public static final Map<PlantForm, DeferredItem<BlockItem>> PLANTS = new EnumMap<>(PlantForm.class);
 
     static {
-        UniverseBlocks.PLANTS.forEach((form, block) -> PLANTS.put(form, ITEMS.registerSimpleBlockItem(block)));
+        // 星球上的植物和原木能烧（营养处理器、便携精炼机开局就靠它们，ADR-0026），和原版的枯灌木、原木一样
+        UniverseBlocks.PLANTS.forEach((form, block) -> PLANTS.put(form, ITEMS.registerSimpleBlockItem(block, properties -> fuel(properties, 100))));
     }
 
-    public static final DeferredItem<BlockItem> PLANET_LOG = ITEMS.registerSimpleBlockItem(UniverseBlocks.PLANET_LOG);
+    public static final DeferredItem<BlockItem> PLANET_LOG = ITEMS.registerSimpleBlockItem(UniverseBlocks.PLANET_LOG,
+            properties -> fuel(properties, 300));
     public static final DeferredItem<BlockItem> PLANET_LEAVES = ITEMS.registerSimpleBlockItem(UniverseBlocks.PLANET_LEAVES);
     public static final DeferredItem<BlockItem> PLANET_CAP = ITEMS.registerSimpleBlockItem(UniverseBlocks.PLANET_CAP);
     public static final DeferredItem<BlockItem> PLANET_BLOOM = ITEMS.registerSimpleBlockItem(UniverseBlocks.PLANET_BLOOM);
@@ -203,6 +211,14 @@ public final class UniverseItems {
             properties -> new SuitRefillItem(SuitRefillItem.Kind.OXYGEN, properties), properties -> properties.stacksTo(16));
     public static final DeferredItem<SuitRefillItem> HAZARD_CELL = ITEMS.registerItem("hazard_cell",
             properties -> new SuitRefillItem(SuitRefillItem.Kind.HAZARD, properties), properties -> properties.stacksTo(16));
+    public static final DeferredItem<BlockItem> NUTRIENT_PROCESSOR = ITEMS.registerSimpleBlockItem(UniverseBlocks.NUTRIENT_PROCESSOR);
+    /** 便携精炼机拆下来带着里面的东西，和潜影盒一样不叠。 */
+    public static final DeferredItem<BlockItem> PORTABLE_REFINER = ITEMS.registerSimpleBlockItem(UniverseBlocks.PORTABLE_REFINER,
+            properties -> properties.stacksTo(1));
+    /** 营养处理器做的半成品和菜，按 {@link Dish} 的顺序。 */
+    public static final Map<Dish, DeferredItem<DishItem>> DISHES = registerDishes();
+    /** 便携精炼机做的防护凝胶，各补一条危害防护。 */
+    public static final Map<Hazard, DeferredItem<SuitRefillItem>> GELS = registerGels();
 
     // ---- 多功能工具
     public static final DeferredItem<MultitoolItem> MULTITOOL = ITEMS.registerItem("multitool", MultitoolItem::new,
@@ -434,11 +450,16 @@ public final class UniverseItems {
         order.addAll(HULL_PLATING.values());
         order.addAll(List.of(EXOSUIT_HELMET, EXOSUIT_CHESTPLATE, EXOSUIT_LEGGINGS, EXOSUIT_BOOTS, OXYGEN_CAPSULE, HAZARD_CELL,
                 MULTITOOL, DAMAGED_MULTITOOL));
+        order.addAll(RESOURCES.values());
+        order.addAll(List.of(HYDROPONIC_TRAY, NUTRIENT_PROCESSOR, PORTABLE_REFINER));
+        order.addAll(GELS.values());
+        order.addAll(DISHES.values());
         order.addAll(MODULES.values());
         order.addAll(DRIVES.values());
         order.add(LANDING_PAD);
         order.add(DAMAGED_HELM);
-        order.addAll(List.of(NAVIGATION_DATA, SIGNAL_BOOSTER, SUPPLY_CRATE, DROP_POD, DATA_TERMINAL, MONOLITH, TECH_CACHE, SMOLDERING_WRECK));
+        order.addAll(List.of(NAVIGATION_DATA, SIGNAL_BOOSTER, SUPPLY_CRATE, DROP_POD, DATA_TERMINAL, MONOLITH, TECH_CACHE, SMOLDERING_WRECK,
+                CREDIT_CHIP, EMERGENCY_RECEIVER));
         order.addAll(List.of(PORTAL_STONE, PORTAL_GLYPH, PORTAL_DIAL));
         order.addAll(List.of(BASE_BEACON, TELEPORTER));
         order.addAll(List.of(TRADE_TERMINAL, MISSION_BOARD, SHIP_REPAIR, SHIP_DEALER, FREIGHTER_CONSOLE, FLEET_TERMINAL, STATION_TELEPORTER, STATION_HULL, STATION_FLOOR, STATION_GLASS, STATION_LIGHT, STATION_PAD, STATION_TRIM, STATION_SOLAR_PANEL, FREIGHTER_PLATE, FREIGHTER_ENGINE));
@@ -481,6 +502,35 @@ public final class UniverseItems {
         resource(items, "gravitino_ball", null);
         resource(items, "marrow_bulb", new FoodProperties.Builder().nutrition(2).saturationModifier(0.4F).build());
         return items;
+    }
+
+    private static Map<Dish, DeferredItem<DishItem>> registerDishes() {
+        Map<Dish, DeferredItem<DishItem>> items = new EnumMap<>(Dish.class);
+        for (Dish dish : Dish.values()) {
+            items.put(dish, ITEMS.registerItem(dish.id(), properties -> new DishItem(dish, properties), properties -> {
+                if (!dish.edible()) {
+                    return properties;
+                }
+                FoodProperties food = new FoodProperties.Builder().nutrition(dish.nutrition()).saturationModifier(dish.saturation()).build();
+                // 汁是喝的
+                return dish == Dish.CACTUS_JUICE ? properties.food(food, Consumables.DEFAULT_DRINK) : properties.food(food);
+            }));
+        }
+        return items;
+    }
+
+    private static Map<Hazard, DeferredItem<SuitRefillItem>> registerGels() {
+        Map<Hazard, DeferredItem<SuitRefillItem>> items = new EnumMap<>(Hazard.class);
+        gel(items, Hazard.COLD, "cold_gel");
+        gel(items, Hazard.HEAT, "heat_gel");
+        gel(items, Hazard.RADIATION, "radiation_gel");
+        gel(items, Hazard.TOXIC, "toxin_gel");
+        return items;
+    }
+
+    private static void gel(Map<Hazard, DeferredItem<SuitRefillItem>> items, Hazard hazard, String name) {
+        items.put(hazard, ITEMS.registerItem(name,
+                properties -> new SuitRefillItem(SuitRefillItem.Kind.HAZARD, GEL_AMOUNT, hazard, properties), properties -> properties.stacksTo(16)));
     }
 
     private static void resource(Map<String, DeferredItem<? extends Item>> items, String name, @Nullable FoodProperties food) {

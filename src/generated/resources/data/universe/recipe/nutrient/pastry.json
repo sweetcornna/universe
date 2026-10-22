@@ -1,0 +1,19 @@
+{
+  "type": "universe:nutrient",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:butter"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:flour"
+    }
+  ],
+  "results": [
+    {
+      "id": "universe:pastry"
+    }
+  ],
+  "time": 50
+}

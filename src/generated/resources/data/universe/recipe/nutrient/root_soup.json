@@ -1,0 +1,19 @@
+{
+  "type": "universe:nutrient",
+  "ingredients": [
+    {
+      "count": 2,
+      "ingredient": "universe:gamma_root"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:water"
+    }
+  ],
+  "results": [
+    {
+      "id": "universe:root_soup"
+    }
+  ],
+  "time": 50
+}

@@ -1,0 +1,23 @@
+{
+  "type": "universe:nutrient",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:alien_egg"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:flour"
+    },
+    {
+      "count": 1,
+      "ingredient": "minecraft:sugar"
+    }
+  ],
+  "results": [
+    {
+      "id": "universe:cake_base"
+    }
+  ],
+  "time": 50
+}

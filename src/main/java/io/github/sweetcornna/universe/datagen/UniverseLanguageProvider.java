@@ -6,11 +6,13 @@ import io.github.sweetcornna.universe.block.OreKind;
 import io.github.sweetcornna.universe.core.fleet.Area;
 import io.github.sweetcornna.universe.core.fleet.FrigateTrait;
 import io.github.sweetcornna.universe.core.fleet.FrigateType;
+import io.github.sweetcornna.universe.core.galaxy.Hazard;
 import io.github.sweetcornna.universe.core.guide.Guide;
 import io.github.sweetcornna.universe.core.terrain.BiomeKind;
 import io.github.sweetcornna.universe.core.poi.PoiType;
 import io.github.sweetcornna.universe.core.ship.ShipType;
 import io.github.sweetcornna.universe.core.space.DriveTier;
+import io.github.sweetcornna.universe.core.survival.Dish;
 import io.github.sweetcornna.universe.core.tech.ModuleType;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
 import io.github.sweetcornna.universe.registry.UniverseItems;
@@ -423,6 +425,8 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("jei.universe.refining", "精炼", "Refining");
         both("jei.universe.chemical", "化工", "Chemical");
         both("jei.universe.particle", "粒子对撞", "Particle Collision");
+        both("jei.universe.nutrient", "营养处理", "Nutrient Processing");
+        both("jei.universe.portable_refining", "便携精炼", "Portable Refining");
         both("jei.universe.info.water", "抽水站放在水源方块上抽水，每分钟 50 个。酸海里的不行。",
                 "A water pump on top of a water source block pumps 50 water a minute. Acid seas don't count.");
         both("jei.universe.info.crude_oil", "原油萃取站要压在原油涌泉上。涌泉越抽越少，降到一个下限为止。",
@@ -737,6 +741,7 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("hud.universe.suit.jetpack", "喷气背包", "Jetpack");
         both("hud.universe.suit.unsealed", "未密封", "unsealed");
         both("hud.universe.suit.near_heat", "取暖中", "warming");
+        both("hud.universe.suit.warm", "保暖", "warm");
         both("hud.universe.suit.near_cold", "降温中", "cooling");
         both("hud.universe.suit.cabin", "舱内供氧", "cabin air");
         both("hud.universe.suit.sheltered", "有遮挡", "sheltered");
@@ -782,6 +787,26 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("commands.universe.resources.goto", "到了 %s 旁边（%s）", "Next to %s (%s)");
         both("commands.universe.resources.not_found", "%s 格内没有 %s", "No %2$s within %1$s blocks");
         both("commands.universe.resources.unknown", "没有叫 %s 的资源植物", "No resource plant called %s");
+        this.kitchen();
+    }
+
+    /** 营养处理器、菜、便携精炼机、防护凝胶（ADR-0026）。 */
+    private void kitchen() {
+        block(UniverseBlocks.NUTRIENT_PROCESSOR.get(), "营养处理器", "Nutrient Processor");
+        block(UniverseBlocks.PORTABLE_REFINER.get(), "便携精炼机", "Portable Refiner");
+        for (Dish dish : Dish.values()) {
+            item(UniverseItems.DISHES.get(dish).get(), dish.nameZh(), dish.nameEn());
+        }
+        item(UniverseItems.GELS.get(Hazard.COLD).get(), "抗寒凝胶", "Cold Gel");
+        item(UniverseItems.GELS.get(Hazard.HEAT).get(), "隔热凝胶", "Heat Gel");
+        item(UniverseItems.GELS.get(Hazard.RADIATION).get(), "辐射防护凝胶", "Radiation Gel");
+        item(UniverseItems.GELS.get(Hazard.TOXIC).get(), "解毒凝胶", "Antitoxin Gel");
+        both("tooltip.universe.dish.oxygen", "氧气 +%s%%", "Oxygen +%s%%");
+        both("tooltip.universe.dish.hazard", "每项防护 +%s%%", "All protection +%s%%");
+        both("tooltip.universe.dish.warmth", "保暖 %s 秒", "Keeps you warm for %s s");
+        both("message.universe.dish.oxygen", "氧气 +%2$s%%（%1$s）", "Oxygen +%2$s%% (%1$s)");
+        both("message.universe.dish.hazard", "防护 +%2$s%%（%1$s）", "Protection +%2$s%% (%1$s)");
+        both("message.universe.dish.warmth", "保暖 %2$s 秒（%1$s）", "Warm for %2$s s (%1$s)");
     }
 
     private void resource(String product, String zh, String en) {
@@ -935,6 +960,8 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("gui.universe.recipe_machine.output_full", "产物已满", "Output full");
         both("gui.universe.recipe_machine.no_power", "电力不足", "No power");
         both("gui.universe.recipe_machine.locked", "配方未解锁", "Recipe locked");
+        both("gui.universe.recipe_machine.no_fuel", "缺燃料", "No fuel");
+        both("gui.universe.fuel_machine.fuel", "燃料", "Fuel");
         both("gui.universe.recipe_machine.time", "每次 %s 秒", "%s s per cycle");
         both("gui.universe.recipe_machine.ingredients", "原料", "Ingredients");
         both("gui.universe.recipe_machine.results", "产物", "Products");
@@ -1541,7 +1568,7 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("guide.universe.survival.hazards.title", "危害", "Hazards");
         both("guide.universe.survival.hazards",
                 "星球最多两种危害：寒冷、高温、毒性、辐射。HUD 上每种一条防护。\n\n全套外骨骼：撑 5 分钟，离开 25 秒充满\n用完：防护每 2 秒掉 1 血，氧气每秒掉 2 血\n有顶有墙的地方：不掉，20 秒充满\n风暴 ×2，火或冰挡相反的危害\n氧气罐、防护电池：各回 50%，低于 20% 自动用",
-                "Up to two hazards per planet: cold, heat, toxicity, radiation.\n\nFull suit: 5 min, refills 25 s after\nEmpty: -1 HP/2 s; no oxygen -2 HP/s\nUnder a roof with walls: no drain, refills in 20 s\nStorms x2\nFire or ice blocks the opposite hazard\nCapsules and cells: +50%, auto below 20%");
+                "Two hazards max: cold, heat, toxic, radiation.\n\nFull suit: 5 min, refills 25 s after\nEmpty: -1 HP/2 s; no oxygen -2 HP/s\nUnder a roof with walls: no drain, refills in 20 s\nStorms x2; fire or ice counters the opposite\nCapsules and cells: +50%, auto below 20%");
         both("guide.universe.survival.resources.title", "资源植物", "Resource Plants");
         both("guide.universe.survival.resources",
                 "星球上一丛丛长着能采的植物，空手右键收获，15 分钟左右长回来。\n\n氧囊草：氧气，右键补 10% 氧气\n盐角草、盐晶簇：钠，右键补 8% 防护\n每类星球还有一种特产，洞穴里有髓球\n产物右键土地能种回去，只能种在本来长它的星球上\n采引力果会惊动守卫机",
@@ -1550,6 +1577,14 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("guide.universe.survival.hydroponics",
                 "研究「水培」后能做。接电网（20 kW），拿产物右键种下，熟了空手右键收，潜行右键拔掉，分拣器也能取。哪颗星球都能种。\n\n氧气 3 分钟一熟，钠 5 分钟，特产 10–30 分钟\n一次 4–8 个",
                 "Unlocked by Hydroponics. Connect power (20 kW), use a plant product on it to sow, right-click to harvest, sneak to uproot. Sorters can take the harvest. Works on any planet.\n\nOxygen: 3 min, sodium: 5 min, others: 10-30 min\n4-8 per harvest");
+        both("guide.universe.survival.cooking.title", "营养处理器", "Nutrient Processor");
+        both("guide.universe.survival.cooking",
+                "开局就能做，烧熔炉燃料，异星原木和星球上的草也能烧。左边点选菜谱，按格子放原料。\n\n一样原料的 2.5 秒，组合菜 5 秒\n仙人掌汁、仙人掌冻：氧气 +20%\n卡士达类：每项防护 +25%\n辣酱、根茎汤、辣烤肉、日焰派：保暖，冷得慢一半\n组合菜空间站收，越复杂越贵",
+                "Burns any furnace fuel, alien logs too. Pick a recipe on the left.\n\nOne ingredient: 2.5 s, combined: 5 s\nCactus juice, cactus jelly: +20% oxygen\nCustards: +25% all protection\nSpicy dishes, root soup: slower cold drain\nStations buy combined dishes");
+        both("guide.universe.survival.refiner.title", "便携精炼机", "Portable Refiner");
+        both("guide.universe.survival.refiner",
+                "开局就能做，烧燃料。拆下来里面的东西跟着走。\n\n岩石 ×4：氧气\n冰、雪、仙人掌肉、水桶：水\n原木：木炭；沙子：玻璃；粗矿：锭\n氧气 ×4：氧气罐；钠 ×4：防护电池\n霜晶、日焰果、伽马根、霉菌 ×2：四种防护凝胶，各补一项 40%",
+                "Burns fuel. Keeps its contents when broken.\n\nRock x4: oxygen\nIce, snow, cactus flesh, water bucket: water\nLogs: charcoal; sand: glass; raw ore: ingots\nOxygen x4: capsule; sodium x4: hazard cell\nFrost crystal, solanium, gamma root, mould x2: the four gels, +40% to one protection");
         both("guide.universe.survival.border.title", "星球边界", "Planet Edge");
         both("guide.universe.survival.border",
                 "星球的地面有边界，以 (0, 0) 为中心：小卫星两千多格见方，大行星三万格。离边界 64 格以内外骨骼面板会提示，屏幕边缘发红。边界走不出去，去别处要开飞船。母星没有边界。",
@@ -1650,6 +1685,8 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("gui.universe.guide.machine.refining", "原油精炼厂", "Oil Refinery");
         both("gui.universe.guide.machine.chemical", "化工厂", "Chemical Plant");
         both("gui.universe.guide.machine.particle", "微型粒子对撞机", "Miniature Particle Collider");
+        both("gui.universe.guide.machine.nutrient", "营养处理器", "Nutrient Processor");
+        both("gui.universe.guide.machine.portable_refining", "便携精炼机", "Portable Refiner");
         both("gui.universe.guide.log.day", "第 %s 天", "Day %s");
         both("guide.universe.log.empty", "还没有收到探测器的日志。", "No probe logs yet.");
         both("guide.universe.ending.locked", "研究完「任务完成」以后，可以在这里重看结局。", "Finish Mission Complete to replay the ending here.");

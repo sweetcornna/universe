@@ -1,0 +1,9 @@
+{
+  "parent": "universe:block/portable_refiner_template",
+  "textures": {
+    "bottom": "universe:block/portable_refiner_bottom",
+    "front": "universe:block/portable_refiner_front_on",
+    "side": "universe:block/portable_refiner_side",
+    "top": "universe:block/portable_refiner_top"
+  }
+}

@@ -11,7 +11,7 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
-/** 配方类型和序列化器：五种设备配方（冶炼、制造、精炼、化工、粒子）和要研究解锁的有序合成。 */
+/** 配方类型和序列化器：七种设备配方（冶炼、制造、精炼、化工、粒子、营养处理、便携精炼）和要研究解锁的有序合成。 */
 public final class UniverseRecipeTypes {
     public static final DeferredRegister<RecipeType<?>> TYPES = DeferredRegister.create(Registries.RECIPE_TYPE, Universe.MOD_ID);
     public static final DeferredRegister<RecipeSerializer<?>> SERIALIZERS = DeferredRegister.create(Registries.RECIPE_SERIALIZER, Universe.MOD_ID);
@@ -23,6 +23,8 @@ public final class UniverseRecipeTypes {
     public static final DeferredHolder<RecipeType<?>, RecipeType<MachineRecipe>> REFINING = type("refining");
     public static final DeferredHolder<RecipeType<?>, RecipeType<MachineRecipe>> CHEMICAL = type("chemical");
     public static final DeferredHolder<RecipeType<?>, RecipeType<MachineRecipe>> PARTICLE = type("particle");
+    public static final DeferredHolder<RecipeType<?>, RecipeType<MachineRecipe>> NUTRIENT = type("nutrient");
+    public static final DeferredHolder<RecipeType<?>, RecipeType<MachineRecipe>> PORTABLE_REFINING = type("portable_refining");
 
     public static final DeferredHolder<RecipeSerializer<?>, RecipeSerializer<MachineRecipe>> SMELTING_SERIALIZER =
             SERIALIZERS.register("smelting", () -> MachineRecipe.serializer(MachineRecipe.Kind.SMELTING));
@@ -34,6 +36,10 @@ public final class UniverseRecipeTypes {
             SERIALIZERS.register("chemical", () -> MachineRecipe.serializer(MachineRecipe.Kind.CHEMICAL));
     public static final DeferredHolder<RecipeSerializer<?>, RecipeSerializer<MachineRecipe>> PARTICLE_SERIALIZER =
             SERIALIZERS.register("particle", () -> MachineRecipe.serializer(MachineRecipe.Kind.PARTICLE));
+    public static final DeferredHolder<RecipeSerializer<?>, RecipeSerializer<MachineRecipe>> NUTRIENT_SERIALIZER =
+            SERIALIZERS.register("nutrient", () -> MachineRecipe.serializer(MachineRecipe.Kind.NUTRIENT));
+    public static final DeferredHolder<RecipeSerializer<?>, RecipeSerializer<MachineRecipe>> PORTABLE_REFINING_SERIALIZER =
+            SERIALIZERS.register("portable_refining", () -> MachineRecipe.serializer(MachineRecipe.Kind.PORTABLE_REFINING));
     public static final DeferredHolder<RecipeSerializer<?>, RecipeSerializer<ResearchShapedRecipe>> RESEARCH_SHAPED =
             SERIALIZERS.register("research_shaped", () -> ResearchShapedRecipe.SERIALIZER);
 

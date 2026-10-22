@@ -1,0 +1,9 @@
+{
+  "parent": "minecraft:block/orientable_with_bottom",
+  "textures": {
+    "bottom": "universe:block/nutrient_processor_side",
+    "front": "universe:block/nutrient_processor_front_on",
+    "side": "universe:block/nutrient_processor_side",
+    "top": "universe:block/nutrient_processor_top_on"
+  }
+}

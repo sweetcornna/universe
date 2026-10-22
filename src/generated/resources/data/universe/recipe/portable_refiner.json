@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "key": {
+    "C": "minecraft:copper_ingot",
+    "F": "minecraft:furnace",
+    "I": "minecraft:iron_ingot"
+  },
+  "pattern": [
+    "I I",
+    "IFI",
+    "CCC"
+  ],
+  "result": {
+    "id": "universe:portable_refiner"
+  }
+}

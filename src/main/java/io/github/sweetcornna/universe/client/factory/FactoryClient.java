@@ -53,6 +53,10 @@ public final class FactoryClient {
         event.register(UniverseMenus.GEOTHERMAL_POWER_STATION.menuType(), PowerScreens.Geothermal::new);
         event.register(UniverseMenus.ENERGY_EXCHANGER.menuType(), PowerScreens.EnergyExchanger::new);
         recipeMachine(event, RecipeMachines.ARC_SMELTER);
+        event.<MachineMenu, RecipeMachineScreen>register(RecipeMachines.NUTRIENT_PROCESSOR.menu().menuType(),
+                (menu, inventory, title) -> new FuelRecipeMachineScreen(menu, inventory, title, RecipeMachines.NUTRIENT_PROCESSOR));
+        event.<MachineMenu, RecipeMachineScreen>register(RecipeMachines.PORTABLE_REFINER.menu().menuType(),
+                (menu, inventory, title) -> new FuelRecipeMachineScreen(menu, inventory, title, RecipeMachines.PORTABLE_REFINER));
         recipeMachine(event, RecipeMachines.ASSEMBLER);
         recipeMachine(event, RecipeMachines.OIL_REFINERY);
         recipeMachine(event, RecipeMachines.ASSEMBLER_MK2);

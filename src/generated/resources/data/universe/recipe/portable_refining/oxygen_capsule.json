@@ -1,0 +1,15 @@
+{
+  "type": "universe:portable_refining",
+  "ingredients": [
+    {
+      "count": 4,
+      "ingredient": "universe:oxygen"
+    }
+  ],
+  "results": [
+    {
+      "id": "universe:oxygen_capsule"
+    }
+  ],
+  "time": 80
+}

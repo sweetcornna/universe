@@ -1,0 +1,19 @@
+{
+  "type": "universe:nutrient",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:cactus_juice"
+    },
+    {
+      "count": 1,
+      "ingredient": "minecraft:sugar"
+    }
+  ],
+  "results": [
+    {
+      "id": "universe:cactus_jelly"
+    }
+  ],
+  "time": 100
+}

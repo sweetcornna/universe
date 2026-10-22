@@ -1,0 +1,23 @@
+{
+  "type": "universe:nutrient",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:frost_crystal"
+    },
+    {
+      "count": 1,
+      "ingredient": "minecraft:sugar"
+    },
+    {
+      "count": 1,
+      "ingredient": "minecraft:milk_bucket"
+    }
+  ],
+  "results": [
+    {
+      "id": "universe:frost_ice_cream"
+    }
+  ],
+  "time": 50
+}

@@ -13,6 +13,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.PackOutput;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.neoforged.neoforge.common.data.ItemTagsProvider;
@@ -37,6 +38,9 @@ final class UniverseItemTagsProvider extends ItemTagsProvider {
                 UniverseItems.HERBIVORE_FEED.key());
         this.tag(CreatureHusbandry.CARNIVORE_FOOD).add(vanilla(Items.BEEF), vanilla(Items.PORKCHOP), vanilla(Items.MUTTON),
                 vanilla(Items.CHICKEN), vanilla(Items.RABBIT), UniverseItems.ALIEN_MEAT.key(), UniverseItems.CARNIVORE_FEED.key());
+        // 异星原木和原版原木一样能烧成木炭（熔炉和便携精炼机，ADR-0026）
+        this.tag(ItemTags.LOGS).add(UniverseItems.PLANET_LOG.key());
+        this.tag(ItemTags.LOGS_THAT_BURN).add(UniverseItems.PLANET_LOG.key());
         this.trade();
     }
 
@@ -89,6 +93,13 @@ final class UniverseItemTagsProvider extends ItemTagsProvider {
                 UniverseItems.ALIEN_EGG.key(), UniverseItems.COOKED_ALIEN_EGG.key(), UniverseItems.ALIEN_FLUFF.key(), UniverseItems.BIO_GEL.key(),
                 UniverseItems.ORE_DROPS.get(OreKind.ORGANIC_CRYSTAL).key(), vanilla(Items.LEATHER), vanilla(Items.WHEAT), vanilla(Items.STRING),
                 vanilla(Items.EGG), vanilla(Items.FEATHER), vanilla(Items.BONE), vanilla(Items.SLIME_BALL), vanilla(Items.HONEYCOMB));
+        // 营养处理器做的组合菜、便携精炼机做的防护凝胶（ADR-0026）
+        UniverseItems.DISHES.forEach((dish, item) -> {
+            if (dish.nutrition() >= 8) {
+                this.tag(ItemValues.tag(TradeCategory.BIO)).add(item.key());
+            }
+        });
+        UniverseItems.GELS.values().forEach(item -> this.tag(ItemValues.tag(TradeCategory.ENERGY)).add(item.key()));
         this.tag(ItemValues.tag(TradeCategory.TECH)).add(
                 UniverseItems.SHIP_HELM.key(), UniverseItems.SHIP_THRUSTER.key(), UniverseItems.FUEL_TANK.key(), UniverseItems.IMPULSE_ENGINE.key(),
                 UniverseItems.WARP_DRIVE.key(), UniverseItems.SHIP_SEAT.key(), UniverseItems.MULTITOOL.key(),

@@ -15,7 +15,8 @@ import io.github.sweetcornna.universe.core.tech.TechBonuses;
  *       耗尽后每秒掉 2 点血。能呼吸的大气里、飞船里很快补满。</li>
  *   <li><b>防护</b>：每种危害一条。暴露在危害里持续下降，整套外骨骼标准强度下撑 5 分钟，缺件更快，
  *       不穿只有半分钟；降到零后每两秒掉 1 点血。旁边有热源（防寒）或冷源（防热）时慢下来，
- *       风暴时加快。离开危害后慢慢恢复；待在庇护所里（ADR-0026）不掉，20 秒回满。</li>
+ *       风暴时加快。离开危害后慢慢恢复；待在庇护所里（ADR-0026）不掉，20 秒回满。吃了保暖的菜（ADR-0026），
+ *       一段时间里寒冷防护掉得慢一半。</li>
  *   <li><b>喷气背包</b>：胸甲上的，空中推进时消耗，落地很快充满。</li>
  * </ul>
  *
@@ -46,10 +47,14 @@ public final class LifeSupport {
     /** 防护耗尽后每 40 刻掉 1 点血。 */
     public static final float HAZARD_DAMAGE = 1;
     static final int HAZARD_INTERVAL = 40;
+    /** 保暖的时候寒冷防护掉得慢一半。 */
+    static final float WARMTH_FACTOR = 0.5F;
 
     private float oxygen = OXYGEN_MAX;
     private final EnumMap<Hazard, Float> protection = new EnumMap<>(Hazard.class);
     private float jet = JET_MAX;
+    /** 还保暖几刻。 */
+    private int warmth;
     private int suffocationTimer;
     private final EnumMap<Hazard, Integer> hazardTimers = new EnumMap<>(Hazard.class);
 
@@ -60,10 +65,15 @@ public final class LifeSupport {
     }
 
     public LifeSupport(float oxygen, Map<Hazard, Float> protection, float jet) {
+        this(oxygen, protection, jet, 0);
+    }
+
+    public LifeSupport(float oxygen, Map<Hazard, Float> protection, float jet, int warmth) {
         this();
         this.oxygen = clamp(oxygen, OXYGEN_MAX);
         protection.forEach((hazard, value) -> this.protection.put(hazard, clamp(value, HAZARD_MAX)));
         this.jet = clamp(jet, JET_MAX);
+        this.warmth = Math.max(0, warmth);
     }
 
     /** 这一刻造成的伤害。 */
@@ -102,6 +112,9 @@ public final class LifeSupport {
             this.jet = Math.max(0, this.jet - JET_BURN * (float) bonuses.reduction(Stat.JET_TIME));
         } else if (onGround || env.supplied()) {
             this.jet = Math.min(JET_MAX, this.jet + JET_RECHARGE);
+        }
+        if (this.warmth > 0) {
+            this.warmth--;
         }
         return suffocation == 0 && hazardDamage.isEmpty() ? Damage.NONE : new Damage(suffocation, hazardDamage);
     }
@@ -154,6 +167,9 @@ public final class LifeSupport {
             return 0;
         }
         float drain = (float) (HAZARD_DRAIN * severity * suit.hazardFactor() * modifier(hazard, env)) * (suit.pieces() > 0 ? factor : 1);
+        if (hazard == Hazard.COLD && this.warmth > 0) {
+            drain *= WARMTH_FACTOR;
+        }
         value = Math.max(0, value - drain);
         this.protection.put(hazard, value);
         if (value > 0) {
@@ -200,6 +216,16 @@ public final class LifeSupport {
         return this.jet > 0;
     }
 
+    /** 还保暖几刻。 */
+    public int warmth() {
+        return this.warmth;
+    }
+
+    /** 吃了保暖的菜：保暖 {@code ticks} 刻。不叠加，取长的那个。 */
+    public void warm(int ticks) {
+        this.warmth = Math.max(this.warmth, ticks);
+    }
+
     public void addOxygen(float amount) {
         this.oxygen = clamp(this.oxygen + amount, OXYGEN_MAX);
     }
@@ -221,6 +247,7 @@ public final class LifeSupport {
         this.oxygen = OXYGEN_MAX;
         this.protection.replaceAll((hazard, value) -> HAZARD_MAX);
         this.jet = JET_MAX;
+        this.warmth = 0;
         this.suffocationTimer = 0;
         this.hazardTimers.clear();
     }

@@ -160,6 +160,7 @@ public final class SuitClient {
         for (Hazard hazard : Hazard.values()) {
             if (hud.exposed(hazard) || hud.protection(hazard) < LifeSupport.HAZARD_MAX) {
                 Component note = hazard == Hazard.COLD && hud.has(SuitHud.NEAR_HEAT) ? Component.translatable("hud.universe.suit.near_heat")
+                        : hazard == Hazard.COLD && hud.has(SuitHud.WARM) ? Component.translatable("hud.universe.suit.warm")
                         : hazard == Hazard.HEAT && hud.has(SuitHud.NEAR_COLD) ? Component.translatable("hud.universe.suit.near_cold")
                         : Component.empty();
                 bars.add(new Bar(Component.translatable("hazard.universe." + hazard.name().toLowerCase(java.util.Locale.ROOT)),

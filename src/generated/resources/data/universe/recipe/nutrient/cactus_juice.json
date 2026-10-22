@@ -1,0 +1,15 @@
+{
+  "type": "universe:nutrient",
+  "ingredients": [
+    {
+      "count": 2,
+      "ingredient": "universe:cactus_flesh"
+    }
+  ],
+  "results": [
+    {
+      "id": "universe:cactus_juice"
+    }
+  ],
+  "time": 50
+}

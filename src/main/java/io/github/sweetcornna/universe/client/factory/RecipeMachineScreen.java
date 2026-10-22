@@ -209,12 +209,13 @@ public class RecipeMachineScreen extends MachineScreen {
             case RecipeMachineBlockEntity.OUTPUT_FULL -> "output_full";
             case RecipeMachineBlockEntity.NO_POWER -> "no_power";
             case RecipeMachineBlockEntity.LOCKED -> "locked";
+            case RecipeMachineBlockEntity.NO_FUEL -> "no_fuel";
             default -> "no_recipe";
         };
         int color = switch (status) {
             case RecipeMachineBlockEntity.RUNNING -> GOOD;
             case RecipeMachineBlockEntity.NO_INPUT, RecipeMachineBlockEntity.OUTPUT_FULL -> WARN;
-            case RecipeMachineBlockEntity.NO_POWER, RecipeMachineBlockEntity.LOCKED -> BAD;
+            case RecipeMachineBlockEntity.NO_POWER, RecipeMachineBlockEntity.LOCKED, RecipeMachineBlockEntity.NO_FUEL -> BAD;
             default -> DIM;
         };
         if (selected == null) {

@@ -1,0 +1,19 @@
+{
+  "type": "universe:nutrient",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:frost_ice_cream"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:pastry"
+    }
+  ],
+  "results": [
+    {
+      "id": "universe:frost_tart"
+    }
+  ],
+  "time": 100
+}

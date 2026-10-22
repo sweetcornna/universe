@@ -112,7 +112,7 @@ final class UniverseBlockTagsProvider extends BlockTagsProvider {
                 UniverseBlocks.VERTICAL_LAUNCHING_SILO, UniverseBlocks.RAY_RECEIVER, UniverseBlocks.MINIATURE_PARTICLE_COLLIDER,
                 UniverseBlocks.MINI_FUSION_POWER_PLANT, UniverseBlocks.ARTIFICIAL_STAR,
                 UniverseBlocks.TELEPORTER, UniverseBlocks.BASE_BEACON, UniverseBlocks.SPRAY_COATER, UniverseBlocks.AUTOMATIC_PILER,
-                UniverseBlocks.HYDROPONIC_TRAY,
+                UniverseBlocks.HYDROPONIC_TRAY, UniverseBlocks.NUTRIENT_PROCESSOR, UniverseBlocks.PORTABLE_REFINER,
                 UniverseBlocks.TRAFFIC_MONITOR, UniverseBlocks.PILE_SORTER, UniverseBlocks.WIRELESS_POWER_TOWER, UniverseBlocks.SATELLITE_SUBSTATION,
                 UniverseBlocks.GEOTHERMAL_POWER_STATION, UniverseBlocks.ENERGY_EXCHANGER, UniverseBlocks.NEGENTROPY_SMELTER,
                 UniverseBlocks.RECOMPOSING_ASSEMBLER, UniverseBlocks.QUANTUM_CHEMICAL_PLANT, UniverseBlocks.SELF_EVOLUTION_LAB,

@@ -59,6 +59,9 @@ final class UniverseModelProvider extends ModelProvider {
     private static final ModelTemplate PLANT_CROSS = template("plant_cross", BODY, DETAIL);
     private static final ModelTemplate TRAY = template("hydroponic_tray_template", TextureSlot.FRONT, TextureSlot.SIDE, TextureSlot.TOP,
             TextureSlot.BOTTOM);
+    /** 便携精炼机：十二格见方的小箱子。 */
+    private static final ModelTemplate SMALL_BOX = template("portable_refiner_template", TextureSlot.FRONT, TextureSlot.SIDE, TextureSlot.TOP,
+            TextureSlot.BOTTOM);
     private static final ModelTemplate PLANT_CROSS_EMISSIVE = template("plant_cross_emissive", BODY, DETAIL);
     /** 地衣：贴地的一片。 */
     private static final ModelTemplate PLANT_PATCH = template("plant_patch", BODY, DETAIL);
@@ -118,7 +121,11 @@ final class UniverseModelProvider extends ModelProvider {
         // 资源植物（ADR-0026）：长熟的和收过的两种样子，植物本身没有物品；产物是平面物品
         UniverseBlocks.RESOURCE_PLANTS.values().forEach(block -> resourcePlant(blockModels, block.get()));
         UniverseItems.RESOURCES.values().forEach(item -> itemModels.generateFlatItem(item.get(), ModelTemplates.FLAT_ITEM));
-        tray(blockModels, UniverseBlocks.HYDROPONIC_TRAY.get());
+        smallMachine(blockModels, UniverseBlocks.HYDROPONIC_TRAY.get(), TRAY, "hydroponic_tray", "machine_casing_top");
+        smallMachine(blockModels, UniverseBlocks.PORTABLE_REFINER.get(), SMALL_BOX, "portable_refiner", "portable_refiner_bottom");
+        recipeMachine(blockModels, UniverseBlocks.NUTRIENT_PROCESSOR.get(), "nutrient_processor", true, "nutrient_processor_side");
+        UniverseItems.DISHES.values().forEach(item -> itemModels.generateFlatItem(item.get(), ModelTemplates.FLAT_ITEM));
+        UniverseItems.GELS.values().forEach(item -> itemModels.generateFlatItem(item.get(), ModelTemplates.FLAT_ITEM));
         factory(blockModels, itemModels);
     }
 
@@ -333,17 +340,20 @@ final class UniverseModelProvider extends ModelProvider {
                 ResourcePlantBlock.RIPE, BlockModelGenerators.plainVariant(ripe), BlockModelGenerators.plainVariant(bare))));
     }
 
-    /** 水培槽：十格高的槽子（手写的父模型），通电长着的时候正面补光灯亮；上面的植物由方块实体渲染器画。 */
-    private static void tray(BlockModelGenerators blockModels, Block block) {
+    /**
+     * 不满一格的设备（手写的父模型）：水培槽是十格高的槽子，通电长着的时候正面补光灯亮，上面的植物由方块实体渲染器画；
+     * 便携精炼机是十二格见方的箱子，干活时观察窗亮。
+     */
+    private static void smallMachine(BlockModelGenerators blockModels, Block block, ModelTemplate template, String name, String bottom) {
         Identifier[] models = new Identifier[2];
         for (int on = 0; on < 2; on++) {
             String suffix = on == 1 ? "_on" : "";
             TextureMapping textures = new TextureMapping()
-                    .put(TextureSlot.FRONT, texture("hydroponic_tray_front" + suffix))
-                    .put(TextureSlot.SIDE, texture("hydroponic_tray_side"))
-                    .put(TextureSlot.TOP, texture("hydroponic_tray_top"))
-                    .put(TextureSlot.BOTTOM, texture("machine_casing_top"));
-            models[on] = TRAY.createWithSuffix(block, suffix, textures, blockModels.modelOutput);
+                    .put(TextureSlot.FRONT, texture(name + "_front" + suffix))
+                    .put(TextureSlot.SIDE, texture(name + "_side"))
+                    .put(TextureSlot.TOP, texture(name + "_top"))
+                    .put(TextureSlot.BOTTOM, texture(bottom));
+            models[on] = template.createWithSuffix(block, suffix, textures, blockModels.modelOutput);
         }
         blockModels.blockStateOutput.accept(MultiVariantGenerator.dispatch(block)
                 .with(PropertyDispatch.initial(MachineBlock.WORKING).generate(on -> BlockModelGenerators.plainVariant(models[on ? 1 : 0])))

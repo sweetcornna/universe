@@ -38,6 +38,7 @@ import io.github.sweetcornna.universe.core.ship.ShipDesigner;
 import io.github.sweetcornna.universe.core.ship.ShipMarket;
 import io.github.sweetcornna.universe.core.ship.ShipType;
 import io.github.sweetcornna.universe.core.space.DriveTier;
+import io.github.sweetcornna.universe.core.survival.Dish;
 import io.github.sweetcornna.universe.core.tech.Grade;
 import io.github.sweetcornna.universe.core.tech.ModuleType;
 import io.github.sweetcornna.universe.core.tech.TechModule;
@@ -46,6 +47,7 @@ import io.github.sweetcornna.universe.entity.ship.ShipAssembly;
 import io.github.sweetcornna.universe.entity.ship.ShipBlueprints;
 import io.github.sweetcornna.universe.entity.ship.ShipEntity;
 import io.github.sweetcornna.universe.entity.ship.ShipOwners;
+import io.github.sweetcornna.universe.factory.FuelRecipeMachineBlockEntity;
 import io.github.sweetcornna.universe.factory.RecipeMachineBlockEntity;
 import io.github.sweetcornna.universe.factory.TallMachineBlock;
 import io.github.sweetcornna.universe.factory.belt.BeltBlock;
@@ -145,6 +147,8 @@ public final class UniverseGameTests {
             UniverseGameTests::landingPadRefuelsShip);
     private static final ResourceKey<Consumer<GameTestHelper>> HYDROPONIC_TRAY_GROWS = function("hydroponic_tray_grows",
             UniverseGameTests::hydroponicTrayGrows);
+    private static final ResourceKey<Consumer<GameTestHelper>> FUEL_MACHINES_COOK = function("fuel_machines_cook",
+            UniverseGameTests::fuelMachinesCook);
     private static final ResourceKey<Consumer<GameTestHelper>> FLEET_SAVE_ROUND_TRIP = function("fleet_save_round_trip",
             UniverseGameTests::fleetSaveRoundTrip);
     private static final ResourceKey<Consumer<GameTestHelper>> FLEET_VOYAGE_CLAIM = function("fleet_voyage_claim",
@@ -188,6 +192,7 @@ public final class UniverseGameTests {
         test(event, environment, HELM_TECH_TUNES_SHIP, 40);
         test(event, environment, LANDING_PAD_REFUELS_SHIP, 300);
         test(event, environment, HYDROPONIC_TRAY_GROWS, 200);
+        test(event, environment, FUEL_MACHINES_COOK, 200);
         test(event, environment, DEALER_SHIPS_ASSEMBLE, HANGAR, 40);
         test(event, environment, CRASHED_SHIP_REPAIRS, HANGAR, 40);
         test(event, environment, PORTAL_DIALS_AND_CLOSES, PORTAL, 20);
@@ -484,6 +489,37 @@ public final class UniverseGameTests {
             helper.assertTrue(tray.growth() > 0.01, "没有长：" + tray.growth());
             helper.assertBlockProperty(pos, MachineBlock.WORKING, true);
         });
+    }
+
+    /**
+     * 烧燃料的配方设备（ADR-0026）不接电也干活：营养处理器烧一块煤把牛奶做成黄油，空桶留在原料格里；
+     * 便携精炼机烧异星原木把粗铁炼成铁锭。
+     */
+    private static void fuelMachinesCook(GameTestHelper helper) {
+        BlockPos processorPos = new BlockPos(2, 1, 3);
+        helper.setBlock(processorPos, UniverseBlocks.NUTRIENT_PROCESSOR.get());
+        FuelRecipeMachineBlockEntity processor = helper.getBlockEntity(processorPos, FuelRecipeMachineBlockEntity.class);
+        selectRecipe(processor, "universe:nutrient/butter");
+        processor.setItem(0, new ItemStack(Items.MILK_BUCKET));
+        processor.setItem(processor.fuelSlot(), new ItemStack(Items.COAL));
+        BlockPos refinerPos = new BlockPos(5, 1, 3);
+        helper.setBlock(refinerPos, UniverseBlocks.PORTABLE_REFINER.get());
+        FuelRecipeMachineBlockEntity refiner = helper.getBlockEntity(refinerPos, FuelRecipeMachineBlockEntity.class);
+        selectRecipe(refiner, "universe:portable_refining/iron_ingot");
+        refiner.setItem(0, new ItemStack(Items.RAW_IRON, 2));
+        refiner.setItem(refiner.fuelSlot(), new ItemStack(UniverseItems.PLANET_LOG.get()));
+        helper.succeedWhen(() -> {
+            helper.assertTrue(processor.getItem(3).is(UniverseItems.DISHES.get(Dish.BUTTER).get()), "营养处理器没有做出黄油");
+            helper.assertTrue(processor.getItem(0).is(Items.BUCKET), "空桶没有留在原料格里：" + processor.getItem(0));
+            helper.assertTrue(processor.getItem(processor.fuelSlot()).isEmpty(), "煤没有烧掉");
+            helper.assertTrue(refiner.getItem(1).is(Items.IRON_INGOT), "便携精炼机没有炼出铁锭");
+        });
+    }
+
+    private static void selectRecipe(RecipeMachineBlockEntity machine, String recipe) {
+        CompoundTag settings = new CompoundTag();
+        settings.putString("Recipe", recipe);
+        machine.applyBlueprintSettings(settings);
     }
 
     /**

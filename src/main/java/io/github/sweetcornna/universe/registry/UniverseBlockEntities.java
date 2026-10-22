@@ -13,6 +13,7 @@ import io.github.sweetcornna.universe.dyson.LaunchSiloBlockEntity;
 import io.github.sweetcornna.universe.dyson.RayReceiverBlockEntity;
 import io.github.sweetcornna.universe.factory.FactoryAnchorBlockEntity;
 import io.github.sweetcornna.universe.factory.FractionatorBlockEntity;
+import io.github.sweetcornna.universe.factory.FuelRecipeMachineBlockEntity;
 import io.github.sweetcornna.universe.factory.RecipeMachineBlockEntity;
 import io.github.sweetcornna.universe.factory.RecipeMachines;
 import io.github.sweetcornna.universe.factory.belt.BeltBlockEntity;
@@ -59,6 +60,10 @@ public final class UniverseBlockEntities {
             () -> new BlockEntityType<>(LandingPadBlockEntity::new, UniverseBlocks.LANDING_PAD.get()));
     public static final Supplier<BlockEntityType<HydroponicTrayBlockEntity>> HYDROPONIC_TRAY = BLOCK_ENTITIES.register("hydroponic_tray",
             () -> new BlockEntityType<>(HydroponicTrayBlockEntity::new, UniverseBlocks.HYDROPONIC_TRAY.get()));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<FuelRecipeMachineBlockEntity>> NUTRIENT_PROCESSOR = fuelRecipeMachine(
+            "nutrient_processor", UniverseBlocks.NUTRIENT_PROCESSOR, RecipeMachines.NUTRIENT_PROCESSOR, false);
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<FuelRecipeMachineBlockEntity>> PORTABLE_REFINER = fuelRecipeMachine(
+            "portable_refiner", UniverseBlocks.PORTABLE_REFINER, RecipeMachines.PORTABLE_REFINER, true);
     public static final Supplier<BlockEntityType<SupplyCrateBlockEntity>> SUPPLY_CRATE = BLOCK_ENTITIES.register("supply_crate",
             () -> new BlockEntityType<>(SupplyCrateBlockEntity::new, UniverseBlocks.SUPPLY_CRATE.get()));
 
@@ -161,6 +166,16 @@ public final class UniverseBlockEntities {
             "quantum_chemical_plant", UniverseBlocks.QUANTUM_CHEMICAL_PLANT, RecipeMachines.QUANTUM_CHEMICAL_PLANT);
 
     private UniverseBlockEntities() {
+    }
+
+    /** 烧燃料的配方设备（ADR-0026）。 */
+    private static DeferredHolder<BlockEntityType<?>, BlockEntityType<FuelRecipeMachineBlockEntity>> fuelRecipeMachine(String name,
+            Supplier<? extends Block> block, RecipeMachineBlockEntity.Spec spec, boolean keepsContents) {
+        DeferredHolder<BlockEntityType<?>, BlockEntityType<FuelRecipeMachineBlockEntity>> self =
+                DeferredHolder.create(Registries.BLOCK_ENTITY_TYPE, Universe.id(name));
+        BLOCK_ENTITIES.register(name, () -> new BlockEntityType<>(
+                (pos, state) -> new FuelRecipeMachineBlockEntity(self.get(), pos, state, spec, keepsContents), block.get()));
+        return self;
     }
 
     /** 配方设备共用一个方块实体类，各自的规格不同。 */

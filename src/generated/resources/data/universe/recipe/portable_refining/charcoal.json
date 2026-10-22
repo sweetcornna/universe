@@ -1,0 +1,15 @@
+{
+  "type": "universe:portable_refining",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "#minecraft:logs_that_burn"
+    }
+  ],
+  "results": [
+    {
+      "id": "minecraft:charcoal"
+    }
+  ],
+  "time": 80
+}

@@ -40,6 +40,8 @@ public record SuitHud(float oxygen, float cold, float heat, float toxic, float r
     public static final int FLYING = 1 << 18;
     /** 建造无人机在飞。 */
     public static final int DRONES = 1 << 19;
+    /** 吃了保暖的菜（ADR-0026）。 */
+    public static final int WARM = 1 << 20;
 
     public static final SuitHud FULL = new SuitHud(LifeSupport.OXYGEN_MAX, LifeSupport.HAZARD_MAX, LifeSupport.HAZARD_MAX,
             LifeSupport.HAZARD_MAX, LifeSupport.HAZARD_MAX, LifeSupport.JET_MAX, 0, 0, 0, 0, 1, 1, 0, 0, 0, -1);
@@ -57,6 +59,7 @@ public record SuitHud(float oxygen, float cold, float heat, float toxic, float r
         flags |= env.nearHeat() ? NEAR_HEAT : 0;
         flags |= env.nearCold() ? NEAR_COLD : 0;
         flags |= overheated ? OVERHEATED : 0;
+        flags |= support.warmth() > 0 ? WARM : 0;
         for (Hazard hazard : Hazard.values()) {
             if (env.exposedTo(hazard)) {
                 flags |= 1 << (EXPOSED_SHIFT + hazard.ordinal());

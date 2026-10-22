@@ -1,0 +1,19 @@
+{
+  "type": "universe:nutrient",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:solar_sauce"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:cooked_alien_meat"
+    }
+  ],
+  "results": [
+    {
+      "id": "universe:spicy_roast"
+    }
+  ],
+  "time": 100
+}

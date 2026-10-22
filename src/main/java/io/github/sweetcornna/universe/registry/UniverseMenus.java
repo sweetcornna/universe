@@ -10,6 +10,7 @@ import io.github.sweetcornna.universe.factory.FractionatorBlockEntity;
 import io.github.sweetcornna.universe.factory.MachineMenu.Role;
 import io.github.sweetcornna.universe.factory.MachineMenu.SlotSpec;
 import io.github.sweetcornna.universe.factory.MachineMenu;
+import io.github.sweetcornna.universe.factory.FuelRecipeMachineBlockEntity;
 import io.github.sweetcornna.universe.factory.RecipeMachineBlockEntity;
 import io.github.sweetcornna.universe.factory.belt.TrafficMonitorBlockEntity;
 import io.github.sweetcornna.universe.factory.power.AccumulatorBlockEntity;
@@ -73,6 +74,12 @@ public final class UniverseMenus {
     public static final MachineMenu.Type MINIATURE_PARTICLE_COLLIDER = machine("miniature_particle_collider",
             new MachineMenu.Type(RecipeMachineBlockEntity.DATA_COUNT, RECIPE_WIDTH, RECIPE_HEIGHT, input(118, 36), input(136, 36), input(118, 54),
                     output(190, 36), output(190, 54)));
+    // 烧燃料的配方设备（ADR-0026）：燃料格放在原料格下面
+    public static final MachineMenu.Type NUTRIENT_PROCESSOR = machine("nutrient_processor", new MachineMenu.Type(
+            FuelRecipeMachineBlockEntity.DATA_COUNT, RECIPE_WIDTH, RECIPE_HEIGHT, input(118, 36), input(136, 36), input(118, 54), output(190, 45),
+            new SlotSpec(136, 54, Role.FUEL)));
+    public static final MachineMenu.Type PORTABLE_REFINER = machine("portable_refiner", new MachineMenu.Type(
+            FuelRecipeMachineBlockEntity.DATA_COUNT, RECIPE_WIDTH, RECIPE_HEIGHT, input(127, 36), output(190, 45), new SlotSpec(127, 54, Role.FUEL)));
     // 高级设备（ADR-0022）：布局和低一级的一样
     public static final MachineMenu.Type NEGENTROPY_SMELTER = machine("negentropy_smelter", new MachineMenu.Type(
             RecipeMachineBlockEntity.DATA_COUNT, RECIPE_WIDTH, RECIPE_HEIGHT, input(118, 36), input(136, 36), input(118, 54), output(190, 45)));

@@ -13,6 +13,7 @@ import io.github.sweetcornna.universe.core.research.Tech;
 import io.github.sweetcornna.universe.factory.research.Research;
 import io.github.sweetcornna.universe.registry.UniverseRecipeTypes;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.item.crafting.RecipeMap;
 import net.minecraft.world.item.crafting.RecipeType;
@@ -23,7 +24,7 @@ import net.neoforged.neoforge.event.OnDatapackSyncEvent;
 /**
  * 设备配方的清单。26.x 的配方默认不发给客户端，这里登记要发的三种类型，客户端收到后由客户端代码接上。
  *
- * <p>设备界面上先按解锁的科技、再按配方 ID 排序列出，服务端和客户端排出来的顺序一样，所以选配方时只传序号。
+ * <p>设备界面上先按解锁的科技、再按产物注册的先后、最后按配方 ID 排序列出，服务端和客户端排出来的顺序一样，所以选配方时只传序号。
  */
 public final class MachineRecipes {
     private static Supplier<RecipeMap> clientRecipes = () -> RecipeMap.EMPTY;
@@ -38,7 +39,8 @@ public final class MachineRecipes {
         // 每种设备配方都要发给客户端，界面左边的配方清单读的是客户端的副本；工作台配方给手册画配方用
         gameBus.addListener(OnDatapackSyncEvent.class, event -> event.sendRecipes(
                 UniverseRecipeTypes.SMELTING.get(), UniverseRecipeTypes.ASSEMBLING.get(), UniverseRecipeTypes.REFINING.get(),
-                UniverseRecipeTypes.CHEMICAL.get(), UniverseRecipeTypes.PARTICLE.get(), RecipeType.CRAFTING));
+                UniverseRecipeTypes.CHEMICAL.get(), UniverseRecipeTypes.PARTICLE.get(), UniverseRecipeTypes.NUTRIENT.get(),
+                UniverseRecipeTypes.PORTABLE_REFINING.get(), RecipeType.CRAFTING));
     }
 
     public static void setClientRecipes(Supplier<RecipeMap> recipes) {
@@ -74,7 +76,10 @@ public final class MachineRecipes {
             }
             return this.lists.computeIfAbsent(kind, k -> {
                 List<RecipeHolder<MachineRecipe>> list = new ArrayList<>(map.byType(k.type()));
+                // 同一科技解锁的按产物注册的先后排（营养处理器先列半成品，再列菜），再按配方 ID。物品的数字 ID 由 NeoForge 同步给客户端，
+                // 两边排出来一样
                 list.sort(Comparator.<RecipeHolder<MachineRecipe>>comparingInt(holder -> researchOrder(holder.value().research()))
+                        .thenComparingInt(holder -> BuiltInRegistries.ITEM.getId(holder.value().results().getFirst().item().value()))
                         .thenComparing(holder -> holder.id().identifier().toString()));
                 return List.copyOf(list);
             });

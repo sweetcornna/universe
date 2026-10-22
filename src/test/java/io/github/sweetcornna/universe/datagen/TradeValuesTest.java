@@ -76,6 +76,7 @@ class TradeValuesTest {
             ValueGraph.Recipe.of("minecraft:spyglass", 1, 1, new Input(List.of("minecraft:copper_ingot"), 2),
                     new Input(List.of("minecraft:amethyst_shard"), 1)),
             ValueGraph.Recipe.of("minecraft:blaze_powder", 2, 1, new Input(List.of("minecraft:blaze_rod"), 1)),
+            ValueGraph.Recipe.of("minecraft:sugar", 1, 1, new Input(List.of("minecraft:sugar_cane"), 1)),
             ValueGraph.Recipe.of("minecraft:magma_cream", 1, 1, new Input(List.of("minecraft:blaze_powder"), 1),
                     new Input(List.of("minecraft:slime_ball"), 1)));
     /** 原料表和配方里的标签：测试里各用一样东西代表。 */

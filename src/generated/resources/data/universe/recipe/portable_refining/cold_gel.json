@@ -1,0 +1,15 @@
+{
+  "type": "universe:portable_refining",
+  "ingredients": [
+    {
+      "count": 2,
+      "ingredient": "universe:frost_crystal"
+    }
+  ],
+  "results": [
+    {
+      "id": "universe:cold_gel"
+    }
+  ],
+  "time": 120
+}

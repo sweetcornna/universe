@@ -16,6 +16,7 @@ import net.minecraft.advancements.predicates.StatePropertiesPredicate;
 import net.minecraft.world.level.storage.loot.entries.UniformContainerBase;
 import net.minecraft.world.level.storage.loot.predicates.LootItemRandomChanceCondition;
 import net.minecraft.world.item.DyeColor;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.data.loot.BlockLootSubProvider;
 import net.minecraft.data.loot.LootTableSubProvider;
@@ -155,6 +156,12 @@ final class UniverseBlockLoot extends BlockLootSubProvider {
                         .when(MatchBlock.blockMatches(this.blocks, block.get(),
                                 StatePropertiesPredicate.Builder.properties().hasProperty(ResourcePlantBlock.RIPE, true))))));
         this.dropSelf(UniverseBlocks.HYDROPONIC_TRAY.get());
+        this.dropSelf(UniverseBlocks.NUTRIENT_PROCESSOR.get());
+        // 便携精炼机：拆下来带着里面的东西和选好的配方（ADR-0026）
+        this.add(UniverseBlocks.PORTABLE_REFINER.get(), block -> LootTable.lootTable().withPool(this.applyExplosionCondition(block,
+                LootPool.lootPool().setRolls(ContextIntProviders.exactly(1)).add(LootItem.lootTableItem(block)
+                        .apply(CopyComponentsFunction.copyComponentsFromBlockEntity(LootContextParams.BLOCK_ENTITY)
+                                .include(DataComponents.CONTAINER).include(DataComponents.CUSTOM_DATA))))));
         // 星球矿石：和原版矿石一样，精准采集掉本体，时运加成掉落
         UniverseBlocks.ORES.forEach((kind, block) -> this.add(block.get(), this.createOreDrops(block.get(), kind)));
     }

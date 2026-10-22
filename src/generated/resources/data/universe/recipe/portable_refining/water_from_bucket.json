@@ -1,0 +1,16 @@
+{
+  "type": "universe:portable_refining",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "minecraft:water_bucket"
+    }
+  ],
+  "results": [
+    {
+      "count": 4,
+      "id": "universe:water"
+    }
+  ],
+  "time": 80
+}

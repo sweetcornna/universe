@@ -37,7 +37,8 @@ public final class UniverseAttachments {
     private static final MapCodec<LifeSupport> LIFE_SUPPORT_CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
             Codec.FLOAT.fieldOf("oxygen").forGetter(LifeSupport::oxygen),
             Codec.unboundedMap(HAZARD_CODEC, Codec.FLOAT).fieldOf("protection").forGetter(LifeSupport::protection),
-            Codec.FLOAT.fieldOf("jet").forGetter(LifeSupport::jet)
+            Codec.FLOAT.fieldOf("jet").forGetter(LifeSupport::jet),
+            Codec.INT.optionalFieldOf("warmth", 0).forGetter(LifeSupport::warmth)
     ).apply(i, LifeSupport::new));
     /** 打包的方块坐标存成字符串（NBT 复合标签的键只能是字符串）。 */
     private static final Codec<Long> PACKED_POS = Codec.STRING.comapFlatMap(text -> {

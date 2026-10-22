@@ -1,0 +1,15 @@
+{
+  "type": "universe:portable_refining",
+  "ingredients": [
+    {
+      "count": 2,
+      "ingredient": "universe:solanium"
+    }
+  ],
+  "results": [
+    {
+      "id": "universe:heat_gel"
+    }
+  ],
+  "time": 120
+}

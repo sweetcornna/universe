@@ -1,0 +1,19 @@
+{
+  "type": "universe:nutrient",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:custard"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:pastry"
+    }
+  ],
+  "results": [
+    {
+      "id": "universe:egg_tart"
+    }
+  ],
+  "time": 100
+}

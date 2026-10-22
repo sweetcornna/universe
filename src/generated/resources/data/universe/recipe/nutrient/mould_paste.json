@@ -1,0 +1,15 @@
+{
+  "type": "universe:nutrient",
+  "ingredients": [
+    {
+      "count": 2,
+      "ingredient": "universe:fungal_mould"
+    }
+  ],
+  "results": [
+    {
+      "id": "universe:mould_paste"
+    }
+  ],
+  "time": 50
+}

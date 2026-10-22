@@ -131,6 +131,8 @@ public final class MachineRecipe implements Recipe<MachineRecipe.Input> {
             case REFINING -> UniverseRecipeTypes.REFINING_SERIALIZER.get();
             case CHEMICAL -> UniverseRecipeTypes.CHEMICAL_SERIALIZER.get();
             case PARTICLE -> UniverseRecipeTypes.PARTICLE_SERIALIZER.get();
+            case NUTRIENT -> UniverseRecipeTypes.NUTRIENT_SERIALIZER.get();
+            case PORTABLE_REFINING -> UniverseRecipeTypes.PORTABLE_REFINING_SERIALIZER.get();
         };
     }
 
@@ -156,7 +158,11 @@ public final class MachineRecipe implements Recipe<MachineRecipe.Input> {
         REFINING,
         CHEMICAL,
         /** 微型粒子对撞机（ADR-0016）。 */
-        PARTICLE;
+        PARTICLE,
+        /** 营养处理器（ADR-0026）。 */
+        NUTRIENT,
+        /** 便携精炼机（ADR-0026）。 */
+        PORTABLE_REFINING;
 
         public RecipeType<MachineRecipe> type() {
             return switch (this) {
@@ -165,6 +171,8 @@ public final class MachineRecipe implements Recipe<MachineRecipe.Input> {
                 case REFINING -> UniverseRecipeTypes.REFINING.get();
                 case CHEMICAL -> UniverseRecipeTypes.CHEMICAL.get();
                 case PARTICLE -> UniverseRecipeTypes.PARTICLE.get();
+                case NUTRIENT -> UniverseRecipeTypes.NUTRIENT.get();
+                case PORTABLE_REFINING -> UniverseRecipeTypes.PORTABLE_REFINING.get();
             };
         }
     }

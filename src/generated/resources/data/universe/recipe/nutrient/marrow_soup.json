@@ -1,0 +1,23 @@
+{
+  "type": "universe:nutrient",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:roasted_marrow"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:butter"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:water"
+    }
+  ],
+  "results": [
+    {
+      "id": "universe:marrow_soup"
+    }
+  ],
+  "time": 100
+}

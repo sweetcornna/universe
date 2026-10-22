@@ -1,0 +1,15 @@
+{
+  "type": "universe:portable_refining",
+  "ingredients": [
+    {
+      "count": 2,
+      "ingredient": "universe:gamma_root"
+    }
+  ],
+  "results": [
+    {
+      "id": "universe:radiation_gel"
+    }
+  ],
+  "time": 120
+}

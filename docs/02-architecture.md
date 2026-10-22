@@ -345,6 +345,9 @@ io.github.sweetcornna.universe
 | `PushReaction` 改了名：`PUSH_PULL`、`PUSH`、`POPPED`（原来的 `DESTROY`，活塞推了就掉）、`IMMOVEABLE`、`IGNORE_ENTITY` | 已确认，资源植物 |
 | `BlockState.blocksMotion()` 没有了，挡不挡路用 `isSolid()`（就是原来的 legacySolid）；`Player.drop(物品, 布尔)` 多了个 `Prediction` 参数，给玩家东西用 `getInventory().placeItemBackInInventory(物品, Prediction.SERVER_ONLY)`，背包满了自己掉在脚下 | 已确认，`survival.Shelters`、水培槽 |
 | 开发脚本里先 `cmd` 换手里的东西再右键，服务端可能先处理右键：聊天命令要排队验签（`chatMessageChain`），右键包当刻就处理。中间等几刻 | 已确认，M14 验收 |
+| 燃料是物品上的 `DataComponents.COOKING_FUEL`：原版用 `Item.Properties.cookingFuel(ResourceKey<ContextIntProvider>)`（`ContextIntProviders.COOKING_TIME_WOOD_BLOCKS` 这类数据驱动的键），模组物品可以直接给 `new CookingFuel(new ResolvableInt.Constant(刻数), new ResolvableFloat.Constant(1))`；读的时候 `ResolvableInt.getFromItem(物品, COOKING_FUEL, CookingFuel::burnTime, 战利品上下文, 0)` | 已确认，营养处理器、便携精炼机 |
+| 拆方块时撒出容器里的东西在方块实体的 `preRemoveSideEffects(BlockPos, BlockState)` 里（`BaseContainerBlockEntity` 默认 `Containers.dropContents`），潜影盒覆盖成空的；东西跟着物品走靠战利品表的 `CopyComponentsFunction.copyComponentsFromBlockEntity(BLOCK_ENTITY).include(DataComponents.CONTAINER)`，放下时 `applyImplicitComponents` 读回来。创造模式拆不掉落，要在 `playerWillDestroy` 里自己掉一个带 `collectComponents()` 的物品 | 已确认，便携精炼机 |
+| `ItemStack.getCraftingRemainder()` 返回可空的 `ItemStackTemplate`（牛奶桶 → 桶）；`Item.finishUsingItem(ItemStack, Level, LivingEntity)` 吃完的回调还在；喝的东西用 `Item.Properties.food(食物, Consumables.DEFAULT_DRINK)` | 已确认，营养处理器、菜 |
 拿不准的 API 先查源码再写，核实后把结果补进这张表。源码在：
 
 - Minecraft（含 NeoForge 补丁）：`build/moddev/artifacts/minecraft-patched-26.3.0.95-sources.jar`，IDE 里可以直接跳转。
