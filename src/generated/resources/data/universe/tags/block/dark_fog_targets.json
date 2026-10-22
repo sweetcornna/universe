@@ -60,6 +60,9 @@
     "universe:implosion_cannon",
     "universe:missile_turret",
     "universe:signal_tower",
-    "universe:jammer_tower"
+    "universe:jammer_tower",
+    "universe:plasma_turret",
+    "universe:sr_plasma_turret",
+    "universe:planetary_shield_generator"
   ]
 }

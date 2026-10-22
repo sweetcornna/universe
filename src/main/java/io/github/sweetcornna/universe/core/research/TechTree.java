@@ -238,6 +238,18 @@ public final class TechTree {
                     items("supersonic_missile_set")),
             Tech.lab("crystal_shells", List.of("high_explosive_shells", "crystal_explosives", "information_matrix"),
                     List.of(BLUE, RED, YELLOW, PURPLE, DARK_FOG), 160, items("crystal_shell_set")),
+            // ---- M16 第二块（ADR-0028 §八）
+            // 等离子炮塔要超音速导弹、量子打印（钛化玻璃）、氘分馏；近程的跟在后面；反物质胶囊要反物质
+            Tech.lab("plasma_turret", List.of("supersonic_missiles", "quantum_printing", "deuterium_fractionation"),
+                    List.of(BLUE, RED, YELLOW, PURPLE, DARK_FOG), 180, items("plasma_turret", "plasma_capsule")),
+            Tech.lab("sr_plasma_turret", List.of("plasma_turret"), List.of(BLUE, RED, YELLOW, PURPLE, DARK_FOG), 160, items("sr_plasma_turret")),
+            Tech.lab("antimatter_capsule", List.of("plasma_turret", "dirac_inversion"), List.of(BLUE, RED, YELLOW, PURPLE, GREEN, DARK_FOG), 240,
+                    items("antimatter_capsule")),
+            // M16 黑雾：等离子炮塔（T）的科技（每条末尾带逗号）加在这行上面
+            // 行星护盾要干扰塔和信息矩阵：枪骑开始从太空来轰炸的时候
+            Tech.lab("planetary_shield", List.of("jammer_tower", "information_matrix"), List.of(BLUE, RED, YELLOW, PURPLE), 200,
+                    items("planetary_shield_generator")),
+            // M16 黑雾：行星护盾（S）的科技（每条末尾带逗号）加在这行上面
             Tech.lab("gravity_missiles", List.of("supersonic_missiles", "gravity_matrix"), List.of(BLUE, RED, YELLOW, PURPLE, GREEN, DARK_FOG), 200,
                     items("gravity_missile_set"))),
             // 升级科技：前几级用低档矩阵，之后用白矩阵无限研究

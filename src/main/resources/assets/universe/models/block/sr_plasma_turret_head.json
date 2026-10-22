@@ -1,0 +1,219 @@
+{
+  "parent": "block/block",
+  "textures": {
+    "particle": "universe:block/turret_base",
+    "base": "universe:block/turret_base",
+    "base_top": "universe:block/turret_base_top",
+    "ring": "universe:block/turret_ring",
+    "housing": "universe:block/sr_plasma_turret_housing",
+    "barrel": "universe:block/sr_plasma_turret_barrel",
+    "accent": "universe:block/sr_plasma_turret_accent",
+    "glow": "universe:block/sr_plasma_turret_glow"
+  },
+  "elements": [
+    {
+      "from": [
+        3,
+        7,
+        3
+      ],
+      "to": [
+        13,
+        9,
+        13
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            3,
+            7,
+            13,
+            9
+          ],
+          "texture": "#housing"
+        },
+        "south": {
+          "uv": [
+            3,
+            7,
+            13,
+            9
+          ],
+          "texture": "#housing"
+        },
+        "west": {
+          "uv": [
+            3,
+            7,
+            13,
+            9
+          ],
+          "texture": "#housing"
+        },
+        "east": {
+          "uv": [
+            3,
+            7,
+            13,
+            9
+          ],
+          "texture": "#housing"
+        },
+        "up": {
+          "uv": [
+            3,
+            3,
+            13,
+            13
+          ],
+          "texture": "#housing"
+        },
+        "down": {
+          "uv": [
+            3,
+            3,
+            13,
+            13
+          ],
+          "texture": "#housing"
+        }
+      }
+    },
+    {
+      "from": [
+        3.5,
+        9,
+        4.5
+      ],
+      "to": [
+        5,
+        12.5,
+        11.5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            11,
+            3.5,
+            12.5,
+            7
+          ],
+          "texture": "#housing"
+        },
+        "south": {
+          "uv": [
+            3.5,
+            3.5,
+            5,
+            7
+          ],
+          "texture": "#housing"
+        },
+        "west": {
+          "uv": [
+            4.5,
+            3.5,
+            11.5,
+            7
+          ],
+          "texture": "#housing"
+        },
+        "east": {
+          "uv": [
+            4.5,
+            3.5,
+            11.5,
+            7
+          ],
+          "texture": "#housing"
+        },
+        "up": {
+          "uv": [
+            3.5,
+            4.5,
+            5,
+            11.5
+          ],
+          "texture": "#housing"
+        },
+        "down": {
+          "uv": [
+            3.5,
+            4.5,
+            5,
+            11.5
+          ],
+          "texture": "#housing"
+        }
+      }
+    },
+    {
+      "from": [
+        11,
+        9,
+        4.5
+      ],
+      "to": [
+        12.5,
+        12.5,
+        11.5
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            3.5,
+            3.5,
+            5,
+            7
+          ],
+          "texture": "#housing"
+        },
+        "south": {
+          "uv": [
+            11,
+            3.5,
+            12.5,
+            7
+          ],
+          "texture": "#housing"
+        },
+        "west": {
+          "uv": [
+            4.5,
+            3.5,
+            11.5,
+            7
+          ],
+          "texture": "#housing"
+        },
+        "east": {
+          "uv": [
+            4.5,
+            3.5,
+            11.5,
+            7
+          ],
+          "texture": "#housing"
+        },
+        "up": {
+          "uv": [
+            11,
+            4.5,
+            12.5,
+            11.5
+          ],
+          "texture": "#housing"
+        },
+        "down": {
+          "uv": [
+            11,
+            4.5,
+            12.5,
+            11.5
+          ],
+          "texture": "#housing"
+        }
+      }
+    }
+  ]
+}

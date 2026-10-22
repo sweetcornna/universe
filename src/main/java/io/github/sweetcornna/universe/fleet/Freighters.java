@@ -149,7 +149,7 @@ public final class Freighters {
             for (Fleet.Voyage voyage : entry.getValue().fleet().voyages()) {
                 if (voyage.done(now) && NOTIFIED.add(entry.getKey() + "/" + voyage.start() + "/" + voyage.slot())) {
                     player.sendSystemMessage(Component.translatable("message.universe.fleet.returned",
-                            Component.translatable("gui.universe.fleet.kind." + voyage.offer().kind().key())));
+                            Component.translatable("gui.universe.fleet.kind." + (voyage.sortie() ? "hive" : voyage.offer().kind().key()))));
                     player.level().playSound(null, player.blockPosition(), SoundEvents.NOTE_BLOCK_CHIME.value(), SoundSource.PLAYERS, 0.7F, 1.2F);
                 }
             }

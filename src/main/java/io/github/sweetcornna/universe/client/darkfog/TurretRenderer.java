@@ -121,6 +121,18 @@ public class TurretRenderer implements BlockEntityRenderer<TurretBlockEntity, Tu
                 streak(buffer, matrix, length - 0.05F, length + 0.45F, 0.12F, 0.02F, alpha, false, 255, 220, 140);
             });
         }
+        if ((state.kind == TurretKind.PLASMA || state.kind == TurretKind.SR_PLASMA) && state.age < 3) {
+            // 等离子：炮口一团短的辉光，等离子炮塔青蓝、近程的发紫
+            float length = (float) TurretBlockEntity.MUZZLE + 0.1F;
+            int alpha = (int) (220 * (1 - state.age / 3));
+            int r = state.kind == TurretKind.PLASMA ? 120 : 190;
+            int g = state.kind == TurretKind.PLASMA ? 220 : 120;
+            collector.submitCustomGeometry(poseStack, RenderTypes.lightning(), (pose, buffer) -> {
+                Matrix4fc matrix = pose.pose();
+                streak(buffer, matrix, length - 0.1F, length + 0.3F, 0.16F, 0.06F, alpha, true, r, g, 255);
+                streak(buffer, matrix, length - 0.1F, length + 0.3F, 0.16F, 0.06F, alpha, false, r, g, 255);
+            });
+        }
         poseStack.popPose();
         if (state.beam != null) {
             this.submitBeam(state, poseStack, collector);
@@ -157,6 +169,8 @@ public class TurretRenderer implements BlockEntityRenderer<TurretBlockEntity, Tu
             case LASER -> 1;
             case IMPLOSION -> 10;
             case MISSILE -> 6;
+            case PLASMA -> 8;
+            case SR_PLASMA -> 5;
         };
     }
 
@@ -166,6 +180,8 @@ public class TurretRenderer implements BlockEntityRenderer<TurretBlockEntity, Tu
             case LASER -> 0;
             case IMPLOSION -> 3F / 16;
             case MISSILE -> 1F / 16;
+            case PLASMA -> 2F / 16;
+            case SR_PLASMA -> 1F / 16;
         };
     }
 

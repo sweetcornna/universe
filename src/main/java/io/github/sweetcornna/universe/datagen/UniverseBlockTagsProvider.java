@@ -256,6 +256,8 @@ final class UniverseBlockTagsProvider extends BlockTagsProvider {
         this.darkFogFacilities();
         this.darkFogTurrets();
         this.darkFogSupport();
+        this.darkFogPlasma();
+        this.darkFogShield();
     }
 
     /** 黑雾基地的方块（子代理 P）。 */
@@ -340,6 +342,25 @@ final class UniverseBlockTagsProvider extends BlockTagsProvider {
             this.tag(ShipParts.EXCLUDED).add(block.key());
             this.tag(io.github.sweetcornna.universe.darkfog.Facilities.TAG).add(block.key());
         }
+    }
+
+    /** 等离子炮塔（ADR-0028 §八，子代理 T）。 */
+    private void darkFogPlasma() {
+        // 和别的炮塔一样：镐子挖，不跟着飞船走，黑雾会打
+        for (var block : List.of(UniverseBlocks.PLASMA_TURRET, UniverseBlocks.SR_PLASMA_TURRET)) {
+            this.tag(BlockTags.MINEABLE_WITH_PICKAXE).add(block.key());
+            this.tag(ShipParts.EXCLUDED).add(block.key());
+            this.tag(io.github.sweetcornna.universe.darkfog.Facilities.TAG).add(block.key());
+        }
+    }
+
+    /** 行星护盾发生器（子代理 S）。 */
+    private void darkFogShield() {
+        // 镐子挖，不跟着飞船走，地面上的黑雾打得坏
+        var block = UniverseBlocks.PLANETARY_SHIELD_GENERATOR;
+        this.tag(BlockTags.MINEABLE_WITH_PICKAXE).add(block.key());
+        this.tag(ShipParts.EXCLUDED).add(block.key());
+        this.tag(io.github.sweetcornna.universe.darkfog.Facilities.TAG).add(block.key());
     }
 
     /** 信号塔、干扰塔（子代理 R2）。 */

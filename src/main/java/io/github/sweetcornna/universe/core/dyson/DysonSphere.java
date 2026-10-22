@@ -52,6 +52,8 @@ public final class DysonSphere {
     private double lastRequested;
     private double drawn;
     private double lastDrawn;
+    /** 黑雾巢穴的光子接收器偷走的功率（焦/刻，ADR-0028 §八）；不存档，巢穴每秒设一次。 */
+    private double siphon;
     /** 结构点、单元点的合计，按 revision 缓存（接收站每刻都要问总功率）。 */
     private long cachedRevision = -1;
     private long cachedSp;
@@ -439,12 +441,27 @@ public final class DysonSphere {
         return total * this.lightFactor;
     }
 
-    /** 这一刻每个接收站能拿到它要的多少：上一刻的总需求不超过总功率时是 1。 */
+    /** 这一刻每个接收站能拿到它要的多少：上一刻的总需求不超过能分的功率时是 1。 */
     public double supplyFraction() {
         if (this.lastRequested <= 0) {
             return 1;
         }
-        return Math.min(1, this.generation() / this.lastRequested);
+        return Math.min(1, this.available() / this.lastRequested);
+    }
+
+    /** 黑雾巢穴偷走多少（焦/刻）；没有巢穴时是 0。 */
+    public void setSiphon(double joulesPerTick) {
+        this.siphon = Math.max(0, joulesPerTick);
+    }
+
+    /** 黑雾巢穴现在偷走的功率（焦/刻），不超过总功率。 */
+    public double siphon() {
+        return Math.min(this.siphon, this.generation());
+    }
+
+    /** 接收站能分的功率（焦/刻）：总功率减去黑雾偷走的。 */
+    public double available() {
+        return Math.max(0, this.generation() - this.siphon);
     }
 
     /** 接收站这一刻要多少（焦），下一刻据此分配。 */

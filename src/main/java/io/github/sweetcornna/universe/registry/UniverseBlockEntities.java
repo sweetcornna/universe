@@ -185,7 +185,6 @@ public final class UniverseBlockEntities {
             () -> new BlockEntityType<>(FacilityGhostBlockEntity::new, UniverseBlocks.FACILITY_GHOST.get()));
     public static final Supplier<BlockEntityType<BattlefieldBaseBlockEntity>> BATTLEFIELD_ANALYSIS_BASE = BLOCK_ENTITIES.register(
             "battlefield_analysis_base", () -> new BlockEntityType<>(BattlefieldBaseBlockEntity::new, UniverseBlocks.BATTLEFIELD_ANALYSIS_BASE.get()));
-    // M16 黑雾：设施（Q）的方块实体加在这行上面
     // M16 炮塔（ADR-0028 §五）：四种共用一个方块实体类，按方块分种类
     public static final Supplier<BlockEntityType<TurretBlockEntity>> GAUSS_TURRET = BLOCK_ENTITIES.register("gauss_turret",
             () -> new BlockEntityType<>(TurretBlockEntity::new, UniverseBlocks.GAUSS_TURRET.get()));
@@ -195,12 +194,19 @@ public final class UniverseBlockEntities {
             () -> new BlockEntityType<>(TurretBlockEntity::new, UniverseBlocks.IMPLOSION_CANNON.get()));
     public static final Supplier<BlockEntityType<TurretBlockEntity>> MISSILE_TURRET = BLOCK_ENTITIES.register("missile_turret",
             () -> new BlockEntityType<>(TurretBlockEntity::new, UniverseBlocks.MISSILE_TURRET.get()));
-    // M16 黑雾：炮塔（R1）的方块实体加在这行上面
     public static final Supplier<BlockEntityType<SignalTowerBlockEntity>> SIGNAL_TOWER = BLOCK_ENTITIES.register("signal_tower",
             () -> new BlockEntityType<>(SignalTowerBlockEntity::new, UniverseBlocks.SIGNAL_TOWER.get()));
     public static final Supplier<BlockEntityType<JammerTowerBlockEntity>> JAMMER_TOWER = BLOCK_ENTITIES.register("jammer_tower",
             () -> new BlockEntityType<>(JammerTowerBlockEntity::new, UniverseBlocks.JAMMER_TOWER.get()));
-    // M16 黑雾：信号塔、干扰塔（R2）的方块实体加在这行上面
+    public static final Supplier<BlockEntityType<TurretBlockEntity>> PLASMA_TURRET = BLOCK_ENTITIES.register("plasma_turret",
+            () -> new BlockEntityType<>(TurretBlockEntity::new, UniverseBlocks.PLASMA_TURRET.get()));
+    public static final Supplier<BlockEntityType<TurretBlockEntity>> SR_PLASMA_TURRET = BLOCK_ENTITIES.register("sr_plasma_turret",
+            () -> new BlockEntityType<>(TurretBlockEntity::new, UniverseBlocks.SR_PLASMA_TURRET.get()));
+    // M16 黑雾：等离子炮塔（T）的方块实体加在这行上面
+    public static final Supplier<BlockEntityType<io.github.sweetcornna.universe.darkfog.shield.PlanetaryShieldBlockEntity>> PLANETARY_SHIELD_GENERATOR =
+            BLOCK_ENTITIES.register("planetary_shield_generator", () -> new BlockEntityType<>(
+                    io.github.sweetcornna.universe.darkfog.shield.PlanetaryShieldBlockEntity::new, UniverseBlocks.PLANETARY_SHIELD_GENERATOR.get()));
+    // M16 黑雾：行星护盾（S）的方块实体加在这行上面
 
     private UniverseBlockEntities() {
     }

@@ -167,6 +167,12 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         this.darkFogTurrets();
         this.darkFogSupport();
         this.worldOptions();
+        this.darkFogHive();
+        this.darkFogHiveBuildings();
+        this.darkFogSpaceUnits();
+        this.darkFogFlights();
+        this.darkFogPlasma();
+        this.darkFogShield();
     }
 
     /** 黑雾的掉落、弹药、投掷物（ADR-0028 §五、§六）：名字在这里，说明归各自的子代理。 */
@@ -462,6 +468,236 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("guide.universe.dark_fog.world_options",
                 "建世界时在\"更多\"→\"游戏规则\"里改，在\"寰宇\"一类下面；开好的世界用 /gamerule 改。\n\n黑雾：开关、攻击性、初始等级、初始占领、成长速度\n威胁系数：用电、战斗\n守卫机强度：0 时没有守卫机\n资源倍率：0 是无限\n恒星系数量：32–256\n\n恒星系数量建世界后就定了，别的随时能改。",
                 "Create World > More > Game Rules, under Universe. In an existing world use /gamerule.\n\nDark Fog: on/off, aggressiveness, initial level, occupation, growth\nThreat factors: power use, combat\nSentinel strength: 0 means no sentinels\nResource multiplier: 0 means infinite\nStar systems: 32 to 256\n\nThe star system count is fixed once the world exists. The rest can change any time.");
+    }
+
+    /** 太空巢穴（ADR-0028 §八，子代理 H）。 */
+    private void darkFogHive() {
+        both("message.universe.dark_fog.hive_collapsed", "巢穴核心打掉了：中继站还在，它会重建", "Hive core destroyed. Its relays remain, so it will rebuild");
+        both("message.universe.dark_fog.hive_destroyed", "黑雾巢穴消灭了", "Dark Fog hive destroyed");
+        both("message.universe.dark_fog.hive_rebuilt", "黑雾巢穴重建了", "The Dark Fog hive has rebuilt");
+        both("message.universe.dark_fog.hive_founded", "黑雾种子落下，这里有了新巢穴", "A Dark Fog seed has landed. A new hive is growing here");
+        both("commands.universe.darkfog.hive.no_system", "这里不属于任何恒星系", "Not in a star system");
+        both("commands.universe.darkfog.hive.not_space", "要在太空里用", "Use this in space");
+        both("commands.universe.darkfog.hive.unknown", "%s 号恒星系没有巢穴", "No hive in system %s");
+        both("commands.universe.darkfog.hive.none", "没有黑雾巢穴", "No Dark Fog hives");
+        both("commands.universe.darkfog.hive.line", "%s 号恒星系 %s %s 级 威胁 %s%% 物质 %s 建筑 %s 枪骑 %s 座头鲸 %s",
+                "System %s: %s, level %s, threat %s%%, matter %s, %s buildings, lancers %s, humpbacks %s");
+        both("commands.universe.darkfog.hive.info",
+                "%s 号恒星系 %s %s 级 威胁 %s%% 物质 %s 建筑 %s（放出来 %s） 枪骑 %s 座头鲸 %s 位置 %s 光子接收器 %s 偷电 %s W 中继站 %s 计时：中继 %s 秒 种子 %s 秒 重建 %s 秒",
+                "System %s: %s, level %s, threat %s%%, matter %s, %s buildings (%s placed), lancers %s, humpbacks %s, at %s, receivers %s, "
+                        + "siphoning %s W, relays %s; timers: relay %ss, seed %ss, rebuild %ss");
+        both("commands.universe.darkfog.hive.status.active", "活动中", "active");
+        both("commands.universe.darkfog.hive.status.rebuilding", "重建中", "rebuilding");
+        both("commands.universe.darkfog.hive.status.gone", "已消灭", "destroyed");
+        both("commands.universe.darkfog.hive.status.raiding", "%s（正在进攻）", "%s (raiding)");
+        both("commands.universe.darkfog.hive.tp", "传到 %s 号恒星系的巢穴", "Teleported to the hive in system %s");
+        both("commands.universe.darkfog.hive.created", "在 %s 号恒星系建了 %s 级的巢穴（%s）", "Created a hive in system %s, level %s, at %s");
+        both("commands.universe.darkfog.hive.threat", "%s 号恒星系巢穴的威胁设为 %s%%", "Hive in system %s: threat set to %s%%");
+        both("commands.universe.darkfog.hive.level", "%s 号恒星系的巢穴设为 %s 级", "Hive in system %s set to level %s");
+        both("commands.universe.darkfog.hive.matter", "%s 号恒星系巢穴的物质设为 %s", "Hive in system %s: matter set to %s");
+        both("commands.universe.darkfog.hive.units", "%s 号恒星系巢穴的单位设为 %s 个", "Hive in system %s: units set to %s");
+        both("commands.universe.darkfog.hive.grow", "%s 号恒星系的巢穴多长了 %s 分钟", "Hive in system %s grew for %s more minutes");
+        both("commands.universe.darkfog.hive.raid", "%s 号恒星系巢穴的威胁满了", "Hive in system %s: threat full");
+        both("commands.universe.darkfog.hive.relay", "%s 号恒星系的巢穴马上派中继站", "Hive in system %s will send a relay now");
+        both("commands.universe.darkfog.hive.seed", "%s 号恒星系的巢穴马上放种子", "Hive in system %s will release a seed now");
+        both("commands.universe.darkfog.hive.killed", "打掉了 %s 号恒星系巢穴的核心", "Destroyed the hive core in system %s");
+        both("commands.universe.darkfog.hive.removed", "收拾掉了 %s 号恒星系的巢穴", "Removed the hive in system %s");
+        both("commands.universe.darkfog.hive.cleared", "收拾掉了 %s 座巢穴", "Removed %s hives");
+        both("guide.universe.dark_fog.hive.title", "太空巢穴", "Space Hives");
+        both("guide.universe.dark_fog.hive",
+                "有黑雾基地的恒星系，太空里还有一座巢穴，离恒星两万多到六万格。核心居中，周围是光子接收器、等离子塔、相位激光塔和两种港口。\n\n"
+                        + "光子接收器吸恒星的光攒物质，还偷戴森球的电，每座 3%。\n\n"
+                        + "恒星系里用电让巢穴的威胁慢慢涨，打它的中继站涨得最猛。满了，一队枪骑去轰炸你所在的星球（母星除外）。"
+                        + "它还派中继站去星球上建基地，等级高了放种子去别的恒星系。\n\n"
+                        + "打掉核心，巢穴瓦解；恒星系里还有中继站，10 分钟后重建。连中继站一起清掉才算消灭。",
+                "Systems with Dark Fog bases also have a hive in space, far out from the star: a core ringed by receivers, "
+                        + "plasma towers, phase lasers and ports. Receivers turn starlight into matter, and each steals 3% of a Dyson sphere's power.\n\n"
+                        + "Power use slowly raises hive threat; hitting its relays raises it fast. At full threat, lancers bomb "
+                        + "the planet you are on (never home). The hive also sends relays to found bases, and later seeds.\n\n"
+                        + "Kill the core and the hive collapses, but it rebuilds in 10 minutes while a relay remains in the system.");
+    }
+
+    /** 巢穴的建筑和它们打出来的东西（子代理 B）。 */
+    private void darkFogHiveBuildings() {
+        both("entity.universe.hive_building", "巢穴建筑", "Hive Structure");
+        both("entity.universe.hive_building.core", "巢穴核心", "Hive Core");
+        both("entity.universe.hive_building.photon_receiver", "光子接收器", "Photon Receiver");
+        both("entity.universe.hive_building.plasma_tower", "等离子塔", "Plasma Tower");
+        both("entity.universe.hive_building.phase_laser", "相位激光塔", "Phase Laser Tower");
+        both("entity.universe.hive_building.lancer_port", "枪骑港", "Lancer Dock");
+        both("entity.universe.hive_building.humpback_port", "座头鲸港", "Humpback Dock");
+        both("entity.universe.hive_building.tag", "%s · %s 级", "%s · Lv %s");
+        both("entity.universe.hive_plasma_shell", "巢穴等离子炮弹", "Hive Plasma Shell");
+    }
+
+    /** 枪骑、座头鲸、枪骑轰炸（子代理 U）。 */
+    private void darkFogSpaceUnits() {
+        both("entity.universe.dark_fog_lancer", "枪骑", "Lancer");
+        both("entity.universe.dark_fog_humpback", "座头鲸", "Humpback");
+        both("entity.universe.lancer_bomb", "枪骑炸弹", "Lancer Bomb");
+        // 轰炸的预警和结果
+        both("message.universe.dark_fog.lancers.warning", "枪骑从%1$s边来轰炸：%2$s 架，%3$s 秒后到",
+                "Lancer raid from the %1$s: %2$s lancers, %3$ss out");
+        both("message.universe.dark_fog.lancers.destroyed", "枪骑全被打下来了", "All lancers shot down");
+        both("message.universe.dark_fog.lancers.repelled", "枪骑撤了，打下来 %s 架", "The lancers pulled back. %s shot down");
+        both("message.universe.dark_fog.lancers.left", "枪骑撤了", "The lancers have left");
+        both("hud.universe.dark_fog.lancers.incoming", "枪骑来袭 %s", "Lancers incoming %s");
+        both("hud.universe.dark_fog.lancers.arrived", "枪骑在轰炸", "Lancers overhead");
+        both("hud.universe.dark_fog.lancers.count", "枪骑 ×%s", "Lancers ×%s");
+        both("hud.universe.dark_fog.lancers.marker_eta", "枪骑 %s · %s 格", "Lancers %s · %s m");
+        // 调试命令
+        both("commands.universe.darkfog.lancers.spawned", "放出 %s 个%s，%s 级", "Spawned %s %s, level %s");
+        both("commands.universe.darkfog.lancers.raid", "%s 架枪骑 %s 秒后到", "%s lancers arrive in %ss");
+        both("commands.universe.darkfog.lancers.strike", "%s 架枪骑马上到", "%s lancers inbound now");
+        both("commands.universe.darkfog.lancers.busy", "这颗星球上已经有一队枪骑了", "Lancers are already raiding this planet");
+        both("commands.universe.darkfog.lancers.disabled", "黑雾关着", "The Dark Fog is turned off");
+        both("commands.universe.darkfog.lancers.none", "这里没有枪骑轰炸", "No lancer raid here");
+        both("commands.universe.darkfog.lancers.line", "#%s %s，%s/%s 架，目标 %s", "#%s %s, %s/%s lancers, target %s");
+        both("commands.universe.darkfog.lancers.phase.warning", "预警", "warning");
+        both("commands.universe.darkfog.lancers.phase.dive", "俯冲", "diving");
+        both("commands.universe.darkfog.lancers.phase.bomb", "轰炸", "bombing");
+        both("commands.universe.darkfog.lancers.phase.leave", "撤走", "leaving");
+        both("commands.universe.darkfog.lancers.phase.over", "结束", "over");
+        both("commands.universe.darkfog.lancers.cleared", "收走 %s 个太空单位，撤走 %s 队轰炸", "Removed %s space units, called off %s raids");
+        both("guide.universe.dark_fog.lancers.title", "枪骑轰炸", "Lancer Raids");
+        both("guide.universe.dark_fog.lancers",
+                "巢穴的威胁满了，会派一队枪骑来轰炸你所在的星球。提前 20 秒预警，HUD 上标出它们出现的地方。\n\n"
+                        + "枪骑从高空降到离地 28 格左右（下面有护盾就停在护盾上面），飞到设施正上方扔炸弹，一架 8 颗。炸弹落地炸开，3 格多以内的设施掉耐久，人也会被溅到。\n\n"
+                        + "行星护盾挡得住炸弹，护盾吃不下的才往下掉。导弹炮塔和等离子炮塔打得到高空的枪骑，别的炮塔够不着。\n\n"
+                        + "炸弹扔完、或者只剩一两架，它们就往上爬，飞走。\n\n"
+                        + "巢穴旁边还有座头鲸守着：慢，耐打，背上的炮很重。",
+                "A hive at full threat sends lancers to bomb the planet you are on. You get 20 seconds' warning, "
+                        + "and the HUD marks where they will appear.\n\n"
+                        + "They drop to about 28 blocks up, or stop just above a shield dome, and bomb the facilities below, 8 bombs each. "
+                        + "Blasts damage facilities within about 3 blocks.\n\n"
+                        + "Shields soak up the bombs. Only missile and plasma turrets reach lancers at altitude. Out of bombs, or down to "
+                        + "one or two, they climb away. Humpbacks stay home to guard the hive.");
+    }
+
+    /** 中继站和种子、星图上的标记（子代理 R）。 */
+    private void darkFogFlights() {
+        both("entity.universe.dark_fog_flying_relay", "中继站", "Relay Station");
+        both("entity.universe.dark_fog_seed", "黑雾种子", "Dark Fog Seed");
+        both("message.universe.dark_fog.seed_launched", "巢穴放出一颗种子，飞往%1$s", "The hive released a seed toward %2$s");
+        both("message.universe.dark_fog.seed_arriving", "一颗黑雾种子从%1$s飞进了这个恒星系", "A Dark Fog seed from %2$s has entered this system");
+        both("message.universe.dark_fog.relay_descending", "黑雾中继站正往 %s, %s 降落", "Dark Fog relay descending toward %s, %s");
+        both("message.universe.dark_fog.relay_landed", "黑雾中继站在 %s, %s 落地，建起了基地", "A Dark Fog relay landed at %s, %s and set up a base");
+        both("message.universe.dark_fog.relay_restored", "黑雾中继站补回了 %s, %s 的基地", "A Dark Fog relay rejoined the base at %s, %s");
+        both("message.universe.dark_fog.relay_shot_down", "打下了黑雾中继站", "Dark Fog relay shot down");
+        both("message.universe.dark_fog.seed_shot_down", "打下了黑雾种子", "Dark Fog seed shot down");
+        both("gui.universe.star_map.dark_fog.hive", "黑雾巢穴 · %s 级 · 威胁 %s%%", "Dark Fog hive · Lv %s · threat %s%%");
+        both("gui.universe.star_map.dark_fog.rebuilding", "黑雾巢穴 · 核心已毁，正在重建", "Dark Fog hive · core down, rebuilding");
+        both("gui.universe.star_map.dark_fog.relays", "%s 个中继站在路上", "%s relays in flight");
+        both("gui.universe.star_map.dark_fog.seed_incoming", "黑雾种子飞来，约 %s 分钟后到", "Dark Fog seed inbound, about %s min out");
+        both("gui.universe.star_map.dark_fog.seed_outgoing", "放出的种子飞往 %s", "Seed heading for %s");
+        both("commands.universe.darkfog.flights.empty", "没有在飞的中继站和种子", "No relays or seeds in flight");
+        both("commands.universe.darkfog.flights.relay_line", "#%s 中继站 %s 号恒星系 → %s %s 还剩 %s 秒 %s 级 血量 %s%%",
+                "#%s relay, system %s → %s, %s, %ss left, level %s, health %s%%");
+        both("commands.universe.darkfog.flights.seed_line", "#%s 种子 %s 号 → %s 号恒星系 %s 还剩 %s 秒 %s 级 血量 %s%%",
+                "#%s seed, system %s → %s, %s, %ss left, level %s, health %s%%");
+        both("commands.universe.darkfog.flights.phase.depart", "起飞", "departing");
+        both("commands.universe.darkfog.flights.phase.cruise", "路上", "cruising");
+        both("commands.universe.darkfog.flights.phase.arrive", "到达", "arriving");
+        both("commands.universe.darkfog.flights.phase.done", "到了", "arrived");
+        both("commands.universe.darkfog.flights.no_system", "这里不属于任何恒星系", "Not in a star system");
+        both("commands.universe.darkfog.flights.no_planet", "没有能落的星球：要在外星球上用（母星不行），在太空里用要有玩家用电的星球",
+                "Nowhere to land. Use it on a planet other than home, or in space when a planet in the system uses power");
+        both("commands.universe.darkfog.flights.no_target", "%s 光年内没有能去的恒星系", "No reachable system within %s ly");
+        both("commands.universe.darkfog.flights.relay_launched", "中继站 #%s 起飞，去 %s，%s 秒后开始降落",
+                "Relay #%s launched toward %s, descends in %ss");
+        both("commands.universe.darkfog.flights.seed_launched", "种子 #%s 放出，%s 号 → %s 号恒星系，路上 %s 分钟",
+                "Seed #%s released, system %s → %s, %s min on the way");
+        both("commands.universe.darkfog.flights.unknown", "没有 #%s", "No flight #%s");
+        both("commands.universe.darkfog.flights.skipped", "#%s 跳到%s", "#%s skipped to %s");
+        both("commands.universe.darkfog.flights.arrive_here", "中继站 #%s 往 %s, %s 降落", "Relay #%s descending toward %s, %s");
+        both("commands.universe.darkfog.flights.not_here", "#%s 不是这个恒星系的中继站，或者这里不能落", "#%s is not a relay for this system, or it cannot land here");
+        both("commands.universe.darkfog.flights.removed", "收回了 #%s", "Removed #%s");
+        both("commands.universe.darkfog.flights.cleared", "收回了 %s 次飞行", "Removed %s flights");
+        both("guide.universe.dark_fog.relays.title", "中继站", "Relays");
+        both("guide.universe.dark_fog.relays",
+                "巢穴隔一阵就派一个中继站出去。头 45 秒在太空里飞，打得着；接着在路上走三五分钟；最后从天上落下来，"
+                        + "这半分钟导弹炮塔和等离子炮塔够得着。\n\n"
+                        + "中继站去恒星系里用电最多的星球（母星除外），落在你的设施几百格外，落地就是一处新基地。"
+                        + "哪处基地丢了中继站，它先去补。\n\n"
+                        + "护盾盖住的地方不落：它在轨道上等两分钟再找，找五次不成就散了。",
+                "Every so often the hive sends out a relay. It flies through space for 45 seconds, where you can shoot it, "
+                        + "spends three to five minutes in transit, then drops out of the sky. Missile and plasma turrets can hit it "
+                        + "during that 30-second descent.\n\n"
+                        + "Relays head for the planet in the system that uses the most power (never home) and land a few hundred blocks "
+                        + "from your facilities, founding a new base. A base that lost its relay is resupplied first.\n\n"
+                        + "Relays won't land under a shield. They wait in orbit for two minutes and try again, and give up after five tries.");
+        both("guide.universe.dark_fog.seeds.title", "种子", "Seeds");
+        both("guide.universe.dark_fog.seeds",
+                "巢穴到 8 级放种子。种子飞往 15 光年内最近的没有巢穴的恒星系，要十几分钟到一个小时，到了就长出一座新巢。\n\n"
+                        + "星图上画着它的航线和走到了哪。出发和进恒星系的那一分钟打得着。\n\n"
+                        + "中继站和种子打下来都掉黑雾的材料。在太空里开飞船打的，直接进货舱。",
+                "At level 8 the hive releases seeds. A seed flies to the nearest system within 15 light years that has no hive, "
+                        + "taking ten minutes to an hour, and grows a new hive there.\n\n"
+                        + "The star map shows its route and where it is now. You can shoot it during the first and last minute of the trip.\n\n"
+                        + "Relays and seeds drop Dark Fog materials. Shoot one down from a ship in space and the loot goes straight into the hold.");
+    }
+
+    /** 等离子炮塔、近程等离子炮塔、两种胶囊、护卫舰清剿（子代理 T）。 */
+    private void darkFogPlasma() {
+        block(UniverseBlocks.PLASMA_TURRET.get(), "等离子炮塔", "Plasma Turret");
+        block(UniverseBlocks.SR_PLASMA_TURRET.get(), "近程等离子炮塔", "SR Plasma Turret");
+        item(UniverseItems.PLASMA_CAPSULE.get(), "等离子胶囊", "Plasma Capsule");
+        item(UniverseItems.ANTIMATTER_CAPSULE.get(), "反物质胶囊", "Antimatter Capsule");
+        both("entity.universe.turret_plasma", "等离子团", "Plasma Bolt");
+        both("tooltip.universe.plasma_turret.summary", "接电网，装胶囊\n射程 56 格，高空 96 格，每秒 1 发\n等离子团命中炸一小片",
+                "Needs power and capsules\nRange 56, 96 against high altitude, 1 shot/s\nPlasma bursts on impact");
+        both("tooltip.universe.sr_plasma_turret.summary", "接电网，不用弹药\n射程 16 格，每秒 0.6 发，一发很疼\n打不到高空，待机也很耗电",
+                "Needs power, no ammo\nRange 16, 0.6 shots/s, heavy hits\nCan't reach high altitude, high idle draw");
+        both("gui.universe.turret.anti_air", "也打高空，%s 格", "High altitude: range %s");
+        tech("plasma_turret", "等离子炮塔", "Plasma Turret");
+        tech("sr_plasma_turret", "近程等离子炮塔", "SR Plasma Turret");
+        tech("antimatter_capsule", "反物质胶囊", "Antimatter Capsule");
+        // 护卫舰清剿黑雾巢穴：舰队终端多一页
+        both("gui.universe.fleet.tab.hives", "清剿", "Hives");
+        both("gui.universe.fleet.kind.hive", "清剿", "Hive strike");
+        both("gui.universe.fleet.hive", "%s %s级 %s", "%s Lv%s %s");
+        both("gui.universe.fleet.no_hives", "还没发现黑雾巢穴", "No Dark Fog hives found yet");
+        both("gui.universe.fleet.pick_hive", "挑一座巢穴", "Pick a hive");
+        both("gui.universe.fleet.hive_note", "只看战斗属性。赢一段打掉巢穴一些单位，赢得多还能拆掉建筑",
+                "Only combat counts. Each win kills hive units, more wins take out structures");
+        both("message.universe.fleet.problem.no_hive", "那里没有巢穴了", "That hive is gone");
+        both("message.universe.fleet.claimed_hive", "清剿回来了：赢了 %s/%s 段，打掉 %s 个单位、%s 座建筑；%s 信用点，%s 件东西；沉 %s 受损 %s 升级 %s",
+                "Strike back: won %s/%s, killed %s units and %s structures; %s credits, %s items; lost %s, damaged %s, promoted %s");
+        both("guide.universe.dark_fog.plasma.title", "等离子炮塔", "Plasma Turrets");
+        both("guide.universe.dark_fog.plasma",
+                "等离子炮塔：56 格，装等离子胶囊或反物质胶囊，等离子团飞得快，命中炸一小片。地面、低空、高空都打，高空能打到 96 格。\n\n"
+                        + "近程等离子炮塔：16 格，只用电，一发伤害很高，打不到高空。待机也很耗电。\n\n"
+                        + "轰炸星球的枪骑在高空，只有导弹炮塔和等离子炮塔够得着。\n\n"
+                        + "舰队终端的“清剿”页能派护卫舰去打巢穴，回来带黑雾的掉落。",
+                "Plasma turret: range 56, takes plasma or antimatter capsules. Fast plasma bolts burst on impact. "
+                        + "Hits ground, air and high altitude, out to 96 for high targets.\n\n"
+                        + "SR plasma turret: range 16, power only, heavy hits, no high altitude. High idle draw.\n\n"
+                        + "Lancers bomb from high altitude. Only missile and plasma turrets reach them.\n\n"
+                        + "The Hives tab on the fleet terminal sends frigates to strike a hive. They bring back Dark Fog loot.");
+    }
+
+    /** 行星护盾发生器（子代理 S）。 */
+    private void darkFogShield() {
+        block(UniverseBlocks.PLANETARY_SHIELD_GENERATOR.get(), "行星护盾发生器", "Planetary Shield Generator");
+        tech("planetary_shield", "行星护盾", "Planetary Shield");
+        both("gui.universe.planetary_shield.raised", "穹顶展开着", "Dome raised");
+        both("gui.universe.planetary_shield.charging", "充能中：存到 %s 展开", "Charging: raises at %s");
+        both("gui.universe.planetary_shield.over_limit", "这颗星球上已有 %s 台在工作，这台不工作", "%s generators already run on this planet. This one is idle.");
+        both("gui.universe.planetary_shield.energy", "能量 %s / %s", "Energy %s / %s");
+        both("gui.universe.planetary_shield.radius", "半径 %s 格（罩满 %s 格）", "Radius %s (full %s)");
+        both("gui.universe.planetary_shield.down", "穹顶没展开", "Dome down");
+        both("gui.universe.planetary_shield.count", "这颗星球上在工作的：%s / %s 台", "Working on this planet: %s / %s");
+        both("gui.universe.planetary_shield.hint", "挡高空来的伤害和中继站降落，挡不了地面上的黑雾。",
+                "Stops damage from above and relay landings. Ground units get through.");
+        both("guide.universe.dark_fog.shield.title", "行星护盾", "Planetary Shields");
+        both("guide.universe.dark_fog.shield",
+                "发生器充能要 24 kW。存到 1.44 MJ 展开穹顶，罩住附近 32 格；存到 2.88 MJ 罩满 160 格，顶高 64 格。"
+                        + "展开以后要 12 kW 维持，电不够从存的能量里扣。\n\n"
+                        + "穹顶挡高空来的伤害，比如枪骑的炸弹，每点扣 1 kJ，扣光就收起。中继站落不进穹顶。地面上的黑雾挡不住。\n\n"
+                        + "一颗星球最多 80 台在工作。几个穹顶叠着时，能量多的先挡。",
+                "Charging takes 24 kW. At 1.44 MJ the dome rises over 32 blocks; at 2.88 MJ it spans 160, 64 high. Upkeep is 12 kW.\n\n"
+                        + "It stops damage from above at 1 kJ per point and drops when empty. Relays can't land under it; "
+                        + "ground units walk through. Up to 80 work per planet; where domes overlap, the fuller one takes the hit.");
     }
 
     /** 一条游戏规则的名字和说明（建世界界面上显示）。 */

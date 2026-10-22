@@ -143,21 +143,27 @@ public final class Expedition {
 
     /** 出发：算好 2 + 难度 段遭遇。队伍里不能有受损的。 */
     public static List<Event> resolve(Offer offer, List<Frigate> team, Rng rng) {
+        return encounters(offer.difficulty(), team, rng,
+                r -> offer.kind().area() != null && r.chance(ON_TYPE) ? offer.kind().area() : r.pick(Area.values()));
+    }
+
+    /** 算好 2 + 难度 段遭遇，每段是哪一类由 {@code areas} 挑（清剿用的也是这个，见 {@link HiveSortie}）。 */
+    static List<Event> encounters(int difficulty, List<Frigate> team, Rng rng, java.util.function.Function<Rng, Area> areas) {
         if (team.isEmpty() || team.size() > MAX_TEAM) {
             throw new IllegalArgumentException("team size " + team.size());
         }
         List<Frigate> alive = new ArrayList<>(team);
         Map<Integer, Integer> hits = new HashMap<>();
         List<Event> events = new ArrayList<>();
-        int count = 2 + offer.difficulty();
+        int count = 2 + difficulty;
         for (int i = 0; i < count; i++) {
-            Area area = offer.kind().area() != null && rng.chance(ON_TYPE) ? offer.kind().area() : rng.pick(Area.values());
+            Area area = areas.apply(rng);
             if (alive.isEmpty()) {
                 events.add(new Event(area, false, -1, Outcome.NONE));
                 continue;
             }
             double roll = strength(alive, area) * rng.range(0.75, 1.25);
-            if (roll >= required(offer.difficulty())) {
+            if (roll >= required(difficulty)) {
                 events.add(new Event(area, true, -1, Outcome.NONE));
                 continue;
             }

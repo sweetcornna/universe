@@ -1,0 +1,28 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:plasma_capsule"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:particle_container"
+    },
+    {
+      "count": 10,
+      "ingredient": "universe:hydrogen"
+    },
+    {
+      "count": 10,
+      "ingredient": "universe:antimatter"
+    }
+  ],
+  "research": "antimatter_capsule",
+  "results": [
+    {
+      "id": "universe:antimatter_capsule"
+    }
+  ],
+  "time": 40
+}

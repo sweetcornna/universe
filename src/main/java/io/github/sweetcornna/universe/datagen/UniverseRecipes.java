@@ -82,6 +82,8 @@ final class UniverseRecipes extends RecipeProvider {
         this.darkFogFacilities();
         this.darkFogTurrets();
         this.darkFogSupport();
+        this.darkFogPlasma();
+        this.darkFogShield();
         this.planetLife();
     }
 
@@ -1166,6 +1168,49 @@ final class UniverseRecipes extends RecipeProvider {
                 in(missile, 1, UniverseItems.THRUSTER.get(), 1, explosive, 2), out(supersonic, 1));
         this.machine(Kind.ASSEMBLING, "gravity_missile_set", 100, "gravity_missiles",
                 in(supersonic, 1, UniverseItems.GRAVITON_LENS.get(), 1, crystalExplosive, 2), out(UniverseItems.GRAVITY_MISSILE_SET.get(), 1));
+    }
+
+    /** 等离子炮塔、近程等离子炮塔、两种胶囊（ADR-0028 §八，子代理 T）。 */
+    private void darkFogPlasma() {
+        Item steel = UniverseItems.STEEL.get();
+        Item alloy = UniverseItems.TITANIUM_ALLOY.get();
+        Item glass = UniverseItems.TITANIUM_GLASS.get();
+        Item ring = UniverseItems.SUPER_MAGNETIC_RING.get();
+        Item exciter = UniverseItems.PLASMA_EXCITER.get();
+        Item processor = UniverseItems.PROCESSOR.get();
+        Item graphene = UniverseItems.GRAPHENE.get();
+        Item magnet = UniverseItems.ORE_SMELTED.get(OreKind.MAGNETIC).get();
+        Item deuterium = UniverseItems.DEUTERIUM.get();
+        Item plasma = UniverseItems.PLASMA_CAPSULE.get();
+        // 等离子炮塔：钛合金的壳子、钛化玻璃的约束腔，超级磁场环和电浆激发器把氘激发成等离子团（照戴森球计划的配方）
+        // （制造台的配方最多四种原料，手工合成和它用一样的料）
+        this.researchShaped("plasma_turret", RecipeCategory.COMBAT, UniverseItems.PLASMA_TURRET.get(), 1, List.of("GEG", "RAR", "AAA"),
+                Map.of('G', glass, 'E', exciter, 'R', ring, 'A', alloy));
+        this.machine(Kind.ASSEMBLING, "plasma_turret", 200, "plasma_turret", in(alloy, 4, glass, 2, ring, 2, exciter, 1),
+                out(UniverseItems.PLASMA_TURRET.get(), 1));
+        // 近程等离子炮塔：钢的底座，石墨烯做散热，电浆激发器直接打
+        this.researchShaped("sr_plasma_turret", RecipeCategory.COMBAT, UniverseItems.SR_PLASMA_TURRET.get(), 1, List.of(" E ", "GPG", "SSS"),
+                Map.of('E', exciter, 'G', graphene, 'P', processor, 'S', steel));
+        this.machine(Kind.ASSEMBLING, "sr_plasma_turret", 160, "sr_plasma_turret", in(steel, 4, graphene, 2, exciter, 2, processor, 1),
+                out(UniverseItems.SR_PLASMA_TURRET.get(), 1));
+        // 胶囊（只在制造台里做，一个要十份氘）：等离子胶囊装氘；反物质胶囊在等离子胶囊外面再套一个粒子容器，装反物质和氢
+        this.machine(Kind.ASSEMBLING, "plasma_capsule", 40, "plasma_turret", in(graphene, 1, magnet, 2, deuterium, 10), out(plasma, 1));
+        this.machine(Kind.ASSEMBLING, "antimatter_capsule", 40, "antimatter_capsule",
+                in(plasma, 1, UniverseItems.PARTICLE_CONTAINER.get(), 1, UniverseItems.HYDROGEN.get(), 10, UniverseItems.ANTIMATTER.get(), 10),
+                out(UniverseItems.ANTIMATTER_CAPSULE.get(), 1));
+    }
+
+    /** 行星护盾发生器（子代理 S）。 */
+    private void darkFogShield() {
+        // 原作：钢材、电磁涡轮、超级磁场环、粒子容器 20:20:5:5；这里和别的防御设施一样按手工合成的量缩小
+        Item steel = UniverseItems.STEEL.get();
+        Item turbine = UniverseItems.ELECTROMAGNETIC_TURBINE.get();
+        Item ring = UniverseItems.SUPER_MAGNETIC_RING.get();
+        Item container = UniverseItems.PARTICLE_CONTAINER.get();
+        this.researchShaped("planetary_shield", RecipeCategory.COMBAT, UniverseItems.PLANETARY_SHIELD_GENERATOR.get(), 1,
+                List.of("PRP", "TST", "SSS"), Map.of('P', container, 'R', ring, 'T', turbine, 'S', steel));
+        this.machine(Kind.ASSEMBLING, "planetary_shield_generator", 200, "planetary_shield", in(steel, 4, turbine, 2, ring, 1, container, 2),
+                out(UniverseItems.PLANETARY_SHIELD_GENERATOR.get(), 1));
     }
 
     /** 信号塔、干扰塔、投掷物、黑雾矩阵、替代配方（子代理 R2）。 */

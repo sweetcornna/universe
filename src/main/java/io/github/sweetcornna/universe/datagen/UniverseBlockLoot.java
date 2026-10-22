@@ -197,6 +197,8 @@ final class UniverseBlockLoot extends BlockLootSubProvider {
         this.darkFogFacilities();
         this.darkFogTurrets();
         this.darkFogSupport();
+        this.darkFogPlasma();
+        this.darkFogShield();
     }
 
     /** 黑雾基地的方块（子代理 P）。 */
@@ -214,6 +216,19 @@ final class UniverseBlockLoot extends BlockLootSubProvider {
         this.dropSelf(UniverseBlocks.LASER_TURRET.get());
         this.dropSelf(UniverseBlocks.IMPLOSION_CANNON.get());
         this.dropSelf(UniverseBlocks.MISSILE_TURRET.get());
+    }
+
+    /** 等离子炮塔（ADR-0028 §八，子代理 T）。 */
+    private void darkFogPlasma() {
+        this.dropSelf(UniverseBlocks.PLASMA_TURRET.get());
+        this.dropSelf(UniverseBlocks.SR_PLASMA_TURRET.get());
+    }
+
+    /** 行星护盾发生器（子代理 S）。 */
+    private void darkFogShield() {
+        // 两格高，只认下半截
+        Block block = UniverseBlocks.PLANETARY_SHIELD_GENERATOR.get();
+        this.add(block, this.createSinglePropConditionTable(block, TallMachineBlock.HALF, DoubleBlockHalf.LOWER));
     }
 
     /** 信号塔、干扰塔（子代理 R2）。 */

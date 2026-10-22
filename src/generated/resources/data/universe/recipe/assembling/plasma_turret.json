@@ -1,0 +1,28 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 4,
+      "ingredient": "universe:titanium_alloy"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:titanium_glass"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:super_magnetic_ring"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:plasma_exciter"
+    }
+  ],
+  "research": "plasma_turret",
+  "results": [
+    {
+      "id": "universe:plasma_turret"
+    }
+  ],
+  "time": 200
+}

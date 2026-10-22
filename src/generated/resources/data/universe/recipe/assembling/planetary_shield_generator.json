@@ -1,0 +1,28 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 4,
+      "ingredient": "universe:steel"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:electromagnetic_turbine"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:super_magnetic_ring"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:particle_container"
+    }
+  ],
+  "research": "planetary_shield",
+  "results": [
+    {
+      "id": "universe:planetary_shield_generator"
+    }
+  ],
+  "time": 200
+}

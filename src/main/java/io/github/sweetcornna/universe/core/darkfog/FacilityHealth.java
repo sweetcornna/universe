@@ -37,7 +37,10 @@ public final class FacilityHealth {
             "missile_turret", 600F,
             "jammer_tower", 300F,
             "signal_tower", 1000F,
-            "battlefield_analysis_base", BATTLEFIELD_BASE);
+            "battlefield_analysis_base", BATTLEFIELD_BASE,
+            "plasma_turret", 700F,
+            "sr_plasma_turret", 300F,
+            "planetary_shield_generator", 1500F);
 
     private FacilityHealth() {
     }

@@ -36,6 +36,7 @@ public class DarkFogBolt extends ThrowableProjectile {
     private static final int LIFETIME = 40;
 
     private float damage = 3;
+    private int lifetime = LIFETIME;
 
     public DarkFogBolt(EntityType<? extends DarkFogBolt> type, Level level) {
         super(type, level);
@@ -44,10 +45,17 @@ public class DarkFogBolt extends ThrowableProjectile {
     /** 从 {@code from} 朝 {@code direction} 打出一发，已经加进世界。 */
     public static DarkFogBolt fire(ServerLevel level, Entity owner, Vec3 from, Vec3 direction, float damage, int color, float size, double speed,
             float inaccuracy) {
+        return fire(level, owner, from, direction, damage, color, size, speed, inaccuracy, LIFETIME);
+    }
+
+    /** 同上，飞 {@code lifetime} 刻才消失（太空里射程远）。 */
+    public static DarkFogBolt fire(ServerLevel level, Entity owner, Vec3 from, Vec3 direction, float damage, int color, float size, double speed,
+            float inaccuracy, int lifetime) {
         DarkFogBolt bolt = new DarkFogBolt(UniverseEntities.DARK_FOG_BOLT.get(), level);
         bolt.setOwner(owner);
         bolt.setPos(from);
         bolt.damage = damage;
+        bolt.lifetime = lifetime;
         bolt.entityData.set(DATA_COLOR, color);
         bolt.entityData.set(DATA_SIZE, size);
         bolt.shoot(direction.x, direction.y, direction.z, (float) speed, inaccuracy);
@@ -96,7 +104,7 @@ public class DarkFogBolt extends ThrowableProjectile {
             }
             return;
         }
-        if (this.isInWater() || this.tickCount > LIFETIME) {
+        if (this.isInWater() || this.tickCount > this.lifetime) {
             this.discard();
         }
     }

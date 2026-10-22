@@ -1,0 +1,207 @@
+{
+  "parent": "block/block",
+  "textures": {
+    "particle": "universe:block/planetary_shield_generator_bank",
+    "casing": "universe:block/machine_casing",
+    "plate": "universe:block/machine_casing_top",
+    "bank": "universe:block/planetary_shield_generator_bank",
+    "core": "universe:block/planetary_shield_generator_core",
+    "dish": "universe:block/planetary_shield_generator_dish",
+    "emitter": "universe:block/planetary_shield_generator_top_off",
+    "emitter_on": "universe:block/planetary_shield_generator_top"
+  },
+  "elements": [
+    {
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        3,
+        16
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            13,
+            16,
+            16
+          ],
+          "texture": "#casing",
+          "cullface": "north"
+        },
+        "south": {
+          "uv": [
+            0,
+            13,
+            16,
+            16
+          ],
+          "texture": "#casing",
+          "cullface": "south"
+        },
+        "west": {
+          "uv": [
+            0,
+            13,
+            16,
+            16
+          ],
+          "texture": "#casing",
+          "cullface": "west"
+        },
+        "east": {
+          "uv": [
+            0,
+            13,
+            16,
+            16
+          ],
+          "texture": "#casing",
+          "cullface": "east"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#plate"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            16,
+            16
+          ],
+          "texture": "#plate",
+          "cullface": "down"
+        }
+      }
+    },
+    {
+      "from": [
+        2,
+        3,
+        2
+      ],
+      "to": [
+        14,
+        14,
+        14
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            2,
+            2,
+            14,
+            13
+          ],
+          "texture": "#bank"
+        },
+        "south": {
+          "uv": [
+            2,
+            2,
+            14,
+            13
+          ],
+          "texture": "#bank"
+        },
+        "west": {
+          "uv": [
+            2,
+            2,
+            14,
+            13
+          ],
+          "texture": "#bank"
+        },
+        "east": {
+          "uv": [
+            2,
+            2,
+            14,
+            13
+          ],
+          "texture": "#bank"
+        }
+      }
+    },
+    {
+      "from": [
+        1,
+        14,
+        1
+      ],
+      "to": [
+        15,
+        16,
+        15
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            1,
+            0,
+            15,
+            2
+          ],
+          "texture": "#casing"
+        },
+        "south": {
+          "uv": [
+            1,
+            0,
+            15,
+            2
+          ],
+          "texture": "#casing"
+        },
+        "west": {
+          "uv": [
+            1,
+            0,
+            15,
+            2
+          ],
+          "texture": "#casing"
+        },
+        "east": {
+          "uv": [
+            1,
+            0,
+            15,
+            2
+          ],
+          "texture": "#casing"
+        },
+        "up": {
+          "uv": [
+            1,
+            1,
+            15,
+            15
+          ],
+          "texture": "#plate",
+          "cullface": "up"
+        },
+        "down": {
+          "uv": [
+            1,
+            1,
+            15,
+            15
+          ],
+          "texture": "#plate"
+        }
+      }
+    }
+  ]
+}

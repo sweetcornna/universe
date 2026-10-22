@@ -24,6 +24,7 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
@@ -67,6 +68,8 @@ public class DarkFogBuilding extends Mob implements DarkFogEnemy {
     private static final float LASER_DAMAGE = 2.0F;
     private static final int SENTRY_INTERVAL = 60;
     private static final float SENTRY_DAMAGE = 6.0F;
+    /** 原版血量属性的上限。钻芯这类比它硬的，实体的血量按比例缩，挨的打也按同样的比例缩。 */
+    private static final float HEALTH_CAP = 1024;
 
     private int baseId = -1;
     private int cooldown = 20;
@@ -83,7 +86,7 @@ public class DarkFogBuilding extends Mob implements DarkFogEnemy {
 
     public static AttributeSupplier.Builder createAttributes() {
         return Mob.createMobAttributes()
-                .add(Attributes.MAX_HEALTH, BuildingKind.CORE.baseHealth())
+                .add(Attributes.MAX_HEALTH, HEALTH_CAP)
                 .add(Attributes.KNOCKBACK_RESISTANCE, 1.0)
                 .add(Attributes.ARMOR, 6)
                 .add(Attributes.MOVEMENT_SPEED, 0);
@@ -95,7 +98,7 @@ public class DarkFogBuilding extends Mob implements DarkFogEnemy {
         building.entityData.set(DATA_KIND, kind.ordinal());
         building.entityData.set(DATA_LEVEL, DarkFogLevels.clamp(darkFogLevel));
         building.baseId = baseId;
-        building.getAttribute(Attributes.MAX_HEALTH).setBaseValue(kind.baseHealth() * DarkFogLevels.scale(darkFogLevel));
+        building.applyMaxHealth();
         building.setHealth(building.getMaxHealth());
         building.refreshDimensions();
         building.snapTo(pos.x, pos.y, pos.z, 0, 0);
@@ -145,8 +148,26 @@ public class DarkFogBuilding extends Mob implements DarkFogEnemy {
         this.entityData.set(DATA_POWERED, powered);
     }
 
+    /** 等级变了：血量上限跟着变，血量的比例不变。 */
     public void setDarkFogLevel(int level) {
+        float fraction = this.getMaxHealth() > 0 ? this.getHealth() / this.getMaxHealth() : 1;
         this.entityData.set(DATA_LEVEL, DarkFogLevels.clamp(level));
+        this.applyMaxHealth();
+        this.setHealth(Math.max(1, this.getMaxHealth() * fraction));
+    }
+
+    /** 真实的血量上限：按种类和等级。 */
+    public float maxStructure() {
+        return (float) (this.kind().baseHealth() * DarkFogLevels.scale(this.darkFogLevel()));
+    }
+
+    /** 实体的血量是真实血量的几分之一。 */
+    private float healthScale() {
+        return this.maxStructure() / Math.max(1, this.getMaxHealth());
+    }
+
+    private void applyMaxHealth() {
+        this.getAttribute(Attributes.MAX_HEALTH).setBaseValue(Math.min(HEALTH_CAP, this.maxStructure()));
     }
 
     @Override
@@ -335,9 +356,10 @@ public class DarkFogBuilding extends Mob implements DarkFogEnemy {
     @Override
     public boolean hurtServer(ServerLevel level, DamageSource source, float damage) {
         float before = this.getHealth();
-        boolean hurt = super.hurtServer(level, source, damage);
+        float scale = this.healthScale();
+        boolean hurt = super.hurtServer(level, source, source.is(DamageTypeTags.BYPASSES_INVULNERABILITY) ? damage : damage / scale);
         if (hurt && !this.isRemoved()) {
-            DarkFogBases.onBuildingHurt(level, this, before - this.getHealth(), source);
+            DarkFogBases.onBuildingHurt(level, this, (before - this.getHealth()) * scale, source);
         }
         return hurt;
     }

@@ -124,6 +124,33 @@ class BaseStateTest {
     }
 
     @Test
+    void landedRelayStartsBareAtTheHiveLevel() {
+        BaseState base = new BaseState(4, 300, -200);
+        base.land(7, 50_000);
+        assertEquals(BaseState.Status.ACTIVE, base.status());
+        assertEquals(7, base.level());
+        assertEquals(2, base.buildings(), "only the core and the relay");
+        assertTrue(base.relayAlive());
+        assertEquals(0, base.matter());
+        assertEquals(50_000, base.updated());
+        assertEquals(BaseState.BUILD_SECONDS, base.buildDelay());
+    }
+
+    @Test
+    void relayCanBeRestoredOnlyWhileTheCoreStands() {
+        BaseState base = active(0);
+        assertFalse(base.restoreRelay(), "the relay is still there");
+        base.destroy(BaseLayout.RELAY);
+        base.advanceTo(100_000 + BaseState.ENERGY_TICKS + 200, NORMAL);
+        assertFalse(base.powered());
+        assertTrue(base.restoreRelay());
+        assertTrue(base.relayAlive());
+        assertTrue(base.powered());
+        base.destroy(BaseLayout.CORE);
+        assertFalse(base.restoreRelay());
+    }
+
+    @Test
     void pendingSitesDoNothing() {
         BaseState base = new BaseState(0, 0, 0);
         base.advanceTo(50_000, NORMAL);

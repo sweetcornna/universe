@@ -213,8 +213,9 @@ public final class FleetPayloads {
      *
      * @param events 已经揭开的那几段
      * @param total  一共几段
+     * @param hive   清剿的恒星系，普通的远征是 -1
      */
-    public record VoyageInfo(int kind, int difficulty, long start, long end, List<Integer> team, List<EventInfo> events, int total) {
+    public record VoyageInfo(int kind, int difficulty, long start, long end, List<Integer> team, List<EventInfo> events, int total, int hive) {
         static void write(FriendlyByteBuf buf, VoyageInfo info) {
             buf.writeVarInt(info.kind);
             buf.writeVarInt(info.difficulty);
@@ -223,22 +224,45 @@ public final class FleetPayloads {
             writeInts(buf, info.team);
             writeList(buf, info.events, EventInfo::write);
             buf.writeVarInt(info.total);
+            buf.writeVarInt(info.hive + 1);
         }
 
         static VoyageInfo read(FriendlyByteBuf buf) {
             return new VoyageInfo(buf.readVarInt(), buf.readVarInt(), buf.readVarLong(), buf.readVarLong(), readInts(buf),
-                    readList(buf, EventInfo::read), buf.readVarInt());
+                    readList(buf, EventInfo::read), buf.readVarInt(), buf.readVarInt() - 1);
+        }
+    }
+
+    /**
+     * 能派护卫舰去清剿的一座黑雾巢穴。
+     *
+     * @param difficulty 清剿的难度（{@code HiveSortie#difficulty}）
+     * @param minutes    要多久
+     */
+    public record HiveInfo(int system, String nameZh, String nameEn, int level, int difficulty, int minutes) {
+        static void write(FriendlyByteBuf buf, HiveInfo info) {
+            buf.writeVarInt(info.system);
+            buf.writeUtf(info.nameZh);
+            buf.writeUtf(info.nameEn);
+            buf.writeVarInt(info.level);
+            buf.writeVarInt(info.difficulty);
+            buf.writeVarInt(info.minutes);
+        }
+
+        static HiveInfo read(FriendlyByteBuf buf) {
+            return new HiveInfo(buf.readVarInt(), buf.readUtf(), buf.readUtf(), buf.readVarInt(), buf.readVarInt(), buf.readVarInt());
         }
     }
 
     /**
      * 服务端 → 客户端：舰队终端的内容。
      *
-     * @param fuel 背包里的发射燃料
-     * @param now  主世界的游戏刻（远征的进度按它算）
+     * @param fuel  背包里的发射燃料
+     * @param now   主世界的游戏刻（远征的进度按它算）
+     * @param hives 能去清剿的巢穴，近的在前
      */
     public record Terminal(boolean open, long credits, int fuel, long now, List<FrigateInfo> frigates, List<OfferInfo> offers,
-            List<VoyageInfo> voyages, Optional<Component> notice) implements CustomPacketPayload {
+            List<VoyageInfo> voyages, List<HiveInfo> hives, Optional<Component> notice) implements CustomPacketPayload {
         public static final Type<Terminal> TYPE = new Type<>(Universe.id("fleet_terminal"));
         public static final StreamCodec<RegistryFriendlyByteBuf, Terminal> STREAM_CODEC = StreamCodec.of(Terminal::write, Terminal::read);
 
@@ -250,12 +274,14 @@ public final class FleetPayloads {
             writeList(buf, state.frigates, FrigateInfo::write);
             writeList(buf, state.offers, OfferInfo::write);
             writeList(buf, state.voyages, VoyageInfo::write);
+            writeList(buf, state.hives, HiveInfo::write);
             ComponentSerialization.OPTIONAL_STREAM_CODEC.encode(buf, state.notice);
         }
 
         private static Terminal read(RegistryFriendlyByteBuf buf) {
             return new Terminal(buf.readBoolean(), buf.readVarLong(), buf.readVarInt(), buf.readVarLong(), readList(buf, FrigateInfo::read),
-                    readList(buf, OfferInfo::read), readList(buf, VoyageInfo::read), ComponentSerialization.OPTIONAL_STREAM_CODEC.decode(buf));
+                    readList(buf, OfferInfo::read), readList(buf, VoyageInfo::read), readList(buf, HiveInfo::read),
+                    ComponentSerialization.OPTIONAL_STREAM_CODEC.decode(buf));
         }
 
         @Override
@@ -267,8 +293,8 @@ public final class FleetPayloads {
     /**
      * 客户端 → 服务端：在舰队终端上做的事。
      *
-     * @param value 出发：任务的序号；领取：第几支远征；修理、解散：护卫舰编号
-     * @param team  出发时派的护卫舰
+     * @param value 出发：任务的序号；领取：第几支远征；修理、解散：护卫舰编号；清剿：恒星系编号
+     * @param team  出发、清剿时派的护卫舰
      */
     public record Action(int action, int value, List<Integer> team) implements CustomPacketPayload {
         public static final int LAUNCH = 0;
@@ -277,6 +303,8 @@ public final class FleetPayloads {
         public static final int DISMISS = 3;
         /** 只要一份新的内容（界面开着时隔几秒要一次，看远征走到哪了）。 */
         public static final int REFRESH = 4;
+        /** 派去清剿黑雾巢穴。 */
+        public static final int SORTIE = 5;
         public static final Type<Action> TYPE = new Type<>(Universe.id("fleet_action"));
         public static final StreamCodec<ByteBuf, Action> STREAM_CODEC = StreamCodec.composite(
                 ByteBufCodecs.VAR_INT, Action::action,

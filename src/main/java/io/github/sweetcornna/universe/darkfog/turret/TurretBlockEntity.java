@@ -49,7 +49,8 @@ import net.minecraft.world.phys.shapes.CollisionContext;
  * 炮塔（ADR-0028 §五）：接电网，有一格弹药（激光炮塔没有）。每 10 刻在射程里找一次黑雾，先打正在打设施的，再打最近的；
  * 交战时按交战的用电算，供电不足按满足率放慢射速，没电不打。
  *
- * <p>高斯炮塔、激光炮塔直接命中（要视线）；聚爆炮打出走弧线的炮弹，导弹炮塔打出会追的导弹。开火和换目标用方块事件告诉
+ * <p>高斯炮塔、激光炮塔直接命中（要视线）；聚爆炮打出走弧线的炮弹，导弹炮塔打出会追的导弹，两种等离子炮塔打出直飞的等离子团
+ * （ADR-0028 §八）。高空目标只有导弹炮塔、等离子炮塔打，等离子炮塔对它们射程更远。开火和换目标用方块事件告诉
  * 附近的客户端，客户端据此转炮塔头、画曳光和激光。
  */
 public class TurretBlockEntity extends MachineBlockEntity {
@@ -214,7 +215,7 @@ public class TurretBlockEntity extends MachineBlockEntity {
     }
 
     /**
-     * 这个目标能不能打：在射程（导弹炮塔加上同一电网里信号塔的范围）里、看得见。
+     * 这个目标能不能打：在射程（导弹炮塔加上同一电网里信号塔的范围；高空目标按高空射程）里、看得见。
      *
      * @return 离炮塔多远；打不了是 -1
      */
@@ -225,7 +226,11 @@ public class TurretBlockEntity extends MachineBlockEntity {
         if (this.kind.groundOnly() && !((DarkFogEnemy) mob).grounded()) {
             return -1;
         }
-        if (distance <= this.kind.range()) {
+        boolean high = Turrets.highAltitude(mob);
+        if (high && !this.kind.antiAir()) {
+            return -1;
+        }
+        if (distance <= this.kind.reach(high)) {
             return visible(level, pivot, aim) ? distance : -1;
         }
         if (this.kind == TurretKind.MISSILE) {
@@ -278,7 +283,7 @@ public class TurretBlockEntity extends MachineBlockEntity {
     /** 在射程里找一个目标。 */
     private @Nullable Mob search(ServerLevel level, @Nullable Mob current) {
         Vec3 pivot = this.pivot();
-        Set<Mob> found = new LinkedHashSet<>(enemies(level, new AABB(pivot, pivot).inflate(this.kind.range())));
+        Set<Mob> found = new LinkedHashSet<>(enemies(level, new AABB(pivot, pivot).inflate(this.kind.maxReach())));
         if (this.kind == TurretKind.MISSILE) {
             for (BlockPos tower : this.signalTowers(level)) {
                 Vec3 top = Taunts.center(tower);
@@ -299,7 +304,7 @@ public class TurretBlockEntity extends MachineBlockEntity {
             DarkFogEnemy enemy = (DarkFogEnemy) mob;
             double reach = this.reach(level, mob);
             candidates.add(new TurretTargeting.Candidate(Math.max(0, reach), reach >= 0, reach >= 0, enemy.grounded(), enemy.attackingFacility(),
-                    mob == current));
+                    mob == current, Turrets.highAltitude(mob)));
             checked.add(mob);
         }
         int chosen = TurretTargeting.choose(this.kind, candidates);
@@ -352,6 +357,16 @@ public class TurretBlockEntity extends MachineBlockEntity {
                 level.addFreshEntity(missile);
                 level.playSound(null, muzzle.x, muzzle.y, muzzle.z, SoundEvents.FIREWORK_ROCKET_LAUNCH, SoundSource.BLOCKS, 0.9F, 0.8F);
             }
+            case PLASMA -> {
+                this.rounds--;
+                AmmoKind ammo = this.loaded == null ? AmmoKind.PLASMA_CAPSULE : this.loaded;
+                level.addFreshEntity(TurretPlasma.launch(level, this.worldPosition, muzzle, lead(muzzle, aim, target), ammo));
+                level.playSound(null, muzzle.x, muzzle.y, muzzle.z, SoundEvents.SHULKER_SHOOT, SoundSource.BLOCKS, 0.9F, 0.55F);
+            }
+            case SR_PLASMA -> {
+                level.addFreshEntity(TurretPlasma.shortRange(level, this.worldPosition, muzzle, lead(muzzle, aim, target)));
+                level.playSound(null, muzzle.x, muzzle.y, muzzle.z, SoundEvents.SHULKER_SHOOT, SoundSource.BLOCKS, 0.7F, 1.4F);
+            }
         }
         level.blockEvent(this.worldPosition, this.getBlockState().getBlock(), EVENT_FIRE, target.getId());
         if (this.kind.usesAmmo() && this.rounds <= 0) {
@@ -359,6 +374,12 @@ public class TurretBlockEntity extends MachineBlockEntity {
             this.rounds = 0;
         }
         this.setChanged();
+    }
+
+    /** 等离子团飞得快但不是瞬间到：按目标现在的速度往前提前一点。 */
+    private static Vec3 lead(Vec3 muzzle, Vec3 aim, Mob target) {
+        double ticks = aim.distanceTo(muzzle) / TurretKind.PLASMA_SPEED;
+        return aim.add(target.getDeltaMovement().scale(ticks));
     }
 
     /** 直接命中：只伤黑雾，打死了记一个。 */
@@ -400,6 +421,8 @@ public class TurretBlockEntity extends MachineBlockEntity {
             case LASER -> UniverseMenus.LASER_TURRET;
             case IMPLOSION -> UniverseMenus.IMPLOSION_CANNON;
             case MISSILE -> UniverseMenus.MISSILE_TURRET;
+            case PLASMA -> UniverseMenus.PLASMA_TURRET;
+            case SR_PLASMA -> UniverseMenus.SR_PLASMA_TURRET;
         };
     }
 
@@ -482,6 +505,8 @@ public class TurretBlockEntity extends MachineBlockEntity {
             case LASER -> 26;
             case IMPLOSION -> 9;
             case MISSILE -> 14;
+            case PLASMA -> 12;
+            case SR_PLASMA -> 20;
         };
         if (target == null || !target.isAlive()) {
             this.yaw = Mth.wrapDegrees(this.yaw + 0.8F);
@@ -538,6 +563,16 @@ public class TurretBlockEntity extends MachineBlockEntity {
                 for (int i = 0; i < 8; i++) {
                     level.addParticle(ParticleTypes.CAMPFIRE_COSY_SMOKE, pivot.x, pivot.y + 0.2, pivot.z,
                             (level.getRandom().nextDouble() - 0.5) * 0.08, 0.02, (level.getRandom().nextDouble() - 0.5) * 0.08);
+                }
+            }
+            case PLASMA, SR_PLASMA -> {
+                // 炮口一圈电火花，等离子炮塔的散热片往外冒点蒸汽
+                for (int i = 0; i < 5; i++) {
+                    level.addParticle(ParticleTypes.ELECTRIC_SPARK, muzzle.x, muzzle.y, muzzle.z, direction.x * 0.2 + (level.getRandom().nextDouble() - 0.5) * 0.2,
+                            direction.y * 0.2 + (level.getRandom().nextDouble() - 0.5) * 0.2, direction.z * 0.2 + (level.getRandom().nextDouble() - 0.5) * 0.2);
+                }
+                if (this.kind == TurretKind.PLASMA) {
+                    level.addParticle(ParticleTypes.CLOUD, pivot.x, pivot.y + 0.1, pivot.z, 0, 0.03, 0);
                 }
             }
         }

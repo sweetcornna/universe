@@ -169,16 +169,27 @@ public final class Universe {
         gameBus.addListener(RegisterCommandsEvent.class, event -> CivCommand.register(event.getDispatcher()));
         DarkFogBases.registerEvents(gameBus);
         gameBus.addListener(RegisterCommandsEvent.class, event -> DarkFogCommand.register(event.getDispatcher()));
-        // M16 基地（P）的注册加在这行上面
-        // M16 单位（P2）的注册加在这行上面
         io.github.sweetcornna.universe.darkfog.facility.FacilityRepairs.registerEvents(modBus, gameBus);
-        // M16 设施（Q）的注册加在这行上面
         Turrets.registerEvents(modBus);
-        // M16 炮塔（R1）的注册加在这行上面
-        // M16 信号塔、干扰塔（R2）的注册加在这行上面
         UniverseGameRules.register(modBus);
         GalaxySettings.registerEvents(gameBus);
-        // M16 建世界的选项（S）的注册加在这行上面
+        // M16 第二块（ADR-0028 §八）
+        io.github.sweetcornna.universe.darkfog.hive.DarkFogHives.registerEvents(gameBus);
+        gameBus.addListener(RegisterCommandsEvent.class,
+                event -> io.github.sweetcornna.universe.darkfog.hive.HiveCommand.register(event.getDispatcher()));
+        // M16 黑雾：巢穴（H）的注册加在这行上面
+        io.github.sweetcornna.universe.darkfog.hive.HiveBuilding.registerEvents(modBus);
+        // M16 黑雾：巢穴建筑（B）的注册加在这行上面
+        io.github.sweetcornna.universe.darkfog.space.SpaceUnits.registerEvents(modBus, gameBus);
+        // M16 黑雾：太空单位（U）的注册加在这行上面
+        io.github.sweetcornna.universe.darkfog.flight.DarkFogFlights.registerEvents(gameBus);
+        io.github.sweetcornna.universe.darkfog.flight.DarkFogFlights.registerModEvents(modBus);
+        gameBus.addListener(RegisterCommandsEvent.class,
+                event -> io.github.sweetcornna.universe.darkfog.flight.FlightCommand.register(event.getDispatcher()));
+        // M16 黑雾：中继站和种子（R）的注册加在这行上面
+        // M16 黑雾：等离子炮塔（T）的注册加在这行上面
+        io.github.sweetcornna.universe.darkfog.shield.Shields.registerEvents(gameBus);
+        // M16 黑雾：行星护盾（S）的注册加在这行上面
     }
 
     private void commonSetup(FMLCommonSetupEvent event) {

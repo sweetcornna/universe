@@ -633,7 +633,8 @@ public final class DevScript {
                     minecraft.mouseHandler.isMouseGrabbed(), player.getData(UniverseAttachments.CREDITS), String.format("%.2f", player.getX()),
                     String.format("%.2f", player.getY()), String.format("%.2f", player.getZ()),
                     player.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.GRAVITY), minecraft.getFps()
-                            + ", dyson sky " + DysonSkyRenderer.takeStats() + ", " + io.github.sweetcornna.universe.client.sky.SpaceDust.stats());
+                            + ", dyson sky " + DysonSkyRenderer.takeStats() + ", " + io.github.sweetcornna.universe.client.sky.SpaceDust.stats()
+                            + ", shield domes " + io.github.sweetcornna.universe.client.darkfog.shield.ShieldClient.domeCount());
             // 测帧率：不限帧、关垂直同步（无头验收结束后 options.txt 会还原）
             case "unlimitedfps" -> {
                 minecraft.options.framerateLimit().set(260);

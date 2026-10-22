@@ -499,16 +499,21 @@ public final class UniverseItems {
     public static final DeferredItem<ThrowableUnitItem> CRYSTAL_EXPLOSIVE_UNIT = ITEMS.registerItem("crystal_explosive_unit",
             ThrowableUnitItem::new, properties -> properties.stacksTo(32));
     public static final DeferredItem<BlockItem> BATTLEFIELD_ANALYSIS_BASE = ITEMS.registerSimpleBlockItem(UniverseBlocks.BATTLEFIELD_ANALYSIS_BASE);
-    // M16 黑雾：设施（Q）的方块物品加在这行上面
     public static final DeferredItem<BlockItem> GAUSS_TURRET = ITEMS.registerSimpleBlockItem(UniverseBlocks.GAUSS_TURRET);
     public static final DeferredItem<BlockItem> LASER_TURRET = ITEMS.registerSimpleBlockItem(UniverseBlocks.LASER_TURRET);
     public static final DeferredItem<BlockItem> IMPLOSION_CANNON = ITEMS.registerSimpleBlockItem(UniverseBlocks.IMPLOSION_CANNON);
     public static final DeferredItem<BlockItem> MISSILE_TURRET = ITEMS.registerSimpleBlockItem(UniverseBlocks.MISSILE_TURRET);
-    // M16 黑雾：炮塔（R1）的方块物品加在这行上面
     public static final DeferredItem<BlockItem> SIGNAL_TOWER = ITEMS.registerSimpleBlockItem(UniverseBlocks.SIGNAL_TOWER);
     public static final DeferredItem<BlockItem> JAMMER_TOWER = ITEMS.registerSimpleBlockItem(UniverseBlocks.JAMMER_TOWER);
-    // M16 黑雾：信号塔、干扰塔（R2）的方块物品加在这行上面
-    // M16 黑雾：基地（P）的方块物品加在这行上面
+    // M16 第二块（ADR-0028 §八）
+    public static final DeferredItem<BlockItem> PLASMA_TURRET = ITEMS.registerSimpleBlockItem(UniverseBlocks.PLASMA_TURRET);
+    public static final DeferredItem<BlockItem> SR_PLASMA_TURRET = ITEMS.registerSimpleBlockItem(UniverseBlocks.SR_PLASMA_TURRET);
+    public static final DeferredItem<AmmoItem> PLASMA_CAPSULE = ITEMS.registerItem("plasma_capsule", p -> new AmmoItem(AmmoKind.PLASMA_CAPSULE, p));
+    public static final DeferredItem<AmmoItem> ANTIMATTER_CAPSULE = ITEMS.registerItem("antimatter_capsule",
+            p -> new AmmoItem(AmmoKind.ANTIMATTER_CAPSULE, p));
+    // M16 黑雾：等离子炮塔（T）的物品加在这行上面
+    public static final DeferredItem<BlockItem> PLANETARY_SHIELD_GENERATOR = ITEMS.registerSimpleBlockItem(UniverseBlocks.PLANETARY_SHIELD_GENERATOR);
+    // M16 黑雾：行星护盾（S）的物品加在这行上面
 
     /** 蓝图（ADR-0018）。 */
     public static final DeferredItem<BlueprintItem> BLUEPRINT = ITEMS.registerItem("blueprint", BlueprintItem::new);
@@ -613,12 +618,12 @@ public final class UniverseItems {
                 MAGNUM_AMMO_BOX, TITANIUM_AMMO_BOX, SUPERALLOY_AMMO_BOX, SHELL_SET, HIGH_EXPLOSIVE_SHELL_SET, CRYSTAL_SHELL_SET,
                 MISSILE_SET, SUPERSONIC_MISSILE_SET, GRAVITY_MISSILE_SET, JAMMING_CAPSULE, EXPLOSIVE_UNIT, CRYSTAL_EXPLOSIVE_UNIT));
         order.add(BATTLEFIELD_ANALYSIS_BASE);
-        // M16 黑雾：设施（Q）的创造物品栏顺序加在这行上面
         order.addAll(List.of(GAUSS_TURRET, LASER_TURRET, IMPLOSION_CANNON, MISSILE_TURRET));
-        // M16 黑雾：炮塔（R1）的创造物品栏顺序加在这行上面
         order.addAll(List.of(SIGNAL_TOWER, JAMMER_TOWER));
-        // M16 黑雾：信号塔、干扰塔（R2）的创造物品栏顺序加在这行上面
-        // M16 黑雾：基地（P）的创造物品栏顺序加在这行上面
+        order.addAll(List.of(PLASMA_TURRET, SR_PLASMA_TURRET, PLASMA_CAPSULE, ANTIMATTER_CAPSULE));
+        // M16 黑雾：等离子炮塔（T）的创造物品栏顺序加在这行上面
+        order.add(PLANETARY_SHIELD_GENERATOR);
+        // M16 黑雾：行星护盾（S）的创造物品栏顺序加在这行上面
         return List.copyOf(order);
     }
 

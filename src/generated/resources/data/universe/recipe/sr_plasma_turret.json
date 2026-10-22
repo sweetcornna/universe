@@ -1,0 +1,19 @@
+{
+  "type": "universe:research_shaped",
+  "category": "equipment",
+  "key": {
+    "E": "universe:plasma_exciter",
+    "G": "universe:graphene",
+    "P": "universe:processor",
+    "S": "universe:steel"
+  },
+  "pattern": [
+    " E ",
+    "GPG",
+    "SSS"
+  ],
+  "research": "sr_plasma_turret",
+  "result": {
+    "id": "universe:sr_plasma_turret"
+  }
+}

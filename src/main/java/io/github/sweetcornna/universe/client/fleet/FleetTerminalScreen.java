@@ -7,11 +7,13 @@ import java.util.Set;
 
 import org.jspecify.annotations.Nullable;
 
+import io.github.sweetcornna.universe.client.galaxy.GalaxyText;
 import io.github.sweetcornna.universe.core.fleet.Area;
 import io.github.sweetcornna.universe.core.fleet.Expedition;
 import io.github.sweetcornna.universe.core.fleet.FreighterRules;
 import io.github.sweetcornna.universe.core.fleet.Frigate;
 import io.github.sweetcornna.universe.core.fleet.FrigateTrait;
+import io.github.sweetcornna.universe.core.fleet.HiveSortie;
 import io.github.sweetcornna.universe.network.FleetPayloads;
 import io.github.sweetcornna.universe.trade.Credits;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -22,11 +24,12 @@ import net.minecraft.network.chat.MutableComponent;
 import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 
 /**
- * 舰队终端（ADR-0024），三页：
+ * 舰队终端（ADR-0024），四页：
  * <ul>
  * <li>护卫舰：每艘的种类、等级、四项属性、燃料、特性（指上去看），受损的能修，停着的能解散（点两下）；</li>
  * <li>远征任务：今天的三个任务，选一个，再点选要派的护卫舰（最多 5 艘），下面算好每段的成功率和要付的发射燃料；</li>
- * <li>在外面：每支远征的进度和已经揭开的那几段，回来了就领。</li>
+ * <li>在外面：每支远征的进度和已经揭开的那几段，回来了就领；</li>
+ * <li>清剿（ADR-0028 §八）：去过的恒星系里的黑雾巢穴，挑一座、挑护卫舰派去打，只看战斗属性。</li>
  * </ul>
  * 属性和成功率由客户端按服务端发来的护卫舰还原以后算，能不能做由服务端说了算。界面开着时每 5 秒要一份新的。
  */
@@ -45,13 +48,15 @@ public class FleetTerminalScreen extends Screen {
     private static final double RISKY = 0.4;
 
     private enum Tab {
-        FRIGATES, OFFERS, VOYAGES
+        FRIGATES, OFFERS, VOYAGES, HIVES
     }
 
     private FleetPayloads.Terminal state;
     private Tab tab = Tab.FRIGATES;
     private int page;
     private int offer = -1;
+    /** 清剿页选中的巢穴所在的恒星系，没选时 -1。 */
+    private int hive = -1;
     private int voyage;
     private final Set<Integer> team = new LinkedHashSet<>();
     private int confirmDismiss = -1;
@@ -87,15 +92,16 @@ public class FleetTerminalScreen extends Screen {
         int x = this.left + 8;
         for (Tab t : Tab.values()) {
             Button button = Button.builder(Component.translatable("gui.universe.fleet.tab." + t.name().toLowerCase(java.util.Locale.ROOT)),
-                    b -> this.select(t)).bounds(x, this.top + 22, 96, 18).build();
+                    b -> this.select(t)).bounds(x, this.top + 22, 88, 18).build();
             button.active = t != this.tab;
             this.addRenderableWidget(button);
-            x += 100;
+            x += 92;
         }
         switch (this.tab) {
             case FRIGATES -> this.initFrigates();
             case OFFERS -> this.initOffers();
             case VOYAGES -> this.initVoyages();
+            case HIVES -> this.initHives();
         }
     }
 
@@ -221,9 +227,9 @@ public class FleetTerminalScreen extends Screen {
             graphics.text(this.font, Component.translatable("gui.universe.fleet.no_frigates"), this.left + 8, this.top + 52, DIM, false);
             return;
         }
+        // 四个页签占满了一行，艘数放在标题后面
         graphics.text(this.font, Component.translatable("gui.universe.fleet.count", frigates.size(), FreighterRules.MAX_FRIGATES),
-                this.left + WIDTH - 8 - this.font.width(Component.translatable("gui.universe.fleet.count", frigates.size(),
-                        FreighterRules.MAX_FRIGATES)), this.top + 27, DIM, false);
+                this.left + 16 + this.font.width(this.title), this.top + 9, DIM, false);
         int from = this.page * PAGE;
         for (int i = from; i < Math.min(frigates.size(), from + PAGE); i++) {
             FleetPayloads.FrigateInfo info = frigates.get(i);
@@ -282,20 +288,7 @@ public class FleetTerminalScreen extends Screen {
         if (this.offer < 0 || this.offer >= offers.size() || offers.get(this.offer).taken()) {
             return;
         }
-        List<FleetPayloads.FrigateInfo> ready = this.ready();
-        for (int i = 0; i < ready.size(); i++) {
-            FleetPayloads.FrigateInfo info = ready.get(i);
-            boolean picked = this.team.contains(info.id());
-            Button pick = Button.builder(Component.translatable(picked ? "gui.universe.fleet.picked" : "gui.universe.fleet.pick",
-                    info.designation(), Component.translatable("gui.universe.fleet.type_short." + info.frigate().type().key())), b -> {
-                        if (!this.team.remove(info.id()) && this.team.size() < Expedition.MAX_TEAM) {
-                            this.team.add(info.id());
-                        }
-                        this.rebuildWidgets();
-                    }).bounds(this.left + 156 + (i % 3) * 74, this.top + 58 + (i / 3) * 20, 72, 18).build();
-            pick.active = picked || this.team.size() < Expedition.MAX_TEAM;
-            this.addRenderableWidget(pick);
-        }
+        this.teamPicker();
         int fuel = Expedition.fuelItems(this.picked());
         boolean creative = this.minecraft != null && this.minecraft.player != null && this.minecraft.player.hasInfiniteMaterials();
         // 胜算低时按两次：第一次只换成确认的字样
@@ -314,6 +307,24 @@ public class FleetTerminalScreen extends Screen {
         }).bounds(this.left + WIDTH - 108, this.top + HEIGHT - 42, 100, 20).build();
         launch.active = !this.team.isEmpty() && (creative || this.state.fuel() >= fuel) && this.state.voyages().size() < Expedition.MAX_ACTIVE;
         this.addRenderableWidget(launch);
+    }
+
+    /** 右边点选要派的护卫舰，三列，最多 {@link Expedition#MAX_TEAM} 艘。 */
+    private void teamPicker() {
+        List<FleetPayloads.FrigateInfo> ready = this.ready();
+        for (int i = 0; i < ready.size(); i++) {
+            FleetPayloads.FrigateInfo info = ready.get(i);
+            boolean picked = this.team.contains(info.id());
+            Button pick = Button.builder(Component.translatable(picked ? "gui.universe.fleet.picked" : "gui.universe.fleet.pick",
+                    info.designation(), Component.translatable("gui.universe.fleet.type_short." + info.frigate().type().key())), b -> {
+                        if (!this.team.remove(info.id()) && this.team.size() < Expedition.MAX_TEAM) {
+                            this.team.add(info.id());
+                        }
+                        this.rebuildWidgets();
+                    }).bounds(this.left + 156 + (i % 3) * 74, this.top + 58 + (i / 3) * 20, 72, 18).build();
+            pick.active = picked || this.team.size() < Expedition.MAX_TEAM;
+            this.addRenderableWidget(pick);
+        }
     }
 
     /** 能派出去的：停着、没受损。 */
@@ -405,7 +416,7 @@ public class FleetTerminalScreen extends Screen {
             FleetPayloads.VoyageInfo info = voyages.get(i);
             int index = i;
             Button row = Button.builder(Component.translatable(now >= info.end() ? "gui.universe.fleet.voyage_back" : "gui.universe.fleet.voyage",
-                    Component.translatable("gui.universe.fleet.kind." + Expedition.Kind.values()[info.kind()].key()), "★".repeat(info.difficulty())),
+                    kindName(info), "★".repeat(info.difficulty())),
                     b -> {
                         this.voyage = index;
                         this.rebuildWidgets();
@@ -438,6 +449,11 @@ public class FleetTerminalScreen extends Screen {
             FleetPayloads.FrigateInfo frigate = this.info(id);
             names.add(frigate == null ? "?" : frigate.designation());
         }
+        FleetPayloads.@Nullable HiveInfo target = info.hive() >= 0 ? this.hiveInfo(info.hive()) : null;
+        if (target != null) {
+            graphics.text(this.font, hiveLabel(target), x, y, ACCENT, false);
+            y += 12;
+        }
         graphics.text(this.font, Component.translatable("gui.universe.fleet.voyage_team", String.join("、", names)), x, y, TEXT, false);
         y += 14;
         // 进度条
@@ -458,6 +474,104 @@ public class FleetTerminalScreen extends Screen {
                 graphics.text(this.font, this.eventLine(i, info.events().get(i)), x, y, info.events().get(i).success() ? GOOD : BAD, false);
             }
             y += 11;
+        }
+    }
+
+    private static Component kindName(FleetPayloads.VoyageInfo info) {
+        Expedition.Kind[] kinds = Expedition.Kind.values();
+        return Component.translatable("gui.universe.fleet.kind." + (info.hive() >= 0 ? "hive" : kinds[Math.clamp(info.kind(), 0, kinds.length - 1)].key()));
+    }
+
+    // ---- 清剿
+
+    private FleetPayloads.@Nullable HiveInfo hiveInfo(int system) {
+        for (FleetPayloads.HiveInfo info : this.state.hives()) {
+            if (info.system() == system) {
+                return info;
+            }
+        }
+        return null;
+    }
+
+    /** "天苑四 12级 ★★"。 */
+    private static Component hiveLabel(FleetPayloads.HiveInfo info) {
+        return Component.translatable("gui.universe.fleet.hive", GalaxyText.pick(info.nameZh(), info.nameEn()), info.level(),
+                "★".repeat(info.difficulty()));
+    }
+
+    private void initHives() {
+        List<FleetPayloads.HiveInfo> hives = this.state.hives();
+        for (int i = 0; i < hives.size(); i++) {
+            FleetPayloads.HiveInfo info = hives.get(i);
+            Button row = Button.builder(hiveLabel(info), b -> {
+                this.hive = info.system();
+                this.rebuildWidgets();
+            }).bounds(this.left + 8, this.top + 48 + i * 22, 140, 20).build();
+            row.active = info.system() != this.hive;
+            this.addRenderableWidget(row);
+        }
+        FleetPayloads.HiveInfo target = this.hive >= 0 ? this.hiveInfo(this.hive) : null;
+        if (target == null) {
+            return;
+        }
+        this.teamPicker();
+        int fuel = Expedition.fuelItems(this.picked());
+        boolean creative = this.minecraft != null && this.minecraft.player != null && this.minecraft.player.hasInfiniteMaterials();
+        // 胜算低时按两次，和远征任务一样；确认的记号用负的恒星系编号，免得和远征任务的序号混
+        List<Integer> key = new ArrayList<>(this.team);
+        key.add(-1 - target.system());
+        boolean risky = HiveSortie.chance(this.picked(), target.difficulty()) < RISKY;
+        boolean confirm = risky && key.equals(this.confirmLaunch);
+        Button launch = Button.builder(Component.translatable(confirm ? "gui.universe.fleet.launch_confirm" : "gui.universe.fleet.launch"), b -> {
+            if (risky && !key.equals(this.confirmLaunch)) {
+                this.confirmLaunch = key;
+                this.rebuildWidgets();
+                return;
+            }
+            this.confirmLaunch = null;
+            send(FleetPayloads.Action.SORTIE, target.system(), List.copyOf(this.team));
+        }).bounds(this.left + WIDTH - 108, this.top + HEIGHT - 42, 100, 20).build();
+        launch.active = !this.team.isEmpty() && (creative || this.state.fuel() >= fuel) && this.state.voyages().size() < Expedition.MAX_ACTIVE;
+        this.addRenderableWidget(launch);
+    }
+
+    private void drawHives(GuiGraphicsExtractor graphics) {
+        if (this.state.hives().isEmpty()) {
+            graphics.text(this.font, Component.translatable("gui.universe.fleet.no_hives"), this.left + 8, this.top + 52, DIM, false);
+            return;
+        }
+        FleetPayloads.HiveInfo target = this.hive >= 0 ? this.hiveInfo(this.hive) : null;
+        if (target == null) {
+            graphics.text(this.font, Component.translatable("gui.universe.fleet.pick_hive"), this.left + 156, this.top + 52, DIM, false);
+            return;
+        }
+        graphics.text(this.font, Component.translatable("gui.universe.fleet.team", this.team.size(), Expedition.MAX_TEAM), this.left + 156,
+                this.top + 46, ACCENT, false);
+        if (this.ready().isEmpty()) {
+            graphics.text(this.font, Component.translatable("gui.universe.fleet.none_ready"), this.left + 156, this.top + 60, DIM, false);
+        }
+        List<Frigate> team = this.picked();
+        int d = target.difficulty();
+        int y = this.top + HEIGHT - 96;
+        graphics.text(this.font, Component.translatable("gui.universe.fleet.offer", Component.translatable("gui.universe.fleet.kind.hive"),
+                "★".repeat(d), target.minutes()).copy().append(" · ").append(Component.translatable("gui.universe.fleet.segments", 2 + d,
+                        Expedition.required(d))), this.left + 8, y, TEXT, false);
+        y += 12;
+        int strength = Expedition.strength(team, Area.COMBAT);
+        double chance = HiveSortie.chance(team, d);
+        int color = team.isEmpty() ? DIM : chance >= 0.8 ? GOOD : chance >= RISKY ? WARN : BAD;
+        graphics.text(this.font, Component.translatable("gui.universe.fleet.chance", areaName(Area.COMBAT), strength, Math.round(chance * 100)),
+                this.left + 8, y, color, false);
+        y += 12;
+        graphics.text(this.font, Component.translatable("gui.universe.fleet.hive_note"), this.left + 8, y, DIM, false);
+        y += 12;
+        int fuel = Expedition.fuelItems(team);
+        boolean enough = this.state.fuel() >= fuel;
+        graphics.text(this.font, Component.translatable("gui.universe.fleet.fuel_cost", fuel, this.state.fuel()), this.left + 8, y,
+                enough || team.isEmpty() ? DIM : BAD, false);
+        y += 12;
+        if (this.state.voyages().size() >= Expedition.MAX_ACTIVE) {
+            graphics.text(this.font, Component.translatable("message.universe.fleet.problem.too_many_voyages"), this.left + 8, y, BAD, false);
         }
     }
 
@@ -494,6 +608,7 @@ public class FleetTerminalScreen extends Screen {
             case FRIGATES -> this.drawFrigates(graphics, mouseX, mouseY);
             case OFFERS -> this.drawOffers(graphics);
             case VOYAGES -> this.drawVoyages(graphics);
+            case HIVES -> this.drawHives(graphics);
         }
         this.state.notice().ifPresent(notice -> graphics.text(this.font, notice, this.left + 8, this.top + HEIGHT - 14, DIM, false));
         super.extractRenderState(graphics, mouseX, mouseY, a);

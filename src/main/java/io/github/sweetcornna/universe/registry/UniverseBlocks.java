@@ -610,7 +610,6 @@ public final class UniverseBlocks {
                     .pushReaction(PushReaction.POPPED).isValidSpawn((state, level, pos, type) -> false));
     public static final DeferredBlock<MachineBlock> BATTLEFIELD_ANALYSIS_BASE = BLOCKS.registerBlock("battlefield_analysis_base",
             p -> new MachineBlock(p, UniverseBlockEntities.BATTLEFIELD_ANALYSIS_BASE), p -> machine(p).strength(5.0F, 12.0F));
-    // M16 黑雾：设施（Q）的方块加在这行上面
     // ---- M16 炮塔（ADR-0028 §五）：底座是方块模型，转台和炮管由方块实体渲染器画
     public static final DeferredBlock<TurretBlock> GAUSS_TURRET = BLOCKS.registerBlock("gauss_turret",
             p -> new TurretBlock(p, TurretKind.GAUSS, UniverseBlockEntities.GAUSS_TURRET), p -> machine(p).noOcclusion());
@@ -620,13 +619,11 @@ public final class UniverseBlocks {
             p -> new TurretBlock(p, TurretKind.IMPLOSION, UniverseBlockEntities.IMPLOSION_CANNON), p -> machine(p).noOcclusion());
     public static final DeferredBlock<TurretBlock> MISSILE_TURRET = BLOCKS.registerBlock("missile_turret",
             p -> new TurretBlock(p, TurretKind.MISSILE, UniverseBlockEntities.MISSILE_TURRET), p -> machine(p).noOcclusion());
-    // M16 黑雾：炮塔（R1）的方块加在这行上面
     /** 信号塔、干扰塔（ADR-0028 §五）：两格高，工作时上半截亮。 */
     public static final DeferredBlock<TallMachineBlock> SIGNAL_TOWER = BLOCKS.registerBlock("signal_tower",
             p -> new TallMachineBlock(p, UniverseBlockEntities.SIGNAL_TOWER), UniverseBlocks::tower);
     public static final DeferredBlock<TallMachineBlock> JAMMER_TOWER = BLOCKS.registerBlock("jammer_tower",
             p -> new TallMachineBlock(p, UniverseBlockEntities.JAMMER_TOWER), UniverseBlocks::tower);
-    // M16 黑雾：信号塔、干扰塔（R2）的方块加在这行上面
     /** 黑雾基地的底板和导轨（ADR-0028 §二）：很硬，不掉落，挖掉了基地会补。 */
     public static final DeferredBlock<Block> DARK_FOG_PLATING = BLOCKS.registerSimpleBlock("dark_fog_plating",
             p -> p.mapColor(MapColor.COLOR_BLACK).strength(30.0F, 1200.0F).sound(SoundType.NETHERITE_BLOCK).noLootTable()
@@ -638,7 +635,17 @@ public final class UniverseBlocks {
     public static final DeferredBlock<Block> DARK_FOG_CORE_REMNANT = BLOCKS.registerSimpleBlock("dark_fog_core_remnant",
             p -> p.mapColor(MapColor.COLOR_ORANGE).strength(-1.0F, 3600000.0F).sound(SoundType.NETHERITE_BLOCK).noLootTable()
                     .lightLevel(state -> 12).pushReaction(PushReaction.IMMOVEABLE).isValidSpawn(Blocks::never));
-    // M16 黑雾：基地（P）的方块加在这行上面
+    // ---- M16 第二块（ADR-0028 §八）
+    /** 等离子炮塔、近程等离子炮塔（ADR-0028 §八）：和别的炮塔一样，底座是方块模型，转台和炮管由渲染器画。 */
+    public static final DeferredBlock<TurretBlock> PLASMA_TURRET = BLOCKS.registerBlock("plasma_turret",
+            p -> new TurretBlock(p, TurretKind.PLASMA, UniverseBlockEntities.PLASMA_TURRET), p -> machine(p).noOcclusion());
+    public static final DeferredBlock<TurretBlock> SR_PLASMA_TURRET = BLOCKS.registerBlock("sr_plasma_turret",
+            p -> new TurretBlock(p, TurretKind.SR_PLASMA, UniverseBlockEntities.SR_PLASMA_TURRET), p -> machine(p).noOcclusion());
+    // M16 黑雾：等离子炮塔（T）的方块加在这行上面
+    /** 行星护盾发生器（ADR-0028 §八）：两格高，穹顶展开时上半截亮。 */
+    public static final DeferredBlock<TallMachineBlock> PLANETARY_SHIELD_GENERATOR = BLOCKS.registerBlock("planetary_shield_generator",
+            p -> new TallMachineBlock(p, UniverseBlockEntities.PLANETARY_SHIELD_GENERATOR), p -> tower(p).strength(5.0F, 12.0F));
+    // M16 黑雾：行星护盾（S）的方块加在这行上面
 
     /**
      * 按星球配色染色的方块。

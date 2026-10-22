@@ -37,6 +37,22 @@ class TurretTargetingTest {
     }
 
     @Test
+    void onlyMissileAndPlasmaTurretsTakeHighAltitudeTargets() {
+        Candidate lancer = new Candidate(4, true, true, false, true, false, true);
+        Candidate raider = at(20);
+        for (TurretKind kind : TurretKind.values()) {
+            boolean antiAir = kind == TurretKind.MISSILE || kind == TurretKind.PLASMA;
+            assertEquals(antiAir, TurretTargeting.eligible(kind, lancer), kind.name());
+            // 打不到高空的就打地面那个，哪怕高空的那个正在炸设施、离得更近
+            assertEquals(antiAir ? 0 : 1, TurretTargeting.choose(kind, List.of(lancer, raider)), kind.name());
+        }
+        // 现在的目标升到高空了：高斯炮换目标
+        Candidate risen = new Candidate(6, true, true, false, false, true, true);
+        assertEquals(1, TurretTargeting.choose(TurretKind.GAUSS, List.of(risen, raider)));
+        assertEquals(0, TurretTargeting.choose(TurretKind.PLASMA, List.of(risen, raider)));
+    }
+
+    @Test
     void keepsTheCurrentTargetUnlessSomethingIsHittingFacilities() {
         Candidate current = new Candidate(20, true, true, true, false, true);
         assertEquals(1, TurretTargeting.choose(TurretKind.GAUSS, List.of(at(5), current)));

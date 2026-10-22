@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "condition": {
+        "type": "minecraft:survives_explosion"
+      },
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "condition": {
+            "type": "minecraft:match_block",
+            "blocks": "universe:planetary_shield_generator",
+            "state": {
+              "half": "lower"
+            }
+          },
+          "name": "universe:planetary_shield_generator"
+        }
+      ],
+      "rolls": 1
+    }
+  ],
+  "random_sequence": "universe:blocks/planetary_shield_generator"
+}

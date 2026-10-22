@@ -155,6 +155,8 @@ final class UniverseModelProvider extends ModelProvider {
         darkFogFacilities(blockModels, itemModels);
         darkFogTurrets(blockModels, itemModels);
         darkFogSupport(blockModels, itemModels);
+        darkFogPlasma(blockModels, itemModels);
+        darkFogShield(blockModels, itemModels);
     }
 
     /** 黑雾的掉落、弹药、投掷物（ADR-0028）：平面物品。 */
@@ -195,6 +197,25 @@ final class UniverseModelProvider extends ModelProvider {
                     BlockModelGenerators.plainVariant(Universe.id("block/" + name))));
             itemModels.itemModelOutput.accept(block.asItem(), ItemModelUtils.plainModel(Universe.id("block/" + name + "_item")));
         }
+    }
+
+    /** 等离子炮塔、近程等离子炮塔、两种胶囊（ADR-0028 §八，子代理 T）。 */
+    private static void darkFogPlasma(BlockModelGenerators blockModels, ItemModelGenerators itemModels) {
+        // 模型由 tools/m16_plasma_models.py 生成，和别的炮塔一样分底座、转台、炮管
+        for (Block block : List.of(UniverseBlocks.PLASMA_TURRET.get(), UniverseBlocks.SR_PLASMA_TURRET.get())) {
+            String name = BuiltInRegistries.BLOCK.getKey(block).getPath();
+            blockModels.blockStateOutput.accept(BlockModelGenerators.createSimpleBlock(block,
+                    BlockModelGenerators.plainVariant(Universe.id("block/" + name))));
+            itemModels.itemModelOutput.accept(block.asItem(), ItemModelUtils.plainModel(Universe.id("block/" + name + "_item")));
+        }
+        itemModels.generateFlatItem(UniverseItems.PLASMA_CAPSULE.get(), ModelTemplates.FLAT_ITEM);
+        itemModels.generateFlatItem(UniverseItems.ANTIMATTER_CAPSULE.get(), ModelTemplates.FLAT_ITEM);
+    }
+
+    /** 行星护盾发生器（子代理 S）。 */
+    private static void darkFogShield(BlockModelGenerators blockModels, ItemModelGenerators itemModels) {
+        // 手写的两截模型见 tools/m16_shield_models.py，穹顶展开时上半截的发射头亮
+        tall(blockModels, itemModels, UniverseBlocks.PLANETARY_SHIELD_GENERATOR.get(), "planetary_shield_generator", false, true);
     }
 
     /** 信号塔、干扰塔（子代理 R2）。 */

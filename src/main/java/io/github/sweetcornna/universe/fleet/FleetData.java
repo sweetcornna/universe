@@ -138,7 +138,8 @@ public final class FleetData extends SavedData {
             Codec.INT.listOf().fieldOf("team").forGetter(Fleet.Voyage::team),
             Codec.LONG.fieldOf("start").forGetter(Fleet.Voyage::start),
             EVENT.listOf().fieldOf("events").forGetter(Fleet.Voyage::events),
-            Codec.LONG.fieldOf("seed").forGetter(Fleet.Voyage::seed)
+            Codec.LONG.fieldOf("seed").forGetter(Fleet.Voyage::seed),
+            Codec.INT.optionalFieldOf("hive", -1).forGetter(Fleet.Voyage::hive)
     ).apply(i, Fleet.Voyage::new));
 
     private static final Codec<Entry> ENTRY = RecordCodecBuilder.create(i -> i.group(

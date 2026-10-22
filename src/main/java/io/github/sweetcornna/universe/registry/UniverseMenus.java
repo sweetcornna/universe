@@ -157,7 +157,6 @@ public final class UniverseMenus {
     /** 战场分析基地（ADR-0028 §五）：上面读数和拾取模式的按钮，下面 27 格储物。 */
     public static final MachineMenu.Type BATTLEFIELD_ANALYSIS_BASE = machine("battlefield_analysis_base",
             new MachineMenu.Type(BattlefieldBaseBlockEntity.DATA_COUNT, 218, grid(8, 70, 9, 3)));
-    // M16 黑雾：设施（Q）的界面加在这行上面
     // 炮塔（ADR-0028 §五）：左边读数，右边一格弹药；激光炮塔不要弹药，只有读数
     public static final MachineMenu.Type GAUSS_TURRET = machine("gauss_turret",
             new MachineMenu.Type(TurretBlockEntity.DATA_COUNT, RESOURCE_WIDTH, 200, input(172, 46)));
@@ -166,13 +165,21 @@ public final class UniverseMenus {
             new MachineMenu.Type(TurretBlockEntity.DATA_COUNT, RESOURCE_WIDTH, 200, input(172, 46)));
     public static final MachineMenu.Type MISSILE_TURRET = machine("missile_turret",
             new MachineMenu.Type(TurretBlockEntity.DATA_COUNT, RESOURCE_WIDTH, 200, input(172, 46)));
-    // M16 黑雾：炮塔（R1）的界面加在这行上面
     // 信号塔只看读数；干扰塔左边读数，右边一个干扰胶囊格（ADR-0028 §五）
     public static final MachineMenu.Type SIGNAL_TOWER = machine("signal_tower",
             new MachineMenu.Type(SignalTowerBlockEntity.SIGNAL_DATA_COUNT, 118));
     public static final MachineMenu.Type JAMMER_TOWER = machine("jammer_tower",
             new MachineMenu.Type(JammerTowerBlockEntity.DATA_COUNT, RESOURCE_WIDTH, 206, input(172, 46)));
-    // M16 黑雾：信号塔、干扰塔（R2）的界面加在这行上面
+    // 等离子炮塔（ADR-0028 §八）：和导弹炮塔一样一格弹药；近程等离子炮塔只用电，只有读数
+    public static final MachineMenu.Type PLASMA_TURRET = machine("plasma_turret",
+            new MachineMenu.Type(TurretBlockEntity.DATA_COUNT, RESOURCE_WIDTH, 200, input(172, 46)));
+    public static final MachineMenu.Type SR_PLASMA_TURRET = machine("sr_plasma_turret",
+            new MachineMenu.Type(TurretBlockEntity.DATA_COUNT, RESOURCE_WIDTH, 84));
+    // M16 黑雾：等离子炮塔（T）的界面加在这行上面
+    // 行星护盾发生器（ADR-0028 §八）：只有读数
+    public static final MachineMenu.Type PLANETARY_SHIELD_GENERATOR = machine("planetary_shield_generator",
+            new MachineMenu.Type(io.github.sweetcornna.universe.darkfog.shield.PlanetaryShieldBlockEntity.DATA_COUNT, RESOURCE_WIDTH, 132));
+    // M16 黑雾：行星护盾（S）的界面加在这行上面
 
     private UniverseMenus() {
     }

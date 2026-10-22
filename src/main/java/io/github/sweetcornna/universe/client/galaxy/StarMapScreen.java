@@ -8,6 +8,7 @@ import static io.github.sweetcornna.universe.client.factory.MachineScreen.WARN;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.OptionalInt;
 
 import org.joml.Matrix3x2fStack;
@@ -21,6 +22,7 @@ import io.github.sweetcornna.universe.core.sentinel.SentinelLevel;
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.client.ClientGalaxy;
 import io.github.sweetcornna.universe.client.UniverseKeys;
+import io.github.sweetcornna.universe.client.darkfog.ClientDarkFogMap;
 import io.github.sweetcornna.universe.client.discovery.ClientDiscoveries;
 import io.github.sweetcornna.universe.client.portal.PortalDialScreen;
 import io.github.sweetcornna.universe.client.factory.ClientResearch;
@@ -47,6 +49,7 @@ import io.github.sweetcornna.universe.core.space.Warp;
 import io.github.sweetcornna.universe.core.trade.Economy;
 import io.github.sweetcornna.universe.entity.ship.ShipEntity;
 import io.github.sweetcornna.universe.entity.ship.ShipWarp;
+import io.github.sweetcornna.universe.network.DarkFogMapPayload;
 import io.github.sweetcornna.universe.network.WarpRequestPayload;
 import io.github.sweetcornna.universe.registry.UniverseItems;
 import io.github.sweetcornna.universe.world.space.SpaceDimensions;
@@ -94,6 +97,10 @@ public class StarMapScreen extends Screen {
     private static final int WARP_HEIGHT = 52;
     private static final int BUTTON_HEIGHT = 16;
     private static final int WARP = 0xFFB98CFF;
+    /** 黑雾的巢穴和种子（ADR-0028 §八）。 */
+    private static final int DARK_FOG = 0xFF2A48;
+    /** 巢穴的六边形最大多大（像素）。 */
+    private static final double HIVE_MARK = 12;
 
     private final StarMapCamera camera = new StarMapCamera();
     private final @Nullable Galaxy galaxy;
@@ -242,7 +249,9 @@ public class StarMapScreen extends Screen {
         this.drawRange(graphics, systems);
         this.drawDropLines(graphics, systems);
         this.drawRoute(graphics, systems);
+        this.drawSeeds(graphics, systems, now);
         this.drawStars(graphics, systems, now);
+        this.drawHives(graphics, systems, now);
         this.drawLabels(graphics, systems);
         graphics.disableScissor();
 
@@ -411,6 +420,64 @@ public class StarMapScreen extends Screen {
         }
     }
 
+    /** 黑雾的种子（ADR-0028 §八）：从出发的恒星系到目标画一条暗红的虚线，种子走到哪画一个一闪一闪的红点。 */
+    private void drawSeeds(GuiGraphicsExtractor graphics, List<StarSystem> systems, long now) {
+        for (DarkFogMapPayload.Seed seed : ClientDarkFogMap.seeds()) {
+            if (seed.from() < 0 || seed.from() >= systems.size() || seed.to() < 0 || seed.to() >= systems.size()) {
+                continue;
+            }
+            StarSystem from = systems.get(seed.from());
+            StarSystem to = systems.get(seed.to());
+            int dashes = 32;
+            for (int i = 0; i < dashes; i++) {
+                double t0 = (double) i / dashes;
+                double t1 = (i + 0.45) / dashes;
+                StarMapCamera.Projected a = this.project(lerp(from.x(), to.x(), t0), lerp(from.y(), to.y(), t0), lerp(from.z(), to.z(), t0));
+                StarMapCamera.Projected b = this.project(lerp(from.x(), to.x(), t1), lerp(from.y(), to.y(), t1), lerp(from.z(), to.z(), t1));
+                if (a != null && b != null) {
+                    line(graphics, a.x(), a.y(), b.x(), b.y(), 0.8F, ARGB.color(0x90, DARK_FOG));
+                }
+            }
+            double t = ClientDarkFogMap.progress(seed);
+            StarMapCamera.Projected p = this.project(lerp(from.x(), to.x(), t), lerp(from.y(), to.y(), t), lerp(from.z(), to.z(), t));
+            if (p != null) {
+                double pulse = 0.5 + 0.5 * Math.sin(now / 250.0 + seed.id());
+                sprite(graphics, GLOW, p.x(), p.y(), 7 + pulse * 3, ARGB.color((int) (150 + pulse * 100), DARK_FOG));
+                sprite(graphics, DISC, p.x(), p.y(), 2.4, 0xFFFFD0D6);
+            }
+        }
+    }
+
+    /**
+     * 有黑雾巢穴的恒星系外面一圈慢慢转的小六边形；核心打掉了、等着重建的暗下去。差不多每个恒星系都有巢穴，
+     * 六边形不跟着恒星放大，免得近处的几圈糊满屏幕。
+     */
+    private void drawHives(GuiGraphicsExtractor graphics, List<StarSystem> systems, long now) {
+        for (DarkFogMapPayload.Hive hive : ClientDarkFogMap.hives().values()) {
+            if (hive.system() < 0 || hive.system() >= systems.size() || this.projected[hive.system()] == null) {
+                continue;
+            }
+            StarMapCamera.Projected p = this.projected[hive.system()];
+            double radius = Math.min(starSize(systems.get(hive.system()).star(), p) * 0.6 + 4, HIVE_MARK);
+            double turn = now / 2400.0 + hive.system();
+            int color = hive.alive() ? ARGB.color(0xA8, DARK_FOG) : ARGB.color(0x50, DARK_FOG);
+            hexagon(graphics, p.x(), p.y(), radius, turn, hive.alive() ? 0.8F : 0.6F, color);
+            if (hive.alive() && hive.threat() > 0.05) {
+                // 威胁越高，里面那圈越亮
+                hexagon(graphics, p.x(), p.y(), radius * 0.72, -turn, 0.6F, ARGB.color(0x30 + (int) (hive.threat() * 0xC0), DARK_FOG));
+            }
+        }
+    }
+
+    private static void hexagon(GuiGraphicsExtractor graphics, double x, double y, double radius, double turn, float width, int color) {
+        for (int k = 0; k < 6; k++) {
+            double a0 = turn + k * Math.PI / 3;
+            double a1 = a0 + Math.PI / 3;
+            line(graphics, x + Math.cos(a0) * radius, y + Math.sin(a0) * radius, x + Math.cos(a1) * radius, y + Math.sin(a1) * radius, width,
+                    color);
+        }
+    }
+
     /** 四个角的选框。 */
     private void brackets(GuiGraphicsExtractor graphics, double x, double y, double half, int color) {
         double arm = Math.max(2.5, half * 0.45);
@@ -512,6 +579,7 @@ public class StarMapScreen extends Screen {
                 : Component.translatable("gui.universe.star_map.star_stats", GalaxyText.magnitude(star.luminosity()),
                         Math.round(star.temperature()), GalaxyText.magnitude(star.mass()));
         y = TextWrap.draw(graphics, this.font, stats, x, y, width, DIM, false) + 4;
+        y = this.drawDarkFog(graphics, system, x, y, width);
 
         this.hoveredPlanet = -1;
         DiscoveryLog.Entry discovery = ClientDiscoveries.entry(DiscoveryKey.system(system.index())).orElse(null);
@@ -582,6 +650,34 @@ public class StarMapScreen extends Screen {
             graphics.fill(this.width - 3, barTop, this.width - 1, barTop + barHeight, 0x804FB4D0);
         }
         this.drawWarp(graphics, system, x, bottom + 4, width, mouseX, mouseY);
+    }
+
+    /** 黑雾（ADR-0028 §八）：巢穴的等级和威胁、往外飞的中继站，飞来和飞走的种子。没去过的恒星系也看得到。 */
+    private int drawDarkFog(GuiGraphicsExtractor graphics, StarSystem system, int x, int y, int width) {
+        int start = y;
+        Optional<DarkFogMapPayload.Hive> hive = ClientDarkFogMap.hive(system.index());
+        if (hive.isPresent()) {
+            Component line = hive.get().alive()
+                    ? Component.translatable("gui.universe.star_map.dark_fog.hive", hive.get().level(), Math.round(hive.get().threat() * 100))
+                    : Component.translatable("gui.universe.star_map.dark_fog.rebuilding");
+            y = this.smallText(graphics, line, x, y, width, hive.get().alive() ? ARGB.opaque(DARK_FOG) : ARGB.color(0xFF, 0xA05060)) + 3;
+            if (hive.get().relays() > 0) {
+                y = this.smallText(graphics, Component.translatable("gui.universe.star_map.dark_fog.relays", hive.get().relays()), x, y, width, DIM)
+                        + 3;
+            }
+        }
+        for (DarkFogMapPayload.Seed seed : ClientDarkFogMap.seeds()) {
+            StarSystem target = this.system(seed.to());
+            if (seed.to() == system.index()) {
+                int minutes = Math.max(1, (int) Math.ceil(ClientDarkFogMap.remaining(seed) / 1200.0));
+                y = this.smallText(graphics, Component.translatable("gui.universe.star_map.dark_fog.seed_incoming", minutes), x, y, width, WARN)
+                        + 3;
+            } else if (seed.from() == system.index() && target != null) {
+                y = this.smallText(graphics, Component.translatable("gui.universe.star_map.dark_fog.seed_outgoing", GalaxyText.system(target)), x, y,
+                        width, DIM) + 3;
+            }
+        }
+        return y == start ? y : y + 1;
     }
 
     /** 跃迁：能不能跳、为什么不能，以及按钮。 */

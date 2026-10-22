@@ -14,7 +14,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 
 /**
- * 炮塔的界面（ADR-0028 §五）：电、在干什么（找目标、交战、没弹药）、装着的弹药还剩几发、射程、击毁数；右边一格弹药。
+ * 炮塔的界面（ADR-0028 §五、§八）：电、在干什么（找目标、交战、没弹药）、装着的弹药还剩几发、射程、击毁数、打不打得到高空；
+ * 右边一格弹药。
  */
 public class TurretScreen extends MachineScreen {
     /** 左边读数的宽度：右边是弹药格，长的弹药名折到下一行。 */
@@ -68,6 +69,9 @@ public class TurretScreen extends MachineScreen {
         if (kind.groundOnly()) {
             y += 12;
             graphics.text(this.font, Component.translatable("gui.universe.turret.ground_only"), 8, y, DIM, false);
+        } else if (kind.antiAir()) {
+            y += 12;
+            graphics.text(this.font, Component.translatable("gui.universe.turret.anti_air", (int) kind.highAltitudeRange()), 8, y, DIM, false);
         }
     }
 }

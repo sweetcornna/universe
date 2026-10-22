@@ -112,16 +112,22 @@ public final class UniverseClient {
         TeleportClient.registerEvents(modBus);
         EggClient.registerEvents(modBus);
         MissionClient.registerEvents(modBus);
-        // M16 基地（P）的注册加在这行上面
         io.github.sweetcornna.universe.client.darkfog.DarkFogClient.registerEvents(modBus);
-        // M16 单位（P2）的注册加在这行上面
         io.github.sweetcornna.universe.client.facility.FacilityClient.registerEvents(modBus, NeoForge.EVENT_BUS);
-        // M16 设施（Q）的注册加在这行上面
         TurretClient.registerEvents(modBus);
-        // M16 炮塔（R1）的注册加在这行上面
         io.github.sweetcornna.universe.client.darkfog.DarkFogSupportClient.registerEvents(modBus);
-        // M16 信号塔、干扰塔（R2）的注册加在这行上面
-        // M16 建世界的选项（S）的注册加在这行上面
+        // M16 第二块（ADR-0028 §八）
+        // M16 黑雾：巢穴（H）的注册加在这行上面
+        io.github.sweetcornna.universe.client.darkfog.hive.HiveClient.registerEvents(modBus);
+        // M16 黑雾：巢穴建筑（B）的注册加在这行上面
+        io.github.sweetcornna.universe.client.darkfog.space.SpaceUnitClient.registerEvents(modBus);
+        // M16 黑雾：太空单位（U）的注册加在这行上面
+        io.github.sweetcornna.universe.client.darkfog.ClientDarkFogMap.registerEvents(modBus, NeoForge.EVENT_BUS);
+        io.github.sweetcornna.universe.client.darkfog.flight.FlightClient.registerEvents(modBus);
+        // M16 黑雾：中继站和种子（R）的注册加在这行上面
+        // M16 黑雾：等离子炮塔（T）的注册加在这行上面
+        io.github.sweetcornna.universe.client.darkfog.shield.ShieldClient.registerEvents(modBus, NeoForge.EVENT_BUS);
+        // M16 黑雾：行星护盾（S）的注册加在这行上面
         ClientStory.registerEvents(modBus, NeoForge.EVENT_BUS);
         GuideItem.opener = () -> Minecraft.getInstance().gui.setScreen(new GuideScreen());
         BlueprintClient.registerEvents(modBus, NeoForge.EVENT_BUS);

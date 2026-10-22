@@ -111,6 +111,29 @@ public final class BaseState {
         this.advanceTo(now, new Environment(growth, false, 0));
     }
 
+    /** 巢穴的中继站落地（ADR-0028 §八）：钻芯和中继站马上有，从这一刻开始长，不补初始成长；第一座建筑也要等一阵。 */
+    public void land(int level, long now) {
+        this.status = Status.ACTIVE;
+        this.level = DarkFogLevels.clamp(level);
+        this.xp = 0;
+        Arrays.fill(this.health, 0);
+        this.health[BaseLayout.CORE] = 1;
+        this.health[BaseLayout.RELAY] = 1;
+        this.energy = ENERGY_TICKS;
+        this.updated = now;
+        this.buildDelay = BUILD_SECONDS;
+    }
+
+    /** 巢穴派来的中继站补上了被打掉的那座：能量又满了。基地瓦解了、中继站还在时不补。 */
+    public boolean restoreRelay() {
+        if (this.status != Status.ACTIVE || this.relayAlive()) {
+            return false;
+        }
+        this.health[BaseLayout.RELAY] = 1;
+        this.energy = ENERGY_TICKS;
+        return true;
+    }
+
     public void voidSite() {
         this.status = Status.VOID;
     }

@@ -16,6 +16,11 @@ public interface DarkFogEnemy {
     /** 地面目标：建筑和贴地悬浮的突袭者是，飞着的游骑兵、守卫者不是。 */
     boolean grounded();
 
+    /** 高空目标：从太空下来轰炸星球的枪骑（ADR-0028 §八）。炮塔里只有导弹炮塔、等离子炮塔打得到。 */
+    default boolean highAltitude() {
+        return false;
+    }
+
     /** 干扰塔减速：{@code ticks} 刻内移动和攻击变慢到 {@code factor} 倍（0–1）。不动的建筑不理。 */
     default void jam(int ticks, double factor) {
     }

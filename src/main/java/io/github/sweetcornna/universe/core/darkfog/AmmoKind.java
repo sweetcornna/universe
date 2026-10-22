@@ -19,7 +19,11 @@ public enum AmmoKind {
     CRYSTAL_SHELL("crystal_shell_set", TurretKind.IMPLOSION, 40, 10, 4, 0.4, 1.2),
     MISSILE("missile_set", TurretKind.MISSILE, 20, 8, 3, 0.6, 0.9),
     SUPERSONIC_MISSILE("supersonic_missile_set", TurretKind.MISSILE, 32, 8, 3, 0.7, 1.8),
-    GRAVITY_MISSILE("gravity_missile_set", TurretKind.MISSILE, 45, 8, 4.5, -0.5, 1.2);
+    GRAVITY_MISSILE("gravity_missile_set", TurretKind.MISSILE, 45, 8, 4.5, -0.5, 1.2),
+    /** 等离子胶囊：装着氘，炮塔把它激发成高温等离子团打出去（ADR-0028 §八）。 */
+    PLASMA_CAPSULE("plasma_capsule", TurretKind.PLASMA, 22, 10, 3, 0, TurretKind.PLASMA_SPEED),
+    /** 反物质胶囊：伤害和范围都大得多。 */
+    ANTIMATTER_CAPSULE("antimatter_capsule", TurretKind.PLASMA, 60, 10, 5, 0, TurretKind.PLASMA_SPEED);
 
     private final String id;
     private final TurretKind turret;
@@ -74,14 +78,19 @@ public enum AmmoKind {
 
     /** 离爆心 {@code distance} 格的伤害：爆心满伤害，到边上剩一半，边外没有。 */
     public float splashDamage(double distance) {
-        if (this.radius <= 0) {
-            return distance <= 0 ? this.damage : 0;
+        return splash(this.damage, this.radius, distance);
+    }
+
+    /** 爆心伤害 {@code damage}、半径 {@code radius} 的范围伤害在 {@code distance} 格处有多少（不用弹药的近程等离子炮塔也这么算）。 */
+    public static float splash(float damage, double radius, double distance) {
+        if (radius <= 0) {
+            return distance <= 0 ? damage : 0;
         }
-        if (distance > this.radius) {
+        if (distance > radius) {
             return 0;
         }
-        double t = Math.max(0, distance) / this.radius;
-        return (float) (this.damage * (1 - 0.5 * t));
+        double t = Math.max(0, distance) / radius;
+        return (float) (damage * (1 - 0.5 * t));
     }
 
     public static List<AmmoKind> forTurret(TurretKind turret) {

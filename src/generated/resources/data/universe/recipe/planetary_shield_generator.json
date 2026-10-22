@@ -1,0 +1,19 @@
+{
+  "type": "universe:research_shaped",
+  "category": "equipment",
+  "key": {
+    "P": "universe:particle_container",
+    "R": "universe:super_magnetic_ring",
+    "S": "universe:steel",
+    "T": "universe:electromagnetic_turbine"
+  },
+  "pattern": [
+    "PRP",
+    "TST",
+    "SSS"
+  ],
+  "research": "planetary_shield",
+  "result": {
+    "id": "universe:planetary_shield_generator"
+  }
+}

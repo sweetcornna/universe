@@ -1,0 +1,28 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 4,
+      "ingredient": "universe:steel"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:graphene"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:plasma_exciter"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:processor"
+    }
+  ],
+  "research": "sr_plasma_turret",
+  "results": [
+    {
+      "id": "universe:sr_plasma_turret"
+    }
+  ],
+  "time": 160
+}

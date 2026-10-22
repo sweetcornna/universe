@@ -42,7 +42,15 @@ public final class Turrets {
 
     private static List<Supplier<? extends BlockEntityType<TurretBlockEntity>>> types() {
         return List.of(UniverseBlockEntities.GAUSS_TURRET, UniverseBlockEntities.LASER_TURRET, UniverseBlockEntities.IMPLOSION_CANNON,
-                UniverseBlockEntities.MISSILE_TURRET);
+                UniverseBlockEntities.MISSILE_TURRET, UniverseBlockEntities.PLASMA_TURRET, UniverseBlockEntities.SR_PLASMA_TURRET);
+    }
+
+    /** 游戏内测试用：带这个标签的黑雾按高空目标算（没有真的从太空下来的枪骑也能测炮塔挑目标）。 */
+    public static final String TEST_HIGH_ALTITUDE_TAG = "universe.test_high_altitude";
+
+    /** 这个黑雾是不是高空目标。 */
+    static boolean highAltitude(Entity entity) {
+        return entity instanceof DarkFogEnemy enemy && (enemy.highAltitude() || entity.entityTags().contains(TEST_HIGH_ALTITUDE_TAG));
     }
 
     private static void registerCapabilities(RegisterCapabilitiesEvent event) {
@@ -87,11 +95,15 @@ public final class Turrets {
      * @return 炸死了几个
      */
     static int splash(ServerLevel level, Vec3 center, AmmoKind ammo, @Nullable Entity direct) {
-        double radius = ammo.radius();
+        return splash(level, center, ammo.damage(), ammo.radius(), ammo.push(), direct);
+    }
+
+    /** 同上，按爆心伤害、半径、推力算（近程等离子炮塔不用弹药）。 */
+    static int splash(ServerLevel level, Vec3 center, float centerDamage, double radius, double push, @Nullable Entity direct) {
         int killed = 0;
         for (Mob mob : TurretBlockEntity.enemies(level, new AABB(center, center).inflate(radius + 2))) {
             double distance = Math.sqrt(mob.getBoundingBox().distanceToSqr(center));
-            float damage = ammo.splashDamage(distance);
+            float damage = AmmoKind.splash(centerDamage, radius, distance);
             if (damage <= 0) {
                 continue;
             }
@@ -105,10 +117,10 @@ public final class Turrets {
             }
             double resistance = mob.getAttributeValue(Attributes.KNOCKBACK_RESISTANCE);
             Vec3 away = mob.getBoundingBox().getCenter().subtract(center);
-            if (resistance < 1 && away.lengthSqr() > 1e-6 && ammo.push() != 0) {
-                double strength = ammo.push() * (1 - distance / radius) * (1 - resistance);
-                Vec3 push = away.normalize().scale(strength);
-                mob.push(new Vec3(push.x, ammo.push() > 0 ? Math.abs(strength) * 0.3 : push.y, push.z));
+            if (resistance < 1 && away.lengthSqr() > 1e-6 && push != 0) {
+                double strength = push * (1 - distance / radius) * (1 - resistance);
+                Vec3 shove = away.normalize().scale(strength);
+                mob.push(new Vec3(shove.x, push > 0 ? Math.abs(strength) * 0.3 : shove.y, shove.z));
             }
         }
         return killed;

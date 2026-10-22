@@ -18,7 +18,6 @@ import io.github.sweetcornna.universe.core.darkfog.BaseLayout;
 import io.github.sweetcornna.universe.core.darkfog.BaseSites;
 import io.github.sweetcornna.universe.core.darkfog.BaseState;
 import io.github.sweetcornna.universe.core.darkfog.BuildingKind;
-import io.github.sweetcornna.universe.core.darkfog.DarkFogLevels;
 import io.github.sweetcornna.universe.core.darkfog.DarkFogLoot;
 import io.github.sweetcornna.universe.core.darkfog.DarkFogSettings;
 import io.github.sweetcornna.universe.core.darkfog.Threat;
@@ -33,6 +32,8 @@ import io.github.sweetcornna.universe.core.stats.ProductionStats;
 import io.github.sweetcornna.universe.darkfog.entity.DarkFogBuilding;
 import io.github.sweetcornna.universe.darkfog.entity.DarkFogUnit;
 import io.github.sweetcornna.universe.darkfog.facility.FacilityRepairs;
+import io.github.sweetcornna.universe.darkfog.hive.DarkFogHives;
+import io.github.sweetcornna.universe.darkfog.shield.Shields;
 import io.github.sweetcornna.universe.factory.power.LevelPower;
 import io.github.sweetcornna.universe.network.DarkFogPayloads;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
@@ -43,6 +44,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
@@ -54,7 +56,6 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ChunkPos;
@@ -413,10 +414,7 @@ public final class DarkFogBases {
 
     /** 等级变了：血量上限跟着变，血量的比例不变。 */
     private static void relevel(DarkFogBuilding building, int level) {
-        float fraction = building.getHealth() / building.getMaxHealth();
         building.setDarkFogLevel(level);
-        building.getAttribute(Attributes.MAX_HEALTH).setBaseValue(building.kind().baseHealth() * DarkFogLevels.scale(level));
-        building.setHealth(Math.max(1, building.getMaxHealth() * fraction));
     }
 
     private static void placeDefenders(ServerLevel level, BaseState base, Live live) {
@@ -748,8 +746,11 @@ public final class DarkFogBases {
         return DarkFogData.get(level.getServer()).planet(key(level)).flatMap(planet -> planet.base(id));
     }
 
-    /** 建筑挨了打（伤害已经扣过）。 */
+    /** 建筑挨了打（伤害已经扣过）。中继站挨打，这个恒星系的巢穴威胁猛涨（ADR-0028 §八）。 */
     public static void onBuildingHurt(ServerLevel level, DarkFogBuilding building, float damage, DamageSource source) {
+        if (building.kind() == BuildingKind.RELAY && damage > 0) {
+            Planets.bodyId(level.dimension()).ifPresent(body -> DarkFogHives.onRelayHurt(level.getServer(), body.system(), damage));
+        }
         base(level, building.baseId()).ifPresent(base -> {
             base.hurt(damage, Threat.buildingPerDamage(building.kind(), UniverseRules.darkFog(level.getServer())));
             int slot = slotOf(level, base, building);
@@ -762,7 +763,7 @@ public final class DarkFogBases {
 
     /** 建筑被打掉了。 */
     public static void onBuildingDestroyed(ServerLevel level, DarkFogBuilding building, DamageSource source) {
-        drop(level, building.position().add(0, 0.5, 0), building.darkFogLevel(), DarkFogLoot.weight(building.kind()));
+        dropLoot(level, building.position().add(0, 0.5, 0), building.darkFogLevel(), DarkFogLoot.weight(building.kind()));
         base(level, building.baseId()).ifPresent(base -> {
             int slot = slotOf(level, base, building);
             if (slot < 0 || base.status() != BaseState.Status.ACTIVE) {
@@ -809,7 +810,7 @@ public final class DarkFogBases {
             for (int slot = 0; slot < BaseLayout.size(); slot++) {
                 DarkFogBuilding other = live.buildings[slot];
                 if (other != null && other.isAlive() && !other.isRemoved()) {
-                    drop(level, other.position().add(0, 0.5, 0), other.darkFogLevel(), DarkFogLoot.weight(other.kind()) / 2);
+                    dropLoot(level, other.position().add(0, 0.5, 0), other.darkFogLevel(), DarkFogLoot.weight(other.kind()) / 2);
                     level.sendParticles(ParticleTypes.EXPLOSION, other.getX(), other.getY() + 1, other.getZ(), 2, 0.8, 0.8, 0.8, 0);
                     other.discard();
                 }
@@ -839,7 +840,7 @@ public final class DarkFogBases {
 
     /** 单位被打死了。 */
     public static void onUnitKilled(ServerLevel level, DarkFogUnit unit, DamageSource source) {
-        drop(level, unit.position(), unit.darkFogLevel(), DarkFogLoot.weight(unit.kind()));
+        dropLoot(level, unit.position(), unit.darkFogLevel(), DarkFogLoot.weight(unit.kind()));
         base(level, unit.baseId()).ifPresent(base -> {
             Live live = live(level, base.id());
             if (live != null && live.wave != null && live.wave.units.remove(unit)) {
@@ -856,8 +857,8 @@ public final class DarkFogBases {
         });
     }
 
-    /** 在原地掉东西，2 分钟不捡就消失。 */
-    private static void drop(ServerLevel level, Vec3 at, int darkFogLevel, double weight) {
+    /** 在原地掉东西，2 分钟不捡就消失。巢穴的建筑和单位也用这个（{@code weight} 按 {@link DarkFogLoot#weight} 的量级给）。 */
+    public static void dropLoot(ServerLevel level, Vec3 at, int darkFogLevel, double weight) {
         Rng rng = Rng.of(level.getRandom().nextLong());
         for (DarkFogLoot.Drop drop : DarkFogLoot.roll(darkFogLevel, weight, rng)) {
             Identifier id = Identifier.tryParse(drop.item());
@@ -883,6 +884,82 @@ public final class DarkFogBases {
                 player.sendSystemMessage(message);
             }
         }
+    }
+
+    // ---- 巢穴的中继站（ADR-0028 §八）
+
+    /** 新落地的基地离别的基地至少这么远（中心到中心）。 */
+    public static final int LANDING_SPACING = BaseLayout.RADIUS * 2 + 48;
+
+    /** 一处基地和它所在的星球维度。 */
+    public record BaseRef(ResourceKey<Level> dimension, BaseState base) {
+    }
+
+    /** 这个恒星系里所有星球上的基地（星球维度没加载也算；母星没有基地）。 */
+    public static List<BaseRef> bases(MinecraftServer server, int system) {
+        List<BaseRef> list = new ArrayList<>();
+        DarkFogData.get(server).planets().forEach((key, planet) -> {
+            Identifier id = Identifier.tryParse(key);
+            if (id == null) {
+                return;
+            }
+            ResourceKey<Level> dimension = ResourceKey.create(Registries.DIMENSION, id);
+            if (Planets.bodyId(dimension).filter(body -> body.system() == system).isPresent()) {
+                planet.bases().forEach(base -> list.add(new BaseRef(dimension, base)));
+            }
+        });
+        return list;
+    }
+
+    /** 这颗星球维度上的基地点有没有选过；没选过就按种子选好（中继站落地前要先有，免得以后选的点和落地的基地叠在一起）。 */
+    private static Optional<DarkFogData.Planet> planned(MinecraftServer server, ResourceKey<Level> dimension) {
+        Optional<Planet> body = Planets.generatedPlanet(Planets.galaxy(server), dimension);
+        if (body.isEmpty()) {
+            return Optional.empty();
+        }
+        DarkFogData data = DarkFogData.get(server);
+        String key = dimension.identifier().toString();
+        return Optional.of(data.planet(key).orElseGet(() -> data.plan(key, sites(server, body.get()))));
+    }
+
+    /**
+     * 巢穴的中继站在 ({@code x}, {@code z}) 落地，建一处新基地，从 {@code darkFogLevel} 级开始。星球维度不用加载：地面等有人来了再压平。
+     *
+     * @return 新的基地；母星、不是星球、护盾盖着、离别的基地太近时是空
+     */
+    public static Optional<BaseState> landRelay(MinecraftServer server, ResourceKey<Level> dimension, int x, int z, int darkFogLevel) {
+        if (dimension == Level.OVERWORLD || !UniverseRules.darkFog(server).enabled() || Shields.covers(server, dimension, x + 0.5, z + 0.5)) {
+            return Optional.empty();
+        }
+        Optional<DarkFogData.Planet> planet = planned(server, dimension);
+        if (planet.isEmpty()) {
+            return Optional.empty();
+        }
+        for (BaseState other : planet.get().bases()) {
+            if (other.status() != BaseState.Status.VOID && Math.hypot(other.x() - x, other.z() - z) < LANDING_SPACING) {
+                return Optional.empty();
+            }
+        }
+        DarkFogData data = DarkFogData.get(server);
+        BaseState base = data.add(dimension.identifier().toString(), x, z);
+        base.land(darkFogLevel, now(server));
+        data.setDirty();
+        return Optional.of(base);
+    }
+
+    /**
+     * 巢穴的中继站补上这处基地被打掉的中继站。
+     *
+     * @return 补上了；基地不在、瓦解了、中继站还在时是 false
+     */
+    public static boolean restoreRelay(MinecraftServer server, ResourceKey<Level> dimension, int id) {
+        DarkFogData data = DarkFogData.get(server);
+        Optional<BaseState> base = data.planet(dimension.identifier().toString()).flatMap(planet -> planet.base(id));
+        if (base.isEmpty() || !base.get().restoreRelay()) {
+            return false;
+        }
+        data.setDirty();
+        return true;
     }
 
     // ---- 调试命令和游戏内测试用

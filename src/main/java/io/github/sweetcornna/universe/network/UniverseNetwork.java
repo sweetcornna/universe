@@ -40,7 +40,7 @@ import net.neoforged.neoforge.server.ServerLifecycleHooks;
  */
 public final class UniverseNetwork {
     /** 协议版本：任何包的格式改动都要加一，版本不同的客户端和服务端会拒绝连接。 */
-    private static final String PROTOCOL_VERSION = "30";
+    private static final String PROTOCOL_VERSION = "31";
 
     private UniverseNetwork() {
     }
@@ -142,9 +142,19 @@ public final class UniverseNetwork {
                 // M16：附近掉血的设施（ADR-0028 §四）
                 .playToClient(io.github.sweetcornna.universe.network.FacilityPayloads.Health.TYPE,
                         io.github.sweetcornna.universe.network.FacilityPayloads.Health.STREAM_CODEC)
-                // M16 黑雾：设施（Q）的包加在这行上面
-                // M16 黑雾：炮塔（R1）的包加在这行上面
-                // M16 黑雾：信号塔、干扰塔（R2）的包加在这行上面
+                // M16 第二块（ADR-0028 §八）
+                // M16 黑雾：巢穴（H）的包加在这行上面
+                // M16 黑雾：巢穴建筑（B）的包加在这行上面
+                .playToClient(LancerPayloads.Warning.TYPE, LancerPayloads.Warning.STREAM_CODEC)
+                // M16 黑雾：太空单位（U）的包加在这行上面
+                .playToClient(DarkFogMapPayload.TYPE, DarkFogMapPayload.STREAM_CODEC)
+                // M16 黑雾：中继站和种子（R）的包加在这行上面
+                // M16 黑雾：等离子炮塔（T）的包加在这行上面
+                .playToClient(io.github.sweetcornna.universe.darkfog.shield.ShieldPayloads.Domes.TYPE,
+                        io.github.sweetcornna.universe.darkfog.shield.ShieldPayloads.Domes.STREAM_CODEC)
+                .playToClient(io.github.sweetcornna.universe.darkfog.shield.ShieldPayloads.Hit.TYPE,
+                        io.github.sweetcornna.universe.darkfog.shield.ShieldPayloads.Hit.STREAM_CODEC)
+                // M16 黑雾：行星护盾（S）的包加在这行上面
                 ;
     }
 }

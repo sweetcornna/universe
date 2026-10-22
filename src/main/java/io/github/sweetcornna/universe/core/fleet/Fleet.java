@@ -43,11 +43,23 @@ public final class Fleet {
      * @param start  出发的游戏刻
      * @param events 出发时算好的各段遭遇
      * @param seed   领奖励时用的种子
+     * @param hive   清剿的是哪个恒星系的黑雾巢穴（{@link HiveSortie}）；普通的远征是 -1，这时 {@code day}、{@code slot} 才有意义
      */
-    public record Voyage(long day, int slot, Expedition.Offer offer, List<Integer> team, long start, List<Expedition.Event> events, long seed) {
+    public record Voyage(long day, int slot, Expedition.Offer offer, List<Integer> team, long start, List<Expedition.Event> events, long seed,
+            int hive) {
         public Voyage {
             team = List.copyOf(team);
             events = List.copyOf(events);
+        }
+
+        /** 普通的远征。 */
+        public Voyage(long day, int slot, Expedition.Offer offer, List<Integer> team, long start, List<Expedition.Event> events, long seed) {
+            this(day, slot, offer, team, start, events, seed, -1);
+        }
+
+        /** 是清剿巢穴。 */
+        public boolean sortie() {
+            return this.hive >= 0;
         }
 
         public long end() {
@@ -224,6 +236,18 @@ public final class Fleet {
         if (this.taken(day, slot)) {
             return Problem.TAKEN;
         }
+        return this.teamProblem(team);
+    }
+
+    /** 能不能派这一队去清剿巢穴：不占每天的远征任务，别的和 {@link #canLaunch} 一样。 */
+    public @Nullable Problem canSortie(List<Integer> team) {
+        if (this.freighter == null) {
+            return Problem.NO_FREIGHTER;
+        }
+        return this.teamProblem(team);
+    }
+
+    private @Nullable Problem teamProblem(List<Integer> team) {
         if (this.voyages.size() >= Expedition.MAX_ACTIVE) {
             return Problem.TOO_MANY_VOYAGES;
         }
@@ -261,19 +285,32 @@ public final class Fleet {
         return voyage;
     }
 
+    /** 派去清剿 {@code system} 的巢穴：先查 {@link #canSortie}，{@code offer} 按巢穴等级定（{@link HiveSortie#offer}）。燃料由调用方收。 */
+    public Voyage sortie(int system, Expedition.Offer offer, List<Integer> team, long now, Rng rng) {
+        List<Integer> ids = List.copyOf(new LinkedHashSet<>(team));
+        List<Expedition.Event> events = HiveSortie.resolve(offer.difficulty(), this.team(ids), rng.fork("events"));
+        Voyage voyage = new Voyage(-1, -1, offer, ids, now, events, rng.nextLong(), system);
+        this.voyages.add(voyage);
+        return voyage;
+    }
+
     /** 在外面的远征都改成刚好回来（调试命令用）：出发时刻往前挪，遭遇不变。 */
     public void hurry(long now) {
         this.voyages.replaceAll(v -> v.done(now) ? v
-                : new Voyage(v.day(), v.slot(), v.offer(), v.team(), now - v.offer().ticks(), v.events(), v.seed()));
+                : new Voyage(v.day(), v.slot(), v.offer(), v.team(), now - v.offer().ticks(), v.events(), v.seed(), v.hive()));
     }
 
-    /** 领回一支回来了的远征：沉了的从舰队里去掉，受损的记上，其余的出勤次数加一、到了就升级。 */
+    /**
+     * 领回一支回来了的远征：沉了的从舰队里去掉，受损的记上，其余的出勤次数加一、到了就升级。清剿的奖励只有信用点，
+     * 巢穴那边打掉了什么、带回什么掉落由调用方去结算。
+     */
     public Claim claim(Voyage voyage) {
         if (!this.voyages.remove(voyage)) {
             throw new IllegalArgumentException("not out: " + voyage);
         }
         Rng rng = Rng.of(voyage.seed());
-        List<Expedition.Reward> rewards = Expedition.rewards(voyage.offer(), voyage.events(), rng.fork("rewards"));
+        List<Expedition.Reward> rewards = voyage.sortie() ? HiveSortie.rewards(voyage.offer().difficulty(), voyage.events(), rng.fork("rewards"))
+                : Expedition.rewards(voyage.offer(), voyage.events(), rng.fork("rewards"));
         Set<Integer> lost = new LinkedHashSet<>();
         Set<Integer> hurt = new LinkedHashSet<>();
         for (Expedition.Event event : voyage.events()) {

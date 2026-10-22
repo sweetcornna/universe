@@ -303,7 +303,6 @@ public final class UniverseGameTests {
             DarkFogBaseGameTests::baseStateSurvivesSave);
     private static final ResourceKey<Consumer<GameTestHelper>> DARK_FOG_SENDS_WAVE = function("dark_fog_sends_wave",
             DarkFogBaseGameTests::fullThreatSendsWave);
-    // M16 黑雾：基地（P）的测试函数加在这行上面
     // 黑雾的单位和建筑（ADR-0028 §二），测试写在 DarkFogUnitGameTests
     private static final ResourceKey<Consumer<GameTestHelper>> DARK_FOG_RAIDER_CLIMBS = function("dark_fog_raider_climbs",
             DarkFogUnitGameTests::raiderClimbsToRaisedTarget);
@@ -315,13 +314,11 @@ public final class UniverseGameTests {
             DarkFogUnitGameTests::guardianReturnsHome);
     private static final ResourceKey<Consumer<GameTestHelper>> DARK_FOG_UNPOWERED_LASER_HOLDS_FIRE = function("dark_fog_unpowered_laser_holds_fire",
             DarkFogUnitGameTests::unpoweredLaserTowerHoldsFire);
-    // M16 黑雾：单位（P2）的测试函数加在这行上面
     // 设施的耐久、残影、战场分析基地（ADR-0028 §四、§五），测试写在 DarkFogFacilityGameTests
     private static final ResourceKey<Consumer<GameTestHelper>> FACILITY_GHOST_RESTORES = function("facility_ghost_restores",
             DarkFogFacilityGameTests::ghostKeepsAndRestores);
     private static final ResourceKey<Consumer<GameTestHelper>> BATTLEFIELD_BASE_REPAIRS = function("battlefield_base_repairs",
             DarkFogFacilityGameTests::baseRepairsAndRebuilds);
-    // M16 黑雾：设施（Q）的测试函数加在这行上面
     // 炮塔（ADR-0028 §五），测试写在 DarkFogTurretGameTests
     private static final ResourceKey<Consumer<GameTestHelper>> GAUSS_KILLS_RAIDER = function("gauss_kills_raider",
             DarkFogTurretGameTests::gaussKillsRaider);
@@ -331,21 +328,75 @@ public final class UniverseGameTests {
             DarkFogTurretGameTests::unpoweredHoldsFire);
     private static final ResourceKey<Consumer<GameTestHelper>> CANNON_IGNORES_FLYERS = function("cannon_ignores_flyers",
             DarkFogTurretGameTests::cannonIgnoresFlyers);
-    // M16 黑雾：炮塔（R1）的测试函数加在这行上面
     private static final ResourceKey<Consumer<GameTestHelper>> JAMMER_SLOWS_RAIDER = function("jammer_slows_raider",
             DarkFogSupportGameTests::jammerSlowsRaider);
     private static final ResourceKey<Consumer<GameTestHelper>> SIGNAL_TOWER_DRAWS_DARK_FOG = function("signal_tower_draws_dark_fog",
             DarkFogSupportGameTests::signalTowerDrawsDarkFog);
     private static final ResourceKey<Consumer<GameTestHelper>> EXPLOSIVE_UNIT_SPARES_BLOCKS = function("explosive_unit_spares_blocks",
             DarkFogSupportGameTests::explosiveUnitSparesBlocks);
-    // M16 黑雾：信号塔、干扰塔（R2）的测试函数加在这行上面
     private static final ResourceKey<Consumer<GameTestHelper>> SENTINEL_STRENGTH_SCALES = function("sentinel_strength_scales",
             WorldOptionsGameTests::sentinelStrengthScales);
     private static final ResourceKey<Consumer<GameTestHelper>> RESOURCE_MULTIPLIER_SCALES_VEINS = function("resource_multiplier_scales_veins",
             WorldOptionsGameTests::resourceMultiplierScalesVeins);
     private static final ResourceKey<Consumer<GameTestHelper>> RULES_READ_INTO_SETTINGS = function("rules_read_into_settings",
             WorldOptionsGameTests::rulesReadIntoSettings);
-    // M16 建世界的选项（S）的测试函数加在这行上面
+    // M16 第二块（ADR-0028 §八）：各自的测试写在自己的类里
+    private static final ResourceKey<Consumer<GameTestHelper>> DARK_FOG_HIVE_SAVES = function("dark_fog_hive_saves",
+            DarkFogHiveGameTests::hiveStateSurvivesSave);
+    private static final ResourceKey<Consumer<GameTestHelper>> DARK_FOG_HIVE_REBUILDS_WITH_RELAYS = function("dark_fog_hive_rebuilds_with_relays",
+            DarkFogHiveGameTests::coreLossRebuildsOnlyWithRelays);
+    private static final ResourceKey<Consumer<GameTestHelper>> DARK_FOG_HIVE_STRIKE_AND_THREAT = function("dark_fog_hive_strike_and_threat",
+            DarkFogHiveGameTests::strikeAndRelayThreat);
+    // M16 黑雾：巢穴（H）的测试函数加在这行上面
+    private static final ResourceKey<Consumer<GameTestHelper>> HIVE_BUILDING_TAKES_PLAYER_DAMAGE = function("hive_building_takes_player_damage",
+            HiveBuildingGameTests::takesOnlyPlayerDamage);
+    private static final ResourceKey<Consumer<GameTestHelper>> HIVE_LASER_NEEDS_POWER = function("hive_laser_needs_power",
+            HiveBuildingGameTests::laserFiresOnlyWhenPowered);
+    private static final ResourceKey<Consumer<GameTestHelper>> HIVE_PLASMA_HITS_PLAYER = function("hive_plasma_hits_player",
+            HiveBuildingGameTests::plasmaTowerHitsPlayer);
+    // M16 黑雾：巢穴建筑（B）的测试函数加在这行上面
+    // 太空单位和枪骑轰炸（ADR-0028 §八），测试写在 SpaceUnitGameTests
+    private static final ResourceKey<Consumer<GameTestHelper>> SPACE_LANCER_FIRES_AT_ATTACKER = function("space_lancer_fires_at_attacker",
+            SpaceUnitGameTests::lancerFiresAtAttacker);
+    private static final ResourceKey<Consumer<GameTestHelper>> SPACE_HUMPBACK_SHELLS_ATTACKER = function("space_humpback_shells_attacker",
+            SpaceUnitGameTests::humpbackShellsAttacker);
+    private static final ResourceKey<Consumer<GameTestHelper>> LANCER_RAID_BOMBS_AND_ENDS = function("lancer_raid_bombs_and_ends",
+            SpaceUnitGameTests::raidBombsAndEnds);
+    private static final ResourceKey<Consumer<GameTestHelper>> SHIELD_STOPS_LANCER_BOMBS = function("shield_stops_lancer_bombs",
+            SpaceUnitGameTests::shieldStopsBombs);
+    // M16 黑雾：太空单位（U）的测试函数加在这行上面
+    private static final ResourceKey<Consumer<GameTestHelper>> DARK_FOG_RELAY_LANDS = function("dark_fog_relay_lands",
+            DarkFogFlightGameTests::relayLandsNewBase);
+    private static final ResourceKey<Consumer<GameTestHelper>> DARK_FOG_RELAY_RESTORES = function("dark_fog_relay_restores",
+            DarkFogFlightGameTests::relayRestoresLostRelay);
+    private static final ResourceKey<Consumer<GameTestHelper>> DARK_FOG_RELAY_AVOIDS_SHIELDS = function("dark_fog_relay_avoids_shields",
+            DarkFogFlightGameTests::relayAvoidsShields);
+    private static final ResourceKey<Consumer<GameTestHelper>> DARK_FOG_SEED_FOUNDS_HIVE = function("dark_fog_seed_founds_hive",
+            DarkFogFlightGameTests::seedFoundsHive);
+    private static final ResourceKey<Consumer<GameTestHelper>> DARK_FOG_CRAFT_SHOT_DOWN = function("dark_fog_craft_shot_down",
+            DarkFogFlightGameTests::craftShotDownEndsFlight);
+    // M16 黑雾：中继站和种子（R）的测试函数加在这行上面
+    private static final ResourceKey<Consumer<GameTestHelper>> PLASMA_KILLS_RAIDER = function("plasma_kills_raider",
+            PlasmaTurretGameTests::plasmaKillsRaider);
+    private static final ResourceKey<Consumer<GameTestHelper>> SR_PLASMA_NEEDS_NO_AMMO = function("sr_plasma_needs_no_ammo",
+            PlasmaTurretGameTests::shortRangeNeedsNoAmmo);
+    private static final ResourceKey<Consumer<GameTestHelper>> GAUSS_IGNORES_HIGH_ALTITUDE = function("gauss_ignores_high_altitude",
+            PlasmaTurretGameTests::gaussIgnoresHighAltitude);
+    private static final ResourceKey<Consumer<GameTestHelper>> MISSILE_AIMS_AT_HIGH_ALTITUDE = function("missile_aims_at_high_altitude",
+            PlasmaTurretGameTests::missileAimsAtHighAltitude);
+    private static final ResourceKey<Consumer<GameTestHelper>> PLASMA_HITS_HIGH_ALTITUDE = function("plasma_hits_high_altitude",
+            PlasmaTurretGameTests::plasmaHitsHighAltitude);
+    private static final ResourceKey<Consumer<GameTestHelper>> FLEET_SORTIE_STRIKES_HIVE = function("fleet_sortie_strikes_hive",
+            PlasmaTurretGameTests::sortieStrikesHive);
+    // M16 黑雾：等离子炮塔（T）的测试函数加在这行上面
+    // 行星护盾（ADR-0028 §八），测试写在 ShieldGameTests
+    private static final ResourceKey<Consumer<GameTestHelper>> SHIELD_CHARGES_AND_RAISES = function("shield_charges_and_raises",
+            ShieldGameTests::chargesAndRaises);
+    private static final ResourceKey<Consumer<GameTestHelper>> SHIELD_ABSORBS_AND_COLLAPSES = function("shield_absorbs_and_collapses",
+            ShieldGameTests::absorbsAndCollapses);
+    private static final ResourceKey<Consumer<GameTestHelper>> SHIELD_LIMIT_AND_OFFLINE_COVERS = function("shield_limit_and_offline_covers",
+            ShieldGameTests::limitAndOfflineCovers);
+    // M16 黑雾：行星护盾（S）的测试函数加在这行上面
 
     private UniverseGameTests() {
     }
@@ -423,29 +474,53 @@ public final class UniverseGameTests {
         spaced(event, environment, DARK_FOG_CORE_LEAVES_REMNANT, 20);
         spaced(event, environment, DARK_FOG_BASE_SAVES, 20);
         spaced(event, environment, DARK_FOG_SENDS_WAVE, 20);
-        // M16 黑雾：基地（P）的测试加在这行上面
         spaced(event, environment, DARK_FOG_RAIDER_STRIKES_FACILITY, HANGAR, 300);
         spaced(event, environment, DARK_FOG_RAIDER_CLIMBS, HANGAR, 300, true);
         spaced(event, environment, DARK_FOG_RANGER_SHOOTS_BACK, HANGAR, 200);
         spaced(event, environment, DARK_FOG_GUARDIAN_RETURNS_HOME, HANGAR, 200);
         spaced(event, environment, DARK_FOG_UNPOWERED_LASER_HOLDS_FIRE, HANGAR, 200);
-        // M16 黑雾：单位（P2）的测试加在这行上面
         test(event, environment, FACILITY_GHOST_RESTORES, 20);
         spaced(event, environment, BATTLEFIELD_BASE_REPAIRS, 200);
-        // M16 黑雾：设施（Q）的测试加在这行上面
         spaced(event, environment, GAUSS_KILLS_RAIDER, HANGAR, 200);
         spaced(event, environment, LASER_NEEDS_NO_AMMO, HANGAR, 100);
         spaced(event, environment, UNPOWERED_TURRET_HOLDS_FIRE, HANGAR, 100);
         spaced(event, environment, CANNON_IGNORES_FLYERS, HANGAR, 100);
-        // M16 黑雾：炮塔（R1）的测试加在这行上面
         spaced(event, environment, JAMMER_SLOWS_RAIDER, 200);
         spaced(event, environment, SIGNAL_TOWER_DRAWS_DARK_FOG, 200);
         spaced(event, environment, EXPLOSIVE_UNIT_SPARES_BLOCKS, 60);
-        // M16 黑雾：信号塔、干扰塔（R2）的测试加在这行上面
         test(event, environment, SENTINEL_STRENGTH_SCALES, 20);
         test(event, environment, RESOURCE_MULTIPLIER_SCALES_VEINS, 20);
         test(event, environment, RULES_READ_INTO_SETTINGS, 20);
-        // M16 建世界的选项（S）的测试加在这行上面
+        test(event, environment, DARK_FOG_HIVE_SAVES, 20);
+        test(event, environment, DARK_FOG_HIVE_REBUILDS_WITH_RELAYS, 20);
+        test(event, environment, DARK_FOG_HIVE_STRIKE_AND_THREAT, 20);
+        // M16 黑雾：巢穴（H）的测试加在这行上面
+        spaced(event, environment, HIVE_BUILDING_TAKES_PLAYER_DAMAGE, HANGAR, 20);
+        spaced(event, environment, HIVE_LASER_NEEDS_POWER, HANGAR, 200);
+        spaced(event, environment, HIVE_PLASMA_HITS_PLAYER, HANGAR, 200);
+        // M16 黑雾：巢穴建筑（B）的测试加在这行上面
+        spaced(event, environment, SPACE_LANCER_FIRES_AT_ATTACKER, HANGAR, 200, true);
+        spaced(event, environment, SPACE_HUMPBACK_SHELLS_ATTACKER, HANGAR, 200, true);
+        spaced(event, environment, LANCER_RAID_BOMBS_AND_ENDS, HANGAR, 600, true);
+        spaced(event, environment, SHIELD_STOPS_LANCER_BOMBS, HANGAR, 300, true);
+        // M16 黑雾：太空单位（U）的测试加在这行上面
+        test(event, environment, DARK_FOG_RELAY_LANDS, 20);
+        test(event, environment, DARK_FOG_RELAY_RESTORES, 20);
+        test(event, environment, DARK_FOG_RELAY_AVOIDS_SHIELDS, 20);
+        test(event, environment, DARK_FOG_SEED_FOUNDS_HIVE, 20);
+        spaced(event, environment, DARK_FOG_CRAFT_SHOT_DOWN, 20);
+        // M16 黑雾：中继站和种子（R）的测试加在这行上面
+        spaced(event, environment, PLASMA_KILLS_RAIDER, HANGAR, 200);
+        spaced(event, environment, SR_PLASMA_NEEDS_NO_AMMO, HANGAR, 100);
+        spaced(event, environment, GAUSS_IGNORES_HIGH_ALTITUDE, HANGAR, 100);
+        spaced(event, environment, MISSILE_AIMS_AT_HIGH_ALTITUDE, HANGAR, 100);
+        spaced(event, environment, PLASMA_HITS_HIGH_ALTITUDE, HANGAR, 200);
+        test(event, environment, FLEET_SORTIE_STRIKES_HIVE, 20);
+        // M16 黑雾：等离子炮塔（T）的测试加在这行上面
+        spaced(event, environment, SHIELD_CHARGES_AND_RAISES, 200);
+        spaced(event, environment, SHIELD_ABSORBS_AND_COLLAPSES, 40);
+        test(event, environment, SHIELD_LIMIT_AND_OFFLINE_COVERS, 20);
+        // M16 黑雾：行星护盾（S）的测试加在这行上面
     }
 
     /**

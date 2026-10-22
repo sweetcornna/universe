@@ -152,7 +152,6 @@ public final class UniverseEntities {
     public static final DeferredHolder<EntityType<?>, EntityType<io.github.sweetcornna.universe.darkfog.entity.DarkFogShell>> DARK_FOG_SHELL =
             ENTITIES.registerEntityType("dark_fog_shell", io.github.sweetcornna.universe.darkfog.entity.DarkFogShell::new, MobCategory.MISC,
                     builder -> builder.sized(0.4F, 0.4F).clientTrackingRange(8).updateInterval(2).noSave().noLootTable().fireImmune());
-    // M16 黑雾：单位的弹体（P2）加在这行上面
     /** 聚爆炮的炮弹、导弹炮塔的导弹（ADR-0028 §五）：不存档；导弹会拐弯，每刻同步。 */
     public static final DeferredHolder<EntityType<?>, EntityType<TurretShell>> TURRET_SHELL = ENTITIES.registerEntityType(
             "turret_shell", TurretShell::new, MobCategory.MISC,
@@ -160,12 +159,47 @@ public final class UniverseEntities {
     public static final DeferredHolder<EntityType<?>, EntityType<TurretMissile>> TURRET_MISSILE = ENTITIES.registerEntityType(
             "turret_missile", TurretMissile::new, MobCategory.MISC,
             builder -> builder.sized(0.35F, 0.35F).clientTrackingRange(8).updateInterval(1).noSave().noLootTable().fireImmune());
-    // M16 黑雾：炮塔的弹体（R1）加在这行上面
     /** 扔出去的燃烧单元、爆破单元（ADR-0028 §五）：和雪球一样画物品本身；不存档。 */
     public static final DeferredHolder<EntityType<?>, EntityType<ThrownUnit>> THROWN_UNIT = ENTITIES.registerEntityType(
             "thrown_unit", ThrownUnit::new, MobCategory.MISC,
             builder -> builder.sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(10).noSave().noLootTable());
-    // M16 黑雾：投掷物（R2）加在这行上面
+    // ---- M16 第二块（ADR-0028 §八）
+    /** 太空巢穴的建筑（ADR-0028 §八）：不动，不存档，由 {@code DarkFogHives} 放；尺寸按种类在实体里算。太空里远远就要看得见。 */
+    public static final DeferredHolder<EntityType<?>, EntityType<io.github.sweetcornna.universe.darkfog.hive.HiveBuilding>> HIVE_BUILDING =
+            ENTITIES.registerEntityType("hive_building", io.github.sweetcornna.universe.darkfog.hive.HiveBuilding::new, MobCategory.MISC,
+                    builder -> builder.sized(6.0F, 5.0F).clientTrackingRange(32).updateInterval(20).noSave().noLootTable().fireImmune());
+    /** 巢穴等离子塔的炮弹：不受重力、直线飞，客户端按速度推算；不存档。 */
+    public static final DeferredHolder<EntityType<?>, EntityType<io.github.sweetcornna.universe.darkfog.hive.HivePlasmaShell>> HIVE_PLASMA_SHELL =
+            ENTITIES.registerEntityType("hive_plasma_shell", io.github.sweetcornna.universe.darkfog.hive.HivePlasmaShell::new, MobCategory.MISC,
+                    builder -> builder.sized(0.6F, 0.6F).clientTrackingRange(16).updateInterval(10).noSave().noLootTable().fireImmune());
+    // M16 黑雾：巢穴建筑（B）的实体加在这行上面
+    /** 巢穴的枪骑、座头鲸（ADR-0028 §八）：在太空里自由飞，不存档，由 {@code DarkFogHives}、{@code LancerRaids} 放。 */
+    public static final DeferredHolder<EntityType<?>, EntityType<io.github.sweetcornna.universe.darkfog.space.DarkFogLancer>> DARK_FOG_LANCER =
+            ENTITIES.registerEntityType("dark_fog_lancer", io.github.sweetcornna.universe.darkfog.space.DarkFogLancer::new, MobCategory.MISC,
+                    builder -> builder.sized(2.2F, 0.9F).eyeHeight(0.45F).clientTrackingRange(16).updateInterval(1).noSave().noLootTable()
+                            .fireImmune());
+    public static final DeferredHolder<EntityType<?>, EntityType<io.github.sweetcornna.universe.darkfog.space.DarkFogHumpback>> DARK_FOG_HUMPBACK =
+            ENTITIES.registerEntityType("dark_fog_humpback", io.github.sweetcornna.universe.darkfog.space.DarkFogHumpback::new, MobCategory.MISC,
+                    builder -> builder.sized(6.0F, 3.0F).eyeHeight(1.8F).clientTrackingRange(20).updateInterval(2).noSave().noLootTable()
+                            .fireImmune());
+    /** 枪骑扔的炸弹：有重力，位置常同步；不存档。 */
+    public static final DeferredHolder<EntityType<?>, EntityType<io.github.sweetcornna.universe.darkfog.space.LancerBomb>> LANCER_BOMB =
+            ENTITIES.registerEntityType("lancer_bomb", io.github.sweetcornna.universe.darkfog.space.LancerBomb::new, MobCategory.MISC,
+                    builder -> builder.sized(0.4F, 0.4F).clientTrackingRange(10).updateInterval(2).noSave().noLootTable().fireImmune());
+    // M16 黑雾：太空单位（U）的实体加在这行上面
+    /** 起飞、降落中的中继站和种子（ADR-0028 §八）：飞行本身按时间算，这两个只是看得见、打得着的样子；不存档。 */
+    public static final DeferredHolder<EntityType<?>, EntityType<io.github.sweetcornna.universe.darkfog.flight.DarkFogCraft>> DARK_FOG_FLYING_RELAY =
+            ENTITIES.registerEntityType("dark_fog_flying_relay", io.github.sweetcornna.universe.darkfog.flight.DarkFogCraft::new, MobCategory.MISC,
+                    builder -> builder.sized(3.0F, 2.0F).clientTrackingRange(32).updateInterval(2).noSave().noLootTable().fireImmune());
+    public static final DeferredHolder<EntityType<?>, EntityType<io.github.sweetcornna.universe.darkfog.flight.DarkFogCraft>> DARK_FOG_SEED =
+            ENTITIES.registerEntityType("dark_fog_seed", io.github.sweetcornna.universe.darkfog.flight.DarkFogCraft::new, MobCategory.MISC,
+                    builder -> builder.sized(2.5F, 2.5F).clientTrackingRange(32).updateInterval(2).noSave().noLootTable().fireImmune());
+    // M16 黑雾：中继站和种子（R）的实体加在这行上面
+    /** 等离子炮塔、近程等离子炮塔打出的等离子团（ADR-0028 §八）：直线飞得快，每刻同步；不存档。 */
+    public static final DeferredHolder<EntityType<?>, EntityType<io.github.sweetcornna.universe.darkfog.turret.TurretPlasma>> TURRET_PLASMA =
+            ENTITIES.registerEntityType("turret_plasma", io.github.sweetcornna.universe.darkfog.turret.TurretPlasma::new, MobCategory.MISC,
+                    builder -> builder.sized(0.4F, 0.4F).clientTrackingRange(8).updateInterval(1).noSave().noLootTable().fireImmune());
+    // M16 黑雾：等离子炮塔（T）的实体加在这行上面
 
     private UniverseEntities() {
     }

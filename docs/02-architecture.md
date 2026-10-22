@@ -384,6 +384,9 @@ io.github.sweetcornna.universe
 | `ChunkEvent.Load` 不一定在服务器主线程触发，`isNewChunk()` 区分新生成的区块，里面不能改世界（会死锁），先排队到下一刻；区块坐标打包用 `ChunkPos.pack(x, z)` 或 `chunkPos.pack()` | 已确认，黑雾基地 |
 | 物品：`Item.use(Level, Player, InteractionHand)` 返回 `InteractionResult`；`appendHoverText(ItemStack, TooltipContext, TooltipDisplay, Consumer<Component>, TooltipFlag)`；冷却按物品堆记，`getCooldowns().addCooldown(ItemStack, 刻)`；`ThrowableItemProjectile` 在 `net.minecraft.world.entity.projectile.throwableitemprojectile`；`ItemEntity.lifespan` 是公开字段 | 已确认，弹药、投掷物、黑雾掉落 |
 | 伤害类型 `new DamageType(消息键, DamageScaling.NEVER, 饥饿)`，`NEVER` 不随难度变；爆炸要护住方块，在 `ExplosionEvent.Detonate` 里从 `getAffectedBlocks()` 删掉；方块实体的物品能力用 `net.neoforged.neoforge.transfer.item.WorldlyContainerWrapper` | 已确认，黑雾伤害、设施 |
+| `Attributes.MAX_HEALTH` 的上限是 1024，设大了被截断。血量更多的实体（巢穴核心 6000 起）按"真实血量 / 实体血量"的倍率记，挨打时伤害除以倍率再交给原版，报出去的伤害再乘回来 | 已确认，黑雾建筑、巢穴建筑 |
+| 深度是反过来的：`DepthStencilState.DEFAULT` 是 `GREATER_THAN_OR_EQUAL` 加写深度。`RenderTypes.debugQuads()`（位置加颜色、半透明混合、不写深度、不剔除）适合大片半透明的面，比如护盾穹顶；`RenderTypes.lightning()` 是叠加混合、写深度。两种都能在 `SubmitCustomGeometryEvent` 里用 | 已确认，护盾穹顶、炮塔光束 |
+| 实体按 16 格的区段查，碰撞箱宽过 6 格时，挨着边的弹体查不到它；大模型照画，碰撞箱只罩住主体 | 已确认，巢穴建筑 |
 
 拿不准的 API 先查源码再写，核实后把结果补进这张表。源码在：
 
