@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "open=false": {
+      "model": "universe:block/salvage_capsule"
+    },
+    "open=true": {
+      "model": "universe:block/salvage_capsule_open"
+    }
+  }
+}

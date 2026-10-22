@@ -3,7 +3,9 @@ package io.github.sweetcornna.universe.datagen;
 import java.util.List;
 import java.util.Optional;
 
+import io.github.sweetcornna.universe.block.landmark.ReinforcedDoorBlock;
 import io.github.sweetcornna.universe.block.poi.DropPodBlock;
+import io.github.sweetcornna.universe.block.poi.SalvageCapsuleBlock;
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.block.ClamBlock;
 import io.github.sweetcornna.universe.block.FloraBlocks;
@@ -132,7 +134,66 @@ final class UniverseModelProvider extends ModelProvider {
         UniverseItems.DISHES.values().forEach(item -> itemModels.generateFlatItem(item.get(), ModelTemplates.FLAT_ITEM));
         UniverseItems.GELS.values().forEach(item -> itemModels.generateFlatItem(item.get(), ModelTemplates.FLAT_ITEM));
         underwater(blockModels, itemModels);
+        wildLandmarks(blockModels, itemModels);
+        outpostLandmarks(blockModels);
         factory(blockModels, itemModels);
+    }
+
+    /**
+     * 交易站、制造设施、观测站的方块（ADR-0026）：交易站的终端借空间站交易终端的贴图；加固门上下两半各一张贴图，
+     * 四面一样；加固板是一张贴图的方块。
+     */
+    private static void outpostLandmarks(BlockModelGenerators blockModels) {
+        Block trade = UniverseBlocks.OUTPOST_TRADE_TERMINAL.get();
+        Identifier tradeModel = ModelTemplates.CUBE_ORIENTABLE_TOP_BOTTOM.create(trade, new TextureMapping()
+                .put(TextureSlot.FRONT, texture("trade_terminal_front"))
+                .put(TextureSlot.SIDE, texture("trade_terminal_side"))
+                .put(TextureSlot.TOP, texture("trade_terminal_top"))
+                .put(TextureSlot.BOTTOM, texture("trade_terminal_top")), blockModels.modelOutput);
+        blockModels.blockStateOutput.accept(MultiVariantGenerator.dispatch(trade, BlockModelGenerators.plainVariant(tradeModel))
+                .with(BlockModelGenerators.ROTATION_HORIZONTAL_FACING));
+        blockModels.registerSimpleItemModel(trade, tradeModel);
+        for (Block block : List.of(UniverseBlocks.FACILITY_TERMINAL.get(), UniverseBlocks.OBSERVATORY_TERMINAL.get())) {
+            String name = BuiltInRegistries.BLOCK.getKey(block).getPath();
+            Identifier model = ModelTemplates.CUBE_ORIENTABLE_TOP_BOTTOM.create(block, new TextureMapping()
+                    .put(TextureSlot.FRONT, texture(name + "_front"))
+                    .put(TextureSlot.SIDE, texture(name + "_side"))
+                    .put(TextureSlot.TOP, texture(name + "_top"))
+                    .put(TextureSlot.BOTTOM, texture(name + "_top")), blockModels.modelOutput);
+            blockModels.blockStateOutput.accept(MultiVariantGenerator.dispatch(block, BlockModelGenerators.plainVariant(model))
+                    .with(BlockModelGenerators.ROTATION_HORIZONTAL_FACING));
+            blockModels.registerSimpleItemModel(block, model);
+        }
+        blockModels.createTrivialCube(UniverseBlocks.REINFORCED_PLATING.get());
+        Block door = UniverseBlocks.REINFORCED_DOOR.get();
+        Identifier lower = ModelTemplates.CUBE_ALL.createWithSuffix(door, "_lower", TextureMapping.cube(texture("reinforced_door_lower")),
+                blockModels.modelOutput);
+        Identifier upper = ModelTemplates.CUBE_ALL.createWithSuffix(door, "_upper", TextureMapping.cube(texture("reinforced_door_upper")),
+                blockModels.modelOutput);
+        blockModels.blockStateOutput.accept(MultiVariantGenerator.dispatch(door).with(PropertyDispatch.initial(ReinforcedDoorBlock.HALF)
+                .generate(half -> BlockModelGenerators.plainVariant(half == DoubleBlockHalf.LOWER ? lower : upper))));
+        blockModels.registerSimpleItemModel(door, lower);
+    }
+
+    /** 野外的地标（ADR-0026）：化石土、雷击石是普通方块；打捞舱顶上是舱门，分关着和开着两种；化石和废料是平面物品。 */
+    private static void wildLandmarks(BlockModelGenerators blockModels, ItemModelGenerators itemModels) {
+        blockModels.createTrivialCube(UniverseBlocks.FOSSIL_DIRT.get());
+        blockModels.createTrivialCube(UniverseBlocks.FULGURITE.get());
+        Block capsule = UniverseBlocks.SALVAGE_CAPSULE.get();
+        Identifier[] capsules = new Identifier[2];
+        for (int open = 0; open < 2; open++) {
+            capsules[open] = ModelTemplates.CUBE_BOTTOM_TOP.createWithSuffix(capsule, open == 1 ? "_open" : "", new TextureMapping()
+                    .put(TextureSlot.TOP, texture(open == 1 ? "salvage_capsule_top_open" : "salvage_capsule_top"))
+                    .put(TextureSlot.BOTTOM, texture("salvage_capsule_bottom"))
+                    .put(TextureSlot.SIDE, texture("salvage_capsule_side")), blockModels.modelOutput);
+        }
+        blockModels.blockStateOutput.accept(MultiVariantGenerator.dispatch(capsule)
+                .with(PropertyDispatch.initial(SalvageCapsuleBlock.OPEN).generate(opened -> BlockModelGenerators.plainVariant(capsules[opened ? 1 : 0]))));
+        blockModels.registerSimpleItemModel(capsule, capsules[0]);
+        for (DeferredItem<?> item : List.of(UniverseItems.SHELL_FOSSIL, UniverseItems.ARTHROPOD_FOSSIL, UniverseItems.SKULL_FOSSIL,
+                UniverseItems.SALVAGED_SCRAP)) {
+            itemModels.generateFlatItem(item.get(), ModelTemplates.FLAT_ITEM);
+        }
     }
 
     /**
@@ -506,6 +567,18 @@ final class UniverseModelProvider extends ModelProvider {
         for (Block block : List.of(UniverseBlocks.MONOLITH.get(), UniverseBlocks.TECH_CACHE.get(), UniverseBlocks.SMOLDERING_WRECK.get())) {
             blockModels.createTrivialBlock(block, TexturedModel.COLUMN);
         }
+        // 守卫塔（ADR-0026）：外壳、灯带是整块；终端正面是屏幕
+        blockModels.createTrivialCube(UniverseBlocks.SENTINEL_PILLAR_PLATING.get());
+        blockModels.createTrivialCube(UniverseBlocks.SENTINEL_PILLAR_LIGHT.get());
+        Block pillarTerminal = UniverseBlocks.SENTINEL_PILLAR_TERMINAL.get();
+        Identifier pillarTerminalModel = ModelTemplates.CUBE_ORIENTABLE_TOP_BOTTOM.create(pillarTerminal, new TextureMapping()
+                .put(TextureSlot.FRONT, texture("sentinel_pillar_terminal_front"))
+                .put(TextureSlot.SIDE, texture("sentinel_pillar_plating"))
+                .put(TextureSlot.TOP, texture("sentinel_pillar_plating"))
+                .put(TextureSlot.BOTTOM, texture("sentinel_pillar_plating")), blockModels.modelOutput);
+        blockModels.blockStateOutput.accept(MultiVariantGenerator.dispatch(pillarTerminal, BlockModelGenerators.plainVariant(pillarTerminalModel))
+                .with(BlockModelGenerators.ROTATION_HORIZONTAL_FACING));
+        blockModels.registerSimpleItemModel(pillarTerminal, pillarTerminalModel);
         // 先驱者传送门（ADR-0024）：符文石按刻的是第几个符文换贴图；门开时环里那层光是半透明、会动的贴图
         blockModels.createTrivialCube(UniverseBlocks.PORTAL_STONE.get());
         blockModels.createTrivialBlock(UniverseBlocks.PORTAL_DIAL.get(), TexturedModel.COLUMN);
@@ -545,6 +618,11 @@ final class UniverseModelProvider extends ModelProvider {
         itemModels.generateFlatItem(UniverseItems.EXOCRAFT.get(), ModelTemplates.FLAT_ITEM);
         itemModels.generateFlatItem(UniverseItems.SENTINEL_SPAWN_EGG.get(), ModelTemplates.FLAT_ITEM);
         itemModels.generateFlatItem(UniverseItems.HEAVY_SENTINEL_SPAWN_EGG.get(), ModelTemplates.FLAT_ITEM);
+        // 地面守卫机（ADR-0026）
+        itemModels.generateFlatItem(UniverseItems.QUADRUPED_SERVO.get(), ModelTemplates.FLAT_ITEM);
+        itemModels.generateFlatItem(UniverseItems.WALKER_BRAIN.get(), ModelTemplates.FLAT_ITEM);
+        itemModels.generateFlatItem(UniverseItems.QUADRUPED_SENTINEL_SPAWN_EGG.get(), ModelTemplates.FLAT_ITEM);
+        itemModels.generateFlatItem(UniverseItems.WALKER_SENTINEL_SPAWN_EGG.get(), ModelTemplates.FLAT_ITEM);
     }
 
     /** 地面植物：变体号单双数用两种外形，发光的物种换自发光模型。 */

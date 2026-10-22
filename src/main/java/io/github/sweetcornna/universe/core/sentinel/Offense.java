@@ -19,7 +19,9 @@ public enum Offense {
     /** 在守卫机眼前收资源植物（ADR-0026）。 */
     HARVEST(0.5, 0),
     /** 摘引力果（ADR-0026）。 */
-    GRAVITINO(10, 3);
+    GRAVITINO(10, 3),
+    /** 打开制造设施的加固门（ADR-0026）。 */
+    FACILITY_DOOR(10, 3);
 
     private final double alert;
     private final int jumpTo;

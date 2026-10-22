@@ -1,0 +1,39 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "condition": "minecraft:tool/can_silk_touch",
+          "name": "universe:fossil_dirt"
+        }
+      ],
+      "rolls": 1
+    },
+    {
+      "condition": {
+        "type": "minecraft:inverted",
+        "term": "minecraft:tool/can_silk_touch"
+      },
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "universe:shell_fossil",
+          "weight": 14
+        },
+        {
+          "type": "minecraft:item",
+          "name": "universe:arthropod_fossil",
+          "weight": 5
+        },
+        {
+          "type": "minecraft:item",
+          "name": "universe:skull_fossil"
+        }
+      ],
+      "rolls": 1
+    }
+  ],
+  "random_sequence": "universe:blocks/fossil_dirt"
+}

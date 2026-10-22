@@ -52,9 +52,20 @@
     "universe:supply_crate",
     "universe:smoldering_wreck",
     "universe:sealed_crate",
+    "universe:outpost_trade_terminal",
+    "universe:reinforced_door",
+    "universe:reinforced_plating",
+    "universe:facility_terminal",
+    "universe:observatory_terminal",
+    "universe:fossil_dirt",
+    "universe:salvage_capsule",
+    "universe:fulgurite",
     "universe:portal_stone",
     "universe:portal_glyph",
     "universe:portal_dial",
+    "universe:sentinel_pillar_plating",
+    "universe:sentinel_pillar_light",
+    "universe:sentinel_pillar_terminal",
     "universe:live_conduit"
   ]
 }

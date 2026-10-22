@@ -77,6 +77,9 @@ public final class RawValues {
             Map.entry("universe:survey_data", 40.0),
             Map.entry("universe:navigation_data", 30.0),
             Map.entry("universe:sentinel_scrap", 25.0),
+            // 地面守卫机的零件（ADR-0026）：三级通缉以上才出四足机，五级才有步行机
+            Map.entry("universe:quadruped_servo", 350.0),
+            Map.entry("universe:walker_brain", 1500.0),
             Map.entry("universe:pirate_scrap", 60.0),
             Map.entry("universe:alien_meat", 3.0),
             Map.entry("universe:alien_hide", 4.0),
@@ -101,6 +104,13 @@ public final class RawValues {
             Map.entry("universe:alien_fish", 2.0),
             Map.entry("universe:living_pearl", 600.0),
             Map.entry("universe:clam", 600.0),
+            // 野外的地标（ADR-0026）：原作里化石两千到两万、废料五千到两万五、风暴晶体六千，这里和活珍珠一样按八分之一定。
+            // 化石坑一处 6–10 块，平均一块 500 左右；打捞舱平均两块多废料；雷击石要在雷暴里追着雷找
+            Map.entry("universe:shell_fossil", 250.0),
+            Map.entry("universe:arthropod_fossil", 800.0),
+            Map.entry("universe:skull_fossil", 2500.0),
+            Map.entry("universe:salvaged_scrap", 600.0),
+            Map.entry("universe:fulgurite", 750.0),
             // 只能在空间站买、在坠毁飞船里拆到的 Mk.II 部件（ADR-0017）
             Map.entry("universe:ship_thruster_mk2", 260.0),
             Map.entry("universe:fuel_tank_mk2", 220.0),

@@ -129,6 +129,16 @@ public final class UniverseItems {
     /** 潜艇：对着水面用放下一艘。 */
     public static final DeferredItem<SubmarineItem> SUBMARINE = ITEMS.registerItem("submarine", SubmarineItem::new, properties -> properties.stacksTo(1));
 
+    // ---- 野外的地标（ADR-0026）：化石坑、打捞点、雷击石。化石和废料只能卖钱
+    public static final DeferredItem<BlockItem> FOSSIL_DIRT = ITEMS.registerSimpleBlockItem(UniverseBlocks.FOSSIL_DIRT);
+    public static final DeferredItem<Item> SHELL_FOSSIL = ITEMS.registerSimpleItem("shell_fossil");
+    public static final DeferredItem<Item> ARTHROPOD_FOSSIL = ITEMS.registerSimpleItem("arthropod_fossil",
+            properties -> properties.rarity(Rarity.UNCOMMON));
+    public static final DeferredItem<Item> SKULL_FOSSIL = ITEMS.registerSimpleItem("skull_fossil", properties -> properties.rarity(Rarity.RARE));
+    public static final DeferredItem<BlockItem> SALVAGE_CAPSULE = ITEMS.registerSimpleBlockItem(UniverseBlocks.SALVAGE_CAPSULE);
+    public static final DeferredItem<Item> SALVAGED_SCRAP = ITEMS.registerSimpleItem("salvaged_scrap", properties -> properties.rarity(Rarity.UNCOMMON));
+    public static final DeferredItem<BlockItem> FULGURITE = ITEMS.registerSimpleBlockItem(UniverseBlocks.FULGURITE);
+
     // ---- 飞船
     public static final DeferredItem<BlockItem> SHIP_HELM = ITEMS.registerSimpleBlockItem(UniverseBlocks.SHIP_HELM);
     public static final DeferredItem<BlockItem> LANDING_PAD = ITEMS.registerSimpleBlockItem(UniverseBlocks.LANDING_PAD);
@@ -179,6 +189,14 @@ public final class UniverseItems {
             SpawnEggItem::new, properties -> properties.spawnEgg(UniverseEntities.SENTINEL.get()));
     public static final DeferredItem<SpawnEggItem> HEAVY_SENTINEL_SPAWN_EGG = ITEMS.registerItem("heavy_sentinel_spawn_egg",
             SpawnEggItem::new, properties -> properties.spawnEgg(UniverseEntities.HEAVY_SENTINEL.get()));
+    /** 地面守卫机的掉落（ADR-0026）：做机甲和守卫机型多功能工具要用，也能卖。 */
+    public static final DeferredItem<Item> QUADRUPED_SERVO = ITEMS.registerSimpleItem("quadruped_servo");
+    public static final DeferredItem<Item> WALKER_BRAIN = ITEMS.registerSimpleItem("walker_brain",
+            properties -> properties.rarity(Rarity.UNCOMMON));
+    public static final DeferredItem<SpawnEggItem> QUADRUPED_SENTINEL_SPAWN_EGG = ITEMS.registerItem("quadruped_sentinel_spawn_egg",
+            SpawnEggItem::new, properties -> properties.spawnEgg(UniverseEntities.QUADRUPED_SENTINEL.get()));
+    public static final DeferredItem<SpawnEggItem> WALKER_SENTINEL_SPAWN_EGG = ITEMS.registerItem("walker_sentinel_spawn_egg",
+            SpawnEggItem::new, properties -> properties.spawnEgg(UniverseEntities.WALKER_SENTINEL.get()));
     // ---- 兴趣点的方块（ADR-0014）
     public static final DeferredItem<BlockItem> SIGNAL_BOOSTER = ITEMS.registerSimpleBlockItem(UniverseBlocks.SIGNAL_BOOSTER);
     public static final DeferredItem<BlockItem> SUPPLY_CRATE = ITEMS.registerSimpleBlockItem(UniverseBlocks.SUPPLY_CRATE);
@@ -189,10 +207,19 @@ public final class UniverseItems {
     public static final DeferredItem<BlockItem> PORTAL_STONE = ITEMS.registerSimpleBlockItem(UniverseBlocks.PORTAL_STONE);
     public static final DeferredItem<BlockItem> PORTAL_GLYPH = ITEMS.registerSimpleBlockItem(UniverseBlocks.PORTAL_GLYPH);
     public static final DeferredItem<BlockItem> PORTAL_DIAL = ITEMS.registerSimpleBlockItem(UniverseBlocks.PORTAL_DIAL);
+    public static final DeferredItem<BlockItem> SENTINEL_PILLAR_PLATING = ITEMS.registerSimpleBlockItem(UniverseBlocks.SENTINEL_PILLAR_PLATING);
+    public static final DeferredItem<BlockItem> SENTINEL_PILLAR_LIGHT = ITEMS.registerSimpleBlockItem(UniverseBlocks.SENTINEL_PILLAR_LIGHT);
+    public static final DeferredItem<BlockItem> SENTINEL_PILLAR_TERMINAL = ITEMS.registerSimpleBlockItem(UniverseBlocks.SENTINEL_PILLAR_TERMINAL);
     public static final DeferredItem<BlockItem> TECH_CACHE = ITEMS.registerSimpleBlockItem(UniverseBlocks.TECH_CACHE);
     public static final DeferredItem<BlockItem> SMOLDERING_WRECK = ITEMS.registerSimpleBlockItem(UniverseBlocks.SMOLDERING_WRECK);
     // ---- 空间站（ADR-0017）
     public static final DeferredItem<BlockItem> TRADE_TERMINAL = ITEMS.registerSimpleBlockItem(UniverseBlocks.TRADE_TERMINAL);
+    // 地上的地标（ADR-0026）：交易站、制造设施、观测站
+    public static final DeferredItem<BlockItem> OUTPOST_TRADE_TERMINAL = ITEMS.registerSimpleBlockItem(UniverseBlocks.OUTPOST_TRADE_TERMINAL);
+    public static final DeferredItem<BlockItem> REINFORCED_DOOR = ITEMS.registerSimpleBlockItem(UniverseBlocks.REINFORCED_DOOR);
+    public static final DeferredItem<BlockItem> REINFORCED_PLATING = ITEMS.registerSimpleBlockItem(UniverseBlocks.REINFORCED_PLATING);
+    public static final DeferredItem<BlockItem> FACILITY_TERMINAL = ITEMS.registerSimpleBlockItem(UniverseBlocks.FACILITY_TERMINAL);
+    public static final DeferredItem<BlockItem> OBSERVATORY_TERMINAL = ITEMS.registerSimpleBlockItem(UniverseBlocks.OBSERVATORY_TERMINAL);
     public static final DeferredItem<BlockItem> STATION_HULL = ITEMS.registerSimpleBlockItem(UniverseBlocks.STATION_HULL);
     public static final DeferredItem<BlockItem> STATION_FLOOR = ITEMS.registerSimpleBlockItem(UniverseBlocks.STATION_FLOOR);
     public static final DeferredItem<BlockItem> STATION_GLASS = ITEMS.registerSimpleBlockItem(UniverseBlocks.STATION_GLASS);
@@ -480,9 +507,13 @@ public final class UniverseItems {
         order.addAll(List.of(NAVIGATION_DATA, SIGNAL_BOOSTER, SUPPLY_CRATE, SEALED_CRATE, DROP_POD, DATA_TERMINAL, MONOLITH, TECH_CACHE, SMOLDERING_WRECK,
                 CREDIT_CHIP, EMERGENCY_RECEIVER));
         order.addAll(List.of(PORTAL_STONE, PORTAL_GLYPH, PORTAL_DIAL));
+        order.addAll(List.of(FOSSIL_DIRT, SHELL_FOSSIL, ARTHROPOD_FOSSIL, SKULL_FOSSIL, SALVAGE_CAPSULE, SALVAGED_SCRAP, FULGURITE));
+        order.addAll(List.of(OUTPOST_TRADE_TERMINAL, REINFORCED_DOOR, REINFORCED_PLATING, FACILITY_TERMINAL, OBSERVATORY_TERMINAL));
+        order.addAll(List.of(SENTINEL_PILLAR_PLATING, SENTINEL_PILLAR_LIGHT, SENTINEL_PILLAR_TERMINAL));
         order.addAll(List.of(BASE_BEACON, TELEPORTER));
         order.addAll(List.of(TRADE_TERMINAL, MISSION_BOARD, SHIP_REPAIR, SHIP_DEALER, FREIGHTER_CONSOLE, FLEET_TERMINAL, STATION_TELEPORTER, STATION_HULL, STATION_FLOOR, STATION_GLASS, STATION_LIGHT, STATION_PAD, STATION_TRIM, STATION_SOLAR_PANEL, FREIGHTER_PLATE, FREIGHTER_ENGINE));
-        order.addAll(List.of(SENTINEL_SCRAP, SENTINEL_SPAWN_EGG, HEAVY_SENTINEL_SPAWN_EGG, PIRATE_SCRAP));
+        order.addAll(List.of(SENTINEL_SCRAP, QUADRUPED_SERVO, WALKER_BRAIN, SENTINEL_SPAWN_EGG, HEAVY_SENTINEL_SPAWN_EGG, QUADRUPED_SENTINEL_SPAWN_EGG,
+                WALKER_SENTINEL_SPAWN_EGG, PIRATE_SCRAP));
         order.addAll(ORES.values());
         order.addAll(ORE_DROPS.values());
         order.addAll(ORE_SMELTED.values());

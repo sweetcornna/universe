@@ -11,6 +11,8 @@ import io.github.sweetcornna.universe.client.exocraft.ExocraftClient;
 import io.github.sweetcornna.universe.client.exocraft.SubmarineClient;
 import io.github.sweetcornna.universe.client.guide.GuideScreen;
 import io.github.sweetcornna.universe.client.pirate.PirateClient;
+import io.github.sweetcornna.universe.client.sentinel.GroundSentinelRenderer;
+import io.github.sweetcornna.universe.client.poi.OutpostClient;
 import io.github.sweetcornna.universe.client.sentinel.SentinelClient;
 import io.github.sweetcornna.universe.client.sentinel.SentinelRenderer;
 import io.github.sweetcornna.universe.client.PlasmaBoltRenderer;
@@ -95,6 +97,7 @@ public final class UniverseClient {
         ItemSummaries.registerEvents(NeoForge.EVENT_BUS);
         PoiClient.registerEvents(modBus);
         SentinelClient.registerEvents(modBus);
+        OutpostClient.registerEvents(modBus);
         TeleportClient.registerEvents(modBus);
         MissionClient.registerEvents(modBus);
         ClientStory.registerEvents(modBus, NeoForge.EVENT_BUS);
@@ -115,6 +118,10 @@ public final class UniverseClient {
             event.registerEntityRenderer(UniverseEntities.PLASMA_BOLT.get(), PlasmaBoltRenderer::new);
             event.registerEntityRenderer(UniverseEntities.SENTINEL.get(), SentinelRenderer::new);
             event.registerEntityRenderer(UniverseEntities.HEAVY_SENTINEL.get(), SentinelRenderer::new);
+            event.registerEntityRenderer(UniverseEntities.REPAIR_SENTINEL.get(), SentinelRenderer::new);
+            event.registerEntityRenderer(UniverseEntities.SUMMONER_SENTINEL.get(), SentinelRenderer::new);
+            event.registerEntityRenderer(UniverseEntities.QUADRUPED_SENTINEL.get(), GroundSentinelRenderer::quadruped);
+            event.registerEntityRenderer(UniverseEntities.WALKER_SENTINEL.get(), GroundSentinelRenderer::walker);
         });
         // 数据生成用的是客户端运行配置（clientData），只在客户端入口登记
         UniverseDataGen.registerEvents(modBus);

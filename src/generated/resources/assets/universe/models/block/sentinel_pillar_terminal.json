@@ -1,0 +1,9 @@
+{
+  "parent": "minecraft:block/orientable_with_bottom",
+  "textures": {
+    "bottom": "universe:block/sentinel_pillar_plating",
+    "front": "universe:block/sentinel_pillar_terminal_front",
+    "side": "universe:block/sentinel_pillar_plating",
+    "top": "universe:block/sentinel_pillar_plating"
+  }
+}

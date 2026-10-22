@@ -19,6 +19,7 @@ import io.github.sweetcornna.universe.core.survival.ToolMode;
 import io.github.sweetcornna.universe.core.survival.PlasmaWeapon;
 import io.github.sweetcornna.universe.registry.UniverseAttachments;
 import io.github.sweetcornna.universe.poi.Landmarks;
+import io.github.sweetcornna.universe.poi.OutpostInteractions;
 import io.github.sweetcornna.universe.poi.Pois;
 import io.github.sweetcornna.universe.poi.PoiProgress;
 import io.github.sweetcornna.universe.core.survival.LaserHeat;
@@ -233,6 +234,10 @@ public final class Multitool {
             state.target = pos.immutable();
         }
         BlockState block = level.getBlockState(pos);
+        // 制造设施的加固门：照满 10 秒烧开（ADR-0026）
+        if (OutpostInteractions.laser(player, level, pos, block)) {
+            return;
+        }
         float hardness = block.getDestroySpeed(level, pos);
         ItemStack tool = player.getMainHandItem();
         boolean harvestable = !block.requiresCorrectToolForDrops() || tool.isCorrectToolForDrops(block);

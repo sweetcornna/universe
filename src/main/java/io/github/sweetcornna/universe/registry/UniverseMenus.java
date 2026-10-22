@@ -28,6 +28,7 @@ import io.github.sweetcornna.universe.factory.resource.WaterPumpBlockEntity;
 import io.github.sweetcornna.universe.logistics.DistributorBlockEntity;
 import io.github.sweetcornna.universe.logistics.StationBlockEntity;
 import io.github.sweetcornna.universe.mecha.MechaMenu;
+import io.github.sweetcornna.universe.poi.FacilityTerminalMenu;
 import io.github.sweetcornna.universe.tech.TechMenu;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.inventory.MenuType;
@@ -138,6 +139,9 @@ public final class UniverseMenus {
     /** 飞船面板：评级、数值、驾驶台的技术槽（ADR-0024）。 */
     public static final DeferredHolder<MenuType<?>, MenuType<ShipPanelMenu>> SHIP_PANEL = MENUS.register("ship_panel",
             () -> IMenuTypeExtension.create(ShipPanelMenu::new));
+    /** 制造设施的终端：三个技术模块挑一个（ADR-0026）。 */
+    public static final DeferredHolder<MenuType<?>, MenuType<FacilityTerminalMenu>> FACILITY_TERMINAL = MENUS.register("facility_terminal",
+            () -> IMenuTypeExtension.create(FacilityTerminalMenu::new));
 
     private UniverseMenus() {
     }

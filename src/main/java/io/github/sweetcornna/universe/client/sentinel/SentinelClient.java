@@ -1,5 +1,7 @@
 package io.github.sweetcornna.universe.client.sentinel;
 
+import java.util.Locale;
+
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.core.sentinel.Wanted;
 import io.github.sweetcornna.universe.registry.UniverseAttachments;
@@ -16,9 +18,10 @@ import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 
 /**
- * 守卫机的 HUD（ADR-0014），画在屏幕顶部正中：
- * 被通缉时是"守卫机通缉"和三颗菱形（亮几颗就是几级），下面一行是"被发现"或者脱离倒计时和进度条；
- * 没被通缉、但警戒值不为零时，只画一条细细的警戒条。
+ * 守卫机的 HUD（ADR-0014，ADR-0026 改成五级），画在屏幕顶部正中：
+ * 被通缉时是"守卫机通缉"和五颗菱形（亮几颗就是几级），下面一行是"被发现"或者脱离倒计时和进度条，
+ * 再下面一行是这一波还剩几架（两波之间写"下一波正在赶来"）；
+ * 守卫机撤走时写还要多久回来；没被通缉、但警戒值不为零时，只画一条细细的警戒条。
  */
 public final class SentinelClient {
     private static final int RED = 0xFFFF4A3A;
@@ -51,7 +54,7 @@ public final class SentinelClient {
             int stars = Wanted.MAX_LEVEL * 12;
             int width = font.width(label) + 6 + stars;
             int x = cx - width / 2;
-            graphics.fill(x - 4, y - 2, x + width + 4, y + 24, 0x90000000);
+            graphics.fill(x - 4, y - 2, x + width + 4, y + 35, 0x90000000);
             graphics.text(font, label, x, y + 1, RED, true);
             int sx = x + font.width(label) + 6 + 5;
             float pulse = hud.seen() ? 0.7F + 0.3F * Mth.sin(time * 0.5F) : 1;
@@ -64,7 +67,7 @@ public final class SentinelClient {
                 Component seen = Component.translatable("hud.universe.sentinel.seen");
                 graphics.text(font, seen, cx - font.width(seen) / 2, lineY, scale(0xFFFF8A7A, pulse), true);
             } else {
-                int seconds = (int) Math.ceil((1 - hud.escape()) * Wanted.ESCAPE_TICKS / 20F);
+                int seconds = (int) Math.ceil((1 - hud.escape()) * Wanted.escapeTicks(hud.level()) / 20F);
                 Component escaping = Component.translatable("hud.universe.sentinel.escaping", seconds);
                 int barWidth = 40;
                 int total = font.width(escaping) + 4 + barWidth;
@@ -74,6 +77,15 @@ public final class SentinelClient {
                 graphics.fill(bx - 1, lineY + 2, bx + barWidth + 1, lineY + 7, 0xC0000000);
                 graphics.fill(bx, lineY + 3, bx + Math.round(barWidth * hud.escape()), lineY + 6, 0xFF6EE08A);
             }
+            Component wave = hud.remaining() < 0 ? Component.translatable("hud.universe.sentinel.next_wave")
+                    : Component.translatable("hud.universe.sentinel.remaining", hud.remaining());
+            graphics.text(font, wave, cx - font.width(wave) / 2, y + 24, hud.remaining() < 0 ? 0xFFFFB04A : 0xFFD8D8D8, true);
+            return;
+        }
+        if (hud.dormant() > 0) {
+            Component away = Component.translatable("hud.universe.sentinel.dormant",
+                    String.format(Locale.ROOT, "%d:%02d", hud.dormant() / 60, hud.dormant() % 60));
+            graphics.text(font, away, cx - font.width(away) / 2, y, 0xFF8AD8FF, true);
             return;
         }
         if (hud.alert() <= 0) {

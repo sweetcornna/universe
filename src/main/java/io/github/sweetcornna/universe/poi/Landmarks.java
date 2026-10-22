@@ -12,6 +12,7 @@ import io.github.sweetcornna.universe.core.poi.Poi;
 import io.github.sweetcornna.universe.core.poi.PoiLayout;
 import io.github.sweetcornna.universe.core.portal.Glyphs;
 import io.github.sweetcornna.universe.core.portal.PortalLayout;
+import io.github.sweetcornna.universe.core.sentinel.PillarLayout;
 import io.github.sweetcornna.universe.world.planet.PlanetCommand;
 import io.github.sweetcornna.universe.world.planet.Planets;
 import net.minecraft.core.BlockPos;
@@ -58,12 +59,22 @@ public final class Landmarks {
         int portalX = landing[0] + offset[0];
         int portalZ = landing[1] + offset[1];
         int portalRadius = PortalLayout.PLATFORM_HALF_WIDTH + 4;
+        // 守卫塔（ADR-0026）也让开
+        Optional<int[]> pillar = PillarLayout.site(planet, landing);
         LandmarkLayout.Blocked blocked = (x, z, radius) -> {
             double dx = x - portalX;
             double dz = z - portalZ;
             double reach = radius + portalRadius;
             if (dx * dx + dz * dz < reach * reach) {
                 return true;
+            }
+            if (pillar.isPresent()) {
+                double px = x - pillar.get()[0];
+                double pz = z - pillar.get()[1];
+                double pillarReach = radius + PillarLayout.RADIUS + 6;
+                if (px * px + pz * pz < pillarReach * pillarReach) {
+                    return true;
+                }
             }
             if (pois.isEmpty()) {
                 return false;

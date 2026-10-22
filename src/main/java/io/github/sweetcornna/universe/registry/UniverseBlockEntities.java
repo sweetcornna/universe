@@ -4,6 +4,7 @@ import java.util.function.Supplier;
 
 import io.github.sweetcornna.universe.block.HydroponicTrayBlockEntity;
 import io.github.sweetcornna.universe.Universe;
+import io.github.sweetcornna.universe.block.landmark.FacilityTerminalBlockEntity;
 import io.github.sweetcornna.universe.block.poi.SupplyCrateBlockEntity;
 import io.github.sweetcornna.universe.block.ship.FuelTankBlockEntity;
 import io.github.sweetcornna.universe.block.ship.HelmBlockEntity;
@@ -66,6 +67,9 @@ public final class UniverseBlockEntities {
             "portable_refiner", UniverseBlocks.PORTABLE_REFINER, RecipeMachines.PORTABLE_REFINER, true);
     public static final Supplier<BlockEntityType<SupplyCrateBlockEntity>> SUPPLY_CRATE = BLOCK_ENTITIES.register("supply_crate",
             () -> new BlockEntityType<>(SupplyCrateBlockEntity::new, UniverseBlocks.SUPPLY_CRATE.get(), UniverseBlocks.SEALED_CRATE.get()));
+    /** 制造设施的终端（ADR-0026）：记着门外的守卫放过没有。 */
+    public static final Supplier<BlockEntityType<FacilityTerminalBlockEntity>> FACILITY_TERMINAL = BLOCK_ENTITIES.register("facility_terminal",
+            () -> new BlockEntityType<>(FacilityTerminalBlockEntity::new, UniverseBlocks.FACILITY_TERMINAL.get()));
 
     // ---- 工业
     public static final Supplier<BlockEntityType<TeslaTowerBlockEntity>> TESLA_TOWER = BLOCK_ENTITIES.register("tesla_tower",

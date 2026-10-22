@@ -5,6 +5,7 @@
     "universe:planet_regolith",
     "universe:planet_sand",
     "universe:planet_snow",
-    "universe:planet_ash"
+    "universe:planet_ash",
+    "universe:fossil_dirt"
   ]
 }

@@ -108,6 +108,8 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         this.suit();
         this.resourcePlants();
         this.underwater();
+        this.wildLandmarks();
+        this.outpostLandmarks();
         this.multitool();
         this.factory();
         this.trade();
@@ -256,6 +258,7 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("message.universe.station.welcome", "欢迎来到%s空间站", "Welcome to %s Station");
         both("gui.universe.trade.title", "交易终端", "Trade Terminal");
         both("gui.universe.trade.station", "%s空间站", "%s Station");
+        both("gui.universe.trade.outpost", "%s交易站", "%s Trading Post");
         both("gui.universe.trade.credits", "%s 信用点", "%s credits");
         both("gui.universe.trade.economy", "%s · %s", "%s · %s");
         both("gui.universe.trade.economy.mining", "采矿经济", "Mining");
@@ -345,6 +348,8 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("entity.universe.plasma_bolt", "等离子弹", "Plasma Bolt");
         both("entity.universe.sentinel", "守卫机", "Sentinel");
         both("entity.universe.heavy_sentinel", "重型守卫机", "Heavy Sentinel");
+        both("entity.universe.repair_sentinel", "维修无人机", "Repair Drone");
+        both("entity.universe.summoner_sentinel", "召唤无人机", "Summoner Drone");
         both("entity.universe.pirate_fighter", "海盗战机", "Pirate Fighter");
         // 探索车（ADR-0017）
         both("entity.universe.exocraft", "探索车", "Exocraft");
@@ -371,14 +376,30 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         item(UniverseItems.SENTINEL_SCRAP.get(), "守卫机残骸", "Sentinel Scrap");
         item(UniverseItems.SENTINEL_SPAWN_EGG.get(), "守卫机刷怪蛋", "Sentinel Spawn Egg");
         item(UniverseItems.HEAVY_SENTINEL_SPAWN_EGG.get(), "重型守卫机刷怪蛋", "Heavy Sentinel Spawn Egg");
+        // 地面守卫机（ADR-0026）
+        both("entity.universe.quadruped_sentinel", "四足机", "Sentinel Quad");
+        both("entity.universe.walker_sentinel", "步行机", "Sentinel Walker");
+        item(UniverseItems.QUADRUPED_SENTINEL_SPAWN_EGG.get(), "四足机刷怪蛋", "Sentinel Quad Spawn Egg");
+        item(UniverseItems.WALKER_SENTINEL_SPAWN_EGG.get(), "步行机刷怪蛋", "Sentinel Walker Spawn Egg");
+        item(UniverseItems.QUADRUPED_SERVO.get(), "四足机伺服器", "Quad Servo");
+        both("tooltip.universe.quadruped_servo.summary", "从四足机腿上拆下来的\n造机甲和守卫机型多功能工具要用，空间站也收",
+                "Pulled from a quad's leg\nUsed to build mechs and sentinel multitools. Stations buy it too");
+        item(UniverseItems.WALKER_BRAIN.get(), "步行机主脑", "Walker Brain");
+        both("tooltip.universe.walker_brain.summary", "步行机的控制核心，还带着余温\n造机甲和守卫机型多功能工具要用，空间站出高价",
+                "A walker's control core, still warm\nUsed to build mechs and sentinel multitools. Stations pay well for it");
         both("message.universe.sentinel.wanted", "通缉等级 %s", "Wanted level %s");
-        both("message.universe.sentinel.heavy", "通缉等级 %s：重型守卫机正在赶来", "Wanted level %s: heavy sentinel inbound");
+        both("message.universe.sentinel.wave", "通缉 %s 级：%s 架守卫机正在赶来", "Wanted level %s: %s Sentinels inbound");
+        both("message.universe.sentinel.wave_cleared", "这一波打光了，通缉升到 %s 级", "Wave destroyed. Wanted level %s");
+        both("message.universe.sentinel.withdrawn", "守卫机撤走了，%s 分钟内不会回来", "The Sentinels withdrew for %s minutes");
         both("message.universe.sentinel.escaped", "已摆脱守卫机", "Escaped the sentinels");
         both("message.universe.sentinel.left_planet", "已离开星球，守卫机停止追捕", "Left the planet. The sentinels gave up");
         both("hud.universe.sentinel.wanted", "守卫机通缉", "SENTINELS");
         both("hud.universe.sentinel.seen", "已被守卫机发现", "Spotted by sentinels");
         both("hud.universe.sentinel.escaping", "躲藏中 %s 秒", "Hiding %ss");
         both("hud.universe.sentinel.alert", "警戒", "Alert");
+        both("hud.universe.sentinel.remaining", "这一波还剩 %s 架", "%s left in this wave");
+        both("hud.universe.sentinel.next_wave", "下一波正在赶来", "Next wave inbound");
+        both("hud.universe.sentinel.dormant", "守卫机已撤离 %s", "Sentinels away %s");
         both("gui.universe.star_map.sentinels", "守卫：%s", "Sentinels: %s");
         both("universe.bed.no_sleep_in_space", "太空里不能睡觉", "You can't sleep in space");
 
@@ -818,6 +839,85 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("message.universe.submarine.need_water", "要放在水里", "Must be placed in water");
         both("message.universe.submarine.sonar", "声呐：%s 处沉船和遗迹，%s 个兴趣点", "Sonar: %s wrecks and ruins, %s points of interest");
         tech("submarine", "潜艇", "Submarine");
+    }
+
+    /** 有人的地标（ADR-0026）：交易站、制造设施、观测站。 */
+    private void outpostLandmarks() {
+        both("landmark.universe.trading_post", "交易站", "Trading Post");
+        both("landmark.universe.manufacturing_facility", "制造设施", "Manufacturing Facility");
+        both("landmark.universe.observatory", "观测站", "Observatory");
+        block(UniverseBlocks.OUTPOST_TRADE_TERMINAL.get(), "交易站终端", "Trading Post Terminal");
+        block(UniverseBlocks.REINFORCED_DOOR.get(), "加固门", "Reinforced Door");
+        block(UniverseBlocks.REINFORCED_PLATING.get(), "加固外壳", "Reinforced Plating");
+        block(UniverseBlocks.FACILITY_TERMINAL.get(), "设施终端", "Facility Terminal");
+        block(UniverseBlocks.OBSERVATORY_TERMINAL.get(), "观测终端", "Observatory Terminal");
+        both("message.universe.reinforced_door.heat", "切割加固门 %s%%", "Cutting door: %s%%");
+        both("message.universe.reinforced_door.open", "门切开了", "Door cut open");
+        both("message.universe.facility_terminal.used", "模块已经取走了", "The module has been taken");
+        both("container.universe.facility_terminal", "设施终端", "Facility Terminal");
+        both("gui.universe.facility_terminal.hint", "只能拿走一个，另外两个随即清除", "Take one. The other two are wiped");
+        both("message.universe.observatory.used", "这台终端已经标过位置了", "This terminal has already marked a site");
+        both("message.universe.observatory.nothing", "%s 格内没有找到目标", "No targets within %s blocks");
+        both("message.universe.observatory.located", "已标出%1$s：%2$s方 %3$s 格", "Marked %1$s: %3$s blocks %2$s");
+        both("waypoint.universe.portal", "传送门", "Portal");
+        // 手册（探索一章）
+        both("guide.universe.exploration.trading_post.title", "交易站", "Trading Posts");
+        both("guide.universe.exploration.trading_post",
+                "有大气、不荒芜的星球上有交易站，多功能工具的扫描能标出来。三块着陆台，飞船可以直接停上去。\n\n交易站终端：和本星系的空间站共用一个市场，价钱一样，货少一些。发射燃料、氧气罐、防护电池、空间翘曲器总有卖，技术模块只摆一个\n屋里有两个补给箱\n\n在这里买卖，空间站的价钱也跟着变。",
+                "Planets with an atmosphere that aren't barren have trading posts. Multitool scans mark them. Ships can land on any of the three landing pads.\n\nTrading Post Terminal: shares the system station's market and prices, with fewer goods. Launch fuel, oxygen, hazard cells and space warpers are always in stock; only one tech module\nTwo supply crates inside\n\nTrades here move the station's prices too.");
+        both("guide.universe.exploration.facility.title", "制造设施", "Manufacturing Facilities");
+        both("guide.universe.exploration.facility",
+                "只在有守卫机的星球上。外墙打不穿，只能走加固门。\n\n加固门：多功能工具用采矿模式对着烧 10 秒。中途过热歇一下不要紧，离开太久要从头来。门一开就是三级通缉\n设施终端：三个技术模块里挑一个，每人只能拿一次\n有人走近时，门外会来两架无人机和一台四足守卫机巡逻",
+                "Only on planets with sentinels. The walls can't be broken; the reinforced door is the only way in.\n\nReinforced Door: cut it with the multitool in mining mode for 10 seconds. Pausing to cool down is fine, but leave it too long and you start over. Opening it puts you at wanted level 3\nFacility Terminal: pick one of three tech modules, once per player\nTwo drones and a quad come to patrol outside when someone approaches");
+        both("guide.universe.exploration.observatory.title", "观测站", "Observatories");
+        both("guide.universe.exploration.observatory",
+                "观测终端在 3000 格内找一处你还没去过的地方，挑最近的标在 HUD 上：先驱者遗迹、没走到跟前过的传送门，或者守卫塔。\n\n每座观测站每人只能用一次。范围里什么都没找到时，不算用过。",
+                "The Observatory Terminal finds the nearest place you haven't been within 3,000 blocks and marks it on your HUD: Precursor Ruins, a portal you haven't reached, or a Sentinel Pillar.\n\nEach observatory works once per player. If it finds nothing in range, the use doesn't count.");
+    }
+
+    /** 野外的地标（ADR-0026）：化石坑、打捞点、废弃建筑，还有风暴里的雷击石。 */
+    private void wildLandmarks() {
+        both("landmark.universe.fossil_pit", "化石坑", "Fossil Pit");
+        both("landmark.universe.salvage_site", "打捞点", "Salvage Site");
+        both("landmark.universe.abandoned_building", "废弃建筑", "Abandoned Building");
+        block(UniverseBlocks.FOSSIL_DIRT.get(), "化石土", "Fossil Dirt");
+        both("tooltip.universe.fossil_dirt.summary", "化石坑底的土，里面埋着化石\n用铲子挖开，掉一块化石\n精准采集拿走整块土",
+                "Soil from the floor of a fossil pit, with a fossil inside\nDig it with a shovel for the fossil\nSilk Touch takes the whole block");
+        item(UniverseItems.SHELL_FOSSIL.get(), "螺壳化石", "Coiled Shell Fossil");
+        both("tooltip.universe.shell_fossil.summary", "盘成一圈的外壳，和地球上的菊石很像\n化石坑里常见。只能卖", "A coiled shell, much like an ammonite\nCommon in fossil pits. Sell-only");
+        item(UniverseItems.ARTHROPOD_FOSSIL.get(), "节肢动物化石", "Arthropod Fossil");
+        both("tooltip.universe.arthropod_fossil.summary", "一节一节的硬壳，有点像三叶虫\n化石坑里不多见。只能卖", "A segmented shell, a bit like a trilobite\nUncommon in fossil pits. Sell-only");
+        item(UniverseItems.SKULL_FOSSIL.get(), "头骨化石", "Skull Fossil");
+        both("tooltip.universe.skull_fossil.summary", "一种大型动物的头骨，保存得很完整\n化石坑里很少见。只能卖，价钱高",
+                "The skull of a large animal, well preserved\nRare in fossil pits. Sell-only, and worth a lot");
+        block(UniverseBlocks.SALVAGE_CAPSULE.get(), "打捞舱", "Salvage Capsule");
+        both("tooltip.universe.salvage_capsule.summary", "埋在打捞点的保护壳下面\n右键打开，倒出里面的东西\n只能开一次",
+                "Buried under the shell plates at a salvage site\nRight-click to open it and spill the contents\nOpens only once");
+        item(UniverseItems.SALVAGED_SCRAP.get(), "打捞的废料", "Salvaged Scrap");
+        both("tooltip.universe.salvaged_scrap.summary", "打捞舱里封着的旧部件，拆不出能用的东西\n只能卖", "Old parts sealed in a salvage capsule, nothing usable\nSell-only");
+        block(UniverseBlocks.FULGURITE.get(), "雷击石", "Fulgurite");
+        both("tooltip.universe.fulgurite.summary", "雷打进沙土、石头里熔成的玻璃管\n星球上打雷时，去落雷的地方找\n在空间站能卖",
+                "A glass tube fused where lightning hits sand, soil or rock\nLook where lightning lands during a storm\nSells at space stations");
+        // 手册（探索一章）
+        both("guide.universe.exploration.fossils.title", "化石坑", "Fossil Pits");
+        both("guide.universe.exploration.fossils",
+                "宜居、荒芜、灼热、冰冻的星球上有没人管的化石发掘坑，多功能工具的扫描能标出来。\n\n坑底露着 6–10 块化石土，用铲子挖开，每块掉一块化石：\n螺壳化石：常见\n节肢动物化石：不多见\n头骨化石：很少见，最值钱\n\n化石只能在空间站卖。",
+                "Habitable, barren, scorched and frozen planets have abandoned fossil digs. Multitool scans mark them.\n\nThe pit floor shows 6–10 Fossil Dirt. Dig each with a shovel for one fossil:\nCoiled Shell Fossil: common\nArthropod Fossil: uncommon\nSkull Fossil: rare, worth the most\n\nFossils are sell-only.");
+        both("guide.universe.exploration.salvage.title", "打捞点和废弃建筑", "Salvage and Abandoned Buildings");
+        both("guide.universe.exploration.salvage",
+                "打捞点：一片烧焦的地，旁边一根亮灯的信标。从正中往下挖开 3 块保护壳，下面是打捞舱，右键打开，倒出打捞的废料和零件，只能开一次。废料只能卖。\n\n废弃建筑：门坏了的旧居住舱。里面的数据终端第一次读给一份导航数据，还有一个补给箱。",
+                "Salvage sites: scorched ground and a lit beacon. Dig down through 3 shell plates at the center to the salvage capsule, then right-click it once to spill salvaged scrap and parts. Scrap is sell-only.\n\nAbandoned buildings: old habitat modules with broken doors. The data terminal gives navigation data the first time you read it, and there's a supply crate.");
+        both("guide.universe.exploration.fulgurite.title", "雷击石", "Fulgurite");
+        both("guide.universe.exploration.fulgurite",
+                "雷暴时雷打在沙、土、石头上，有时把落点熔成一根往下伸的玻璃管，这就是雷击石。用镐挖，在空间站能卖。\n\n下雨的星球有雷暴，火山灰的风暴里也打雷。打在基地和建筑附近的雷熔不出雷击石。\n\n雷会打到人，风暴里别站在空地上。",
+                "In thunderstorms, lightning that hits sand, soil or rock sometimes fuses a glass tube down into the ground: fulgurite. Mine it with a pickaxe and sell it at a station.\n\nRainy planets get thunderstorms, and volcanic ash storms throw lightning too. Strikes near bases and buildings leave none.\n\nLightning can hit you. Don't stand in the open during a storm.");
+        // JEI 的说明页
+        both("jei.universe.info.fossil", "化石坑里的化石土用铲子挖出来。宜居、荒芜、灼热、冰冻的星球上有化石坑。只能卖。",
+                "Dug from Fossil Dirt in fossil pits on habitable, barren, scorched and frozen planets. Sell-only.");
+        both("jei.universe.info.salvaged_scrap", "打捞点的打捞舱里有，舱埋在 3 块保护壳下面。只能卖。",
+                "Found in salvage capsules, buried under 3 shell plates at salvage sites. Sell-only.");
+        both("jei.universe.info.fulgurite", "雷暴时雷打在沙、土、石头上熔成的。用镐挖，在空间站能卖。",
+                "Fused where lightning hits sand, soil or rock in a thunderstorm. Mine it with a pickaxe; sells at space stations.");
     }
 
     /** 营养处理器、菜、便携精炼机、防护凝胶（ADR-0026）。 */
@@ -1619,6 +1719,10 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("guide.universe.survival.border",
                 "星球的地面有边界，以 (0, 0) 为中心：小卫星两千多格见方，大行星三万格。离边界 64 格以内外骨骼面板会提示，屏幕边缘发红。边界走不出去，去别处要开飞船。母星没有边界。",
                 "A planet's surface has an edge centered on (0, 0): about 2000 blocks across on small moons, up to 30000 on large planets. Within 64 blocks the suit panel warns you and the screen edges turn red. You can't walk past it; take your ship. The home planet has no edge.");
+        both("guide.universe.survival.sentinels.title", "守卫机和通缉", "Sentinels");
+        both("guide.universe.survival.sentinels",
+                "有守卫机的星球上，激光采矿、捕杀动物、攻击守卫机都会提高警戒，警戒满了就被通缉。\n\n通缉五级，打光一波升一级：\n1 级：无人机\n2 级：多一架维修无人机\n3 级起：重型无人机、召唤无人机、四足机\n5 级：步行机\n\n维修无人机给别的守卫机回血，召唤无人机叫来更多无人机，先打它们。四足机、步行机从背后打伤害翻倍。躲开视线 20 + 10 × 等级 秒就脱身；打光五级，这颗星球的守卫机撤走 10 分钟。",
+                "Laser mining, hunting and attacking Sentinels raise the alert. Fill it and you are wanted.\n\nFive levels. Destroy a wave to go up one:\n1: drones\n2: a repair drone joins\n3+: heavy drones, summoners, quads\n5: a walker\n\nKill repair drones and summoners first. Quads and walkers take double damage from behind. Stay out of sight 20 + 10 × level seconds to escape. Beat level 5 and the Sentinels leave for 10 minutes.");
         both("guide.universe.survival.modules.title", "技术模块", "Tech Modules");
         both("guide.universe.survival.modules",
                 "U 键打开技术配置，在这里装模块、整理货舱。\n\n外骨骼：开始 4 个技术槽、9 格货舱，每修好一个掉落舱 +1 槽、+9 格，最多 12 槽、54 格\n多功能工具：6 个技术槽\n品质：C、B、A、S，同一种最多三个生效\n来源：制造台做 C 档，更好的从兴趣点和空间站拿\n\n喷气背包：空中再按一次跳跃，喷 2.5 秒，落地 2 秒充满",
@@ -1662,6 +1766,10 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
                 "Candlelight Kelp grows on the seabed of planets with seas and glows when ripe. Each pod restores 15 oxygen and can be planted back on the seabed.");
         both("jei.universe.info.alien_fish", "有海的星球上，水里的动物都掉生鱼。",
                 "Dropped by sea life on planets with seas.");
+        both("jei.universe.info.quadruped_servo", "四足机掉的。三级以上的通缉会派四足机来，制造设施门口也有一台在巡逻。从背后打，伤害翻倍。",
+                "Dropped by sentinel quads. They join the hunt from wanted level 3, and one patrols outside each manufacturing facility. Hits from behind do double damage.");
+        both("jei.universe.info.walker_brain", "步行机掉的。五级通缉才会派步行机来。它转身慢，绕到背后打散热口，伤害翻倍。",
+                "Dropped by sentinel walkers, which only come at wanted level 5. They turn slowly: get behind them and hit the vent for double damage.");
         // 潜艇的仪表盘（ADR-0026）
         both("hud.universe.submarine.depth", "深度 %s 格", "Depth %s blocks");
         both("hud.universe.submarine.surfaced", "浮在水面", "Surfaced");
@@ -2157,6 +2265,19 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         block(UniverseBlocks.PORTAL_GLYPH.get(), "符文石", "Glyph Stone");
         block(UniverseBlocks.PORTAL_DIAL.get(), "传送门拨号台", "Portal Dial");
         block(UniverseBlocks.PORTAL_FIELD.get(), "传送门光幕", "Portal Field");
+        // 守卫塔（ADR-0026）
+        block(UniverseBlocks.SENTINEL_PILLAR_PLATING.get(), "守卫塔外壳", "Sentinel Pillar Plating");
+        block(UniverseBlocks.SENTINEL_PILLAR_LIGHT.get(), "守卫塔灯带", "Sentinel Pillar Light");
+        block(UniverseBlocks.SENTINEL_PILLAR_TERMINAL.get(), "守卫塔终端", "Sentinel Pillar Terminal");
+        both("waypoint.universe.sentinel_pillar", "守卫塔", "Sentinel Pillar");
+        both("message.universe.pillar.found", "发现守卫塔", "Sentinel Pillar found");
+        both("message.universe.pillar.shutdown", "守卫机关停 %s 分钟", "Sentinels offline for %s minutes");
+        both("message.universe.pillar.wanted", "通缉中，终端没有响应", "Wanted: the terminal won't respond");
+        both("message.universe.pillar.used", "今天已经关停过，%s 分钟后再来", "Already used today. Try again in %s min");
+        both("guide.universe.exploration.pillars.title", "守卫塔", "Sentinel Pillars");
+        both("guide.universe.exploration.pillars",
+                "有守卫机的星球上都有一座守卫塔，在降落点 400–900 格外，二十多格高，塔身亮着琥珀色的灯带。\n\n塔下的终端：右键关停这颗星球的守卫机 20 分钟\n一个游戏日只能关停一次\n被通缉时终端不响应\n\n打光五级通缉的那一波，HUD 上会标出守卫塔。",
+                "Every planet with sentinels has one Sentinel Pillar, 400–900 blocks from the landing site: a tall tower with amber light strips.\n\nBase terminal: right-click to shut down this planet's sentinels for 20 minutes\nOnce per in-game day\nNo response while you are wanted\n\nClear the level 5 wave and the pillar is marked on your HUD.");
         both("gui.universe.portal.title", "先驱者传送门", "Precursor Portal");
         both("gui.universe.portal.here", "这座门：", "This portal:");
         both("gui.universe.portal.back", "退格", "Back");

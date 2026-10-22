@@ -1,0 +1,14 @@
+{
+  "values": [
+    "#minecraft:sand",
+    "#minecraft:dirt",
+    "#minecraft:base_stone_overworld",
+    "universe:planet_regolith",
+    "universe:planet_ash",
+    "universe:planet_strata",
+    "universe:planet_cobblestone",
+    "minecraft:gravel",
+    "minecraft:red_sandstone",
+    "minecraft:sandstone"
+  ]
+}

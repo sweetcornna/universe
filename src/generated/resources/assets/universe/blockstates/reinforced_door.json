@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "half=lower": {
+      "model": "universe:block/reinforced_door_lower"
+    },
+    "half=upper": {
+      "model": "universe:block/reinforced_door_upper"
+    }
+  }
+}

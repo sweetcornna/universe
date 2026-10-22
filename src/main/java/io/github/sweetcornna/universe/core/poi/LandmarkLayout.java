@@ -11,8 +11,10 @@ import java.util.Set;
 
 import io.github.sweetcornna.universe.core.ecology.Fauna;
 import io.github.sweetcornna.universe.core.galaxy.Planet;
+import io.github.sweetcornna.universe.core.galaxy.PlanetType;
 import io.github.sweetcornna.universe.core.procgen.Rng;
 import io.github.sweetcornna.universe.core.procgen.Seeds;
+import io.github.sweetcornna.universe.core.sentinel.SentinelLevel;
 import io.github.sweetcornna.universe.core.terrain.TerrainModel;
 
 /**
@@ -94,18 +96,33 @@ public final class LandmarkLayout {
         return new LandmarkLayout(planet.seed(), kinds(planet), ground, model.seaLevel(), planet.worldSize(), blocked);
     }
 
-    /** 这颗星球上会有哪些地标：海底的只在有海的星球上。不能登陆的星球没有。 */
+    /** 这颗星球上会有哪些地标（ADR-0026 的表）。不能登陆的星球没有。 */
     public static Set<LandmarkType> kinds(Planet planet) {
         Set<LandmarkType> kinds = EnumSet.noneOf(LandmarkType.class);
         if (!planet.landable()) {
             return kinds;
         }
         for (LandmarkType type : LandmarkType.values()) {
-            if (!type.seabed() || Fauna.hasSea(planet.liquid())) {
+            if (allowed(type, planet)) {
                 kinds.add(type);
             }
         }
         return kinds;
+    }
+
+    private static boolean allowed(LandmarkType type, Planet planet) {
+        if (type.seabed()) {
+            return Fauna.hasSea(planet.liquid());
+        }
+        return switch (type) {
+            case TRADING_POST -> planet.atmosphere().present() && planet.type() != PlanetType.BARREN;
+            case MANUFACTURING_FACILITY -> SentinelLevel.of(planet).present();
+            case FOSSIL_PIT -> switch (planet.type()) {
+                case HABITABLE, BARREN, SCORCHED, FROZEN -> true;
+                default -> false;
+            };
+            default -> true;
+        };
     }
 
     public Set<LandmarkType> kinds() {

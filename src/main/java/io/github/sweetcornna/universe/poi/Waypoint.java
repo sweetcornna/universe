@@ -10,6 +10,7 @@ import io.github.sweetcornna.universe.core.poi.PoiType;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceKey;
@@ -23,6 +24,9 @@ public record Waypoint(ResourceKey<Level> dimension, BlockPos pos, String type) 
     public static final Waypoint NONE = new Waypoint(Level.OVERWORLD, BlockPos.ZERO, "");
     /** 走到多近算到达。 */
     public static final int ARRIVE = 20;
+    /** 不是兴趣点的航点种类。 */
+    public static final String PORTAL = "portal";
+    public static final String SENTINEL_PILLAR = "sentinel_pillar";
 
     public static final MapCodec<Waypoint> CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
             ResourceKey.codec(Registries.DIMENSION).fieldOf("dimension").forGetter(Waypoint::dimension),
@@ -49,5 +53,19 @@ public record Waypoint(ResourceKey<Level> dimension, BlockPos pos, String type) 
         } catch (IllegalArgumentException e) {
             return Optional.empty();
         }
+    }
+
+    /** HUD 上写的名字：兴趣点用兴趣点的名字；别的（观测站标的传送门、守卫塔，ADR-0026）用 {@code waypoint.universe.<种类>}。 */
+    public Component name() {
+        return this.poiType().map(Pois::name).orElseGet(() -> Component.translatable("waypoint.universe." + this.type));
+    }
+
+    /** HUD 上标记的颜色（RGB）。 */
+    public int color() {
+        return this.poiType().map(PoiType::color).orElseGet(() -> switch (this.type) {
+            case PORTAL -> 0xB58CFF;
+            case SENTINEL_PILLAR -> 0xFF5A4A;
+            default -> 0xE8EEF2;
+        });
     }
 }

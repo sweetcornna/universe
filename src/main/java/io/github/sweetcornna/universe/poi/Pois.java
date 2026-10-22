@@ -108,8 +108,7 @@ public final class Pois {
         if (waypoint.active() && waypoint.dimension() == level.dimension()
                 && horizontalDistanceSq(player, waypoint.pos()) < Waypoint.ARRIVE * Waypoint.ARRIVE) {
             player.setData(UniverseAttachments.WAYPOINT, Waypoint.NONE);
-            player.sendOverlayMessage(Component.translatable("message.universe.poi.arrived",
-                    waypoint.poiType().map(Pois::name).orElse(Component.empty())));
+            player.sendOverlayMessage(Component.translatable("message.universe.poi.arrived", waypoint.name()));
         }
         Optional<PoiLayout> layout = layout(level);
         if (layout.isEmpty() || player.isSpectator()) {

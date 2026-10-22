@@ -70,9 +70,23 @@ import io.github.sweetcornna.universe.portal.Portals;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
 import io.github.sweetcornna.universe.registry.UniverseDataComponents;
 import io.github.sweetcornna.universe.registry.UniverseEntities;
+import io.github.sweetcornna.universe.sentinel.QuadrupedSentinel;
+import io.github.sweetcornna.universe.sentinel.RepairSentinel;
+import io.github.sweetcornna.universe.sentinel.WalkerSentinel;
+import net.minecraft.world.damagesource.DamageSource;
+import io.github.sweetcornna.universe.sentinel.Sentinel;
+import io.github.sweetcornna.universe.sentinel.SentinelPillars;
+import io.github.sweetcornna.universe.sentinel.Sentinels;
 import io.github.sweetcornna.universe.registry.UniverseItems;
 import io.github.sweetcornna.universe.world.planet.Planets;
 import io.github.sweetcornna.universe.block.ClamBlock;
+import io.github.sweetcornna.universe.block.poi.SalvageCapsuleBlock;
+import io.github.sweetcornna.universe.block.landmark.ReinforcedDoorBlock;
+import io.github.sweetcornna.universe.core.poi.DoorBreach;
+import io.github.sweetcornna.universe.poi.OutpostInteractions;
+import io.github.sweetcornna.universe.world.planet.Fulgurites;
+import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.item.ItemEntity;
 import io.github.sweetcornna.universe.entity.AquaticCreature;
 import io.github.sweetcornna.universe.exocraft.Submarine;
 import io.github.sweetcornna.universe.exocraft.Torpedo;
@@ -172,6 +186,22 @@ public final class UniverseGameTests {
             UniverseGameTests::submarineHovers);
     private static final ResourceKey<Consumer<GameTestHelper>> TORPEDO_HITS_CREATURE = function("torpedo_hits_creature",
             UniverseGameTests::torpedoHitsCreature);
+    private static final ResourceKey<Consumer<GameTestHelper>> FOSSIL_DIRT_GIVES_FOSSIL = function("fossil_dirt_gives_fossil",
+            UniverseGameTests::fossilDirtGivesFossil);
+    private static final ResourceKey<Consumer<GameTestHelper>> SALVAGE_CAPSULE_OPENS_ONCE = function("salvage_capsule_opens_once",
+            UniverseGameTests::salvageCapsuleOpensOnce);
+    private static final ResourceKey<Consumer<GameTestHelper>> REINFORCED_DOOR_CUTS_OPEN = function("reinforced_door_cuts_open",
+            UniverseGameTests::reinforcedDoorCutsOpen);
+    private static final ResourceKey<Consumer<GameTestHelper>> LIGHTNING_FUSES_FULGURITE = function("lightning_fuses_fulgurite",
+            UniverseGameTests::lightningFusesFulgurite);
+    private static final ResourceKey<Consumer<GameTestHelper>> QUAD_BACK_HIT_DOUBLES = function("quad_back_hit_doubles",
+            UniverseGameTests::quadBackHitDoubles);
+    private static final ResourceKey<Consumer<GameTestHelper>> GROUND_SENTINELS_WALK = function("ground_sentinels_walk",
+            UniverseGameTests::groundSentinelsWalk);
+    private static final ResourceKey<Consumer<GameTestHelper>> PILLAR_TERMINAL_SHUTS_DOWN = function("pillar_terminal_shuts_down",
+            UniverseGameTests::pillarTerminalShutsDown);
+    private static final ResourceKey<Consumer<GameTestHelper>> REPAIR_DRONE_HEALS = function("repair_drone_heals",
+            UniverseGameTests::repairDroneHeals);
 
     private UniverseGameTests() {
     }
@@ -214,6 +244,14 @@ public final class UniverseGameTests {
         test(event, environment, CLAM_GIVES_PEARL, 40);
         test(event, environment, SUBMARINE_HOVERS, 80);
         test(event, environment, TORPEDO_HITS_CREATURE, 60);
+        test(event, environment, FOSSIL_DIRT_GIVES_FOSSIL, 20);
+        test(event, environment, SALVAGE_CAPSULE_OPENS_ONCE, 20);
+        test(event, environment, REINFORCED_DOOR_CUTS_OPEN, 20);
+        test(event, environment, LIGHTNING_FUSES_FULGURITE, 20);
+        test(event, environment, QUAD_BACK_HIT_DOUBLES, 20);
+        test(event, environment, GROUND_SENTINELS_WALK, 60);
+        test(event, environment, PILLAR_TERMINAL_SHUTS_DOWN, 20);
+        test(event, environment, REPAIR_DRONE_HEALS, 80);
     }
 
     private static void test(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition<?>> environment, ResourceKey<Consumer<GameTestHelper>> function,
@@ -507,6 +545,62 @@ public final class UniverseGameTests {
         });
     }
 
+    /** 化石坑（ADR-0026）：挖开化石土（没有精准采集）掉一块化石。 */
+    private static void fossilDirtGivesFossil(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(3, 1, 3);
+        helper.setBlock(pos, UniverseBlocks.FOSSIL_DIRT.get());
+        helper.getLevel().destroyBlock(helper.absolutePos(pos), true);
+        Set<Item> fossils = Set.of(UniverseItems.SHELL_FOSSIL.get(), UniverseItems.ARTHROPOD_FOSSIL.get(), UniverseItems.SKULL_FOSSIL.get());
+        helper.succeedWhen(() -> {
+            List<ItemEntity> drops = helper.getEntities(EntityTypes.ITEM, pos, 3);
+            helper.assertTrue(drops.size() == 1 && fossils.contains(drops.get(0).getItem().getItem())
+                    && drops.get(0).getItem().getCount() == 1, "掉的不是一块化石：" + drops);
+        });
+    }
+
+    /** 制造设施（ADR-0026）：两扇并排的加固门，采矿激光照 199 刻还在，照满 200 刻整扇门一起烧开。 */
+    private static void reinforcedDoorCutsOpen(GameTestHelper helper) {
+        List<BlockPos> door = List.of(new BlockPos(3, 1, 3), new BlockPos(3, 2, 3), new BlockPos(4, 1, 3), new BlockPos(4, 2, 3));
+        BlockState lower = UniverseBlocks.REINFORCED_DOOR.get().defaultBlockState()
+                .setValue(ReinforcedDoorBlock.FACING, Direction.NORTH).setValue(ReinforcedDoorBlock.HALF, DoubleBlockHalf.LOWER);
+        for (BlockPos pos : door) {
+            helper.setBlock(pos, pos.getY() == 1 ? lower : lower.setValue(ReinforcedDoorBlock.HALF, DoubleBlockHalf.UPPER));
+        }
+        BlockPos target = helper.absolutePos(new BlockPos(4, 2, 3));
+        for (int i = 1; i < DoorBreach.TICKS; i++) {
+            OutpostInteractions.laser(null, helper.getLevel(), target, helper.getLevel().getBlockState(target));
+        }
+        door.forEach(pos -> helper.assertBlockPresent(UniverseBlocks.REINFORCED_DOOR.get(), pos));
+        helper.assertTrue(OutpostInteractions.laser(null, helper.getLevel(), target, helper.getLevel().getBlockState(target)),
+                "激光没认出加固门");
+        door.forEach(pos -> helper.assertBlockPresent(Blocks.AIR, pos));
+        helper.succeed();
+    }
+
+    /** 打捞点（ADR-0026）：打捞舱右键打开倒出废料，打开的再右键什么也没有。 */
+    private static void salvageCapsuleOpensOnce(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(3, 1, 3);
+        helper.setBlock(pos, UniverseBlocks.SALVAGE_CAPSULE.get());
+        Player player = helper.makeMockPlayer(GameType.SURVIVAL);
+        helper.useBlock(pos, player);
+        helper.assertBlockProperty(pos, SalvageCapsuleBlock.OPEN, true);
+        helper.assertItemEntityPresent(UniverseItems.SALVAGED_SCRAP.get(), pos, 3);
+        helper.killAllEntitiesOfClass(ItemEntity.class);
+        helper.useBlock(pos, player);
+        helper.assertItemEntityNotPresent(UniverseItems.SALVAGED_SCRAP.get(), pos, 3);
+        helper.succeed();
+    }
+
+    /** 雷击石（ADR-0026）：雷打中的沙子熔成雷击石。 */
+    private static void lightningFusesFulgurite(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(3, 1, 3);
+        helper.setBlock(pos, Blocks.SAND);
+        int fused = Fulgurites.fuse(helper.getLevel(), helper.absolutePos(pos), Rng.of(7));
+        helper.assertTrue(fused >= 1, "没有熔出雷击石");
+        helper.assertBlockPresent(UniverseBlocks.FULGURITE.get(), pos);
+        helper.succeed();
+    }
+
     /** 甲壳蚌（ADR-0026）：右键撬开掉一颗活珍珠，撬开的再右键没有了。 */
     private static void clamGivesPearl(GameTestHelper helper) {
         BlockPos pos = new BlockPos(3, 1, 3);
@@ -546,6 +640,62 @@ public final class UniverseGameTests {
             helper.assertTrue(!target.isAlive() || target.getHealth() < health, "鱼雷没打中：" + target.getHealth());
             helper.assertTrue(submarine.isAlive(), "鱼雷炸了自己的潜艇");
         });
+    }
+
+    /** 地面守卫机的弱点（ADR-0026）：两台朝南的四足机挨同样的一下，从北边（背后）打的掉血是从南边（正面）打的两倍左右。 */
+    private static void quadBackHitDoubles(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        QuadrupedSentinel front = helper.spawn(UniverseEntities.QUADRUPED_SENTINEL.get(), new Vec3(1.5, 1, 2.5));
+        QuadrupedSentinel back = helper.spawn(UniverseEntities.QUADRUPED_SENTINEL.get(), new Vec3(5.5, 1, 2.5));
+        for (QuadrupedSentinel quad : List.of(front, back)) {
+            quad.setNoAi(true);
+            quad.setYRot(0);
+            quad.setYHeadRot(0);
+            quad.setYBodyRot(0);
+        }
+        Holder<net.minecraft.world.damagesource.DamageType> generic = level.damageSources().generic().typeHolder();
+        front.hurtServer(level, new DamageSource(generic, front.position().add(0, 1, 2)), 6);
+        back.hurtServer(level, new DamageSource(generic, back.position().add(0, 1, -2)), 6);
+        float frontLoss = QuadrupedSentinel.MAX_HEALTH - front.getHealth();
+        float backLoss = QuadrupedSentinel.MAX_HEALTH - back.getHealth();
+        helper.succeedWhen(() -> {
+            helper.assertTrue(frontLoss > 0, "正面打没掉血");
+            helper.assertTrue(backLoss >= frontLoss * 1.8F, "背后打掉 " + backLoss + "，正面掉 " + frontLoss);
+        });
+    }
+
+    /** 四足机、步行机走地面（ADR-0026）：从半空放下会落到平台上，不会像无人机那样飘着。 */
+    private static void groundSentinelsWalk(GameTestHelper helper) {
+        QuadrupedSentinel quad = helper.spawn(UniverseEntities.QUADRUPED_SENTINEL.get(), new Vec3(1.5, 3.5, 1.5));
+        WalkerSentinel walker = helper.spawn(UniverseEntities.WALKER_SENTINEL.get(), new Vec3(4.6, 2.5, 4.6));
+        double floor = helper.absoluteVec(new Vec3(0, 1, 0)).y;
+        helper.succeedWhen(() -> {
+            for (Sentinel sentinel : List.<Sentinel>of(quad, walker)) {
+                helper.assertTrue(!sentinel.isNoGravity(), sentinel.getType() + " 没有重力");
+                helper.assertTrue(sentinel.onGround() && sentinel.getY() < floor + 0.5, sentinel.getType() + " 还在 " + sentinel.getY());
+            }
+        });
+    }
+
+    /** 维修无人机（ADR-0026）：给附近受伤的守卫机回血，自己不受影响。 */
+    private static void repairDroneHeals(GameTestHelper helper) {
+        Sentinel patient = helper.spawn(UniverseEntities.SENTINEL.get(), new Vec3(2.5, 3.0, 3.5));
+        RepairSentinel medic = helper.spawn(UniverseEntities.REPAIR_SENTINEL.get(), new Vec3(5.5, 3.0, 3.5));
+        patient.setHealth(8);
+        helper.assertTrue(medic.getMaxHealth() == 16, "维修无人机的生命不是 16：" + medic.getMaxHealth());
+        helper.succeedWhen(() -> helper.assertTrue(patient.isAlive() && patient.getHealth() > 9,
+                "守卫机没被修：" + patient.getHealth()));
+    }
+
+    /** 守卫塔的终端（ADR-0026）：被通缉时不响应；关停这个维度的守卫机；同一个游戏日第二次用不了。 */
+    private static void pillarTerminalShutsDown(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        helper.assertTrue(SentinelPillars.use(level, true) == SentinelPillars.Use.WANTED, "通缉时终端响应了");
+        helper.assertTrue(!Sentinels.dormant(level), "通缉时守卫机被关停了");
+        helper.assertTrue(SentinelPillars.use(level, false) == SentinelPillars.Use.SHUT_DOWN, "终端没有关停守卫机");
+        helper.assertTrue(Sentinels.dormant(level), "关停以后守卫机还在");
+        helper.assertTrue(SentinelPillars.use(level, false) == SentinelPillars.Use.USED_TODAY, "同一天能关停两次");
+        helper.succeed();
     }
 
     /** 测试场地里这一块（含两端，相对坐标）灌满水。 */

@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "bottom": "universe:block/salvage_capsule_bottom",
+    "side": "universe:block/salvage_capsule_side",
+    "top": "universe:block/salvage_capsule_top"
+  }
+}

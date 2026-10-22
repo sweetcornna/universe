@@ -72,6 +72,11 @@ public final class PoiProgress {
         return this.claimed.add(key);
     }
 
+    /** 领过没有（不记下）。 */
+    public boolean claimed(long key) {
+        return this.claimed.contains(key);
+    }
+
     /** 这块石碑讲第几段线索：第一次碰时按顺序给下一段，读完一轮从头再来。 */
     public int monolithLore(long key, int count) {
         return this.monoliths.computeIfAbsent(key, k -> this.lore++ % count);

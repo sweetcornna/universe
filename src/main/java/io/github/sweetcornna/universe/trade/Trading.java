@@ -18,8 +18,10 @@ import io.github.sweetcornna.universe.core.galaxy.StarSystem;
 import io.github.sweetcornna.universe.core.trade.Economy;
 import io.github.sweetcornna.universe.core.trade.Goods;
 import io.github.sweetcornna.universe.core.trade.Market;
+import io.github.sweetcornna.universe.core.trade.OutpostStock;
 import io.github.sweetcornna.universe.core.trade.TradeCategory;
 import io.github.sweetcornna.universe.dyson.Dyson;
+import io.github.sweetcornna.universe.poi.Pois;
 import io.github.sweetcornna.universe.network.TradeActionPayload;
 import io.github.sweetcornna.universe.network.TradeStatePayload;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
@@ -78,8 +80,12 @@ public final class Trading {
             new Staple(UniverseItems.WARP_DRIVE_MK2, Economy.Wealth.WEALTHY),
             new Staple(UniverseItems.ALLOY_HULL_PLATING, Economy.Wealth.WEALTHY));
 
-    /** 玩家开着的终端：交易时检查还在不在旁边。 */
-    private record Session(ResourceKey<Level> dimension, BlockPos pos, int system) {
+    /** 交易站总有的东西（ADR-0026）：燃料、氧气、防护电池、空间翘曲器。 */
+    private static final List<Supplier<? extends Item>> ESSENTIALS = List.of(UniverseItems.LAUNCH_FUEL, UniverseItems.OXYGEN_CAPSULE,
+            UniverseItems.HAZARD_CELL, UniverseItems.SPACE_WARPER);
+
+    /** 玩家开着的终端：交易时检查还在不在旁边。{@code outpost} 是星球上交易站的种子，空间站的终端为 0。 */
+    private record Session(ResourceKey<Level> dimension, BlockPos pos, int system, long outpost) {
     }
 
     private static final Map<UUID, Session> SESSIONS = new HashMap<>();
@@ -149,13 +155,32 @@ public final class Trading {
 
     /** 右键终端：记下会话，发界面内容。 */
     public static void open(ServerPlayer player, ServerLevel level, BlockPos pos) {
+        open(player, level, pos, 0);
+    }
+
+    /** 右键星球上交易站的终端（ADR-0026）：行情和本恒星系的空间站一样，货少一些（{@link OutpostStock}）。 */
+    public static void openOutpost(ServerPlayer player, ServerLevel level, BlockPos pos) {
+        long seed = Pois.claimKey(level, pos);
+        open(player, level, pos, seed == 0 ? 1 : seed);
+    }
+
+    private static void open(ServerPlayer player, ServerLevel level, BlockPos pos, long outpost) {
         OptionalInt system = Dyson.systemOf(level.dimension());
         if (system.isEmpty() || Planets.galaxy(level.getServer()).system(system.getAsInt()).isEmpty()) {
             player.sendOverlayMessage(Component.translatable("message.universe.trade.no_signal"));
             return;
         }
-        SESSIONS.put(player.getUUID(), new Session(level.dimension(), pos.immutable(), system.getAsInt()));
-        send(player, system.getAsInt(), true, null);
+        SESSIONS.put(player.getUUID(), new Session(level.dimension(), pos.immutable(), system.getAsInt(), outpost));
+        send(player, system.getAsInt(), outpost, true, null);
+    }
+
+    /** 交易站摆不摆这一行货。 */
+    private static boolean carries(long outpost, Market.Listing listing) {
+        if (outpost == 0) {
+            return true;
+        }
+        boolean essential = ESSENTIALS.stream().anyMatch(item -> id(item.get()).equals(listing.item()));
+        return OutpostStock.carries(outpost, listing.item(), essential);
     }
 
     public static void handleAction(TradeActionPayload payload, IPayloadContext context) {
@@ -173,15 +198,16 @@ public final class Trading {
             return;
         }
         long now = now(server);
-        Component notice = payload.buy() ? buy(player, station.get(), payload.key(), payload.mode(), now)
+        Component notice = payload.buy() ? buy(player, station.get(), payload.key(), payload.mode(), now, session.outpost())
                 : sell(player, station.get(), payload.key(), payload.mode(), now);
-        send(player, session.system(), false, notice);
+        send(player, session.system(), session.outpost(), false, notice);
     }
 
     private static boolean valid(ServerPlayer player, Session session) {
         return player.isAlive() && player.level().dimension() == session.dimension()
                 && player.distanceToSqr(Vec3.atCenterOf(session.pos())) <= REACH * REACH
-                && player.level().getBlockState(session.pos()).is(UniverseBlocks.TRADE_TERMINAL.get());
+                && player.level().getBlockState(session.pos()).is(session.outpost() == 0 ? UniverseBlocks.TRADE_TERMINAL.get()
+                        : UniverseBlocks.OUTPOST_TRADE_TERMINAL.get());
     }
 
     // ---- 卖出
@@ -246,10 +272,10 @@ public final class Trading {
         return quote < 0 ? -1 : (long) Math.ceil(quote - 1e-9);
     }
 
-    private static Component buy(ServerPlayer player, StationMarket station, String key, int mode, long now) {
+    private static Component buy(ServerPlayer player, StationMarket station, String key, int mode, long now, long outpost) {
         MinecraftServer server = player.level().getServer();
         if (key.startsWith("m")) {
-            return buyModule(player, station, key, now);
+            return buyModule(player, station, key, now, moduleLimit(outpost));
         }
         int index;
         try {
@@ -265,7 +291,7 @@ public final class Trading {
         Market.Listing listing = listings.get(index);
         Optional<Item> item = BuiltInRegistries.ITEM.getOptional(Identifier.parse(listing.item()));
         int stock = listing.stock(now);
-        if (item.isEmpty() || stock <= 0) {
+        if (item.isEmpty() || stock <= 0 || !carries(outpost, listing)) {
             return fail("message.universe.trade.out_of_stock");
         }
         int count = mode == TradeActionPayload.STACK ? Math.min(stock, item.get().getDefaultMaxStackSize()) : 1;
@@ -289,7 +315,12 @@ public final class Trading {
         return ok("message.universe.trade.bought", count, name, cost);
     }
 
-    private static Component buyModule(ServerPlayer player, StationMarket station, String key, long now) {
+    /** 摆几个技术模块：空间站全摆，交易站少摆。 */
+    private static int moduleLimit(long outpost) {
+        return outpost == 0 ? Integer.MAX_VALUE : OutpostStock.MODULES;
+    }
+
+    private static Component buyModule(ServerPlayer player, StationMarket station, String key, long now, int limit) {
         int index;
         try {
             index = Integer.parseInt(key.substring(1));
@@ -297,7 +328,7 @@ public final class Trading {
             return fail("message.universe.trade.out_of_stock");
         }
         List<StationMarket.ModuleOffer> offers = station.offers();
-        if (index < 0 || index >= offers.size() || station.sold(index)) {
+        if (index < 0 || index >= Math.min(offers.size(), limit) || station.sold(index)) {
             return fail("message.universe.trade.out_of_stock");
         }
         StationMarket.ModuleOffer offer = offers.get(index);
@@ -315,7 +346,7 @@ public final class Trading {
 
     // ---- 界面内容
 
-    private static void send(ServerPlayer player, int system, boolean open, @Nullable Component notice) {
+    private static void send(ServerPlayer player, int system, long outpost, boolean open, @Nullable Component notice) {
         MinecraftServer server = player.level().getServer();
         Optional<StationMarket> found = station(server, system);
         if (found.isEmpty()) {
@@ -355,7 +386,7 @@ public final class Trading {
         for (int i = 0; i < listings.size(); i++) {
             Market.Listing listing = listings.get(i);
             Optional<Item> item = BuiltInRegistries.ITEM.getOptional(Identifier.parse(listing.item()));
-            if (item.isEmpty()) {
+            if (item.isEmpty() || !carries(outpost, listing)) {
                 continue;
             }
             int stock = listing.stock(now);
@@ -365,7 +396,7 @@ public final class Trading {
                     listing.category().ordinal()));
         }
         List<StationMarket.ModuleOffer> offers = station.offers();
-        for (int i = 0; i < offers.size(); i++) {
+        for (int i = 0; i < Math.min(offers.size(), moduleLimit(outpost)); i++) {
             StationMarket.ModuleOffer offer = offers.get(i);
             double price = station.offerPrice(offer, now);
             boolean sold = station.sold(i);
@@ -374,7 +405,7 @@ public final class Trading {
                     TradeCategory.TECH.ordinal()));
         }
         Economy economy = station.economy();
-        PacketDistributor.sendToPlayer(player, new TradeStatePayload(open, system, economy.type().ordinal(), economy.wealth().ordinal(),
+        PacketDistributor.sendToPlayer(player, new TradeStatePayload(open, system, outpost != 0, economy.type().ordinal(), economy.wealth().ordinal(),
                 Credits.get(player), sell, buy, Optional.ofNullable(notice)));
     }
 

@@ -1,24 +1,38 @@
 package io.github.sweetcornna.universe.core.sentinel;
 
 /**
- * 一个玩家在一颗星球上的警戒值和通缉级别（ADR-0014）。
+ * 一个玩家在一颗星球上的警戒值和通缉级别（ADR-0014，ADR-0026 改成五级）。
  *
  * <ul>
- *   <li>违规（{@link Offense}）提高警戒值；到 30、60、90 分别是一、二、三级通缉。</li>
+ *   <li>违规（{@link Offense}）提高警戒值；到 30 开始一级通缉。</li>
  *   <li>没被通缉时，10 秒不再违规，警戒值每秒降 1。</li>
- *   <li>被通缉后级别只升不降：躲出所有敌对守卫机的视线 20 秒才算脱离，警戒值和级别一起清零；
+ *   <li>被通缉以后再违规不加级，<b>打光当前这一波（{@link #waveCleared()}）才升一级</b>；严重的违规直接跳到某一级
+ *       （{@link Offense#jumpTo()}）。打光五级那一波，通缉解除，这颗星球的守卫机撤走。</li>
+ *   <li>级别只升不降：躲出所有敌对守卫机的视线 20 + 10 × 级别 秒才算脱离，警戒值和级别一起清零；
  *       离开星球或者死亡也清零（由适配层调 {@link #clear()}）。</li>
  * </ul>
  */
 public final class Wanted {
-    public static final double[] THRESHOLDS = {30, 60, 90};
+    /** 警戒值到这里开始通缉。 */
+    public static final double THRESHOLD = 30;
     public static final double MAX = 120;
-    public static final int MAX_LEVEL = 3;
+    public static final int MAX_LEVEL = 5;
     /** 不再违规多少刻后警戒值开始下降。 */
     static final int GRACE = 200;
     static final double DECAY_PER_TICK = 0.05;
-    /** 躲出视线多少刻算脱离。 */
-    public static final int ESCAPE_TICKS = 400;
+    /** 躲出视线多少刻算脱离：20 秒，每级多 10 秒。 */
+    static final int ESCAPE_BASE = 400;
+    static final int ESCAPE_PER_LEVEL = 200;
+
+    /** 打光一波的结果。 */
+    public enum Outcome {
+        /** 没被通缉，没有波次可打。 */
+        NONE,
+        /** 升了一级，下一波要来了。 */
+        ESCALATED,
+        /** 打光了五级，通缉解除，守卫机撤走。 */
+        WITHDRAWN
+    }
 
     private double alert;
     private int level;
@@ -28,22 +42,24 @@ public final class Wanted {
     public Wanted() {
     }
 
+    /** 从存档恢复；旧存档里的 1–3 级照样有效。 */
     public Wanted(double alert, int level) {
         this.alert = Math.clamp(alert, 0, MAX);
         this.level = Math.clamp(level, 0, MAX_LEVEL);
     }
 
-    /** 警戒值对应的通缉级别。 */
+    /** 没被通缉时，警戒值对应的通缉级别：到门槛是一级，否则是零。 */
     public static int levelFor(double alert) {
-        int level = 0;
-        while (level < THRESHOLDS.length && alert >= THRESHOLDS[level]) {
-            level++;
-        }
-        return level;
+        return alert >= THRESHOLD ? 1 : 0;
+    }
+
+    /** 这一级要躲多少刻才能脱离。 */
+    public static int escapeTicks(int level) {
+        return ESCAPE_BASE + ESCAPE_PER_LEVEL * Math.clamp(level, 1, MAX_LEVEL);
     }
 
     /**
-     * 违规一次。
+     * 违规一次。没被通缉时加警戒值，到门槛开始一级通缉；被通缉以后只有跳级的违规能升级。
      *
      * @param factor 星球守卫强度的倍数（{@link SentinelLevel#alertFactor()}）
      * @return 通缉级别有没有升高
@@ -55,15 +71,32 @@ public final class Wanted {
         int before = this.level;
         int jump = Math.min(offense.jumpTo(), MAX_LEVEL);
         if (jump > 0) {
-            this.alert = Math.max(this.alert, THRESHOLDS[jump - 1]);
+            this.alert = Math.max(this.alert, THRESHOLD);
         }
         this.alert = Math.min(MAX, this.alert + offense.alert() * factor);
         this.sinceOffense = 0;
-        this.level = Math.max(this.level, Math.max(jump, levelFor(this.alert)));
+        if (this.level == 0) {
+            this.level = levelFor(this.alert);
+        }
+        this.level = Math.max(this.level, jump);
         if (this.level > 0) {
             this.hidden = 0;
         }
         return this.level > before;
+    }
+
+    /** 打光了当前这一波：升一级；五级打光就解除通缉。 */
+    public Outcome waveCleared() {
+        if (this.level == 0) {
+            return Outcome.NONE;
+        }
+        if (this.level >= MAX_LEVEL) {
+            this.clear();
+            return Outcome.WITHDRAWN;
+        }
+        this.level++;
+        this.hidden = 0;
+        return Outcome.ESCALATED;
     }
 
     /**
@@ -88,7 +121,7 @@ public final class Wanted {
             return false;
         }
         this.hidden++;
-        if (this.hidden >= ESCAPE_TICKS) {
+        if (this.hidden >= escapeTicks(this.level)) {
             this.clear();
             return true;
         }
@@ -114,26 +147,13 @@ public final class Wanted {
         return this.level > 0;
     }
 
-    /** 脱离的进度 0–1（躲出视线的时间占 20 秒的比例）。 */
+    /** 脱离的进度 0–1（躲出视线的时间占这一级要躲的时间的比例）。 */
     public float escapeProgress() {
-        return this.level == 0 ? 0 : (float) this.hidden / ESCAPE_TICKS;
+        return this.level == 0 ? 0 : (float) this.hidden / escapeTicks(this.level);
     }
 
     /** 还要躲多少刻。 */
     public int escapeRemaining() {
-        return ESCAPE_TICKS - this.hidden;
-    }
-
-    /** 被通缉时要有几架普通守卫机、几架重型守卫机追捕（警觉的星球多一架普通的）。 */
-    public static int drones(int level, SentinelLevel planet) {
-        if (level <= 0) {
-            return 0;
-        }
-        int base = level == 1 ? 2 : 4;
-        return base + (planet == SentinelLevel.AGGRESSIVE ? 1 : 0);
-    }
-
-    public static int heavies(int level) {
-        return level >= MAX_LEVEL ? 1 : 0;
+        return this.level == 0 ? 0 : escapeTicks(this.level) - this.hidden;
     }
 }

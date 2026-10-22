@@ -17,6 +17,7 @@ import net.minecraft.world.item.ItemStack;
  *
  * @param open    true 时客户端打开交易界面；false 只刷新已经开着的界面
  * @param system  恒星系序号
+ * @param outpost 星球上的交易站（不是空间站）
  * @param economy 经济类型的序号（{@code Economy.Type}）
  * @param wealth  财富的序号（{@code Economy.Wealth}）
  * @param credits 玩家现在的信用点
@@ -24,7 +25,7 @@ import net.minecraft.world.item.ItemStack;
  * @param buy     空间站的货（最后几行是技术模块）
  * @param notice  上一次交易的结果，界面底部显示
  */
-public record TradeStatePayload(boolean open, int system, int economy, int wealth, long credits, List<Row> sell, List<Row> buy,
+public record TradeStatePayload(boolean open, int system, boolean outpost, int economy, int wealth, long credits, List<Row> sell, List<Row> buy,
         Optional<Component> notice) implements CustomPacketPayload {
     public static final Type<TradeStatePayload> TYPE = new Type<>(Universe.id("trade_state"));
     public static final StreamCodec<RegistryFriendlyByteBuf, TradeStatePayload> STREAM_CODEC = StreamCodec.of(TradeStatePayload::write,
@@ -51,6 +52,7 @@ public record TradeStatePayload(boolean open, int system, int economy, int wealt
     private static void write(RegistryFriendlyByteBuf buf, TradeStatePayload payload) {
         buf.writeBoolean(payload.open);
         buf.writeVarInt(payload.system);
+        buf.writeBoolean(payload.outpost);
         buf.writeVarInt(payload.economy);
         buf.writeVarInt(payload.wealth);
         buf.writeVarLong(payload.credits);
@@ -79,13 +81,14 @@ public record TradeStatePayload(boolean open, int system, int economy, int wealt
     private static TradeStatePayload read(RegistryFriendlyByteBuf buf) {
         boolean open = buf.readBoolean();
         int system = buf.readVarInt();
+        boolean outpost = buf.readBoolean();
         int economy = buf.readVarInt();
         int wealth = buf.readVarInt();
         long credits = buf.readVarLong();
         List<Row> sell = readRows(buf);
         List<Row> buy = readRows(buf);
         Optional<Component> notice = ComponentSerialization.OPTIONAL_STREAM_CODEC.decode(buf);
-        return new TradeStatePayload(open, system, economy, wealth, credits, sell, buy, notice);
+        return new TradeStatePayload(open, system, outpost, economy, wealth, credits, sell, buy, notice);
     }
 
     private static List<Row> readRows(RegistryFriendlyByteBuf buf) {

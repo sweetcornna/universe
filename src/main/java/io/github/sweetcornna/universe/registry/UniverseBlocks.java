@@ -7,6 +7,10 @@ import java.util.Optional;
 
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.block.FloraBlocks;
+import io.github.sweetcornna.universe.block.landmark.FacilityTerminalBlock;
+import io.github.sweetcornna.universe.block.landmark.ObservatoryTerminalBlock;
+import io.github.sweetcornna.universe.block.landmark.OutpostTradeTerminalBlock;
+import io.github.sweetcornna.universe.block.landmark.ReinforcedDoorBlock;
 import io.github.sweetcornna.universe.block.FloraVariantBlock;
 import io.github.sweetcornna.universe.block.HydroponicTrayBlock;
 import io.github.sweetcornna.universe.block.OreKind;
@@ -24,8 +28,10 @@ import io.github.sweetcornna.universe.block.poi.MonolithBlock;
 import io.github.sweetcornna.universe.block.portal.PortalDialBlock;
 import io.github.sweetcornna.universe.block.portal.PortalFieldBlock;
 import io.github.sweetcornna.universe.block.portal.PortalGlyphBlock;
+import io.github.sweetcornna.universe.block.sentinel.PillarTerminalBlock;
 import io.github.sweetcornna.universe.block.poi.SignalBoosterBlock;
 import io.github.sweetcornna.universe.block.poi.SmolderingWreckBlock;
+import io.github.sweetcornna.universe.block.poi.SalvageCapsuleBlock;
 import io.github.sweetcornna.universe.block.poi.SealedCrateBlock;
 import io.github.sweetcornna.universe.block.poi.SupplyCrateBlock;
 import io.github.sweetcornna.universe.block.fleet.FleetTerminalBlock;
@@ -224,6 +230,16 @@ public final class UniverseBlocks {
                     .noOcclusion().randomTicks().lightLevel(state -> 12).pushReaction(PushReaction.IMMOVEABLE).isValidSpawn(Blocks::never)
                     .isRedstoneConductor((state, level, pos) -> false).isSuffocating((state, level, pos) -> false)
                     .isViewBlocking((state, level, pos, box) -> false));
+    /** 守卫塔（ADR-0026）：外壳、灯带、底下的终端。都挖不掉、推不动。 */
+    public static final DeferredBlock<Block> SENTINEL_PILLAR_PLATING = BLOCKS.registerSimpleBlock("sentinel_pillar_plating",
+            p -> p.mapColor(MapColor.SNOW).strength(-1.0F, 3600000.0F).sound(SoundType.NETHERITE_BLOCK).noLootTable()
+                    .pushReaction(PushReaction.IMMOVEABLE).isValidSpawn(Blocks::never));
+    public static final DeferredBlock<Block> SENTINEL_PILLAR_LIGHT = BLOCKS.registerSimpleBlock("sentinel_pillar_light",
+            p -> p.mapColor(MapColor.COLOR_ORANGE).strength(-1.0F, 3600000.0F).sound(SoundType.GLASS).noLootTable()
+                    .lightLevel(state -> 12).pushReaction(PushReaction.IMMOVEABLE).isValidSpawn(Blocks::never));
+    public static final DeferredBlock<PillarTerminalBlock> SENTINEL_PILLAR_TERMINAL = BLOCKS.registerBlock("sentinel_pillar_terminal",
+            PillarTerminalBlock::new, p -> p.mapColor(MapColor.SNOW).strength(-1.0F, 3600000.0F).sound(SoundType.NETHERITE_BLOCK)
+                    .noLootTable().lightLevel(state -> 7).pushReaction(PushReaction.IMMOVEABLE));
     // ---- 星球生活（ADR-0026）
     /** 资源植物：每种一个方块，长熟时能收获。 */
     public static final Map<ResourcePlant, DeferredBlock<ResourcePlantBlock>> RESOURCE_PLANTS = registerResourcePlants();
@@ -251,6 +267,16 @@ public final class UniverseBlocks {
     /** 甲壳蚌：深水海底，撬开得到活珍珠。 */
     public static final DeferredBlock<ClamBlock> CLAM = BLOCKS.registerBlock("clam", ClamBlock::new,
             p -> p.mapColor(MapColor.TERRACOTTA_PINK).strength(1.0F).sound(SoundType.BONE_BLOCK).noOcclusion().pushReaction(PushReaction.POPPED));
+    // ---- 野外的地标（ADR-0026）
+    /** 化石土：化石坑的坑底，用铲子挖出化石。 */
+    public static final DeferredBlock<Block> FOSSIL_DIRT = BLOCKS.registerSimpleBlock("fossil_dirt",
+            p -> p.mapColor(MapColor.DIRT).strength(0.8F).sound(SoundType.ROOTED_DIRT));
+    /** 打捞舱：埋在打捞点的保护壳下面，右键打开一次。 */
+    public static final DeferredBlock<SalvageCapsuleBlock> SALVAGE_CAPSULE = BLOCKS.registerBlock("salvage_capsule", SalvageCapsuleBlock::new,
+            p -> p.mapColor(MapColor.METAL).strength(3.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops());
+    /** 雷击石：风暴里雷打在沙土上熔成的玻璃管。 */
+    public static final DeferredBlock<Block> FULGURITE = BLOCKS.registerSimpleBlock("fulgurite",
+            p -> p.mapColor(MapColor.SAND).strength(1.2F).sound(SoundType.GLASS).requiresCorrectToolForDrops());
     /** 坠毁飞船上还在冒烟的残骸，挖掉出船体板。 */
     public static final DeferredBlock<SmolderingWreckBlock> SMOLDERING_WRECK = BLOCKS.registerBlock("smoldering_wreck",
             SmolderingWreckBlock::new, p -> p.mapColor(MapColor.COLOR_BLACK).strength(2.0F, 6.0F).sound(SoundType.NETHERITE_BLOCK)
@@ -277,6 +303,27 @@ public final class UniverseBlocks {
     public static final DeferredBlock<TradeTerminalBlock> TRADE_TERMINAL = BLOCKS.registerBlock("trade_terminal", TradeTerminalBlock::new,
             p -> p.mapColor(MapColor.METAL).strength(-1.0F, 3600000.0F).sound(SoundType.METAL).noLootTable().lightLevel(state -> 10)
                     .pushReaction(PushReaction.IMMOVEABLE));
+    // ---- 地上的地标（ADR-0026）：交易站、制造设施、观测站里的这些方块都挖不掉
+    /** 交易站的交易终端。 */
+    public static final DeferredBlock<OutpostTradeTerminalBlock> OUTPOST_TRADE_TERMINAL = BLOCKS.registerBlock("outpost_trade_terminal",
+            OutpostTradeTerminalBlock::new, p -> p.mapColor(MapColor.METAL).strength(-1.0F, 3600000.0F).sound(SoundType.METAL).noLootTable()
+                    .lightLevel(state -> 10).pushReaction(PushReaction.IMMOVEABLE));
+    /** 制造设施的加固门：用采矿激光烧开。 */
+    public static final DeferredBlock<ReinforcedDoorBlock> REINFORCED_DOOR = BLOCKS.registerBlock("reinforced_door", ReinforcedDoorBlock::new,
+            p -> p.mapColor(MapColor.COLOR_GRAY).strength(-1.0F, 3600000.0F).sound(SoundType.NETHERITE_BLOCK).noLootTable().lightLevel(state -> 3)
+                    .pushReaction(PushReaction.IMMOVEABLE).isValidSpawn(Blocks::never));
+    /** 制造设施的墙和顶：只能走门进去。 */
+    public static final DeferredBlock<Block> REINFORCED_PLATING = BLOCKS.registerSimpleBlock("reinforced_plating",
+            p -> p.mapColor(MapColor.COLOR_GRAY).strength(-1.0F, 3600000.0F).sound(SoundType.NETHERITE_BLOCK).noLootTable()
+                    .pushReaction(PushReaction.IMMOVEABLE).isValidSpawn(Blocks::never));
+    /** 制造设施的终端：挑一个技术模块。 */
+    public static final DeferredBlock<FacilityTerminalBlock> FACILITY_TERMINAL = BLOCKS.registerBlock("facility_terminal",
+            FacilityTerminalBlock::new, p -> p.mapColor(MapColor.METAL).strength(-1.0F, 3600000.0F).sound(SoundType.METAL).noLootTable()
+                    .lightLevel(state -> 9).pushReaction(PushReaction.IMMOVEABLE));
+    /** 观测站的终端：标出附近一处没去过的地方。 */
+    public static final DeferredBlock<ObservatoryTerminalBlock> OBSERVATORY_TERMINAL = BLOCKS.registerBlock("observatory_terminal",
+            ObservatoryTerminalBlock::new, p -> p.mapColor(MapColor.METAL).strength(-1.0F, 3600000.0F).sound(SoundType.METAL).noLootTable()
+                    .lightLevel(state -> 9).pushReaction(PushReaction.IMMOVEABLE));
     /** 任务板：挖不掉，只在空间站的大厅里有。 */
     public static final DeferredBlock<MissionBoardBlock> MISSION_BOARD = BLOCKS.registerBlock("mission_board", MissionBoardBlock::new,
             p -> p.mapColor(MapColor.METAL).strength(-1.0F, 3600000.0F).sound(SoundType.METAL).noLootTable().lightLevel(state -> 10)

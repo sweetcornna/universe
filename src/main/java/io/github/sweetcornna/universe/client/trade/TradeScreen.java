@@ -146,7 +146,8 @@ public class TradeScreen extends Screen {
     /** 恒星系、信用点、经济和财富、缺什么产什么。 */
     private void header(GuiGraphicsExtractor graphics, int x, int y) {
         Component station = ClientGalaxy.galaxy().flatMap(galaxy -> galaxy.system(this.state.system()))
-                .<Component>map(system -> Component.translatable("gui.universe.trade.station", GalaxyText.system(system)))
+                .<Component>map(system -> Component.translatable(this.state.outpost() ? "gui.universe.trade.outpost" : "gui.universe.trade.station",
+                        GalaxyText.system(system)))
                 .orElse(this.title);
         Component credits = Component.translatable("gui.universe.trade.credits", credits(this.state.credits()));
         int creditsWidth = this.font.width(credits);

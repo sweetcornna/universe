@@ -91,6 +91,7 @@ public final class Guide {
                     page("refiner", "universe:portable_refiner", "universe:portable_refiner", "universe:cold_gel", "universe:heat_gel",
                             "universe:radiation_gel", "universe:toxin_gel"),
                     page("border", ""),
+                    page("sentinels", ""),
                     page("modules", "", "universe:drop_pod"),
                     page("core", "", "universe:exosuit_chestplate", "universe:combustible_unit", "universe:hydrogen_fuel_rod"),
                     page("flight", "")),
@@ -101,10 +102,19 @@ public final class Guide {
                             "universe:navigation_data"),
                     page("bases", "", "universe:base_beacon", "universe:teleporter"),
                     page("portals", "", "universe:portal_dial", "universe:portal_glyph"),
+                    page("pillars", "", "universe:sentinel_pillar_terminal", "universe:sentinel_pillar_light"),
                     // 水下（ADR-0026）
                     page("underwater", "", "universe:kelp_pod", "universe:clam", "universe:living_pearl", "universe:alien_fish"),
                     page("submarine", "universe:submarine"),
-                    page("wrecks", "", "universe:sealed_crate", "universe:living_pearl")),
+                    page("wrecks", "", "universe:sealed_crate", "universe:living_pearl"),
+                    // 野外的地标（ADR-0026）
+                    page("fossils", "", "universe:fossil_dirt", "universe:shell_fossil", "universe:arthropod_fossil", "universe:skull_fossil"),
+                    page("salvage", "", "universe:salvage_capsule", "universe:salvaged_scrap", "universe:data_terminal", "universe:navigation_data"),
+                    page("fulgurite", "", "universe:fulgurite"),
+                    // 有人的地标（ADR-0026）
+                    page("trading_post", "", "universe:outpost_trade_terminal", "universe:landing_pad"),
+                    page("facility", "", "universe:reinforced_door", "universe:facility_terminal"),
+                    page("observatory", "", "universe:observatory_terminal")),
             chapter("trade", "universe:circuit_board",
                     page("stations", ""),
                     page("trading", ""),

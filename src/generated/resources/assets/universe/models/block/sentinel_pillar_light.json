@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "universe:block/sentinel_pillar_light"
+  }
+}

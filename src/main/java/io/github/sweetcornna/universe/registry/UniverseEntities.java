@@ -6,7 +6,11 @@ import io.github.sweetcornna.universe.exocraft.Submarine;
 import io.github.sweetcornna.universe.exocraft.Torpedo;
 import io.github.sweetcornna.universe.encounter.SentinelInterceptor;
 import io.github.sweetcornna.universe.pirate.PirateFighter;
+import io.github.sweetcornna.universe.sentinel.QuadrupedSentinel;
+import io.github.sweetcornna.universe.sentinel.RepairSentinel;
 import io.github.sweetcornna.universe.sentinel.Sentinel;
+import io.github.sweetcornna.universe.sentinel.SummonerSentinel;
+import io.github.sweetcornna.universe.sentinel.WalkerSentinel;
 import io.github.sweetcornna.universe.entity.PlasmaBolt;
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.entity.AlienCreature;
@@ -50,6 +54,22 @@ public final class UniverseEntities {
     public static final DeferredHolder<EntityType<?>, EntityType<Sentinel>> HEAVY_SENTINEL = ENTITIES.registerEntityType(
             "heavy_sentinel", Sentinel::new, MobCategory.MISC,
             builder -> builder.sized(1.4F, 1.1F).eyeHeight(0.55F).clientTrackingRange(10).noSave().fireImmune());
+    /** 维修无人机（ADR-0026）。 */
+    public static final DeferredHolder<EntityType<?>, EntityType<RepairSentinel>> REPAIR_SENTINEL = ENTITIES.registerEntityType(
+            "repair_sentinel", RepairSentinel::new, MobCategory.MISC,
+            builder -> builder.sized(0.7F, 0.6F).eyeHeight(0.35F).clientTrackingRange(10).noSave().fireImmune());
+    /** 召唤无人机（ADR-0026）。 */
+    public static final DeferredHolder<EntityType<?>, EntityType<SummonerSentinel>> SUMMONER_SENTINEL = ENTITIES.registerEntityType(
+            "summoner_sentinel", SummonerSentinel::new, MobCategory.MISC,
+            builder -> builder.sized(1.0F, 0.9F).eyeHeight(0.5F).clientTrackingRange(10).noSave().fireImmune());
+    /** 四足机（ADR-0026）：地面单位。 */
+    public static final DeferredHolder<EntityType<?>, EntityType<QuadrupedSentinel>> QUADRUPED_SENTINEL = ENTITIES.registerEntityType(
+            "quadruped_sentinel", QuadrupedSentinel::new, MobCategory.MISC,
+            builder -> builder.sized(1.6F, 1.5F).eyeHeight(1.2F).clientTrackingRange(10).noSave().fireImmune());
+    /** 步行机（ADR-0026）：4 格高的地面单位。 */
+    public static final DeferredHolder<EntityType<?>, EntityType<WalkerSentinel>> WALKER_SENTINEL = ENTITIES.registerEntityType(
+            "walker_sentinel", WalkerSentinel::new, MobCategory.MISC,
+            builder -> builder.sized(2.2F, 4.0F).eyeHeight(3.4F).clientTrackingRange(12).noSave().fireImmune());
 
     /** 探索车（ADR-0017）：驾驶员的客户端算位置，别人看到的每刻同步、插值。 */
     public static final DeferredHolder<EntityType<?>, EntityType<Exocraft>> EXOCRAFT = ENTITIES.registerEntityType(
@@ -91,6 +111,10 @@ public final class UniverseEntities {
             event.put(AQUATIC_CREATURE.get(), AquaticCreature.createAttributes().build());
             event.put(SENTINEL.get(), Sentinel.createAttributes(false).build());
             event.put(HEAVY_SENTINEL.get(), Sentinel.createAttributes(true).build());
+            event.put(REPAIR_SENTINEL.get(), RepairSentinel.createAttributes().build());
+            event.put(SUMMONER_SENTINEL.get(), SummonerSentinel.createAttributes().build());
+            event.put(QUADRUPED_SENTINEL.get(), QuadrupedSentinel.createAttributes().build());
+            event.put(WALKER_SENTINEL.get(), WalkerSentinel.createAttributes().build());
         });
     }
 }

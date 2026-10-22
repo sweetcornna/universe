@@ -19,8 +19,10 @@ import io.github.sweetcornna.universe.core.ecology.ResourcePlant;
 import io.github.sweetcornna.universe.core.ecology.TreeBuilder;
 import io.github.sweetcornna.universe.core.ecology.TreeSpecies;
 import io.github.sweetcornna.universe.core.galaxy.Planet;
+import io.github.sweetcornna.universe.core.poi.Landmark;
 import io.github.sweetcornna.universe.core.procgen.Rng;
 import io.github.sweetcornna.universe.core.terrain.BiomeKind;
+import io.github.sweetcornna.universe.poi.Landmarks;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
 import io.github.sweetcornna.universe.world.planet.Planets;
 import net.minecraft.core.BlockPos;
@@ -68,6 +70,8 @@ public record PlanetFloraFeature() implements Feature {
     private static final int CAVE_ROOF = 8;
     /** 甲壳蚌上面至少有几格水。 */
     private static final int CLAM_DEPTH = 8;
+    /** 地标占地半径的上限（建筑不超过中心 15 格）。 */
+    private static final int LANDMARK_RADIUS = 15;
 
     @Override
     public MapCodec<PlanetFloraFeature> codec() {
@@ -91,14 +95,14 @@ public record PlanetFloraFeature() implements Feature {
         }
         Optional<FloraLayout> found = layout(planet.get());
         if (found.isPresent()) {
-            this.flora(level, random, origin, found.get());
+            this.flora(level, random, origin, planet.get(), found.get());
         }
         // 资源植物最后放，只占前面留下的空地（ADR-0026），原来的植物和树一株不变
         this.resources(level, planet.get(), origin);
         return true;
     }
 
-    private void flora(WorldGenLevel level, RandomSource random, BlockPos origin, FloraLayout layout) {
+    private void flora(WorldGenLevel level, RandomSource random, BlockPos origin, Planet planet, FloraLayout layout) {
         int x0 = origin.getX();
         int z0 = origin.getZ();
         // 先长地面植物，树再盖上去（树能挤掉植物）：反过来的话树冠下的地面找不到，林下就空了
@@ -126,6 +130,7 @@ public record PlanetFloraFeature() implements Feature {
         pos.setY(level.getHeight(Heightmap.Types.WORLD_SURFACE_WG, pos.getX(), pos.getZ()));
         BiomeKind center = PlanetBiomes.kind(level.getBiome(pos));
         int attempts = center == null ? 0 : layout.treeAttempts(pos.getX(), pos.getZ(), center, random.nextDouble());
+        List<Landmark> landmarks = attempts == 0 ? List.of() : landmarks(planet, x0, z0);
         for (int i = 0; i < attempts; i++) {
             int x = x0 + random.nextInt(16);
             int z = z0 + random.nextInt(16);
@@ -137,7 +142,10 @@ public record PlanetFloraFeature() implements Feature {
             }
             TreeSpecies tree = layout.treeAt(x, z, biome, random.nextDouble());
             if (tree != null) {
-                this.grow(level, base, tree, random.nextLong());
+                long seed = random.nextLong();
+                if (!clearing(landmarks, x, z)) {
+                    this.grow(level, base, tree, seed);
+                }
             }
         }
     }
@@ -315,6 +323,28 @@ public record PlanetFloraFeature() implements Feature {
                     .setValue(FloraBlocks.LIT, tree.bloomGlows());
             case CRYSTAL -> UniverseBlocks.PLANET_CRYSTAL.get().defaultBlockState();
         };
+    }
+
+    /** 区块附近地上的地标（海底的不算）。 */
+    private static List<Landmark> landmarks(Planet planet, int x0, int z0) {
+        return Landmarks.layout(planet)
+                .map(layout -> layout.within(x0 + 8, z0 + 8, 12 + LANDMARK_RADIUS + TreeBuilder.REACH).stream()
+                        .filter(landmark -> !landmark.type().seabed()).toList())
+                .orElse(List.of());
+    }
+
+    /**
+     * 地标占地再往外 {@link TreeBuilder#REACH} 格以内不种树。地标在自己的区块里清了场，可相邻区块后生成，
+     * 那边的树冠会伸到建筑和着陆台上。
+     */
+    private static boolean clearing(List<Landmark> landmarks, int x, int z) {
+        for (Landmark landmark : landmarks) {
+            int reach = landmark.type().radius() + TreeBuilder.REACH;
+            if (landmark.distanceSq(x + 0.5, z + 0.5) <= reach * reach) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static boolean soil(BlockState state) {

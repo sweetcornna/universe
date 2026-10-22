@@ -18,12 +18,16 @@ import io.github.sweetcornna.universe.core.ecology.Fauna;
 import io.github.sweetcornna.universe.core.galaxy.Galaxy;
 import io.github.sweetcornna.universe.core.galaxy.GalaxyGenerator;
 import io.github.sweetcornna.universe.core.galaxy.Planet;
+import io.github.sweetcornna.universe.core.galaxy.PlanetType;
 import io.github.sweetcornna.universe.core.procgen.Rng;
+import io.github.sweetcornna.universe.core.sentinel.SentinelLevel;
 import io.github.sweetcornna.universe.core.terrain.TerrainModel;
 
 class LandmarkLayoutTest {
     private static final int SEA = 63;
     private static final Set<LandmarkType> ALL = EnumSet.allOf(LandmarkType.class);
+    /** 海底的两种；合成地面的测试都是海底，只用这两种。 */
+    private static final Set<LandmarkType> SEABED = EnumSet.of(LandmarkType.SHIPWRECK, LandmarkType.SEABED_RUIN);
 
     /** 平的地面，高度固定。 */
     private static LandmarkLayout.Ground flat(double height) {
@@ -42,7 +46,7 @@ class LandmarkLayoutTest {
 
     /** 处处是 30 格深的平海底。 */
     private static LandmarkLayout deep(long seed) {
-        return new LandmarkLayout(seed, ALL, flat(SEA - 30), SEA, 0, LandmarkLayout.Blocked.NONE);
+        return new LandmarkLayout(seed, SEABED, flat(SEA - 30), SEA, 0, LandmarkLayout.Blocked.NONE);
     }
 
     private static List<Landmark> cells(LandmarkLayout layout, LandmarkType type, int range) {
@@ -130,9 +134,9 @@ class LandmarkLayoutTest {
     @Test
     void seabedLandmarksNeedDeepFlatUsableSeabed() {
         // 水深正好 SEABED_DEPTH 可以，浅一格不行
-        assertFalse(new LandmarkLayout(5, ALL, flat(SEA - LandmarkLayout.SEABED_DEPTH), SEA, 0, LandmarkLayout.Blocked.NONE)
+        assertFalse(new LandmarkLayout(5, SEABED, flat(SEA - LandmarkLayout.SEABED_DEPTH), SEA, 0, LandmarkLayout.Blocked.NONE)
                 .within(0, 0, 6000).isEmpty());
-        assertTrue(new LandmarkLayout(5, ALL, flat(SEA - LandmarkLayout.SEABED_DEPTH + 1), SEA, 0, LandmarkLayout.Blocked.NONE)
+        assertTrue(new LandmarkLayout(5, SEABED, flat(SEA - LandmarkLayout.SEABED_DEPTH + 1), SEA, 0, LandmarkLayout.Blocked.NONE)
                 .within(0, 0, 6000).isEmpty());
         // 陡坡：占地范围里的高低差超过要求
         LandmarkLayout.Ground slope = new LandmarkLayout.Ground() {
@@ -146,7 +150,7 @@ class LandmarkLayoutTest {
                 return true;
             }
         };
-        assertTrue(new LandmarkLayout(5, ALL, slope, SEA, 0, LandmarkLayout.Blocked.NONE).within(0, 0, 6000).isEmpty());
+        assertTrue(new LandmarkLayout(5, SEABED, slope, SEA, 0, LandmarkLayout.Blocked.NONE).within(0, 0, 6000).isEmpty());
         // 熔岩湖之类不能用的地面
         LandmarkLayout.Ground lava = new LandmarkLayout.Ground() {
             @Override
@@ -159,15 +163,15 @@ class LandmarkLayoutTest {
                 return false;
             }
         };
-        assertTrue(new LandmarkLayout(5, ALL, lava, SEA, 0, LandmarkLayout.Blocked.NONE).within(0, 0, 6000).isEmpty());
+        assertTrue(new LandmarkLayout(5, SEABED, lava, SEA, 0, LandmarkLayout.Blocked.NONE).within(0, 0, 6000).isEmpty());
     }
 
     @Test
     void landmarksGiveWayToBlockedPlacesAndTheWorldBorder() {
-        assertTrue(new LandmarkLayout(42, ALL, flat(SEA - 30), SEA, 0, (x, z, r) -> true).within(0, 0, 8000).isEmpty());
+        assertTrue(new LandmarkLayout(42, SEABED, flat(SEA - 30), SEA, 0, (x, z, r) -> true).within(0, 0, 8000).isEmpty());
         // 中心 2000 格以内都被占了（兴趣点、传送门）：地标连占地范围都不伸进去
         LandmarkLayout.Blocked disc = (x, z, r) -> Math.hypot(x, z) < 2000 + r;
-        LandmarkLayout blocked = new LandmarkLayout(42, ALL, flat(SEA - 30), SEA, 0, disc);
+        LandmarkLayout blocked = new LandmarkLayout(42, SEABED, flat(SEA - 30), SEA, 0, disc);
         assertFalse(deep(42).within(0, 0, 1900).isEmpty(), "没让路时这里本来有地标");
         List<Landmark> around = blocked.within(0, 0, 4000);
         assertFalse(around.isEmpty());
@@ -175,7 +179,7 @@ class LandmarkLayoutTest {
             assertTrue(Math.hypot(landmark.x(), landmark.z()) >= 2000 + landmark.type().radius(), landmark.toString());
         }
         // 世界边界 4096：中心离边界至少 MARGIN 格
-        LandmarkLayout bordered = new LandmarkLayout(42, ALL, flat(SEA - 30), SEA, 4096, LandmarkLayout.Blocked.NONE);
+        LandmarkLayout bordered = new LandmarkLayout(42, SEABED, flat(SEA - 30), SEA, 4096, LandmarkLayout.Blocked.NONE);
         int limit = 4096 / 2 - LandmarkLayout.MARGIN;
         assertFalse(bordered.within(0, 0, 3000).isEmpty());
         for (Landmark landmark : bordered.within(0, 0, 6000)) {
@@ -272,17 +276,59 @@ class LandmarkLayoutTest {
         int seas = 0;
         for (Planet planet : planets()) {
             Set<LandmarkType> kinds = LandmarkLayout.kinds(planet);
-            if (planet.landable() && Fauna.hasSea(planet.liquid())) {
-                assertEquals(ALL, kinds, planet.id().toString());
+            Set<LandmarkType> seabed = EnumSet.noneOf(LandmarkType.class);
+            kinds.stream().filter(LandmarkType::seabed).forEach(seabed::add);
+            if (!planet.landable()) {
+                assertTrue(kinds.isEmpty(), planet.id().toString());
+            } else if (Fauna.hasSea(planet.liquid())) {
+                assertEquals(SEABED, seabed, planet.id().toString());
                 seas++;
             } else {
-                assertTrue(kinds.isEmpty(), planet.id() + " " + planet.type() + " " + planet.liquid());
-                if (planet.landable()) {
-                    assertTrue(LandmarkLayout.of(planet, LandmarkLayout.Blocked.NONE).within(0, 0, 3000).isEmpty());
-                }
+                assertTrue(seabed.isEmpty(), planet.id() + " " + planet.type() + " " + planet.liquid());
+                assertTrue(LandmarkLayout.of(planet, LandmarkLayout.Blocked.NONE).within(0, 0, 3000).stream()
+                        .noneMatch(l -> l.type().seabed()));
             }
         }
         assertTrue(seas >= 5, "too few sea planets: " + seas);
+    }
+
+    @Test
+    void landLandmarksFollowThePlanetRules() {
+        boolean facility = false;
+        boolean noFacility = false;
+        for (Planet planet : planets()) {
+            if (!planet.landable()) {
+                continue;
+            }
+            Set<LandmarkType> kinds = LandmarkLayout.kinds(planet);
+            String id = planet.id() + " " + planet.type();
+            assertTrue(kinds.contains(LandmarkType.OBSERVATORY), id);
+            assertTrue(kinds.contains(LandmarkType.SALVAGE_SITE), id);
+            assertTrue(kinds.contains(LandmarkType.ABANDONED_BUILDING), id);
+            assertEquals(planet.atmosphere().present() && planet.type() != PlanetType.BARREN, kinds.contains(LandmarkType.TRADING_POST), id);
+            assertEquals(SentinelLevel.of(planet).present(), kinds.contains(LandmarkType.MANUFACTURING_FACILITY), id);
+            facility |= kinds.contains(LandmarkType.MANUFACTURING_FACILITY);
+            noFacility |= !kinds.contains(LandmarkType.MANUFACTURING_FACILITY);
+            boolean fossils = switch (planet.type()) {
+                case HABITABLE, BARREN, SCORCHED, FROZEN -> true;
+                default -> false;
+            };
+            assertEquals(fossils, kinds.contains(LandmarkType.FOSSIL_PIT), id);
+        }
+        assertTrue(facility && noFacility);
+    }
+
+    @Test
+    void landLandmarksStayOnDryFlatGround() {
+        Set<LandmarkType> land = EnumSet.complementOf(EnumSet.copyOf(SEABED));
+        // 海平面以上一格起才算陆地
+        List<Landmark> dry = new LandmarkLayout(7, ALL, flat(SEA + 1), SEA, 0, LandmarkLayout.Blocked.NONE).within(0, 0, 6000);
+        assertFalse(dry.isEmpty());
+        assertTrue(dry.stream().allMatch(l -> land.contains(l.type())));
+        assertTrue(new LandmarkLayout(7, land, flat(SEA), SEA, 0, LandmarkLayout.Blocked.NONE).within(0, 0, 6000).isEmpty());
+        // 深海底只有海底的两种
+        assertTrue(new LandmarkLayout(7, ALL, flat(SEA - 30), SEA, 0, LandmarkLayout.Blocked.NONE).within(0, 0, 6000).stream()
+                .allMatch(l -> l.type().seabed()));
     }
 
     @Test
@@ -307,14 +353,17 @@ class LandmarkLayoutTest {
                         int x = landmark.x() + i * r;
                         int z = landmark.z() + j * r;
                         double h = terrain.sample(x, z).height();
-                        assertTrue(h <= terrain.seaLevel() - LandmarkLayout.SEABED_DEPTH, planet.id() + " " + landmark);
+                        assertTrue(landmark.type().seabed() ? h <= terrain.seaLevel() - LandmarkLayout.SEABED_DEPTH : h >= terrain.seaLevel() + 1,
+                                planet.id() + " " + landmark);
                         assertFalse(terrain.lavaLake(x, z));
                         min = Math.min(min, h);
                         max = Math.max(max, h);
                     }
                 }
                 assertTrue(max - min <= landmark.type().slope(), planet.id() + " " + landmark);
-                assertTrue(layout.estimatedY(landmark) <= terrain.seaLevel() - LandmarkLayout.SEABED_DEPTH);
+                if (landmark.type().seabed()) {
+                    assertTrue(layout.estimatedY(landmark) <= terrain.seaLevel() - LandmarkLayout.SEABED_DEPTH);
+                }
                 if (planet.worldSize() > 0) {
                     int limit = planet.worldSize() / 2 - LandmarkLayout.MARGIN;
                     assertTrue(Math.abs(landmark.x()) <= limit && Math.abs(landmark.z()) <= limit);

@@ -34,7 +34,7 @@ import net.neoforged.neoforge.server.ServerLifecycleHooks;
  */
 public final class UniverseNetwork {
     /** 协议版本：任何包的格式改动都要加一，版本不同的客户端和服务端会拒绝连接。 */
-    private static final String PROTOCOL_VERSION = "23";
+    private static final String PROTOCOL_VERSION = "24";
 
     private UniverseNetwork() {
     }

@@ -93,6 +93,15 @@ public final class UniverseJeiPlugin implements IModPlugin {
         info(registration, UniverseItems.LIVING_PEARL.get(), "living_pearl");
         info(registration, UniverseItems.RESOURCES.get("kelp_pod").get(), "kelp_pod");
         info(registration, UniverseItems.ALIEN_FISH.get(), "alien_fish");
+        // 地面守卫机的掉落（ADR-0026）
+        info(registration, UniverseItems.QUADRUPED_SERVO.get(), "quadruped_servo");
+        info(registration, UniverseItems.WALKER_BRAIN.get(), "walker_brain");
+        // 野外的地标（ADR-0026）：化石、打捞的废料、雷击石
+        info(registration, UniverseItems.SHELL_FOSSIL.get(), "fossil");
+        info(registration, UniverseItems.ARTHROPOD_FOSSIL.get(), "fossil");
+        info(registration, UniverseItems.SKULL_FOSSIL.get(), "fossil");
+        info(registration, UniverseItems.SALVAGED_SCRAP.get(), "salvaged_scrap");
+        info(registration, UniverseItems.FULGURITE.get(), "fulgurite");
     }
 
     /** JEI 换行只认空格，中文会断在数字两边、词中间加连字符，所以先按本模组的规则断好行，一行一个组件。 */

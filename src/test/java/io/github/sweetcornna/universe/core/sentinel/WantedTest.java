@@ -16,11 +16,10 @@ import io.github.sweetcornna.universe.core.galaxy.StarSystem;
 
 class WantedTest {
     @Test
-    void thresholdsMapToLevels() {
+    void alertStartsLevelOneOnly() {
         assertEquals(0, Wanted.levelFor(29.9));
         assertEquals(1, Wanted.levelFor(30));
-        assertEquals(2, Wanted.levelFor(60));
-        assertEquals(3, Wanted.levelFor(119));
+        assertEquals(1, Wanted.levelFor(119));
     }
 
     @Test
@@ -85,10 +84,11 @@ class WantedTest {
     }
 
     @Test
-    void hidingForTwentySecondsEscapes() {
+    void hidingForThirtySecondsEscapesLevelOne() {
         Wanted wanted = new Wanted();
         wanted.offend(Offense.ATTACK_SENTINEL, 1);
-        for (int i = 0; i < Wanted.ESCAPE_TICKS - 1; i++) {
+        assertEquals(30 * 20, Wanted.escapeTicks(1));
+        for (int i = 0; i < Wanted.escapeTicks(1) - 1; i++) {
             assertFalse(wanted.tick(false));
         }
         assertEquals(1, wanted.level());
@@ -98,41 +98,91 @@ class WantedTest {
     }
 
     @Test
+    void higherLevelsTakeLongerToEscape() {
+        // 20 + 10 × 级别 秒
+        assertEquals(40 * 20, Wanted.escapeTicks(2));
+        assertEquals(70 * 20, Wanted.escapeTicks(5));
+        Wanted wanted = new Wanted(0, 5);
+        for (int i = 0; i < 69 * 20; i++) {
+            assertFalse(wanted.tick(false));
+        }
+        assertEquals(5, wanted.level());
+        assertTrue(wanted.escapeProgress() > 0.98F);
+    }
+
+    @Test
     void beingSeenResetsTheEscapeTimer() {
         Wanted wanted = new Wanted();
         wanted.offend(Offense.ATTACK_SENTINEL, 1);
-        for (int i = 0; i < Wanted.ESCAPE_TICKS - 10; i++) {
+        for (int i = 0; i < Wanted.escapeTicks(1) - 10; i++) {
             wanted.tick(false);
         }
         wanted.tick(true);
         assertEquals(0, wanted.escapeProgress(), 1e-9);
-        for (int i = 0; i < Wanted.ESCAPE_TICKS - 1; i++) {
+        for (int i = 0; i < Wanted.escapeTicks(1) - 1; i++) {
             assertFalse(wanted.tick(false));
         }
     }
 
     @Test
-    void destroyingSentinelsEscalates() {
+    void offendingWhileWantedDoesNotEscalate() {
         Wanted wanted = new Wanted();
         wanted.offend(Offense.ATTACK_SENTINEL, 1);
-        wanted.offend(Offense.DESTROY_SENTINEL, 1);
-        wanted.offend(Offense.DESTROY_SENTINEL, 1);
-        assertEquals(2, wanted.level());
-        for (int i = 0; i < 4; i++) {
-            wanted.offend(Offense.DESTROY_SENTINEL, 1);
+        for (int i = 0; i < 20; i++) {
+            assertFalse(wanted.offend(Offense.DESTROY_SENTINEL, 1.5));
         }
-        assertEquals(3, wanted.level());
+        assertEquals(1, wanted.level());
         assertTrue(wanted.alert() <= Wanted.MAX);
     }
 
     @Test
-    void responseGrowsWithLevel() {
-        assertEquals(0, Wanted.drones(0, SentinelLevel.NORMAL));
-        assertEquals(2, Wanted.drones(1, SentinelLevel.NORMAL));
-        assertEquals(4, Wanted.drones(2, SentinelLevel.NORMAL));
-        assertEquals(5, Wanted.drones(3, SentinelLevel.AGGRESSIVE));
-        assertEquals(0, Wanted.heavies(2));
-        assertEquals(1, Wanted.heavies(3));
+    void clearingWavesClimbsToFiveThenWithdraws() {
+        Wanted wanted = new Wanted();
+        wanted.offend(Offense.ATTACK_SENTINEL, 1);
+        for (int level = 2; level <= Wanted.MAX_LEVEL; level++) {
+            assertEquals(Wanted.Outcome.ESCALATED, wanted.waveCleared());
+            assertEquals(level, wanted.level());
+        }
+        assertEquals(Wanted.Outcome.WITHDRAWN, wanted.waveCleared());
+        assertFalse(wanted.wanted());
+        assertEquals(0, wanted.alert());
+        assertEquals(Wanted.Outcome.NONE, wanted.waveCleared());
+    }
+
+    @Test
+    void clearingAWaveResetsTheEscapeTimer() {
+        Wanted wanted = new Wanted();
+        wanted.offend(Offense.ATTACK_SENTINEL, 1);
+        for (int i = 0; i < 200; i++) {
+            wanted.tick(false);
+        }
+        wanted.waveCleared();
+        assertEquals(0, wanted.escapeProgress(), 1e-9);
+        assertEquals(Wanted.escapeTicks(2), wanted.escapeRemaining());
+    }
+
+    @Test
+    void severeOffensesJumpStraightToLevelThree() {
+        for (Offense offense : new Offense[] {Offense.GRAVITINO, Offense.FACILITY_DOOR}) {
+            Wanted fresh = new Wanted();
+            assertTrue(fresh.offend(offense, 0.5));
+            assertEquals(3, fresh.level(), offense.name());
+            // 已经在一级，也跳到三级；已经在四级，不降
+            Wanted low = new Wanted();
+            low.offend(Offense.ATTACK_SENTINEL, 1);
+            assertTrue(low.offend(offense, 1));
+            assertEquals(3, low.level());
+            Wanted high = new Wanted(60, 4);
+            assertFalse(high.offend(offense, 1));
+            assertEquals(4, high.level());
+        }
+    }
+
+    @Test
+    void savedLevelsAreClampedToFive() {
+        assertEquals(3, new Wanted(90, 3).level());
+        assertEquals(Wanted.MAX_LEVEL, new Wanted(500, 9).level());
+        assertEquals(Wanted.MAX, new Wanted(500, 9).alert());
     }
 
     @Test

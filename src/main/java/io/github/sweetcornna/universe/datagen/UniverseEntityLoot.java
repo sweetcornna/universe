@@ -65,6 +65,32 @@ final class UniverseEntityLoot extends EntityLootSubProvider {
                         .add(LootItem.lootTableItem(UniverseItems.MODULES.get(ModuleType.WEAPON_CALIBRATOR).get())
                                 .apply(RandomModuleFunction.randomModule(1)))
                         .when(LootItemRandomChanceCondition.randomChance(0.3F))));
+        // 地面守卫机（ADR-0026）：四足机掉伺服器，步行机掉主脑，残骸多一些；步行机常带导航数据和技术模块
+        this.add(UniverseEntities.QUADRUPED_SENTINEL.get(), LootTable.lootTable()
+                .withPool(this.scrap(3, 5))
+                .withPool(LootPool.lootPool().setRolls(ContextIntProviders.exactly(1))
+                        .add(LootItem.lootTableItem(UniverseItems.QUADRUPED_SERVO.get())))
+                .withPool(LootPool.lootPool().setRolls(ContextIntProviders.exactly(1))
+                        .add(LootItem.lootTableItem(UniverseItems.NAVIGATION_DATA.get()))
+                        .when(LootItemRandomChanceCondition.randomChance(0.25F))));
+        this.add(UniverseEntities.WALKER_SENTINEL.get(), LootTable.lootTable()
+                .withPool(this.scrap(6, 10))
+                .withPool(LootPool.lootPool().setRolls(ContextIntProviders.exactly(1))
+                        .add(LootItem.lootTableItem(UniverseItems.WALKER_BRAIN.get())))
+                .withPool(LootPool.lootPool().setRolls(ContextIntProviders.exactly(1))
+                        .add(LootItem.lootTableItem(UniverseItems.NAVIGATION_DATA.get()))
+                        .when(LootItemRandomChanceCondition.randomChance(0.5F)))
+                .withPool(LootPool.lootPool().setRolls(ContextIntProviders.exactly(1))
+                        .add(LootItem.lootTableItem(UniverseItems.MODULES.get(ModuleType.WEAPON_CALIBRATOR).get())
+                                .apply(RandomModuleFunction.randomModule(1)))
+                        .when(LootItemRandomChanceCondition.randomChance(0.5F))));
+        // 维修、召唤无人机：守卫机残骸，召唤无人机偶尔有导航数据（ADR-0026）
+        this.add(UniverseEntities.REPAIR_SENTINEL.get(), LootTable.lootTable().withPool(this.scrap(1, 2)));
+        this.add(UniverseEntities.SUMMONER_SENTINEL.get(), LootTable.lootTable()
+                .withPool(this.scrap(2, 3))
+                .withPool(LootPool.lootPool().setRolls(ContextIntProviders.exactly(1))
+                        .add(LootItem.lootTableItem(UniverseItems.NAVIGATION_DATA.get()))
+                        .when(LootItemRandomChanceCondition.randomChance(0.2F))));
         // 太空守卫机的拦截机：守卫机残骸，偶尔有导航数据、飞船模块（ADR-0024）
         this.add(UniverseEntities.SENTINEL_INTERCEPTOR.get(), LootTable.lootTable()
                 .withPool(this.scrap(2, 4))

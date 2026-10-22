@@ -51,8 +51,10 @@ public final class LandmarkStructures {
     public static boolean build(WorldGenLevel level, Landmark landmark) {
         int x = landmark.x();
         int z = landmark.z();
-        int y = PoiStructures.seabedY(level, x, z);
-        if (y <= level.getMinY() + 6) {
+        boolean seabed = landmark.type().seabed();
+        int y = seabed ? PoiStructures.seabedY(level, x, z) : PoiStructures.groundY(level, x, z);
+        if (y <= level.getMinY() + 6 || !seabed && !level.getFluidState(new BlockPos(x, y, z)).isEmpty()) {
+            // 地上的地标中心不放在湖里
             return false;
         }
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos(x, y + 1, z);
@@ -61,14 +63,23 @@ public final class LandmarkStructures {
             surface = pos.getY();
             pos.move(Direction.UP);
         }
-        if (landmark.type().seabed() && surface - y < MIN_WATER) {
+        if (seabed ? surface - y < MIN_WATER : surface > y) {
+            // 海底的要够深；地上的不放进水里
             return false;
         }
-        PoiStructures.Placer p = new PoiStructures.Placer(level, new BlockPos(x, y, z), landmark.rotation(), RandomSource.create(landmark.seed()))
-                .underwater(surface);
+        PoiStructures.Placer p = new PoiStructures.Placer(level, new BlockPos(x, y, z), landmark.rotation(), RandomSource.create(landmark.seed()));
+        if (seabed) {
+            p.underwater(surface);
+        }
         switch (landmark.type()) {
             case SHIPWRECK -> shipwreck(p, landmark.seed());
             case SEABED_RUIN -> seabedRuin(p);
+            case TRADING_POST -> OutpostStructures.tradingPost(p, landmark);
+            case MANUFACTURING_FACILITY -> OutpostStructures.manufacturingFacility(p, landmark);
+            case OBSERVATORY -> OutpostStructures.observatory(p, landmark);
+            case FOSSIL_PIT -> WildStructures.fossilPit(p, landmark);
+            case SALVAGE_SITE -> WildStructures.salvageSite(p, landmark);
+            case ABANDONED_BUILDING -> WildStructures.abandonedBuilding(p, landmark);
         }
         return true;
     }

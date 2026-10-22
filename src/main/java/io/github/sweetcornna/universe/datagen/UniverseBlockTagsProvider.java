@@ -8,6 +8,7 @@ import io.github.sweetcornna.universe.block.FloraBlocks;
 import io.github.sweetcornna.universe.block.OreKind;
 import io.github.sweetcornna.universe.entity.ship.ShipParts;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
+import io.github.sweetcornna.universe.world.planet.Fulgurites;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.tags.BlockItemTags;
@@ -148,6 +149,27 @@ final class UniverseBlockTagsProvider extends BlockTagsProvider {
         this.tag(BlockTags.BLOCKS_MOTION_NO_LEAVES).add(UniverseBlocks.SEALED_CRATE.key());
         this.tag(BlockTags.MINEABLE_WITH_PICKAXE).add(UniverseBlocks.SEALED_CRATE.key(), UniverseBlocks.CLAM.key());
         this.tag(ShipParts.EXCLUDED).add(UniverseBlocks.SEALED_CRATE.key(), UniverseBlocks.CLAM.key());
+        // 交易站、制造设施、观测站（ADR-0026）：打不坏的方块都是实心的，不会被组装进飞船
+        for (var block : List.of(UniverseBlocks.OUTPOST_TRADE_TERMINAL, UniverseBlocks.REINFORCED_DOOR, UniverseBlocks.REINFORCED_PLATING,
+                UniverseBlocks.FACILITY_TERMINAL, UniverseBlocks.OBSERVATORY_TERMINAL)) {
+            this.tag(BlockTags.BLOCKS_MOTION_NO_LEAVES).add(block.key());
+            this.tag(ShipParts.EXCLUDED).add(block.key());
+        }
+        // 野外的地标（ADR-0026）：化石土用铲子，打捞舱和雷击石用镐子；打捞舱固定在原地
+        this.tag(BlockTags.BLOCKS_MOTION_NO_LEAVES).add(
+                UniverseBlocks.FOSSIL_DIRT.key(), UniverseBlocks.SALVAGE_CAPSULE.key(), UniverseBlocks.FULGURITE.key());
+        this.tag(BlockTags.MINEABLE_WITH_SHOVEL).add(UniverseBlocks.FOSSIL_DIRT.key());
+        this.tag(BlockTags.MINEABLE_WITH_PICKAXE).add(UniverseBlocks.SALVAGE_CAPSULE.key(), UniverseBlocks.FULGURITE.key());
+        this.tag(ShipParts.EXCLUDED).add(UniverseBlocks.SALVAGE_CAPSULE.key());
+        // 雷打在这些天然的沙、土、石头上会熔成雷击石
+        this.tag(Fulgurites.HOSTS).addTag(BlockTags.SAND).addTag(BlockTags.DIRT).addTag(BlockTags.BASE_STONE_OVERWORLD).add(
+                UniverseBlocks.PLANET_REGOLITH.key(),
+                UniverseBlocks.PLANET_ASH.key(),
+                UniverseBlocks.PLANET_STRATA.key(),
+                UniverseBlocks.PLANET_COBBLESTONE.key(),
+                Blocks.GRAVEL.builtInRegistryHolder().key(),
+                Blocks.RED_SANDSTONE.builtInRegistryHolder().key(),
+                Blocks.SANDSTONE.builtInRegistryHolder().key());
         // 先驱者传送门（ADR-0024）：石头都是实心的，整座门不会被组装进飞船
         this.tag(BlockTags.BLOCKS_MOTION_NO_LEAVES).add(
                 UniverseBlocks.PORTAL_STONE.key(),
@@ -158,6 +180,15 @@ final class UniverseBlockTagsProvider extends BlockTagsProvider {
                 UniverseBlocks.PORTAL_GLYPH.key(),
                 UniverseBlocks.PORTAL_DIAL.key(),
                 UniverseBlocks.PORTAL_FIELD.key());
+        // 守卫塔（ADR-0026）：实心，不会被组装进飞船
+        this.tag(BlockTags.BLOCKS_MOTION_NO_LEAVES).add(
+                UniverseBlocks.SENTINEL_PILLAR_PLATING.key(),
+                UniverseBlocks.SENTINEL_PILLAR_LIGHT.key(),
+                UniverseBlocks.SENTINEL_PILLAR_TERMINAL.key());
+        this.tag(ShipParts.EXCLUDED).add(
+                UniverseBlocks.SENTINEL_PILLAR_PLATING.key(),
+                UniverseBlocks.SENTINEL_PILLAR_LIGHT.key(),
+                UniverseBlocks.SENTINEL_PILLAR_TERMINAL.key());
         // 废弃货船里漏电的线管（ADR-0024）
         this.tag(BlockTags.BLOCKS_MOTION_NO_LEAVES).add(UniverseBlocks.LIVE_CONDUIT.key());
         this.tag(ShipParts.EXCLUDED).add(UniverseBlocks.LIVE_CONDUIT.key());

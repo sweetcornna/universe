@@ -165,6 +165,20 @@ final class UniverseBlockLoot extends BlockLootSubProvider {
                 .when(MatchBlock.blockMatches(this.blocks, clam, StatePropertiesPredicate.Builder.properties().hasProperty(ClamBlock.OPEN, false)))
                 .add(LootItem.lootTableItem(clam).when(this.hasSilkTouch()).otherwise(LootItem.lootTableItem(UniverseItems.LIVING_PEARL.get())))));
         this.dropSelf(UniverseBlocks.SEALED_CRATE.get());
+        // 野外的地标（ADR-0026）：化石土挖出一块化石（普通七成、少见两成半、稀有半成），精准采集拿走化石土本身；
+        // 打捞舱挖的时候先打开（东西在打开时倒出来），舱壳掉两块灰色船体板；雷击石掉自己
+        Block fossilDirt = UniverseBlocks.FOSSIL_DIRT.get();
+        this.add(fossilDirt, LootTable.lootTable()
+                .withPool(LootPool.lootPool().setRolls(ContextIntProviders.exactly(1))
+                        .add(LootItem.lootTableItem(fossilDirt).when(this.hasSilkTouch())))
+                .withPool(LootPool.lootPool().setRolls(ContextIntProviders.exactly(1)).when(this.doesNotHaveSilkTouch())
+                        .add(LootItem.lootTableItem(UniverseItems.SHELL_FOSSIL.get()).setWeight(14))
+                        .add(LootItem.lootTableItem(UniverseItems.ARTHROPOD_FOSSIL.get()).setWeight(5))
+                        .add(LootItem.lootTableItem(UniverseItems.SKULL_FOSSIL.get()).setWeight(1))));
+        this.add(UniverseBlocks.SALVAGE_CAPSULE.get(), LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ContextIntProviders.exactly(1))
+                .add(LootItem.lootTableItem(UniverseBlocks.HULL_PLATING.get(DyeColor.GRAY).get())
+                        .apply(SetItemCountFunction.setCount(ContextIntProviders.exactly(2))))));
+        this.dropSelf(UniverseBlocks.FULGURITE.get());
         // 便携精炼机：拆下来带着里面的东西和选好的配方（ADR-0026）
         this.add(UniverseBlocks.PORTABLE_REFINER.get(), block -> LootTable.lootTable().withPool(this.applyExplosionCondition(block,
                 LootPool.lootPool().setRolls(ContextIntProviders.exactly(1)).add(LootItem.lootTableItem(block)

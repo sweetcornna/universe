@@ -1,11 +1,14 @@
 package io.github.sweetcornna.universe.datagen;
 
 import io.github.sweetcornna.universe.block.OreKind;
+import io.github.sweetcornna.universe.block.poi.SalvageCapsuleBlock;
 import io.github.sweetcornna.universe.core.tech.ModuleType;
 import io.github.sweetcornna.universe.encounter.SpaceEncounters;
 import io.github.sweetcornna.universe.poi.LandmarkStructures;
+import io.github.sweetcornna.universe.poi.OutpostStructures;
 import io.github.sweetcornna.universe.poi.PoiStructures;
 import io.github.sweetcornna.universe.poi.RandomModuleFunction;
+import io.github.sweetcornna.universe.poi.WildStructures;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
 import io.github.sweetcornna.universe.registry.UniverseItems;
 import net.minecraft.data.loot.LootTableSubProvider;
@@ -121,6 +124,58 @@ final class UniverseChestLoot implements LootTableSubProvider {
                 .withPool(chance(item(UniverseItems.NAVIGATION_DATA.get(), 1, 1, 1), 0.5F))
                 .withPool(chance(LootItem.lootTableItem(UniverseItems.MODULES.get(ModuleType.LIFE_SUPPORT).get())
                         .apply(RandomModuleFunction.randomModule(1)), 0.4F)));
+        // 打捞舱（ADR-0026）：1–5 块打捞的废料（越多越少见），一些零件和材料，有时一件 Mk.II 部件或一个飞船模块
+        this.context.accept(SalvageCapsuleBlock.LOOT, LootTable.lootTable()
+                .withPool(LootPool.lootPool().setRolls(ContextIntProviders.exactly(1))
+                        .add(item(UniverseItems.SALVAGED_SCRAP.get(), 1, 1, 5))
+                        .add(item(UniverseItems.SALVAGED_SCRAP.get(), 2, 2, 4))
+                        .add(item(UniverseItems.SALVAGED_SCRAP.get(), 3, 3, 3))
+                        .add(item(UniverseItems.SALVAGED_SCRAP.get(), 4, 4, 2))
+                        .add(item(UniverseItems.SALVAGED_SCRAP.get(), 5, 5, 1)))
+                .withPool(LootPool.lootPool().setRolls(ContextIntProviders.between(2, 4))
+                        .add(item(UniverseItems.CIRCUIT_BOARD.get(), 1, 3, 6))
+                        .add(item(UniverseItems.MAGNETIC_COIL.get(), 1, 3, 5))
+                        .add(item(UniverseItems.GEAR.get(), 2, 4, 5))
+                        .add(item(UniverseItems.ORE_SMELTED.get(OreKind.TITANIUM).get(), 2, 4, 5))
+                        .add(item(UniverseItems.LAUNCH_FUEL.get(), 1, 3, 4))
+                        .add(item(UniverseItems.ALLOY_HULL_PLATING.get(), 1, 3, 3))
+                        .add(item(UniverseItems.CREDIT_CHIP.get(), 1, 2, 3)))
+                .withPool(chance(LootItem.lootTableItem(UniverseItems.MODULES.get(ModuleType.FIRE_CONTROL).get())
+                        .apply(RandomModuleFunction.randomShipModule(1)), 0.3F))
+                .withPool(LootPool.lootPool().setRolls(ContextIntProviders.exactly(1))
+                        .when(LootItemRandomChanceCondition.randomChance(0.15F))
+                        .add(item(UniverseItems.SHIP_THRUSTER_MK2.get(), 1, 1, 4))
+                        .add(item(UniverseItems.FUEL_TANK_MK2.get(), 1, 1, 4))
+                        .add(item(UniverseItems.IMPULSE_ENGINE_MK2.get(), 1, 1, 1))));
+        // 废弃建筑（ADR-0026）：和据点差不多的生存物资，导航数据更常见
+        this.context.accept(WildStructures.ABANDONED_BUILDING_LOOT, LootTable.lootTable()
+                .withPool(LootPool.lootPool().setRolls(ContextIntProviders.between(3, 5))
+                        .add(item(UniverseItems.OXYGEN_CAPSULE.get(), 1, 3, 8))
+                        .add(item(UniverseItems.HAZARD_CELL.get(), 1, 3, 8))
+                        .add(item(UniverseItems.COOKED_ALIEN_MEAT.get(), 1, 3, 5))
+                        .add(item(Items.IRON_INGOT, 1, 4, 6))
+                        .add(item(Items.COPPER_INGOT, 2, 5, 5))
+                        .add(item(UniverseItems.CIRCUIT_BOARD.get(), 1, 2, 4))
+                        .add(item(UniverseItems.MAGNETIC_COIL.get(), 1, 2, 3))
+                        .add(item(UniverseItems.LAUNCH_FUEL.get(), 1, 2, 3))
+                        .add(item(Items.PAPER, 2, 5, 3)))
+                .withPool(chance(item(UniverseItems.NAVIGATION_DATA.get(), 1, 2, 1), 0.6F))
+                .withPool(chance(LootItem.lootTableItem(UniverseItems.MODULES.get(ModuleType.LIFE_SUPPORT).get())
+                        .apply(RandomModuleFunction.randomModule(0)), 0.25F)));
+        // 交易站的补给箱（ADR-0026）：做买卖的地方，多是燃料、氧气、防护电池和信用点芯片，偶尔有导航数据和模块
+        this.context.accept(OutpostStructures.TRADING_POST_LOOT, LootTable.lootTable()
+                .withPool(LootPool.lootPool().setRolls(ContextIntProviders.between(3, 5))
+                        .add(item(UniverseItems.LAUNCH_FUEL.get(), 1, 3, 8))
+                        .add(item(UniverseItems.OXYGEN_CAPSULE.get(), 1, 3, 8))
+                        .add(item(UniverseItems.HAZARD_CELL.get(), 1, 3, 7))
+                        .add(item(UniverseItems.CREDIT_CHIP.get(), 1, 3, 6))
+                        .add(item(UniverseItems.COOKED_ALIEN_MEAT.get(), 1, 3, 5))
+                        .add(item(UniverseItems.CIRCUIT_BOARD.get(), 1, 2, 4))
+                        .add(item(Items.IRON_INGOT, 2, 5, 4))
+                        .add(item(UniverseItems.SPACE_WARPER.get(), 1, 1, 1)))
+                .withPool(chance(item(UniverseItems.NAVIGATION_DATA.get(), 1, 1, 1), 0.4F))
+                .withPool(chance(LootItem.lootTableItem(UniverseItems.MODULES.get(ModuleType.LIFE_SUPPORT).get())
+                        .apply(RandomModuleFunction.randomModule(0)), 0.2F)));
         this.context.accept(PoiStructures.OUTPOST_LOOT, LootTable.lootTable()
                 .withPool(LootPool.lootPool().setRolls(ContextIntProviders.between(3, 5))
                         .add(item(Items.BREAD, 2, 4, 6))

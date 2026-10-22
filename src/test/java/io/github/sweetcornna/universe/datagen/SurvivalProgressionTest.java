@@ -68,6 +68,11 @@ class SurvivalProgressionTest {
             NS + "freighter_plate", NS + "freighter_engine", NS + "freighter_console", NS + "fleet_terminal",
             // 先驱者传送门挖不掉（ADR-0024）
             NS + "portal_stone", NS + "portal_glyph", NS + "portal_dial",
+            // 守卫塔挖不掉（ADR-0026）
+            NS + "sentinel_pillar_plating", NS + "sentinel_pillar_light", NS + "sentinel_pillar_terminal",
+            // 交易站、制造设施、观测站的终端和加固外壳、加固门挖不掉（ADR-0026）
+            NS + "outpost_trade_terminal", NS + "facility_terminal", NS + "observatory_terminal", NS + "reinforced_plating",
+            NS + "reinforced_door",
             // Mk.II 部件只能在空间站买、在坠毁飞船里拆到（ADR-0017）
             NS + "ship_thruster_mk2", NS + "fuel_tank_mk2", NS + "impulse_engine_mk2", NS + "warp_drive_mk2", NS + "alloy_hull_plating",
             // 建造无人机是机甲自带的，物品只用来画在世界里飞的样子（ADR-0023）
@@ -83,7 +88,9 @@ class SurvivalProgressionTest {
             "universe:portable_refining", new int[] {1, 1});
     /** 兴趣点的建筑里天然放着的方块（ADR-0014），挖了按各自的战利品表掉落。 */
     private static final Set<String> STRUCTURE_BLOCKS = Set.of(NS + "data_terminal", NS + "supply_crate", NS + "tech_cache",
-            NS + "smoldering_wreck", NS + "damaged_ship_helm", NS + "clam", NS + "sealed_crate");
+            NS + "smoldering_wreck", NS + "damaged_ship_helm", NS + "clam", NS + "sealed_crate",
+            // 野外的地标（ADR-0026）：化石坑的化石土、打捞点的打捞舱；雷击石是风暴里雷劈出来的
+            NS + "fossil_dirt", NS + "salvage_capsule", NS + "fulgurite");
 
     private record Recipe(String name, List<List<String>> ingredients, String research) {
     }

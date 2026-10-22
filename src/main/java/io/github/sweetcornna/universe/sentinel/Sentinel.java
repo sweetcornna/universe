@@ -5,6 +5,7 @@ import java.util.List;
 
 import org.jspecify.annotations.Nullable;
 
+import io.github.sweetcornna.universe.core.sentinel.SentinelKind;
 import io.github.sweetcornna.universe.entity.PlasmaBolt;
 import io.github.sweetcornna.universe.registry.UniverseEntities;
 import net.minecraft.core.BlockPos;
@@ -84,6 +85,21 @@ public class Sentinel extends PathfinderMob {
         return this.getType() == UniverseEntities.HEAVY_SENTINEL.get();
     }
 
+    /** 哪一种守卫机；子类各自返回自己的种类。 */
+    public SentinelKind kind() {
+        return this.isHeavy() ? SentinelKind.HEAVY : SentinelKind.DRONE;
+    }
+
+    /** 交战时开不开火（维修、召唤无人机不开火）。 */
+    protected boolean armed() {
+        return true;
+    }
+
+    /** 交战时绕着目标飞的半径（再随机加 0–6 格）。 */
+    protected double standOff() {
+        return this.isHeavy() ? 9 : 7;
+    }
+
     public boolean isHostile() {
         return this.entityData.get(DATA_HOSTILE);
     }
@@ -107,6 +123,11 @@ public class Sentinel extends PathfinderMob {
         this.setHostile(null);
         this.retreat = 0;
         this.getNavigation().stop();
+    }
+
+    /** 正在撤退（地面守卫机的 goal 用）。 */
+    protected boolean retreating() {
+        return this.retreat >= 0;
     }
 
     @Override
@@ -136,7 +157,7 @@ public class Sentinel extends PathfinderMob {
         super.tick();
         if (this.level().isClientSide()) {
             // 机身下方推进器的微光
-            if (this.random.nextInt(3) == 0) {
+            if (this.kind().flying() && this.random.nextInt(3) == 0) {
                 double spread = this.isHeavy() ? 0.6 : 0.3;
                 this.level().addParticle(new DustParticleOptions(this.isHostile() ? 0xFF6A4A : 0x9AD8FF, 0.5F),
                         this.getX() + (this.random.nextDouble() - 0.5) * spread, this.getY() + 0.05,
@@ -145,9 +166,12 @@ public class Sentinel extends PathfinderMob {
             return;
         }
         if (this.retreat >= 0) {
+            // 飞的往上飞走，走路的原地传送走
             this.retreat++;
-            this.setDeltaMovement(this.getDeltaMovement().scale(0.8).add(0, 0.08, 0));
-            if (this.retreat > 60) {
+            if (this.kind().flying()) {
+                this.setDeltaMovement(this.getDeltaMovement().scale(0.8).add(0, 0.08, 0));
+            }
+            if (this.retreat > (this.kind().flying() ? 60 : 20)) {
                 this.vanish();
             }
             return;
@@ -163,7 +187,7 @@ public class Sentinel extends PathfinderMob {
             this.discard();
         }
         // 不要贴地飞
-        if (this.tickCount % 10 == 0 && this.getY() - this.groundY(this.getBlockX(), this.getBlockZ()) < 1.5) {
+        if (this.kind().flying() && this.tickCount % 10 == 0 && this.getY() - this.groundY(this.getBlockX(), this.getBlockZ()) < 1.5) {
             this.setDeltaMovement(this.getDeltaMovement().add(0, 0.12, 0));
         }
     }
@@ -411,12 +435,15 @@ public class Sentinel extends PathfinderMob {
             double distance = self.distanceTo(target);
             if (--this.reposition <= 0 || self.getNavigation().isDone()) {
                 this.reposition = 30 + self.random.nextInt(30);
-                double ring = distance > 24 ? 6 : (heavy ? 9 : 7) + self.random.nextDouble() * 6;
+                double ring = distance > 24 ? 6 : self.standOff() + self.random.nextDouble() * 6;
                 double angle = Math.atan2(self.getZ() - target.getZ(), self.getX() - target.getX()) + (self.random.nextDouble() - 0.5) * 1.6;
                 int x = (int) Math.floor(target.getX() + Math.cos(angle) * ring);
                 int z = (int) Math.floor(target.getZ() + Math.sin(angle) * ring);
                 double y = Math.max(target.getY() + 2.5, self.groundY(x, z) + 3) + self.random.nextDouble() * 2;
                 self.getNavigation().moveTo(x + 0.5, y, z + 0.5, heavy ? 1.0 : 1.3);
+            }
+            if (!self.armed()) {
+                return;
             }
             if (self.cooldown > 0) {
                 self.cooldown--;

@@ -2,7 +2,6 @@ package io.github.sweetcornna.universe.client.poi;
 
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.client.HudMarker;
-import io.github.sweetcornna.universe.core.poi.PoiType;
 import io.github.sweetcornna.universe.network.OpenSignalBoosterPayload;
 import io.github.sweetcornna.universe.network.PoiTextPayload;
 import io.github.sweetcornna.universe.poi.Waypoint;
@@ -48,16 +47,15 @@ public final class PoiClient {
             return;
         }
         Waypoint waypoint = player.getData(UniverseAttachments.WAYPOINT);
-        if (!waypoint.active() || waypoint.dimension() != minecraft.level.dimension() || waypoint.poiType().isEmpty()) {
+        if (!waypoint.active() || waypoint.dimension() != minecraft.level.dimension()) {
             return;
         }
-        PoiType type = waypoint.poiType().get();
         Vec3 target = Vec3.atBottomCenterOf(waypoint.pos()).add(0, 2, 0);
         double dx = target.x - player.getX();
         double dz = target.z - player.getZ();
         int distance = (int) Math.round(Math.sqrt(dx * dx + dz * dz));
         float pulse = 0.75F + 0.25F * (float) Math.sin((minecraft.level.getGameTime() + delta.getGameTimeDeltaPartialTick(false)) * 0.2);
-        Component label = Component.translatable("hud.universe.waypoint", Component.translatable("poi.universe." + type.serializedName()), distance);
-        HudMarker.draw(graphics, minecraft, target, type.color(), label, pulse);
+        Component label = Component.translatable("hud.universe.waypoint", waypoint.name(), distance);
+        HudMarker.draw(graphics, minecraft, target, waypoint.color(), label, pulse);
     }
 }

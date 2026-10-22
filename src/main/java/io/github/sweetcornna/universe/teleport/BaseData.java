@@ -88,6 +88,11 @@ public final class BaseData extends SavedData {
         return this.bases.values().stream().filter(base -> base.dimension().equals(dimension) && base.pos().equals(pos)).findFirst();
     }
 
+    /** 这个维度里 {@code radius} 格内有没有基地（雷击石不往基地附近落，ADR-0026）。 */
+    public boolean near(ResourceKey<Level> dimension, BlockPos pos, double radius) {
+        return this.bases.values().stream().anyMatch(base -> base.dimension().equals(dimension) && base.pos().distSqr(pos) < radius * radius);
+    }
+
     public Optional<Base> get(UUID id) {
         return Optional.ofNullable(this.bases.get(id));
     }
