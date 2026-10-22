@@ -53,7 +53,7 @@ public final class Husbandry {
     public static Product product(CreatureSpecies species) {
         return switch (species.plan()) {
             case BIPED, FLYER -> Product.EGG;
-            case HEXAPOD, SERPENT -> Product.GEL;
+            case HEXAPOD, SERPENT, FISH, EEL, JELLY, SQUID -> Product.GEL;
             case QUADRUPED -> species.body().dorsal() == Dorsal.PLATES || species.body().dorsal() == Dorsal.SPIKES ? Product.EGG : Product.FLUFF;
         };
     }
@@ -67,7 +67,7 @@ public final class Husbandry {
     public static boolean rideable(CreatureSpecies species) {
         return species.size() >= RIDE_MIN_SIZE && switch (species.plan()) {
             case QUADRUPED, HEXAPOD, BIPED -> true;
-            case SERPENT, FLYER -> false;
+            case SERPENT, FLYER, FISH, EEL, JELLY, SQUID -> false;
         };
     }
 

@@ -16,6 +16,9 @@
     "minecraft:bone",
     "minecraft:slime_ball",
     "minecraft:honeycomb",
+    "universe:alien_fish",
+    "universe:cooked_alien_fish",
+    "universe:living_pearl",
     "universe:star_pie",
     "universe:meat_pie",
     "universe:spicy_roast",
@@ -28,6 +31,7 @@
     "universe:gravitino_pastry",
     "universe:marrow_soup",
     "universe:fish_pie",
-    "universe:star_cake"
+    "universe:star_cake",
+    "universe:seafood_roll"
   ]
 }

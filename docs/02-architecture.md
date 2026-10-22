@@ -348,6 +348,13 @@ io.github.sweetcornna.universe
 | 燃料是物品上的 `DataComponents.COOKING_FUEL`：原版用 `Item.Properties.cookingFuel(ResourceKey<ContextIntProvider>)`（`ContextIntProviders.COOKING_TIME_WOOD_BLOCKS` 这类数据驱动的键），模组物品可以直接给 `new CookingFuel(new ResolvableInt.Constant(刻数), new ResolvableFloat.Constant(1))`；读的时候 `ResolvableInt.getFromItem(物品, COOKING_FUEL, CookingFuel::burnTime, 战利品上下文, 0)` | 已确认，营养处理器、便携精炼机 |
 | 拆方块时撒出容器里的东西在方块实体的 `preRemoveSideEffects(BlockPos, BlockState)` 里（`BaseContainerBlockEntity` 默认 `Containers.dropContents`），潜影盒覆盖成空的；东西跟着物品走靠战利品表的 `CopyComponentsFunction.copyComponentsFromBlockEntity(BLOCK_ENTITY).include(DataComponents.CONTAINER)`，放下时 `applyImplicitComponents` 读回来。创造模式拆不掉落，要在 `playerWillDestroy` 里自己掉一个带 `collectComponents()` 的物品 | 已确认，便携精炼机 |
 | `ItemStack.getCraftingRemainder()` 返回可空的 `ItemStackTemplate`（牛奶桶 → 桶）；`Item.finishUsingItem(ItemStack, Level, LivingEntity)` 吃完的回调还在；喝的东西用 `Item.Properties.food(食物, Consumables.DEFAULT_DRINK)` | 已确认，营养处理器、菜 |
+| 水生动物继承 `WaterAnimal`：离水憋死、在水里回满空气都在它的 `baseTick` 里；游泳重写 `travelInWater(Vec3 input, double baseGravity, boolean isFalling, double oldY)`（原版的鱼 `moveRelative(0.01, input)`、阻力 0.9、无目标时下沉 0.005），寻路用 `WaterBoundPathNavigation`，`MoveControl<T>` 带泛型。`Entity.isEyeInFluid(FluidTags.WATER)` 还在 | 已确认，水生动物在用 |
+| `ThrowableProjectile` 在水里的 0.8 阻力写在私有方法里改不了；在水里不减速的弹射物直接继承 `Projectile`，自己用 `ProjectileUtil.getHitResultOnMoveVector`、`hitTargetOrDeflectSelf`、`updateRotation` | 已确认，鱼雷在用 |
+| `Mob.getLootTable()` 是 final，也没有设置的方法；同一种实体按个体换战利品表时重写 `LivingEntity.dropFromLootTable(ServerLevel, DamageSource, boolean)`，调四个参数的版本传另一张表 | 已确认，水母在用 |
+| 骑着东西潜进水里时，只有坐骑的类型在 `EntityTypeTags.DISMOUNTS_UNDERWATER` 里才被甩下来（`Entity.dismountsUnderwater()` 看的是坐骑）；自己的载具不进这个标签，乘客就一直坐着 | 已确认，潜艇在用 |
+| 潮涌能量（`MobEffects.CONDUIT_POWER`）给水下呼吸，眼睛在水里时 `LightmapRenderStateExtractor` 按 `getWaterVision()` 给夜视；隐藏的效果（`ambient`、不显示粒子和图标）也会同步给本人的客户端 | 已确认，潜艇的舱里在用 |
+| `ChestMenu` 带容器的静态工厂只有 `threeRows`、`sixRows`；别的行数用构造器 `new ChestMenu(MenuType.GENERIC_9xN, id, inventory, container, rows)` | 已确认，潜艇的 18 格货舱在用 |
+| 方块的水：海草那样的方块实现 `LiquidBlockContainer`，`getFluidState` 返回 `Fluids.WATER.getSource(false)`，`updateShape` 里 `scheduleTick(pos, Fluids.WATER, ...)`；`Heightmap.Types.OCEAN_FLOOR` 是不算液体的地面，`MOTION_BLOCKING` 算液体 | 已确认，烛光海带、甲壳蚌、海底的地标在用 |
 拿不准的 API 先查源码再写，核实后把结果补进这张表。源码在：
 
 - Minecraft（含 NeoForge 补丁）：`build/moddev/artifacts/minecraft-patched-26.3.0.95-sources.jar`，IDE 里可以直接跳转。

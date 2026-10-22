@@ -97,6 +97,8 @@
     "universe:signal_booster",
     "universe:supply_crate",
     "universe:smoldering_wreck",
+    "universe:sealed_crate",
+    "universe:clam",
     "universe:planet_iron_ore",
     "universe:planet_copper_ore",
     "universe:planet_coal_ore",

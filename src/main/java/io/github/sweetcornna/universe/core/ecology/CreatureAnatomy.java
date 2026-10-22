@@ -25,7 +25,11 @@ public final class CreatureAnatomy {
 
     /** 部件在动画里的角色。 */
     public enum Role {
-        BODY, HEAD, LEG, ARM, TAIL, WING, SEGMENT, DECOR
+        BODY, HEAD, LEG, ARM, TAIL, WING, SEGMENT, DECOR,
+        /** 鱼的胸鳍、乌贼的鳍。 */
+        FIN,
+        /** 水母的触手、乌贼的腕。 */
+        TENTACLE
     }
 
     /**
@@ -123,6 +127,10 @@ public final class CreatureAnatomy {
         switch (species.plan()) {
             case SERPENT -> a.serpent(species);
             case FLYER -> a.flyer(species);
+            case FISH -> a.fish(species);
+            case EEL -> a.eel(species);
+            case JELLY -> a.jelly(species);
+            case SQUID -> a.squid(species);
             default -> a.walker(species);
         }
         a.packUv();
@@ -231,6 +239,138 @@ public final class CreatureAnatomy {
             int fan = Math.max(2, w);
             this.add("tail0", "body", 0, -h / 2f + 1, len / 2f, -0.15f, 0, 0,
                     List.of(new Box(-fan / 2f, -0.5f, 0, fan, 1, b.tailLength(), 0, 0, 2)), Role.TAIL, 0, 0, 0);
+        }
+    }
+
+    // ---------------------------------------------------------------- 水生的体型（ADR-0026）
+
+    /** 鱼：侧扁的身子，前面是头，后面尾柄连着竖起的尾鳍，两侧一对胸鳍，背上可以有背鳍。在水里悬着，离碰撞箱底一格多。 */
+    private void fish(CreatureSpecies s) {
+        Body b = s.body();
+        int len = b.length();
+        int w = b.width();
+        int h = b.height();
+        float bodyY = GROUND - h / 2f - 1;
+        List<Box> body = new ArrayList<>();
+        body.add(box(-w / 2f, -h / 2f, -len / 2f, w, h, len));
+        this.dorsal(b, body, -h / 2f, len);
+        // 腹下的臀鳍
+        body.add(new Box(-0.5f, h / 2f, len / 6f, 1, 1, Math.max(2, len / 4), 0, 0, 2));
+        this.add("body", null, 0, bodyY, 0, 0, 0, 0, body, Role.BODY, 0, 0, 0);
+        int hw = b.headWidth();
+        int hh = b.headHeight();
+        int hd = b.headDepth();
+        List<Box> head = new ArrayList<>();
+        head.add(box(-hw / 2f, -hh / 2f, -hd, hw, hh, hd));
+        if (b.snoutLength() > 0) {
+            int sh = Math.max(1, hh / 2);
+            head.add(box(-Math.max(1, hw - 1) / 2f, 0, -hd - b.snoutLength(), Math.max(1, hw - 1), sh, b.snoutLength()));
+        }
+        this.add("head", "body", 0, 0.5f, -len / 2f, 0, 0, 0, head, Role.HEAD, 0, 0, 0);
+        if (b.crest() == CreatureSpecies.Crest.ANTENNAE) {
+            // 嘴边一对须
+            for (int side = -1; side <= 1; side += 2) {
+                this.add("barbel" + (side < 0 ? "l" : "r"), "head", side * (hw / 2f - 0.5f), hh / 2f - 0.5f, -hd, 0.5f, 0, side * 0.3f,
+                        List.of(box(-0.5f, 0, -0.5f, 1, 3, 1)), Role.DECOR, 0, side, 0);
+            }
+        }
+        // 尾柄和尾鳍：尾鳍比身子高一截
+        int peduncle = Math.max(1, Math.min(h - 1, 2));
+        int fin = h + 2;
+        this.add("tail0", "body", 0, 0, len / 2f, 0, 0, 0,
+                List.of(box(-Math.max(1, w - 1) / 2f, -peduncle / 2f, 0, Math.max(1, w - 1), peduncle, 2),
+                        new Box(-0.5f, -fin / 2f, 1.5f, 1, fin, b.tailLength(), 0, 0, 2)), Role.TAIL, 0, 0, 0);
+        int span = b.wingSpan();
+        for (int side = -1; side <= 1; side += 2) {
+            this.add("fin" + (side < 0 ? "l" : "r"), "body", side * (w / 2f), h / 4f, -len / 4f, 0, 0, side * 0.6f,
+                    List.of(new Box(side > 0 ? 0 : -span, 0, -1, span, 1, 3, 0, 0, 2)), Role.FIN, 0, side, side > 0 ? 0 : (float) Math.PI);
+        }
+    }
+
+    /** 鳗：一串逐渐变细的身体节，最前面是带长吻的头，最后一节带尾鳍，背上一条连着的背鳍。 */
+    private void eel(CreatureSpecies s) {
+        Body b = s.body();
+        int segs = b.segments();
+        int segLen = b.length();
+        float total = segs * segLen;
+        String parent = null;
+        for (int i = 0; i < segs; i++) {
+            int taper = Math.max(0, i - (segs - 4));
+            int w = Math.max(1, b.width() - taper / 2);
+            int h = Math.max(1, b.height() - taper / 2);
+            float y = i == 0 ? GROUND - b.height() / 2f - 1 : 0;
+            float z = i == 0 ? -total / 2f : segLen;
+            List<Box> boxes = new ArrayList<>();
+            boxes.add(box(-w / 2f, -h / 2f, 0, w, h, segLen));
+            if (b.dorsal() == CreatureSpecies.Dorsal.FIN) {
+                boxes.add(new Box(-0.5f, -h / 2f - 1, 0, 1, 1, segLen, 0, 0, 2));
+            }
+            if (i == segs - 1) {
+                boxes.add(new Box(-0.5f, -h / 2f - 1, segLen, 1, h + 2, b.tailLength(), 0, 0, 2));
+            }
+            String name = "segment" + i;
+            this.add(name, parent, 0, y, z, 0, 0, 0, boxes, Role.SEGMENT, i, 0, 0);
+            parent = name;
+        }
+        this.head(s, "segment0", 0, 0, 0);
+    }
+
+    /** 水母：上面一口钟，钟下垂着口腕（当头），钟口一圈细长的触手一直垂到碰撞箱底。 */
+    private void jelly(CreatureSpecies s) {
+        Body b = s.body();
+        int bell = b.width();
+        int bh = b.height();
+        int tentacle = b.legLength();
+        float rim = GROUND - tentacle;
+        List<Box> body = new ArrayList<>();
+        body.add(box(-bell / 2f, -bh, -bell / 2f, bell, bh, bell));
+        int cap = Math.max(2, bell - 2);
+        body.add(box(-cap / 2f, -bh - 1, -cap / 2f, cap, 1, cap));
+        this.add("body", null, 0, rim, 0, 0, 0, 0, body, Role.BODY, 0, 0, 0);
+        int core = b.headWidth();
+        this.add("head", "body", 0, 0, 0, 0, 0, 0, List.of(box(-core / 2f, 0, -core / 2f, core, b.headHeight(), core)), Role.HEAD, 0, 0, 0);
+        int count = b.legPairs() * 2;
+        float radius = bell / 2f - 1;
+        for (int i = 0; i < count; i++) {
+            double angle = Math.PI * 2 * i / count;
+            float x = (float) (Math.cos(angle) * radius);
+            float z = (float) (Math.sin(angle) * radius);
+            this.add("tentacle" + i, "body", x, -0.01f, z, 0, 0, 0, List.of(box(-0.5f, 0, -0.5f, 1, tentacle, 1)), Role.TENTACLE, i,
+                    x < 0 ? -1 : 1, (float) angle);
+        }
+    }
+
+    /** 乌贼：长套膜朝前，尖上一对鳍；套膜后面是头，头后面拖着一束腕，其中两条触腕更长。 */
+    private void squid(CreatureSpecies s) {
+        Body b = s.body();
+        int len = b.length();
+        int w = b.width();
+        int h = b.height();
+        float bodyY = GROUND - h / 2f - 1;
+        List<Box> body = new ArrayList<>();
+        body.add(box(-w / 2f, -h / 2f, -len / 2f, w, h, len));
+        int tipW = Math.max(1, w - 2);
+        int tipH = Math.max(1, h - 2);
+        body.add(box(-tipW / 2f, -tipH / 2f, -len / 2f - 2, tipW, tipH, 2));
+        this.add("body", null, 0, bodyY, 0, 0, 0, 0, body, Role.BODY, 0, 0, 0);
+        int span = b.wingSpan();
+        for (int side = -1; side <= 1; side += 2) {
+            this.add("fin" + (side < 0 ? "l" : "r"), "body", side * (w / 2f), 0, -len / 2f + 1, 0, 0, 0,
+                    List.of(new Box(side > 0 ? 0 : -span, -0.5f, -1, span, 1, 4, 0, 0, 2)), Role.FIN, 0, side, side > 0 ? 0 : (float) Math.PI);
+        }
+        int hw = b.headWidth();
+        int hh = b.headHeight();
+        int hd = b.headDepth();
+        // 头的"正面"贴着套膜，眼睛画在两侧
+        this.add("head", "body", 0, 0, len / 2f + hd, 0, 0, 0, List.of(box(-hw / 2f, -hh / 2f, -hd, hw, hh, hd)), Role.HEAD, 0, 0, 0);
+        int count = b.legPairs() * 2;
+        float rx = Math.max(0.5f, hw / 2f - 1);
+        float ry = Math.max(0.5f, hh / 2f - 1);
+        for (int i = 0; i < count; i++) {
+            double angle = Math.PI * 2 * i / count;
+            int length = i < 2 ? Math.round(b.legLength() * 1.6f) : b.legLength();
+            this.add("tentacle" + i, "head", (float) (Math.cos(angle) * rx), (float) (Math.sin(angle) * ry), 0, 0, 0, 0,
+                    List.of(box(-0.5f, -0.5f, 0, 1, 1, length)), Role.TENTACLE, i, Math.cos(angle) < 0 ? -1 : 1, (float) angle);
         }
     }
 
@@ -392,7 +532,7 @@ public final class CreatureAnatomy {
         float minZ = 0;
         float maxZ = 0;
         for (Part part : this.parts) {
-            if (part.role() == Role.WING || part.role() == Role.DECOR) {
+            if (part.role() == Role.WING || part.role() == Role.DECOR || part.role() == Role.FIN || part.role() == Role.TENTACLE) {
                 continue;
             }
             float[] o = this.origin(part);

@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import io.github.sweetcornna.universe.block.poi.DropPodBlock;
 import io.github.sweetcornna.universe.Universe;
+import io.github.sweetcornna.universe.block.ClamBlock;
 import io.github.sweetcornna.universe.block.FloraBlocks;
 import io.github.sweetcornna.universe.block.ResourcePlantBlock;
 import io.github.sweetcornna.universe.client.PlanetTints;
@@ -63,6 +64,10 @@ final class UniverseModelProvider extends ModelProvider {
     private static final ModelTemplate SMALL_BOX = template("portable_refiner_template", TextureSlot.FRONT, TextureSlot.SIDE, TextureSlot.TOP,
             TextureSlot.BOTTOM);
     private static final ModelTemplate PLANT_CROSS_EMISSIVE = template("plant_cross_emissive", BODY, DETAIL);
+    /** 甲壳蚌（ADR-0026）：合着的和撬开的两个手写父模型，撬开的多一张壳里的贴图。 */
+    private static final TextureSlot INNER = TextureSlot.create("inner");
+    private static final ModelTemplate CLAM = template("clam_template", TextureSlot.TOP, TextureSlot.SIDE);
+    private static final ModelTemplate CLAM_OPEN = template("clam_open_template", TextureSlot.TOP, TextureSlot.SIDE, INNER);
     /** 地衣：贴地的一片。 */
     private static final ModelTemplate PLANT_PATCH = template("plant_patch", BODY, DETAIL);
     private static final ModelTemplate PLANT_PATCH_EMISSIVE = template("plant_patch_emissive", BODY, DETAIL);
@@ -126,7 +131,30 @@ final class UniverseModelProvider extends ModelProvider {
         recipeMachine(blockModels, UniverseBlocks.NUTRIENT_PROCESSOR.get(), "nutrient_processor", true, "nutrient_processor_side");
         UniverseItems.DISHES.values().forEach(item -> itemModels.generateFlatItem(item.get(), ModelTemplates.FLAT_ITEM));
         UniverseItems.GELS.values().forEach(item -> itemModels.generateFlatItem(item.get(), ModelTemplates.FLAT_ITEM));
+        underwater(blockModels, itemModels);
         factory(blockModels, itemModels);
+    }
+
+    /**
+     * 水下（ADR-0026）：甲壳蚌有合着和撬开两种样子，嘴朝放的人；生鱼、熟鱼、活珍珠、刷怪蛋、潜艇是平面物品。
+     * 烛光海带和海带囊跟着资源植物生成，两道菜跟着菜生成，海底密封箱和补给箱一起生成。
+     */
+    private static void underwater(BlockModelGenerators blockModels, ItemModelGenerators itemModels) {
+        Block clam = UniverseBlocks.CLAM.get();
+        TextureMapping textures = new TextureMapping()
+                .put(TextureSlot.TOP, texture("clam_top"))
+                .put(TextureSlot.SIDE, texture("clam_side"))
+                .put(INNER, texture("clam_inner"));
+        Identifier closed = CLAM.create(clam, textures, blockModels.modelOutput);
+        Identifier open = CLAM_OPEN.createWithSuffix(clam, "_open", textures, blockModels.modelOutput);
+        blockModels.blockStateOutput.accept(MultiVariantGenerator.dispatch(clam)
+                .with(PropertyDispatch.initial(ClamBlock.OPEN).generate(opened -> BlockModelGenerators.plainVariant(opened ? open : closed)))
+                .with(BlockModelGenerators.ROTATION_HORIZONTAL_FACING));
+        blockModels.registerSimpleItemModel(clam, closed);
+        for (DeferredItem<?> item : List.of(UniverseItems.ALIEN_FISH, UniverseItems.COOKED_ALIEN_FISH, UniverseItems.LIVING_PEARL,
+                UniverseItems.AQUATIC_CREATURE_SPAWN_EGG, UniverseItems.SUBMARINE)) {
+            itemModels.generateFlatItem(item.get(), ModelTemplates.FLAT_ITEM);
+        }
     }
 
     /** 工业设备：两格高的设备模型由 tools/factory_models.py 生成，这里按上下半截、工作状态、朝向挑模型。 */
@@ -455,7 +483,8 @@ final class UniverseModelProvider extends ModelProvider {
                 .with(PropertyDispatch.initial(DropPodBlock.REPAIRED).generate(repaired -> BlockModelGenerators.plainVariant(podModels[repaired ? 1 : 0])))
                 .with(BlockModelGenerators.ROTATION_HORIZONTAL_FACING));
         blockModels.registerSimpleItemModel(pod, podModels[0]);
-        for (Block block : List.of(UniverseBlocks.DATA_TERMINAL.get(), UniverseBlocks.SUPPLY_CRATE.get(), UniverseBlocks.TRADE_TERMINAL.get(),
+        for (Block block : List.of(UniverseBlocks.DATA_TERMINAL.get(), UniverseBlocks.SUPPLY_CRATE.get(), UniverseBlocks.SEALED_CRATE.get(),
+                UniverseBlocks.TRADE_TERMINAL.get(),
                 UniverseBlocks.SHIP_REPAIR.get(), UniverseBlocks.MISSION_BOARD.get(), UniverseBlocks.SHIP_DEALER.get(),
                 UniverseBlocks.FREIGHTER_CONSOLE.get(), UniverseBlocks.FLEET_TERMINAL.get())) {
             String name = BuiltInRegistries.BLOCK.getKey(block).getPath();

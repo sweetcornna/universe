@@ -22,7 +22,9 @@ import io.github.sweetcornna.universe.client.galaxy.GalaxyText;
 import io.github.sweetcornna.universe.core.discovery.DiscoveryKey;
 import io.github.sweetcornna.universe.core.discovery.DiscoveryLog;
 import io.github.sweetcornna.universe.core.discovery.Survey;
+import io.github.sweetcornna.universe.core.ecology.BodyPlan;
 import io.github.sweetcornna.universe.core.ecology.CreatureSpecies;
+import io.github.sweetcornna.universe.core.ecology.Fauna;
 import io.github.sweetcornna.universe.core.ecology.Flora;
 import io.github.sweetcornna.universe.core.ecology.Husbandry;
 import io.github.sweetcornna.universe.core.ecology.PlantSpecies;
@@ -33,6 +35,7 @@ import io.github.sweetcornna.universe.core.galaxy.Planet;
 import io.github.sweetcornna.universe.core.galaxy.StarSystem;
 import io.github.sweetcornna.universe.discovery.Discoveries;
 import io.github.sweetcornna.universe.entity.AlienCreature;
+import io.github.sweetcornna.universe.entity.AquaticCreature;
 import io.github.sweetcornna.universe.entity.CreatureHusbandry;
 import io.github.sweetcornna.universe.network.AnalyzePayload;
 import io.github.sweetcornna.universe.registry.UniverseItems;
@@ -55,6 +58,7 @@ import net.minecraft.util.Util;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityReference;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
@@ -194,9 +198,12 @@ public final class AnalysisVisor {
         BlockHitResult blocks = level.clip(new ClipContext(eye, eye.add(look.scale(Discoveries.ENTITY_RANGE)),
                 ClipContext.Block.OUTLINE, ClipContext.Fluid.NONE, player));
         double reach = blocks.getType() == HitResult.Type.MISS ? Discoveries.ENTITY_RANGE : blocks.getLocation().distanceTo(eye);
-        AlienCreature creature = aimedCreature(level, player, eye, look, reach);
-        if (creature != null) {
+        Entity aimed = aimedCreature(level, player, eye, look, reach);
+        if (aimed instanceof AlienCreature creature) {
             return creature(creature, body, galaxy);
+        }
+        if (aimed instanceof AquaticCreature creature) {
+            return aquatic(creature, body, galaxy);
         }
         if (blocks.getType() == HitResult.Type.BLOCK && blocks.getLocation().distanceTo(eye) <= Discoveries.BLOCK_RANGE) {
             Target block = block(level, blocks.getBlockPos(), body, galaxy);
@@ -214,15 +221,17 @@ public final class AnalysisVisor {
     }
 
     /**
-     * 准星对着的动物。碰撞箱放大一圈再算，远处的小动物也好瞄；动物站在方块边上时稍微越过方块一点也算。
+     * 准星对着的动物（地上的和水里的）。碰撞箱放大一圈再算，远处的小动物也好瞄；动物站在方块边上时稍微越过方块一点也算。
+     * 水挡不住视线，站在岸上也能分析水里的鱼。
      */
-    private static @Nullable AlienCreature aimedCreature(Level level, LocalPlayer player, Vec3 eye, Vec3 look, double reach) {
+    private static @Nullable Entity aimedCreature(Level level, LocalPlayer player, Vec3 eye, Vec3 look, double reach) {
         double limit = Math.min(Discoveries.ENTITY_RANGE, reach + 0.8);
         Vec3 end = eye.add(look.scale(limit));
         AABB search = player.getBoundingBox().expandTowards(look.scale(limit)).inflate(2);
-        AlienCreature best = null;
+        Entity best = null;
         double bestDistance = limit;
-        for (AlienCreature candidate : level.getEntitiesOfClass(AlienCreature.class, search, Entity::isAlive)) {
+        for (Entity candidate : level.getEntities((Entity) null, search,
+                e -> e.isAlive() && (e instanceof AlienCreature || e instanceof AquaticCreature))) {
             AABB box = candidate.getBoundingBox().inflate(0.3 + eye.distanceTo(candidate.position()) * 0.01);
             Optional<Vec3> hit = box.contains(eye) ? Optional.of(eye) : box.clip(eye, end);
             if (hit.isPresent() && hit.get().distanceTo(eye) < bestDistance) {
@@ -253,6 +262,25 @@ public final class AnalysisVisor {
             PlayerInfo info = connection == null ? null : connection.getPlayerInfo(owner.getUUID());
             String ownerName = info == null ? "?" : info.getProfile().name();
             extra.add(Component.translatable(creature.isStaying() ? "hud.universe.visor.tamed_staying" : "hud.universe.visor.tamed", ownerName));
+        }
+        return new Target(AnalyzePayload.entity(creature.getId()), key, name, detail, extra, key == null ? 0 : Survey.reward(key, galaxy));
+    }
+
+    /** 水生动物（ADR-0026）：住在深水还是浅水、掉什么；水母写上会蜇人。 */
+    private static Target aquatic(AquaticCreature creature, Optional<BodyId> here, Galaxy galaxy) {
+        CreatureSpecies species = creature.species();
+        DiscoveryKey key = here.map(id -> DiscoveryKey.creature(id, species.index())).orElse(null);
+        String name = key == null ? GalaxyText.name(species.name()) : ClientDiscoveries.name(key, species.name());
+        Component detail = Component.translatable("hud.universe.visor.creature",
+                Component.translatable("discovery.universe.plan." + species.plan().name().toLowerCase(Locale.ROOT)),
+                Component.translatable("discovery.universe.temperament." + species.temperament().name().toLowerCase(Locale.ROOT)),
+                GalaxyText.number(species.size(), 1));
+        List<Component> extra = new ArrayList<>();
+        extra.add(Component.translatable("hud.universe.visor.aquatic",
+                Component.translatable(Fauna.deepWater(species) ? "hud.universe.visor.deep_water" : "hud.universe.visor.shallow_water"),
+                new ItemStack(UniverseItems.ALIEN_FISH.get()).getHoverName()));
+        if (species.plan() == BodyPlan.JELLY) {
+            extra.add(Component.translatable("hud.universe.visor.stings"));
         }
         return new Target(AnalyzePayload.entity(creature.getId()), key, name, detail, extra, key == null ? 0 : Survey.reward(key, galaxy));
     }

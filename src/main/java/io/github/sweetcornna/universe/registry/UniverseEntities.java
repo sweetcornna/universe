@@ -2,6 +2,8 @@ package io.github.sweetcornna.universe.registry;
 
 import io.github.sweetcornna.universe.asteroid.Asteroid;
 import io.github.sweetcornna.universe.exocraft.Exocraft;
+import io.github.sweetcornna.universe.exocraft.Submarine;
+import io.github.sweetcornna.universe.exocraft.Torpedo;
 import io.github.sweetcornna.universe.encounter.SentinelInterceptor;
 import io.github.sweetcornna.universe.pirate.PirateFighter;
 import io.github.sweetcornna.universe.sentinel.Sentinel;
@@ -9,6 +11,7 @@ import io.github.sweetcornna.universe.entity.PlasmaBolt;
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.entity.AlienCreature;
 import io.github.sweetcornna.universe.entity.AlienFlyer;
+import io.github.sweetcornna.universe.entity.AquaticCreature;
 import io.github.sweetcornna.universe.entity.ship.ShipEntity;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
@@ -24,6 +27,9 @@ public final class UniverseEntities {
     /** 地上的动物（四足、六足、两足、节蠕虫）。碰撞箱按物种在实体里算，这里只是默认值。 */
     public static final DeferredHolder<EntityType<?>, EntityType<AlienCreature>> ALIEN_CREATURE = ENTITIES.registerEntityType(
             "alien_creature", AlienCreature::new, MobCategory.CREATURE, builder -> builder.sized(0.9F, 1.0F).clientTrackingRange(10));
+    /** 水里的动物（ADR-0026）：鱼、鳗、水母、乌贼。 */
+    public static final DeferredHolder<EntityType<?>, EntityType<AquaticCreature>> AQUATIC_CREATURE = ENTITIES.registerEntityType(
+            "aquatic_creature", AquaticCreature::new, MobCategory.WATER_CREATURE, builder -> builder.sized(0.7F, 0.5F).clientTrackingRange(10));
     /** 飞兽。 */
     public static final DeferredHolder<EntityType<?>, EntityType<AlienFlyer>> ALIEN_FLYER = ENTITIES.registerEntityType(
             "alien_flyer", AlienFlyer::new, MobCategory.CREATURE, builder -> builder.sized(0.6F, 0.6F).clientTrackingRange(10));
@@ -50,6 +56,15 @@ public final class UniverseEntities {
             "exocraft", Exocraft::new, MobCategory.MISC,
             builder -> builder.sized(2.0F, 1.9F).clientTrackingRange(10).updateInterval(1).fireImmune().noLootTable());
 
+    /** 潜艇（ADR-0026）：和探索车一样由驾驶员的客户端算位置。 */
+    public static final DeferredHolder<EntityType<?>, EntityType<Submarine>> SUBMARINE = ENTITIES.registerEntityType(
+            "submarine", Submarine::new, MobCategory.MISC,
+            builder -> builder.sized(2.2F, 1.5F).clientTrackingRange(10).updateInterval(1).fireImmune().noLootTable());
+    /** 潜艇的鱼雷：直线跑，客户端按速度推算；不存档。 */
+    public static final DeferredHolder<EntityType<?>, EntityType<Torpedo>> TORPEDO = ENTITIES.registerEntityType(
+            "torpedo", Torpedo::new, MobCategory.MISC,
+            builder -> builder.sized(0.4F, 0.4F).clientTrackingRange(6).updateInterval(5).noSave().noLootTable().fireImmune());
+
     /** 小行星（ADR-0017）：由 {@code Asteroids} 在玩家附近生成，不存档；一动不动（自转只在客户端画），很少同步位置。 */
     public static final DeferredHolder<EntityType<?>, EntityType<Asteroid>> ASTEROID = ENTITIES.registerEntityType(
             "asteroid", Asteroid::new, MobCategory.MISC,
@@ -73,6 +88,7 @@ public final class UniverseEntities {
         modBus.addListener(EntityAttributeCreationEvent.class, event -> {
             event.put(ALIEN_CREATURE.get(), AlienCreature.createAttributes().build());
             event.put(ALIEN_FLYER.get(), AlienFlyer.createAttributes().build());
+            event.put(AQUATIC_CREATURE.get(), AquaticCreature.createAttributes().build());
             event.put(SENTINEL.get(), Sentinel.createAttributes(false).build());
             event.put(HEAVY_SENTINEL.get(), Sentinel.createAttributes(true).build());
         });

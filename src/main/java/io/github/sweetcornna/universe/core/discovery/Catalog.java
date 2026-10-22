@@ -24,9 +24,10 @@ public final class Catalog {
         return key.body() == null ? Optional.empty() : galaxy.body(key.body());
     }
 
+    /** 陆地的物种序号从 0 起，水生的从 {@link Fauna#MARINE_INDEX} 起（ADR-0026）。 */
     public static Optional<CreatureSpecies> creature(DiscoveryKey key, Galaxy galaxy) {
         return key.kind() != DiscoveryKey.Kind.CREATURE ? Optional.empty()
-                : planet(key, galaxy).flatMap(planet -> pick(Fauna.of(planet).species(), key.index()));
+                : planet(key, galaxy).flatMap(planet -> Fauna.of(planet).find(key.index()));
     }
 
     public static Optional<PlantSpecies> plant(DiscoveryKey key, Galaxy galaxy) {

@@ -1,0 +1,19 @@
+{
+  "type": "universe:research_shaped",
+  "key": {
+    "A": "universe:accumulator",
+    "C": "universe:circuit_board",
+    "G": "minecraft:glass",
+    "M": "universe:electric_motor",
+    "T": "universe:titanium_ingot"
+  },
+  "pattern": [
+    "TGT",
+    "CAC",
+    "TMT"
+  ],
+  "research": "submarine",
+  "result": {
+    "id": "universe:submarine"
+  }
+}

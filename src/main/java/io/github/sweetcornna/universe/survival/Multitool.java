@@ -18,6 +18,7 @@ import io.github.sweetcornna.universe.entity.PlasmaBolt;
 import io.github.sweetcornna.universe.core.survival.ToolMode;
 import io.github.sweetcornna.universe.core.survival.PlasmaWeapon;
 import io.github.sweetcornna.universe.registry.UniverseAttachments;
+import io.github.sweetcornna.universe.poi.Landmarks;
 import io.github.sweetcornna.universe.poi.Pois;
 import io.github.sweetcornna.universe.poi.PoiProgress;
 import io.github.sweetcornna.universe.core.survival.LaserHeat;
@@ -292,8 +293,10 @@ public final class Multitool {
         ServerLevel level = player.level();
         int radius = (int) Math.round(SCAN_RADIUS * bonuses.boost(Stat.SCAN_RADIUS));
         List<ScanResultPayload.Marker> markers = scanOres(level, player.blockPosition(), radius);
-        List<ScanResultPayload.PoiMarker> pois = scanPois(player, (int) Math.round(POI_RADIUS * bonuses.boost(Stat.SCAN_RADIUS)));
-        PacketDistributor.sendToPlayer(player, new ScanResultPayload(markers, pois));
+        int poiRadius = (int) Math.round(POI_RADIUS * bonuses.boost(Stat.SCAN_RADIUS));
+        List<ScanResultPayload.PoiMarker> pois = scanPois(player, poiRadius);
+        List<ScanResultPayload.LandmarkMarker> landmarks = scanLandmarks(player, poiRadius);
+        PacketDistributor.sendToPlayer(player, new ScanResultPayload(markers, pois, landmarks));
         level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.BEACON_ACTIVATE, SoundSource.PLAYERS, 0.8F, 1.8F);
         for (int i = 0; i < 48; i++) {
             double angle = i * Math.PI * 2 / 48;
@@ -301,9 +304,19 @@ public final class Multitool {
                     player.getZ() + Math.sin(angle) * 1.5, 1, 0, 0, 0, 0);
         }
         int total = markers.stream().mapToInt(ScanResultPayload.Marker::count).sum();
-        player.sendOverlayMessage(pois.isEmpty()
+        int sites = pois.size() + landmarks.size();
+        player.sendOverlayMessage(sites == 0
                 ? Component.translatable("message.universe.multitool.scanned", markers.size(), total)
-                : Component.translatable("message.universe.multitool.scanned_poi", markers.size(), total, pois.size()));
+                : Component.translatable("message.universe.multitool.scanned_poi", markers.size(), total, sites));
+    }
+
+    /** 半径内的地标（ADR-0026），由近到远；和兴趣点一样由星球种子算位置。 */
+    public static List<ScanResultPayload.LandmarkMarker> scanLandmarks(ServerPlayer player, int radius) {
+        ServerLevel level = player.level();
+        return Landmarks.layout(level).map(layout -> layout.within(player.getX(), player.getZ(), radius).stream()
+                .limit(ScanResultPayload.MAX_LANDMARKS)
+                .map(landmark -> new ScanResultPayload.LandmarkMarker(Landmarks.position(level, layout, landmark), landmark.type()))
+                .toList()).orElse(List.of());
     }
 
     /** 半径内的兴趣点（ADR-0014）：位置由星球种子算，不用加载区块；已经加载的区块用真实地面的高度。 */

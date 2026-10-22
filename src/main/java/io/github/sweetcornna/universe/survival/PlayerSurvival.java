@@ -9,6 +9,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 import io.github.sweetcornna.universe.Universe;
+import io.github.sweetcornna.universe.core.ecology.ResourcePlant;
 import io.github.sweetcornna.universe.core.galaxy.Hazard;
 import io.github.sweetcornna.universe.core.galaxy.Planet;
 import io.github.sweetcornna.universe.core.survival.Environment;
@@ -17,6 +18,7 @@ import io.github.sweetcornna.universe.core.survival.LifeSupport;
 import io.github.sweetcornna.universe.core.survival.Suit;
 import io.github.sweetcornna.universe.core.tech.TechBonuses;
 import io.github.sweetcornna.universe.entity.ship.ShipEntity;
+import io.github.sweetcornna.universe.exocraft.Submarine;
 import io.github.sweetcornna.universe.mecha.Mecha;
 import io.github.sweetcornna.universe.network.JetpackPayload;
 import io.github.sweetcornna.universe.perf.ServerPerf;
@@ -42,6 +44,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.AbstractFurnaceBlock;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
@@ -67,6 +70,9 @@ public final class PlayerSurvival {
     private static final int SOURCE_RADIUS = 3;
     /** 自动补给的阈值。 */
     private static final float AUTO_REFILL = 0.2F;
+    /** 烛光海带：多远以内、每秒补多少氧气（外骨骼每秒耗 1/6，待在旁边大约 5 分钟补满）。 */
+    private static final int KELP_REACH = 2;
+    private static final float KELP_OXYGEN = 0.5F;
 
     private static final Set<UUID> JETTING = ConcurrentHashMap.newKeySet();
     private static final Map<UUID, int[]> SOURCES = new ConcurrentHashMap<>();
@@ -198,6 +204,11 @@ public final class PlayerSurvival {
             JETTING.remove(player.getUUID());
         }
         autoRefill(player, support, env, suit);
+        // 烛光海带旁边慢慢补氧气（ADR-0026）
+        if (player.tickCount % 20 == 0 && env.needsOxygen() && support.oxygen() < LifeSupport.OXYGEN_MAX
+                && player.isEyeInFluid(FluidTags.WATER) && nearKelp(player, level)) {
+            support.addOxygen(KELP_OXYGEN);
+        }
         // 密封的外骨骼在水下用自己的氧气
         if (suit.sealed() && support.oxygen() > 0 && player.isEyeInFluid(FluidTags.WATER)) {
             player.setAirSupply(player.getMaxAirSupply());
@@ -227,21 +238,26 @@ public final class PlayerSurvival {
     }
 
     static Environment environment(ServerPlayer player, ServerLevel level, Suit suit) {
-        boolean supplied = player.getVehicle() instanceof ShipEntity;
+        // 飞船和潜艇的舱里有空气（ADR-0026）
+        boolean supplied = player.getVehicle() instanceof ShipEntity || player.getVehicle() instanceof Submarine;
         boolean underwater = suit.sealed() && player.isEyeInFluid(FluidTags.WATER);
+        // 水压：密封外骨骼在深水里耗氧更快（潜艇里没有）
+        boolean pressure = underwater && !supplied && level.getSeaLevel() - player.getEyeY() >= LifeSupport.PRESSURE_DEPTH;
         Optional<Planet> planet = Planets.planet(level);
         if (Stations.inside(level, player.position())) {
             // 空间站里有空气，不消耗生命维持（ADR-0017）
             return Environment.SAFE;
         }
         if (planet.isEmpty() && !SpaceDimensions.isSpace(level.dimension())) {
-            return underwater || supplied ? new Environment(!underwater, Map.of(), false, 0, false, false, supplied) : Environment.SAFE;
+            return underwater || supplied ? new Environment(!underwater, Map.of(), false, 0, false, false, supplied).withPressure(pressure)
+                    : Environment.SAFE;
         }
         boolean breathable = planet.map(p -> p.atmosphere().breathable()).orElse(false) && !underwater;
         Map<Hazard, Double> hazards = planet.map(PlayerSurvival::hazards).orElse(Map.of());
         boolean sheltered = supplied || Shelters.sheltered(player, level);
         int[] sources = sources(player, level, hazards);
-        return new Environment(breathable, hazards, sheltered, PlanetWeather.severity(level), sources[0] > 0, sources[1] > 0, supplied);
+        return new Environment(breathable, hazards, sheltered, PlanetWeather.severity(level), sources[0] > 0, sources[1] > 0, supplied)
+                .withPressure(pressure);
     }
 
     private static Map<Hazard, Double> hazards(Planet planet) {
@@ -293,6 +309,18 @@ public final class PlayerSurvival {
     }
 
     /** 数值低于两成时从背包里取一个补给：氧气、氧气罐；防护凝胶、钠、防护电池。 */
+    /** 离眼睛 {@link #KELP_REACH} 格以内有烛光海带。 */
+    private static boolean nearKelp(ServerPlayer player, ServerLevel level) {
+        Block kelp = UniverseBlocks.RESOURCE_PLANTS.get(ResourcePlant.CANDLE_KELP).get();
+        BlockPos eye = BlockPos.containing(player.getEyePosition());
+        for (BlockPos pos : BlockPos.betweenClosed(eye.offset(-KELP_REACH, -KELP_REACH - 1, -KELP_REACH), eye.offset(KELP_REACH, KELP_REACH, KELP_REACH))) {
+            if (level.getBlockState(pos).is(kelp)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private static void autoRefill(ServerPlayer player, LifeSupport support, Environment env, Suit suit) {
         if (suit.sealed() && env.needsOxygen() && support.oxygen() < LifeSupport.OXYGEN_MAX * AUTO_REFILL) {
             take(player, support, refill -> refill.kind() == SuitRefillItem.Kind.OXYGEN);

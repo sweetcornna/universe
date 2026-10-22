@@ -62,6 +62,8 @@
     "universe:data_terminal",
     "universe:tech_cache",
     "universe:supply_crate",
+    "universe:sealed_crate",
+    "universe:clam",
     "universe:portal_stone",
     "universe:portal_glyph",
     "universe:portal_dial",

@@ -153,8 +153,8 @@ public final class SuitClient {
         boolean chest = hud.has(SuitHud.CHEST);
         List<Bar> bars = new ArrayList<>();
         if (hud.has(SuitHud.NEEDS_OXYGEN) || hud.oxygen() < LifeSupport.OXYGEN_MAX) {
-            Component note = hud.has(SuitHud.NEEDS_OXYGEN) && !hud.has(SuitHud.SEALED)
-                    ? Component.translatable("hud.universe.suit.unsealed") : Component.empty();
+            Component note = hud.has(SuitHud.NEEDS_OXYGEN) && !hud.has(SuitHud.SEALED) ? Component.translatable("hud.universe.suit.unsealed")
+                    : hud.has(SuitHud.PRESSURE) ? Component.translatable("hud.universe.suit.pressure") : Component.empty();
             bars.add(new Bar(Component.translatable("hud.universe.suit.oxygen"), hud.oxygen(), LifeSupport.OXYGEN_MAX, 0xFF4FC3F7, note));
         }
         for (Hazard hazard : Hazard.values()) {

@@ -1,0 +1,8 @@
+{
+  "parent": "universe:block/clam_open_template",
+  "textures": {
+    "inner": "universe:block/clam_inner",
+    "side": "universe:block/clam_side",
+    "top": "universe:block/clam_top"
+  }
+}

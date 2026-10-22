@@ -51,10 +51,13 @@ final class UniverseRecipes extends RecipeProvider {
 
     @Override
     protected void buildRecipes() {
-        // 烤肉：熔炉、烟熏炉、营火，时间和原版的牛肉一样
-        this.cookMeat("smelting", SmeltingRecipe::new, 200);
-        this.cookMeat("smoking", SmokingRecipe::new, 100);
-        this.cookMeat("campfire_cooking", CampfireCookingRecipe::new, 600);
+        // 烤肉、烤鱼：熔炉、烟熏炉、营火，时间和原版的牛肉、鳕鱼一样
+        this.cook(UniverseItems.ALIEN_MEAT.get(), UniverseItems.COOKED_ALIEN_MEAT.get(), "smelting", SmeltingRecipe::new, 200);
+        this.cook(UniverseItems.ALIEN_MEAT.get(), UniverseItems.COOKED_ALIEN_MEAT.get(), "smoking", SmokingRecipe::new, 100);
+        this.cook(UniverseItems.ALIEN_MEAT.get(), UniverseItems.COOKED_ALIEN_MEAT.get(), "campfire_cooking", CampfireCookingRecipe::new, 600);
+        this.cook(UniverseItems.ALIEN_FISH.get(), UniverseItems.COOKED_ALIEN_FISH.get(), "smelting", SmeltingRecipe::new, 200);
+        this.cook(UniverseItems.ALIEN_FISH.get(), UniverseItems.COOKED_ALIEN_FISH.get(), "smoking", SmokingRecipe::new, 100);
+        this.cook(UniverseItems.ALIEN_FISH.get(), UniverseItems.COOKED_ALIEN_FISH.get(), "campfire_cooking", CampfireCookingRecipe::new, 600);
         // 兽皮鞣成皮革
         this.shapeless(RecipeCategory.MISC, Items.LEATHER)
                 .requires(UniverseItems.ALIEN_HIDE.get(), 2)
@@ -124,8 +127,15 @@ final class UniverseRecipes extends RecipeProvider {
         this.dish(Dish.CACTUS_JELLY, 100, in(dish(Dish.CACTUS_JUICE), 1, sugar, 1));
         this.dish(Dish.GRAVITINO_PASTRY, 100, in(dish(Dish.GRAVITINO_JELLY), 1, dish(Dish.PASTRY), 1));
         this.dish(Dish.MARROW_SOUP, 100, in(dish(Dish.ROASTED_MARROW), 1, dish(Dish.BUTTER), 1, water, 1));
-        this.dish(Dish.FISH_PIE, 100, in(Items.COD, 1, dish(Dish.PASTRY), 1));
+        // 鱼派：原版的鱼和异星生鱼都行
+        this.dish(Dish.FISH_PIE, 100, List.of(new SizedIngredient(Ingredient.of(Items.COD, Items.SALMON, UniverseItems.ALIEN_FISH.get()), 1),
+                SizedIngredient.of(dish(Dish.PASTRY), 1)));
         this.dish(Dish.STAR_CAKE, 100, in(dish(Dish.ALIEN_CAKE), 1, dish(Dish.STAR_JAM), 1));
+        // 水下的几道：海带囊烤成脆片，生鱼裹上脆片是海味卷；烤鱼和熔炉烤出来的是同一样东西
+        this.dish(Dish.KELP_CRISPS, 50, in(resource("kelp_pod"), 2));
+        this.dish(Dish.SEAFOOD_ROLL, 100, in(UniverseItems.ALIEN_FISH.get(), 1, dish(Dish.KELP_CRISPS), 1));
+        this.machine(Kind.NUTRIENT, "cooked_alien_fish", 50, "", in(UniverseItems.ALIEN_FISH.get(), 1),
+                out(UniverseItems.COOKED_ALIEN_FISH.get(), 1));
 
         // 便携精炼机
         Kind refining = Kind.PORTABLE_REFINING;
@@ -704,6 +714,11 @@ final class UniverseRecipes extends RecipeProvider {
                 in(UniverseItems.STEEL.get(), 6, UniverseItems.ELECTRIC_MOTOR.get(), 4, UniverseItems.ACCUMULATOR.get(), 1,
                         UniverseItems.PLASMA_EXCITER.get(), 1),
                 out(UniverseItems.EXOCRAFT.get(), 1));
+        // 潜艇（ADR-0026）：钛的耐压壳、一个玻璃观察罩、一块蓄电器、一台电动机带螺旋桨
+        this.machine(Kind.ASSEMBLING, "submarine", 240, "submarine",
+                in(UniverseItems.ORE_SMELTED.get(OreKind.TITANIUM).get(), 4, Items.GLASS, 1, UniverseItems.ACCUMULATOR.get(), 1,
+                        UniverseItems.ELECTRIC_MOTOR.get(), 1),
+                out(UniverseItems.SUBMARINE.get(), 1));
         // 传送器（ADR-0017）：钛的机壳、等离子激发器，核心是一个空间翘曲器
         this.machine(Kind.ASSEMBLING, "teleporter", 240, "teleport_network",
                 in(UniverseItems.ORE_SMELTED.get(OreKind.TITANIUM).get(), 4, UniverseItems.PLASMA_EXCITER.get(), 1, UniverseItems.STEEL.get(), 2,
@@ -973,6 +988,10 @@ final class UniverseRecipes extends RecipeProvider {
         this.researchShaped("exocraft", RecipeCategory.TRANSPORTATION, UniverseItems.EXOCRAFT.get(), 1,
                 List.of("SXS", "CAC", "MSM"), Map.of('S', steel, 'X', exciter, 'C', UniverseItems.CIRCUIT_BOARD.get(),
                         'A', UniverseItems.ACCUMULATOR.get(), 'M', UniverseItems.ELECTRIC_MOTOR.get()));
+        // 潜艇的配方 ID 是 universe:submarine（手册里引用）
+        this.researchShaped("submarine", RecipeCategory.TRANSPORTATION, UniverseItems.SUBMARINE.get(), 1,
+                List.of("TGT", "CAC", "TMT"), Map.of('T', UniverseItems.ORE_SMELTED.get(OreKind.TITANIUM).get(), 'G', Items.GLASS,
+                        'C', UniverseItems.CIRCUIT_BOARD.get(), 'A', UniverseItems.ACCUMULATOR.get(), 'M', UniverseItems.ELECTRIC_MOTOR.get()));
         // 蓝图（ADR-0018）：四张纸围着一块电路板，一次出两张
         this.researchShaped("blueprint", RecipeCategory.TOOLS, UniverseItems.BLUEPRINT.get(), 2, List.of(" P ", "PCP", " P "),
                 Map.of('P', Items.PAPER, 'C', UniverseItems.CIRCUIT_BOARD.get()));
@@ -1044,10 +1063,10 @@ final class UniverseRecipes extends RecipeProvider {
     }
 
     /** 原版的 simpleCookingRecipe 会把配方存到 minecraft 命名空间下，这里自己指定 ID。 */
-    private <T extends AbstractCookingRecipe> void cookMeat(String source, AbstractCookingRecipe.Factory<T> factory, int time) {
-        SimpleCookingRecipeBuilder.generic(Ingredient.of(UniverseItems.ALIEN_MEAT.get()), RecipeCategory.FOOD, CookingBookCategory.FOOD,
-                        UniverseItems.COOKED_ALIEN_MEAT.get(), 0.35F, time, factory)
-                .unlockedBy(getHasName(UniverseItems.ALIEN_MEAT.get()), this.has(UniverseItems.ALIEN_MEAT.get()))
-                .save(this.output, "universe:cooked_alien_meat_from_" + source);
+    private <T extends AbstractCookingRecipe> void cook(Item raw, Item cooked, String source, AbstractCookingRecipe.Factory<T> factory,
+            int time) {
+        SimpleCookingRecipeBuilder.generic(Ingredient.of(raw), RecipeCategory.FOOD, CookingBookCategory.FOOD, cooked, 0.35F, time, factory)
+                .unlockedBy(getHasName(raw), this.has(raw))
+                .save(this.output, "universe:" + getItemName(cooked) + "_from_" + source);
     }
 }

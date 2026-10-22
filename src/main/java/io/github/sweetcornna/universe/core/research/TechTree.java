@@ -167,6 +167,8 @@ public final class TechTree {
                     items("shield_generator")),
             // ---- M7：探索车（ADR-0017）
             Tech.lab("exocraft", List.of("energy_storage", "processor"), List.of(BLUE, RED), 60, items("exocraft")),
+            // ---- M14：潜艇（ADR-0026）。暂时接在探索车后面，有了悬浮车再改
+            Tech.lab("submarine", List.of("exocraft"), List.of(BLUE, RED), 80, items("submarine")),
             // ---- M7：传送网络（ADR-0017）。基地信标不用研究
             Tech.lab("teleport_network", List.of("warp_drive"), List.of(BLUE, RED), 100, items("teleporter")),
             // ---- M13：飞船与航行（ADR-0024）。着陆台电磁学阶段就能研究；三档驱动接在跃迁引擎后面，一档比一档要的矩阵多

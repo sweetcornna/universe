@@ -6,6 +6,7 @@ import java.util.Optional;
 
 import org.jspecify.annotations.Nullable;
 
+import io.github.sweetcornna.universe.core.galaxy.Planet;
 import io.github.sweetcornna.universe.core.galaxy.PlanetType;
 import io.github.sweetcornna.universe.core.procgen.Rng;
 import io.github.sweetcornna.universe.core.procgen.Seeds;
@@ -45,7 +46,17 @@ public final class ResourceFlora {
         this.lifeless = lifeless;
     }
 
-    /** 这类星球的招牌植物；海洋星球的在水下（M14 第六块），陆地上没有。 */
+    /** 海底每个区块长一丛烛光海带的机会。 */
+    static final double KELP_CHANCE = 0.55;
+    /** 海底每个区块有甲壳蚌的机会。 */
+    static final double CLAM_CHANCE = 0.12;
+
+    /** 有海、有生命的星球海底长烛光海带、有甲壳蚌（ADR-0026）。 */
+    public static boolean seabedLife(Planet planet) {
+        return planet.landable() && !planet.ecology().lifeless() && Fauna.hasSea(planet.liquid());
+    }
+
+    /** 这类星球的招牌植物；海洋星球的是海底的烛光海带（{@link #seabedSpots}），陆地上没有。 */
     public static Optional<ResourcePlant> signature(PlanetType type) {
         return Optional.ofNullable(switch (type) {
             case HABITABLE -> ResourcePlant.STAR_BRAMBLE;
@@ -168,6 +179,41 @@ public final class ResourceFlora {
     private static void add(List<ResourcePlant> options, List<Double> weights, ResourcePlant plant, double weight) {
         options.add(plant);
         weights.add(weight);
+    }
+
+    /**
+     * 落在这个区块里的烛光海带（一丛 3–7 株，按区块定有没有）。适配层在每列找海底，只种在水里。
+     * 用自己的派生键 {@code sea}，不动地上的植物。没有海、没有生命的星球不要调。
+     */
+    public List<Spot> seabedSpots(int chunkX, int chunkZ) {
+        List<Spot> spots = new ArrayList<>();
+        Rng rng = Rng.of(Seeds.derive(Seeds.derive(this.seed, "sea"), ((long) chunkX << 32) ^ (chunkZ & 0xFFFFFFFFL)));
+        if (!rng.chance(KELP_CHANCE)) {
+            return spots;
+        }
+        int x0 = chunkX << 4;
+        int z0 = chunkZ << 4;
+        int centerX = x0 + rng.range(PATCH_RADIUS, 15 - PATCH_RADIUS);
+        int centerZ = z0 + rng.range(PATCH_RADIUS, 15 - PATCH_RADIUS);
+        int count = rng.range(3, 7);
+        for (int i = 0; i < count; i++) {
+            spots.add(new Spot(centerX + rng.range(-PATCH_RADIUS, PATCH_RADIUS), centerZ + rng.range(-PATCH_RADIUS, PATCH_RADIUS), 0));
+        }
+        return spots;
+    }
+
+    /** 这个区块里的甲壳蚌（0–2 个），派生键 {@code clam}。适配层只放在够深的海底。 */
+    public List<Spot> clamSpots(int chunkX, int chunkZ) {
+        List<Spot> spots = new ArrayList<>();
+        Rng rng = Rng.of(Seeds.derive(Seeds.derive(this.seed, "clam"), ((long) chunkX << 32) ^ (chunkZ & 0xFFFFFFFFL)));
+        if (!rng.chance(CLAM_CHANCE)) {
+            return spots;
+        }
+        int count = rng.chance(0.3) ? 2 : 1;
+        for (int i = 0; i < count; i++) {
+            spots.add(new Spot((chunkX << 4) + rng.nextInt(16), (chunkZ << 4) + rng.nextInt(16), rng.nextDouble()));
+        }
+        return spots;
     }
 
     /**

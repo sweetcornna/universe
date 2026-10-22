@@ -126,6 +126,10 @@ public final class CreatureSkin {
         if (head.boxes().size() <= skullIndex) {
             return;
         }
+        if (body.eyes() == 0) {
+            // 水母没有眼睛，也不画嘴
+            return;
+        }
         Box skull = head.boxes().get(skullIndex);
         Skin skin = species.skin();
         int w = skull.w();
@@ -135,7 +139,9 @@ public final class CreatureSkin {
         int frontV = skull.v() + d;
         int eyeRow = Math.max(0, Math.min(h - 2, Math.round(h * 0.35f)));
         // 猎手和多眼的外星动物眼睛朝前；食草动物的眼睛长在头两侧
-        boolean frontEyes = species.temperament().fights() || body.eyes() != 2 || species.plan() == BodyPlan.BIPED;
+        // 鱼和乌贼的眼睛总在两侧（乌贼的头正面贴着套膜）
+        boolean sideways = species.plan() == BodyPlan.FISH || species.plan() == BodyPlan.SQUID;
+        boolean frontEyes = !sideways && (species.temperament().fights() || body.eyes() != 2 || species.plan() == BodyPlan.BIPED);
         if (frontEyes) {
             for (int[] spot : eyeSpots(body.eyes(), w, eyeRow)) {
                 int ex = Math.max(0, Math.min(w - 1, spot[0]));
@@ -241,7 +247,7 @@ public final class CreatureSkin {
             this.bodyTop = o[1] + b.y();
             this.bodyBottom = o[1] + b.y() + b.h();
             this.bodyFront = o[2] + b.z();
-            this.bodyBack = species.plan() == BodyPlan.SERPENT ? this.bodyFront + b.d() * species.body().segments()
+            this.bodyBack = species.plan() == BodyPlan.SERPENT || species.plan() == BodyPlan.EEL ? this.bodyFront + b.d() * species.body().segments()
                     : this.bodyFront + b.d();
         }
 

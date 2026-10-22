@@ -19,6 +19,7 @@ import io.github.sweetcornna.universe.encounter.CreditChipItem;
 import io.github.sweetcornna.universe.encounter.EmergencyReceiverItem;
 import io.github.sweetcornna.universe.core.tech.ModuleType;
 import io.github.sweetcornna.universe.exocraft.ExocraftItem;
+import io.github.sweetcornna.universe.exocraft.SubmarineItem;
 import io.github.sweetcornna.universe.factory.belt.StorageTankItem;
 import io.github.sweetcornna.universe.guide.GuideItem;
 import io.github.sweetcornna.universe.logistics.StationItem;
@@ -58,6 +59,8 @@ public final class UniverseItems {
     public static final float OXYGEN_AMOUNT = 10;
     /** 一个钠给每条防护补多少（满 100）。 */
     public static final float SODIUM_AMOUNT = 8;
+    /** 一个海带气囊补多少氧气：水下就地补给，比氧气植物多一半。 */
+    public static final float KELP_POD_AMOUNT = 15;
     /** 一支防护凝胶给它那一条防护补多少（满 100）。 */
     public static final float GEL_AMOUNT = 40;
 
@@ -111,6 +114,20 @@ public final class UniverseItems {
             SpawnEggItem::new, properties -> properties.spawnEgg(UniverseEntities.ALIEN_CREATURE.get()));
     public static final DeferredItem<SpawnEggItem> ALIEN_FLYER_SPAWN_EGG = ITEMS.registerItem("alien_flyer_spawn_egg",
             SpawnEggItem::new, properties -> properties.spawnEgg(UniverseEntities.ALIEN_FLYER.get()));
+    /** 刷怪蛋：按水深挑一种本星球的水生动物。 */
+    public static final DeferredItem<SpawnEggItem> AQUATIC_CREATURE_SPAWN_EGG = ITEMS.registerItem("aquatic_creature_spawn_egg",
+            SpawnEggItem::new, properties -> properties.spawnEgg(UniverseEntities.AQUATIC_CREATURE.get()));
+    // ---- 水下（ADR-0026）
+    /** 异星生鱼：水生动物都掉，和生鳕鱼差不多。 */
+    public static final DeferredItem<Item> ALIEN_FISH = ITEMS.registerSimpleItem("alien_fish",
+            properties -> properties.food(new FoodProperties.Builder().nutrition(2).saturationModifier(0.1F).build()));
+    public static final DeferredItem<Item> COOKED_ALIEN_FISH = ITEMS.registerSimpleItem("cooked_alien_fish",
+            properties -> properties.food(new FoodProperties.Builder().nutrition(5).saturationModifier(0.6F).build()));
+    /** 活珍珠：海底的蚌里长的，只能卖钱（无人深空的 Living Pearl）。 */
+    public static final DeferredItem<Item> LIVING_PEARL = ITEMS.registerSimpleItem("living_pearl", properties -> properties.rarity(Rarity.UNCOMMON));
+    public static final DeferredItem<BlockItem> CLAM = ITEMS.registerSimpleBlockItem(UniverseBlocks.CLAM);
+    /** 潜艇：对着水面用放下一艘。 */
+    public static final DeferredItem<SubmarineItem> SUBMARINE = ITEMS.registerItem("submarine", SubmarineItem::new, properties -> properties.stacksTo(1));
 
     // ---- 飞船
     public static final DeferredItem<BlockItem> SHIP_HELM = ITEMS.registerSimpleBlockItem(UniverseBlocks.SHIP_HELM);
@@ -165,6 +182,7 @@ public final class UniverseItems {
     // ---- 兴趣点的方块（ADR-0014）
     public static final DeferredItem<BlockItem> SIGNAL_BOOSTER = ITEMS.registerSimpleBlockItem(UniverseBlocks.SIGNAL_BOOSTER);
     public static final DeferredItem<BlockItem> SUPPLY_CRATE = ITEMS.registerSimpleBlockItem(UniverseBlocks.SUPPLY_CRATE);
+    public static final DeferredItem<BlockItem> SEALED_CRATE = ITEMS.registerSimpleBlockItem(UniverseBlocks.SEALED_CRATE);
     public static final DeferredItem<BlockItem> DROP_POD = ITEMS.registerSimpleBlockItem(UniverseBlocks.DROP_POD);
     public static final DeferredItem<BlockItem> DATA_TERMINAL = ITEMS.registerSimpleBlockItem(UniverseBlocks.DATA_TERMINAL);
     public static final DeferredItem<BlockItem> MONOLITH = ITEMS.registerSimpleBlockItem(UniverseBlocks.MONOLITH);
@@ -443,10 +461,11 @@ public final class UniverseItems {
                 PLANET_LOG, PLANET_LEAVES, PLANET_CAP, PLANET_BLOOM));
         order.addAll(PLANTS.values());
         order.addAll(List.of(ALIEN_MEAT, COOKED_ALIEN_MEAT, ALIEN_HIDE, HERBIVORE_FEED, CARNIVORE_FEED, ALIEN_EGG, COOKED_ALIEN_EGG,
-                ALIEN_FLUFF, BIO_GEL, ALIEN_CREATURE_SPAWN_EGG, ALIEN_FLYER_SPAWN_EGG));
+                ALIEN_FLUFF, BIO_GEL, ALIEN_CREATURE_SPAWN_EGG, ALIEN_FLYER_SPAWN_EGG, AQUATIC_CREATURE_SPAWN_EGG,
+                ALIEN_FISH, COOKED_ALIEN_FISH, LIVING_PEARL, CLAM));
         order.addAll(List.of(SHIP_HELM, SHIP_THRUSTER, FUEL_TANK, IMPULSE_ENGINE, WARP_DRIVE, SHIP_SEAT, PHOTON_CANNON, MINING_BEAM,
                 SHIELD_GENERATOR, SHIP_THRUSTER_MK2, FUEL_TANK_MK2, IMPULSE_ENGINE_MK2, WARP_DRIVE_MK2, ALLOY_HULL_PLATING,
-                LAUNCH_FUEL, SPACE_WARPER, SURVEY_DATA, EXOCRAFT, BLUEPRINT, GUIDE));
+                LAUNCH_FUEL, SPACE_WARPER, SURVEY_DATA, EXOCRAFT, SUBMARINE, BLUEPRINT, GUIDE));
         order.addAll(HULL_PLATING.values());
         order.addAll(List.of(EXOSUIT_HELMET, EXOSUIT_CHESTPLATE, EXOSUIT_LEGGINGS, EXOSUIT_BOOTS, OXYGEN_CAPSULE, HAZARD_CELL,
                 MULTITOOL, DAMAGED_MULTITOOL));
@@ -458,7 +477,7 @@ public final class UniverseItems {
         order.addAll(DRIVES.values());
         order.add(LANDING_PAD);
         order.add(DAMAGED_HELM);
-        order.addAll(List.of(NAVIGATION_DATA, SIGNAL_BOOSTER, SUPPLY_CRATE, DROP_POD, DATA_TERMINAL, MONOLITH, TECH_CACHE, SMOLDERING_WRECK,
+        order.addAll(List.of(NAVIGATION_DATA, SIGNAL_BOOSTER, SUPPLY_CRATE, SEALED_CRATE, DROP_POD, DATA_TERMINAL, MONOLITH, TECH_CACHE, SMOLDERING_WRECK,
                 CREDIT_CHIP, EMERGENCY_RECEIVER));
         order.addAll(List.of(PORTAL_STONE, PORTAL_GLYPH, PORTAL_DIAL));
         order.addAll(List.of(BASE_BEACON, TELEPORTER));
@@ -501,6 +520,9 @@ public final class UniverseItems {
         resource(items, "cactus_flesh", new FoodProperties.Builder().nutrition(2).saturationModifier(0.2F).build());
         resource(items, "gravitino_ball", null);
         resource(items, "marrow_bulb", new FoodProperties.Builder().nutrition(2).saturationModifier(0.4F).build());
+        // 烛光海带的气囊里是氧气（ADR-0026）
+        items.put("kelp_pod", ITEMS.registerItem("kelp_pod",
+                properties -> new ResourceItem.Refill("kelp_pod", SuitRefillItem.Kind.OXYGEN, KELP_POD_AMOUNT, null, properties)));
         return items;
     }
 

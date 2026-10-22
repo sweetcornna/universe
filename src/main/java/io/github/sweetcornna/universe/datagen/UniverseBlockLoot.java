@@ -6,6 +6,7 @@ import java.util.Set;
 import io.github.sweetcornna.universe.poi.RandomModuleFunction;
 import io.github.sweetcornna.universe.core.tech.ModuleType;
 import io.github.sweetcornna.universe.Universe;
+import io.github.sweetcornna.universe.block.ClamBlock;
 import io.github.sweetcornna.universe.block.OreKind;
 import io.github.sweetcornna.universe.block.ResourcePlantBlock;
 import io.github.sweetcornna.universe.factory.TallMachineBlock;
@@ -157,6 +158,13 @@ final class UniverseBlockLoot extends BlockLootSubProvider {
                                 StatePropertiesPredicate.Builder.properties().hasProperty(ResourcePlantBlock.RIPE, true))))));
         this.dropSelf(UniverseBlocks.HYDROPONIC_TRAY.get());
         this.dropSelf(UniverseBlocks.NUTRIENT_PROCESSOR.get());
+        // 水下（ADR-0026）：没撬开的蚌掉里面的活珍珠，精准采集整个拿走（放下还是没撬开的）；撬开的空壳什么也不掉。
+        // 海底密封箱和补给箱一样能拆走
+        Block clam = UniverseBlocks.CLAM.get();
+        this.add(clam, LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ContextIntProviders.exactly(1))
+                .when(MatchBlock.blockMatches(this.blocks, clam, StatePropertiesPredicate.Builder.properties().hasProperty(ClamBlock.OPEN, false)))
+                .add(LootItem.lootTableItem(clam).when(this.hasSilkTouch()).otherwise(LootItem.lootTableItem(UniverseItems.LIVING_PEARL.get())))));
+        this.dropSelf(UniverseBlocks.SEALED_CRATE.get());
         // 便携精炼机：拆下来带着里面的东西和选好的配方（ADR-0026）
         this.add(UniverseBlocks.PORTABLE_REFINER.get(), block -> LootTable.lootTable().withPool(this.applyExplosionCondition(block,
                 LootPool.lootPool().setRolls(ContextIntProviders.exactly(1)).add(LootItem.lootTableItem(block)

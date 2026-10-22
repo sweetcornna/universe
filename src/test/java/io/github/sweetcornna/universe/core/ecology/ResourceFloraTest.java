@@ -14,7 +14,11 @@ import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 
+import io.github.sweetcornna.universe.core.galaxy.Galaxy;
+import io.github.sweetcornna.universe.core.galaxy.GalaxyGenerator;
+import io.github.sweetcornna.universe.core.galaxy.Planet;
 import io.github.sweetcornna.universe.core.galaxy.PlanetType;
+import io.github.sweetcornna.universe.core.galaxy.StarSystem;
 import io.github.sweetcornna.universe.core.procgen.Rng;
 
 class ResourceFloraTest {
@@ -146,5 +150,114 @@ class ResourceFloraTest {
             assertTrue(ResourcePlant.GRAVITINO_HOST.trayYield(rng) <= 2);
         }
         assertEquals(20 * 60 * 20, ResourcePlant.SOLAR_VINE.trayTicks());
+    }
+
+    // ---------------------------------------------------------------- 海底（ADR-0026）
+
+    @Test
+    void seabedLifeNeedsALandableLivingSeaPlanet() {
+        Galaxy galaxy = GalaxyGenerator.generate(20261016L, 64);
+        int seas = 0;
+        for (StarSystem system : galaxy.systems()) {
+            for (Planet planet : system.bodies()) {
+                boolean expected = planet.landable() && !planet.ecology().lifeless() && Fauna.hasSea(planet.liquid());
+                assertEquals(expected, ResourceFlora.seabedLife(planet), planet.id() + " " + planet.type() + " " + planet.liquid());
+                if (expected) {
+                    seas++;
+                }
+            }
+        }
+        assertTrue(seas >= 5, "too few planets with seabed life: " + seas);
+    }
+
+    @Test
+    void kelpPatchesAreDeterministicAndInsideTheChunk() {
+        ResourceFlora a = new ResourceFlora(42L, PlanetType.OCEAN, false);
+        ResourceFlora b = new ResourceFlora(42L, PlanetType.OCEAN, false);
+        ResourceFlora other = new ResourceFlora(43L, PlanetType.OCEAN, false);
+        int chunks = 0;
+        int patches = 0;
+        boolean differs = false;
+        for (int cx = -20; cx <= 20; cx++) {
+            for (int cz = -20; cz <= 20; cz++) {
+                List<ResourceFlora.Spot> spots = a.seabedSpots(cx, cz);
+                assertEquals(spots, b.seabedSpots(cx, cz));
+                differs |= !spots.equals(other.seabedSpots(cx, cz));
+                chunks++;
+                if (spots.isEmpty()) {
+                    continue;
+                }
+                patches++;
+                assertTrue(spots.size() >= 3 && spots.size() <= 7, "一丛 3–7 株：" + spots.size());
+                int minX = Integer.MAX_VALUE;
+                int maxX = Integer.MIN_VALUE;
+                int minZ = Integer.MAX_VALUE;
+                int maxZ = Integer.MIN_VALUE;
+                for (ResourceFlora.Spot spot : spots) {
+                    assertEquals(cx, Math.floorDiv(spot.x(), 16));
+                    assertEquals(cz, Math.floorDiv(spot.z(), 16));
+                    minX = Math.min(minX, spot.x());
+                    maxX = Math.max(maxX, spot.x());
+                    minZ = Math.min(minZ, spot.z());
+                    maxZ = Math.max(maxZ, spot.z());
+                }
+                // 一丛围着一个中心，最远离中心 PATCH_RADIUS 格
+                assertTrue(maxX - minX <= 2 * ResourceFlora.PATCH_RADIUS && maxZ - minZ <= 2 * ResourceFlora.PATCH_RADIUS);
+            }
+        }
+        assertEquals(ResourceFlora.KELP_CHANCE, patches / (double) chunks, 0.06);
+        assertTrue(differs, "换了星球种子海带的位置要变");
+    }
+
+    @Test
+    void clamsAreRareAndInsideTheChunk() {
+        ResourceFlora flora = new ResourceFlora(7L, PlanetType.HABITABLE, false);
+        int chunks = 0;
+        int withClams = 0;
+        int pairs = 0;
+        for (int cx = -20; cx <= 20; cx++) {
+            for (int cz = -20; cz <= 20; cz++) {
+                List<ResourceFlora.Spot> clams = flora.clamSpots(cx, cz);
+                assertEquals(clams, flora.clamSpots(cx, cz));
+                chunks++;
+                assertTrue(clams.size() <= 2);
+                if (clams.isEmpty()) {
+                    continue;
+                }
+                withClams++;
+                if (clams.size() == 2) {
+                    pairs++;
+                }
+                for (ResourceFlora.Spot clam : clams) {
+                    assertEquals(cx, Math.floorDiv(clam.x(), 16));
+                    assertEquals(cz, Math.floorDiv(clam.z(), 16));
+                    assertTrue(clam.roll() >= 0 && clam.roll() < 1);
+                }
+            }
+        }
+        assertEquals(ResourceFlora.CLAM_CHANCE, withClams / (double) chunks, 0.04);
+        assertEquals(0.3, pairs / (double) withClams, 0.12);
+    }
+
+    @Test
+    void candleKelpOnlyGrowsOnTheSeabed() {
+        ResourcePlant kelp = ResourcePlant.CANDLE_KELP;
+        assertEquals("candle_kelp", kelp.id());
+        assertEquals("kelp_pod", kelp.product());
+        assertEquals(ResourcePlant.Habitat.WATER, kelp.habitat());
+        assertFalse(kelp.farmable(), "水培槽种不了海带");
+        assertTrue(kelp.wildMin() >= 1 && kelp.wildMax() >= kelp.wildMin());
+        // 新植物往后加，前面的序号不变
+        assertEquals(ResourcePlant.values().length - 1, kelp.ordinal());
+        for (PlanetType type : PlanetType.values()) {
+            assertFalse(ResourceFlora.plants(type, false).contains(kelp), "海带不在地表和洞穴的植物里：" + type);
+            assertFalse(ResourceFlora.grows(kelp, type, false), type.name());
+            ResourceFlora flora = new ResourceFlora(11L, type, false);
+            for (Biotope biotope : Biotope.values()) {
+                for (double roll = 0; roll < 1; roll += 0.05) {
+                    assertTrue(flora.pick(biotope, false, roll) != kelp && flora.pick(biotope, true, roll) != kelp);
+                }
+            }
+        }
     }
 }

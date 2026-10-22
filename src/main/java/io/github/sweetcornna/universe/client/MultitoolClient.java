@@ -9,6 +9,7 @@ import io.github.sweetcornna.universe.survival.Multitool;
 import io.github.sweetcornna.universe.network.ToolModePayload;
 import io.github.sweetcornna.universe.core.survival.ToolMode;
 import io.github.sweetcornna.universe.Universe;
+import io.github.sweetcornna.universe.core.poi.LandmarkType;
 import io.github.sweetcornna.universe.core.poi.PoiType;
 import io.github.sweetcornna.universe.core.survival.LaserHeat;
 import io.github.sweetcornna.universe.network.ScanResultPayload;
@@ -51,8 +52,13 @@ public final class MultitoolClient {
     private record PoiMark(Vec3 pos, PoiType type, boolean visited) {
     }
 
+    /** 扫描、声呐找到的地标（ADR-0026）。 */
+    private record LandmarkMark(Vec3 pos, LandmarkType type) {
+    }
+
     private static List<Marker> markers = List.of();
     private static List<PoiMark> pois = List.of();
+    private static List<LandmarkMark> landmarks = List.of();
     private static long scannedAt;
 
     private MultitoolClient() {
@@ -89,6 +95,8 @@ public final class MultitoolClient {
         markers = List.copyOf(list);
         pois = payload.pois().stream().map(poi -> new PoiMark(Vec3.atBottomCenterOf(poi.pos()).add(0, 1.5, 0), poi.type(), poi.visited()))
                 .toList();
+        landmarks = payload.landmarks().stream().map(landmark -> new LandmarkMark(Vec3.atBottomCenterOf(landmark.pos()).add(0, 2, 0),
+                landmark.type())).toList();
         Minecraft minecraft = Minecraft.getInstance();
         scannedAt = minecraft.level == null ? 0 : minecraft.level.getGameTime();
     }
@@ -145,13 +153,15 @@ public final class MultitoolClient {
 
     private static void renderMarkers(GuiGraphicsExtractor graphics, DeltaTracker delta) {
         Minecraft minecraft = Minecraft.getInstance();
-        if (markers.isEmpty() && pois.isEmpty() || minecraft.level == null || minecraft.player == null || minecraft.gui.hud.isHidden()) {
+        if (markers.isEmpty() && pois.isEmpty() && landmarks.isEmpty() || minecraft.level == null || minecraft.player == null
+                || minecraft.gui.hud.isHidden()) {
             return;
         }
         long age = minecraft.level.getGameTime() - scannedAt;
         if (age > MARKER_TICKS || age < 0) {
             markers = List.of();
             pois = List.of();
+            landmarks = List.of();
             return;
         }
         int alpha = age > MARKER_TICKS - 100 ? (int) (255 * (MARKER_TICKS - age) / 100F) : 255;
@@ -228,6 +238,22 @@ public final class MultitoolClient {
             if (boxes.stream().noneMatch(other -> box[0] < other[2] && other[0] < box[2] && box[1] < other[3] && other[1] < box[3])) {
                 boxes.add(box);
                 graphics.text(font, text, point[0] + 7, point[1] - 4, (a << 24) | lighten(poi.type().color()), true);
+            }
+        }
+        List<LandmarkMark> sites = new ArrayList<>(landmarks);
+        sites.sort(Comparator.comparingDouble(site -> site.pos().distanceToSqr(eye)));
+        for (LandmarkMark site : sites) {
+            int[] point = projection.project(site.pos());
+            if (!projection.onScreen(point, 10)) {
+                continue;
+            }
+            diamond(graphics, point[0], point[1], (alpha << 24) | site.type().color(), (alpha * 3 / 4) << 24);
+            Component text = Component.translatable("hud.universe.multitool.poi", Component.translatable("landmark.universe." + site.type().id()),
+                    (int) Math.round(site.pos().distanceTo(eye)));
+            int[] box = {point[0] + 7, point[1] - 5, point[0] + 7 + font.width(text), point[1] + 5};
+            if (boxes.stream().noneMatch(other -> box[0] < other[2] && other[0] < box[2] && box[1] < other[3] && other[1] < box[3])) {
+                boxes.add(box);
+                graphics.text(font, text, point[0] + 7, point[1] - 4, (alpha << 24) | lighten(site.type().color()), true);
             }
         }
     }

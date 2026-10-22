@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.OptionalInt;
+import java.util.stream.IntStream;
 
 import org.joml.Matrix3x2fStack;
 import org.jspecify.annotations.Nullable;
@@ -551,7 +552,11 @@ public class DiscoveryLogScreen extends Screen {
         y += 2;
         graphics.text(this.font, Component.translatable(key, found, total), x, y, found >= total ? GREEN : TEXT, false);
         y += 11;
-        for (int index = 0; index < total; index++) {
+        // 动物的序号：陆地的从 0 起，水生的从 Fauna.MARINE_INDEX 起（ADR-0026）
+        int[] indices = kind == DiscoveryKey.Kind.CREATURE
+                ? this.fauna(planet).all().stream().mapToInt(CreatureSpecies::index).toArray()
+                : IntStream.range(0, total).toArray();
+        for (int index : indices) {
             DiscoveryKey speciesKey = switch (kind) {
                 case CREATURE -> DiscoveryKey.creature(planet.id(), index);
                 case PLANT -> DiscoveryKey.plant(planet.id(), index);
@@ -579,11 +584,11 @@ public class DiscoveryLogScreen extends Screen {
     private String speciesDetail(DiscoveryKey.Kind kind, Planet planet, int index) {
         switch (kind) {
             case CREATURE -> {
-                List<CreatureSpecies> species = this.fauna(planet).species();
-                if (index >= species.size()) {
+                Optional<CreatureSpecies> found = this.fauna(planet).find(index);
+                if (found.isEmpty()) {
                     return "";
                 }
-                CreatureSpecies creature = species.get(index);
+                CreatureSpecies creature = found.get();
                 return Component.translatable("hud.universe.visor.creature",
                         Component.translatable("discovery.universe.plan." + creature.plan().name().toLowerCase(Locale.ROOT)),
                         Component.translatable("discovery.universe.temperament." + creature.temperament().name().toLowerCase(Locale.ROOT)),

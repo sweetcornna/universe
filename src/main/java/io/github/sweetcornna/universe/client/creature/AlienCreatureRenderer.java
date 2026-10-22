@@ -9,6 +9,7 @@ import io.github.sweetcornna.universe.entity.AlienFlyer;
 import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.entity.EntityRendererProvider;
 import net.minecraft.client.renderer.entity.MobRenderer;
+import net.minecraft.client.renderer.entity.RenderLayerParent;
 import net.minecraft.client.renderer.entity.layers.RenderLayer;
 import net.minecraft.client.renderer.rendertype.RenderTypes;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
@@ -60,9 +61,9 @@ public class AlienCreatureRenderer extends MobRenderer<AlienCreature, AlienCreat
         return CreatureAssets.get(state.species).hitWidth() * 0.55F * state.scale * state.ageScale;
     }
 
-    /** 眼睛、荧光花纹：不受光照影响的发光层。 */
-    private static final class GlowLayer extends RenderLayer<AlienCreatureRenderState, AlienCreatureModel> {
-        GlowLayer(AlienCreatureRenderer renderer) {
+    /** 眼睛、荧光花纹：不受光照影响的发光层（水生动物也用）。 */
+    static final class GlowLayer extends RenderLayer<AlienCreatureRenderState, AlienCreatureModel> {
+        GlowLayer(RenderLayerParent<AlienCreatureRenderState, AlienCreatureModel> renderer) {
             super(renderer);
         }
 

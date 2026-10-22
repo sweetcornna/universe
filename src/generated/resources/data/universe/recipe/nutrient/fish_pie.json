@@ -3,7 +3,11 @@
   "ingredients": [
     {
       "count": 1,
-      "ingredient": "minecraft:cod"
+      "ingredient": [
+        "minecraft:cod",
+        "minecraft:salmon",
+        "universe:alien_fish"
+      ]
     },
     {
       "count": 1,

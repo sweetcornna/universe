@@ -69,6 +69,10 @@ public final class AlienCreatureModel extends EntityModel<AlienCreatureRenderSta
     @Override
     public void setupAnim(AlienCreatureRenderState state) {
         super.setupAnim(state);
+        if (this.plan.aquatic()) {
+            this.swim(state);
+            return;
+        }
         float pos = state.walkAnimationPos;
         float amount = Math.min(1, state.walkAnimationSpeed);
         float age = state.ageInTicks;
@@ -137,6 +141,67 @@ public final class AlienCreatureModel extends EntityModel<AlienCreatureRenderSta
                         m.xRot += Mth.sin(age * 1.3F) * 0.03F;
                     }
                 }
+                default -> {
+                }
+            }
+        }
+    }
+
+    /**
+     * 水生动物（ADR-0026）：鱼摆尾、鳗身体波动、水母的钟一张一缩、乌贼的腕开合。游得越快摆得越快，
+     * 整个身体顺着游的方向抬头低头（轴心在身体中间）。
+     */
+    private void swim(AlienCreatureRenderState state) {
+        float age = state.ageInTicks;
+        float amount = Math.min(1, state.walkAnimationSpeed * 2);
+        float beat = age * (0.25F + 0.4F * amount);
+        float pitch = state.swimPitch * DEG;
+        float pulse = Mth.sin(age * 0.12F);
+        for (Animated a : this.parts) {
+            ModelPart m = a.model();
+            Part p = a.part();
+            switch (p.role()) {
+                case BODY -> {
+                    if (this.plan == BodyPlan.JELLY) {
+                        m.xScale = 1 + pulse * 0.08F;
+                        m.zScale = 1 + pulse * 0.08F;
+                        m.yScale = 1 - pulse * 0.06F;
+                    } else {
+                        m.xRot += pitch;
+                        if (this.plan == BodyPlan.FISH) {
+                            m.yRot += Mth.sin(beat) * 0.08F;
+                        }
+                    }
+                }
+                case SEGMENT -> {
+                    if (p.index() == 0) {
+                        m.xRot += pitch;
+                        m.yRot += Mth.sin(beat * 0.8F) * 0.08F;
+                    } else {
+                        m.yRot += Mth.sin(beat * 0.8F - p.index() * 0.9F) * 0.3F;
+                    }
+                }
+                case TAIL -> m.yRot += Mth.sin(beat - 0.6F) * 0.45F;
+                case FIN -> m.zRot += p.side() * Mth.sin(age * 0.3F) * (this.plan == BodyPlan.SQUID ? 0.35F : 0.25F);
+                case TENTACLE -> {
+                    if (this.plan == BodyPlan.JELLY) {
+                        // 钟缩起来时触手往外甩一点，平时慢慢飘
+                        float spread = Math.max(0, -pulse) * 0.25F;
+                        m.xRot += Mth.sin(age * 0.09F + p.phase()) * 0.1F - Mth.sin(p.phase()) * spread;
+                        m.zRot += Mth.cos(age * 0.07F + p.phase() * 1.3F) * 0.1F + Mth.cos(p.phase()) * spread;
+                    } else {
+                        // 乌贼的腕拖在身后，一张一合
+                        float open = (Mth.sin(age * 0.2F) + 1) * 0.12F + 0.05F;
+                        m.xRot += -Mth.sin(p.phase()) * open;
+                        m.yRot += Mth.cos(p.phase()) * open;
+                    }
+                }
+                case HEAD -> {
+                    if (state.attackAnim > 0) {
+                        m.xRot += Mth.sin(state.attackAnim * Mth.PI) * 0.4F;
+                    }
+                }
+                case DECOR -> m.xRot += Mth.sin(age * 0.15F + p.side()) * 0.1F;
                 default -> {
                 }
             }

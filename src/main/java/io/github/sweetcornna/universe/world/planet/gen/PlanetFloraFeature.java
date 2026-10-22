@@ -8,6 +8,7 @@ import java.util.Optional;
 import com.mojang.serialization.MapCodec;
 
 import io.github.sweetcornna.universe.Universe;
+import io.github.sweetcornna.universe.block.ClamBlock;
 import io.github.sweetcornna.universe.block.FloraBlocks;
 import io.github.sweetcornna.universe.core.ecology.Flora;
 import io.github.sweetcornna.universe.core.ecology.FloraLayout;
@@ -28,6 +29,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.LeavesBlock;
 import net.minecraft.world.level.block.RotatedPillarBlock;
 import net.minecraft.world.level.block.state.BlockState;
@@ -64,6 +66,8 @@ public record PlanetFloraFeature() implements Feature {
     private static final int CAVE_DEPTH = 8;
     /** 洞顶最多几格高。 */
     private static final int CAVE_ROOF = 8;
+    /** 甲壳蚌上面至少有几格水。 */
+    private static final int CLAM_DEPTH = 8;
 
     @Override
     public MapCodec<PlanetFloraFeature> codec() {
@@ -180,6 +184,45 @@ public record PlanetFloraFeature() implements Feature {
                 }
             }
         }
+        if (ResourceFlora.seabedLife(planet)) {
+            this.seabed(level, flora, chunkX, chunkZ);
+        }
+    }
+
+    /** 海底的烛光海带和甲壳蚌（ADR-0026）：海带长在至少两格深的水底，蚌只在 {@link #CLAM_DEPTH} 格以上的深水里。 */
+    private void seabed(WorldGenLevel level, ResourceFlora flora, int chunkX, int chunkZ) {
+        BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+        BlockState kelp = UniverseBlocks.RESOURCE_PLANTS.get(ResourcePlant.CANDLE_KELP).get().defaultBlockState();
+        for (ResourceFlora.Spot spot : flora.seabedSpots(chunkX, chunkZ)) {
+            pos.set(spot.x(), level.getHeight(Heightmap.Types.OCEAN_FLOOR_WG, spot.x(), spot.z()), spot.z());
+            if (water(level, pos, 2) && sturdy(level, pos.below())) {
+                level.setBlock(pos, kelp, 2);
+            }
+        }
+        for (ResourceFlora.Spot spot : flora.clamSpots(chunkX, chunkZ)) {
+            pos.set(spot.x(), level.getHeight(Heightmap.Types.OCEAN_FLOOR_WG, spot.x(), spot.z()), spot.z());
+            if (water(level, pos, CLAM_DEPTH) && sturdy(level, pos.below())) {
+                Direction facing = Direction.from2DDataValue((int) (spot.roll() * 4));
+                level.setBlock(pos, UniverseBlocks.CLAM.get().defaultBlockState().setValue(ClamBlock.FACING, facing), 2);
+            }
+        }
+    }
+
+    /** 从这一格往上 {@code depth} 格都是静止的水。 */
+    private static boolean water(WorldGenLevel level, BlockPos pos, int depth) {
+        BlockPos.MutableBlockPos at = pos.mutable();
+        for (int i = 0; i < depth; i++) {
+            BlockState state = level.getBlockState(at);
+            if (!state.is(Blocks.WATER) || !state.getFluidState().isSource()) {
+                return false;
+            }
+            at.move(Direction.UP);
+        }
+        return true;
+    }
+
+    private static boolean sturdy(WorldGenLevel level, BlockPos pos) {
+        return level.getBlockState(pos).isFaceSturdy(level, pos, Direction.UP);
     }
 
     /** 洞顶在 {@link #CAVE_ROOF} 格以内。 */

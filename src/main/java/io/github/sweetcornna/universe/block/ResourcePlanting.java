@@ -18,12 +18,13 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.UseOnContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.gameevent.GameEvent;
 
 /**
  * 拿着资源植物的产物右键地面，把它种下去（ADR-0026）：只能种在这类星球本来就长它的地方，种下去是没长熟的。
- * 水培槽不受这个限制，由水培槽自己处理。
+ * 水下的（烛光海带）种在有海的星球的海底。水培槽不受这个限制，由水培槽自己处理。
  */
 public final class ResourcePlanting {
     private ResourcePlanting() {
@@ -31,20 +32,28 @@ public final class ResourcePlanting {
 
     /** 种不下去时返回 {@link InteractionResult#PASS}，让物品照常用（比如氧气右键补给）。 */
     public static InteractionResult plant(UseOnContext context, ResourcePlant plant) {
-        if (context.getClickedFace() != Direction.UP || plant.habitat() != ResourcePlant.Habitat.SOIL) {
+        boolean water = plant.habitat() == ResourcePlant.Habitat.WATER;
+        if (context.getClickedFace() != Direction.UP || plant.habitat() != ResourcePlant.Habitat.SOIL && !water) {
             return InteractionResult.PASS;
         }
         Level level = context.getLevel();
         BlockPos soil = context.getClickedPos();
         BlockPos pos = soil.above();
-        if (!level.getBlockState(soil).is(FloraBlocks.PLANT_SOIL) || !level.getBlockState(pos).canBeReplaced()) {
+        if (water) {
+            // 烛光海带种在有海的星球的海底：下面是实心的方块，上面是满的水（ADR-0026）
+            if (!level.getBlockState(soil).isFaceSturdy(level, soil, Direction.UP) || !level.getBlockState(pos).is(Blocks.WATER)
+                    || !level.getFluidState(pos).isSource()) {
+                return InteractionResult.PASS;
+            }
+        } else if (!level.getBlockState(soil).is(FloraBlocks.PLANT_SOIL) || !level.getBlockState(pos).canBeReplaced()) {
             return InteractionResult.PASS;
         }
         if (level.isClientSide()) {
             return InteractionResult.SUCCESS;
         }
         Optional<Planet> body = Planets.body((ServerLevel) level);
-        boolean grows = body.map(p -> ResourceFlora.grows(plant, p.type(), p.ecology().lifeless())).orElse(false);
+        boolean grows = body.map(p -> water ? ResourceFlora.seabedLife(p) : ResourceFlora.grows(plant, p.type(), p.ecology().lifeless()))
+                .orElse(false);
         Player player = context.getPlayer();
         if (!grows) {
             if (player != null) {

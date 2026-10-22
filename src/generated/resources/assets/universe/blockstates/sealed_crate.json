@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "universe:block/sealed_crate",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "universe:block/sealed_crate"
+    },
+    "facing=south": {
+      "model": "universe:block/sealed_crate",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "universe:block/sealed_crate",
+      "y": 270
+    }
+  }
+}

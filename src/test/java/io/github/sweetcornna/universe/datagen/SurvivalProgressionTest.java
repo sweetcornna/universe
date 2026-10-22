@@ -83,7 +83,7 @@ class SurvivalProgressionTest {
             "universe:portable_refining", new int[] {1, 1});
     /** 兴趣点的建筑里天然放着的方块（ADR-0014），挖了按各自的战利品表掉落。 */
     private static final Set<String> STRUCTURE_BLOCKS = Set.of(NS + "data_terminal", NS + "supply_crate", NS + "tech_cache",
-            NS + "smoldering_wreck", NS + "damaged_ship_helm");
+            NS + "smoldering_wreck", NS + "damaged_ship_helm", NS + "clam", NS + "sealed_crate");
 
     private record Recipe(String name, List<List<String>> ingredients, String research) {
     }

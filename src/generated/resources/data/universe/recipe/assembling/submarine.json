@@ -1,0 +1,28 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 4,
+      "ingredient": "universe:titanium_ingot"
+    },
+    {
+      "count": 1,
+      "ingredient": "minecraft:glass"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:accumulator"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:electric_motor"
+    }
+  ],
+  "research": "submarine",
+  "results": [
+    {
+      "id": "universe:submarine"
+    }
+  ],
+  "time": 240
+}

@@ -89,6 +89,10 @@ public final class UniverseJeiPlugin implements IModPlugin {
         info(registration, UniverseItems.CRUDE_OIL.get(), "crude_oil");
         info(registration, UniverseItems.DEUTERIUM.get(), "deuterium");
         info(registration, UniverseItems.CRITICAL_PHOTON.get(), "critical_photon");
+        // 水下（ADR-0026）：只能在海底找到的东西
+        info(registration, UniverseItems.LIVING_PEARL.get(), "living_pearl");
+        info(registration, UniverseItems.RESOURCES.get("kelp_pod").get(), "kelp_pod");
+        info(registration, UniverseItems.ALIEN_FISH.get(), "alien_fish");
     }
 
     /** JEI 换行只认空格，中文会断在数字两边、词中间加连字符，所以先按本模组的规则断好行，一行一个组件。 */

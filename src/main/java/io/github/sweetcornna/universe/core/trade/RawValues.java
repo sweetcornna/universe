@@ -95,6 +95,12 @@ public final class RawValues {
             Map.entry("universe:cactus_flesh", 3.0),
             Map.entry("universe:gravitino_ball", 120.0),
             Map.entry("universe:marrow_bulb", 4.0),
+            Map.entry("universe:kelp_pod", 1.2),
+            // 水下（ADR-0026）：生鱼和鳕鱼一样；活珍珠只能卖，深水海底平均六七个区块一颗，一趟下潜捞上几千；
+            // 定得比 Mk.II 部件还贵，海就比造船来钱快了。没撬开的蚌里有一颗
+            Map.entry("universe:alien_fish", 2.0),
+            Map.entry("universe:living_pearl", 600.0),
+            Map.entry("universe:clam", 600.0),
             // 只能在空间站买、在坠毁飞船里拆到的 Mk.II 部件（ADR-0017）
             Map.entry("universe:ship_thruster_mk2", 260.0),
             Map.entry("universe:fuel_tank_mk2", 220.0),

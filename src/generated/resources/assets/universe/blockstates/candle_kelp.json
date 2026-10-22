@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "ripe=false": {
+      "model": "universe:block/candle_kelp_harvested"
+    },
+    "ripe=true": {
+      "model": "universe:block/candle_kelp"
+    }
+  }
+}

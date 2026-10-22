@@ -26,7 +26,9 @@ public enum ResourcePlant {
     FUNGAL_CLUSTER("fungal_cluster", "fungal_mould", "毒霉簇", "Fungal Cluster", Habitat.SOIL, 10, 1, 3),
     ECHINOCACTUS("echinocactus", "cactus_flesh", "桶形仙人掌", "Echinocactus", Habitat.SOIL, 20, 1, 3),
     GRAVITINO_HOST("gravitino_host", "gravitino_ball", "引力果丛", "Gravitino Host", Habitat.SOIL, 30, 1, 1),
-    CAVE_MARROW("cave_marrow", "marrow_bulb", "洞穴髓球", "Cave Marrow", Habitat.CAVE, 0, 1, 2);
+    CAVE_MARROW("cave_marrow", "marrow_bulb", "洞穴髓球", "Cave Marrow", Habitat.CAVE, 0, 1, 2),
+    /** 烛光海带：长在海底，会发光，站在旁边慢慢补氧气。 */
+    CANDLE_KELP("candle_kelp", "kelp_pod", "烛光海带", "Candlelight Kelp", Habitat.WATER, 0, 1, 3);
 
     /** 野外收过以后平均多久重新长出来（刻，15 分钟）。 */
     public static final int REGROW_TICKS = 15 * 60 * 20;
@@ -41,7 +43,9 @@ public enum ResourcePlant {
         /** 地表的岩石、沙子上（矿物）。 */
         ROCK,
         /** 洞穴的地面。 */
-        CAVE
+        CAVE,
+        /** 水下的海底。 */
+        WATER
     }
 
     private final String id;

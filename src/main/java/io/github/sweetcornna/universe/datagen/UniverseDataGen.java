@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Set;
 
 import io.github.sweetcornna.universe.entity.PlasmaBolt;
+import io.github.sweetcornna.universe.world.planet.gen.PlanetLandmarkFeature;
 import io.github.sweetcornna.universe.world.planet.gen.PlanetPoiFeature;
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.survival.SurvivalDamage;
@@ -63,6 +64,7 @@ public final class UniverseDataGen {
             context.register(PlanetOreFeature.KEY, new PlanetOreFeature());
             context.register(OverworldVeinsFeature.KEY, new OverworldVeinsFeature());
             context.register(PlanetPoiFeature.KEY, new PlanetPoiFeature());
+            context.register(PlanetLandmarkFeature.KEY, new PlanetLandmarkFeature());
         });
         event.add(Registries.PLACED_FEATURE, context -> {
             context.register(PlanetFloraFeature.PLACED,
@@ -73,6 +75,8 @@ public final class UniverseDataGen {
                     new PlacedFeature(context.lookup(Registries.FEATURE).getOrThrow(OverworldVeinsFeature.KEY), List.of(BiomeFilter.biome())));
             context.register(PlanetPoiFeature.PLACED,
                     new PlacedFeature(context.lookup(Registries.FEATURE).getOrThrow(PlanetPoiFeature.KEY), List.of(BiomeFilter.biome())));
+            context.register(PlanetLandmarkFeature.PLACED,
+                    new PlacedFeature(context.lookup(Registries.FEATURE).getOrThrow(PlanetLandmarkFeature.KEY), List.of(BiomeFilter.biome())));
         });
         // 主世界的矿脉露头和原油涌泉在最后一步放，压在树和草之后
         event.add(NeoForgeRegistries.Keys.BIOME_MODIFIERS, context -> context.register(

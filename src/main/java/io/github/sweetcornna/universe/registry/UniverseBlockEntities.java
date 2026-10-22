@@ -65,7 +65,7 @@ public final class UniverseBlockEntities {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<FuelRecipeMachineBlockEntity>> PORTABLE_REFINER = fuelRecipeMachine(
             "portable_refiner", UniverseBlocks.PORTABLE_REFINER, RecipeMachines.PORTABLE_REFINER, true);
     public static final Supplier<BlockEntityType<SupplyCrateBlockEntity>> SUPPLY_CRATE = BLOCK_ENTITIES.register("supply_crate",
-            () -> new BlockEntityType<>(SupplyCrateBlockEntity::new, UniverseBlocks.SUPPLY_CRATE.get()));
+            () -> new BlockEntityType<>(SupplyCrateBlockEntity::new, UniverseBlocks.SUPPLY_CRATE.get(), UniverseBlocks.SEALED_CRATE.get()));
 
     // ---- 工业
     public static final Supplier<BlockEntityType<TeslaTowerBlockEntity>> TESLA_TOWER = BLOCK_ENTITIES.register("tesla_tower",

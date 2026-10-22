@@ -16,14 +16,25 @@ import io.github.sweetcornna.universe.core.galaxy.Planet;
  * @param nearHeat   旁边有火、岩浆、亮着的炉子：寒冷消耗变慢
  * @param nearCold   旁边有冰雪：高温消耗变慢
  * @param supplied   在飞船里：舱内有生命维持，氧气和防护都会补满
+ * @param pressure   在深水里（水面以下 40 格更深，ADR-0026）：氧气掉得快一半
  */
 public record Environment(boolean breathable, Map<Hazard, Double> hazards, boolean sheltered, int storm,
-        boolean nearHeat, boolean nearCold, boolean supplied) {
+        boolean nearHeat, boolean nearCold, boolean supplied, boolean pressure) {
     /** 主世界这样的安全环境。 */
     public static final Environment SAFE = new Environment(true, Map.of(), false, 0, false, false, false);
 
     public Environment {
         hazards = hazards.isEmpty() ? Map.of() : Map.copyOf(hazards);
+    }
+
+    public Environment(boolean breathable, Map<Hazard, Double> hazards, boolean sheltered, int storm, boolean nearHeat, boolean nearCold,
+            boolean supplied) {
+        this(breathable, hazards, sheltered, storm, nearHeat, nearCold, supplied, false);
+    }
+
+    public Environment withPressure(boolean pressure) {
+        return new Environment(this.breathable, this.hazards, this.sheltered, this.storm, this.nearHeat, this.nearCold, this.supplied,
+                pressure);
     }
 
     public boolean exposedTo(Hazard hazard) {

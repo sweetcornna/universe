@@ -2,6 +2,7 @@ package io.github.sweetcornna.universe.datagen;
 
 import java.util.List;
 
+import io.github.sweetcornna.universe.world.planet.gen.PlanetLandmarkFeature;
 import io.github.sweetcornna.universe.world.planet.gen.PlanetPoiFeature;
 import io.github.sweetcornna.universe.core.terrain.BiomeKind;
 import io.github.sweetcornna.universe.world.planet.gen.PlanetBiomes;
@@ -60,6 +61,8 @@ final class UniverseBiomes {
         generation.addFeature(GenerationStep.Decoration.VEGETAL_DECORATION, PlanetFloraFeature.PLACED);
         // 兴趣点在植物之后放，建筑会清掉占地范围里的植物（ADR-0014）
         generation.addFeature(GenerationStep.Decoration.TOP_LAYER_MODIFICATION, PlanetPoiFeature.PLACED);
+        // 地标在兴趣点之后（ADR-0026）
+        generation.addFeature(GenerationStep.Decoration.TOP_LAYER_MODIFICATION, PlanetLandmarkFeature.PLACED);
         generation.addFeature(GenerationStep.Decoration.TOP_LAYER_MODIFICATION, MiscOverworldPlacements.FREEZE_TOP_LAYER);
         return new Biome.BiomeBuilder()
                 .hasPrecipitation(kind.precipitation())

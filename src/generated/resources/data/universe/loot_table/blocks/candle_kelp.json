@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "condition": {
+        "type": "minecraft:match_block",
+        "blocks": "universe:candle_kelp",
+        "state": {
+          "ripe": "true"
+        }
+      },
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "modifier": {
+            "type": "minecraft:set_count",
+            "count": {
+              "type": "minecraft:uniform",
+              "max": 3,
+              "min": 1
+            }
+          },
+          "name": "universe:kelp_pod"
+        }
+      ],
+      "rolls": 1
+    }
+  ],
+  "random_sequence": "universe:blocks/candle_kelp"
+}

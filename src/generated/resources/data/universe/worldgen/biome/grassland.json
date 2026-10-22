@@ -36,6 +36,7 @@
     ],
     [
       "universe:planet_poi",
+      "universe:planet_landmark",
       "minecraft:freeze_top_layer"
     ]
   ],

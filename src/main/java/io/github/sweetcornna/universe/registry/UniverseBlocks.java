@@ -14,7 +14,9 @@ import io.github.sweetcornna.universe.block.PlanetBloomBlock;
 import io.github.sweetcornna.universe.block.PlanetLeavesBlock;
 import io.github.sweetcornna.universe.block.PlanetLogBlock;
 import io.github.sweetcornna.universe.block.PlanetPlantBlock;
+import io.github.sweetcornna.universe.block.ClamBlock;
 import io.github.sweetcornna.universe.block.ResourcePlantBlock;
+import io.github.sweetcornna.universe.block.WaterResourcePlantBlock;
 import io.github.sweetcornna.universe.block.encounter.LiveConduitBlock;
 import io.github.sweetcornna.universe.block.poi.DataTerminalBlock;
 import io.github.sweetcornna.universe.block.poi.DropPodBlock;
@@ -24,6 +26,7 @@ import io.github.sweetcornna.universe.block.portal.PortalFieldBlock;
 import io.github.sweetcornna.universe.block.portal.PortalGlyphBlock;
 import io.github.sweetcornna.universe.block.poi.SignalBoosterBlock;
 import io.github.sweetcornna.universe.block.poi.SmolderingWreckBlock;
+import io.github.sweetcornna.universe.block.poi.SealedCrateBlock;
 import io.github.sweetcornna.universe.block.poi.SupplyCrateBlock;
 import io.github.sweetcornna.universe.block.fleet.FleetTerminalBlock;
 import io.github.sweetcornna.universe.block.fleet.FreighterConsoleBlock;
@@ -242,6 +245,12 @@ public final class UniverseBlocks {
                     .lightLevel(state -> 4));
     public static final DeferredBlock<SupplyCrateBlock> SUPPLY_CRATE = BLOCKS.registerBlock("supply_crate", SupplyCrateBlock::new,
             p -> p.mapColor(MapColor.COLOR_GRAY).strength(2.5F, 6.0F).sound(SoundType.METAL));
+    /** 海底遗迹里的密封箱（ADR-0026）。 */
+    public static final DeferredBlock<SealedCrateBlock> SEALED_CRATE = BLOCKS.registerBlock("sealed_crate", SealedCrateBlock::new,
+            p -> p.mapColor(MapColor.WARPED_STEM).strength(2.5F, 6.0F).sound(SoundType.METAL).lightLevel(state -> 3));
+    /** 甲壳蚌：深水海底，撬开得到活珍珠。 */
+    public static final DeferredBlock<ClamBlock> CLAM = BLOCKS.registerBlock("clam", ClamBlock::new,
+            p -> p.mapColor(MapColor.TERRACOTTA_PINK).strength(1.0F).sound(SoundType.BONE_BLOCK).noOcclusion().pushReaction(PushReaction.POPPED));
     /** 坠毁飞船上还在冒烟的残骸，挖掉出船体板。 */
     public static final DeferredBlock<SmolderingWreckBlock> SMOLDERING_WRECK = BLOCKS.registerBlock("smoldering_wreck",
             SmolderingWreckBlock::new, p -> p.mapColor(MapColor.COLOR_BLACK).strength(2.0F, 6.0F).sound(SoundType.NETHERITE_BLOCK)
@@ -489,7 +498,8 @@ public final class UniverseBlocks {
     private static Map<ResourcePlant, DeferredBlock<ResourcePlantBlock>> registerResourcePlants() {
         Map<ResourcePlant, DeferredBlock<ResourcePlantBlock>> plants = new EnumMap<>(ResourcePlant.class);
         for (ResourcePlant plant : ResourcePlant.values()) {
-            plants.put(plant, BLOCKS.registerBlock(plant.id(), p -> new ResourcePlantBlock(plant, p), p -> resourcePlantProperties(p, plant)));
+            plants.put(plant, BLOCKS.registerBlock(plant.id(), p -> plant.habitat() == ResourcePlant.Habitat.WATER
+                    ? new WaterResourcePlantBlock(plant, p) : new ResourcePlantBlock(plant, p), p -> resourcePlantProperties(p, plant)));
         }
         return plants;
     }
@@ -503,6 +513,7 @@ public final class UniverseBlocks {
             case FUNGAL_CLUSTER -> p.mapColor(MapColor.COLOR_LIGHT_GREEN).sound(SoundType.FUNGUS);
             case FROSTWORT -> p.mapColor(MapColor.ICE).sound(SoundType.GRASS);
             case SOLAR_VINE -> p.mapColor(MapColor.COLOR_ORANGE).sound(SoundType.GRASS).lightLevel(state -> state.getValue(ResourcePlantBlock.RIPE) ? 5 : 0);
+            case CANDLE_KELP -> p.mapColor(MapColor.WATER).sound(SoundType.WET_GRASS).lightLevel(state -> state.getValue(ResourcePlantBlock.RIPE) ? 11 : 5);
             default -> p.mapColor(MapColor.PLANT).sound(SoundType.GRASS);
         };
     }

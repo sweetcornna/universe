@@ -144,6 +144,10 @@ final class UniverseBlockTagsProvider extends BlockTagsProvider {
                 UniverseBlocks.DATA_TERMINAL.key(),
                 UniverseBlocks.TECH_CACHE.key(),
                 UniverseBlocks.SUPPLY_CRATE.key());
+        // 水下（ADR-0026）：海底密封箱和补给箱一样；甲壳蚌用镐子撬
+        this.tag(BlockTags.BLOCKS_MOTION_NO_LEAVES).add(UniverseBlocks.SEALED_CRATE.key());
+        this.tag(BlockTags.MINEABLE_WITH_PICKAXE).add(UniverseBlocks.SEALED_CRATE.key(), UniverseBlocks.CLAM.key());
+        this.tag(ShipParts.EXCLUDED).add(UniverseBlocks.SEALED_CRATE.key(), UniverseBlocks.CLAM.key());
         // 先驱者传送门（ADR-0024）：石头都是实心的，整座门不会被组装进飞船
         this.tag(BlockTags.BLOCKS_MOTION_NO_LEAVES).add(
                 UniverseBlocks.PORTAL_STONE.key(),

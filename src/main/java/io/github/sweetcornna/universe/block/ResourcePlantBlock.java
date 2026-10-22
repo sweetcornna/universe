@@ -61,7 +61,7 @@ public class ResourcePlantBlock extends VegetationBlock {
     protected boolean mayPlaceOn(BlockState state, BlockGetter level, BlockPos pos) {
         return switch (this.plant.habitat()) {
             case SOIL -> state.is(FloraBlocks.PLANT_SOIL);
-            case ROCK, CAVE -> state.isFaceSturdy(level, pos, Direction.UP);
+            case ROCK, CAVE, WATER -> state.isFaceSturdy(level, pos, Direction.UP);
         };
     }
 

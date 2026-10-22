@@ -138,6 +138,11 @@ public class AlienCreature extends PathfinderMob implements OwnableEntity, Playe
         clientHomeFauna = byHome;
     }
 
+    /** 客户端当前星球的动物（水生动物也用这一份）。 */
+    static Fauna clientFauna() {
+        return clientFauna.get();
+    }
+
     public static AttributeSupplier.Builder createAttributes() {
         return Mob.createMobAttributes()
                 .add(Attributes.MAX_HEALTH, 10)
@@ -286,8 +291,11 @@ public class AlienCreature extends PathfinderMob implements OwnableEntity, Playe
     @Override
     protected void readAdditionalSaveData(ValueInput input) {
         super.readAdditionalSaveData(input);
-        this.entityData.set(DATA_SPECIES, input.getIntOr("Species", 0));
-        this.speciesAssigned = true;
+        // /summon 也会走这里（不带数据）：没存物种时留给 finalizeSpawn 按群系挑
+        input.getInt("Species").ifPresent(index -> {
+            this.entityData.set(DATA_SPECIES, index);
+            this.speciesAssigned = true;
+        });
         EntityReference<LivingEntity> owner = EntityReference.read(input, "Owner");
         this.entityData.set(DATA_OWNER, Optional.ofNullable(owner));
         this.entityData.set(DATA_HOME, input.getStringOr("Home", ""));

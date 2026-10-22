@@ -1,0 +1,19 @@
+{
+  "type": "universe:nutrient",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:alien_fish"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:kelp_crisps"
+    }
+  ],
+  "results": [
+    {
+      "id": "universe:seafood_roll"
+    }
+  ],
+  "time": 100
+}

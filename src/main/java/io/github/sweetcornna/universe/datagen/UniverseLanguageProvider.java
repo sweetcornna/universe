@@ -107,6 +107,7 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         this.ores();
         this.suit();
         this.resourcePlants();
+        this.underwater();
         this.multitool();
         this.factory();
         this.trade();
@@ -788,6 +789,35 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("commands.universe.resources.not_found", "%s 格内没有 %s", "No %2$s within %1$s blocks");
         both("commands.universe.resources.unknown", "没有叫 %s 的资源植物", "No resource plant called %s");
         this.kitchen();
+    }
+
+    /** 水下（ADR-0026）：水生动物、生鱼、海带囊、甲壳蚌、沉船和海底遗迹、潜艇。 */
+    private void underwater() {
+        both("entity.universe.aquatic_creature", "异星水生动物", "Alien Sea Creature");
+        item(UniverseItems.AQUATIC_CREATURE_SPAWN_EGG.get(), "异星水生动物刷怪蛋", "Alien Sea Creature Spawn Egg");
+        item(UniverseItems.ALIEN_FISH.get(), "异星生鱼", "Raw Alien Fish");
+        item(UniverseItems.COOKED_ALIEN_FISH.get(), "熟异星鱼", "Cooked Alien Fish");
+        resource("kelp_pod", "海带囊", "Kelp Sac");
+        both("tooltip.universe.kelp_pod.summary", "烛光海带上结的气囊，里面是氧气\n使用：补外骨骼的氧气\n对着水下的地面使用：种下",
+                "A gas bladder from Candlelight Kelp, full of oxygen\nUse: refill your exosuit's oxygen\nUse on the seabed: plant it");
+        block(UniverseBlocks.CLAM.get(), "甲壳蚌", "Clam");
+        both("tooltip.universe.clam.summary", "右键撬开，取出一颗活珍珠\n撬开的蚌不会再长\n精准采集能整个拿走", "Right-click to pry it open for a Living Pearl\nAn opened clam stays empty\nSilk Touch picks it up whole");
+        item(UniverseItems.LIVING_PEARL.get(), "活珍珠", "Living Pearl");
+        both("tooltip.universe.living_pearl.summary", "海底的甲壳蚌里长的\n没什么用处，在空间站能卖个好价钱", "Grown inside seabed clams\nNo use of its own, but it sells well at a space station");
+        both("landmark.universe.shipwreck", "沉船", "Shipwreck");
+        both("landmark.universe.seabed_ruin", "海底遗迹", "Seabed Ruin");
+        block(UniverseBlocks.SEALED_CRATE.get(), "海底密封箱", "Sealed Crate");
+        both("container.universe.sealed_crate", "海底密封箱", "Sealed Crate");
+        both("hud.universe.suit.pressure", "高压", "high pressure");
+        both("entity.universe.submarine", "潜艇", "Submarine");
+        both("entity.universe.torpedo", "鱼雷", "Torpedo");
+        item(UniverseItems.SUBMARINE.get(), "潜艇", "Submarine");
+        both("tooltip.universe.submarine.summary",
+                "对着水面使用：放下\n右键：驾驶\n潜行右键：打开货舱\n手持燃料右键：加燃料\n驾驶时看哪儿往哪儿开，前进、后退键推进，左右键侧移\n驾驶时按攻击键：鱼雷\n驾驶时手持多功能工具右键：声呐\n用镐敲三下：收起，保留燃料和货物",
+                "Use on the water: deploy\nRight-click: pilot\nSneak + right-click: open cargo\nRight-click with fuel: refuel\nWhile piloting it heads where you look; forward and back thrust, left and right strafe\nAttack while piloting: torpedo\nRight-click with a multi-tool while piloting: sonar\nHit three times with a pickaxe: pack up, keeping fuel and cargo");
+        both("message.universe.submarine.need_water", "要放在水里", "Must be placed in water");
+        both("message.universe.submarine.sonar", "声呐：%s 处沉船和遗迹，%s 个兴趣点", "Sonar: %s wrecks and ruins, %s points of interest");
+        tech("submarine", "潜艇", "Submarine");
     }
 
     /** 营养处理器、菜、便携精炼机、防护凝胶（ADR-0026）。 */
@@ -1613,6 +1643,39 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("guide.universe.exploration.portals",
                 "每颗能降落的星球都有一座先驱者传送门，门上刻着这颗星球的地址：6 个符文，一共 16 种。船不跟着过去。\n\n学符文：每座先驱者石碑第一次碰、每座传送门第一次走近，各学一个；探索远征偶尔带回一个\n拨号：右键拨号台，按 6 个认识的符文，门开 30 秒，走进光里就到了\n星图上去过的星球写着地址",
                 "Every landable planet has a Precursor portal carved with its address: 6 glyphs out of 16. Your ship can't follow you through.\n\nLearning glyphs: each monolith's first touch and each portal's first visit teach one; exploration expeditions may bring one back\nDialing: right-click the dial and enter 6 known glyphs; the portal opens for 30 s, walk into the light\nThe star map shows the address of planets you've visited");
+        // 水下（ADR-0026）
+        both("guide.universe.exploration.underwater.title", "水下", "Underwater");
+        both("guide.universe.exploration.underwater",
+                "有海的星球，海底也有东西。\n\n烛光海带：长在海底，熟了发光，待在旁边慢慢补氧气。海带囊补 15 点氧气，能种回海底\n甲壳蚌：在深水的海底，右键撬开得一颗活珍珠。活珍珠只能卖，价钱高\n鱼成群游，鳗咬水里的人，水母碰到会中毒，巨型乌贼只在深水里\n\n水压：海平面 40 格以下，外骨骼的氧气耗得快一半。",
+                "Seas hide a lot on the seabed.\n\nCandlelight Kelp: glows when ripe; stay close to refill oxygen. A Kelp Sac restores 15 oxygen and can be replanted\nClams: on deep seabeds. Right-click one for a Living Pearl, which sells high\nFish school, eels bite swimmers, jellyfish sting, giant squid keep to deep water\n\nPressure: deeper than 40 blocks below sea level, the exosuit uses oxygen 50% faster.");
+        both("guide.universe.exploration.submarine.title", "潜艇", "Submarine");
+        both("guide.universe.exploration.submarine",
+                "只能在水里开。对着水面使用物品放下，拿镐敲三下收回，燃料和货物留在物品里。\n\nW / S：推进器，A / D：侧推\n艇头跟着视线转：抬头上浮，低头下潜\n按住左键：鱼雷，每发 4 燃料\n艇里拿多功能工具右键：声呐，范围 600 格\n艇里有空气，不耗氧气，没有水压\n\n油箱 1000（和飞船燃料通用），货舱 18 格",
+                "Water only. Deploy it on the water; three pickaxe hits pack it up with fuel and cargo.\n\nW / S: thrust, A / D: strafe\nLook up to rise, down to dive\nHold left-click: torpedo, 4 fuel each\nSonar: multitool right-click, 600 blocks\nThe cabin has air and no pressure\nTank 1,000 (ship fuel), hold 18 slots");
+        both("guide.universe.exploration.wrecks.title", "沉船和海底遗迹", "Wrecks and Ruins");
+        both("guide.universe.exploration.wrecks",
+                "深水的海底有沉船和海底遗迹。潜艇的声呐、多功能工具的扫描都能找到。\n\n沉船：货舱里的箱子有打捞来的部件\n海底遗迹：半埋在海底，里面有 3 个海底密封箱\n\n海底密封箱的东西比地上的补给箱值钱。",
+                "Deep seabeds hide shipwrecks and seabed ruins. Submarine sonar and multitool scans both find them.\n\nShipwrecks: the cargo crates hold salvaged parts\nSeabed ruins: half buried, with 3 sealed crates inside\n\nSealed crates are worth more than the supply crates on land.");
+        both("jei.universe.info.living_pearl", "有海的星球，深水的海底有甲壳蚌，右键撬开得到。只能卖，价钱高。",
+                "Pry open clams on the deep seabeds of planets with seas. Sell-only, and worth a lot.");
+        both("jei.universe.info.kelp_pod", "烛光海带的气囊。有海的星球，海底长着烛光海带，熟了会发光。补 15 点氧气，能在海底种回去。",
+                "Candlelight Kelp grows on the seabed of planets with seas and glows when ripe. Each pod restores 15 oxygen and can be planted back on the seabed.");
+        both("jei.universe.info.alien_fish", "有海的星球上，水里的动物都掉生鱼。",
+                "Dropped by sea life on planets with seas.");
+        // 潜艇的仪表盘（ADR-0026）
+        both("hud.universe.submarine.depth", "深度 %s 格", "Depth %s blocks");
+        both("hud.universe.submarine.surfaced", "浮在水面", "Surfaced");
+        both("hud.universe.submarine.beached", "离开水面", "Out of water");
+        both("hud.universe.submarine.cargo", "货舱 %s / %s 格", "Hold %s / %s slots");
+        both("hud.universe.submarine.torpedo", "鱼雷", "Torpedo");
+        both("hud.universe.submarine.torpedo_reload", "鱼雷（装填中）", "Torpedo (reloading)");
+        both("hud.universe.submarine.keys", "%s 鱼雷  %s 下艇", "%s Torpedo  %s Exit");
+        both("hud.universe.submarine.sonar_hint", "多功能工具 %s：声呐", "Multitool %s: sonar");
+        // 分析目镜看水生动物
+        both("hud.universe.visor.aquatic", "%1$s · 掉落%2$s", "%1$s · Drops %2$s");
+        both("hud.universe.visor.deep_water", "深水", "Deep water");
+        both("hud.universe.visor.shallow_water", "浅水", "Shallow water");
+        both("hud.universe.visor.stings", "碰到会蜇人", "Stings on contact");
         both("guide.universe.trade.stations.title", "空间站", "Space Stations");
         both("guide.universe.trade.stations",
                 "每个星系有一座空间站，在第一颗能降落的星球外 700 格。从机库口飞进去，停在起降台上。\n\n交易终端：买卖\n任务板：接任务\n飞船维修台：修船，每点船体 2 信用点\n空间站传送器：不用电\n\n站内有重力和空气。站外失重：跳跃上升，潜行下降。",
@@ -2309,7 +2372,8 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("discovery.universe.temperament.territorial", "有领地意识", "Territorial");
         both("discovery.universe.temperament.predator", "捕食者", "Predator");
         String[][] plans = {{"quadruped", "四足兽", "Quadruped"}, {"hexapod", "六足虫", "Hexapod"}, {"biped", "两足兽", "Biped"},
-                {"serpent", "节蠕虫", "Serpent"}, {"flyer", "飞兽", "Flyer"}};
+                {"serpent", "节蠕虫", "Serpent"}, {"flyer", "飞兽", "Flyer"}, {"fish", "鱼", "Fish"}, {"eel", "鳗", "Eel"},
+                {"jelly", "水母", "Jelly"}, {"squid", "乌贼", "Squid"}};
         for (String[] plan : plans) {
             both("discovery.universe.plan." + plan[0], plan[1], plan[2]);
         }

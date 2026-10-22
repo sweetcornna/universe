@@ -72,6 +72,13 @@ import io.github.sweetcornna.universe.registry.UniverseDataComponents;
 import io.github.sweetcornna.universe.registry.UniverseEntities;
 import io.github.sweetcornna.universe.registry.UniverseItems;
 import io.github.sweetcornna.universe.world.planet.Planets;
+import io.github.sweetcornna.universe.block.ClamBlock;
+import io.github.sweetcornna.universe.entity.AquaticCreature;
+import io.github.sweetcornna.universe.exocraft.Submarine;
+import io.github.sweetcornna.universe.exocraft.Torpedo;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.GameType;
+import net.minecraft.world.phys.Vec3;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
@@ -159,6 +166,12 @@ public final class UniverseGameTests {
             UniverseGameTests::crashedShipRepairs);
     private static final ResourceKey<Consumer<GameTestHelper>> PORTAL_DIALS_AND_CLOSES = function("portal_dials_and_closes",
             UniverseGameTests::portalDialsAndCloses);
+    private static final ResourceKey<Consumer<GameTestHelper>> CLAM_GIVES_PEARL = function("clam_gives_pearl",
+            UniverseGameTests::clamGivesPearl);
+    private static final ResourceKey<Consumer<GameTestHelper>> SUBMARINE_HOVERS = function("submarine_hovers",
+            UniverseGameTests::submarineHovers);
+    private static final ResourceKey<Consumer<GameTestHelper>> TORPEDO_HITS_CREATURE = function("torpedo_hits_creature",
+            UniverseGameTests::torpedoHitsCreature);
 
     private UniverseGameTests() {
     }
@@ -198,6 +211,9 @@ public final class UniverseGameTests {
         test(event, environment, PORTAL_DIALS_AND_CLOSES, PORTAL, 20);
         test(event, environment, FLEET_SAVE_ROUND_TRIP, 20);
         test(event, environment, FLEET_VOYAGE_CLAIM, 20);
+        test(event, environment, CLAM_GIVES_PEARL, 40);
+        test(event, environment, SUBMARINE_HOVERS, 80);
+        test(event, environment, TORPEDO_HITS_CREATURE, 60);
     }
 
     private static void test(RegisterGameTestsEvent event, Holder<TestEnvironmentDefinition<?>> environment, ResourceKey<Consumer<GameTestHelper>> function,
@@ -489,6 +505,54 @@ public final class UniverseGameTests {
             helper.assertTrue(tray.growth() > 0.01, "没有长：" + tray.growth());
             helper.assertBlockProperty(pos, MachineBlock.WORKING, true);
         });
+    }
+
+    /** 甲壳蚌（ADR-0026）：右键撬开掉一颗活珍珠，撬开的再右键没有了。 */
+    private static void clamGivesPearl(GameTestHelper helper) {
+        BlockPos pos = new BlockPos(3, 1, 3);
+        flood(helper, 2, 1, 2, 4, 2, 4);
+        helper.setBlock(pos, UniverseBlocks.CLAM.get());
+        Player player = helper.makeMockPlayer(GameType.SURVIVAL);
+        helper.useBlock(pos, player);
+        helper.succeedWhen(() -> {
+            helper.assertBlockProperty(pos, ClamBlock.OPEN, true);
+            helper.assertItemEntityPresent(UniverseItems.LIVING_PEARL.get(), pos, 3);
+        });
+    }
+
+    /** 潜艇（ADR-0026）：没人开的时候在水里悬停，不沉也不浮；在空气里往下掉。 */
+    private static void submarineHovers(GameTestHelper helper) {
+        flood(helper, 0, 1, 0, 3, 3, 6);
+        Submarine wet = helper.spawn(UniverseEntities.SUBMARINE.get(), new Vec3(1.7, 1.5, 3.5));
+        Submarine dry = helper.spawn(UniverseEntities.SUBMARINE.get(), new Vec3(5.4, 2.4, 3.5));
+        double start = wet.getY();
+        helper.runAfterDelay(60, () -> {
+            helper.assertTrue(wet.isInWater() && wet.submerged(), "潜艇不在水里");
+            helper.assertTrue(Math.abs(wet.getY() - start) < 0.15, "水里的潜艇漂走了：" + start + " → " + wet.getY());
+            helper.assertTrue(dry.getY() < helper.absoluteVec(new Vec3(0, 1.1, 0)).y, "空气里的潜艇没掉下去：" + dry.getY());
+            helper.succeed();
+        });
+    }
+
+    /** 鱼雷（ADR-0026）：在水里直线跑，打中水生动物炸开；打不中发射它的潜艇。 */
+    private static void torpedoHitsCreature(GameTestHelper helper) {
+        flood(helper, 0, 1, 0, 6, 3, 6);
+        Submarine submarine = helper.spawn(UniverseEntities.SUBMARINE.get(), new Vec3(1.2, 1.2, 3.5));
+        AquaticCreature target = helper.spawn(UniverseEntities.AQUATIC_CREATURE.get(), new Vec3(5.5, 1.8, 3.5));
+        float health = target.getHealth();
+        Vec3 from = helper.absoluteVec(new Vec3(2.6, 2.0, 3.5));
+        helper.getLevel().addFreshEntity(Torpedo.launch(helper.getLevel(), submarine, from, new Vec3(1, -0.05, 0)));
+        helper.succeedWhen(() -> {
+            helper.assertTrue(!target.isAlive() || target.getHealth() < health, "鱼雷没打中：" + target.getHealth());
+            helper.assertTrue(submarine.isAlive(), "鱼雷炸了自己的潜艇");
+        });
+    }
+
+    /** 测试场地里这一块（含两端，相对坐标）灌满水。 */
+    private static void flood(GameTestHelper helper, int x0, int y0, int z0, int x1, int y1, int z1) {
+        for (BlockPos pos : BlockPos.betweenClosed(x0, y0, z0, x1, y1, z1)) {
+            helper.setBlock(pos, Blocks.WATER);
+        }
     }
 
     /**

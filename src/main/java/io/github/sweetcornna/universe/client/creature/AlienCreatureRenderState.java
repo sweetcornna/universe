@@ -12,4 +12,6 @@ public class AlienCreatureRenderState extends LivingEntityRenderState {
     public boolean flying;
     /** 扑咬动作的进度，0–1。 */
     public float attackAnim;
+    /** 水生动物游动的俯仰角（度，正数朝下）。 */
+    public float swimPitch;
 }

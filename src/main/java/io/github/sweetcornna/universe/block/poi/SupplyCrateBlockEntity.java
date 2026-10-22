@@ -17,6 +17,7 @@ import net.minecraft.world.level.storage.ValueOutput;
 /** 补给箱的 27 格，第一次打开时按战利品表填上东西。 */
 public class SupplyCrateBlockEntity extends RandomizableContainerBlockEntity {
     private static final Component NAME = Component.translatable("container.universe.supply_crate");
+    private static final Component SEALED_NAME = Component.translatable("container.universe.sealed_crate");
     private NonNullList<ItemStack> items = NonNullList.withSize(27, ItemStack.EMPTY);
 
     public SupplyCrateBlockEntity(BlockPos pos, BlockState state) {
@@ -57,7 +58,7 @@ public class SupplyCrateBlockEntity extends RandomizableContainerBlockEntity {
 
     @Override
     protected Component getDefaultName() {
-        return NAME;
+        return this.getBlockState().getBlock() instanceof SealedCrateBlock ? SEALED_NAME : NAME;
     }
 
     @Override

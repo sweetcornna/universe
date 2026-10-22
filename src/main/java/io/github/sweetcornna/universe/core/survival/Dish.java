@@ -42,7 +42,10 @@ public enum Dish {
     GRAVITINO_PASTRY("gravitino_pastry", "引力果酥", "Gravitino Pastry", 10, 0.8F, Effect.NONE, 0),
     MARROW_SOUP("marrow_soup", "髓球浓汤", "Marrow Soup", 10, 0.8F, Effect.NONE, 0),
     FISH_PIE("fish_pie", "鱼派", "Fish Pie", 10, 0.8F, Effect.NONE, 0),
-    STAR_CAKE("star_cake", "星莓蛋糕", "Star Cake", 14, 0.9F, Effect.HAZARD, 25);
+    STAR_CAKE("star_cake", "星莓蛋糕", "Star Cake", 14, 0.9F, Effect.HAZARD, 25),
+    // 水下的（ADR-0026 第八节）：海带囊烤干，生鱼裹上海带脆片
+    KELP_CRISPS("kelp_crisps", "海带脆片", "Kelp Crisps", 3, 0.3F, Effect.NONE, 0),
+    SEAFOOD_ROLL("seafood_roll", "海味卷", "Seafood Roll", 9, 0.8F, Effect.NONE, 0);
 
     /** 吃了以后的额外效果。 */
     public enum Effect {

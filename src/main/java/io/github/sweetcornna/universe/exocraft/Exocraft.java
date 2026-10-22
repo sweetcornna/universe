@@ -4,20 +4,14 @@ import java.util.List;
 
 import org.jspecify.annotations.Nullable;
 
-import io.github.sweetcornna.universe.block.ship.ShipFuel;
 import io.github.sweetcornna.universe.core.sentinel.Offense;
-import io.github.sweetcornna.universe.core.ship.ShipFlight;
 import io.github.sweetcornna.universe.core.survival.LaserHeat;
 import io.github.sweetcornna.universe.core.vehicle.RoverDrive;
-import io.github.sweetcornna.universe.entity.ship.ShipEnvironment;
 import io.github.sweetcornna.universe.network.ScanResultPayload;
-import io.github.sweetcornna.universe.registry.UniverseDataComponents;
 import io.github.sweetcornna.universe.registry.UniverseItems;
 import io.github.sweetcornna.universe.sentinel.Sentinels;
 import io.github.sweetcornna.universe.survival.Multitool;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.NonNullList;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
@@ -29,38 +23,24 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
-import net.minecraft.tags.ItemTags;
 import net.minecraft.util.Mth;
-import net.minecraft.world.ContainerHelper;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResult;
-import net.minecraft.world.SimpleContainer;
-import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.InterpolationHandler;
-import net.minecraft.world.entity.LinearInterpolationHandler;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.Pose;
-import net.minecraft.world.entity.player.Input;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.vehicle.DismountHelper;
-import net.minecraft.world.entity.vehicle.VehicleEntity;
-import net.minecraft.world.inventory.ChestMenu;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.level.ClipContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.storage.ValueInput;
-import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
@@ -75,9 +55,7 @@ import net.neoforged.neoforge.network.PacketDistributor;
  * 打 {@link #LASER_RANGE} 格内准星对着的方块，挖下的东西进货箱；坐在车上用多功能工具右键是车载扫描（矿脉 {@link #SCAN_RADIUS} 格、
  * 兴趣点 {@link #POI_RADIUS} 格）。右键上车，潜行右键开货箱，拿燃料右键加油，拿镐敲三下变回物品（货物和燃料存在物品里）。
  */
-public class Exocraft extends VehicleEntity {
-    /** 油箱多大（和飞船燃料同一个单位：一块煤 200）。 */
-    public static final double MAX_FUEL = 1000;
+public class Exocraft extends UniverseVehicle {
     /** 踩着油门每刻烧多少（和一台飞船推进器全开一样）。 */
     public static final double FUEL_PER_TICK = 0.05;
     /** 开着激光每刻烧多少。 */
@@ -100,37 +78,14 @@ public class Exocraft extends VehicleEntity {
     private static final double GRAVITY = 0.08;
     /** 悬挂能吃掉多高的摔落（格）。 */
     private static final double SUSPENSION = 6;
-    /** 拿镐敲一下掉多少：过了 40 就收起（敲三下）。 */
-    private static final float HIT_DAMAGE = 20;
-    /** 每刻回多少：按镐的攻击冷却一下一下敲，三下就收起；两下之间隔了两秒以上，前面的就白敲了。 */
-    private static final float DAMAGE_DECAY = 0.25F;
     private static final int BEAM_COLOR = 0x5AD2FF;
     /** 激光按方块的挖掘规则算掉落，掉落和钻石镐挖的一样。 */
     private static final ItemStack LASER_TOOL = new ItemStack(Items.DIAMOND_PICKAXE);
 
-    private static final EntityDataAccessor<Float> DATA_FUEL = SynchedEntityData.defineId(Exocraft.class, EntityDataSerializers.FLOAT);
-    private static final EntityDataAccessor<Float> DATA_GRAVITY = SynchedEntityData.defineId(Exocraft.class, EntityDataSerializers.FLOAT);
     private static final EntityDataAccessor<Float> DATA_HEAT = SynchedEntityData.defineId(Exocraft.class, EntityDataSerializers.FLOAT);
     private static final EntityDataAccessor<Boolean> DATA_LASER = SynchedEntityData.defineId(Exocraft.class, EntityDataSerializers.BOOLEAN);
     private static final EntityDataAccessor<Boolean> DATA_OVERHEATED = SynchedEntityData.defineId(Exocraft.class, EntityDataSerializers.BOOLEAN);
-    private static final EntityDataAccessor<Integer> DATA_CARGO = SynchedEntityData.defineId(Exocraft.class, EntityDataSerializers.INT);
 
-    private final SimpleContainer cargo = new SimpleContainer(CARGO_SLOTS) {
-        @Override
-        public boolean stillValid(Player player) {
-            return !Exocraft.this.isRemoved() && player.distanceToSqr(Exocraft.this) < 64;
-        }
-
-        @Override
-        public void setChanged() {
-            super.setChanged();
-            // 货箱的东西只在服务端，客户端的仪表盘靠同步的格数
-            if (!Exocraft.this.level().isClientSide()) {
-                Exocraft.this.entityData.set(DATA_CARGO, Exocraft.this.countUsed());
-            }
-        }
-    };
-    private double fuel;
     /** 沿车头方向的速度（格/刻）：在算驾驶的那一端（驾驶员的客户端，没人开时的服务端）才有意义。 */
     private double speed;
     /** 这一刻转了多少度，乘客跟着转。 */
@@ -150,8 +105,7 @@ public class Exocraft extends VehicleEntity {
     public float wheelSpinO;
 
     public Exocraft(EntityType<? extends Exocraft> type, Level level) {
-        super(type, level);
-        this.blocksBuilding = true;
+        super(type, level, CARGO_SLOTS);
     }
 
     // ---- 同步的数据
@@ -159,17 +113,9 @@ public class Exocraft extends VehicleEntity {
     @Override
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
         super.defineSynchedData(builder);
-        builder.define(DATA_FUEL, 0.0F);
-        builder.define(DATA_GRAVITY, 1.0F);
         builder.define(DATA_HEAT, 0.0F);
         builder.define(DATA_LASER, false);
         builder.define(DATA_OVERHEATED, false);
-        builder.define(DATA_CARGO, 0);
-    }
-
-    /** 燃料（两端都能读）。 */
-    public float fuel() {
-        return this.entityData.get(DATA_FUEL);
     }
 
     /** 激光的热量，0 到 {@link LaserHeat#MAX}（两端都能读）。 */
@@ -187,40 +133,10 @@ public class Exocraft extends VehicleEntity {
         return this.entityData.get(DATA_OVERHEATED);
     }
 
-    public SimpleContainer cargo() {
-        return this.cargo;
-    }
-
-    /** 货箱里用了几格（两端都能读）。 */
-    public int usedSlots() {
-        return this.entityData.get(DATA_CARGO);
-    }
-
-    private int countUsed() {
-        int used = 0;
-        for (int i = 0; i < this.cargo.getContainerSize(); i++) {
-            if (!this.cargo.getItem(i).isEmpty()) {
-                used++;
-            }
-        }
-        return used;
-    }
-
-    void setFuel(double fuel) {
-        this.fuel = Mth.clamp(fuel, 0, MAX_FUEL);
-        this.entityData.set(DATA_FUEL, (float) this.fuel);
-    }
-
     // ---- 每刻
 
     @Override
     public void tick() {
-        if (this.getHurtTime() > 0) {
-            this.setHurtTime(this.getHurtTime() - 1);
-        }
-        if (this.getDamage() > 0) {
-            this.setDamage(Math.max(0, this.getDamage() - DAMAGE_DECAY));
-        }
         super.tick();
         if (this.isLocalInstanceAuthoritative()) {
             this.drive();
@@ -262,7 +178,7 @@ public class Exocraft extends VehicleEntity {
         double throttle = driver == null ? 0 : driver.zza;
         // 玩家的 xxa 向左为正，方向盘向右为正
         double steer = driver == null ? 0 : -driver.xxa;
-        boolean powered = driver != null && (this.fuel() > 0 || driver.hasInfiniteMaterials());
+        boolean powered = this.powered(driver);
         this.deltaRotation = RoverDrive.turn(this.speed, steer, grounded || water);
         this.setYRot(this.getYRot() + this.deltaRotation);
         this.speed = RoverDrive.speed(this.speed, throttle, powered, grounded || water);
@@ -270,37 +186,26 @@ public class Exocraft extends VehicleEntity {
             this.speed *= 0.92;
         }
         Vec3 heading = heading(this.getYRot());
-        double g = GRAVITY * this.entityData.get(DATA_GRAVITY);
+        double g = GRAVITY * this.gravityScale();
         double vy = this.getDeltaMovement().y;
         vy = water ? Math.max(vy * 0.8 - g * 0.15, -0.12) : (vy - g) * 0.98;
         this.setDeltaMovement(heading.x * this.speed, vy, heading.z * this.speed);
     }
 
     private void serverTick(ServerLevel level) {
-        if (this.tickCount % 20 == 1) {
-            ShipFlight.Environment env = ShipEnvironment.of(level);
-            this.entityData.set(DATA_GRAVITY, (float) (env.space() ? 1 : env.gravity()));
-        }
         ServerPlayer driver = this.getControllingPassenger() instanceof ServerPlayer player ? player : null;
         boolean infinite = driver != null && driver.hasInfiniteMaterials();
-        if (driver != null && !infinite) {
-            Input input = driver.getLastClientInput();
-            if ((input.forward() || input.backward()) && this.fuel > 0) {
-                this.setFuel(this.fuel - FUEL_PER_TICK);
-            }
-        }
+        this.burnDriveFuel(driver, FUEL_PER_TICK);
         if (this.scanCooldown > 0) {
             this.scanCooldown--;
         }
-        boolean trigger = this.firing && driver != null && (infinite || this.fuel > 0);
+        boolean trigger = this.firing && driver != null && (infinite || this.fuelLeft() > 0);
         boolean on = this.heat.tick(trigger, LASER_HEAT);
         this.entityData.set(DATA_HEAT, this.heat.heat());
         this.entityData.set(DATA_LASER, on);
         this.entityData.set(DATA_OVERHEATED, this.heat.overheated());
         if (on) {
-            if (!infinite) {
-                this.setFuel(this.fuel - LASER_FUEL_PER_TICK);
-            }
+            this.burnFuel(driver, LASER_FUEL_PER_TICK);
             this.fireLaser(level, driver);
         } else {
             this.clearTarget(level);
@@ -313,6 +218,7 @@ public class Exocraft extends VehicleEntity {
 
     // ---- 车载采矿激光
 
+    @Override
     void setControls(boolean firing, boolean thirdPerson) {
         this.firing = firing;
         this.thirdPersonAim = thirdPerson;
@@ -389,7 +295,7 @@ public class Exocraft extends VehicleEntity {
         driver.awardStat(Stats.BLOCK_MINED.get(block.getBlock()));
         boolean full = false;
         for (ItemStack drop : drops) {
-            ItemStack left = this.cargo.addItem(drop);
+            ItemStack left = this.cargo().addItem(drop);
             if (!left.isEmpty()) {
                 // 货箱满了：掉在车旁边
                 full = true;
@@ -428,6 +334,7 @@ public class Exocraft extends VehicleEntity {
 
     // ---- 车载扫描
 
+    @Override
     void scan(ServerPlayer player) {
         if (this.scanCooldown > 0) {
             player.sendOverlayMessage(Component.translatable("message.universe.multitool.charging"));
@@ -437,7 +344,8 @@ public class Exocraft extends VehicleEntity {
         ServerLevel level = player.level();
         List<ScanResultPayload.Marker> markers = Multitool.scanOres(level, this.blockPosition(), SCAN_RADIUS);
         List<ScanResultPayload.PoiMarker> pois = Multitool.scanPois(player, POI_RADIUS);
-        PacketDistributor.sendToPlayer(player, new ScanResultPayload(markers, pois));
+        List<ScanResultPayload.LandmarkMarker> landmarks = Multitool.scanLandmarks(player, POI_RADIUS);
+        PacketDistributor.sendToPlayer(player, new ScanResultPayload(markers, pois, landmarks));
         level.playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.BEACON_ACTIVATE, SoundSource.NEUTRAL, 1.0F, 1.4F);
         for (int i = 0; i < 72; i++) {
             double angle = i * Math.PI * 2 / 72;
@@ -445,116 +353,10 @@ public class Exocraft extends VehicleEntity {
                     1, 0, 0, 0, 0);
         }
         int total = markers.stream().mapToInt(ScanResultPayload.Marker::count).sum();
-        player.sendOverlayMessage(pois.isEmpty()
+        int sites = pois.size() + landmarks.size();
+        player.sendOverlayMessage(sites == 0
                 ? Component.translatable("message.universe.multitool.scanned", markers.size(), total)
-                : Component.translatable("message.universe.multitool.scanned_poi", markers.size(), total, pois.size()));
-    }
-
-    // ---- 交互
-
-    @Override
-    public InteractionResult interact(Player player, InteractionHand hand, Vec3 location) {
-        if (player.isSecondaryUseActive()) {
-            if (this.level() instanceof ServerLevel) {
-                player.openMenu(new SimpleMenuProvider((id, inventory, p) -> ChestMenu.threeRows(id, inventory, this.cargo), this.getDisplayName()));
-            }
-            return InteractionResult.SUCCESS;
-        }
-        ItemStack held = player.getItemInHand(hand);
-        if (ShipFuel.value(held) > 0) {
-            if (this.level() instanceof ServerLevel) {
-                this.refuel(player, hand);
-            }
-            return InteractionResult.SUCCESS;
-        }
-        if (!this.isVehicle()) {
-            if (this.level() instanceof ServerLevel) {
-                player.startRiding(this);
-            }
-            return InteractionResult.SUCCESS;
-        }
-        return InteractionResult.PASS;
-    }
-
-    /** 服务端：用手里的燃料加油，油箱放不下一整份就不加。 */
-    void refuel(Player player, InteractionHand hand) {
-        ItemStack held = player.getItemInHand(hand);
-        double value = ShipFuel.value(held);
-        if (this.fuel + value > MAX_FUEL + 1e-6) {
-            player.sendOverlayMessage(Component.translatable("message.universe.exocraft.tank_full", (int) this.fuel, (int) MAX_FUEL));
-            return;
-        }
-        this.setFuel(this.fuel + value);
-        if (!player.hasInfiniteMaterials()) {
-            ShipFuel.consume(held, player, hand);
-        }
-        this.playSound(SoundEvents.BUCKET_EMPTY_LAVA, 0.6F, 1.2F);
-        player.sendOverlayMessage(Component.translatable("message.universe.exocraft.fuel", (int) this.fuel, (int) MAX_FUEL));
-    }
-
-    // ---- 拆车
-
-    @Override
-    public boolean hurtServer(ServerLevel level, DamageSource source, float damage) {
-        if (this.isRemoved() || !(source.getEntity() instanceof Player player) || source.getDirectEntity() != player) {
-            // 怪物、爆炸、火都伤不了它
-            return false;
-        }
-        boolean creative = player.getAbilities().instabuild;
-        if (!creative && !player.getMainHandItem().is(ItemTags.PICKAXES)) {
-            player.sendOverlayMessage(Component.translatable("message.universe.exocraft.need_pickaxe"));
-            return false;
-        }
-        this.setHurtDir(-this.getHurtDir());
-        this.setHurtTime(10);
-        this.markHurt();
-        this.setDamage(this.getDamage() + HIT_DAMAGE);
-        this.playSound(SoundEvents.ANVIL_PLACE, 0.4F, 1.4F);
-        if (creative || this.getDamage() > 40) {
-            this.destroy(level, source);
-        }
-        return true;
-    }
-
-    @Override
-    protected void destroy(ServerLevel level, DamageSource source) {
-        // 货物和燃料存进物品里，再放下还是原样；拿镐收车的人直接收进背包，背包满了才掉在地上
-        this.ejectPassengers();
-        ItemStack item = this.toItem();
-        if (source.getEntity() instanceof Player player) {
-            player.getInventory().add(item);
-        }
-        if (!item.isEmpty()) {
-            this.spawnAtLocation(level, item);
-        }
-        this.cargo.clearContent();
-        this.discard();
-    }
-
-    ItemStack toItem() {
-        ItemStack stack = new ItemStack(this.getDropItem());
-        stack.set(DataComponents.CUSTOM_NAME, this.getCustomName());
-        if (this.fuel > 0) {
-            stack.set(UniverseDataComponents.EXOCRAFT_FUEL.get(), (int) Math.round(this.fuel));
-        }
-        if (!this.cargo.isEmpty()) {
-            stack.set(DataComponents.CONTAINER, ItemContainerContents.fromItems(this.cargo.getItems()));
-        }
-        return stack;
-    }
-
-    /** 从物品放下时把物品里存的燃料和货物搬进车里。 */
-    void loadFrom(ItemStack stack) {
-        this.setFuel(stack.getOrDefault(UniverseDataComponents.EXOCRAFT_FUEL.get(), 0));
-        ItemContainerContents contents = stack.get(DataComponents.CONTAINER);
-        if (contents != null) {
-            NonNullList<ItemStack> items = NonNullList.withSize(CARGO_SLOTS, ItemStack.EMPTY);
-            contents.copyInto(items);
-            for (int i = 0; i < CARGO_SLOTS; i++) {
-                this.cargo.setItem(i, items.get(i));
-            }
-        }
-        this.setCustomName(stack.get(DataComponents.CUSTOM_NAME));
+                : Component.translatable("message.universe.multitool.scanned_poi", markers.size(), total, sites));
     }
 
     @Override
@@ -562,22 +364,7 @@ public class Exocraft extends VehicleEntity {
         return UniverseItems.EXOCRAFT.get();
     }
 
-    @Override
-    public ItemStack getPickResult() {
-        return new ItemStack(this.getDropItem());
-    }
-
     // ---- 乘坐
-
-    @Override
-    public @Nullable LivingEntity getControllingPassenger() {
-        return this.getFirstPassenger() instanceof Player player ? player : null;
-    }
-
-    @Override
-    protected boolean canAddPassenger(Entity passenger) {
-        return this.getPassengers().isEmpty() && passenger instanceof Player;
-    }
 
     @Override
     protected Vec3 getPassengerAttachmentPoint(Entity passenger, EntityDimensions dimensions, float scale) {
@@ -638,40 +425,5 @@ public class Exocraft extends VehicleEntity {
         // 悬挂吃掉一截，车本身不坏
         this.propagateFallToPassengers(Math.max(0, fallDistance - SUSPENSION), damageModifier, damageSource);
         return false;
-    }
-
-    @Override
-    public boolean canBeCollidedWith(@Nullable Entity other) {
-        return true;
-    }
-
-    @Override
-    public boolean isPickable() {
-        return !this.isRemoved();
-    }
-
-    @Override
-    public boolean isPushable() {
-        return false;
-    }
-
-    @Override
-    protected InterpolationHandler createInterpolationHandler() {
-        return LinearInterpolationHandler.create(this, 3);
-    }
-
-    // ---- 存档
-
-    @Override
-    protected void addAdditionalSaveData(ValueOutput output) {
-        output.putDouble("fuel", this.fuel);
-        ContainerHelper.saveAllItems(output, this.cargo.getItems());
-    }
-
-    @Override
-    protected void readAdditionalSaveData(ValueInput input) {
-        this.setFuel(input.getDoubleOr("fuel", 0));
-        ContainerHelper.loadAllItems(input, this.cargo.getItems());
-        this.entityData.set(DATA_CARGO, this.countUsed());
     }
 }

@@ -422,6 +422,12 @@ public final class PoiStructures {
         return pos.getY();
     }
 
+    /** 海底方块的 y：水下第一块挡路的方块（海带、海草不算）。 */
+    static int seabedY(WorldGenLevel level, int x, int z) {
+        Heightmap.Types type = level instanceof ServerLevel ? Heightmap.Types.OCEAN_FLOOR : Heightmap.Types.OCEAN_FLOOR_WG;
+        return level.getHeight(type, x, z) - 1;
+    }
+
     /** 树干、树叶、菌盖、花这些清场时要拿掉的东西。 */
     static boolean vegetation(BlockState state) {
         return state.is(BlockTags.LOGS) || state.is(BlockTags.LEAVES) || state.is(UniverseBlocks.PLANET_CAP.get())
@@ -435,12 +441,20 @@ public final class PoiStructures {
         private final Rotation rotation;
         final RandomSource random;
         private final BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos();
+        /** 水下的建筑：这个高度（世界坐标）以下放空气变成放水，能泡水的方块泡上水；地面是海底。 */
+        private int waterTop = Integer.MIN_VALUE;
 
         Placer(WorldGenLevel level, BlockPos origin, int rotation, RandomSource random) {
             this.level = level;
             this.origin = origin;
             this.rotation = Rotation.values()[Math.floorMod(rotation, 4)];
             this.random = random;
+        }
+
+        /** 在水下盖（ADR-0026 的海底地标）：{@code surface} 是水面最上一格水的高度。 */
+        Placer underwater(int surface) {
+            this.waterTop = surface;
+            return this;
         }
 
         /** 本地坐标转成世界坐标（和结构模板的旋转一致：顺时针 90° 时 (x, z) → (-z, x)）。 */
@@ -461,7 +475,15 @@ public final class PoiStructures {
         }
 
         void set(int dx, int dy, int dz, BlockState state) {
-            this.level.setBlock(this.at(dx, dy, dz), state.rotate(this.rotation), 2);
+            BlockPos at = this.at(dx, dy, dz);
+            if (at.getY() <= this.waterTop) {
+                if (state.isAir()) {
+                    state = Blocks.WATER.defaultBlockState();
+                } else if (state.hasProperty(BlockStateProperties.WATERLOGGED)) {
+                    state = state.setValue(BlockStateProperties.WATERLOGGED, true);
+                }
+            }
+            this.level.setBlock(at, state.rotate(this.rotation), 2);
         }
 
         BlockState get(int dx, int dy, int dz) {
@@ -471,7 +493,9 @@ public final class PoiStructures {
         /** 这一列地面相对原点的高度。 */
         int ground(int dx, int dz) {
             BlockPos column = this.at(dx, 0, dz);
-            return groundY(this.level, column.getX(), column.getZ()) - this.origin.getY();
+            int y = this.waterTop == Integer.MIN_VALUE ? groundY(this.level, column.getX(), column.getZ())
+                    : seabedY(this.level, column.getX(), column.getZ());
+            return y - this.origin.getY();
         }
 
         /** 把一列从 {@code from} 到 {@code to}（相对高度，含两端）清成空气。 */
@@ -561,7 +585,12 @@ public final class PoiStructures {
 
         /** 放一个补给箱，第一次打开时按战利品表装东西。 */
         void crate(int dx, int dy, int dz, Direction facing, ResourceKey<LootTable> loot) {
-            this.set(dx, dy, dz, UniverseBlocks.SUPPLY_CRATE.get().defaultBlockState().setValue(SupplyCrateBlock.FACING, facing));
+            this.container(dx, dy, dz, UniverseBlocks.SUPPLY_CRATE.get().defaultBlockState().setValue(SupplyCrateBlock.FACING, facing), loot);
+        }
+
+        /** 放一个容器，第一次打开时按战利品表装东西。 */
+        void container(int dx, int dy, int dz, BlockState state, ResourceKey<LootTable> loot) {
+            this.set(dx, dy, dz, state);
             RandomizableContainer.setBlockEntityLootTable(this.level, this.random, this.at(dx, dy, dz).immutable(), loot);
         }
     }

@@ -8,6 +8,7 @@ import io.github.sweetcornna.universe.client.blueprint.GhostClient;
 import io.github.sweetcornna.universe.client.mecha.MechaClient;
 import io.github.sweetcornna.universe.client.dev.DevScript;
 import io.github.sweetcornna.universe.client.exocraft.ExocraftClient;
+import io.github.sweetcornna.universe.client.exocraft.SubmarineClient;
 import io.github.sweetcornna.universe.client.guide.GuideScreen;
 import io.github.sweetcornna.universe.client.pirate.PirateClient;
 import io.github.sweetcornna.universe.client.sentinel.SentinelClient;
@@ -21,6 +22,7 @@ import io.github.sweetcornna.universe.client.SuitClient;
 import io.github.sweetcornna.universe.client.UniverseKeys;
 import io.github.sweetcornna.universe.client.PlanetTints;
 import io.github.sweetcornna.universe.client.creature.AlienCreatureRenderer;
+import io.github.sweetcornna.universe.client.creature.AquaticCreatureRenderer;
 import io.github.sweetcornna.universe.client.discovery.AnalysisVisor;
 import io.github.sweetcornna.universe.client.discovery.ClientDiscoveries;
 import io.github.sweetcornna.universe.client.dyson.ClientDyson;
@@ -89,6 +91,7 @@ public final class UniverseClient {
         PirateClient.registerEvents(modBus);
         AsteroidClient.registerEvents(modBus);
         ExocraftClient.registerEvents(modBus, NeoForge.EVENT_BUS);
+        SubmarineClient.registerEvents(modBus, NeoForge.EVENT_BUS);
         ItemSummaries.registerEvents(NeoForge.EVENT_BUS);
         PoiClient.registerEvents(modBus);
         SentinelClient.registerEvents(modBus);
@@ -108,6 +111,7 @@ public final class UniverseClient {
         modBus.addListener(EntityRenderersEvent.RegisterRenderers.class, event -> {
             event.registerEntityRenderer(UniverseEntities.ALIEN_CREATURE.get(), AlienCreatureRenderer::new);
             event.registerEntityRenderer(UniverseEntities.ALIEN_FLYER.get(), AlienCreatureRenderer::new);
+            event.registerEntityRenderer(UniverseEntities.AQUATIC_CREATURE.get(), AquaticCreatureRenderer::new);
             event.registerEntityRenderer(UniverseEntities.PLASMA_BOLT.get(), PlasmaBoltRenderer::new);
             event.registerEntityRenderer(UniverseEntities.SENTINEL.get(), SentinelRenderer::new);
             event.registerEntityRenderer(UniverseEntities.HEAVY_SENTINEL.get(), SentinelRenderer::new);

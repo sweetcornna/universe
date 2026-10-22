@@ -24,6 +24,7 @@ import io.github.sweetcornna.universe.core.galaxy.Planet;
 import io.github.sweetcornna.universe.core.galaxy.StarSystem;
 import io.github.sweetcornna.universe.core.procgen.NameGenerator.Name;
 import io.github.sweetcornna.universe.entity.AlienCreature;
+import io.github.sweetcornna.universe.entity.AquaticCreature;
 import io.github.sweetcornna.universe.mission.Missions;
 import io.github.sweetcornna.universe.network.AnalyzePayload;
 import io.github.sweetcornna.universe.network.DiscoveryPayload;
@@ -223,10 +224,19 @@ public final class Discoveries {
 
     private static Optional<DiscoveryKey> creature(ServerPlayer player, ServerLevel level, int id) {
         Entity entity = level.getEntity(id);
-        if (!(entity instanceof AlienCreature creature) || player.distanceTo(entity) > ENTITY_RANGE + 4) {
+        if (entity == null || player.distanceTo(entity) > ENTITY_RANGE + 4) {
             return Optional.empty();
         }
-        return Planets.bodyId(level.dimension()).map(body -> DiscoveryKey.creature(body, creature.species().index()));
+        // 水生动物（ADR-0026）的物种序号从 Fauna.MARINE_INDEX 起，和陆地的不会撞上
+        int index;
+        if (entity instanceof AlienCreature creature) {
+            index = creature.species().index();
+        } else if (entity instanceof AquaticCreature creature) {
+            index = creature.species().index();
+        } else {
+            return Optional.empty();
+        }
+        return Planets.bodyId(level.dimension()).map(body -> DiscoveryKey.creature(body, index));
     }
 
     private static Optional<DiscoveryKey> block(ServerPlayer player, ServerLevel level, BlockPos pos) {

@@ -49,6 +49,10 @@ public final class LifeSupport {
     static final int HAZARD_INTERVAL = 40;
     /** 保暖的时候寒冷防护掉得慢一半。 */
     static final float WARMTH_FACTOR = 0.5F;
+    /** 深水的高压下氧气掉得快一半（ADR-0026）。 */
+    public static final float PRESSURE_FACTOR = 1.5F;
+    /** 水面以下多深算深水（格）。 */
+    public static final int PRESSURE_DEPTH = 40;
 
     private float oxygen = OXYGEN_MAX;
     private final EnumMap<Hazard, Float> protection = new EnumMap<>(Hazard.class);
@@ -135,7 +139,8 @@ public final class LifeSupport {
             this.suffocationTimer = 0;
             return 0;
         }
-        this.oxygen = Math.max(0, this.oxygen - (suit.sealed() ? SUIT_OXYGEN_DRAIN * factor : BARE_OXYGEN_DRAIN));
+        float pressure = env.pressure() ? PRESSURE_FACTOR : 1;
+        this.oxygen = Math.max(0, this.oxygen - (suit.sealed() ? SUIT_OXYGEN_DRAIN * factor : BARE_OXYGEN_DRAIN) * pressure);
         if (this.oxygen > 0) {
             this.suffocationTimer = 0;
             return 0;

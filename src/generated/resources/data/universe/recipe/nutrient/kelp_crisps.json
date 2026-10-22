@@ -1,0 +1,15 @@
+{
+  "type": "universe:nutrient",
+  "ingredients": [
+    {
+      "count": 2,
+      "ingredient": "universe:kelp_pod"
+    }
+  ],
+  "results": [
+    {
+      "id": "universe:kelp_crisps"
+    }
+  ],
+  "time": 50
+}

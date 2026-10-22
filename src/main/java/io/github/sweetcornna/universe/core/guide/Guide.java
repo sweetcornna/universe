@@ -100,7 +100,11 @@ public final class Guide {
                     page("poi", "universe:signal_booster", "universe:monolith", "universe:data_terminal", "universe:tech_cache",
                             "universe:navigation_data"),
                     page("bases", "", "universe:base_beacon", "universe:teleporter"),
-                    page("portals", "", "universe:portal_dial", "universe:portal_glyph")),
+                    page("portals", "", "universe:portal_dial", "universe:portal_glyph"),
+                    // 水下（ADR-0026）
+                    page("underwater", "", "universe:kelp_pod", "universe:clam", "universe:living_pearl", "universe:alien_fish"),
+                    page("submarine", "universe:submarine"),
+                    page("wrecks", "", "universe:sealed_crate", "universe:living_pearl")),
             chapter("trade", "universe:circuit_board",
                     page("stations", ""),
                     page("trading", ""),

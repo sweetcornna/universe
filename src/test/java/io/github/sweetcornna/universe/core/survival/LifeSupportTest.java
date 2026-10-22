@@ -215,4 +215,55 @@ class LifeSupportTest {
         double moonDamage = (20 - GravityModel.safeFall(0.24)) * GravityModel.fallDamage(0.24);
         assertEquals(4.8 - 3, moonDamage, 1e-9);
     }
+
+    // ---------------------------------------------------------------- 水压（ADR-0026）
+
+    @Test
+    void deepWaterPressureDrainsOxygenHalfAgainAsFast() {
+        Environment deep = VACUUM.withPressure(true);
+        int normal = ticksUntil(new LifeSupport(), VACUUM, Suit.FULL, s -> s.oxygen() <= 0);
+        int pressed = ticksUntil(new LifeSupport(), deep, Suit.FULL, s -> s.oxygen() <= 0);
+        assertEquals(normal / LifeSupport.PRESSURE_FACTOR, pressed, 60);
+        assertEquals(10 * 60 * 20 / 1.5, pressed, 60, "密封外骨骼在深水里撑 6 分 40 秒");
+        // 只有头盔也一样快一半
+        Suit helmet = new Suit(true, false, false, false);
+        int bare = ticksUntil(new LifeSupport(), VACUUM, helmet, s -> s.oxygen() <= 0);
+        int barePressed = ticksUntil(new LifeSupport(), deep, helmet, s -> s.oxygen() <= 0);
+        assertEquals(bare / LifeSupport.PRESSURE_FACTOR, barePressed, 2);
+    }
+
+    @Test
+    void pressureOnlyMattersWhenBreathingFromTheSuit() {
+        // 能呼吸的地方（或者在飞船、潜艇里）水压不耗氧气，照样回满
+        LifeSupport support = new LifeSupport(0, Map.of(), LifeSupport.JET_MAX);
+        int ticks = ticksUntil(support, Environment.SAFE.withPressure(true), Suit.NONE, s -> s.oxygen() >= LifeSupport.OXYGEN_MAX);
+        assertEquals(100, ticks, 2);
+        Environment cabin = new Environment(false, Map.of(), false, 0, false, false, true).withPressure(true);
+        LifeSupport inCabin = new LifeSupport(50, Map.of(), LifeSupport.JET_MAX);
+        inCabin.tick(cabin, Suit.FULL, false, true);
+        assertTrue(inCabin.oxygen() > 50);
+        // 不在深水里：和以前一模一样
+        LifeSupport a = new LifeSupport();
+        LifeSupport b = new LifeSupport();
+        for (int i = 0; i < 1000; i++) {
+            a.tick(VACUUM, Suit.FULL, false, true);
+            b.tick(VACUUM.withPressure(false), Suit.FULL, false, true);
+        }
+        assertEquals(a.oxygen(), b.oxygen(), 0);
+    }
+
+    @Test
+    void pressureFlagKeepsTheRestOfTheEnvironment() {
+        Environment storm = new Environment(false, Map.of(Hazard.COLD, 1.5), true, 2, true, false, false);
+        Environment deep = storm.withPressure(true);
+        assertTrue(deep.pressure());
+        assertEquals(storm, deep.withPressure(false));
+        assertEquals(storm.hazards(), deep.hazards());
+        assertEquals(storm.storm(), deep.storm());
+        assertTrue(deep.sheltered() && deep.nearHeat() && !deep.nearCold() && !deep.supplied() && !deep.breathable());
+        // 旧的七个参数的构造器没有水压
+        assertFalse(storm.pressure());
+        assertFalse(Environment.SAFE.pressure());
+        assertEquals(40, LifeSupport.PRESSURE_DEPTH);
+    }
 }

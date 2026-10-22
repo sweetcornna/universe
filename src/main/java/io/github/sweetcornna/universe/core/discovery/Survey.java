@@ -33,7 +33,7 @@ public final class Survey {
     }
 
     /**
-     * 一颗星球上有几种动物、地面植物和树。
+     * 一颗星球上有几种动物（陆地的加水里的）、地面植物和树。
      */
     public record Census(int creatures, int plants, int trees) {
         public static final Census NONE = new Census(0, 0, 0);
@@ -58,7 +58,7 @@ public final class Survey {
             return Census.NONE;
         }
         Flora flora = Flora.of(planet);
-        return new Census(Fauna.of(planet).species().size(), flora.plants().size(), flora.trees().size());
+        return new Census(Fauna.of(planet).all().size(), flora.plants().size(), flora.trees().size());
     }
 
     /** 这颗星球上的动植物是不是都发现了（没有动植物的星球不算）。 */
