@@ -355,7 +355,7 @@ public final class AnalysisVisor {
         Planet planet = sky.planet();
         DiscoveryKey key = DiscoveryKey.body(planet.id());
         return new Target(AnalyzePayload.body(planet.id().path()), key, GalaxyText.planet(planet),
-                Component.translatable("hud.universe.visor.body", GalaxyText.pick(planet.type().nameZh(), planet.type().nameEn()),
+                Component.translatable("hud.universe.visor.body", GalaxyText.planetType(planet),
                         Math.round(planet.temperatureCelsius()), GalaxyText.number(planet.gravity(), 2)),
                 Survey.reward(key, galaxy));
     }

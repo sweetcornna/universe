@@ -8,6 +8,7 @@ import org.jspecify.annotations.Nullable;
 import io.github.sweetcornna.universe.client.ClientGalaxy;
 import io.github.sweetcornna.universe.client.UniverseKeys;
 import io.github.sweetcornna.universe.core.dyson.DysonSphere;
+import io.github.sweetcornna.universe.network.DysonResultPayload;
 import io.github.sweetcornna.universe.network.DysonSyncPayload;
 import io.github.sweetcornna.universe.registry.UniverseBlockEntities;
 import io.github.sweetcornna.universe.registry.UniverseMenus;
@@ -35,7 +36,10 @@ public final class ClientDyson {
     }
 
     public static void registerEvents(IEventBus modBus, IEventBus gameBus) {
-        modBus.addListener(RegisterClientPayloadHandlersEvent.class, event -> event.register(DysonSyncPayload.TYPE, ClientDyson::handle));
+        modBus.addListener(RegisterClientPayloadHandlersEvent.class, event -> {
+            event.register(DysonSyncPayload.TYPE, ClientDyson::handle);
+            event.register(DysonResultPayload.TYPE, ClientDyson::handleResult);
+        });
         modBus.addListener(RegisterMenuScreensEvent.class, event -> {
             event.register(UniverseMenus.EM_RAIL_EJECTOR.menuType(), DysonScreens.Ejector::new);
             event.register(UniverseMenus.VERTICAL_LAUNCHING_SILO.menuType(), DysonScreens.Silo::new);
@@ -73,6 +77,16 @@ public final class ClientDyson {
         payload = received;
         sphere = received.toSphere();
         version++;
+    }
+
+    /** 编辑一层网格的结果（ADR-0030 §四）：开着编辑器就显示在编辑器里，不然发到动作栏。 */
+    private static void handleResult(DysonResultPayload result, IPayloadContext context) {
+        Minecraft minecraft = Minecraft.getInstance();
+        if (minecraft.gui.screen() instanceof DysonEditorScreen screen) {
+            screen.showResult(result);
+        } else {
+            minecraft.gui.hud.setOverlayMessage(DysonResultText.of(result), false);
+        }
     }
 
     public static long version() {

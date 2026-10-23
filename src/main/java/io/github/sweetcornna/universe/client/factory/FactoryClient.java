@@ -52,6 +52,8 @@ public final class FactoryClient {
         event.register(UniverseMenus.ARTIFICIAL_STAR.menuType(), PowerScreens.FuelGenerator::new);
         event.register(UniverseMenus.GEOTHERMAL_POWER_STATION.menuType(), PowerScreens.Geothermal::new);
         event.register(UniverseMenus.ENERGY_EXCHANGER.menuType(), PowerScreens.EnergyExchanger::new);
+        // 电网接口（ADR-0030 §三）
+        event.register(UniverseMenus.GRID_INTERFACE.menuType(), GridInterfaceScreen::new);
         recipeMachine(event, RecipeMachines.ARC_SMELTER);
         event.<MachineMenu, RecipeMachineScreen>register(RecipeMachines.NUTRIENT_PROCESSOR.menu().menuType(),
                 (menu, inventory, title) -> new FuelRecipeMachineScreen(menu, inventory, title, RecipeMachines.NUTRIENT_PROCESSOR));

@@ -11,6 +11,7 @@ import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 
 import io.github.sweetcornna.universe.core.vehicle.VehicleKind;
+import io.github.sweetcornna.universe.fluid.AcidFluid;
 import io.github.sweetcornna.universe.network.VehiclePayloads;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
 import net.minecraft.core.BlockPos;
@@ -26,7 +27,6 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.TicketType;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.tags.FluidTags;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityDimensions;
 import net.minecraft.world.entity.EntitySpawnReason;
@@ -245,7 +245,7 @@ public final class VehicleSummoning {
             BlockPos feet = BlockPos.containing(at.x, at.y + 0.1, at.z);
             if (aquatic) {
                 BlockPos middle = BlockPos.containing(at.x, at.y + size.height() * 0.6, at.z);
-                if (level.getFluidState(feet).is(FluidTags.WATER) && level.getFluidState(middle).is(FluidTags.WATER)) {
+                if (AcidFluid.sea(level.getFluidState(feet)) && AcidFluid.sea(level.getFluidState(middle))) {
                     return at;
                 }
                 continue;

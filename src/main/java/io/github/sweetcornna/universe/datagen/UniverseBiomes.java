@@ -2,6 +2,7 @@ package io.github.sweetcornna.universe.datagen;
 
 import java.util.List;
 
+import io.github.sweetcornna.universe.world.planet.gen.PlanetExoticFeature;
 import io.github.sweetcornna.universe.world.planet.gen.PlanetLandmarkFeature;
 import io.github.sweetcornna.universe.world.planet.gen.PlanetPoiFeature;
 import io.github.sweetcornna.universe.core.terrain.BiomeKind;
@@ -49,6 +50,8 @@ final class UniverseBiomes {
             generation.addFeature(GenerationStep.Decoration.LAKES, MiscOverworldPlacements.LAKE_LAVA_SURFACE);
         }
         generation.addFeature(GenerationStep.Decoration.LOCAL_MODIFICATIONS, CavePlacements.AMETHYST_GEODE);
+        // 奇异星球的石柱、石拱、晶柱（ADR-0030）：矿和植物之前，石柱上照样长植物
+        generation.addFeature(GenerationStep.Decoration.LOCAL_MODIFICATIONS, PlanetExoticFeature.PLACED);
         if (kind == BiomeKind.FROZEN_OCEAN) {
             generation.addFeature(GenerationStep.Decoration.LOCAL_MODIFICATIONS, MiscOverworldPlacements.ICEBERG_PACKED);
             generation.addFeature(GenerationStep.Decoration.LOCAL_MODIFICATIONS, MiscOverworldPlacements.ICEBERG_BLUE);

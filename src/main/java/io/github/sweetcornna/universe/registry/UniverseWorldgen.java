@@ -12,6 +12,7 @@ import io.github.sweetcornna.universe.world.planet.gen.PlanetHeightFunction;
 import io.github.sweetcornna.universe.world.planet.gen.PlanetIslandFunction;
 import io.github.sweetcornna.universe.world.planet.gen.PlanetLavaCondition;
 import io.github.sweetcornna.universe.world.planet.gen.PlanetOreFeature;
+import io.github.sweetcornna.universe.world.planet.gen.PlanetExoticFeature;
 import io.github.sweetcornna.universe.world.planet.gen.PlanetLandmarkFeature;
 import io.github.sweetcornna.universe.world.planet.gen.PlanetPoiFeature;
 import io.github.sweetcornna.universe.world.planet.gen.PlanetSteepCondition;
@@ -56,6 +57,7 @@ public final class UniverseWorldgen {
         FEATURE_TYPES.register("overworld_veins", () -> OverworldVeinsFeature.CODEC);
         FEATURE_TYPES.register("planet_poi", () -> PlanetPoiFeature.CODEC);
         FEATURE_TYPES.register("planet_landmark", () -> PlanetLandmarkFeature.CODEC);
+        FEATURE_TYPES.register("planet_exotic", () -> PlanetExoticFeature.CODEC);
         LOOT_FUNCTION_TYPES.register("random_module", () -> RandomModuleFunction.MAP_CODEC);
         CHUNK_GENERATORS.register("space", () -> SpaceChunkGenerator.CODEC);
         CHUNK_GENERATORS.register("freighter", () -> FreighterChunkGenerator.CODEC);

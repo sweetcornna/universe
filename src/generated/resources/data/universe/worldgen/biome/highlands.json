@@ -10,7 +10,8 @@
       "minecraft:lake_lava_underground"
     ],
     [
-      "minecraft:amethyst_geode"
+      "minecraft:amethyst_geode",
+      "universe:planet_exotic"
     ],
     [],
     [],

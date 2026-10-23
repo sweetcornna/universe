@@ -19,6 +19,18 @@ public final class DysonLayer {
     public record Target(boolean node, int index) {
     }
 
+    /** 层里的一种元素（ADR-0030 §四）。 */
+    public enum Element {
+        NODE,
+        FRAME,
+        SHELL;
+
+        public static Element byOrdinal(int ordinal) {
+            Element[] values = values();
+            return values[Math.floorMod(ordinal, values.length)];
+        }
+    }
+
     private final int id;
     private double radius;
     private double inclination;
@@ -31,21 +43,47 @@ public final class DysonLayer {
     private int[] cells;
     private int[] nodeReserved;
     private int[] frameReserved;
+    /** 节点、框架、球壳的颜色（ADR-0030 §四）：0 是默认色，别的是 0xFFRRGGBB。 */
+    private int[] nodeColors;
+    private int[] frameColors;
+    private int[] shellColors;
+    /** 网格每换一次加一（元素的下标变了），编辑器发来的改动按它判断是不是过时了。不存档。 */
+    private int revision;
     /** 吸帆的零头（帆），和下一片轮到的球壳。 */
     private double absorbCredit;
     private int absorbCursor;
 
     public DysonLayer(int id, double radius, double inclination, double ascendingNode, DysonGrid.Template template, int density) {
+        this(id, radius, inclination, ascendingNode, DysonGrid.of(template, density));
+    }
+
+    public DysonLayer(int id, double radius, double inclination, double ascendingNode, DysonGrid grid) {
         this.id = id;
         this.inclination = inclination;
         this.ascendingNode = ascendingNode;
-        this.reshape(radius, template, density);
+        this.rebuild(radius, grid);
     }
 
-    /** 换半径或模板，进度清零；只在还没开始建时用。 */
+    /** 换半径或模板，进度清零、颜色恢复默认；只在还没开始建时用。 */
     void reshape(double radius, DysonGrid.Template template, int density) {
+        this.rebuild(radius, DysonGrid.of(template, density));
+        this.revision++;
+    }
+
+    /** 只换半径，网格和颜色不变，进度清零；只在还没开始建时用。 */
+    void resize(double radius) {
+        int[] nodes = this.nodeColors;
+        int[] frames = this.frameColors;
+        int[] shells = this.shellColors;
+        this.rebuild(radius, this.grid);
+        this.nodeColors = nodes;
+        this.frameColors = frames;
+        this.shellColors = shells;
+    }
+
+    private void rebuild(double radius, DysonGrid grid) {
         this.radius = radius;
-        this.grid = DysonGrid.of(template, density);
+        this.grid = grid;
         this.frameCost = new int[this.grid.frameCount()];
         for (int i = 0; i < this.frameCost.length; i++) {
             this.frameCost[i] = frameCost(this.grid.frameArc(i), radius);
@@ -59,8 +97,147 @@ public final class DysonLayer {
         this.cells = new int[this.grid.shellCount()];
         this.nodeReserved = new int[this.grid.nodeCount()];
         this.frameReserved = new int[this.grid.frameCount()];
+        this.nodeColors = new int[this.grid.nodeCount()];
+        this.frameColors = new int[this.grid.frameCount()];
+        this.shellColors = new int[this.grid.shellCount()];
         this.absorbCredit = 0;
         this.absorbCursor = 0;
+    }
+
+    // ---- 自由编辑（ADR-0030 §四）
+
+    /**
+     * 换成新的网格，按对应关系搬进度、预定和颜色。map[新下标] 是旧下标，新加的是 -1；没对应上的旧元素的进度丢掉，
+     * 调用前要确认它们都没开始建。
+     */
+    void apply(DysonGrid next, int[] nodeMap, int[] frameMap, int[] shellMap, int[] nodeColors, int[] frameColors, int[] shellColors) {
+        int[] oldNodes = this.nodeSp;
+        int[] oldFrames = this.frameSp;
+        int[] oldCells = this.cells;
+        int[] oldNodeReserved = this.nodeReserved;
+        int[] oldFrameReserved = this.frameReserved;
+        double credit = this.absorbCredit;
+        this.rebuild(this.radius, next);
+        for (int i = 0; i < nodeMap.length && i < this.nodeSp.length; i++) {
+            if (nodeMap[i] >= 0) {
+                this.nodeSp[i] = Math.min(NODE_SP, oldNodes[nodeMap[i]]);
+                this.nodeReserved[i] = oldNodeReserved[nodeMap[i]];
+            }
+        }
+        for (int i = 0; i < frameMap.length && i < this.frameSp.length; i++) {
+            if (frameMap[i] >= 0) {
+                this.frameSp[i] = Math.min(this.frameCost[i], oldFrames[frameMap[i]]);
+                this.frameReserved[i] = oldFrameReserved[frameMap[i]];
+            }
+        }
+        for (int i = 0; i < shellMap.length && i < this.cells.length; i++) {
+            if (shellMap[i] >= 0) {
+                this.cells[i] = Math.min(this.shellCost[i], oldCells[shellMap[i]]);
+            }
+        }
+        this.restoreColors(nodeColors, frameColors, shellColors);
+        this.absorbCredit = credit;
+        this.revision++;
+    }
+
+    /** 这个元素建了一点、或者有火箭正往这儿飞（不能直接删，要先拆）。 */
+    public boolean started(Element kind, int index) {
+        return switch (kind) {
+            case NODE -> this.nodeSp[index] > 0 || this.nodeReserved[index] > 0;
+            case FRAME -> this.frameSp[index] > 0 || this.frameReserved[index] > 0;
+            case SHELL -> this.cells[index] > 0;
+        };
+    }
+
+    public int count(Element kind) {
+        return switch (kind) {
+            case NODE -> this.grid.nodeCount();
+            case FRAME -> this.grid.frameCount();
+            case SHELL -> this.grid.shellCount();
+        };
+    }
+
+    /**
+     * 拆掉一个元素：结构点、单元点清零，不退；节点连着的框架和球壳、框架边上的球壳跟着拆。拆到的节点、框架记进
+     * nodes、frames（在路上的火箭跟着作废）。
+     */
+    void demolish(Element kind, int index, java.util.Set<Integer> nodes, java.util.Set<Integer> frames) {
+        switch (kind) {
+            case NODE -> {
+                this.nodeSp[index] = 0;
+                this.nodeReserved[index] = 0;
+                nodes.add(index);
+                for (int f = 0; f < this.grid.frameCount(); f++) {
+                    if (this.grid.frame(f)[0] == index || this.grid.frame(f)[1] == index) {
+                        this.demolish(Element.FRAME, f, nodes, frames);
+                    }
+                }
+                for (int shell : this.grid.nodeShells(index)) {
+                    this.cells[shell] = 0;
+                }
+            }
+            case FRAME -> {
+                this.frameSp[index] = 0;
+                this.frameReserved[index] = 0;
+                frames.add(index);
+                for (int s = 0; s < this.grid.shellCount(); s++) {
+                    for (int f : this.grid.shellFrames(s)) {
+                        if (f == index) {
+                            this.cells[s] = 0;
+                        }
+                    }
+                }
+            }
+            case SHELL -> this.cells[index] = 0;
+        }
+    }
+
+    public int nodeColor(int node) {
+        return this.nodeColors[node];
+    }
+
+    public int frameColor(int frame) {
+        return this.frameColors[frame];
+    }
+
+    public int shellColor(int shell) {
+        return this.shellColors[shell];
+    }
+
+    void paint(Element kind, int index, int color) {
+        switch (kind) {
+            case NODE -> this.nodeColors[index] = color;
+            case FRAME -> this.frameColors[index] = color;
+            case SHELL -> this.shellColors[index] = color;
+        }
+    }
+
+    public int[] nodeColors() {
+        return this.nodeColors.clone();
+    }
+
+    public int[] frameColors() {
+        return this.frameColors.clone();
+    }
+
+    public int[] shellColors() {
+        return this.shellColors.clone();
+    }
+
+    /** 读档、同步：恢复颜色，长度不对的部分忽略。 */
+    public void restoreColors(int[] nodes, int[] frames, int[] shells) {
+        System.arraycopy(nodes, 0, this.nodeColors, 0, Math.min(nodes.length, this.nodeColors.length));
+        System.arraycopy(frames, 0, this.frameColors, 0, Math.min(frames.length, this.frameColors.length));
+        System.arraycopy(shells, 0, this.shellColors, 0, Math.min(shells.length, this.shellColors.length));
+    }
+
+    public int revision() {
+        return this.revision;
+    }
+
+    /** 同步：客户端照服务端的编号。 */
+    public void restoreRevision(int revision) {
+        this.revision = revision;
     }
 
     /** 弧长（弧度）为 arc 的框架在半径 radius 天文单位处要几个结构点，至少 1 个。 */

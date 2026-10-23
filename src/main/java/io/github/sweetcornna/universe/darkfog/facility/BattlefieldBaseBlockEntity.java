@@ -2,6 +2,7 @@ package io.github.sweetcornna.universe.darkfog.facility;
 
 import java.util.List;
 
+import io.github.sweetcornna.universe.blueprint.BlueprintSettings;
 import io.github.sweetcornna.universe.core.darkfog.FacilityHealth;
 import io.github.sweetcornna.universe.core.darkfog.PickupFilter;
 import io.github.sweetcornna.universe.factory.MachineBlockEntity;
@@ -9,6 +10,7 @@ import io.github.sweetcornna.universe.factory.MachineMenu;
 import io.github.sweetcornna.universe.registry.UniverseBlockEntities;
 import io.github.sweetcornna.universe.registry.UniverseMenus;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -24,8 +26,9 @@ import net.minecraft.world.phys.Vec3;
 /**
  * 战场分析基地（ADR-0028 §五）：接电网，30 格内自动修掉血的设施、用储物格里的方块按残影重建，45 格内自动捡黑雾的掉落
  * 和散落的物品。捡什么可以在界面上换（全部、只捡黑雾掉落、只捡储物格里已有的、不捡）。储物格分拣器、漏斗都能进出。
+ * 蓝图记下捡什么（ADR-0030）。
  */
-public class BattlefieldBaseBlockEntity extends MachineBlockEntity implements MachineMenu.ButtonTarget {
+public class BattlefieldBaseBlockEntity extends MachineBlockEntity implements MachineMenu.ButtonTarget, BlueprintSettings {
     public static final int SLOTS = 27;
     public static final double REPAIR_RANGE = 30;
     public static final double PICKUP_RANGE = 45;
@@ -166,6 +169,19 @@ public class BattlefieldBaseBlockEntity extends MachineBlockEntity implements Ma
     @Override
     protected boolean isOutput(int slot) {
         return true;
+    }
+
+    @Override
+    public CompoundTag blueprintSettings() {
+        CompoundTag tag = new CompoundTag();
+        tag.putInt("Pickup", this.filter.ordinal());
+        return tag;
+    }
+
+    @Override
+    public void applyBlueprintSettings(CompoundTag settings) {
+        this.filter = PickupFilter.byIndex(settings.getIntOr("Pickup", 0));
+        this.setChanged();
     }
 
     @Override

@@ -1,0 +1,19 @@
+{
+  "type": "universe:research_shaped",
+  "category": "redstone",
+  "key": {
+    "A": "universe:accumulator",
+    "B": "universe:circuit_board",
+    "C": "minecraft:copper_ingot",
+    "M": "universe:magnetic_coil"
+  },
+  "pattern": [
+    "CBC",
+    "MAM",
+    "CBC"
+  ],
+  "research": "grid_interface",
+  "result": {
+    "id": "universe:grid_interface"
+  }
+}

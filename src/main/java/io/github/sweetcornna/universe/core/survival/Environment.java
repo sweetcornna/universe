@@ -17,9 +17,11 @@ import io.github.sweetcornna.universe.core.galaxy.Planet;
  * @param nearCold   旁边有冰雪：高温消耗变慢
  * @param supplied   在飞船里：舱内有生命维持，氧气和防护都会补满
  * @param pressure   在深水里（水面以下 40 格更深，ADR-0026）：氧气掉得快一半
+ * @param acid       泡在酸液里（ADR-0030）：毒性防护掉得快，庇护所不管用
+ * @param acidRain   淋着酸雨（ADR-0030）：和毒雾一起算
  */
 public record Environment(boolean breathable, Map<Hazard, Double> hazards, boolean sheltered, int storm,
-        boolean nearHeat, boolean nearCold, boolean supplied, boolean pressure) {
+        boolean nearHeat, boolean nearCold, boolean supplied, boolean pressure, boolean acid, boolean acidRain) {
     /** 主世界这样的安全环境。 */
     public static final Environment SAFE = new Environment(true, Map.of(), false, 0, false, false, false);
 
@@ -29,16 +31,33 @@ public record Environment(boolean breathable, Map<Hazard, Double> hazards, boole
 
     public Environment(boolean breathable, Map<Hazard, Double> hazards, boolean sheltered, int storm, boolean nearHeat, boolean nearCold,
             boolean supplied) {
-        this(breathable, hazards, sheltered, storm, nearHeat, nearCold, supplied, false);
+        this(breathable, hazards, sheltered, storm, nearHeat, nearCold, supplied, false, false, false);
     }
 
     public Environment withPressure(boolean pressure) {
         return new Environment(this.breathable, this.hazards, this.sheltered, this.storm, this.nearHeat, this.nearCold, this.supplied,
-                pressure);
+                pressure, this.acid, this.acidRain);
+    }
+
+    /** 泡在酸里、淋着酸雨（ADR-0030）。 */
+    public Environment withAcid(boolean acid, boolean acidRain) {
+        return new Environment(this.breathable, this.hazards, this.sheltered, this.storm, this.nearHeat, this.nearCold, this.supplied,
+                this.pressure, acid, acidRain);
     }
 
     public boolean exposedTo(Hazard hazard) {
-        return !this.supplied && this.hazards.containsKey(hazard);
+        return !this.supplied && (this.hazards.containsKey(hazard) || hazard == Hazard.TOXIC && (this.acid || this.acidRain));
+    }
+
+    /**
+     * 这种危害此刻的强度，没有为 0。毒性加上酸液和酸雨（ADR-0030）：没有毒性的星球上泡进玩家倒的酸、淋到酸雨也掉毒性防护。
+     */
+    public double severity(Hazard hazard) {
+        double severity = this.hazards.getOrDefault(hazard, 0.0);
+        if (hazard == Hazard.TOXIC) {
+            severity += (this.acid ? Acid.IMMERSED_SEVERITY : 0) + (this.acidRain ? Acid.RAIN_SEVERITY : 0);
+        }
+        return severity;
     }
 
     /** 需要生命维持：不能呼吸，又不在飞船里。 */

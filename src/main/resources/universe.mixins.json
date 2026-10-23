@@ -15,7 +15,8 @@
     "client.ClientLevelMixin",
     "client.IntegratedServerMixin",
     "client.MouseHandlerMixin",
-    "client.SkyRendererMixin"
+    "client.SkyRendererMixin",
+    "client.WeatherEffectRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 1

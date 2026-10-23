@@ -1,0 +1,24 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:assembler_mk3"
+    },
+    {
+      "count": 4,
+      "ingredient": "universe:matter_recombinator"
+    },
+    {
+      "count": 4,
+      "ingredient": "universe:silicon_neuron"
+    }
+  ],
+  "research": "recomposing_assembly",
+  "results": [
+    {
+      "id": "universe:recomposing_assembler"
+    }
+  ],
+  "time": 240
+}

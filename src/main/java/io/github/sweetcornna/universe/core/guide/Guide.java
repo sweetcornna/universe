@@ -38,7 +38,10 @@ public final class Guide {
                     page("storage", "universe:accumulator"),
                     page("towers", "", "universe:tesla_tower", "universe:wireless_power_tower", "universe:satellite_substation"),
                     page("geothermal", "universe:geothermal_power_station"),
-                    page("exchanger", "", "universe:energy_exchanger", "universe:accumulator")),
+                    page("exchanger", "", "universe:energy_exchanger", "universe:accumulator"),
+                    // 和别的模组接电、接管道（ADR-0030 §三）
+                    page("interface", "universe:grid_interface", "universe:grid_interface", "universe:storage_tank", "universe:water_pump",
+                            "universe:oil_extractor")),
             chapter("gathering", "universe:mining_machine",
                     page("mining", "universe:mining_machine"),
                     page("veins", "", "universe:planet_iron_ore", "universe:titanium_ore", "universe:silicon_ore", "universe:fire_ice_ore",
@@ -62,6 +65,8 @@ public final class Guide {
                     page("assembler", "universe:assembler", "universe:assembler", "universe:assembler_mk2", "universe:assembler_mk3"),
                     page("stations", "", "universe:planetary_logistics_station", "universe:interstellar_logistics_station",
                             "universe:logistics_drone", "universe:logistics_vessel"),
+                    // 运输船在恒星系的太空里看得见（ADR-0030 §五）
+                    page("vessels", "", "universe:logistics_vessel", "universe:space_warper"),
                     page("distributor", "universe:logistics_distributor", "universe:logistics_distributor", "universe:logistics_bot"),
                     page("slots", ""),
                     page("blueprint", "universe:blueprint"),
@@ -76,6 +81,8 @@ public final class Guide {
                             "universe:module_deflector", "universe:module_hull_reinforcement", "universe:module_fire_control"),
                     page("drives", "", "universe:cadmium_drive", "universe:emeril_drive", "universe:indium_drive"),
                     page("black_hole", ""),
+                    // M17（ADR-0030 §六）
+                    page("cargo", ""),
                     page("dealer", "", "universe:ship_dealer", "universe:landing_pad"),
                     page("freighter", "", "universe:freighter_console"),
                     page("fleet", "", "universe:fleet_terminal"),
@@ -83,6 +90,8 @@ public final class Guide {
                     page("space_sentinels", "", "universe:emergency_receiver", "universe:credit_chip")),
             chapter("survival", "universe:exosuit_helmet",
                     page("hazards", "universe:hazard_cell", "universe:oxygen_capsule", "universe:hazard_cell"),
+                    // 酸海和酸雨（ADR-0030 §一）
+                    page("acid", "", "universe:acid_bucket", "universe:sulfuric_acid", "universe:water_pump"),
                     // M14（ADR-0026）
                     page("resources", "", "universe:oxygen", "universe:sodium", "universe:star_bulb", "universe:solanium",
                             "universe:cactus_flesh", "universe:marrow_bulb"),
@@ -105,6 +114,8 @@ public final class Guide {
                     page("bases", "", "universe:base_beacon", "universe:teleporter"),
                     page("portals", "", "universe:portal_dial", "universe:portal_glyph"),
                     page("pillars", "", "universe:sentinel_pillar_terminal", "universe:sentinel_pillar_light"),
+                    // 奇异星球的六种地貌（ADR-0030 §二）
+                    page("exotic", "", "universe:planet_crystal", "universe:planet_strata", "universe:planet_rock"),
                     // 巨型生物（ADR-0026 §九）
                     page("giants", "", "universe:herbivore_feed", "universe:carnivore_feed"),
                     // 水下（ADR-0026）
@@ -154,6 +165,8 @@ public final class Guide {
             chapter("dyson", "universe:solar_sail",
                     page("sails", "universe:em_rail_ejector", "universe:solar_sail"),
                     page("editor", ""),
+                    // 自己设计戴森壳（M17，ADR-0030 §四）
+                    page("design", ""),
                     page("rockets", "universe:small_carrier_rocket", "universe:vertical_launching_silo", "universe:dyson_sphere_component"),
                     page("receiver", "universe:ray_receiver", "universe:critical_photon", "universe:graviton_lens")),
             chapter("endgame", "universe:universe_matrix",

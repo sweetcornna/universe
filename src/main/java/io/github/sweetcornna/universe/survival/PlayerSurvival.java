@@ -12,6 +12,7 @@ import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.core.ecology.ResourcePlant;
 import io.github.sweetcornna.universe.core.galaxy.Hazard;
 import io.github.sweetcornna.universe.core.galaxy.Planet;
+import io.github.sweetcornna.universe.core.galaxy.WeatherProfile;
 import io.github.sweetcornna.universe.core.survival.Environment;
 import io.github.sweetcornna.universe.core.survival.GravityModel;
 import io.github.sweetcornna.universe.core.survival.LifeSupport;
@@ -20,6 +21,7 @@ import io.github.sweetcornna.universe.core.tech.TechBonuses;
 import io.github.sweetcornna.universe.entity.ship.ShipEntity;
 import io.github.sweetcornna.universe.exocraft.ExoMech;
 import io.github.sweetcornna.universe.exocraft.Submarine;
+import io.github.sweetcornna.universe.fluid.AcidFluid;
 import io.github.sweetcornna.universe.mecha.Mecha;
 import io.github.sweetcornna.universe.network.JetpackPayload;
 import io.github.sweetcornna.universe.perf.ServerPerf;
@@ -33,10 +35,12 @@ import io.github.sweetcornna.universe.world.space.SpaceDimensions;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Holder;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.tags.BlockTags;
 import net.minecraft.tags.FluidTags;
+import net.minecraft.world.damagesource.DamageType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.AttributeInstance;
@@ -115,6 +119,10 @@ public final class PlayerSurvival {
             JETTING.add(id);
         } else {
             JETTING.remove(id);
+        }
+        // 火焰给附近的人看（ADR-0030 §六）
+        if (context.player() instanceof ServerPlayer player) {
+            JetpackFlames.report(player, payload.thrusting());
         }
     }
 
@@ -210,8 +218,8 @@ public final class PlayerSurvival {
                 && player.isEyeInFluid(FluidTags.WATER) && nearKelp(player, level)) {
             support.addOxygen(KELP_OXYGEN);
         }
-        // 密封的外骨骼在水下用自己的氧气
-        if (suit.sealed() && support.oxygen() > 0 && player.isEyeInFluid(FluidTags.WATER)) {
+        // 密封的外骨骼在水下、酸里用自己的氧气
+        if (suit.sealed() && support.oxygen() > 0 && eyeInLiquid(player)) {
             player.setAirSupply(player.getMaxAirSupply());
         }
         if (damage.suffocation() > 0) {
@@ -224,7 +232,9 @@ public final class PlayerSurvival {
                 total += entry.getValue();
                 worst = worst == null ? entry.getKey() : worst;
             }
-            player.hurtServer(level, level.damageSources().source(SurvivalDamage.BY_HAZARD.get(worst)), total);
+            // 泡在酸里的毒性伤害算酸液灼伤（ADR-0030）
+            ResourceKey<DamageType> type = worst == Hazard.TOXIC && env.acid() ? SurvivalDamage.ACID : SurvivalDamage.BY_HAZARD.get(worst);
+            player.hurtServer(level, level.damageSources().source(type), total);
         }
         if (player.tickCount % HUD_INTERVAL == 0) {
             publish(player, Mecha.hud(player, SuitHud.of(support, env, suit, Multitool.heat(player), Multitool.overheated(player),
@@ -242,24 +252,35 @@ public final class PlayerSurvival {
         // 飞船、潜艇和机甲的舱里有空气（ADR-0026）
         boolean supplied = player.getVehicle() instanceof ShipEntity || player.getVehicle() instanceof Submarine
                 || player.getVehicle() instanceof ExoMech;
-        boolean underwater = suit.sealed() && player.isEyeInFluid(FluidTags.WATER);
+        boolean underwater = suit.sealed() && eyeInLiquid(player);
         // 水压：密封外骨骼在深水里耗氧更快（潜艇里没有）
         boolean pressure = underwater && !supplied && level.getSeaLevel() - player.getEyeY() >= LifeSupport.PRESSURE_DEPTH;
+        // 泡在酸里（ADR-0030）：哪个维度都算，玩家自己倒的酸也是
+        boolean acid = player.getFluidTypeHeight(AcidFluid.type()) > 0;
         Optional<Planet> planet = Planets.planet(level);
         if (Stations.inside(level, player.position())) {
             // 空间站里有空气，不消耗生命维持（ADR-0017）
             return Environment.SAFE;
         }
         if (planet.isEmpty() && !SpaceDimensions.isSpace(level.dimension())) {
-            return underwater || supplied ? new Environment(!underwater, Map.of(), false, 0, false, false, supplied).withPressure(pressure)
+            return underwater || supplied || acid
+                    ? new Environment(!underwater, Map.of(), false, 0, false, false, supplied).withPressure(pressure).withAcid(acid, false)
                     : Environment.SAFE;
         }
         boolean breathable = planet.map(p -> p.atmosphere().breathable()).orElse(false) && !underwater;
         Map<Hazard, Double> hazards = planet.map(PlayerSurvival::hazards).orElse(Map.of());
         boolean sheltered = supplied || Shelters.sheltered(player, level);
         int[] sources = sources(player, level, hazards);
+        // 酸雨（ADR-0030）：雨真淋到身上才算，和毒雾一起掉毒性防护
+        boolean acidRain = !sheltered && planet.map(p -> p.weather().precipitation() == WeatherProfile.Precipitation.ACID_RAIN).orElse(false)
+                && (level.isRainingAt(player.blockPosition()) || level.isRainingAt(BlockPos.containing(player.getX(), player.getBoundingBox().maxY, player.getZ())));
         return new Environment(breathable, hazards, sheltered, PlanetWeather.severity(level), sources[0] > 0, sources[1] > 0, supplied)
-                .withPressure(pressure);
+                .withPressure(pressure).withAcid(acid, acidRain);
+    }
+
+    /** 眼睛在水里或酸液里。 */
+    private static boolean eyeInLiquid(ServerPlayer player) {
+        return player.isEyeInFluid(FluidTags.WATER) || player.isEyeInFluid(AcidFluid.type());
     }
 
     private static Map<Hazard, Double> hazards(Planet planet) {

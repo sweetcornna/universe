@@ -31,6 +31,7 @@ import io.github.sweetcornna.universe.client.ClientWeather;
 import io.github.sweetcornna.universe.client.sky.PlanetSkyRenderer;
 import io.github.sweetcornna.universe.core.dyson.DysonGrid;
 import io.github.sweetcornna.universe.core.dyson.DysonLayer;
+import io.github.sweetcornna.universe.core.dyson.DysonPalette;
 import io.github.sweetcornna.universe.core.dyson.DysonSky;
 import io.github.sweetcornna.universe.core.dyson.DysonSphere;
 import io.github.sweetcornna.universe.core.dyson.SwarmOrbit;
@@ -104,14 +105,16 @@ public final class DysonSkyRenderer {
     /** 亮的天空里发光部分改用的颜色：深一些的金色，蓝天上看得出来。 */
     private static final int TINT = 0xC88420;
 
+    /** 背面的球壳（ADR-0030 §四）：最先画，在背面的框架和节点后面。 */
+    private final Batch backShells = new Batch();
     private final Batch backTint = new Batch();
     private final Batch back = new Batch();
     private final Batch shells = new Batch();
     private final Batch frontTint = new Batch();
     private final Batch front = new Batch();
-    /** 按画的顺序：背面（半透明、叠加）、球壳、正面（半透明、叠加）。 */
-    private final Batch[] batches = {this.backTint, this.back, this.shells, this.frontTint, this.front};
-    private static final RenderPipeline[] PIPELINES = {SHELL, GLOW, SHELL, SHELL, GLOW};
+    /** 按画的顺序：背面的球壳、背面（半透明、叠加）、正面的球壳、正面（半透明、叠加）。 */
+    private final Batch[] batches = {this.backShells, this.backTint, this.back, this.shells, this.frontTint, this.front};
+    private static final RenderPipeline[] PIPELINES = {SHELL, SHELL, GLOW, SHELL, SHELL, GLOW};
     private final Frame frame = new Frame(this.batches);
     private static @Nullable DysonSkyRenderer instance;
     /** 这一帧要画的（提取阶段定下来，天空里画）；没有要画的是 null。 */
@@ -129,7 +132,7 @@ public final class DysonSkyRenderer {
     /** 顶点重算一次加一；和上传时记下的不一样才重新上传。 */
     private int version;
     private int uploadedVersion = -1;
-    private final long[] offsets = new long[5];
+    private final long[] offsets = new long[6];
     // 开发脚本测帧率用：累计的 CPU 耗时（算顶点和上传）、帧数、上一帧的顶点数
     private static long cpuNanos;
     private static int cpuFrames;
@@ -410,16 +413,28 @@ public final class DysonSkyRenderer {
                 center[2] += units[node][2];
             }
             center = normalize(center);
-            if (!projector.facing(center)) {
+            // 背面的球壳也画（ADR-0030 §四）：暗一些，画在背面的框架后面；简化画质只画正面
+            boolean facing = projector.facing(center);
+            if (!facing && this.low) {
                 continue;
             }
             double fill = Math.min(1, cells / (double) layer.shellCost(s));
             // 每块壳的亮度略有不同，看得出拼接；蓝天里颜色深一些、更不透明，免得和天色混成灰的
             double shade = 0.85 + 0.15 * Math.sin(s * 12.9898 + layer.id() * 3.1);
-            int rgb = mix(mix(0xC8781E, 0xFFC060, shade), mix(0x8A5010, 0xD08A28, shade), this.bright);
-            int color = argb((int) ((30 + 120 * fill) * visibility * (1 + 0.6 * this.bright)), rgb);
+            int custom = layer.shellColor(s);
+            int rgb;
+            if (custom == 0) {
+                rgb = mix(mix(0xC8781E, 0xFFC060, shade), mix(0x8A5010, 0xD08A28, shade), this.bright);
+            } else {
+                // 上过色的：按同样的明暗变化调深浅，蓝天里压暗一点
+                int tinted = DysonPalette.mix(DysonPalette.mix(0, custom, shade), custom, 0.5);
+                rgb = DysonPalette.mix(tinted, DysonPalette.mix(0, tinted, 0.7), this.bright);
+            }
+            double side = facing ? 1 : 0.45;
+            int color = argb((int) ((30 + 120 * fill) * visibility * (1 + 0.6 * this.bright) * side), rgb);
+            Batch batch = facing ? this.shells : this.backShells;
             for (int k = 0; k < shell.length; k++) {
-                this.fan(projector, radius, center, units[shell[k]], units[shell[(k + 1) % shell.length]], color);
+                this.fan(batch, projector, radius, center, units[shell[k]], units[shell[(k + 1) % shell.length]], color);
             }
         }
         // 框架：建好的部分（建了一半的画一截）
@@ -442,7 +457,8 @@ public final class DysonSkyRenderer {
                 double[] nextSky = projector.project(next, radius);
                 boolean facing = projector.facing(normalize(new double[] {previous[0] + next[0], previous[1] + next[1], previous[2] + next[2]}));
                 if (facing || !this.low) {
-                    this.glowLine(facing, previousSky, nextSky, (facing ? 210 : 70) * visibility, 0xFFC86E);
+                    this.glowLine(facing, previousSky, nextSky, (facing ? 210 : 70) * visibility,
+                            DysonPalette.rgb(layer.frameColor(f), DysonPalette.FRAME));
                 }
                 if (t >= progress) {
                     break;
@@ -458,13 +474,14 @@ public final class DysonSkyRenderer {
             }
             boolean facing = projector.facing(units[i]);
             if (facing || !this.low) {
-                this.glowDot(facing, projector.project(units[i], radius), NODE_SIZE, (facing ? 235 : 90) * visibility, 0xFFEFC8);
+                this.glowDot(facing, projector.project(units[i], radius), NODE_SIZE, (facing ? 235 : 90) * visibility,
+                        DysonPalette.rgb(layer.nodeColor(i), DysonPalette.NODE));
             }
         }
     }
 
     /** 球壳的一片扇形（中心和一条边），在球面上细分成小三角形，贴着球面弯。 */
-    private void fan(Projector projector, double radius, double[] center, double[] a, double[] b, int color) {
+    private void fan(Batch batch, Projector projector, double radius, double[] center, double[] a, double[] b, int color) {
         double arc = Math.max(angle(center, a), angle(center, b));
         int n = this.low ? 1 : Math.max(1, Math.min(6, (int) Math.ceil(arc / SHELL_STEP)));
         double[][][] grid = new double[n + 1][][];
@@ -482,9 +499,9 @@ public final class DysonSkyRenderer {
         }
         for (int i = 0; i < n; i++) {
             for (int j = 0; j <= i; j++) {
-                this.shells.triangle(grid[i][j], grid[i + 1][j], grid[i + 1][j + 1], color);
+                batch.triangle(grid[i][j], grid[i + 1][j], grid[i + 1][j + 1], color);
                 if (j < i) {
-                    this.shells.triangle(grid[i][j], grid[i + 1][j + 1], grid[i][j + 1], color);
+                    batch.triangle(grid[i][j], grid[i + 1][j + 1], grid[i][j + 1], color);
                 }
             }
         }
@@ -508,12 +525,12 @@ public final class DysonSkyRenderer {
         }
     }
 
-    /** 发光的线：暗的天空里叠加；天空越亮，越多地换成半透明的深金色。 */
+    /** 发光的线：暗的天空里叠加；天空越亮，越多地换成半透明的深色。 */
     private void glowLine(boolean facing, double[] a, double[] b, double alpha, int rgb) {
         int tint = (int) (alpha * this.bright);
         int glow = (int) (alpha * (1 - 0.75 * this.bright));
         if (tint > 0) {
-            (facing ? this.frontTint : this.backTint).line(a, b, FRAME_WIDTH, argb(tint, TINT));
+            (facing ? this.frontTint : this.backTint).line(a, b, FRAME_WIDTH, argb(tint, tint(rgb)));
         }
         if (glow > 0) {
             (facing ? this.front : this.back).line(a, b, FRAME_WIDTH, argb(glow, rgb));
@@ -525,11 +542,19 @@ public final class DysonSkyRenderer {
         int tint = (int) (alpha * this.bright);
         int glow = (int) (alpha * (1 - 0.75 * this.bright));
         if (tint > 0) {
-            (facing ? this.frontTint : this.backTint).dot(p, half, argb(tint, TINT));
+            (facing ? this.frontTint : this.backTint).dot(p, half, argb(tint, tint(rgb)));
         }
         if (glow > 0) {
             (facing ? this.front : this.back).dot(p, half, argb(glow, rgb));
         }
+    }
+
+    /**
+     * 亮天空里半透明那一份用的颜色：默认的金色照旧用 {@link #TINT}（调出来的，蓝天上最像），上过色的按本色压暗，
+     * 免得玩家涂的蓝色、绿色在白天全变成金的。
+     */
+    private static int tint(int rgb) {
+        return rgb == DysonPalette.FRAME || rgb == DysonPalette.NODE ? TINT : DysonPalette.mix(0, rgb, 0.78);
     }
 
     private static double angle(double[] a, double[] b) {

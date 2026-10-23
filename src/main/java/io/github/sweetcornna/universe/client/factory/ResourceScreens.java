@@ -88,8 +88,9 @@ public final class ResourceScreens {
                 case WaterPumpBlockEntity.ACID -> "acid";
                 default -> "no_water";
             };
+            // 酸液源头上抽的是硫酸（ADR-0030）
             graphics.text(this.font, Component.translatable("gui.universe.water_pump." + key), 8, 36,
-                    source == WaterPumpBlockEntity.WATER ? GOOD : BAD, false);
+                    source == WaterPumpBlockEntity.NO_WATER ? BAD : GOOD, false);
             lastLine(this, graphics, Component.translatable("gui.universe.water_pump.rate",
                     1200 / WaterPumpBlockEntity.TICKS_PER_ITEM), 48);
         }

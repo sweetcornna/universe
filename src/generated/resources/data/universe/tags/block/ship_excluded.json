@@ -117,6 +117,7 @@
     "universe:jammer_tower",
     "universe:plasma_turret",
     "universe:sr_plasma_turret",
-    "universe:planetary_shield_generator"
+    "universe:planetary_shield_generator",
+    "universe:grid_interface"
   ]
 }

@@ -387,6 +387,8 @@ io.github.sweetcornna.universe
 | `Attributes.MAX_HEALTH` 的上限是 1024，设大了被截断。血量更多的实体（巢穴核心 6000 起）按"真实血量 / 实体血量"的倍率记，挨打时伤害除以倍率再交给原版，报出去的伤害再乘回来 | 已确认，黑雾建筑、巢穴建筑 |
 | 深度是反过来的：`DepthStencilState.DEFAULT` 是 `GREATER_THAN_OR_EQUAL` 加写深度。`RenderTypes.debugQuads()`（位置加颜色、半透明混合、不写深度、不剔除）适合大片半透明的面，比如护盾穹顶；`RenderTypes.lightning()` 是叠加混合、写深度。两种都能在 `SubmitCustomGeometryEvent` 里用 | 已确认，护盾穹顶、炮塔光束 |
 | 实体按 16 格的区段查，碰撞箱宽过 6 格时，挨着边的弹体查不到它；大模型照画，碰撞箱只罩住主体 | 已确认，巢穴建筑 |
+| 能量能力：`Capabilities.Energy.BLOCK` 是 `BlockCapability<EnergyHandler, @Nullable Direction>`，`transfer.energy.EnergyHandler` 用 long 读数（`getAmountAsLong`、`getCapacityAsLong`），`insert(int, TransactionContext)`、`extract(int, TransactionContext)` 读写；`EnergyHandlerUtil.move` 在两个处理器之间搬电。流体能力 `Capabilities.Fluid.BLOCK` 是 `ResourceHandler<FluidResource>`。事务用 `Transaction.openRoot()`，自己的状态用 `SnapshotJournal` 回滚 | 已确认，电网接口（ADR-0030） |
+| 流体标签提供器 `FluidTagsProvider(output, lookup, modId)`；原版水的 ID 在 `world.level.material.FluidIds`（`WATER`、`FLOWING_WATER`）；`Registry.getTagOrEmpty` 返回 `Iterable<Holder<T>>`；`TagsUpdatedEvent` 是密封类 | 已确认，流体互通（ADR-0030） |
 
 拿不准的 API 先查源码再写，核实后把结果补进这张表。源码在：
 
@@ -407,6 +409,8 @@ M9 实测（2026-10-20，本机，ADR-0019）：主世界 5,000 段传送带、5
 - 数据：`SurvivalProgressionTest` 读 `src/generated/resources`，检查科技树和配方在生存里走得通（ADR-0011）；`BalanceTest` 拿同样的配方跑进度模型（`core.balance.Progression`），检查每档研究时间没有断崖（ADR-0018）。改了数据生成要先跑 `runData`。
 - 游戏内行为：NeoForge GameTest，`./gradlew runGameTestServer` 跑完退出。现有：通电的制造台做出齿轮、没电的制造台停在缺电、传送带把物品送进储物仓、研究站攒点数（`gametest.UniverseGameTests`）。这也顺带验证了服务端不加载客户端的类。
 - 脚本验收：`./gradlew runClient -PdevScript=<脚本>` 启动时，`client.dev.DevScript` 进存档后逐行执行脚本：执行命令、转视角、悬停、右键设备、按界面按钮、等设备动作一次、截图、退出，不碰键盘鼠标。截的是帧缓冲，窗口可以一直放在屏幕外；要在 `options.txt` 里关掉 `pauseOnLostFocus`，否则窗口没有焦点时游戏会暂停。
+  - 脚本的路径按游戏目录（`run/`）的上一级算，也就是项目根目录，不是脚本自己待的地方。
+  - `push`、`buttons` 只认原版的 `AbstractButton`。戴森球编辑器自己画可点的区域（`DysonEditorScreen.Hit`），用 `hits` 列出这一帧的文字、`hit <文字>` 点一个（色块的文字是 `color:RRGGBB`）。要选中三维视图里的东西（上色、拆掉要先选）还是得靠鼠标，脚本够不着，那条路由 `DysonEditGameTests` 在服务端验。
 - 性能：core 层做基准测试（M1 定方案）。游戏内 `/universe perf` 按子系统计时，`/universe bench <传送带> <设备>` 搭参照基地；要看方法栈时再装 Spark。
 - 多人：`runClient2`（游戏目录 `run2`，用户名 Dev2）。两个客户端都带开发脚本无头启动：主机用 `lan <端口>` 开放（只监听回环地址），`waitplayers <人数>` 等客人连上、退出；客人用 `-PjoinServer=localhost:<端口>` 直接连。
 - 回归：保留几个固定种子的测试世界，每次升级 MC 版本后手动走一遍。

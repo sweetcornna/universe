@@ -4,6 +4,7 @@ import java.util.Optional;
 
 import org.jspecify.annotations.Nullable;
 
+import io.github.sweetcornna.universe.blueprint.BlueprintSettings;
 import io.github.sweetcornna.universe.core.factory.Cargo;
 import io.github.sweetcornna.universe.factory.MachineMenu;
 import io.github.sweetcornna.universe.factory.MachinePanel;
@@ -17,6 +18,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
@@ -32,9 +34,9 @@ import net.minecraft.world.level.storage.ValueOutput;
 
 /**
  * 流速监测器（ADR-0022）：串在传送带中间，数最近一分钟流过多少个物品（叠着的按个数算，可以只数一种）。设了下限、
- * 流量低于下限时报警：方块亮红灯，发出红石信号。不要电。
+ * 流量低于下限时报警：方块亮红灯，发出红石信号。不要电。蓝图记下下限和只数的物品（ADR-0030）。
  */
-public class TrafficMonitorBlockEntity extends BeltPassBlockEntity implements MenuProvider, MachineMenu.ButtonTarget {
+public class TrafficMonitorBlockEntity extends BeltPassBlockEntity implements MenuProvider, MachineMenu.ButtonTarget, BlueprintSettings {
     /** 界面数据：最近一分钟的个数、下限、第 0 位报警、第 1 位开机满一分钟。 */
     public static final int COUNT = 0;
     public static final int THRESHOLD = 1;
@@ -92,6 +94,26 @@ public class TrafficMonitorBlockEntity extends BeltPassBlockEntity implements Me
 
     public int threshold() {
         return this.threshold;
+    }
+
+    @Override
+    public @Nullable CompoundTag blueprintSettings() {
+        if (this.threshold == 0 && this.filter == null) {
+            return null;
+        }
+        CompoundTag tag = new CompoundTag();
+        tag.putInt("Threshold", this.threshold);
+        if (this.filter != null) {
+            tag.putString("Filter", BuiltInRegistries.ITEM.getKey(this.filter).toString());
+        }
+        return tag;
+    }
+
+    @Override
+    public void applyBlueprintSettings(CompoundTag settings) {
+        this.threshold = Math.max(0, Math.min(MAX_THRESHOLD, settings.getIntOr("Threshold", 0)));
+        Identifier id = Identifier.tryParse(settings.getStringOr("Filter", ""));
+        this.setFilter(id == null ? null : BuiltInRegistries.ITEM.getValue(id));
     }
 
     /** 最近一分钟流过的个数。 */

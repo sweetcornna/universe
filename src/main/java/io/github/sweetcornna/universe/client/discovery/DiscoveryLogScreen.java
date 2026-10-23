@@ -407,7 +407,7 @@ public class DiscoveryLogScreen extends Screen {
                 graphics.fill(x, y + ROW / 2 - 3, x + 6, y + ROW / 2 + 3, ARGB.opaque(planet.palette().surface()));
                 graphics.text(this.font, this.font.plainSubstrByWidth(GalaxyText.planet(planet), room), x + 10, y + 2,
                         row.moon() ? 0xFFC8D0D6 : TEXT, false);
-                this.small(graphics, GalaxyText.pick(planet.type().nameZh(), planet.type().nameEn()), x + 10, y + 12,
+                this.small(graphics, GalaxyText.planetType(planet), x + 10, y + 12,
                         planet.landable() ? DIM : WARN);
                 if (this.complete(planet)) {
                     graphics.text(this.font, "✔", right - 12, y + 6, GREEN, false);
@@ -531,7 +531,7 @@ public class DiscoveryLogScreen extends Screen {
 
     private int bodyDetail(GuiGraphicsExtractor graphics, Planet planet, int x, int y, int width) {
         y = this.title(graphics, GalaxyText.planet(planet), x, y);
-        graphics.text(this.font, GalaxyText.pick(planet.type().nameZh(), planet.type().nameEn()), x, y, planet.landable() ? TEXT : WARN, false);
+        graphics.text(this.font, GalaxyText.planetType(planet), x, y, planet.landable() ? TEXT : WARN, false);
         y += 12;
         Component details = planet.type() == PlanetType.GAS_GIANT
                 ? Component.translatable("gui.universe.star_map.gas_giant", GalaxyText.number(planet.radius(), 1))

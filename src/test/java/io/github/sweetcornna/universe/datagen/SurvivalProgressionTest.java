@@ -50,10 +50,14 @@ class SurvivalProgressionTest {
      * （轨道采集器也能采，但它本身要更晚的科技）；临界光子由射线接收站在光子模式下产出（戴森云有帆就行）。
      * 蛋、绒毛、胶质是驯服的异星动物产的，喂得起饲料就能养；生物卵是喂饱的伙伴下的（ADR-0026 §九）。
      * 黑雾的零件和黑雾矩阵是打黑雾掉的（{@code DarkFogLoot}，不走战利品表），有多功能工具就打得动（ADR-0028 §六）。
+     * 酸液桶是拿空桶在酸海里舀的，和原版打水一样（ADR-0030 §一）。
+     *
+     * <p>值按 {@link #available} 判断，所以可以是原版物品或标签。
      */
     private static final Map<String, String> EXTRACTED = Map.ofEntries(
             Map.entry(NS + "crude_oil", NS + "oil_extractor"),
             Map.entry(NS + "water", NS + "water_pump"),
+            Map.entry(NS + "acid_bucket", "minecraft:bucket"),
             Map.entry(NS + "survey_data", NS + "multitool"),
             Map.entry(NS + "deuterium", NS + "fractionator"),
             Map.entry(NS + "critical_photon", NS + "ray_receiver"),
@@ -119,7 +123,7 @@ class SurvivalProgressionTest {
         while (changed) {
             changed = false;
             for (Map.Entry<String, String> entry : EXTRACTED.entrySet()) {
-                if (have.contains(entry.getValue())) {
+                if (available(entry.getValue(), have)) {
                     changed |= have.add(entry.getKey());
                 }
             }

@@ -1,0 +1,28 @@
+{
+  "values": [
+    "minecraft:glass",
+    "minecraft:glass_pane",
+    "minecraft:glass_bottle",
+    "minecraft:tinted_glass",
+    "minecraft:quartz",
+    "minecraft:quartz_block",
+    "minecraft:amethyst_shard",
+    "minecraft:gold_ingot",
+    "minecraft:gold_nugget",
+    "minecraft:gold_block",
+    "minecraft:raw_gold",
+    "minecraft:diamond",
+    "minecraft:diamond_block",
+    "minecraft:emerald",
+    "minecraft:netherite_ingot",
+    "minecraft:brick",
+    "minecraft:obsidian",
+    "universe:plastic",
+    "universe:synthetic_diamond",
+    "universe:titanium_glass",
+    "universe:titanium_crystal",
+    "universe:casimir_crystal",
+    "universe:acid_bucket",
+    "universe:sulfuric_acid"
+  ]
+}

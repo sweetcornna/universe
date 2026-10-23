@@ -1,0 +1,24 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:matrix_lab"
+    },
+    {
+      "count": 4,
+      "ingredient": "universe:silicon_neuron"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:core_element"
+    }
+  ],
+  "research": "self_evolution",
+  "results": [
+    {
+      "id": "universe:self_evolution_lab"
+    }
+  ],
+  "time": 240
+}

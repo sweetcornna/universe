@@ -5,6 +5,7 @@
     "universe:heat",
     "universe:toxic",
     "universe:radiation",
+    "universe:acid",
     "universe:plasma",
     "universe:shock",
     "universe:dark_fog"

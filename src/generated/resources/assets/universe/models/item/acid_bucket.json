@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "universe:item/acid_bucket",
+    "layer1": "universe:item/acid_bucket_fluid"
+  }
+}

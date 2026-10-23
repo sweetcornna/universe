@@ -128,6 +128,14 @@ public final class UniverseClient {
         // M16 黑雾：等离子炮塔（T）的注册加在这行上面
         io.github.sweetcornna.universe.client.darkfog.shield.ShieldClient.registerEvents(modBus, NeoForge.EVENT_BUS);
         // M16 黑雾：行星护盾（S）的注册加在这行上面
+        io.github.sweetcornna.universe.client.fluid.AcidClient.registerEvents(modBus);
+        // M17 收尾：酸液（A）的注册加在这行上面
+        // M17 收尾：奇异星球（B）的注册加在这行上面
+        // M17 收尾：互通（C）的注册加在这行上面
+        // M17 收尾：戴森球（D）的注册加在这行上面
+        // M17 收尾：工厂物流（E）的注册加在这行上面
+        io.github.sweetcornna.universe.client.ship.ShipCargoClient.registerEvents(modBus, NeoForge.EVENT_BUS);
+        // M17 收尾：飞船和星球（F）的注册加在这行上面
         ClientStory.registerEvents(modBus, NeoForge.EVENT_BUS);
         GuideItem.opener = () -> Minecraft.getInstance().gui.setScreen(new GuideScreen());
         BlueprintClient.registerEvents(modBus, NeoForge.EVENT_BUS);

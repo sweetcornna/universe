@@ -328,7 +328,9 @@ public final class Blueprints {
             int packed = stored.positions()[i];
             int[] xz = BlueprintGeometry.rotate(BlueprintGeometry.x(packed), BlueprintGeometry.z(packed), stored.sizeX(), stored.sizeZ(), turns);
             BlockState state = stored.palette().get(stored.states()[i]).rotate(rotation);
-            list.add(new Placement(origin.offset(xz[0], BlueprintGeometry.y(packed), xz[1]), state, stored.settings().get(i), cost(state)));
+            // 设置里的方向（分流器的优先出口）跟着蓝图转（ADR-0030）
+            list.add(new Placement(origin.offset(xz[0], BlueprintGeometry.y(packed), xz[1]), state,
+                    BlueprintSettings.rotated(stored.settings().get(i), turns), cost(state)));
         }
         list.sort(Comparator.comparingInt((Placement p) -> p.pos.getY()).thenComparingInt(p -> p.cost == null ? 1 : 0)
                 .thenComparingInt(p -> p.pos.getX()).thenComparingInt(p -> p.pos.getZ()));

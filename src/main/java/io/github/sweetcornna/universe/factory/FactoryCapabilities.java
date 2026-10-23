@@ -3,6 +3,10 @@ package io.github.sweetcornna.universe.factory;
 import java.util.List;
 import java.util.function.Supplier;
 
+import io.github.sweetcornna.universe.factory.fluid.FluidBridge;
+import io.github.sweetcornna.universe.factory.fluid.OutputFluidHandler;
+import io.github.sweetcornna.universe.factory.resource.OilExtractorBlockEntity;
+import io.github.sweetcornna.universe.factory.resource.WaterPumpBlockEntity;
 import io.github.sweetcornna.universe.logistics.StationBlockEntity;
 import io.github.sweetcornna.universe.registry.UniverseBlockEntities;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -13,6 +17,9 @@ import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 /**
  * 设备对外提供的能力：有物品栏的设备都提供物品能力，漏斗、分拣器和其他模组的管道都能接（ADR-0011）；喷过增产剂的原料
  * 进设备时点数记进池子（{@link MachineItemHandler}，ADR-0022）。
+ *
+ * <p>和别的模组的电、流体接上（ADR-0030 §三）：电网接口提供能量能力；储液罐、抽水站、原油萃取站提供流体能力，
+ * 流体物品按 {@link FluidBridge} 换成真正的流体，一个算 1000 mB。
  */
 public final class FactoryCapabilities {
     private FactoryCapabilities() {
@@ -48,5 +55,13 @@ public final class FactoryCapabilities {
                 UniverseBlockEntities.INTERSTELLAR_LOGISTICS_STATION, UniverseBlockEntities.ORBITAL_COLLECTOR)) {
             event.registerBlockEntity(Capabilities.Item.BLOCK, type.get(), (station, side) -> station.handler());
         }
+        // ---- 和别的模组互通（ADR-0030 §三）
+        event.registerBlockEntity(Capabilities.Energy.BLOCK, UniverseBlockEntities.GRID_INTERFACE.get(), (device, side) -> device.energyHandler());
+        event.registerBlockEntity(Capabilities.Fluid.BLOCK, UniverseBlockEntities.STORAGE_TANK.get(), (tank, side) -> tank.fluidHandler());
+        // 抽水站、萃取站：产物格里的流体只出不进
+        event.registerBlockEntity(Capabilities.Fluid.BLOCK, UniverseBlockEntities.WATER_PUMP.get(),
+                (pump, side) -> new OutputFluidHandler(pump, WaterPumpBlockEntity.OUTPUT));
+        event.registerBlockEntity(Capabilities.Fluid.BLOCK, UniverseBlockEntities.OIL_EXTRACTOR.get(),
+                (extractor, side) -> new OutputFluidHandler(extractor, OilExtractorBlockEntity.OUTPUT));
     }
 }

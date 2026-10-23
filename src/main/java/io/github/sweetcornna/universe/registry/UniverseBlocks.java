@@ -646,6 +646,17 @@ public final class UniverseBlocks {
     public static final DeferredBlock<TallMachineBlock> PLANETARY_SHIELD_GENERATOR = BLOCKS.registerBlock("planetary_shield_generator",
             p -> new TallMachineBlock(p, UniverseBlockEntities.PLANETARY_SHIELD_GENERATOR), p -> tower(p).strength(5.0F, 12.0F));
     // M16 黑雾：行星护盾（S）的方块加在这行上面
+    /** 酸液（ADR-0030 §一）：和原版的水一样的液体方块，流体见 {@link UniverseFluids}。 */
+    public static final DeferredBlock<net.minecraft.world.level.block.LiquidBlock> ACID = BLOCKS.registerBlock("acid",
+            p -> new net.minecraft.world.level.block.LiquidBlock(UniverseFluids.ACID.get(), p),
+            p -> p.mapColor(MapColor.COLOR_YELLOW).replaceable().noCollision().strength(100.0F).pushReaction(PushReaction.POPPED)
+                    .noLootTable().liquid().sound(SoundType.EMPTY));
+    // M17 收尾：酸液（A）的方块加在这行上面
+    /** 电网接口（ADR-0030 §三）：和别的模组的能量系统（FE）接上。 */
+    public static final DeferredBlock<MachineBlock> GRID_INTERFACE = BLOCKS.registerBlock("grid_interface",
+            p -> new MachineBlock(p, UniverseBlockEntities.GRID_INTERFACE),
+            p -> machine(p).lightLevel(state -> state.getValue(MachineBlock.WORKING) ? 9 : 2));
+    // M17 收尾：互通（C）的方块加在这行上面
 
     /**
      * 按星球配色染色的方块。

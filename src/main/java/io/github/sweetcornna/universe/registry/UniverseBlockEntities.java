@@ -207,6 +207,10 @@ public final class UniverseBlockEntities {
             BLOCK_ENTITIES.register("planetary_shield_generator", () -> new BlockEntityType<>(
                     io.github.sweetcornna.universe.darkfog.shield.PlanetaryShieldBlockEntity::new, UniverseBlocks.PLANETARY_SHIELD_GENERATOR.get()));
     // M16 黑雾：行星护盾（S）的方块实体加在这行上面
+    public static final Supplier<BlockEntityType<io.github.sweetcornna.universe.factory.power.GridInterfaceBlockEntity>> GRID_INTERFACE =
+            BLOCK_ENTITIES.register("grid_interface", () -> new BlockEntityType<>(
+                    io.github.sweetcornna.universe.factory.power.GridInterfaceBlockEntity::new, UniverseBlocks.GRID_INTERFACE.get()));
+    // M17 收尾：互通（C）的方块实体加在这行上面
 
     private UniverseBlockEntities() {
     }
