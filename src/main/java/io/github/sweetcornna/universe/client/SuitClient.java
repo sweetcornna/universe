@@ -162,6 +162,7 @@ public final class SuitClient {
                 Component note = hazard == Hazard.COLD && hud.has(SuitHud.NEAR_HEAT) ? Component.translatable("hud.universe.suit.near_heat")
                         : hazard == Hazard.COLD && hud.has(SuitHud.WARM) ? Component.translatable("hud.universe.suit.warm")
                         : hazard == Hazard.HEAT && hud.has(SuitHud.NEAR_COLD) ? Component.translatable("hud.universe.suit.near_cold")
+                        : hazard == Hazard.TOXIC && hud.has(SuitHud.ACID) ? Component.translatable("hud.universe.suit.acid")
                         : Component.empty();
                 bars.add(new Bar(Component.translatable("hazard.universe." + hazard.name().toLowerCase(java.util.Locale.ROOT)),
                         hud.protection(hazard), LifeSupport.HAZARD_MAX, hazardColor(hazard), note));

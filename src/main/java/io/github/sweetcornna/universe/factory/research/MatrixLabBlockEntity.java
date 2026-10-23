@@ -4,6 +4,7 @@ import java.util.List;
 
 import org.jspecify.annotations.Nullable;
 
+import io.github.sweetcornna.universe.blueprint.BlueprintSettings;
 import io.github.sweetcornna.universe.core.factory.Proliferation;
 import io.github.sweetcornna.universe.core.factory.Throughput;
 import io.github.sweetcornna.universe.core.research.TechTree;
@@ -15,6 +16,7 @@ import io.github.sweetcornna.universe.registry.UniverseBlocks;
 import io.github.sweetcornna.universe.registry.UniverseMenus;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.Item;
@@ -30,9 +32,9 @@ import net.minecraft.world.level.storage.ValueOutput;
  * <p>喷过增产剂的矩阵（ADR-0022）：选“额外产出”时按等级多出研究点数，选“加速”时研究得更快，都更费电。
  *
  * <p>自我演化研究站也用这个方块实体，研究速度是三倍。研究站可以竖着叠：上面那台每秒从正下方那台拿矩阵，两台的数量
- * 拉平，所以只要给最下面一台送料（ADR-0022）。
+ * 拉平，所以只要给最下面一台送料（ADR-0022）。蓝图记下增产模式（ADR-0030）。
  */
-public class MatrixLabBlockEntity extends MachineBlockEntity implements MachineMenu.ButtonTarget {
+public class MatrixLabBlockEntity extends MachineBlockEntity implements MachineMenu.ButtonTarget, BlueprintSettings {
     /** 戴森球计划的 480 kW。 */
     public static final long POWER = 24;
     /** 自我演化研究站：戴森球计划的 1.92 MW，研究速度三倍。 */
@@ -85,6 +87,19 @@ public class MatrixLabBlockEntity extends MachineBlockEntity implements MachineM
 
     public Proliferation.Mode mode() {
         return this.mode;
+    }
+
+    @Override
+    public CompoundTag blueprintSettings() {
+        CompoundTag tag = new CompoundTag();
+        tag.putBoolean("Speedup", this.mode == Proliferation.Mode.SPEEDUP);
+        return tag;
+    }
+
+    @Override
+    public void applyBlueprintSettings(CompoundTag settings) {
+        this.mode = settings.getBooleanOr("Speedup", false) ? Proliferation.Mode.SPEEDUP : Proliferation.Mode.EXTRA_PRODUCTS;
+        this.setChanged();
     }
 
     @Override

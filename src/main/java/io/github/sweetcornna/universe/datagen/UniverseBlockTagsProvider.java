@@ -258,6 +258,8 @@ final class UniverseBlockTagsProvider extends BlockTagsProvider {
         this.darkFogSupport();
         this.darkFogPlasma();
         this.darkFogShield();
+        this.wrapUpAcid();
+        this.wrapUpInterop();
     }
 
     /** 黑雾基地的方块（子代理 P）。 */
@@ -269,6 +271,27 @@ final class UniverseBlockTagsProvider extends BlockTagsProvider {
             this.tag(BlockTags.BLOCKS_MOTION_NO_LEAVES).add(block.key());
             this.tag(ShipParts.EXCLUDED).add(block.key());
         }
+    }
+
+    /** M17 收尾的方块标签：酸液（子代理 A，ADR-0030）。放在原版水所在的那几个标签里，但不进任何"算水"的标签。 */
+    private void wrapUpAcid() {
+        var acid = UniverseBlocks.ACID;
+        // 盖得掉、被流体冲掉、晶洞不长在里面：和原版的水一样
+        this.tag(BlockTags.REPLACEABLE).add(acid.key());
+        this.tag(BlockTags.WASHED_AWAY_BY_FLUIDS).add(acid.key());
+        this.tag(BlockTags.GEODE_INVALID_BLOCKS).add(acid.key());
+        // 树和蘑菇长的时候能顶掉水，酸液同理
+        this.tag(BlockTags.REPLACEABLE_BY_TREES).add(acid.key());
+        this.tag(BlockTags.REPLACEABLE_BY_MUSHROOMS).add(acid.key());
+    }
+
+    /** M17 收尾的方块标签：互通（子代理 C，ADR-0030）。 */
+    private void wrapUpInterop() {
+        // 镐子挖，不跟着飞船走，黑雾会打
+        var block = UniverseBlocks.GRID_INTERFACE;
+        this.tag(BlockTags.MINEABLE_WITH_PICKAXE).add(block.key());
+        this.tag(ShipParts.EXCLUDED).add(block.key());
+        this.tag(Facilities.TAG).add(block.key());
     }
 
     /** 设施标签、残影、战场分析基地（子代理 Q）。 */

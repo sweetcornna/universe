@@ -1,0 +1,12 @@
+{
+  "values": [
+    {
+      "id": "universe:acid",
+      "required": false
+    },
+    {
+      "id": "#c:sulfuric_acid",
+      "required": false
+    }
+  ]
+}

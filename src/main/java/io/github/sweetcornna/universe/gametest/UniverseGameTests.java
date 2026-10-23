@@ -52,6 +52,10 @@ import io.github.sweetcornna.universe.entity.ship.ShipEntity;
 import io.github.sweetcornna.universe.entity.ship.ShipOwners;
 import io.github.sweetcornna.universe.factory.FuelRecipeMachineBlockEntity;
 import io.github.sweetcornna.universe.factory.RecipeMachineBlockEntity;
+import io.github.sweetcornna.universe.core.survival.Acid;
+import io.github.sweetcornna.universe.fluid.AcidFluid;
+import io.github.sweetcornna.universe.factory.resource.WaterPumpBlockEntity;
+import io.github.sweetcornna.universe.factory.MachineBlockEntity;
 import io.github.sweetcornna.universe.factory.TallMachineBlock;
 import io.github.sweetcornna.universe.factory.belt.BeltBlock;
 import io.github.sweetcornna.universe.factory.belt.BeltNetwork;
@@ -90,6 +94,7 @@ import io.github.sweetcornna.universe.core.poi.DoorBreach;
 import io.github.sweetcornna.universe.poi.OutpostInteractions;
 import io.github.sweetcornna.universe.world.planet.Fulgurites;
 import net.minecraft.world.entity.EntityTypes;
+import net.minecraft.world.entity.animal.cow.Cow;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.Mob;
 import io.github.sweetcornna.universe.entity.PlasmaGrenade;
@@ -117,6 +122,7 @@ import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
+import net.minecraft.tags.FluidTags;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Holder;
@@ -397,6 +403,46 @@ public final class UniverseGameTests {
     private static final ResourceKey<Consumer<GameTestHelper>> SHIELD_LIMIT_AND_OFFLINE_COVERS = function("shield_limit_and_offline_covers",
             ShieldGameTests::limitAndOfflineCovers);
     // M16 黑雾：行星护盾（S）的测试函数加在这行上面
+    private static final ResourceKey<Consumer<GameTestHelper>> ACID_BURNS = function("acid_burns", UniverseGameTests::acidBurns);
+    private static final ResourceKey<Consumer<GameTestHelper>> ACID_CORRODES_ITEMS = function("acid_corrodes_items",
+            UniverseGameTests::acidCorrodesItems);
+    private static final ResourceKey<Consumer<GameTestHelper>> PUMP_MAKES_SULFURIC_ACID = function("pump_makes_sulfuric_acid",
+            UniverseGameTests::pumpMakesSulfuricAcid);
+    // M17 收尾：酸液（A）的测试函数加在这行上面
+    private static final ResourceKey<Consumer<GameTestHelper>> GRID_INTERFACE_OUTPUT_FEEDS_NEIGHBOR = function(
+            "grid_interface_output_feeds_neighbor", InteropGameTests::outputFeedsNeighbor);
+    private static final ResourceKey<Consumer<GameTestHelper>> GRID_INTERFACE_INPUT_FEEDS_GRID = function("grid_interface_input_feeds_grid",
+            InteropGameTests::inputFeedsGrid);
+    private static final ResourceKey<Consumer<GameTestHelper>> TANK_AND_PUMP_FLUIDS = function("tank_and_pump_fluids",
+            InteropGameTests::tankAndPumpFluids);
+    // M17 收尾：互通（C）的测试函数加在这行上面
+    private static final ResourceKey<Consumer<GameTestHelper>> DYSON_FREE_DESIGN_APPLIES = function("dyson_free_design_applies",
+            DysonEditGameTests::freeDesignApplies);
+    private static final ResourceKey<Consumer<GameTestHelper>> DYSON_PAINT_STICKS_AND_STALE_FAILS = function("dyson_paint_sticks_and_stale_fails",
+            DysonEditGameTests::paintSticksAndStaleFails);
+    private static final ResourceKey<Consumer<GameTestHelper>> DYSON_BLUEPRINT_ROUND_TRIPS = function("dyson_blueprint_round_trips",
+            DysonEditGameTests::blueprintRoundTrips);
+    private static final ResourceKey<Consumer<GameTestHelper>> DYSON_BUILT_NODE_CANNOT_BE_REMOVED = function("dyson_built_node_cannot_be_removed",
+            DysonEditGameTests::builtNodeCannotBeRemoved);
+    // M17 收尾：戴森球（D）的测试函数加在这行上面
+    private static final ResourceKey<Consumer<GameTestHelper>> HOPPER_PULLS_FROM_STATION = function("hopper_pulls_from_station",
+            FactoryTailGameTests::hopperPullsFromStation);
+    private static final ResourceKey<Consumer<GameTestHelper>> COMPARATOR_READS_STATION = function("comparator_reads_station",
+            FactoryTailGameTests::comparatorReadsStation);
+    private static final ResourceKey<Consumer<GameTestHelper>> LENS_RECEIVES_WITHOUT_SUN = function("lens_receives_without_sun",
+            FactoryTailGameTests::lensReceivesWithoutSun);
+    private static final ResourceKey<Consumer<GameTestHelper>> BLUEPRINT_KEEPS_SETTINGS = function("blueprint_keeps_settings",
+            FactoryTailGameTests::blueprintKeepsSettings);
+    // M17 收尾：工厂物流（E）的测试函数加在这行上面
+    private static final ResourceKey<Consumer<GameTestHelper>> FLYING_SHIP_CARGO = function("flying_ship_cargo",
+            ShipTailGameTests::flyingShipCargo);
+    private static final ResourceKey<Consumer<GameTestHelper>> SHIP_WITHOUT_HOLDS = function("ship_without_holds",
+            ShipTailGameTests::shipWithoutHolds);
+    private static final ResourceKey<Consumer<GameTestHelper>> ENTITY_GRAVITY_FOLLOWS_PLANET = function("entity_gravity_follows_planet",
+            ShipTailGameTests::entityGravityFollowsPlanet);
+    private static final ResourceKey<Consumer<GameTestHelper>> PLACED_PLANT_PICKS_LOCAL_SPECIES = function("placed_plant_picks_local_species",
+            ShipTailGameTests::placedPlantPicksLocalSpecies);
+    // M17 收尾：飞船和星球（F）的测试函数加在这行上面
 
     private UniverseGameTests() {
     }
@@ -521,6 +567,29 @@ public final class UniverseGameTests {
         spaced(event, environment, SHIELD_ABSORBS_AND_COLLAPSES, 40);
         test(event, environment, SHIELD_LIMIT_AND_OFFLINE_COVERS, 20);
         // M16 黑雾：行星护盾（S）的测试加在这行上面
+        test(event, environment, ACID_BURNS, 120);
+        test(event, environment, ACID_CORRODES_ITEMS, 200);
+        test(event, environment, PUMP_MAKES_SULFURIC_ACID, 200);
+        // M17 收尾：酸液（A）的测试加在这行上面
+        test(event, environment, GRID_INTERFACE_OUTPUT_FEEDS_NEIGHBOR, 200);
+        test(event, environment, GRID_INTERFACE_INPUT_FEEDS_GRID, 100);
+        test(event, environment, TANK_AND_PUMP_FLUIDS, 20);
+        // M17 收尾：互通（C）的测试加在这行上面
+        test(event, environment, DYSON_FREE_DESIGN_APPLIES, 20);
+        test(event, environment, DYSON_PAINT_STICKS_AND_STALE_FAILS, 20);
+        test(event, environment, DYSON_BLUEPRINT_ROUND_TRIPS, 20);
+        test(event, environment, DYSON_BUILT_NODE_CANNOT_BE_REMOVED, 20);
+        // M17 收尾：戴森球（D）的测试加在这行上面
+        test(event, environment, HOPPER_PULLS_FROM_STATION, 100);
+        test(event, environment, COMPARATOR_READS_STATION, 20);
+        test(event, environment, LENS_RECEIVES_WITHOUT_SUN, 200);
+        test(event, environment, BLUEPRINT_KEEPS_SETTINGS, 20);
+        // M17 收尾：工厂物流（E）的测试加在这行上面
+        test(event, environment, FLYING_SHIP_CARGO, 20);
+        test(event, environment, SHIP_WITHOUT_HOLDS, 20);
+        test(event, environment, ENTITY_GRAVITY_FOLLOWS_PLANET, 20);
+        test(event, environment, PLACED_PLANT_PICKS_LOCAL_SPECIES, 20);
+        // M17 收尾：飞船和星球（F）的测试加在这行上面
     }
 
     /**
@@ -1633,4 +1702,62 @@ public final class UniverseGameTests {
             }
         }
     }
+
+    /** 泡在酸液里的生物会被灼伤；酸液不算水，水生植物不认它（ADR-0030 §一）。 */
+    private static void acidBurns(GameTestHelper helper) {
+        BlockPos pool = new BlockPos(3, 2, 3);
+        for (Direction side : Direction.Plane.HORIZONTAL) {
+            helper.setBlock(pool.relative(side), Blocks.STONE);
+        }
+        helper.setBlock(pool, UniverseBlocks.ACID.get());
+        // 酸液不在 minecraft:water 里：海带这类水生植物放不下去
+        helper.assertTrue(!helper.getBlockState(pool).getFluidState().is(FluidTags.WATER), "酸液被当成了水");
+        helper.assertTrue(AcidFluid.is(helper.getBlockState(pool).getFluidState()), "这格不是酸液");
+        Cow cow = helper.spawn(EntityTypes.COW, pool);
+        float health = cow.getHealth();
+        helper.succeedWhen(() -> helper.assertTrue(!cow.isAlive() || cow.getHealth() < health,
+                "泡在酸里没掉血：" + cow.getHealth()));
+    }
+
+    /** 掉进酸液的铁锭会被蚀掉，玻璃不怕酸（ADR-0030 §一）。 */
+    private static void acidCorrodesItems(GameTestHelper helper) {
+        BlockPos pool = new BlockPos(3, 2, 3);
+        for (Direction side : Direction.Plane.HORIZONTAL) {
+            helper.setBlock(pool.relative(side), Blocks.STONE);
+        }
+        helper.setBlock(pool, UniverseBlocks.ACID.get());
+        // 让物品自己沉进酸里：浮着不动的实体每刻不走 move()，泡的深度算不出来
+        Vec3 centre = helper.absoluteVec(new Vec3(3.5, 2.4, 3.5));
+        ServerLevel level = helper.getLevel();
+        ItemEntity iron = new ItemEntity(level, centre.x, centre.y, centre.z, new ItemStack(Items.IRON_INGOT, 64));
+        ItemEntity glass = new ItemEntity(level, centre.x, centre.y, centre.z, new ItemStack(Items.GLASS, 64));
+        iron.setDeltaMovement(0, 0, 0);
+        glass.setDeltaMovement(0, 0, 0);
+        level.addFreshEntity(iron);
+        level.addFreshEntity(glass);
+        // 腐蚀过 CORRODE_DELAY 刻才开始，再等两轮：沉下去那几刻不算泡着
+        helper.runAfterDelay(Acid.CORRODE_DELAY + Acid.CORRODE_INTERVAL * 2 + 20, () -> {
+            helper.assertTrue(!iron.isAlive() || iron.getItem().getCount() < 64, "铁锭没被蚀掉：" + iron.getItem().getCount());
+            helper.assertTrue(glass.isAlive() && glass.getItem().getCount() == 64, "玻璃被蚀掉了");
+            helper.succeed();
+        });
+    }
+
+    /** 抽水站放在酸液源头上抽出硫酸，放在水源上还是水（ADR-0030 §一）。 */
+    private static void pumpMakesSulfuricAcid(GameTestHelper helper) {
+        powerPlant(helper);
+        BlockPos acid = new BlockPos(3, 1, 3);
+        for (Direction side : Direction.Plane.HORIZONTAL) {
+            helper.setBlock(acid.relative(side), Blocks.STONE);
+        }
+        helper.setBlock(acid, UniverseBlocks.ACID.get());
+        BlockPos pump = acid.above();
+        helper.setBlock(pump, UniverseBlocks.WATER_PUMP.get());
+        helper.succeedWhen(() -> {
+            MachineBlockEntity entity = helper.getBlockEntity(pump, MachineBlockEntity.class);
+            helper.assertValueEqual(entity.data().get(WaterPumpBlockEntity.SOURCE), WaterPumpBlockEntity.ACID, "抽水站下面的液体");
+            helper.assertTrue(entity.countItem(UniverseItems.SULFURIC_ACID.get()) > 0, "抽水站没有产出硫酸");
+        });
+    }
+
 }

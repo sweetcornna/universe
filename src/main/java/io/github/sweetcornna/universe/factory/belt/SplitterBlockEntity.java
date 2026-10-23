@@ -7,6 +7,7 @@ import org.jspecify.annotations.Nullable;
 
 import com.mojang.serialization.Codec;
 
+import io.github.sweetcornna.universe.blueprint.BlueprintSettings;
 import io.github.sweetcornna.universe.core.factory.Cargo;
 import io.github.sweetcornna.universe.registry.UniverseBlockEntities;
 import it.unimi.dsi.fastutil.ints.IntArrayFIFOQueue;
@@ -18,6 +19,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.Containers;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -35,8 +37,10 @@ import net.minecraft.world.level.storage.ValueOutput;
  *
  * <p>可以设一个优先出口（ADR-0022）：没有过滤物品时货物先走优先出口，堵了再轮流走别的；设了过滤物品时，过滤物品只走
  * 优先出口，别的物品只走其他出口。没设优先出口时过滤物品不起作用。
+ *
+ * <p>蓝图记下优先出口和过滤物品（ADR-0030），优先出口跟着蓝图转。
  */
-public class SplitterBlockEntity extends BlockEntity implements BeltReceiver {
+public class SplitterBlockEntity extends BlockEntity implements BeltReceiver, BlueprintSettings {
     /** 缓冲几格货物：够每刻放两格，Mk.III 传送带（每秒 30 格）汇进来也不堵。 */
     private static final int BUFFER = 4;
     private static final int PER_TICK = 2;
@@ -89,6 +93,31 @@ public class SplitterBlockEntity extends BlockEntity implements BeltReceiver {
 
     public void setFilter(@Nullable Item filter) {
         this.filter = filter == Items.AIR ? null : filter;
+        this.changed();
+    }
+
+    @Override
+    public @Nullable CompoundTag blueprintSettings() {
+        if (this.priority == null && this.filter == null) {
+            return null;
+        }
+        CompoundTag tag = new CompoundTag();
+        if (this.priority != null) {
+            tag.putString(SIDE, this.priority.getSerializedName());
+        }
+        if (this.filter != null) {
+            tag.putString("Filter", BuiltInRegistries.ITEM.getKey(this.filter).toString());
+        }
+        return tag;
+    }
+
+    @Override
+    public void applyBlueprintSettings(CompoundTag settings) {
+        Direction side = Direction.byName(settings.getStringOr(SIDE, ""));
+        this.priority = side != null && side.getAxis().isHorizontal() ? side : null;
+        Identifier id = Identifier.tryParse(settings.getStringOr("Filter", ""));
+        Item item = id == null ? null : BuiltInRegistries.ITEM.getValue(id);
+        this.filter = item == Items.AIR ? null : item;
         this.changed();
     }
 

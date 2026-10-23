@@ -1,0 +1,24 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:chemical_plant"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:negentropy_singularity"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:matter_recombinator"
+    }
+  ],
+  "research": "quantum_chemistry",
+  "results": [
+    {
+      "id": "universe:quantum_chemical_plant"
+    }
+  ],
+  "time": 240
+}

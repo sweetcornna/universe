@@ -1,0 +1,24 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:plane_smelter"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:negentropy_singularity"
+    },
+    {
+      "count": 4,
+      "ingredient": "universe:matter_recombinator"
+    }
+  ],
+  "research": "negentropy_smelting",
+  "results": [
+    {
+      "id": "universe:negentropy_smelter"
+    }
+  ],
+  "time": 240
+}

@@ -1,0 +1,12 @@
+{
+  "values": [
+    {
+      "id": "#c:crude_oil",
+      "required": false
+    },
+    {
+      "id": "#c:oil",
+      "required": false
+    }
+  ]
+}

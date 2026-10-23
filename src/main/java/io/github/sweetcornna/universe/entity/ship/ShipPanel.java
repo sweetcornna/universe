@@ -49,6 +49,20 @@ public final class ShipPanel {
                 buf -> ShipPanelMenu.writeOpenData(structure, true, buf));
     }
 
+    /**
+     * 坐在船上按货舱键：船上所有箱子、木桶拼成一个界面（ADR-0030 §六）。飞着、停着都能开，坐着就行，不用是驾驶员；
+     * 船上一个货柜都没有也开得起来，界面里写一行"船上没有货柜"。
+     */
+    public static void openCargo(ServerPlayer player, ShipEntity ship) {
+        if (ship.isRemoved() || ship.structure() == null) {
+            return;
+        }
+        ShipCargoContainer cargo = ShipCargoContainer.of(ship, player.level().registryAccess());
+        player.openMenu(new SimpleMenuProvider((id, inventory, p) -> new ShipCargoMenu(id, inventory, cargo,
+                viewer -> !ship.isRemoved() && viewer.getVehicle() == ship), Component.translatable("gui.universe.ship_cargo.title")),
+                buf -> ShipCargoMenu.writeOpenData(cargo, buf));
+    }
+
     /** 潜行右键停着的船的驾驶台。 */
     public static void openParked(ServerLevel level, BlockPos helmPos, ServerPlayer player) {
         if (!(level.getBlockEntity(helmPos) instanceof HelmBlockEntity helm)) {

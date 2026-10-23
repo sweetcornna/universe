@@ -816,7 +816,7 @@ public class StarMapScreen extends Screen {
     /** 一颗行星或卫星：名字、类型；温度、重力、大气；危害。 */
     private int drawPlanet(GuiGraphicsExtractor graphics, Planet planet, int x, int y, int width, boolean moon) {
         sprite(graphics, DISC, x + 3, y + 4, moon ? 4 : 6, ARGB.opaque(planetColor(planet)));
-        String type = GalaxyText.pick(planet.type().nameZh(), planet.type().nameEn());
+        String type = GalaxyText.planetType(planet);
         int typeWidth = this.font.width(type);
         String name = GalaxyText.planet(planet);
         int nameRoom = width - 10 - typeWidth - 4;

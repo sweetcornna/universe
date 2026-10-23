@@ -12,12 +12,12 @@ import io.github.sweetcornna.universe.core.ship.CrashedShip;
 import io.github.sweetcornna.universe.core.ship.ShipDesign;
 import io.github.sweetcornna.universe.core.ship.ShipDesign.Cell;
 import io.github.sweetcornna.universe.entity.ship.ShipBlueprints;
+import io.github.sweetcornna.universe.fluid.AcidFluid;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.tags.FluidTags;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.Blocks;
@@ -59,7 +59,7 @@ public final class LandmarkStructures {
         }
         BlockPos.MutableBlockPos pos = new BlockPos.MutableBlockPos(x, y + 1, z);
         int surface = y;
-        while (level.getFluidState(pos).is(FluidTags.WATER) && pos.getY() < level.getMaxY()) {
+        while (AcidFluid.sea(level.getFluidState(pos)) && pos.getY() < level.getMaxY()) {
             surface = pos.getY();
             pos.move(Direction.UP);
         }

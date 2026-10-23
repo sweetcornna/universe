@@ -9,6 +9,7 @@ import com.mojang.math.Axis;
 
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.core.power.Solar;
+import io.github.sweetcornna.universe.core.power.StarFacing;
 import io.github.sweetcornna.universe.factory.power.SolarPanelBlockEntity;
 import io.github.sweetcornna.universe.world.space.SpaceDimensions;
 import net.minecraft.client.Minecraft;
@@ -31,7 +32,8 @@ import net.neoforged.neoforge.client.model.standalone.StandaloneModelKey;
 
 /**
  * 太阳能板上的板子：绕南北向的轴转，白天追着太阳从东转到西，夜里放平（{@link Solar#trackingAngle}）。
- * 一片区的板子角度都一样，整齐地一起转。太空里没有昼夜，板子平放。
+ * 一片区的板子角度都一样，整齐地一起转。太空里没有昼夜，板子先转到恒星的方位、再倾斜到正对恒星（{@link StarFacing}，
+ * ADR-0030），离恒星远的一片板子朝向差不多，近的看得出各朝各的。
  */
 public class SolarPanelRenderer implements BlockEntityRenderer<SolarPanelBlockEntity, SolarPanelRenderer.State> {
     public static final StandaloneModelKey<BlockStateModelPart> ARRAY = new StandaloneModelKey<>(() -> "universe:solar_panel_array");
@@ -58,8 +60,16 @@ public class SolarPanelRenderer implements BlockEntityRenderer<SolarPanelBlockEn
         if (level == null) {
             return;
         }
-        boolean space = SpaceDimensions.system(level.dimension()).isPresent();
-        state.tilt = space ? 0 : (float) Solar.trackingAngle(level.environmentAttributes().getValue(EnvironmentAttributes.SUN_ANGLE, blockEntity.getBlockPos()));
+        if (SpaceDimensions.system(level.dimension()).isPresent()) {
+            // 恒星在太空维度的原点
+            double[] facing = StarFacing.facing(blockEntity.getBlockPos().getX() + 0.5, blockEntity.getBlockPos().getY() + PIVOT_Y,
+                    blockEntity.getBlockPos().getZ() + 0.5);
+            state.yaw = (float) facing[0];
+            state.tilt = (float) facing[1];
+        } else {
+            state.yaw = 0;
+            state.tilt = (float) Solar.trackingAngle(level.environmentAttributes().getValue(EnvironmentAttributes.SUN_ANGLE, blockEntity.getBlockPos()));
+        }
         state.lightCoords = LightCoordsUtil.getLightCoords(level, blockEntity.getBlockPos().above());
     }
 
@@ -71,6 +81,9 @@ public class SolarPanelRenderer implements BlockEntityRenderer<SolarPanelBlockEn
         }
         poseStack.pushPose();
         poseStack.translate(0.5F, PIVOT_Y, 0.5F);
+        if (state.yaw != 0) {
+            poseStack.rotateDegrees(Axis.YP, state.yaw);
+        }
         poseStack.rotateDegrees(Axis.ZP, state.tilt);
         poseStack.translate(-0.5F, -PIVOT_Y, -0.5F);
         collector.submitBlockModel(poseStack, RenderTypes.cutoutMovingBlock(), List.of(array), new int[0], state.lightCoords,
@@ -84,6 +97,7 @@ public class SolarPanelRenderer implements BlockEntityRenderer<SolarPanelBlockEn
     }
 
     public static class State extends BlockEntityRenderState {
+        float yaw;
         float tilt;
     }
 }

@@ -82,8 +82,9 @@ public final class PlanetChunkGenerators {
 
     private static BlockState fluid(Liquid liquid) {
         return switch (liquid) {
-            // 酸液暂时用水，客户端按星球调色板染成酸液的颜色
-            case WATER, ICE, ACID -> Blocks.WATER.defaultBlockState();
+            case WATER, ICE -> Blocks.WATER.defaultBlockState();
+            // 酸海和含水层都是酸液（ADR-0030）；以前生成的区块还是水
+            case ACID -> io.github.sweetcornna.universe.registry.UniverseBlocks.ACID.get().defaultBlockState();
             case LAVA -> Blocks.LAVA.defaultBlockState();
             case NONE -> Blocks.AIR.defaultBlockState();
         };

@@ -1,0 +1,28 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:accumulator"
+    },
+    {
+      "count": 4,
+      "ingredient": "universe:circuit_board"
+    },
+    {
+      "count": 6,
+      "ingredient": "universe:magnetic_coil"
+    },
+    {
+      "count": 8,
+      "ingredient": "minecraft:copper_ingot"
+    }
+  ],
+  "research": "grid_interface",
+  "results": [
+    {
+      "id": "universe:grid_interface"
+    }
+  ],
+  "time": 60
+}

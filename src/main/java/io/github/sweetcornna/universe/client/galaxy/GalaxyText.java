@@ -4,6 +4,7 @@ import java.util.Locale;
 
 import io.github.sweetcornna.universe.client.discovery.ClientDiscoveries;
 import io.github.sweetcornna.universe.core.discovery.DiscoveryKey;
+import io.github.sweetcornna.universe.core.galaxy.ExoticForm;
 import io.github.sweetcornna.universe.core.galaxy.Planet;
 import io.github.sweetcornna.universe.core.galaxy.StarSystem;
 import io.github.sweetcornna.universe.core.procgen.NameGenerator;
@@ -35,6 +36,17 @@ public final class GalaxyText {
 
     public static String planet(Planet planet) {
         return ClientDiscoveries.name(DiscoveryKey.body(planet.id()), planet.name());
+    }
+
+    /**
+     * 星球的类型；奇异星球连它的地貌一起写出来（ADR-0030 §二），例如"奇异星球（巨晶）"。
+     * 地貌由星球种子派生，客户端自己算得出来，不用网络传。
+     */
+    public static String planetType(Planet planet) {
+        String type = pick(planet.type().nameZh(), planet.type().nameEn());
+        return ExoticForm.of(planet)
+                .map(form -> type + pick("（" + form.nameZh() + "）", " (" + form.nameEn() + ")"))
+                .orElse(type);
     }
 
     /** 保留几位小数，小数点固定用"."。 */

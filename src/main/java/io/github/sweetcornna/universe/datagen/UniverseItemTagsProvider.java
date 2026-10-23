@@ -7,6 +7,7 @@ import io.github.sweetcornna.universe.block.OreKind;
 import io.github.sweetcornna.universe.core.trade.TradeCategory;
 import io.github.sweetcornna.universe.entity.CreatureHusbandry;
 import io.github.sweetcornna.universe.factory.FluidItems;
+import io.github.sweetcornna.universe.fluid.AcidEffects;
 import io.github.sweetcornna.universe.registry.UniverseItems;
 import io.github.sweetcornna.universe.trade.ItemValues;
 import net.minecraft.core.HolderLookup;
@@ -50,10 +51,34 @@ final class UniverseItemTagsProvider extends ItemTagsProvider {
         this.tag(ItemTags.LOGS).add(UniverseItems.PLANET_LOG.key());
         this.tag(ItemTags.LOGS_THAT_BURN).add(UniverseItems.PLANET_LOG.key());
         this.trade();
+        this.wrapUpAcid();
+        this.wrapUpInterop();
     }
 
     private static ResourceKey<Item> vanilla(Item item) {
         return BuiltInRegistries.ITEM.getResourceKey(item).orElseThrow();
+    }
+
+    /** M17 收尾的物品标签：酸液（子代理 A，ADR-0030）。 */
+    private void wrapUpAcid() {
+        // 不怕浓硫酸的东西：玻璃和石英（硅酸盐）、金和铂族（王水才咬得动）、塑料和聚合物、陶瓷和宝石。
+        // 铁、铜、铝这些活泼金属，木头、布、肉、植物都会被蚀掉
+        this.tag(AcidEffects.RESISTANT).add(
+                vanilla(Items.GLASS), vanilla(Items.GLASS_PANE), vanilla(Items.GLASS_BOTTLE), vanilla(Items.TINTED_GLASS),
+                vanilla(Items.QUARTZ), vanilla(Items.QUARTZ_BLOCK), vanilla(Items.AMETHYST_SHARD),
+                vanilla(Items.GOLD_INGOT), vanilla(Items.GOLD_NUGGET), vanilla(Items.GOLD_BLOCK), vanilla(Items.RAW_GOLD),
+                vanilla(Items.DIAMOND), vanilla(Items.DIAMOND_BLOCK), vanilla(Items.EMERALD), vanilla(Items.NETHERITE_INGOT),
+                vanilla(Items.BRICK), vanilla(Items.OBSIDIAN),
+                UniverseItems.PLASTIC.key(), UniverseItems.SYNTHETIC_DIAMOND.key(), UniverseItems.TITANIUM_GLASS.key(),
+                UniverseItems.TITANIUM_CRYSTAL.key(), UniverseItems.CASIMIR_CRYSTAL.key(),
+                // 装酸的桶和硫酸本身不会被自己蚀掉
+                UniverseItems.ACID_BUCKET.key(), UniverseItems.SULFURIC_ACID.key());
+        // 酸液桶和水桶一样算桶
+        this.tag(Tags.Items.BUCKETS).add(UniverseItems.ACID_BUCKET.key());
+    }
+
+    /** M17 收尾的物品标签：互通（子代理 C，ADR-0030）。 */
+    private void wrapUpInterop() {
     }
 
     /**

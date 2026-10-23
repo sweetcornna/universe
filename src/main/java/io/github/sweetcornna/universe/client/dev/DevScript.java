@@ -24,6 +24,7 @@ import io.github.sweetcornna.universe.client.ItemSummaries;
 import io.github.sweetcornna.universe.client.UniverseKeys;
 import io.github.sweetcornna.universe.client.blueprint.GhostClient;
 import io.github.sweetcornna.universe.client.dyson.ClientDyson;
+import io.github.sweetcornna.universe.client.dyson.DysonEditorScreen;
 import io.github.sweetcornna.universe.client.dyson.DysonSkyRenderer;
 import io.github.sweetcornna.universe.client.guide.GuideScreen;
 import io.github.sweetcornna.universe.client.mecha.FlyersClient;
@@ -491,6 +492,10 @@ public final class DevScript {
                     case "toolmode" -> UniverseKeys.TOOL_MODE;
                     // 技术配置界面（U）
                     case "tech" -> UniverseKeys.TECH;
+                    // 飞船货舱（H）
+                    case "cargo" -> UniverseKeys.SHIP_CARGO;
+                    // 戴森球编辑器（Y）
+                    case "dysoneditor" -> UniverseKeys.DYSON_EDITOR;
                     default -> throw new IllegalArgumentException("unknown key " + args[0]);
                 };
                 KeyMapping.click(key.getKey());
@@ -574,6 +579,24 @@ public final class DevScript {
                 if (screen != null) {
                     Universe.LOGGER.info("Dev script buttons: {}", buttons(screen).stream()
                             .map(b -> b.getMessage().getString() + (b.active ? "" : " (off)")).toList());
+                }
+            }
+            case "hits" -> {
+                // 列出戴森球编辑器这一帧可点的东西，给 hit 用
+                Screen screen = minecraft.gui.screen();
+                if (screen instanceof DysonEditorScreen editor) {
+                    Universe.LOGGER.info("Dev script hits: {}", editor.labels());
+                }
+            }
+            case "hit" -> {
+                // hit 文字：点戴森球编辑器里按文字找的东西（^ 开头时按开头比）。那个界面自己画可点的区域，
+                // 不是原版按钮，push 找不到
+                Screen screen = minecraft.gui.screen();
+                if (screen instanceof DysonEditorScreen editor) {
+                    Universe.LOGGER.info("Dev script hit: {} -> {}", rest, editor.clickByLabel(rest));
+                } else {
+                    Universe.LOGGER.info("Dev script hit: {} 不在戴森球编辑器里（现在是 {}）", rest,
+                            screen == null ? "没有界面" : screen.getClass().getSimpleName());
                 }
             }
             case "scroll" -> {

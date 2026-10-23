@@ -9,6 +9,7 @@ import io.github.sweetcornna.universe.darkfog.defense.SignalTowerBlockEntity;
 import io.github.sweetcornna.universe.core.logistics.StationKind;
 import io.github.sweetcornna.universe.dyson.EmRailEjectorBlockEntity;
 import io.github.sweetcornna.universe.entity.CompanionMenu;
+import io.github.sweetcornna.universe.entity.ship.ShipCargoMenu;
 import io.github.sweetcornna.universe.entity.ship.ShipPanelMenu;
 import io.github.sweetcornna.universe.dyson.LaunchSiloBlockEntity;
 import io.github.sweetcornna.universe.dyson.RayReceiverBlockEntity;
@@ -180,6 +181,14 @@ public final class UniverseMenus {
     public static final MachineMenu.Type PLANETARY_SHIELD_GENERATOR = machine("planetary_shield_generator",
             new MachineMenu.Type(io.github.sweetcornna.universe.darkfog.shield.PlanetaryShieldBlockEntity.DATA_COUNT, RESOURCE_WIDTH, 132));
     // M16 黑雾：行星护盾（S）的界面加在这行上面
+    // 电网接口（ADR-0030 §三）：只有读数和模式按钮
+    public static final MachineMenu.Type GRID_INTERFACE = machine("grid_interface",
+            new MachineMenu.Type(io.github.sweetcornna.universe.factory.power.GridInterfaceBlockEntity.DATA_COUNT, 110));
+    // M17 收尾：互通（C）的界面加在这行上面
+    /** 飞船货舱（ADR-0030 §六）：船上所有箱子、木桶拼成一片，超过 6 行就滚动。 */
+    public static final DeferredHolder<MenuType<?>, MenuType<ShipCargoMenu>> SHIP_CARGO = MENUS.register("ship_cargo",
+            () -> IMenuTypeExtension.create(ShipCargoMenu::new));
+    // M17 收尾：飞船和星球（F）的界面加在这行上面
 
     private UniverseMenus() {
     }

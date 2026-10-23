@@ -22,6 +22,8 @@ public final class SurvivalDamage {
     public static final ResourceKey<DamageType> TOXIC = key("toxic");
     public static final ResourceKey<DamageType> RADIATION = key("radiation");
     public static final ResourceKey<DamageType> SHOCK = key("shock");
+    /** 泡在酸液里灼伤（ADR-0030）。 */
+    public static final ResourceKey<DamageType> ACID = key("acid");
     public static final Map<Hazard, ResourceKey<DamageType>> BY_HAZARD = Map.of(
             Hazard.COLD, COLD, Hazard.HEAT, HEAT, Hazard.TOXIC, TOXIC, Hazard.RADIATION, RADIATION);
 
@@ -39,5 +41,6 @@ public final class SurvivalDamage {
         context.register(TOXIC, new DamageType("universe.toxic", DamageScaling.NEVER, 0.0F));
         context.register(RADIATION, new DamageType("universe.radiation", DamageScaling.NEVER, 0.0F));
         context.register(SHOCK, new DamageType("universe.shock", DamageScaling.NEVER, 0.1F));
+        context.register(ACID, new DamageType("universe.acid", DamageScaling.NEVER, 0.0F, DamageEffects.BURNING));
     }
 }

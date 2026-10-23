@@ -40,7 +40,7 @@ import net.neoforged.neoforge.server.ServerLifecycleHooks;
  */
 public final class UniverseNetwork {
     /** 协议版本：任何包的格式改动都要加一，版本不同的客户端和服务端会拒绝连接。 */
-    private static final String PROTOCOL_VERSION = "31";
+    private static final String PROTOCOL_VERSION = "32";
 
     private UniverseNetwork() {
     }
@@ -155,6 +155,16 @@ public final class UniverseNetwork {
                 .playToClient(io.github.sweetcornna.universe.darkfog.shield.ShieldPayloads.Hit.TYPE,
                         io.github.sweetcornna.universe.darkfog.shield.ShieldPayloads.Hit.STREAM_CODEC)
                 // M16 黑雾：行星护盾（S）的包加在这行上面
+                // M17 收尾：酸液（A）的包加在这行上面
+                // M17 收尾：互通（C）的包加在这行上面
+                .playToServer(DysonLayerEditPayload.TYPE, DysonLayerEditPayload.STREAM_CODEC,
+                        io.github.sweetcornna.universe.dyson.Dyson::handleLayerEdit)
+                .playToClient(DysonResultPayload.TYPE, DysonResultPayload.STREAM_CODEC)
+                // M17 收尾：戴森球（D）的包加在这行上面
+                // M17 收尾：工厂物流（E）的包加在这行上面
+                .playToServer(ShipCargoPayloads.Open.TYPE, ShipCargoPayloads.Open.STREAM_CODEC, ShipCargoPayloads::handleOpen)
+                .playToClient(ShipCargoPayloads.Jetpack.TYPE, ShipCargoPayloads.Jetpack.STREAM_CODEC)
+                // M17 收尾：飞船和星球（F）的包加在这行上面
                 ;
     }
 }

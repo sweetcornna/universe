@@ -250,6 +250,9 @@ public final class TechTree {
             Tech.lab("planetary_shield", List.of("jammer_tower", "information_matrix"), List.of(BLUE, RED, YELLOW, PURPLE), 200,
                     items("planetary_shield_generator")),
             // M16 黑雾：行星护盾（S）的科技（每条末尾带逗号）加在这行上面
+            // 电网接口（ADR-0030 §三）：有了蓄电器就能和别的模组的电接上
+            Tech.lab("grid_interface", List.of("energy_storage"), List.of(BLUE, RED), 30, items("grid_interface")),
+            // M17 收尾：互通（C）的科技（每条末尾带逗号）加在这行上面
             Tech.lab("gravity_missiles", List.of("supersonic_missiles", "gravity_matrix"), List.of(BLUE, RED, YELLOW, PURPLE, GREEN, DARK_FOG), 200,
                     items("gravity_missile_set"))),
             // 升级科技：前几级用低档矩阵，之后用白矩阵无限研究

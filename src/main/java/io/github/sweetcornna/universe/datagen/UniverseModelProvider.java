@@ -14,6 +14,7 @@ import io.github.sweetcornna.universe.block.CreatureEggBlock;
 import io.github.sweetcornna.universe.block.FloraBlocks;
 import io.github.sweetcornna.universe.block.ResourcePlantBlock;
 import io.github.sweetcornna.universe.client.PlanetTints;
+import io.github.sweetcornna.universe.client.fluid.AcidClient;
 import io.github.sweetcornna.universe.client.creature.EggClient;
 import io.github.sweetcornna.universe.client.tech.ModuleGradeTint;
 import io.github.sweetcornna.universe.client.tech.MultitoolClassProperty;
@@ -157,6 +158,8 @@ final class UniverseModelProvider extends ModelProvider {
         darkFogSupport(blockModels, itemModels);
         darkFogPlasma(blockModels, itemModels);
         darkFogShield(blockModels, itemModels);
+        wrapUpAcid(blockModels, itemModels);
+        wrapUpInterop(blockModels, itemModels);
     }
 
     /** 黑雾的掉落、弹药、投掷物（ADR-0028）：平面物品。 */
@@ -169,6 +172,28 @@ final class UniverseModelProvider extends ModelProvider {
                 UniverseItems.JAMMING_CAPSULE, UniverseItems.EXPLOSIVE_UNIT, UniverseItems.CRYSTAL_EXPLOSIVE_UNIT)) {
             itemModels.generateFlatItem(item.get(), ModelTemplates.FLAT_ITEM);
         }
+    }
+
+    /**
+     * M17 收尾的模型：酸液（子代理 A，ADR-0030）。贴图见 {@code tools/m17_acid_textures.py}。
+     *
+     * <p>液体方块和原版的水一样只出一份 blockstate，指到一个不存在的模型上，真正的样子由流体渲染器按
+     * {@code AcidClient} 注册的 FluidModel 画。桶分两层：桶壳不染色，里面的液面按当前星球的酸液色染。
+     */
+    private static void wrapUpAcid(BlockModelGenerators blockModels, ItemModelGenerators itemModels) {
+        blockModels.createNonTemplateModelBlock(UniverseBlocks.ACID.get());
+        Item bucket = UniverseItems.ACID_BUCKET.get();
+        Identifier model = ModelTemplates.TWO_LAYERED_ITEM.create(bucket,
+                TextureMapping.layered(TextureMapping.getItemTexture(bucket), TextureMapping.getItemTexture(bucket, "_fluid")),
+                itemModels.modelOutput);
+        itemModels.itemModelOutput.accept(bucket, ItemModelUtils.tintedModel(model,
+                ItemModelUtils.constantTint(-1), AcidClient.AcidItemTint.INSTANCE));
+    }
+
+    /** M17 收尾的模型：互通（子代理 C，ADR-0030）。 */
+    private static void wrapUpInterop(BlockModelGenerators blockModels, ItemModelGenerators itemModels) {
+        // 贴图见 tools/m17_interop_textures.py：正面是接线排，工作时指示灯亮
+        recipeMachine(blockModels, UniverseBlocks.GRID_INTERFACE.get(), "grid_interface", false, "machine_casing_top");
     }
 
     /** 黑雾基地的方块（子代理 P）。 */
