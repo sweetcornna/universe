@@ -68,7 +68,7 @@ This is still a test version. The story text is a placeholder and will be rewrit
 ### Links
 
 - Changelog: see the Changelog tab.
-- Source code and issues: (fill in the repository link before publishing)
+- Source code and issues: https://github.com/sweetcornna/universe
 
 Inspired by *No Man's Sky* and *Dyson Sphere Program*. Not affiliated with Hello Games or Youthcat Studio, and no assets from either game are used.
 
@@ -122,6 +122,11 @@ Inspired by *No Man's Sky* and *Dyson Sphere Program*. Not affiliated with Hello
 - 可选：JEI（每种设备配方一个分类）、Jade（指着设备看状态）。
 - Sodium 要用 0.9.3-beta.1 或更新的版本，0.9.2 本身在现在的 NeoForge 26.3 上启动就崩溃。Iris 1.11.7 配它能用。开光影包（试的是 Complementary Reimagined）时，本模组的星球和太空用的是光影包的主世界天空，太空里是蓝天。
 - 装了 Sound Physics Remastered 时，声音的滤波交给它。
+
+### 链接
+
+- 更新日志：看 Changelog 页。
+- 源码和问题反馈：https://github.com/sweetcornna/universe
 
 玩法参考了《无人深空》和《戴森球计划》。本模组和 Hello Games、柚子猫工作室（Youthcat Studio）没有关系，没有用这两款游戏的美术和音效。
 

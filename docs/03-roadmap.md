@@ -238,7 +238,8 @@
 - [x] 专用服务器和 GameTest（2026-10-20）：`runGameTestServer` 不走 EULA，4 个游戏内测试（制造台有电出货、没电停着，传送带送进储物仓，研究站攒点数）全过，服务端不加载客户端的类
 - [x] 多人测试（2026-10-20）：两个无头客户端局域网联机，看了设备和传送带、设备界面、科技树、新建星球维度、主机开船和开炮、戴森球、交易和各自的信用点。修了后进服补剧情进度时往聊天栏里报"完成了挑战"的问题
 - [x] 发布准备（2026-10-20）：版本号 0.7.0-alpha、模组图标、`CHANGELOG.md`、发布页文字（中英文）和截图（`docs/release/`）、README
-- [ ] 在 Modrinth 和 CurseForge 发布 Alpha：用作者的账号上传；发布前在 `neoforge.mods.toml` 和发布页填上仓库地址
+- [x] GitHub 仓库和 Alpha 发布（2026-10-23）：代码开在 [sweetcornna/universe](https://github.com/sweetcornna/universe)，0.14.0-alpha 作为第一个公开版本发出去，带编译好的 jar。版本号从 0.7.0-alpha 跳到 0.14.0-alpha，对上实际做完的内容（0.8–0.14 一路没公开）；`neoforge.mods.toml` 填了 `issueTrackerURL`（26.3 的 `ModFileInfo` 只认文件级的这一个，没有 `displayURL`），发布页和 README 填了仓库地址。
+- [ ] 在 Modrinth 和 CurseForge 上架：用作者的账号传 `build/libs/universe-26.3-0.14.0-alpha.jar`，正文用 `docs/release/page.md`，图库按那份表重截
 
 退出标准：公开发布 0.7 Alpha。
 

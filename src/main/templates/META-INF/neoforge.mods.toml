@@ -2,6 +2,8 @@
 # 字段说明：https://docs.neoforged.net/docs/gettingstarted/modfiles
 
 license="${mod_license}"
+# 26.3 的 ModFileInfo 只读文件级的 issueTrackerURL，没有 displayURL；仓库地址写在发布页和 README 里
+issueTrackerURL="https://github.com/sweetcornna/universe/issues"
 
 [[mods]]
 modId="${mod_id}"
