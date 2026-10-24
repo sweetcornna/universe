@@ -1,7 +1,9 @@
 package io.github.sweetcornna.universe.client.exocraft;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.jspecify.annotations.Nullable;
 
@@ -30,6 +32,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.HitResult;
@@ -52,6 +55,10 @@ import net.neoforged.neoforge.client.network.event.RegisterClientPayloadHandlers
 public final class ExocraftClient {
     private static final int PANEL_WIDTH = 140;
     private static @Nullable EngineSound engineSound;
+    /** 别人开的车多远以内听得见。 */
+    private static final double RANGE = 48;
+    /** 别人开着的车的引擎声（实体 id）。 */
+    private static final Map<Integer, EngineSound> OTHERS = new HashMap<>();
     /** 上车前的视角：上车切到第三人称看得见车，下车切回来。 */
     private static @Nullable CameraType cameraBeforeBoarding;
     private static boolean sentFiring;
@@ -125,17 +132,38 @@ public final class ExocraftClient {
             cameraBeforeBoarding = null;
         }
         if (exocraft != null && (!Loops.playing(engineSound))) {
-            engineSound = new EngineSound(exocraft);
+            engineSound = new EngineSound(exocraft, true);
             minecraft.getSoundManager().play(engineSound);
         } else if (exocraft == null) {
             engineSound = null;
         }
+        others(minecraft, exocraft);
         boolean firing = exocraft != null && minecraft.gui.screen() == null && (minecraft.options.keyAttack.isDown() || ShipClient.forceFire);
         boolean third = exocraft != null && thirdPerson(minecraft);
         if ((firing != sentFiring || third != sentThirdPerson) && minecraft.getConnection() != null) {
             ClientPacketDistributor.sendToServer(new ExocraftControlPayload(firing, third));
             sentFiring = firing;
             sentThirdPerson = third;
+        }
+    }
+
+    /** 附近别人开着的车：引擎声跟着车走。 */
+    private static void others(Minecraft minecraft, @Nullable Exocraft own) {
+        OTHERS.values().removeIf(loop -> !Loops.playing(loop));
+        if (minecraft.level == null || minecraft.player == null) {
+            OTHERS.clear();
+            return;
+        }
+        if (minecraft.isPaused()) {
+            return;
+        }
+        for (Exocraft other : minecraft.level.getEntitiesOfClass(Exocraft.class, minecraft.player.getBoundingBox().inflate(RANGE))) {
+            boolean running = other.getControllingPassenger() instanceof Player driver && (other.fuel() > 0 || driver.hasInfiniteMaterials());
+            if (other != own && running && !OTHERS.containsKey(other.getId())) {
+                EngineSound loop = new EngineSound(other, false);
+                OTHERS.put(other.getId(), loop);
+                minecraft.getSoundManager().play(loop);
+            }
         }
     }
 
@@ -242,37 +270,61 @@ public final class ExocraftClient {
         return Component.translatable("hud.universe.exocraft.target", state.getBlock().getName(), distance);
     }
 
-    /** 电机和传动：车越快越响、调越高；停着时小声怠速，没燃料就停。重型车往低处放，悬浮车往高处放。 */
+    /**
+     * 电机和传动：车越快越响、调越高；停着时小声怠速，没燃料就停。重型车往低处放，悬浮车往高处放。
+     * 自己开的贴在耳边；别人开的跟着车，没人开了淡出。
+     */
     private static final class EngineSound extends AbstractTickableSoundInstance {
         private final Exocraft exocraft;
+        private final boolean own;
         private final float base;
 
-        EngineSound(Exocraft exocraft) {
+        EngineSound(Exocraft exocraft, boolean own) {
             super(ShipSounds.ROVER.get(), SoundSource.NEUTRAL, RandomSource.create());
             this.exocraft = exocraft;
+            this.own = own;
             this.base = exocraft instanceof HeavyRover ? 0.85F : exocraft instanceof HoverCar ? 1.15F : 1.0F;
             this.looping = true;
             this.delay = 0;
             this.volume = 0.01F;
             this.pitch = 0.8F * this.base;
-            this.relative = true;
-            this.attenuation = SoundInstance.Attenuation.NONE;
+            if (own) {
+                this.relative = true;
+                this.attenuation = SoundInstance.Attenuation.NONE;
+            } else {
+                this.place();
+            }
         }
 
         @Override
         public void tick() {
-            if (this.exocraft.isRemoved() || driving() != this.exocraft) {
+            boolean mine = driving() == this.exocraft;
+            if (this.exocraft.isRemoved() || mine != this.own) {
                 this.stop();
                 return;
             }
             double dx = this.exocraft.getX() - this.exocraft.xo;
             double dz = this.exocraft.getZ() - this.exocraft.zo;
             float speed = (float) Math.sqrt(dx * dx + dz * dz);
-            boolean running = this.exocraft.fuel() > 0 || Minecraft.getInstance().player.hasInfiniteMaterials();
+            Player driver = this.own ? Minecraft.getInstance().player
+                    : this.exocraft.getControllingPassenger() instanceof Player player ? player : null;
+            boolean running = driver != null && (this.exocraft.fuel() > 0 || driver.hasInfiniteMaterials());
             float share = Mth.clamp(speed / 0.6F, 0, 1);
             float target = running ? 0.25F + 0.5F * share : 0;
             this.volume = Mth.lerp(0.15F, this.volume, target);
             this.pitch = Mth.lerp(0.15F, this.pitch, (0.8F + 0.45F * share) * this.base);
+            if (!this.own) {
+                this.place();
+                if (!running && this.volume < 0.02F) {
+                    this.stop();
+                }
+            }
+        }
+
+        private void place() {
+            this.x = this.exocraft.getX();
+            this.y = this.exocraft.getY() + 0.8;
+            this.z = this.exocraft.getZ();
         }
 
         @Override

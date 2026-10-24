@@ -7,6 +7,7 @@ import org.jspecify.annotations.Nullable;
 import io.github.sweetcornna.universe.core.darkfog.BuildingKind;
 import io.github.sweetcornna.universe.core.darkfog.DarkFogLevels;
 import io.github.sweetcornna.universe.core.darkfog.Tactics;
+import io.github.sweetcornna.universe.darkfog.Collapses;
 import io.github.sweetcornna.universe.darkfog.DarkFogBases;
 import io.github.sweetcornna.universe.darkfog.DarkFogEnemy;
 import io.github.sweetcornna.universe.darkfog.Facilities;
@@ -77,6 +78,9 @@ public class DarkFogBuilding extends Mob implements DarkFogEnemy {
     private int retarget;
     private @Nullable LivingEntity aimEntity;
     private @Nullable BlockPos aimBlock;
+    /** 倒塌的声音放不放，在哪一刻定的（{@link #loudCollapse}）。 */
+    private long collapseTick = -1;
+    private boolean collapseLoud;
 
     public DarkFogBuilding(EntityType<? extends DarkFogBuilding> type, Level level) {
         super(type, level);
@@ -376,7 +380,9 @@ public class DarkFogBuilding extends Mob implements DarkFogEnemy {
             level.sendParticles(new DustParticleOptions(0xFF2A3A, 1.5F), this.getX(), y, this.getZ(), 30, size * 0.4, this.getBbHeight() * 0.4,
                     size * 0.4, 0);
             level.sendParticles(ParticleTypes.ELECTRIC_SPARK, this.getX(), y, this.getZ(), 40, size * 0.4, this.getBbHeight() * 0.4, size * 0.4, 0.4);
-            level.playSound(null, this.getX(), y, this.getZ(), UniverseSounds.EXPLOSION_SMALL.get(), SoundSource.HOSTILE, 1.0F, 0.85F);
+            if (this.loudCollapse()) {
+                level.playSound(null, this.getX(), y, this.getZ(), UniverseSounds.EXPLOSION_SMALL.get(), SoundSource.HOSTILE, 1.0F, 0.85F);
+            }
             DarkFogBases.onBuildingDestroyed(level, this, source);
         }
     }
@@ -406,8 +412,18 @@ public class DarkFogBuilding extends Mob implements DarkFogEnemy {
     }
 
     @Override
-    protected SoundEvent getDeathSound() {
-        return HostileSounds.COLLAPSE.get();
+    protected @Nullable SoundEvent getDeathSound() {
+        return this.loudCollapse() ? HostileSounds.COLLAPSE.get() : null;
+    }
+
+    /** 这次倒塌放不放声音（一次清掉整座基地时只放头几声，{@link Collapses}）；同一刻里问几次答案一样。 */
+    private boolean loudCollapse() {
+        long now = this.level().getGameTime();
+        if (this.collapseTick != now) {
+            this.collapseTick = now;
+            this.collapseLoud = Collapses.allow(this);
+        }
+        return this.collapseLoud;
     }
 
     @Override

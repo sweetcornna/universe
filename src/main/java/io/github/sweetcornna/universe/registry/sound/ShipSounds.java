@@ -29,8 +29,8 @@ public final class ShipSounds {
     public static final DeferredHolder<SoundEvent, SoundEvent> POWER_DOWN = sound("ship.power_down", 1, "飞船：断电", "Ship powers down");
 
     // 载具
-    public static final DeferredHolder<SoundEvent, SoundEvent> ROVER = sound("vehicle.rover", 1, "探索车：行驶", "Exocraft drives");
-    public static final DeferredHolder<SoundEvent, SoundEvent> MECH_JET = sound("vehicle.mech_jet", 1, "机甲：喷气", "Mech jets");
+    public static final DeferredHolder<SoundEvent, SoundEvent> ROVER = sound("vehicle.rover", 1, 32, "探索车：行驶", "Exocraft drives");
+    public static final DeferredHolder<SoundEvent, SoundEvent> MECH_JET = sound("vehicle.mech_jet", 1, 32, "机甲：喷气", "Mech jets");
     public static final DeferredHolder<SoundEvent, SoundEvent> MECH_STEP = sound("vehicle.mech_step", 3, 24, "机甲：脚步", "Mech stomps");
     public static final DeferredHolder<SoundEvent, SoundEvent> CANNON = sound("vehicle.cannon", 3, 32, "机甲爆能炮：开火", "Mech cannon fires");
     /** 探索车的采矿激光：服务端每 10 刻放一段。 */

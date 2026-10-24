@@ -1203,7 +1203,10 @@
   },
   "vehicle.mech_jet": {
     "sounds": [
-      "universe:vehicle/mech_jet_1"
+      {
+        "attenuation_distance": 32,
+        "name": "universe:vehicle/mech_jet_1"
+      }
     ],
     "subtitle": "subtitles.universe.vehicle.mech_jet"
   },
@@ -1226,7 +1229,10 @@
   },
   "vehicle.rover": {
     "sounds": [
-      "universe:vehicle/rover_1"
+      {
+        "attenuation_distance": 32,
+        "name": "universe:vehicle/rover_1"
+      }
     ],
     "subtitle": "subtitles.universe.vehicle.rover"
   },

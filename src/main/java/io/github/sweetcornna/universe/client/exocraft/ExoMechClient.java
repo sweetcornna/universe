@@ -1,7 +1,9 @@
 package io.github.sweetcornna.universe.client.exocraft;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.jspecify.annotations.Nullable;
 
@@ -41,6 +43,10 @@ import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 public final class ExoMechClient {
     private static final int PANEL_WIDTH = 140;
     private static @Nullable JetSound jetSound;
+    /** 别人的机甲喷气多远以内听得见。 */
+    private static final double RANGE = 48;
+    /** 别人的机甲正在喷气的声音（实体 id）。 */
+    private static final Map<Integer, JetSound> OTHERS = new HashMap<>();
     /** 上机前的视角：上机切到第三人称看得见机甲，下机切回来。 */
     private static @Nullable CameraType cameraBeforeBoarding;
     private static boolean sentFiring;
@@ -96,11 +102,12 @@ public final class ExoMechClient {
             cameraBeforeBoarding = null;
         }
         if (mech != null && (!Loops.playing(jetSound))) {
-            jetSound = new JetSound(mech);
+            jetSound = new JetSound(mech, true);
             minecraft.getSoundManager().play(jetSound);
         } else if (mech == null) {
             jetSound = null;
         }
+        others(minecraft, mech);
         boolean firing = mech != null && minecraft.gui.screen() == null && (minecraft.options.keyAttack.isDown() || ShipClient.forceFire);
         boolean third = mech != null && thirdPerson(minecraft);
         // 只在机甲上发：下机时把按着的攻击键松开一次，别的时候交给探索车、潜艇自己发
@@ -179,6 +186,25 @@ public final class ExoMechClient {
         }
     }
 
+    /** 附近别人的机甲在喷气：声音跟着机甲走。 */
+    private static void others(Minecraft minecraft, @Nullable ExoMech own) {
+        OTHERS.values().removeIf(loop -> !Loops.playing(loop));
+        if (minecraft.level == null || minecraft.player == null) {
+            OTHERS.clear();
+            return;
+        }
+        if (minecraft.isPaused()) {
+            return;
+        }
+        for (ExoMech other : minecraft.level.getEntitiesOfClass(ExoMech.class, minecraft.player.getBoundingBox().inflate(RANGE))) {
+            if (other != own && other.thrusting() && !OTHERS.containsKey(other.getId())) {
+                JetSound loop = new JetSound(other, false);
+                OTHERS.put(other.getId(), loop);
+                minecraft.getSoundManager().play(loop);
+            }
+        }
+    }
+
     private static int bar(GuiGraphicsExtractor graphics, Font font, Component text, int x, int y, int width, float share, int color) {
         graphics.text(font, text, x, y, 0xFFE0E0E0, false);
         y += 10;
@@ -187,29 +213,48 @@ public final class ExoMechClient {
         return y + 6;
     }
 
-    /** 喷气：开着时呼呼响，关了很快静下来；储量见底时音调往下掉。 */
+    /** 喷气：开着时呼呼响，关了很快静下来；储量见底时音调往下掉。自己开的贴在耳边，别人的跟着机甲，停了就收。 */
     private static final class JetSound extends AbstractTickableSoundInstance {
         private final ExoMech mech;
+        private final boolean own;
 
-        JetSound(ExoMech mech) {
+        JetSound(ExoMech mech, boolean own) {
             super(ShipSounds.MECH_JET.get(), SoundSource.NEUTRAL, RandomSource.create());
             this.mech = mech;
+            this.own = own;
             this.looping = true;
             this.delay = 0;
             this.volume = 0.01F;
             this.pitch = 1.0F;
-            this.relative = true;
-            this.attenuation = SoundInstance.Attenuation.NONE;
+            if (own) {
+                this.relative = true;
+                this.attenuation = SoundInstance.Attenuation.NONE;
+            } else {
+                this.place();
+            }
         }
 
         @Override
         public void tick() {
-            if (this.mech.isRemoved() || driving() != this.mech) {
+            boolean mine = driving() == this.mech;
+            if (this.mech.isRemoved() || mine != this.own) {
                 this.stop();
                 return;
             }
             this.volume = Mth.lerp(0.3F, this.volume, this.mech.thrusting() ? 0.9F : 0);
             this.pitch = Mth.lerp(0.2F, this.pitch, 0.9F + 0.15F * this.mech.jetShare());
+            if (!this.own) {
+                this.place();
+                if (!this.mech.thrusting() && this.volume < 0.02F) {
+                    this.stop();
+                }
+            }
+        }
+
+        private void place() {
+            this.x = this.mech.getX();
+            this.y = this.mech.getY() + 1.5;
+            this.z = this.mech.getZ();
         }
 
         @Override

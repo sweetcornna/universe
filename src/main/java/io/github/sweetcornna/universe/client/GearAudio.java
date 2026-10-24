@@ -10,6 +10,7 @@ import io.github.sweetcornna.universe.core.survival.ToolMode;
 import io.github.sweetcornna.universe.core.survival.ToolWeapon;
 import io.github.sweetcornna.universe.core.tech.Stat;
 import io.github.sweetcornna.universe.client.audio.Loops;
+import io.github.sweetcornna.universe.client.ship.ShipCargoClient;
 import io.github.sweetcornna.universe.registry.UniverseAttachments;
 import io.github.sweetcornna.universe.registry.sound.GearSounds;
 import io.github.sweetcornna.universe.survival.Multitool;
@@ -34,7 +35,7 @@ import org.jspecify.annotations.Nullable;
 
 /**
  * 玩家装备的持续声音（ADR-0029）：采矿激光和烈焰标枪的蓄力（自己的和附近别人的，按"正在用、什么模式"起停），
- * 喷气背包、生命维持和告警（只放给自己，在头盔里）。
+ * 喷气背包（自己的在背后，附近别人的跟着他，按服务端转发的喷火状态），生命维持和告警（只放给自己，在头盔里）。
  */
 public final class GearAudio {
     /** 别人的工具多远以内听得见。 */
@@ -47,6 +48,8 @@ public final class GearAudio {
     }
 
     private static final Map<Integer, ToolLoop> TOOLS = new HashMap<>();
+    /** 附近别人的喷气背包（实体 id）。 */
+    private static final Map<Integer, JetLoop> JETS = new HashMap<>();
     private static @Nullable SuitLoop lifeSupport;
     private static @Nullable SuitLoop jetpack;
     private static int alarmCooldown;
@@ -83,8 +86,14 @@ public final class GearAudio {
                 TOOLS.put(player.getId(), loop);
                 minecraft.getSoundManager().play(loop);
             }
+            if (player != self && ShipCargoClient.flaming(player.getId()) && !Loops.playing(JETS.get(player.getId()))) {
+                JetLoop jet = new JetLoop(player);
+                JETS.put(player.getId(), jet);
+                minecraft.getSoundManager().play(jet);
+            }
         }
         TOOLS.values().removeIf(loop -> !Loops.playing(loop));
+        JETS.values().removeIf(loop -> !Loops.playing(loop));
         suit(minecraft, self);
     }
 
@@ -171,6 +180,8 @@ public final class GearAudio {
     private static void clear() {
         TOOLS.values().forEach(ToolLoop::end);
         TOOLS.clear();
+        JETS.values().forEach(JetLoop::end);
+        JETS.clear();
         if (lifeSupport != null) {
             lifeSupport.on = false;
             lifeSupport = null;
@@ -242,6 +253,50 @@ public final class GearAudio {
         private void place() {
             this.x = this.player.getX();
             this.y = this.player.getEyeY() - 0.3;
+            this.z = this.player.getZ();
+        }
+
+        @Override
+        public boolean canStartSilent() {
+            return true;
+        }
+    }
+
+    /** 别人的喷气背包：跟着他，服务端说熄火了就淡出；走远了、看不见了也停。 */
+    private static final class JetLoop extends AbstractTickableSoundInstance {
+        private final Player player;
+        private boolean ending;
+
+        JetLoop(Player player) {
+            super(GearSounds.JETPACK.get(), SoundSource.PLAYERS, RandomSource.create());
+            this.player = player;
+            this.looping = true;
+            this.delay = 0;
+            this.volume = 0.01F;
+            this.place();
+        }
+
+        void end() {
+            this.ending = true;
+        }
+
+        @Override
+        public void tick() {
+            if (this.player.isRemoved() || !ShipCargoClient.flaming(this.player.getId())) {
+                this.ending = true;
+            }
+            this.volume += Mth.clamp((this.ending ? 0 : 0.7F) - this.volume, -0.2F, 0.35F);
+            float rise = (float) Mth.clamp(this.player.getDeltaMovement().y / 0.5, 0, 1);
+            this.pitch = Mth.lerp(0.2F, this.pitch, 0.95F + 0.1F * rise);
+            this.place();
+            if (this.ending && this.volume <= 0.01F) {
+                this.stop();
+            }
+        }
+
+        private void place() {
+            this.x = this.player.getX();
+            this.y = this.player.getY() + 0.9;
             this.z = this.player.getZ();
         }
 

@@ -92,6 +92,12 @@ public abstract class UniverseVehicle extends VehicleEntity {
         };
     }
 
+    /** 轮子、履带、悬浮垫没有原版方块的脚步声（机甲的脚步自己放，ADR-0029）；游戏事件照常发，幽匿感测体还听得见。 */
+    @Override
+    protected Entity.MovementEmission getMovementEmission() {
+        return Entity.MovementEmission.EVENTS;
+    }
+
     // ---- 同步的数据
 
     @Override
