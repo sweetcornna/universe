@@ -70,7 +70,12 @@ public final class Distributors {
         }
         List<DistributorBlockEntity> distributors = new ArrayList<>();
         List<Distribution.Node> nodes = new ArrayList<>();
+        DistributorRegistry registry = DistributorRegistry.get(level.getServer());
         for (BlockPos pos : loaded) {
+            if (level.getBlockEntity(pos) instanceof DistributorBlockEntity distributor) {
+                // 机器人数这些只在这里顺手更新到登记表（ADR-0033 §三）
+                registry.record(level, distributor);
+            }
             if (level.getBlockEntity(pos) instanceof DistributorBlockEntity distributor && distributor.filter() != null) {
                 nodes.add(new Distribution.Node(distributors.size(), pos.getX() + 0.5, pos.getZ() + 0.5, id(distributor.filter()),
                         distributor.icarus(), distributor.peer(), distributor.stock(), distributor.space(), distributor.idleBots()));

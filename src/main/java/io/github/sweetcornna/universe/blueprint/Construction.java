@@ -135,18 +135,23 @@ public final class Construction {
     /**
      * 生存模式放蓝图：留下一个工地。
      *
+     * @param devicesOnly 只贴设备（ADR-0033 §九），上限只算设备
      * @return 放下了（没超过"批量建造"的上限）
      */
-    static boolean paste(ServerPlayer player, BlueprintData.Stored stored, BlockPos anchor, int turns) {
+    static boolean paste(ServerPlayer player, BlueprintData.Stored stored, BlockPos anchor, int turns, boolean devicesOnly) {
         ServerLevel level = player.level();
         int limit = Upgrades.buildLimit(Research.level(level, Upgrades.MASS_CONSTRUCTION));
-        if (stored.blocks() > limit) {
-            player.sendOverlayMessage(Component.translatable("message.universe.blueprint.over_limit", stored.blocks(), limit)
+        List<Blueprints.Placement> placements = Blueprints.placements(stored, anchor, turns, devicesOnly);
+        int blocks = devicesOnly ? placements.size() : stored.blocks();
+        if (blocks > limit) {
+            player.sendOverlayMessage(Component.translatable("message.universe.blueprint.over_limit", blocks, limit)
                     .withStyle(ChatFormatting.RED));
             return false;
         }
-        List<Blueprints.Placement> placements = Blueprints.placements(stored, anchor, turns);
         if (placements.isEmpty()) {
+            if (devicesOnly) {
+                player.sendOverlayMessage(Component.translatable("message.universe.blueprint.no_devices"));
+            }
             return false;
         }
         int minX = Integer.MAX_VALUE;

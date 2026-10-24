@@ -93,6 +93,8 @@ public class DiscoveryLogScreen extends Screen {
     private int seenVersion = -1;
     private @Nullable EditBox nameBox;
     private @Nullable Button saveButton;
+    /** 星球、星系备忘的入口（ADR-0033 §六）：发现过的才能写。 */
+    private @Nullable Button memoButton;
     /** 改名框现在对着的东西；切换选中时清空重填。 */
     private @Nullable DiscoveryKey editing;
     /** 标题栏上的两页：发现、文明（ADR-0027）。 */
@@ -130,6 +132,9 @@ public class DiscoveryLogScreen extends Screen {
         this.saveButton = Button.builder(Component.translatable("gui.universe.discovery.save"), button -> this.save())
                 .bounds(left + Math.max(40, width - 54) + 4, y - 2, 50, 20).build();
         this.addRenderableWidget(this.saveButton);
+        this.memoButton = Button.builder(Component.translatable("gui.universe.memo.open"), button -> this.openMemo())
+                .bounds(this.width - PADDING - 4 - 44, HEADER + 4, 44, 14).build();
+        this.addRenderableWidget(this.memoButton);
         this.updateRename();
     }
 
@@ -226,6 +231,21 @@ public class DiscoveryLogScreen extends Screen {
         String current = entry.map(DiscoveryLog.Entry::customName).orElse("");
         Optional<String> clean = DiscoveryLog.cleanName(this.nameBox.getValue());
         this.saveButton.active = renamable && clean.isPresent() && !clean.get().equals(current);
+        if (this.memoButton != null) {
+            this.memoButton.visible = !this.civTab && entry.isPresent();
+        }
+    }
+
+    /** 打开选中的星球或星系的备忘；服务端回了内容才真正打开，关掉回到这里。 */
+    private void openMemo() {
+        StarSystem system = this.system();
+        if (system == null) {
+            return;
+        }
+        String key = this.selectedBody == null ? io.github.sweetcornna.universe.core.beacon.MemoKeys.system(system.index())
+                : io.github.sweetcornna.universe.core.beacon.MemoKeys.body(this.selectedBody.id());
+        String title = this.selectedBody == null ? GalaxyText.system(system) : GalaxyText.planet(this.selectedBody);
+        io.github.sweetcornna.universe.client.beacon.BeaconClient.openMemo(key, Component.literal(title), this);
     }
 
     private void save() {

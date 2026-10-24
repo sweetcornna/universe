@@ -33,7 +33,6 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.ai.control.FlyingMoveControl;
 import net.minecraft.world.entity.ai.navigation.FlyingPathNavigation;
 import net.minecraft.world.entity.ai.navigation.PathNavigation;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.Heightmap;
@@ -315,11 +314,11 @@ public abstract class DarkFogUnit extends PathfinderMob implements DarkFogEnemy 
         Vec3 pos = this.position();
         double homeDistance = horizontal(pos, center(this.home));
         Optional<BlockPos> taunt = Taunts.nearestTaunt(level, pos, Tactics.TAUNT_RANGE);
-        Player player = level.getNearestPlayer(pos.x, pos.y, pos.z, SIGHT, DarkFogDamage::targetable);
+        LivingEntity player = DarkFogDamage.nearestTarget(level, pos, SIGHT);
         double playerDistance = player == null ? Double.POSITIVE_INFINITY : this.distanceTo(player);
         double playerHome = player == null ? Double.POSITIVE_INFINITY : horizontal(player.position(), center(this.home));
         LivingEntity attacker = this.getLastHurtByMob();
-        boolean grudge = attacker != null && DarkFogDamage.targetable(attacker) && attacker.level() == level
+        boolean grudge = attacker != null && DarkFogDamage.engageable(attacker) && attacker.level() == level
                 && this.tickCount - this.getLastHurtByMobTimestamp() < GRUDGE;
         double revenge = grudge ? this.distanceTo(attacker) : Double.POSITIVE_INFINITY;
         double targetDistance = this.target == null ? Double.POSITIVE_INFINITY : horizontal(pos, center(this.target));
@@ -362,7 +361,7 @@ public abstract class DarkFogUnit extends PathfinderMob implements DarkFogEnemy 
         switch (this.order) {
             case PLAYER -> {
                 LivingEntity enemy = this.focus;
-                if (enemy == null || !enemy.isAlive() || enemy.level() != level || !DarkFogDamage.targetable(enemy)) {
+                if (enemy == null || !enemy.isAlive() || enemy.level() != level || !DarkFogDamage.engageable(enemy)) {
                     this.thinkCooldown = 0;
                     return;
                 }

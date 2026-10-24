@@ -14,12 +14,19 @@ import net.minecraft.resources.Identifier;
 
 /**
  * 服务端 → 客户端：多功能工具扫描到的矿脉和兴趣点（ADR-0014）、地标（ADR-0026），HUD 上标出来一段时间。
+ *
+ * @param focused 只扫了一种矿（ADR-0033 §八）：标记画大一些、留得久一些
  */
-public record ScanResultPayload(List<Marker> markers, List<PoiMarker> pois, List<LandmarkMarker> landmarks) implements CustomPacketPayload {
+public record ScanResultPayload(List<Marker> markers, List<PoiMarker> pois, List<LandmarkMarker> landmarks, boolean focused)
+        implements CustomPacketPayload {
     public static final Type<ScanResultPayload> TYPE = new Type<>(Universe.id("scan_result"));
     public static final int MAX_MARKERS = 128;
     public static final int MAX_POIS = 32;
     public static final int MAX_LANDMARKS = 16;
+
+    public ScanResultPayload(List<Marker> markers, List<PoiMarker> pois, List<LandmarkMarker> landmarks) {
+        this(markers, pois, landmarks, false);
+    }
 
     /** 一条矿脉：中心位置、矿石方块、有几块。 */
     public record Marker(BlockPos pos, Identifier block, int count) {
@@ -52,6 +59,7 @@ public record ScanResultPayload(List<Marker> markers, List<PoiMarker> pois, List
             Marker.STREAM_CODEC.apply(ByteBufCodecs.list(MAX_MARKERS)), ScanResultPayload::markers,
             PoiMarker.STREAM_CODEC.apply(ByteBufCodecs.list(MAX_POIS)), ScanResultPayload::pois,
             LandmarkMarker.STREAM_CODEC.apply(ByteBufCodecs.list(MAX_LANDMARKS)), ScanResultPayload::landmarks,
+            ByteBufCodecs.BOOL, ScanResultPayload::focused,
             ScanResultPayload::new);
 
     @Override

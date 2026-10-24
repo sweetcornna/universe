@@ -109,7 +109,7 @@ public final class UniverseMenus {
             new MachineMenu.Type(RayReceiverBlockEntity.DATA_COUNT, RESOURCE_WIDTH, 192, input(172, 30), output(172, 52)));
     // 采集设备：读数加一个产物格
     public static final MachineMenu.Type MINING_MACHINE = machine("mining_machine",
-            new MachineMenu.Type(MiningMachineBlockEntity.DATA_COUNT, RESOURCE_WIDTH, 166, output(172, 46)));
+            new MachineMenu.Type(MiningMachineBlockEntity.DATA_COUNT, RESOURCE_WIDTH, 180, output(172, 46)));
     public static final MachineMenu.Type WATER_PUMP = machine("water_pump",
             new MachineMenu.Type(WaterPumpBlockEntity.DATA_COUNT, RESOURCE_WIDTH, 166, output(172, 46)));
     public static final MachineMenu.Type OIL_EXTRACTOR = machine("oil_extractor",
@@ -189,6 +189,10 @@ public final class UniverseMenus {
     public static final DeferredHolder<MenuType<?>, MenuType<ShipCargoMenu>> SHIP_CARGO = MENUS.register("ship_cargo",
             () -> IMenuTypeExtension.create(ShipCargoMenu::new));
     // M17 收尾：飞船和星球（F）的界面加在这行上面
+    // M18 舰队和战斗（A）的界面加在这行上面
+    // M18 物流调度（B）的界面加在这行上面
+    // M18 统计和研究（C）的界面加在这行上面
+    // M18 信标、透镜、矿脉、蓝图（D）的界面加在这行上面
 
     private UniverseMenus() {
     }

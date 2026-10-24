@@ -218,6 +218,9 @@ public class RecipeMachineBlockEntity extends MachineBlockEntity implements Mach
             return false;
         }
         this.status = RUNNING;
+        // 参考产量（ADR-0033 §四）：满速时每分钟做多少
+        ProductionLog.reference(this.level, this.worldPosition, holder, this.spec.speed() * Proliferation.speedFactor(mode, this.batchLevel),
+                mode == Proliferation.Mode.EXTRA_PRODUCTS ? 1 + Proliferation.extraProducts(this.batchLevel) : 1);
         this.progress += this.spec.speed() * rate * Proliferation.speedFactor(mode, this.batchLevel);
         if (this.progress >= recipe.time()) {
             this.progress = 0;

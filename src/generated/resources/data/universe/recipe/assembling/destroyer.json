@@ -1,0 +1,28 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:corvette"
+    },
+    {
+      "count": 30,
+      "ingredient": "universe:titanium_alloy"
+    },
+    {
+      "count": 4,
+      "ingredient": "universe:quantum_chip"
+    },
+    {
+      "count": 4,
+      "ingredient": "universe:matter_recombinator"
+    }
+  ],
+  "research": "destroyers",
+  "results": [
+    {
+      "id": "universe:destroyer"
+    }
+  ],
+  "time": 800
+}

@@ -9,6 +9,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import io.github.sweetcornna.universe.Universe;
+import io.github.sweetcornna.universe.core.logistics.ItemRoute;
 import io.github.sweetcornna.universe.core.logistics.Location;
 import io.github.sweetcornna.universe.core.logistics.Logic;
 import io.github.sweetcornna.universe.core.logistics.LogisticsNetwork;
@@ -24,7 +25,7 @@ import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.saveddata.SavedDataType;
 
 /**
- * 物流站的账本和在途的运输，存在全局存档 {@code data/universe/logistics.dat}（ADR-0015）。核心层的类不能依赖
+ * 物流站的账本、在途的运输和物品路线，存在全局存档 {@code data/universe/logistics.dat}（ADR-0015）。核心层的类不能依赖
  * 序列化库，这里用记录类转一道。
  */
 public final class LogisticsData extends SavedData {
@@ -66,6 +67,41 @@ public final class LogisticsData extends SavedData {
         ).apply(i, Fleet::new));
     }
 
+    /** 调度的设置（ADR-0033 §三）：名字、编号、分组、点对点的伙伴、指定配对、运输船最小载货量。旧档里没有，按默认。 */
+    private record Dispatch(String name, int number, int group, List<UUID> partners, boolean isolated, int minLoad) {
+        static final Dispatch DEFAULT = new Dispatch("", 0, 0, List.of(), false, 0);
+        static final Codec<Dispatch> CODEC = RecordCodecBuilder.create(i -> i.group(
+                Codec.STRING.optionalFieldOf("name", "").forGetter(Dispatch::name),
+                Codec.INT.optionalFieldOf("number", 0).forGetter(Dispatch::number),
+                Codec.INT.optionalFieldOf("group", 0).forGetter(Dispatch::group),
+                UUIDUtil.CODEC.listOf().optionalFieldOf("partners", List.of()).forGetter(Dispatch::partners),
+                Codec.BOOL.optionalFieldOf("isolated", false).forGetter(Dispatch::isolated),
+                Codec.INT.optionalFieldOf("min_load", 0).forGetter(Dispatch::minLoad)
+        ).apply(i, Dispatch::new));
+
+        static Dispatch of(Station station) {
+            return new Dispatch(station.name(), station.number(), station.group(), List.copyOf(station.partners()), station.isolated(),
+                    station.minLoad());
+        }
+
+        void applyTo(Station station) {
+            station.setName(this.name);
+            station.setNumber(this.number);
+            station.setGroup(this.group);
+            this.partners.forEach(station::addPartner);
+            station.setIsolated(this.isolated);
+            station.setMinLoad(this.minLoad);
+        }
+    }
+
+    private static final Codec<ItemRoute> ROUTE_CODEC = RecordCodecBuilder.create(i -> i.group(
+            UUIDUtil.CODEC.fieldOf("id").forGetter(ItemRoute::id),
+            Codec.STRING.fieldOf("item").forGetter(ItemRoute::item),
+            Codec.BOOL.optionalFieldOf("systems", false).forGetter(ItemRoute::systems),
+            Codec.STRING.fieldOf("from").forGetter(ItemRoute::from),
+            Codec.STRING.fieldOf("to").forGetter(ItemRoute::to)
+    ).apply(i, ItemRoute::new));
+
     private static final Codec<Station> STATION_CODEC = RecordCodecBuilder.create(i -> i.group(
             UUIDUtil.CODEC.fieldOf("id").forGetter(Station::id),
             enumCodec(StationKind.class).fieldOf("kind").forGetter(Station::kind),
@@ -78,7 +114,8 @@ public final class LogisticsData extends SavedData {
             Codec.LONG.optionalFieldOf("energy", 0L).forGetter(Station::energy),
             Codec.INT.optionalFieldOf("range", Station.DEFAULT_RANGE).forGetter(Station::droneRange),
             Codec.DOUBLE.listOf().optionalFieldOf("production", List.of()).forGetter(station -> doubles(station, true)),
-            Codec.DOUBLE.listOf().optionalFieldOf("accumulated", List.of()).forGetter(station -> doubles(station, false))
+            Codec.DOUBLE.listOf().optionalFieldOf("accumulated", List.of()).forGetter(station -> doubles(station, false)),
+            Dispatch.CODEC.optionalFieldOf("dispatch", Dispatch.DEFAULT).forGetter(Dispatch::of)
     ).apply(i, LogisticsData::station));
 
     private static List<Double> doubles(Station station, boolean production) {
@@ -90,7 +127,7 @@ public final class LogisticsData extends SavedData {
     }
 
     private static Station station(UUID id, StationKind kind, String dimension, BlockPos pos, Location location, List<StationSlot> slots,
-            Fleet fleet, long energy, int range, List<Double> production, List<Double> accumulated) {
+            Fleet fleet, long energy, int range, List<Double> production, List<Double> accumulated, Dispatch dispatch) {
         Station station = new Station(id, kind, dimension, pos.getX(), pos.getY(), pos.getZ(), location);
         for (int k = 0; k < Math.min(slots.size(), kind.slots()); k++) {
             station.restoreSlot(k, slots.get(k));
@@ -105,6 +142,7 @@ public final class LogisticsData extends SavedData {
         for (int k = 0; k < Math.min(accumulated.size(), kind.slots()); k++) {
             station.setAccumulated(k, accumulated.get(k));
         }
+        dispatch.applyTo(station);
         return station;
     }
 
@@ -138,11 +176,13 @@ public final class LogisticsData extends SavedData {
     private static final Codec<LogisticsData> CODEC = RecordCodecBuilder.create(i -> i.group(
             Codec.INT.optionalFieldOf("format").forGetter(data -> Optional.of(FORMAT)),
             STATION_CODEC.listOf().fieldOf("stations").forGetter(data -> List.copyOf(data.network.stations())),
-            TRIP_CODEC.listOf().fieldOf("trips").forGetter(data -> data.network.trips())
-    ).apply(i, (format, stations, trips) -> {
+            TRIP_CODEC.listOf().fieldOf("trips").forGetter(data -> data.network.trips()),
+            ROUTE_CODEC.listOf().optionalFieldOf("routes", List.of()).forGetter(data -> data.network.routes())
+    ).apply(i, (format, stations, trips, routes) -> {
         LogisticsData data = new LogisticsData();
         stations.forEach(data.network::add);
         trips.forEach(data.network::restoreTrip);
+        routes.forEach(data.network::addRoute);
         return data;
     }));
 

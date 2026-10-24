@@ -69,7 +69,7 @@ class ProductionStatsTest {
             stats.produced(MOON, "gear", 1, now);
             stats.produced(MOON, "titanium", 5, now);
         }
-        Snapshot all = stats.snapshot(null, Range.MINUTE, now);
+        Snapshot all = stats.snapshot((String) null, Range.MINUTE, now);
         List<String> order = all.rows().stream().map(Row::item).toList();
         assertEquals(List.of("titanium", "gear", "iron"), order);
         assertEquals(120, all.rows().get(1).produced(), 3);

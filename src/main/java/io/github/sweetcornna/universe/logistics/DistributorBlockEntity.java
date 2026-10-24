@@ -172,7 +172,29 @@ public class DistributorBlockEntity extends MachineBlockEntity implements Machin
             }
         }
         this.setChanged();
+        this.register();
         return true;
+    }
+
+    /** 控制面板远程改模式（ADR-0033 §三）：只认两个模式按钮，物品要走到跟前改。 */
+    public boolean remoteButton(int button) {
+        switch (button) {
+            case CYCLE_ICARUS -> this.icarus = DistributorRegistry.next(this.icarus);
+            case CYCLE_PEER -> this.peer = DistributorRegistry.next(this.peer);
+            default -> {
+                return false;
+            }
+        }
+        this.setChanged();
+        this.register();
+        return true;
+    }
+
+    /** 把现状记进全局的登记表。 */
+    void register() {
+        if (this.level instanceof ServerLevel level && !this.isRemoved()) {
+            DistributorRegistry.get(level.getServer()).record(level, this);
+        }
     }
 
     /** 蓝图记下物品和两个模式。 */
@@ -198,6 +220,7 @@ public class DistributorBlockEntity extends MachineBlockEntity implements Machin
         this.icarus = enumOr(Distribution.Icarus.class, settings.getStringOr("Icarus", ""), Distribution.Icarus.NONE);
         this.peer = enumOr(Distribution.Peer.class, settings.getStringOr("Peer", ""), Distribution.Peer.NONE);
         this.setChanged();
+        this.register();
     }
 
     // ---- 电
@@ -490,6 +513,14 @@ public class DistributorBlockEntity extends MachineBlockEntity implements Machin
         super.onLoad();
         if (this.level instanceof ServerLevel level) {
             Distributors.add(level, this.worldPosition);
+            // 没加载的时候控制面板改过模式，现在照着改
+            DistributorRegistry.Entry pending = DistributorRegistry.get(level.getServer()).takePending(level, this.worldPosition);
+            if (pending != null) {
+                this.icarus = pending.icarus();
+                this.peer = pending.peer();
+                this.setChanged();
+            }
+            this.register();
         }
     }
 
@@ -511,6 +542,7 @@ public class DistributorBlockEntity extends MachineBlockEntity implements Machin
     @Override
     public void preRemoveSideEffects(BlockPos pos, BlockState state) {
         if (this.level instanceof ServerLevel level) {
+            DistributorRegistry.get(level.getServer()).remove(level, pos);
             for (Trip trip : this.trips) {
                 int left = trip.cargo;
                 while (left > 0) {

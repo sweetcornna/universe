@@ -102,10 +102,13 @@ public final class BlueprintClient {
             while (UniverseKeys.ROTATE_BLUEPRINT.consumeClick()) {
                 if (minecraft.gui.screen() == null && minecraft.player != null
                         && minecraft.player.getMainHandItem().has(UniverseDataComponents.BLUEPRINT.get())) {
-                    ClientPacketDistributor.sendToServer(new BlueprintPayloads.Rotate());
+                    // Shift + 旋转键切"只贴设备"（ADR-0033 §九），不另占按键
+                    ClientPacketDistributor.sendToServer(new BlueprintPayloads.Rotate(minecraft.hasShiftDown()));
                 }
             }
+            BlueprintCostHud.tick(minecraft);
         });
+        BlueprintCostHud.registerEvents(modBus);
         gameBus.addListener(InputEvent.InteractionKeyMappingTriggered.class, BlueprintClient::onUse);
         gameBus.addListener(ExtractLevelRenderStateEvent.class, BlueprintClient::extract);
         gameBus.addListener(SubmitCustomGeometryEvent.class, BlueprintClient::submit);
@@ -114,6 +117,7 @@ public final class BlueprintClient {
             REQUESTED.clear();
             MODELS.clear();
             lastPaste = null;
+            BlueprintCostHud.clear();
         });
     }
 
@@ -201,10 +205,26 @@ public final class BlueprintClient {
             ClientPacketDistributor.sendToServer(new BlueprintPayloads.Request(info.id()));
         }
         int turns = held.getOrDefault(UniverseDataComponents.BLUEPRINT_ROTATION.get(), 0);
+        boolean devicesOnly = held.getOrDefault(UniverseDataComponents.BLUEPRINT_DEVICES_ONLY.get(), false);
         int[] rotated = BlueprintGeometry.rotatedSize(info.size(), turns);
         BlockPos origin = BlueprintItem.origin(anchor(info, turns, level, hit), rotated);
         AABB box = new AABB(Vec3.atLowerCornerOf(origin), Vec3.atLowerCornerOf(origin).add(rotated[0], rotated[1], rotated[2]));
-        List<Ghost> ghosts = content == null || content.positions().size() > MAX_GHOSTS ? List.of() : ghosts(content, origin, turns, level, camera);
+        Map<net.minecraft.world.item.Item, Integer> cost = new HashMap<>();
+        List<Ghost> ghosts;
+        if (content == null) {
+            ghosts = List.of();
+        } else if (content.positions().size() > MAX_GHOSTS) {
+            // 太大不画虚影，材料按整张蓝图算
+            ghosts = List.of();
+            for (int state : content.states()) {
+                tally(cost, content.palette().get(state), devicesOnly);
+            }
+        } else {
+            ghosts = ghosts(content, origin, turns, level, camera, devicesOnly, cost);
+        }
+        if (content != null) {
+            BlueprintCostHud.preview(cost, devicesOnly, level.getGameTime());
+        }
         boolean blocked = ghosts.stream().anyMatch(ghost -> ghost.color == BLOCKED);
         return new Preview(box.move(camera.reverse()), blocked ? FRAME_BAD : FRAME, ghosts);
     }
@@ -223,14 +243,31 @@ public final class BlueprintClient {
         });
     }
 
-    private static List<Ghost> ghosts(BlueprintPayloads.Content content, BlockPos origin, int turns, ClientLevel level, Vec3 camera) {
+    /** 放这个方块要花的材料记进 cost；"只贴设备"时不是设备的不算。 */
+    private static void tally(Map<net.minecraft.world.item.Item, Integer> cost, BlockState state, boolean devicesOnly) {
+        if (!devicesOnly || Blueprints.device(state)) {
+            net.minecraft.world.item.Item item = Blueprints.cost(state);
+            if (item != null) {
+                cost.merge(item, 1, Integer::sum);
+            }
+        }
+    }
+
+    /**
+     * 要画的虚影：已经是这个样子的格子不画；"只贴设备"时只画设备。顺带把还要花的材料记进 cost。
+     */
+    private static List<Ghost> ghosts(BlueprintPayloads.Content content, BlockPos origin, int turns, ClientLevel level, Vec3 camera,
+            boolean devicesOnly, Map<net.minecraft.world.item.Item, Integer> cost) {
         Rotation rotation = Blueprints.rotation(turns);
         int count = content.positions().size();
         Map<BlockPos, BlockState> placed = new HashMap<>(count * 2);
         for (int i = 0; i < count; i++) {
             int packed = content.positions().get(i);
             int[] xz = BlueprintGeometry.rotate(BlueprintGeometry.x(packed), BlueprintGeometry.z(packed), content.sizeX(), content.sizeZ(), turns);
-            placed.put(origin.offset(xz[0], BlueprintGeometry.y(packed), xz[1]), content.palette().get(content.states().get(i)).rotate(rotation));
+            BlockState state = content.palette().get(content.states().get(i)).rotate(rotation);
+            if (!devicesOnly || Blueprints.device(state)) {
+                placed.put(origin.offset(xz[0], BlueprintGeometry.y(packed), xz[1]), state);
+            }
         }
         List<Ghost> ghosts = new ArrayList<>(count);
         for (Map.Entry<BlockPos, BlockState> entry : placed.entrySet()) {
@@ -240,6 +277,7 @@ public final class BlueprintClient {
             if (current == state) {
                 continue;
             }
+            tally(cost, state, false);
             int hidden = 0;
             for (Direction direction : DIRECTIONS) {
                 BlockState neighbor = placed.get(pos.relative(direction));

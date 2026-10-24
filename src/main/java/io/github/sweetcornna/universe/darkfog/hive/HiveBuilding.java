@@ -13,6 +13,7 @@ import io.github.sweetcornna.universe.darkfog.DarkFogEnemy;
 import io.github.sweetcornna.universe.darkfog.entity.DarkFogBolt;
 import io.github.sweetcornna.universe.darkfog.entity.DarkFogDamage;
 import io.github.sweetcornna.universe.entity.ship.ShipEntity;
+import io.github.sweetcornna.universe.mecha.fleet.FleetUnit;
 import io.github.sweetcornna.universe.registry.UniverseEntities;
 import io.github.sweetcornna.universe.registry.UniverseSounds;
 import io.github.sweetcornna.universe.registry.sound.HostileSounds;
@@ -355,10 +356,13 @@ public class HiveBuilding extends Mob implements DarkFogEnemy, Enemy {
         return false;
     }
 
-    /** 能当目标：飞船看上面的人，人不能坐在飞船里（按飞船算）。 */
+    /** 能当目标：飞船看上面的人，人不能坐在飞船里（按飞船算），机甲的舰队单位活着就打。 */
     private static boolean shootable(Entity entity) {
         if (entity instanceof ShipEntity ship) {
             return shootableShip(ship);
+        }
+        if (entity instanceof FleetUnit unit) {
+            return unit.isAlive();
         }
         return DarkFogDamage.targetable(entity) && !(entity.getVehicle() instanceof ShipEntity);
     }
@@ -399,6 +403,13 @@ public class HiveBuilding extends Mob implements DarkFogEnemy, Enemy {
             if (d < bestDistance && this.clear(level, muzzle, aimPoint(player))) {
                 bestDistance = d;
                 best = player;
+            }
+        }
+        for (FleetUnit unit : DarkFogDamage.fleetUnits(level, muzzle, range)) {
+            double d = aimPoint(unit).distanceToSqr(muzzle);
+            if (d < bestDistance && this.clear(level, muzzle, aimPoint(unit))) {
+                bestDistance = d;
+                best = unit;
             }
         }
         return best;

@@ -102,6 +102,12 @@ public final class UniverseDataComponents {
     /** 生物卵上记着的物种、性状和主人（ADR-0026 §九）。 */
     public static final Supplier<DataComponentType<CreatureEggs.Egg>> CREATURE_EGG = COMPONENTS.registerComponentType("creature_egg",
             builder -> builder.persistent(CreatureEggs.Egg.CODEC).networkSynchronized(CreatureEggs.Egg.STREAM_CODEC).cacheEncoding());
+    /** 画好的蓝图切到了"只贴设备"（ADR-0033 §九）；没有这一项就是贴全部。 */
+    public static final Supplier<DataComponentType<Boolean>> BLUEPRINT_DEVICES_ONLY = COMPONENTS.registerComponentType("blueprint_devices_only",
+            builder -> builder.persistent(Codec.BOOL).networkSynchronized(ByteBufCodecs.BOOL));
+    /** 舰队单位掉了多少血（ADR-0033 §一）；满血的不带，能叠在一起。 */
+    public static final Supplier<DataComponentType<Integer>> FLEET_DAMAGE = COMPONENTS.registerComponentType("fleet_damage",
+            builder -> builder.persistent(Codec.intRange(0, 100000)).networkSynchronized(ByteBufCodecs.VAR_INT));
 
     private UniverseDataComponents() {
     }

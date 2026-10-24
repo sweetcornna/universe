@@ -349,6 +349,8 @@ public final class DevScript {
                     case "sneak" -> minecraft.options.keyShift;
                     case "sprint" -> minecraft.options.keySprint;
                     case "use" -> minecraft.options.keyUse;
+                    // 按住蓄护盾爆发，松开放出（左 Alt）
+                    case "burst" -> io.github.sweetcornna.universe.client.mecha.CombatClient.SHIELD_BURST;
                     default -> throw new IllegalArgumentException("unknown key " + args[0]);
                 };
                 boolean down = args.length < 2 || args[1].equals("on");
@@ -498,10 +500,33 @@ public final class DevScript {
                     case "cargo" -> UniverseKeys.SHIP_CARGO;
                     // 戴森球编辑器（Y）
                     case "dysoneditor" -> UniverseKeys.DYSON_EDITOR;
+                    // 物流控制面板（I）
+                    case "controlpanel" -> UniverseKeys.CONTROL_PANEL;
+                    // 出动、召回舰队（Z）
+                    case "fleet" -> io.github.sweetcornna.universe.client.mecha.CombatClient.FLEET;
                     default -> throw new IllegalArgumentException("unknown key " + args[0]);
                 };
                 KeyMapping.click(key.getKey());
             }
+            // pin 种类 [目标] [范围]：往仪表盘上钉一张图（种类是 item、power、research、dyson、station，范围见 Dashboard.Pin）
+            case "pin" -> ClientPacketDistributor.sendToServer(new io.github.sweetcornna.universe.network.DashboardEditPayload(
+                    io.github.sweetcornna.universe.network.DashboardEditPayload.Action.ADD, -1,
+                    io.github.sweetcornna.universe.core.stats.Dashboard.Pin.of(
+                            io.github.sweetcornna.universe.core.stats.Dashboard.Kind.valueOf(args[0].toUpperCase(java.util.Locale.ROOT)),
+                            args.length > 1 ? args[1] : "", args.length > 2 ? args[2] : "", 0)));
+            // menubutton 编号：像界面上点按钮那样，本地菜单先按一下（翻页这类只在两边各记一份的状态），再发给服务端
+            case "menubutton" -> {
+                int id = Integer.parseInt(args[0]);
+                player.containerMenu.clickMenuButton(player, id);
+                minecraft.gameMode.handleInventoryButtonClick(player.containerMenu.containerId, id);
+            }
+            // quickmove 格子：Shift 点当前界面的某一格（格子按菜单里的序号）
+            case "quickmove" -> minecraft.gameMode.handleContainerInput(player.containerMenu.containerId, Integer.parseInt(args[0]), 0,
+                    net.minecraft.world.inventory.ContainerInput.QUICK_MOVE, player);
+            // stats 物品：打开生产统计，直接选中这种物品
+            case "stats" -> minecraft.gui.setScreen(new io.github.sweetcornna.universe.client.stats.StatsScreen("", 0, 0, args[0]));
+            // queue 科技：把科技排进研究队列（服务端照样查前置）
+            case "queue" -> ClientPacketDistributor.sendToServer(new ResearchActionPayload(ResearchActionPayload.Action.QUEUE_ADD, args[0], -1));
             case "rightclick" -> KeyMapping.click(minecraft.options.keyUse.getKey()); // 按一下右键，走原版的完整流程
             case "advancements" -> minecraft.gui.setScreen(new AdvancementsScreen(player.connection.getAdvancements()));
             case "creative" -> {

@@ -18,6 +18,7 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
@@ -52,6 +53,8 @@ public class StationScreen extends MachineScreen {
     private static final int RANGE_Y = 38;
     private static final int SUPPLY = 0xFF4FA3F7;
     private static final int DEMAND = 0xFFE89A3C;
+    private static final int PANEL_Y = 4;
+    private static final int PANEL_HEIGHT = 12;
 
     private final StationKind kind;
 
@@ -60,6 +63,13 @@ public class StationScreen extends MachineScreen {
         MachineMenu.Type type = menu.type();
         this.kind = type == UniverseMenus.INTERSTELLAR_LOGISTICS_STATION ? StationKind.INTERSTELLAR
                 : type == UniverseMenus.ORBITAL_COLLECTOR ? StationKind.COLLECTOR : StationKind.PLANETARY;
+    }
+
+    @Override
+    protected void init() {
+        super.init();
+        // "钉住"要按位置找站在账本里的编号，先要一份控制面板的快照
+        ControlPanelClient.request();
     }
 
     // ---- 布局（和 StationBlockEntity#layout 对齐）
@@ -136,6 +146,7 @@ public class StationScreen extends MachineScreen {
 
     @Override
     protected void extractInfo(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+        this.panelButton(graphics, mouseX, mouseY);
         if (this.kind == StationKind.COLLECTOR) {
             graphics.text(this.font, Component.translatable("gui.universe.orbital_collector.hint"), 8, 22, DIM, false);
             graphics.text(this.font, Component.translatable("gui.universe.station.item"), BAR_X, COLLECTOR_ROWS_Y - 10, DIM, false);
@@ -280,6 +291,55 @@ public class StationScreen extends MachineScreen {
         graphics.centeredText(this.font, Component.literal(label), x + SMALL / 2 + 1, y + 3, TEXT);
     }
 
+    /**
+     * 标题栏右边两个小按钮（ADR-0033 §三）："面板"打开物流控制面板、选中这座站；"钉住"把这座站的存货钉到仪表盘。
+     */
+    private void panelButton(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+        this.titleButton(graphics, Component.translatable("gui.universe.control_panel.open"), this.panelButtonX(), mouseX, mouseY);
+        this.titleButton(graphics, Component.translatable("gui.universe.control_panel.pin_short"), this.pinButtonX(), mouseX, mouseY);
+    }
+
+    private void titleButton(GuiGraphicsExtractor graphics, Component label, int x, int mouseX, int mouseY) {
+        int width = this.font.width(label) + 8;
+        boolean hover = inside(mouseX, mouseY, x, PANEL_Y, width, PANEL_HEIGHT);
+        graphics.fill(x, PANEL_Y, x + width, PANEL_Y + PANEL_HEIGHT, hover ? 0xFF2E7A92 : 0xFF16262E);
+        graphics.outline(x, PANEL_Y, width, PANEL_HEIGHT, BORDER);
+        graphics.centeredText(this.font, label, x + width / 2, PANEL_Y + 2, hover ? TEXT : DIM);
+    }
+
+    private int panelButtonWidth() {
+        return this.font.width(Component.translatable("gui.universe.control_panel.open")) + 8;
+    }
+
+    private int panelButtonX() {
+        return this.imageWidth - 6 - this.panelButtonWidth();
+    }
+
+    private int pinButtonWidth() {
+        return this.font.width(Component.translatable("gui.universe.control_panel.pin_short")) + 8;
+    }
+
+    private int pinButtonX() {
+        return this.panelButtonX() - 3 - this.pinButtonWidth();
+    }
+
+    /** 站在账本里的编号要从控制面板的快照里按位置找（界面只知道方块的位置）。 */
+    private void pinToDashboard() {
+        if (this.minecraft == null || this.minecraft.level == null || this.minecraft.player == null) {
+            return;
+        }
+        String dimension = this.minecraft.level.dimension().identifier().toString();
+        BlockPos pos = this.menu.pos();
+        java.util.Optional<java.util.UUID> id = ControlPanelClient.snapshot().flatMap(snapshot -> snapshot.stations().stream()
+                .filter(row -> row.dimension().equals(dimension) && row.pos().equals(pos)).map(row -> row.id()).findFirst());
+        if (id.isPresent()) {
+            io.github.sweetcornna.universe.client.stats.DashboardHud.pinStation(id.get());
+        } else {
+            ControlPanelClient.request();
+            this.minecraft.player.sendOverlayMessage(Component.translatable("gui.universe.control_panel.pin_wait"));
+        }
+    }
+
     private static boolean inside(double mouseX, double mouseY, int x, int y, int width, int height) {
         return mouseX >= x && mouseX < x + width && mouseY >= y && mouseY < y + height;
     }
@@ -386,6 +446,18 @@ public class StationScreen extends MachineScreen {
         }
         if (!left) {
             return super.mouseClicked(event, doubleClick);
+        }
+        if (inside(x, y, this.pinButtonX(), PANEL_Y, this.pinButtonWidth(), PANEL_HEIGHT) && this.minecraft != null) {
+            this.minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+            this.pinToDashboard();
+            return true;
+        }
+        if (inside(x, y, this.panelButtonX(), PANEL_Y, this.panelButtonWidth(), PANEL_HEIGHT) && this.minecraft != null) {
+            this.minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
+            BlockPos pos = this.menu.pos();
+            this.onClose();
+            this.minecraft.gui.setScreen(new ControlPanelScreen(pos));
+            return true;
         }
         if (this.kind != StationKind.COLLECTOR && inside(x, y, RANGE_MINUS_X, RANGE_Y, SMALL, 14)) {
             return this.press(StationBlockEntity.RANGE_MINUS);

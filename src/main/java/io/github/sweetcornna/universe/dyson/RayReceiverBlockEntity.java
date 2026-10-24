@@ -28,7 +28,8 @@ import net.minecraft.world.level.storage.ValueOutput;
 
 /**
  * 射线接收站（ADR-0016）：把本恒星系戴森球的能量送进电网，或者在光子模式下产出临界光子，数值见 {@link RayReceiver}。
- * 星球上要恒星在地平线以上、头顶看得见天空；装着引力透镜时，有大气的星球不需要看见恒星；太空里一直能收。
+ * 星球上要恒星在地平线以上、头顶看得见天空；装着透镜时，有大气的星球不需要看见恒星；太空里一直能收。
+ * 透镜格放引力透镜或黑雾透镜（ADR-0033 §七），数值见 {@link RayReceiver.Lens}。
  *
  * <p>发电模式下每刻向戴森球要"满负荷时要取的电 × 上一刻的负荷"，戴森球不够分时大家按比例少拿；电网用多少才从戴森球
  * 取多少（除以效率）。
@@ -42,7 +43,9 @@ public class RayReceiverBlockEntity extends MachineBlockEntity implements Machin
     public static final int STATUS = BASE_DATA + 3;
     public static final int SHARE = BASE_DATA + 4;
     public static final int PHOTON = BASE_DATA + 5;
-    public static final int DATA_COUNT = BASE_DATA + 6;
+    /** 正在用的透镜，{@link RayReceiver.Lens} 的序号。 */
+    public static final int LENS_KIND = BASE_DATA + 6;
+    public static final int DATA_COUNT = BASE_DATA + 7;
     public static final int BUTTON_MODE = 0;
     private static final int RECHECK = 20;
 
@@ -53,6 +56,7 @@ public class RayReceiverBlockEntity extends MachineBlockEntity implements Machin
     private boolean photonMode;
     private double continuity;
     private int lensTicks;
+    private RayReceiver.Lens lens = RayReceiver.Lens.NONE;
     private double photonEnergy;
     private boolean sky;
     private boolean sun;
@@ -81,6 +85,19 @@ public class RayReceiverBlockEntity extends MachineBlockEntity implements Machin
         return this.lensTicks > 0;
     }
 
+    /** 正在起作用的透镜，没有就是 NONE。 */
+    public RayReceiver.Lens lens() {
+        return this.lensActive() ? this.lens : RayReceiver.Lens.NONE;
+    }
+
+    /** 这个物品是哪种透镜。 */
+    public static RayReceiver.Lens lensOf(ItemStack stack) {
+        if (stack.is(UniverseItems.DARK_FOG_LENS.get())) {
+            return RayReceiver.Lens.DARK_FOG;
+        }
+        return stack.is(UniverseItems.GRAVITON_LENS.get()) ? RayReceiver.Lens.GRAVITON : RayReceiver.Lens.NONE;
+    }
+
     @Override
     public long generation() {
         return this.photonMode ? 0 : this.output;
@@ -95,7 +112,7 @@ public class RayReceiverBlockEntity extends MachineBlockEntity implements Machin
     public void settle(double satisfaction, double load, long stored) {
         super.settle(satisfaction, load, stored);
         if (this.output > 0 && !this.photonMode) {
-            this.sphere().ifPresent(sphere -> sphere.draw(this.output * load / RayReceiver.efficiency(this.continuity, this.lossFactor())));
+            this.sphere().ifPresent(sphere -> sphere.draw(this.output * load / RayReceiver.efficiency(this.continuity, this.lens(), this.lossFactor())));
         }
     }
 
@@ -136,7 +153,8 @@ public class RayReceiverBlockEntity extends MachineBlockEntity implements Machin
             this.sun = DysonSight.sunElevation(level, this.worldPosition) > 0;
         }
         DysonSphere sphere = this.sphere().orElse(null);
-        boolean lensAvailable = this.lensActive() || this.getItem(LENS_SLOT).is(UniverseItems.GRAVITON_LENS.get());
+        RayReceiver.Lens loaded = lensOf(this.getItem(LENS_SLOT));
+        boolean lensAvailable = this.lensActive() || loaded != RayReceiver.Lens.NONE;
         // 装着透镜时，有大气的星球不需要看见恒星
         boolean sight = DysonSight.space(level) || lensAvailable && DysonSight.atmosphere(level) || this.sky && this.sun;
         boolean room = this.outputHasRoom(PHOTON_SLOT, new ItemStack(UniverseItems.CRITICAL_PHOTON.get()));
@@ -154,15 +172,16 @@ public class RayReceiverBlockEntity extends MachineBlockEntity implements Machin
             this.status = Status.RECEIVING;
         }
         boolean receiving = this.status == Status.RECEIVING;
-        this.continuity = RayReceiver.continuity(this.continuity, receiving);
-        if (receiving && !this.lensActive() && this.getItem(LENS_SLOT).is(UniverseItems.GRAVITON_LENS.get())) {
-            ProductionLog.consumed(level, UniverseItems.GRAVITON_LENS.get(), 1);
+        if (receiving && !this.lensActive() && loaded != RayReceiver.Lens.NONE) {
+            ProductionLog.consumed(level, this.getItem(LENS_SLOT).getItem(), 1);
             this.getItem(LENS_SLOT).shrink(1);
-            this.lensTicks = RayReceiver.LENS_TICKS;
+            this.lens = loaded;
+            this.lensTicks = loaded.ticks();
             this.setChanged();
         }
-        boolean lens = this.lensActive();
-        if (receiving && lens) {
+        RayReceiver.Lens lens = this.lens();
+        this.continuity = RayReceiver.continuity(this.continuity, receiving, lens);
+        if (receiving && lens != RayReceiver.Lens.NONE) {
             this.lensTicks--;
         }
         this.share = sphere == null ? 0 : sphere.supplyFraction();
@@ -227,7 +246,7 @@ public class RayReceiverBlockEntity extends MachineBlockEntity implements Machin
 
     @Override
     public boolean canPlaceItem(int slot, ItemStack stack) {
-        return slot == LENS_SLOT && stack.is(UniverseItems.GRAVITON_LENS.get());
+        return slot == LENS_SLOT && lensOf(stack) != RayReceiver.Lens.NONE;
     }
 
     @Override
@@ -240,7 +259,8 @@ public class RayReceiverBlockEntity extends MachineBlockEntity implements Machin
         return switch (index) {
             case MODE -> this.photonMode ? 1 : 0;
             case CONTINUITY -> (int) Math.round(this.continuity * 1000);
-            case LENS -> (int) Math.round(this.lensTicks * 1000.0 / RayReceiver.LENS_TICKS);
+            case LENS -> this.lensActive() ? (int) Math.round(this.lensTicks * 1000.0 / this.lens.ticks()) : 0;
+            case LENS_KIND -> this.lens().ordinal();
             case STATUS -> this.status.ordinal();
             case SHARE -> (int) Math.round(this.share * 1000);
             case PHOTON -> (int) Math.round(Math.min(1, this.photonEnergy / RayReceiver.PHOTON_ENERGY) * 1000);
@@ -259,6 +279,8 @@ public class RayReceiverBlockEntity extends MachineBlockEntity implements Machin
         this.photonMode = input.getBooleanOr("PhotonMode", false);
         this.continuity = input.getDoubleOr("Continuity", 0);
         this.lensTicks = input.getIntOr("LensTicks", 0);
+        // 以前的存档只有引力透镜
+        this.lens = RayReceiver.Lens.byKey(input.getStringOr("Lens", RayReceiver.Lens.GRAVITON.key()));
         this.photonEnergy = input.getDoubleOr("PhotonEnergy", 0);
         this.receiving = input.getBooleanOr("Receiving", false);
     }
@@ -269,6 +291,7 @@ public class RayReceiverBlockEntity extends MachineBlockEntity implements Machin
         output.putBoolean("PhotonMode", this.photonMode);
         output.putDouble("Continuity", this.continuity);
         output.putInt("LensTicks", this.lensTicks);
+        output.putString("Lens", this.lens.key());
         output.putDouble("PhotonEnergy", this.photonEnergy);
     }
 

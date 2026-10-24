@@ -657,6 +657,15 @@ public final class UniverseBlocks {
             p -> new MachineBlock(p, UniverseBlockEntities.GRID_INTERFACE),
             p -> machine(p).lightLevel(state -> state.getValue(MachineBlock.WORKING) ? 9 : 2));
     // M17 收尾：互通（C）的方块加在这行上面
+    // M18 舰队和战斗（A）的方块加在这行上面
+    // M18 物流调度（B）的方块加在这行上面
+    // M18 统计和研究（C）的方块加在这行上面
+    /** 全息信标（ADR-0033 §六）：投影台顶上的发光盘常亮。 */
+    public static final DeferredBlock<io.github.sweetcornna.universe.beacon.HoloBeaconBlock> HOLO_BEACON = BLOCKS.registerBlock("holo_beacon",
+            io.github.sweetcornna.universe.beacon.HoloBeaconBlock::new,
+            p -> p.mapColor(MapColor.METAL).strength(2.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()
+                    .lightLevel(state -> 9));
+    // M18 信标、透镜、矿脉、蓝图（D）的方块加在这行上面
 
     /**
      * 按星球配色染色的方块。

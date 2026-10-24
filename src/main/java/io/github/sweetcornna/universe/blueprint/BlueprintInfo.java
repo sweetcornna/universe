@@ -17,8 +17,9 @@ import net.minecraft.world.item.Item;
  * 物品只记这些，提示里看得到。
  *
  * @param materials 按数量从多到少排的材料
+ * @param meta      作者、版本、说明（ADR-0033 §九）
  */
-public record BlueprintInfo(int id, String name, int sizeX, int sizeY, int sizeZ, int blocks, List<Material> materials) {
+public record BlueprintInfo(int id, String name, int sizeX, int sizeY, int sizeZ, int blocks, List<Material> materials, BlueprintData.Meta meta) {
     public record Material(Item item, int count) {
         static final Codec<Material> CODEC = RecordCodecBuilder.create(i -> i.group(
                 BuiltInRegistries.ITEM.byNameCodec().fieldOf("item").forGetter(Material::item),
@@ -37,7 +38,8 @@ public record BlueprintInfo(int id, String name, int sizeX, int sizeY, int sizeZ
             Codec.INT.fieldOf("size_y").forGetter(BlueprintInfo::sizeY),
             Codec.INT.fieldOf("size_z").forGetter(BlueprintInfo::sizeZ),
             Codec.INT.fieldOf("blocks").forGetter(BlueprintInfo::blocks),
-            Material.CODEC.listOf().fieldOf("materials").forGetter(BlueprintInfo::materials)
+            Material.CODEC.listOf().fieldOf("materials").forGetter(BlueprintInfo::materials),
+            BlueprintData.Meta.MAP_CODEC.forGetter(BlueprintInfo::meta)
     ).apply(i, BlueprintInfo::new));
     public static final StreamCodec<RegistryFriendlyByteBuf, BlueprintInfo> STREAM_CODEC = StreamCodec.composite(
             ByteBufCodecs.VAR_INT, BlueprintInfo::id,
@@ -47,6 +49,7 @@ public record BlueprintInfo(int id, String name, int sizeX, int sizeY, int sizeZ
             ByteBufCodecs.VAR_INT, BlueprintInfo::sizeZ,
             ByteBufCodecs.VAR_INT, BlueprintInfo::blocks,
             Material.STREAM_CODEC.apply(ByteBufCodecs.list()), BlueprintInfo::materials,
+            BlueprintData.Meta.STREAM_CODEC, BlueprintInfo::meta,
             BlueprintInfo::new);
 
     public int[] size() {

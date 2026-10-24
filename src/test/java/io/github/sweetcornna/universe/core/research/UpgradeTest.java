@@ -135,7 +135,7 @@ class UpgradeTest {
     @Test
     void defaultUpgradesMatchTheDesign() {
         TechTree tree = TechTree.DEFAULT;
-        assertEquals(15, tree.upgrades().size());
+        assertEquals(18, tree.upgrades().size());
         // 有限几级：矿脉利用 4、研究速度 3、载具引擎 5、射线 4；容量和太阳帆 6 级封顶
         assertEquals(4, tree.upgrade(Upgrades.VEIN_UTILIZATION).orElseThrow().tiers().size());
         assertEquals(3, tree.upgrade(Upgrades.RESEARCH_SPEED).orElseThrow().tiers().size());
@@ -152,6 +152,12 @@ class UpgradeTest {
         assertEquals(4, tree.upgrade(Upgrades.MASS_CONSTRUCTION).orElseThrow().maxLevel());
         assertEquals(Integer.MAX_VALUE, tree.upgrade(Upgrades.MECHA_CORE).orElseThrow().maxLevel());
         assertEquals(5, tree.upgrade(Upgrades.COMMUNICATION_CONTROL).orElseThrow().tiers().size());
+        // 舰队和战斗（ADR-0033）：能量护盾 5 级、编队扩充 2 级、舰队扩充 1 级
+        assertEquals(Upgrades.ENERGY_SHIELD_MAX, tree.upgrade(Upgrades.ENERGY_SHIELD).orElseThrow().maxLevel());
+        assertEquals(2, tree.upgrade(Upgrades.SQUADRON_EXPANSION).orElseThrow().maxLevel());
+        assertEquals(1, tree.upgrade(Upgrades.FLEET_EXPANSION).orElseThrow().maxLevel());
+        assertEquals(List.of("ground_squadron"), tree.upgrade(Upgrades.SQUADRON_EXPANSION).orElseThrow().requires());
+        assertEquals(List.of("space_fleet"), tree.upgrade(Upgrades.FLEET_EXPANSION).orElseThrow().requires());
         for (Upgrade upgrade : tree.upgrades()) {
             for (int level = 1; level <= upgrade.tiers().size() + 3 && level <= upgrade.maxLevel(); level++) {
                 assertTrue(TechTree.MATRICES.containsAll(upgrade.matrices(level)), upgrade.id() + " " + level);
@@ -217,6 +223,18 @@ class UpgradeTest {
         assertEquals("800 W", Upgrades.watts(40));
         assertEquals("999 J", Upgrades.energy(999));
         assertEquals("1 kJ", Upgrades.energy(999.96));
+    }
+
+    @Test
+    void fleetAndShieldUpgradesFollowTheDesign() {
+        assertEquals(0, Upgrades.energyShield(0));
+        assertEquals(40, Upgrades.energyShield(2));
+        assertEquals(100, Upgrades.energyShield(5));
+        assertEquals(100, Upgrades.energyShield(9));
+        assertEquals(List.of("60"), Upgrades.effectArgs(Upgrades.ENERGY_SHIELD, 3));
+        assertEquals(List.of("2"), Upgrades.effectArgs(Upgrades.SQUADRON_EXPANSION, 1));
+        assertEquals(List.of("3"), Upgrades.effectArgs(Upgrades.SQUADRON_EXPANSION, 2));
+        assertEquals(List.of("2"), Upgrades.effectArgs(Upgrades.FLEET_EXPANSION, 1));
     }
 
     @Test

@@ -9,6 +9,7 @@ import io.github.sweetcornna.universe.core.survival.Shield;
 import io.github.sweetcornna.universe.core.tech.Stat;
 import io.github.sweetcornna.universe.core.tech.TechBonuses;
 import io.github.sweetcornna.universe.core.tech.TechModule;
+import io.github.sweetcornna.universe.mecha.combat.MechaCombat;
 import io.github.sweetcornna.universe.network.OpenTechPayload;
 import io.github.sweetcornna.universe.perf.ServerPerf;
 import io.github.sweetcornna.universe.registry.UniverseAttachments;
@@ -116,13 +117,9 @@ public final class SuitTech {
     }
 
     private static void tick(ServerPlayer player) {
-        ExosuitData data = player.getData(UniverseAttachments.EXOSUIT);
         TechBonuses bonuses = suit(player);
-        Shield shield = data.shield();
-        shield.tick((float) bonuses.get(Stat.SHIELD));
-        if (player.isCreative()) {
-            shield.refill();
-        }
+        // 护盾：模块那部分自己回充，机甲核心再用电补（ADR-0033 §二）
+        MechaCombat.tickShield(player);
         if (player.tickCount % 10 == 0) {
             AttributeInstance speed = player.getAttribute(Attributes.MOVEMENT_SPEED);
             double amount = bonuses.get(Stat.SPEED);
@@ -138,26 +135,33 @@ public final class SuitTech {
         }
     }
 
-    /** 护盾只挡战斗伤害：来自生物、投射物、爆炸；缺氧、危害、摔落、饥饿不挡。 */
     private static void shield(ServerPlayer player, LivingIncomingDamageEvent event) {
-        DamageSource source = event.getSource();
+        event.setAmount(absorb(player, event.getSource(), event.getAmount()));
+    }
+
+    /**
+     * 护盾挡一次伤害（GameTest 也直接调）。只挡战斗伤害：来自生物、投射物、爆炸；缺氧、危害、摔落、饥饿不挡。
+     *
+     * @return 挡不住、还要落到玩家身上的部分
+     */
+    public static float absorb(ServerPlayer player, DamageSource source, float amount) {
         boolean combat = source.getEntity() != null || source.is(DamageTypeTags.IS_PROJECTILE) || source.is(DamageTypeTags.IS_EXPLOSION);
         if (!combat || source.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) {
-            return;
+            return amount;
         }
         Shield shield = player.getData(UniverseAttachments.EXOSUIT).shield();
         if (shield.capacity() <= 0) {
-            return;
+            return amount;
         }
         boolean had = shield.value() > 0;
-        float left = shield.absorb(event.getAmount());
+        float left = shield.absorb(amount);
         ServerLevel level = player.level();
         if (had) {
             level.playSound(null, player.getX(), player.getY(), player.getZ(),
                     shield.value() > 0 ? GearSounds.SHIELD_HIT : GearSounds.SHIELD_BREAK, SoundSource.PLAYERS, 0.8F,
                     0.95F + player.getRandom().nextFloat() * 0.1F);
         }
-        event.setAmount(left);
+        return left;
     }
 
     /** 背包放不下这件东西时收进货舱。 */

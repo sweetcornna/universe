@@ -135,6 +135,8 @@ public abstract class MachineBlockEntity extends BaseContainerBlockEntity implem
         this.satisfaction = satisfaction;
         this.load = load;
         this.stored = stored;
+        // 电力统计按设备种类分开（ADR-0033 §四），每秒取一次样
+        io.github.sweetcornna.universe.stats.ProductionLog.device(this);
     }
 
     /** 发电机：界面上显示输出和负荷。 */

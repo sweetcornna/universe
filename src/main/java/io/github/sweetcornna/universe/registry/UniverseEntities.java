@@ -200,6 +200,37 @@ public final class UniverseEntities {
             ENTITIES.registerEntityType("turret_plasma", io.github.sweetcornna.universe.darkfog.turret.TurretPlasma::new, MobCategory.MISC,
                     builder -> builder.sized(0.4F, 0.4F).clientTrackingRange(8).updateInterval(1).noSave().noLootTable().fireImmune());
     // M16 黑雾：等离子炮塔（T）的实体加在这行上面
+    // ---- M18 舰队和战斗（ADR-0033 §一、§二）
+    /** 机甲放出来的舰队单位：物品一直在编队格里，实体只是它在外面的样子，不存档。 */
+    public static final DeferredHolder<EntityType<?>, EntityType<io.github.sweetcornna.universe.mecha.fleet.FleetUnit>> FLEET_PROTOTYPE =
+            fleet("fleet_prototype", io.github.sweetcornna.universe.core.mecha.fleet.FleetUnitKind.PROTOTYPE, 0.7F, 0.5F, 10);
+    public static final DeferredHolder<EntityType<?>, EntityType<io.github.sweetcornna.universe.mecha.fleet.FleetUnit>> FLEET_PRECISION_DRONE =
+            fleet("fleet_precision_drone", io.github.sweetcornna.universe.core.mecha.fleet.FleetUnitKind.PRECISION_DRONE, 0.8F, 0.5F, 10);
+    public static final DeferredHolder<EntityType<?>, EntityType<io.github.sweetcornna.universe.mecha.fleet.FleetUnit>> FLEET_ATTACK_DRONE =
+            fleet("fleet_attack_drone", io.github.sweetcornna.universe.core.mecha.fleet.FleetUnitKind.ATTACK_DRONE, 1.0F, 0.7F, 10);
+    public static final DeferredHolder<EntityType<?>, EntityType<io.github.sweetcornna.universe.mecha.fleet.FleetUnit>> FLEET_CORVETTE =
+            fleet("fleet_corvette", io.github.sweetcornna.universe.core.mecha.fleet.FleetUnitKind.CORVETTE, 2.5F, 1.2F, 20);
+    public static final DeferredHolder<EntityType<?>, EntityType<io.github.sweetcornna.universe.mecha.fleet.FleetUnit>> FLEET_DESTROYER =
+            fleet("fleet_destroyer", io.github.sweetcornna.universe.core.mecha.fleet.FleetUnitKind.DESTROYER, 5.0F, 2.0F, 24);
+    /** 舰队单位、机甲等离子炮打出的等离子团：算放它的玩家打的，直线飞，每刻同步；不存档。 */
+    public static final DeferredHolder<EntityType<?>, EntityType<io.github.sweetcornna.universe.mecha.combat.PlasmaShot>> PLASMA_SHOT =
+            ENTITIES.registerEntityType("plasma_shot", io.github.sweetcornna.universe.mecha.combat.PlasmaShot::new, MobCategory.MISC,
+                    builder -> builder.sized(0.4F, 0.4F).clientTrackingRange(10).updateInterval(1).noSave().noLootTable().fireImmune());
+    /** 机甲的导弹：会拐弯，每刻同步；不存档。 */
+    public static final DeferredHolder<EntityType<?>, EntityType<io.github.sweetcornna.universe.mecha.combat.MechaMissile>> MECHA_MISSILE =
+            ENTITIES.registerEntityType("mecha_missile", io.github.sweetcornna.universe.mecha.combat.MechaMissile::new, MobCategory.MISC,
+                    builder -> builder.sized(0.35F, 0.35F).clientTrackingRange(8).updateInterval(1).noSave().noLootTable().fireImmune());
+
+    private static DeferredHolder<EntityType<?>, EntityType<io.github.sweetcornna.universe.mecha.fleet.FleetUnit>> fleet(String name,
+            io.github.sweetcornna.universe.core.mecha.fleet.FleetUnitKind kind, float width, float height, int tracking) {
+        return ENTITIES.registerEntityType(name, (type, level) -> new io.github.sweetcornna.universe.mecha.fleet.FleetUnit(type, level, kind),
+                MobCategory.MISC, builder -> builder.sized(width, height).eyeHeight(height * 0.5F).clientTrackingRange(tracking).updateInterval(1)
+                        .noSave().noLootTable().fireImmune());
+    }
+    // M18 舰队和战斗（A）的实体加在这行上面
+    // M18 物流调度（B）的实体加在这行上面
+    // M18 统计和研究（C）的实体加在这行上面
+    // M18 信标、透镜、矿脉、蓝图（D）的实体加在这行上面
 
     private UniverseEntities() {
     }

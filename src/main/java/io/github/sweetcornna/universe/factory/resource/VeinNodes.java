@@ -77,6 +77,30 @@ public final class VeinNodes {
         return vanilla != null ? vanilla : planetOres().get(state.getBlock());
     }
 
+    /** 这个方块开采出来是不是这种物品；不是矿脉节点的矿石（别的模组的）按它自己的物品算。 */
+    public static boolean yields(BlockState state, Item item) {
+        Node node = node(state);
+        return node != null ? node.item() == item : state.getBlock().asItem() == item;
+    }
+
+    /** 这种物品是不是某种矿脉节点开采出来的（多功能工具按矿种高亮时用）。 */
+    public static boolean isOreDrop(Item item) {
+        if (item == Items.AIR) {
+            return false;
+        }
+        for (Node node : VANILLA.values()) {
+            if (node.item() == item) {
+                return true;
+            }
+        }
+        for (Node node : planetOres().values()) {
+            if (node.item() == item) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /** 星球矿石：注册完才能取方块，第一次用到时再建表。 */
     private static Map<Block, Node> planetOres() {
         Map<Block, Node> ores = planetOres;
@@ -133,6 +157,14 @@ public final class VeinNodes {
         }
         setUsed(level, pos, used);
         return false;
+    }
+
+    /** 把节点的储量用到只剩 left 个（至少 1 个）；采不完的节点不动。GameTest 用。 */
+    public static void drain(ServerLevel level, BlockPos pos, Node node, int left) {
+        int reserve = initialReserve(level, pos, node);
+        if (reserve != Veins.INFINITE) {
+            setUsed(level, pos, Math.max(0, reserve - Math.max(1, left)));
+        }
     }
 
     // ---- 原油涌泉

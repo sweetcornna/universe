@@ -1,0 +1,28 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 20,
+      "ingredient": "universe:titanium_alloy"
+    },
+    {
+      "count": 6,
+      "ingredient": "universe:processor"
+    },
+    {
+      "count": 4,
+      "ingredient": "universe:reinforced_thruster"
+    },
+    {
+      "count": 4,
+      "ingredient": "universe:plasma_exciter"
+    }
+  ],
+  "research": "space_fleet",
+  "results": [
+    {
+      "id": "universe:corvette"
+    }
+  ],
+  "time": 400
+}

@@ -46,6 +46,9 @@ public final class Guide {
                     page("mining", "universe:mining_machine"),
                     page("veins", "", "universe:planet_iron_ore", "universe:titanium_ore", "universe:silicon_ore", "universe:fire_ice_ore",
                             "universe:optical_crystal_ore", "universe:uranium_ore"),
+                    // 枯竭提醒、按矿种扫描（ADR-0033 §八）
+                    page("depletion", "", "universe:mining_machine", "universe:advanced_mining_machine"),
+                    page("scan_filter", "", "universe:multitool"),
                     page("smelting", "universe:arc_smelter"),
                     page("fluids", "", "universe:oil_extractor", "universe:water_pump")),
             chapter("research", "universe:matrix_lab",
@@ -54,7 +57,12 @@ public final class Guide {
                     page("matrices", "universe:electromagnetic_matrix", "universe:electromagnetic_matrix", "universe:energy_matrix",
                             "universe:structure_matrix", "universe:information_matrix", "universe:gravity_matrix", "universe:universe_matrix"),
                     page("upgrades", ""),
-                    page("stacking", "universe:self_evolution_lab", "universe:matrix_lab", "universe:self_evolution_lab")),
+                    // 研究队列（ADR-0033 §五）
+                    page("queue", ""),
+                    page("stacking", "universe:self_evolution_lab", "universe:matrix_lab", "universe:self_evolution_lab"),
+                    // 统计面板和仪表盘（ADR-0033 §四）
+                    page("stats", ""),
+                    page("dashboard", "")),
             chapter("logistics", "universe:conveyor_belt",
                     page("belts", "universe:conveyor_belt", "universe:conveyor_belt", "universe:conveyor_belt_mk2", "universe:conveyor_belt_mk3"),
                     page("sorters", "universe:sorter", "universe:sorter", "universe:splitter", "universe:storage_depot"),
@@ -67,9 +75,14 @@ public final class Guide {
                             "universe:logistics_drone", "universe:logistics_vessel"),
                     // 运输船在恒星系的太空里看得见（ADR-0030 §五）
                     page("vessels", "", "universe:logistics_vessel", "universe:space_warper"),
+                    // 五层配对、物品路线和控制面板（ADR-0033 §三）
+                    page("dispatch", "", "universe:interstellar_logistics_station", "universe:planetary_logistics_station"),
+                    page("control_panel", "", "universe:interstellar_logistics_station", "universe:logistics_distributor"),
                     page("distributor", "universe:logistics_distributor", "universe:logistics_distributor", "universe:logistics_bot"),
                     page("slots", ""),
                     page("blueprint", "universe:blueprint"),
+                    // 作者、版本、只贴设备、材料清单（ADR-0033 §九）
+                    page("blueprint_devices", "", "universe:blueprint", "universe:conveyor_belt", "universe:sorter"),
                     page("drones", "", "universe:blueprint", "universe:construction_drone")),
             chapter("ship", "universe:ship_helm",
                     page("build", "", "universe:ship_helm", "universe:ship_thruster", "universe:impulse_engine", "universe:fuel_tank",
@@ -105,13 +118,21 @@ public final class Guide {
                     page("weapons", "", "universe:scatter_blaster", "universe:pulse_spitter", "universe:blaze_javelin", "universe:plasma_launcher"),
                     page("modules", "", "universe:drop_pod"),
                     page("core", "", "universe:exosuit_chestplate", "universe:combustible_unit", "universe:hydrogen_fuel_rod"),
-                    page("flight", "")),
+                    page("flight", ""),
+                    // M18 机甲的舰队和战斗（ADR-0033 §一、§二）
+                    page("fleet", "universe:prototype", "universe:prototype", "universe:precision_drone", "universe:attack_drone"),
+                    page("space_fleet", "universe:corvette", "universe:corvette", "universe:destroyer"),
+                    page("mecha_weapons", "", "universe:magnum_ammo_box", "universe:missile_set", "universe:plasma_capsule"),
+                    page("shield_burst", "", "universe:jamming_capsule")),
             chapter("exploration", "universe:survey_data",
                     page("visor", ""),
                     page("discoveries", "", "universe:survey_data"),
                     page("poi", "universe:signal_booster", "universe:monolith", "universe:data_terminal", "universe:tech_cache",
                             "universe:navigation_data"),
                     page("bases", "", "universe:base_beacon", "universe:teleporter"),
+                    // 全息信标和备忘（ADR-0033 §六）
+                    page("holo_beacon", "universe:holo_beacon", "universe:holo_beacon"),
+                    page("memos", ""),
                     page("portals", "", "universe:portal_dial", "universe:portal_glyph"),
                     page("pillars", "", "universe:sentinel_pillar_terminal", "universe:sentinel_pillar_light"),
                     // 奇异星球的六种地貌（ADR-0030 §二）
@@ -168,7 +189,9 @@ public final class Guide {
                     // 自己设计戴森壳（M17，ADR-0030 §四）
                     page("design", ""),
                     page("rockets", "universe:small_carrier_rocket", "universe:vertical_launching_silo", "universe:dyson_sphere_component"),
-                    page("receiver", "universe:ray_receiver", "universe:critical_photon", "universe:graviton_lens")),
+                    page("receiver", "universe:ray_receiver", "universe:critical_photon", "universe:graviton_lens", "universe:dark_fog_lens"),
+                    // 黑雾透镜（ADR-0033 §七）
+                    page("dark_fog_lens", "universe:dark_fog_lens", "universe:dark_fog_lens", "universe:graviton_lens")),
             chapter("endgame", "universe:universe_matrix",
                     page("antimatter", "universe:antimatter", "universe:miniature_particle_collider"),
                     page("power", "", "universe:mini_fusion_power_plant", "universe:artificial_star", "universe:antimatter_fuel_rod"),

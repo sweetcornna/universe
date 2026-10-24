@@ -13,6 +13,7 @@ import io.github.sweetcornna.universe.darkfog.DarkFogEnemy;
 import io.github.sweetcornna.universe.darkfog.Facilities;
 import io.github.sweetcornna.universe.darkfog.Taunts;
 import io.github.sweetcornna.universe.entity.PlasmaBolt;
+import io.github.sweetcornna.universe.mecha.fleet.FleetUnit;
 import io.github.sweetcornna.universe.registry.UniverseEntities;
 import io.github.sweetcornna.universe.registry.UniverseSounds;
 import io.github.sweetcornna.universe.registry.sound.HostileSounds;
@@ -275,29 +276,41 @@ public class DarkFogBuilding extends Mob implements DarkFogEnemy {
 
     private boolean stillValid(ServerLevel level, double range) {
         if (this.aimEntity != null) {
-            return this.aimEntity.isAlive() && DarkFogDamage.targetable(this.aimEntity) && this.aimEntity.level() == level
+            return this.aimEntity.isAlive() && DarkFogDamage.engageable(this.aimEntity) && this.aimEntity.level() == level
                     && this.muzzle().distanceTo(this.aimEntity.getEyePosition()) <= range;
         }
         return this.aimBlock == null || !level.getBlockState(this.aimBlock).isAir();
     }
 
-    /** 先信号塔，再人，再设施；激光塔要看得见，哨塔是吊射，不用。 */
+    /** 先信号塔，再人和机甲的舰队单位（谁近打谁），再设施；激光塔要看得见，哨塔是吊射，不用。 */
     private void pickTarget(ServerLevel level, double range) {
         Vec3 muzzle = this.muzzle();
-        boolean laser = this.kind() == BuildingKind.LASER_TOWER;
         Optional<BlockPos> taunt = Taunts.nearestTaunt(level, muzzle, range);
         if (taunt.isPresent()) {
             this.aim(null, taunt.get());
             return;
         }
-        Player player = level.getNearestPlayer(muzzle.x, muzzle.y, muzzle.z, range, entity -> DarkFogDamage.targetable(entity)
-                && (!laser || this.clear(level, muzzle, ((Player) entity).getEyePosition()))
-                && (laser || entity.position().distanceTo(this.position()) >= SENTRY_MIN_RANGE));
-        if (player != null) {
-            this.aim(player, null);
+        LivingEntity best = level.getNearestPlayer(muzzle.x, muzzle.y, muzzle.z, range,
+                entity -> DarkFogDamage.targetable(entity) && this.canShoot(level, muzzle, (Player) entity));
+        double bestDistance = best == null ? Double.MAX_VALUE : best.distanceToSqr(muzzle);
+        for (FleetUnit unit : DarkFogDamage.fleetUnits(level, muzzle, range)) {
+            double distance = unit.distanceToSqr(muzzle);
+            if (distance < bestDistance && distance <= range * range && this.canShoot(level, muzzle, unit)) {
+                best = unit;
+                bestDistance = distance;
+            }
+        }
+        if (best != null) {
+            this.aim(best, null);
             return;
         }
         this.aim(null, Facilities.nearest(level, this.position(), range).orElse(null));
+    }
+
+    private boolean canShoot(ServerLevel level, Vec3 muzzle, LivingEntity target) {
+        return this.kind() == BuildingKind.LASER_TOWER
+                ? this.clear(level, muzzle, target.getEyePosition())
+                : target.position().distanceTo(this.position()) >= SENTRY_MIN_RANGE;
     }
 
     private void aim(@Nullable LivingEntity entity, @Nullable BlockPos block) {

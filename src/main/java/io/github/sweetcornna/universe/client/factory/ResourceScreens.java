@@ -2,6 +2,9 @@ package io.github.sweetcornna.universe.client.factory;
 
 import java.util.Locale;
 
+import com.mojang.blaze3d.platform.InputConstants;
+
+import io.github.sweetcornna.universe.core.factory.VeinWarnings;
 import io.github.sweetcornna.universe.core.factory.Veins;
 import io.github.sweetcornna.universe.factory.FractionatorBlockEntity;
 import io.github.sweetcornna.universe.factory.MachineMenu;
@@ -9,6 +12,7 @@ import io.github.sweetcornna.universe.factory.resource.MiningMachineBlockEntity;
 import io.github.sweetcornna.universe.factory.resource.OilExtractorBlockEntity;
 import io.github.sweetcornna.universe.factory.resource.WaterPumpBlockEntity;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
@@ -40,8 +44,11 @@ public final class ResourceScreens {
         }
     }
 
-    /** 采矿机：采的是什么矿、几个节点、还剩多少、满电时的产量。 */
+    /** 采矿机：采的是什么矿、几个节点、还剩多少、满电时的产量，下面一个枯竭提醒的按钮（ADR-0033 §八）。 */
     public static final class MiningMachine extends MachineScreen {
+        private static final int WARNING_Y = 72;
+        private static final int WARNING_WIDTH = 150;
+
         public MiningMachine(MachineMenu menu, Inventory inventory, Component title) {
             super(menu, inventory, title);
         }
@@ -50,6 +57,10 @@ public final class ResourceScreens {
         protected void extractInfo(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
             this.powerLine(graphics, 8, 22);
             outputLabel(this, graphics);
+            VeinWarnings.Mode warning = VeinWarnings.Mode.byOrdinal(this.menu.data(MiningMachineBlockEntity.WARNING));
+            this.textButton(graphics, 8, WARNING_Y, WARNING_WIDTH, Component.translatable("gui.universe.mining_machine.warning",
+                    Component.translatable("gui.universe.mining_machine.warning." + warning.key())),
+                    warning == VeinWarnings.Mode.NONE ? DIM : TEXT, mouseX, mouseY);
             int nodes = this.menu.data(MiningMachineBlockEntity.NODES);
             long id = this.menu.wide(MiningMachineBlockEntity.ITEM) - 1;
             int area = this.menu.data(MiningMachineBlockEntity.AREA);
@@ -69,6 +80,16 @@ public final class ResourceScreens {
             double perMinute = nodes * 1200.0 / MiningMachineBlockEntity.TICKS_PER_ITEM * this.menu.data(MiningMachineBlockEntity.SPEED) / 100;
             lastLine(this, graphics, Component.translatable("gui.universe.mining_machine.rate",
                     String.format(Locale.ROOT, "%.0f", perMinute)), 60);
+        }
+
+        @Override
+        public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+            if (event.button() == InputConstants.MOUSE_BUTTON_LEFT
+                    && overMode(event.x() - this.leftPos, event.y() - this.topPos, 8, WARNING_Y, WARNING_WIDTH)) {
+                this.clickMode(MiningMachineBlockEntity.BUTTON_WARNING);
+                return true;
+            }
+            return super.mouseClicked(event, doubleClick);
         }
     }
 

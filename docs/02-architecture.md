@@ -396,6 +396,8 @@ io.github.sweetcornna.universe
 | 方块模型的元素可以写 `light_emission`（0–15），渲染层按每个面单独选；和底下的面共面的第二个元素能当自发光覆盖层 | 已确认，`models/block/machine_glow.json` |
 | 能量能力：`Capabilities.Energy.BLOCK` 是 `BlockCapability<EnergyHandler, @Nullable Direction>`，`transfer.energy.EnergyHandler` 用 long 读数（`getAmountAsLong`、`getCapacityAsLong`），`insert(int, TransactionContext)`、`extract(int, TransactionContext)` 读写；`EnergyHandlerUtil.move` 在两个处理器之间搬电。流体能力 `Capabilities.Fluid.BLOCK` 是 `ResourceHandler<FluidResource>`。事务用 `Transaction.openRoot()`，自己的状态用 `SnapshotJournal` 回滚 | 已确认，电网接口（ADR-0030） |
 | 流体标签提供器 `FluidTagsProvider(output, lookup, modId)`；原版水的 ID 在 `world.level.material.FluidIds`（`WATER`、`FLOWING_WATER`）；`Registry.getTagOrEmpty` 返回 `Iterable<Holder<T>>`；`TagsUpdatedEvent` 是密封类 | 已确认，流体互通（ADR-0030） |
+| 菜单的点击：`ClickType` 改名为 `ContainerInput`（`world.inventory`），客户端发点击是 `MultiPlayerGameMode.handleContainerInput(containerId, slot, button, ContainerInput, player)`；按菜单按钮还是 `handleInventoryButtonClick(containerId, buttonId)` | 已确认，开发脚本的 `quickmove`、`menubutton` |
+| `GameTestHelper.assertValueEqual(actual, expected, …)` 拿实际值调 `equals`，实际值是 null 时直接抛空指针；在 `startSequence` 里抛出去会让整个测试服务端崩掉，可能为 null 的值改用 `assertTrue(expected.equals(actual), …)` | 已确认，`StatsGameTests` |
 
 拿不准的 API 先查源码再写，核实后把结果补进这张表。源码在：
 
@@ -418,6 +420,7 @@ M9 实测（2026-10-20，本机，ADR-0019）：主世界 5,000 段传送带、5
 - 脚本验收：`./gradlew runClient -PdevScript=<脚本>` 启动时，`client.dev.DevScript` 进存档后逐行执行脚本：执行命令、转视角、悬停、右键设备、按界面按钮、等设备动作一次、截图、退出，不碰键盘鼠标。截的是帧缓冲，窗口可以一直放在屏幕外；要在 `options.txt` 里关掉 `pauseOnLostFocus`，否则窗口没有焦点时游戏会暂停。
   - 脚本的路径按游戏目录（`run/`）的上一级算，也就是项目根目录，不是脚本自己待的地方。
   - `push`、`buttons` 只认原版的 `AbstractButton`。戴森球编辑器自己画可点的区域（`DysonEditorScreen.Hit`），用 `hits` 列出这一帧的文字、`hit <文字>` 点一个（色块的文字是 `color:RRGGBB`）。要选中三维视图里的东西（上色、拆掉要先选）还是得靠鼠标，脚本够不着，那条路由 `DysonEditGameTests` 在服务端验。
+  - 菜单里的格子和按钮不用算坐标：`quickmove <格子序号>` 是 Shift 点一格，`menubutton <编号>` 按菜单的按钮（编号见各菜单的 `clickMenuButton`，比如机甲面板 51 是舰队页、70 是出动第一个地面编队）。M18 加的还有 `pin <种类> [目标]`（往仪表盘上钉图）、`stats <物品>`（打开统计并选中）、`queue <科技>`（排研究队列）、`press controlpanel|fleet`、`key burst on|off`（按住、松开护盾爆发）。
 - 性能：core 层做基准测试（M1 定方案）。游戏内 `/universe perf` 按子系统计时，`/universe bench <传送带> <设备>` 搭参照基地；要看方法栈时再装 Spark。
 - 多人：`runClient2`（游戏目录 `run2`，用户名 Dev2）。两个客户端都带开发脚本无头启动：主机用 `lan <端口>` 开放（只监听回环地址），`waitplayers <人数>` 等客人连上、退出；客人用 `-PjoinServer=localhost:<端口>` 直接连。
 - 回归：保留几个固定种子的测试世界，每次升级 MC 版本后手动走一遍。

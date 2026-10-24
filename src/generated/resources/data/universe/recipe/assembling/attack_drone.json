@@ -1,0 +1,28 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:precision_drone"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:plasma_exciter"
+    },
+    {
+      "count": 4,
+      "ingredient": "universe:titanium_alloy"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:super_magnetic_ring"
+    }
+  ],
+  "research": "attack_drones",
+  "results": [
+    {
+      "id": "universe:attack_drone"
+    }
+  ],
+  "time": 160
+}

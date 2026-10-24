@@ -201,6 +201,11 @@ final class UniverseBlockLoot extends BlockLootSubProvider {
         this.darkFogShield();
         this.wrapUpAcid();
         this.wrapUpInterop();
+        // M18 舰队和战斗（A）的战利品表加在这行上面
+        // M18 物流调度（B）的战利品表加在这行上面
+        // M18 统计和研究（C）的战利品表加在这行上面
+        this.dropSelf(UniverseBlocks.HOLO_BEACON.get());
+        // M18 信标、透镜、矿脉、蓝图（D）的战利品表加在这行上面
     }
 
     /** 黑雾基地的方块（子代理 P）。 */

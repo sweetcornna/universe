@@ -47,8 +47,11 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 public final class MultitoolClient {
     /** 标记显示多久（刻）。 */
     private static final int MARKER_TICKS = 600;
+    /** 只看一种矿时（ADR-0033 §八）标记留 60 秒，多写几条字。 */
+    private static final int FOCUSED_TICKS = 1200;
     /** 最多给几条最近的矿脉写字，其余只画点。 */
     private static final int LABELS = 12;
+    private static final int FOCUSED_LABELS = 20;
 
     private record Marker(Vec3 pos, Block block, int count, int color) {
     }
@@ -65,6 +68,7 @@ public final class MultitoolClient {
     private static List<PoiMark> pois = List.of();
     private static List<LandmarkMark> landmarks = List.of();
     private static long scannedAt;
+    private static boolean focused;
 
     private MultitoolClient() {
     }
@@ -81,7 +85,12 @@ public final class MultitoolClient {
             while (UniverseKeys.TOOL_MODE.consumeClick()) {
                 if (minecraft.gui.screen() == null && minecraft.player != null
                         && minecraft.player.getMainHandItem().getItem() instanceof MultitoolItem) {
-                    ClientPacketDistributor.sendToServer(ToolModePayload.INSTANCE);
+                    if (minecraft.hasShiftDown()) {
+                        // Shift + 模式键：选扫描只看哪种矿（ADR-0033 §八）
+                        minecraft.gui.setScreen(new ScanFilterScreen());
+                    } else {
+                        ClientPacketDistributor.sendToServer(ToolModePayload.INSTANCE);
+                    }
                 }
             }
         });
@@ -98,6 +107,7 @@ public final class MultitoolClient {
             list.add(new Marker(Vec3.atCenterOf(marker.pos()), block, marker.count(), color(marker.block())));
         }
         markers = List.copyOf(list);
+        focused = payload.focused();
         pois = payload.pois().stream().map(poi -> new PoiMark(Vec3.atBottomCenterOf(poi.pos()).add(0, 1.5, 0), poi.type(), poi.visited()))
                 .toList();
         landmarks = payload.landmarks().stream().map(landmark -> new LandmarkMark(Vec3.atBottomCenterOf(landmark.pos()).add(0, 2, 0),
@@ -198,13 +208,14 @@ public final class MultitoolClient {
             return;
         }
         long age = minecraft.level.getGameTime() - scannedAt;
-        if (age > MARKER_TICKS || age < 0) {
+        int lifetime = focused ? FOCUSED_TICKS : MARKER_TICKS;
+        if (age > lifetime || age < 0) {
             markers = List.of();
             pois = List.of();
             landmarks = List.of();
             return;
         }
-        int alpha = age > MARKER_TICKS - 100 ? (int) (255 * (MARKER_TICKS - age) / 100F) : 255;
+        int alpha = age > lifetime - 100 ? (int) (255 * (lifetime - age) / 100F) : 255;
         ScreenProjection projection = ScreenProjection.of(minecraft, graphics.guiWidth(), graphics.guiHeight());
         Vec3 eye = projection.eye();
         Font font = minecraft.font;
@@ -225,7 +236,7 @@ public final class MultitoolClient {
         int poiBoxes = boxes.size();
         for (OnScreen on : visible) {
             Component text = null;
-            if (boxes.size() - poiBoxes < LABELS) {
+            if (boxes.size() - poiBoxes < (focused ? FOCUSED_LABELS : LABELS)) {
                 Component candidate = Component.translatable("hud.universe.multitool.marker",
                         Component.translatable(on.marker().block().getDescriptionId()), on.marker().count(),
                         (int) Math.round(on.distance()));
@@ -244,13 +255,22 @@ public final class MultitoolClient {
             int sy = on.y();
             int color = (alpha << 24) | (on.marker().color() & 0xFFFFFF);
             int shadow = ((alpha * 3 / 4) << 24);
-            graphics.fill(sx - 3, sy - 1, sx + 4, sy + 2, shadow);
-            graphics.fill(sx - 1, sy - 3, sx + 2, sy + 4, shadow);
-            graphics.fill(sx - 2, sy, sx + 3, sy + 1, color);
-            graphics.fill(sx, sy - 2, sx + 1, sy + 3, color);
+            if (focused) {
+                // 只看一种矿：大一号的十字，外面再套一个菱形框
+                graphics.fill(sx - 5, sy - 1, sx + 6, sy + 2, shadow);
+                graphics.fill(sx - 1, sy - 5, sx + 2, sy + 6, shadow);
+                graphics.fill(sx - 4, sy, sx + 5, sy + 1, color);
+                graphics.fill(sx, sy - 4, sx + 1, sy + 5, color);
+                diamond(graphics, sx, sy, (alpha * 5 / 8) << 24 | on.marker().color() & 0xFFFFFF, 0);
+            } else {
+                graphics.fill(sx - 3, sy - 1, sx + 4, sy + 2, shadow);
+                graphics.fill(sx - 1, sy - 3, sx + 2, sy + 4, shadow);
+                graphics.fill(sx - 2, sy, sx + 3, sy + 1, color);
+                graphics.fill(sx, sy - 2, sx + 1, sy + 3, color);
+            }
             Component text = texts.get(i);
             if (text != null) {
-                graphics.text(font, text, sx + 6, sy - 4, (alpha << 24) | lighten(on.marker().color()), true);
+                graphics.text(font, text, sx + (focused ? 8 : 6), sy - 4, (alpha << 24) | lighten(on.marker().color()), true);
             }
         }
     }

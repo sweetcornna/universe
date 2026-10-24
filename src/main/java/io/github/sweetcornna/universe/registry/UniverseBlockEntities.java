@@ -211,6 +211,13 @@ public final class UniverseBlockEntities {
             BLOCK_ENTITIES.register("grid_interface", () -> new BlockEntityType<>(
                     io.github.sweetcornna.universe.factory.power.GridInterfaceBlockEntity::new, UniverseBlocks.GRID_INTERFACE.get()));
     // M17 收尾：互通（C）的方块实体加在这行上面
+    // M18 舰队和战斗（A）的方块实体加在这行上面
+    // M18 物流调度（B）的方块实体加在这行上面
+    // M18 统计和研究（C）的方块实体加在这行上面
+    public static final Supplier<BlockEntityType<io.github.sweetcornna.universe.beacon.HoloBeaconBlockEntity>> HOLO_BEACON =
+            BLOCK_ENTITIES.register("holo_beacon", () -> new BlockEntityType<>(
+                    io.github.sweetcornna.universe.beacon.HoloBeaconBlockEntity::new, UniverseBlocks.HOLO_BEACON.get()));
+    // M18 信标、透镜、矿脉、蓝图（D）的方块实体加在这行上面
 
     private UniverseBlockEntities() {
     }

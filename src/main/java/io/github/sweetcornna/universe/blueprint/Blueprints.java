@@ -12,8 +12,14 @@ import java.util.UUID;
 
 import org.jspecify.annotations.Nullable;
 
+import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.advancement.MilestoneTrigger;
 import io.github.sweetcornna.universe.core.blueprint.BlueprintGeometry;
+import io.github.sweetcornna.universe.core.blueprint.BlueprintMeta;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.EntityBlock;
 import io.github.sweetcornna.universe.network.BlueprintPayloads;
 import io.github.sweetcornna.universe.perf.ServerPerf;
 import io.github.sweetcornna.universe.registry.UniverseAttachments;
@@ -62,11 +68,13 @@ public final class Blueprints {
     public static final int LISTED_MATERIALS = 6;
     /** 拿着蓝图时射线能点多远（预览和放置都用这个，比原版的交互距离长）。 */
     public static final double REACH = 64;
+    /** "只贴设备"时除了有方块实体的方块，还放这些（ADR-0033 §九）：传送带、分拣器这类。 */
+    public static final TagKey<Block> DEVICES = TagKey.create(Registries.BLOCK, Universe.id("blueprint_devices"));
 
     private static final Map<UUID, Job> JOBS = new HashMap<>();
 
     /** 要放的一个方块；cost 为空的不扣材料（双格方块的上半截、床头）。 */
-    record Placement(BlockPos pos, BlockState state, @Nullable CompoundTag settings, @Nullable Item cost) {
+    public record Placement(BlockPos pos, BlockState state, @Nullable CompoundTag settings, @Nullable Item cost) {
     }
 
     private static final class Job {
@@ -144,11 +152,11 @@ public final class Blueprints {
 
     public static void handleSave(BlueprintPayloads.Save payload, IPayloadContext context) {
         if (context.player() instanceof ServerPlayer player) {
-            save(player, payload.name());
+            save(player, payload.name(), payload.description());
         }
     }
 
-    private static void save(ServerPlayer player, String rawName) {
+    private static void save(ServerPlayer player, String rawName, String rawDescription) {
         ItemStack stack = player.getMainHandItem();
         if (!(stack.getItem() instanceof BlueprintItem) || stack.has(UniverseDataComponents.BLUEPRINT.get())) {
             return;
@@ -173,10 +181,16 @@ public final class Blueprints {
             player.sendOverlayMessage(Component.translatable("message.universe.blueprint.empty_selection").withStyle(ChatFormatting.RED));
             return;
         }
-        int id = BlueprintData.get(player.level().getServer()).add(stored);
+        // 作者、版本、说明（ADR-0033 §九）：同名的蓝图再存一次版本加 1
+        BlueprintData data = BlueprintData.get(player.level().getServer());
+        String description = io.github.sweetcornna.universe.core.beacon.Memo.cleanText(rawDescription, BlueprintMeta.MAX_DESCRIPTION);
+        stored = stored.withMeta(new BlueprintData.Meta(player.getGameProfile().name(), data.nextVersion(name), description));
+        int id = data.add(stored);
         stack.remove(UniverseDataComponents.BLUEPRINT_SELECTION.get());
         stack.set(UniverseDataComponents.BLUEPRINT.get(), info(id, stored));
-        player.sendSystemMessage(Component.translatable("message.universe.blueprint.saved", name, stored.blocks()));
+        player.sendSystemMessage(stored.meta().version() > 1
+                ? Component.translatable("message.universe.blueprint.saved_version", name, stored.meta().version(), stored.blocks())
+                : Component.translatable("message.universe.blueprint.saved", name, stored.blocks()));
         MilestoneTrigger.reach(player, MilestoneTrigger.BLUEPRINT);
         player.level().playSound(null, player.blockPosition(), net.minecraft.sounds.SoundEvents.BOOK_PAGE_TURN, SoundSource.PLAYERS, 1, 1);
     }
@@ -215,7 +229,7 @@ public final class Blueprints {
             }
         }
         return new BlueprintData.Stored(name, size[0], size[1], size[2], palette, positions.stream().mapToInt(Integer::intValue).toArray(),
-                states.stream().mapToInt(Integer::intValue).toArray(), settings);
+                states.stream().mapToInt(Integer::intValue).toArray(), settings, BlueprintData.Meta.NONE);
     }
 
     /** 物品上记的东西：材料按数量从多到少。 */
@@ -231,7 +245,12 @@ public final class Blueprints {
                 .sorted(Map.Entry.<Item, Integer>comparingByValue().reversed())
                 .map(entry -> new BlueprintInfo.Material(entry.getKey(), entry.getValue()))
                 .toList();
-        return new BlueprintInfo(id, stored.name(), stored.sizeX(), stored.sizeY(), stored.sizeZ(), stored.blocks(), list);
+        return new BlueprintInfo(id, stored.name(), stored.sizeX(), stored.sizeY(), stored.sizeZ(), stored.blocks(), list, stored.meta());
+    }
+
+    /** "只贴设备"时放的方块（ADR-0033 §九）：有方块实体的，或者标了 {@link #DEVICES} 的。客户端预览也用。 */
+    public static boolean device(BlockState state) {
+        return state.getBlock() instanceof EntityBlock || state.is(DEVICES);
     }
 
     /** 不花材料、跟着另一半一起放的方块：双格方块的上半截和床头。 */
@@ -241,7 +260,7 @@ public final class Blueprints {
     }
 
     /** 放这个方块要扣的物品；不扣时为空。 */
-    static @Nullable Item cost(BlockState state) {
+    public static @Nullable Item cost(BlockState state) {
         if (free(state)) {
             return null;
         }
@@ -273,11 +292,24 @@ public final class Blueprints {
     public static void handleRotate(BlueprintPayloads.Rotate payload, IPayloadContext context) {
         if (context.player() instanceof ServerPlayer player) {
             ItemStack stack = player.getMainHandItem();
-            if (stack.getItem() instanceof BlueprintItem && stack.has(UniverseDataComponents.BLUEPRINT.get())) {
-                int rotation = (stack.getOrDefault(UniverseDataComponents.BLUEPRINT_ROTATION.get(), 0) + 1) % 4;
-                stack.set(UniverseDataComponents.BLUEPRINT_ROTATION.get(), rotation);
-                player.sendOverlayMessage(Component.translatable("message.universe.blueprint.rotated", rotation * 90));
+            if (!(stack.getItem() instanceof BlueprintItem) || !stack.has(UniverseDataComponents.BLUEPRINT.get())) {
+                return;
             }
+            if (payload.devices()) {
+                // Shift + 旋转键：切"只贴设备"（ADR-0033 §九）
+                boolean devicesOnly = !stack.getOrDefault(UniverseDataComponents.BLUEPRINT_DEVICES_ONLY.get(), false);
+                if (devicesOnly) {
+                    stack.set(UniverseDataComponents.BLUEPRINT_DEVICES_ONLY.get(), true);
+                } else {
+                    stack.remove(UniverseDataComponents.BLUEPRINT_DEVICES_ONLY.get());
+                }
+                player.sendOverlayMessage(Component.translatable(devicesOnly ? "message.universe.blueprint.devices_only"
+                        : "message.universe.blueprint.all_blocks"));
+                return;
+            }
+            int rotation = (stack.getOrDefault(UniverseDataComponents.BLUEPRINT_ROTATION.get(), 0) + 1) % 4;
+            stack.set(UniverseDataComponents.BLUEPRINT_ROTATION.get(), rotation);
+            player.sendOverlayMessage(Component.translatable("message.universe.blueprint.rotated", rotation * 90));
         }
     }
 
@@ -290,6 +322,30 @@ public final class Blueprints {
                 ? new BlueprintPayloads.Content(payload.id(), 0, 0, 0, List.of(), List.of(), List.of())
                 : new BlueprintPayloads.Content(payload.id(), stored.sizeX(), stored.sizeY(), stored.sizeZ(), stored.palette(),
                         java.util.Arrays.stream(stored.positions()).boxed().toList(), java.util.Arrays.stream(stored.states()).boxed().toList()));
+    }
+
+    /** 预览时问身上有多少材料：背包和外骨骼货舱（建造无人机和创造以外的放置都从这两处拿）。 */
+    public static void handleStock(BlueprintPayloads.StockRequest payload, IPayloadContext context) {
+        if (!(context.player() instanceof ServerPlayer player)) {
+            return;
+        }
+        List<Item> items = payload.items().stream().distinct().limit(BlueprintPayloads.StockRequest.MAX_ITEMS).toList();
+        Map<Item, Integer> counts = new HashMap<>();
+        Inventory inventory = player.getInventory();
+        for (int i = 0; i < inventory.getContainerSize(); i++) {
+            ItemStack stack = inventory.getItem(i);
+            if (!stack.isEmpty() && !(stack.getItem() instanceof BlueprintItem)) {
+                counts.merge(stack.getItem(), stack.getCount(), Integer::sum);
+            }
+        }
+        ExosuitData data = player.getData(UniverseAttachments.EXOSUIT);
+        for (int i = 0; i < data.cargoSlots(); i++) {
+            ItemStack stack = data.cargo().get(i);
+            if (!stack.isEmpty()) {
+                counts.merge(stack.getItem(), stack.getCount(), Integer::sum);
+            }
+        }
+        PacketDistributor.sendToPlayer(player, new BlueprintPayloads.Stock(items, items.stream().map(item -> counts.getOrDefault(item, 0)).toList()));
     }
 
     // ---- 放蓝图
@@ -310,16 +366,25 @@ public final class Blueprints {
             return;
         }
         int turns = stack.getOrDefault(UniverseDataComponents.BLUEPRINT_ROTATION.get(), 0);
+        boolean devicesOnly = stack.getOrDefault(UniverseDataComponents.BLUEPRINT_DEVICES_ONLY.get(), false);
         // 生存模式留下工地，让建造无人机去建（ADR-0023）；创造模式照旧直接放
         if (!player.isCreative()) {
-            Construction.paste(player, stored, anchor, turns);
+            Construction.paste(player, stored, anchor, turns, devicesOnly);
             return;
         }
-        JOBS.put(player.getUUID(), new Job(player.level().dimension(), placements(stored, anchor, turns)));
+        JOBS.put(player.getUUID(), new Job(player.level().dimension(), placements(stored, anchor, turns, devicesOnly)));
     }
 
-    /** 蓝图里每个方块转过以后放在哪：从下往上，同一层里先放要花材料的，再放跟着另一半的。 */
     static List<Placement> placements(BlueprintData.Stored stored, BlockPos anchor, int turns) {
+        return placements(stored, anchor, turns, false);
+    }
+
+    /**
+     * 蓝图里每个方块转过以后放在哪：从下往上，同一层里先放要花材料的，再放跟着另一半的。
+     *
+     * @param devicesOnly 只放设备（{@link #device}），地板、墙、装饰跳过（ADR-0033 §九）
+     */
+    public static List<Placement> placements(BlueprintData.Stored stored, BlockPos anchor, int turns, boolean devicesOnly) {
         int[] rotated = BlueprintGeometry.rotatedSize(new int[] {stored.sizeX(), stored.sizeY(), stored.sizeZ()}, turns);
         BlockPos origin = BlueprintItem.origin(anchor, rotated);
         Rotation rotation = rotation(turns);
@@ -328,6 +393,9 @@ public final class Blueprints {
             int packed = stored.positions()[i];
             int[] xz = BlueprintGeometry.rotate(BlueprintGeometry.x(packed), BlueprintGeometry.z(packed), stored.sizeX(), stored.sizeZ(), turns);
             BlockState state = stored.palette().get(stored.states()[i]).rotate(rotation);
+            if (!BlueprintMeta.keep(devicesOnly, device(state))) {
+                continue;
+            }
             // 设置里的方向（分流器的优先出口）跟着蓝图转（ADR-0030）
             list.add(new Placement(origin.offset(xz[0], BlueprintGeometry.y(packed), xz[1]), state,
                     BlueprintSettings.rotated(stored.settings().get(i), turns), cost(state)));

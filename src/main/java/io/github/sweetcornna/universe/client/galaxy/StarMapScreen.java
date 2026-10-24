@@ -249,9 +249,11 @@ public class StarMapScreen extends Screen {
         this.drawRange(graphics, systems);
         this.drawDropLines(graphics, systems);
         this.drawRoute(graphics, systems);
+        this.drawLogistics(graphics, systems);
         this.drawSeeds(graphics, systems, now);
         this.drawStars(graphics, systems, now);
         this.drawHives(graphics, systems, now);
+        this.drawBeacons(graphics, systems);
         this.drawLabels(graphics, systems);
         graphics.disableScissor();
 
@@ -367,6 +369,80 @@ public class StarMapScreen extends Screen {
         }
     }
 
+    /**
+     * 星际物流（ADR-0033 §三）：从选中的恒星系出发的物品路线画虚线（同一个恒星系里的星球路线画成恒星周围的虚线圈），
+     * 进出这个恒星系、正在飞的运输船画亮线，船所在的位置画一个点。颜色按物品。
+     */
+    private void drawLogistics(GuiGraphicsExtractor graphics, List<StarSystem> systems) {
+        io.github.sweetcornna.universe.client.logistics.ControlPanelClient.requestIfStale();
+        io.github.sweetcornna.universe.network.ControlPanelPayloads.Snapshot snapshot =
+                io.github.sweetcornna.universe.client.logistics.ControlPanelClient.snapshot().orElse(null);
+        if (snapshot == null || this.selected < 0 || this.selected >= systems.size()) {
+            return;
+        }
+        StarSystem here = systems.get(this.selected);
+        int rings = 0;
+        for (io.github.sweetcornna.universe.network.ControlPanelPayloads.RouteRow route : snapshot.routes()) {
+            int from = route.route().fromSystem();
+            int to = route.route().toSystem();
+            if (from != this.selected || to < 0 || to >= systems.size()) {
+                continue;
+            }
+            int color = ARGB.color(0xB0, io.github.sweetcornna.universe.client.logistics.ControlPanelClient.itemColor(route.item()));
+            if (to == from) {
+                StarMapCamera.Projected center = this.projected[from];
+                if (center == null) {
+                    continue;
+                }
+                double radius = 9 + 3 * rings++;
+                int segments = 32;
+                for (int i = 0; i < segments; i += 2) {
+                    double a0 = i * Math.PI * 2 / segments;
+                    double a1 = (i + 1) * Math.PI * 2 / segments;
+                    line(graphics, center.x() + Math.cos(a0) * radius, center.y() + Math.sin(a0) * radius, center.x() + Math.cos(a1) * radius,
+                            center.y() + Math.sin(a1) * radius, 0.8F, color);
+                }
+                continue;
+            }
+            StarSystem target = systems.get(to);
+            int dashes = 20;
+            for (int i = 0; i < dashes; i++) {
+                double t0 = (double) i / dashes;
+                double t1 = (i + 0.5) / dashes;
+                StarMapCamera.Projected a = this.project(lerp(here.x(), target.x(), t0), lerp(here.y(), target.y(), t0), lerp(here.z(), target.z(), t0));
+                StarMapCamera.Projected b = this.project(lerp(here.x(), target.x(), t1), lerp(here.y(), target.y(), t1), lerp(here.z(), target.z(), t1));
+                if (a != null && b != null) {
+                    line(graphics, a.x(), a.y(), b.x(), b.y(), 1.0F, color);
+                }
+            }
+        }
+        double now = io.github.sweetcornna.universe.client.logistics.ControlPanelClient.serverTime(0);
+        for (io.github.sweetcornna.universe.network.ControlPanelPayloads.VesselRow vessel : snapshot.vessels()) {
+            if (vessel.fromSystem() == vessel.toSystem() || vessel.fromSystem() != this.selected && vessel.toSystem() != this.selected
+                    || vessel.fromSystem() < 0 || vessel.toSystem() < 0 || vessel.fromSystem() >= systems.size() || vessel.toSystem() >= systems.size()) {
+                continue;
+            }
+            StarSystem home = systems.get(vessel.fromSystem());
+            StarSystem other = systems.get(vessel.toSystem());
+            StarMapCamera.Projected a = this.projected[home.index()];
+            StarMapCamera.Projected b = this.projected[other.index()];
+            if (a == null || b == null) {
+                continue;
+            }
+            int color = io.github.sweetcornna.universe.client.logistics.ControlPanelClient.itemColor(vessel.item());
+            line(graphics, a.x(), a.y(), b.x(), b.y(), 1.4F, ARGB.color(0xE0, color));
+            // 去程从家到对方，回程反过来
+            double t = now < vessel.arriveAt()
+                    ? (now - vessel.departAt()) / Math.max(1, vessel.arriveAt() - vessel.departAt())
+                    : 1 - (now - vessel.arriveAt()) / Math.max(1, vessel.returnAt() - vessel.arriveAt());
+            t = Math.clamp(t, 0, 1);
+            StarMapCamera.Projected ship = this.project(lerp(home.x(), other.x(), t), lerp(home.y(), other.y(), t), lerp(home.z(), other.z(), t));
+            if (ship != null) {
+                sprite(graphics, DISC, ship.x(), ship.y(), 4, 0xFF000000 | color);
+            }
+        }
+    }
+
     private void drawStars(GuiGraphicsExtractor graphics, List<StarSystem> systems, long now) {
         // 由远到近画，近的盖住远的
         List<Integer> order = new ArrayList<>();
@@ -467,6 +543,94 @@ public class StarMapScreen extends Screen {
                 hexagon(graphics, p.x(), p.y(), radius * 0.72, -turn, 0.6F, ARGB.color(0x30 + (int) (hive.threat() * 0xC0), DARK_FOG));
             }
         }
+    }
+
+    // ---- 全息信标和星系备忘（ADR-0033 §六，子代理 D）
+
+    /** 星系备忘入口这一帧画在哪（屏幕坐标），没画是 memoSystem = -1。 */
+    private int memoSystem = -1;
+    private int memoLeft;
+    private int memoTop;
+    private int memoRight;
+    private int memoBottom;
+
+    /** 范围到恒星系、星团的信标：恒星右上方一个小菱形，用第一个信标的颜色，几个就在旁边写几。 */
+    private void drawBeacons(GuiGraphicsExtractor graphics, List<StarSystem> systems) {
+        java.util.Set<Integer> marked = new java.util.HashSet<>();
+        for (io.github.sweetcornna.universe.network.HoloBeaconPayloads.Entry beacon : io.github.sweetcornna.universe.client.beacon.BeaconClient
+                .beacons()) {
+            int index = beacon.system();
+            if (index < 0 || index >= systems.size() || index >= this.projected.length || !marked.add(index)) {
+                continue;
+            }
+            List<io.github.sweetcornna.universe.network.HoloBeaconPayloads.Entry> list =
+                    io.github.sweetcornna.universe.client.beacon.BeaconClient.onStarMap(index);
+            StarMapCamera.Projected p = this.projected[index];
+            if (list.isEmpty() || p == null) {
+                continue;
+            }
+            double r = starSize(systems.get(index).star(), p);
+            int cx = (int) Math.round(p.x() + r + 4);
+            int cy = (int) Math.round(p.y() - r - 4);
+            int color = ARGB.opaque(io.github.sweetcornna.universe.core.beacon.BeaconStyle.color(list.getFirst().color()));
+            graphics.fill(cx - 1, cy - 3, cx + 2, cy + 4, 0xA0000000);
+            graphics.fill(cx - 3, cy - 1, cx + 4, cy + 2, 0xA0000000);
+            graphics.fill(cx, cy - 2, cx + 1, cy + 3, color);
+            graphics.fill(cx - 2, cy, cx + 3, cy + 1, color);
+            if (list.size() > 1) {
+                this.smallText(graphics, Component.literal(Integer.toString(list.size())), cx + 4, cy - 4, 20, color);
+            }
+        }
+    }
+
+    /** 信息栏里：这个星系看得到的信标，和星系备忘的入口（发现过的星系才有）。 */
+    private int drawBeaconPanel(GuiGraphicsExtractor graphics, StarSystem system, int x, int y, int width, int mouseX, int mouseY, int bottom) {
+        this.memoSystem = -1;
+        List<io.github.sweetcornna.universe.network.HoloBeaconPayloads.Entry> beacons =
+                io.github.sweetcornna.universe.client.beacon.BeaconClient.onStarMap(system.index());
+        if (!beacons.isEmpty()) {
+            graphics.text(this.font, Component.translatable("gui.universe.star_map.beacons"), x, y, TEXT, false);
+            y += 11;
+            for (io.github.sweetcornna.universe.network.HoloBeaconPayloads.Entry beacon : beacons) {
+                int color = ARGB.opaque(io.github.sweetcornna.universe.core.beacon.BeaconStyle.color(beacon.color()));
+                graphics.fill(x, y + 2, x + 4, y + 6, color);
+                y = this.smallText(graphics, io.github.sweetcornna.universe.client.beacon.BeaconClient.name(beacon.label(), beacon.icon()), x + 7,
+                        y, width - 7, color) + 2;
+            }
+            y += 2;
+        }
+        if (ClientDiscoveries.known(DiscoveryKey.system(system.index()))) {
+            Component link = Component.translatable("gui.universe.star_map.memo");
+            int w = (int) Math.ceil(this.font.width(link) * 0.75F);
+            boolean visible = y >= HEADER && y + 8 <= bottom;
+            boolean hover = visible && mouseX >= x && mouseX < x + w && mouseY >= y - 1 && mouseY < y + 8;
+            int end = this.smallText(graphics, link, x, y, width, hover ? TEXT : ACCENT);
+            if (visible) {
+                this.memoSystem = system.index();
+                this.memoLeft = x;
+                this.memoTop = y - 1;
+                this.memoRight = x + w;
+                this.memoBottom = y + 8;
+            }
+            y = end + 4;
+        }
+        return y;
+    }
+
+    /** 点了星系备忘的入口：向服务端要这一页，到了打开备忘界面，关掉以后回到星图。 */
+    private boolean clickMemo(MouseButtonEvent event) {
+        if (event.button() != InputConstants.MOUSE_BUTTON_LEFT || this.memoSystem < 0 || event.x() < this.memoLeft || event.x() >= this.memoRight
+                || event.y() < this.memoTop || event.y() >= this.memoBottom) {
+            return false;
+        }
+        StarSystem system = this.system(this.memoSystem);
+        if (system == null) {
+            return false;
+        }
+        io.github.sweetcornna.universe.client.beacon.BeaconClient.openMemo(
+                io.github.sweetcornna.universe.core.beacon.MemoKeys.system(system.index()), Component.literal(GalaxyText.system(system)), this);
+        this.click();
+        return true;
     }
 
     private static void hexagon(GuiGraphicsExtractor graphics, double x, double y, double radius, double turn, float width, int color) {
@@ -624,6 +788,7 @@ public class StarMapScreen extends Screen {
             y = this.smallText(graphics, Component.translatable("gui.universe.star_map.black_hole"), x, y, width, WARN) + 3;
         }
         y = this.drawStrip(graphics, system, x, y, width, mouseX, mouseY) + 4;
+        y = this.drawBeaconPanel(graphics, system, x, y, width, mouseX, mouseY, bottom);
 
         graphics.text(this.font, Component.translatable("gui.universe.star_map.planets", system.planets().size()), x, y, TEXT, false);
         y += 12;
@@ -934,6 +1099,9 @@ public class StarMapScreen extends Screen {
 
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+        if (this.clickMemo(event)) {
+            return true;
+        }
         double x = event.x();
         double y = event.y();
         int buttonY = this.height - FOOTER - BUTTON_HEIGHT - 4;

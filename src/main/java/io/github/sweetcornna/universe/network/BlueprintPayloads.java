@@ -3,11 +3,15 @@ package io.github.sweetcornna.universe.network;
 import java.util.List;
 
 import io.github.sweetcornna.universe.Universe;
+import io.github.sweetcornna.universe.core.blueprint.BlueprintMeta;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -31,12 +35,13 @@ public final class BlueprintPayloads {
         }
     }
 
-    /** 客户端 → 服务端：把主手空白蓝图框住的选区存成蓝图。 */
-    public record Save(String name) implements CustomPacketPayload {
+    /** 客户端 → 服务端：把主手空白蓝图框住的选区存成蓝图，带一段说明（ADR-0033 §九）。 */
+    public record Save(String name, String description) implements CustomPacketPayload {
         public static final int MAX_NAME = 32;
         public static final Type<Save> TYPE = new Type<>(Universe.id("blueprint_save"));
         public static final StreamCodec<ByteBuf, Save> STREAM_CODEC = StreamCodec.composite(
                 ByteBufCodecs.stringUtf8(MAX_NAME * 4), Save::name,
+                ByteBufCodecs.stringUtf8(BlueprintMeta.MAX_DESCRIPTION * 4), Save::description,
                 Save::new);
 
         @Override
@@ -45,10 +50,12 @@ public final class BlueprintPayloads {
         }
     }
 
-    /** 客户端 → 服务端：主手的蓝图顺时针转 90°。 */
-    public record Rotate() implements CustomPacketPayload {
+    /** 客户端 → 服务端：主手的蓝图顺时针转 90°；devices 为真时改成切换"只贴设备"（Shift + 旋转键，ADR-0033 §九）。 */
+    public record Rotate(boolean devices) implements CustomPacketPayload {
         public static final Type<Rotate> TYPE = new Type<>(Universe.id("blueprint_rotate"));
-        public static final StreamCodec<ByteBuf, Rotate> STREAM_CODEC = StreamCodec.unit(new Rotate());
+        public static final StreamCodec<ByteBuf, Rotate> STREAM_CODEC = StreamCodec.composite(
+                ByteBufCodecs.BOOL, Rotate::devices,
+                Rotate::new);
 
         @Override
         public Type<Rotate> type() {
@@ -68,6 +75,34 @@ public final class BlueprintPayloads {
 
         @Override
         public Type<Click> type() {
+            return TYPE;
+        }
+    }
+
+    /** 客户端 → 服务端：预览蓝图时问身上（背包和外骨骼货舱）各有多少这些材料（ADR-0033 §九）。 */
+    public record StockRequest(List<Item> items) implements CustomPacketPayload {
+        public static final int MAX_ITEMS = 64;
+        public static final Type<StockRequest> TYPE = new Type<>(Universe.id("blueprint_stock_request"));
+        public static final StreamCodec<RegistryFriendlyByteBuf, StockRequest> STREAM_CODEC = StreamCodec.composite(
+                ByteBufCodecs.registry(Registries.ITEM).apply(ByteBufCodecs.list(MAX_ITEMS)), StockRequest::items,
+                StockRequest::new);
+
+        @Override
+        public Type<StockRequest> type() {
+            return TYPE;
+        }
+    }
+
+    /** 服务端 → 客户端：{@link StockRequest} 的回答，counts 和 items 一一对应。 */
+    public record Stock(List<Item> items, List<Integer> counts) implements CustomPacketPayload {
+        public static final Type<Stock> TYPE = new Type<>(Universe.id("blueprint_stock"));
+        public static final StreamCodec<RegistryFriendlyByteBuf, Stock> STREAM_CODEC = StreamCodec.composite(
+                ByteBufCodecs.registry(Registries.ITEM).apply(ByteBufCodecs.list(StockRequest.MAX_ITEMS)), Stock::items,
+                ByteBufCodecs.VAR_INT.apply(ByteBufCodecs.list(StockRequest.MAX_ITEMS)), Stock::counts,
+                Stock::new);
+
+        @Override
+        public Type<Stock> type() {
             return TYPE;
         }
     }

@@ -202,6 +202,14 @@ public final class Universe {
         // M17 收尾：工厂物流（E）的注册加在这行上面
         io.github.sweetcornna.universe.survival.JetpackFlames.registerEvents(gameBus);
         // M17 收尾：飞船和星球（F）的注册加在这行上面
+        io.github.sweetcornna.universe.mecha.fleet.MechaFleet.registerEvents(modBus, gameBus);
+        io.github.sweetcornna.universe.mecha.combat.MechaCombat.registerEvents(gameBus);
+        // M18 舰队和战斗（A）的注册加在这行上面
+        // M18 物流调度（B）的注册加在这行上面
+        io.github.sweetcornna.universe.stats.Dashboards.registerEvents(gameBus);
+        // M18 统计和研究（C）的注册加在这行上面
+        io.github.sweetcornna.universe.beacon.HoloBeacons.registerEvents(gameBus);
+        // M18 信标、透镜、矿脉、蓝图（D）的注册加在这行上面
     }
 
     private void commonSetup(FMLCommonSetupEvent event) {

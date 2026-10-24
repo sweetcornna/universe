@@ -1,0 +1,28 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:prototype"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:processor"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:crystal_silicon"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:titanium_alloy"
+    }
+  ],
+  "research": "precision_drones",
+  "results": [
+    {
+      "id": "universe:precision_drone"
+    }
+  ],
+  "time": 120
+}

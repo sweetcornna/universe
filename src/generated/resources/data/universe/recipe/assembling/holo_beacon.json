@@ -1,0 +1,28 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 4,
+      "ingredient": "minecraft:iron_ingot"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:circuit_board"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:magnetic_coil"
+    },
+    {
+      "count": 1,
+      "ingredient": "minecraft:glass"
+    }
+  ],
+  "research": "holo_beacon",
+  "results": [
+    {
+      "id": "universe:holo_beacon"
+    }
+  ],
+  "time": 60
+}

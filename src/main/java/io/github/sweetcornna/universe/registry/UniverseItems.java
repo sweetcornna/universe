@@ -521,6 +521,30 @@ public final class UniverseItems {
     // M17 收尾：酸液（A）的物品加在这行上面
     public static final DeferredItem<BlockItem> GRID_INTERFACE = ITEMS.registerSimpleBlockItem(UniverseBlocks.GRID_INTERFACE);
     // M17 收尾：互通（C）的物品加在这行上面
+    // M18 舰队（ADR-0033 §一）：放进机甲的编队格里出动
+    public static final DeferredItem<io.github.sweetcornna.universe.mecha.fleet.FleetUnitItem> PROTOTYPE = ITEMS.registerItem("prototype",
+            p -> new io.github.sweetcornna.universe.mecha.fleet.FleetUnitItem(io.github.sweetcornna.universe.core.mecha.fleet.FleetUnitKind.PROTOTYPE, p),
+            p -> p.stacksTo(16));
+    public static final DeferredItem<io.github.sweetcornna.universe.mecha.fleet.FleetUnitItem> PRECISION_DRONE = ITEMS.registerItem("precision_drone",
+            p -> new io.github.sweetcornna.universe.mecha.fleet.FleetUnitItem(io.github.sweetcornna.universe.core.mecha.fleet.FleetUnitKind.PRECISION_DRONE, p),
+            p -> p.stacksTo(16));
+    public static final DeferredItem<io.github.sweetcornna.universe.mecha.fleet.FleetUnitItem> ATTACK_DRONE = ITEMS.registerItem("attack_drone",
+            p -> new io.github.sweetcornna.universe.mecha.fleet.FleetUnitItem(io.github.sweetcornna.universe.core.mecha.fleet.FleetUnitKind.ATTACK_DRONE, p),
+            p -> p.stacksTo(16));
+    public static final DeferredItem<io.github.sweetcornna.universe.mecha.fleet.FleetUnitItem> CORVETTE = ITEMS.registerItem("corvette",
+            p -> new io.github.sweetcornna.universe.mecha.fleet.FleetUnitItem(io.github.sweetcornna.universe.core.mecha.fleet.FleetUnitKind.CORVETTE, p),
+            p -> p.stacksTo(4));
+    public static final DeferredItem<io.github.sweetcornna.universe.mecha.fleet.FleetUnitItem> DESTROYER = ITEMS.registerItem("destroyer",
+            p -> new io.github.sweetcornna.universe.mecha.fleet.FleetUnitItem(io.github.sweetcornna.universe.core.mecha.fleet.FleetUnitKind.DESTROYER, p),
+            p -> p.stacksTo(4).rarity(Rarity.RARE));
+    // M18 舰队和战斗（A）的物品加在这行上面
+    // M18 物流调度（B）的物品加在这行上面
+    // M18 统计和研究（C）的物品加在这行上面
+    /** 黑雾透镜（ADR-0033 §七）：射线接收站的透镜格里用，损耗减半、积累快一倍。 */
+    public static final DeferredItem<Item> DARK_FOG_LENS = ITEMS.registerSimpleItem("dark_fog_lens");
+    /** 全息信标（ADR-0033 §六）。 */
+    public static final DeferredItem<BlockItem> HOLO_BEACON = ITEMS.registerSimpleBlockItem(UniverseBlocks.HOLO_BEACON);
+    // M18 信标、透镜、矿脉、蓝图（D）的物品加在这行上面
 
     /** 蓝图（ADR-0018）。 */
     public static final DeferredItem<BlueprintItem> BLUEPRINT = ITEMS.registerItem("blueprint", BlueprintItem::new);
@@ -635,6 +659,12 @@ public final class UniverseItems {
         // M17 收尾：酸液（A）的创造物品栏顺序加在这行上面
         order.add(GRID_INTERFACE);
         // M17 收尾：互通（C）的创造物品栏顺序加在这行上面
+        order.addAll(List.of(PROTOTYPE, PRECISION_DRONE, ATTACK_DRONE, CORVETTE, DESTROYER));
+        // M18 舰队和战斗（A）的创造物品栏顺序加在这行上面
+        // M18 物流调度（B）的创造物品栏顺序加在这行上面
+        // M18 统计和研究（C）的创造物品栏顺序加在这行上面
+        order.addAll(List.of(DARK_FOG_LENS, HOLO_BEACON));
+        // M18 信标、透镜、矿脉、蓝图（D）的创造物品栏顺序加在这行上面
         return List.copyOf(order);
     }
 
