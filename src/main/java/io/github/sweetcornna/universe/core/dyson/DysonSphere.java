@@ -202,16 +202,233 @@ public final class DysonSphere {
         }
         double r = this.clampRadius(radius);
         int d = Math.max(1, Math.min(template.maxDensity(), density));
-        boolean reshape = Math.abs(r - layer.radius()) > 1e-9 || template != layer.grid().template() || d != layer.grid().density();
-        if (reshape && !layer.empty()) {
+        boolean resize = Math.abs(r - layer.radius()) > 1e-9;
+        boolean regrid = template != layer.grid().template() || d != layer.grid().density();
+        if ((resize || regrid) && !layer.empty()) {
             return false;
         }
-        if (reshape) {
+        if (regrid) {
+            // 换模板：自己画的网格和颜色不要了
             layer.reshape(r, template, d);
+        } else if (resize) {
+            // 只换半径：网格、颜色照旧（自定义的网格也留着）
+            layer.resize(r);
         }
         layer.orient(clampInclination(inclination), wrapDegrees(ascendingNode));
         this.changed();
         return true;
+    }
+
+    // ---- 自由编辑（ADR-0030 §四）
+
+    /** 编辑的结果，界面上显示 {@link #key()}。 */
+    public enum EditResult {
+        OK,
+        NO_LAYER,
+        /** 编辑器看到的网格已经过时了（别人刚改过）。 */
+        STALE,
+        /** 蓝图只能导入到还没开始建的层。 */
+        NOT_EMPTY,
+        /** 建了的（或者有火箭在路上的）元素不能直接删、不能挪，要先拆。 */
+        BUILT,
+        /** 要拆的还没建。 */
+        NOT_BUILT,
+        INVALID;
+
+        public String key() {
+            return "gui.universe.dyson.result." + this.name().toLowerCase(java.util.Locale.ROOT);
+        }
+    }
+
+    /** 两个位置算同一个节点的角距离（弧度）：远小于节点之间的最小间距。 */
+    private static final double SAME_NODE = 1e-6;
+
+    /**
+     * 把一层的网格换成 design：位置一样的节点、两端一样的框架、顶点一样的球壳保留进度（节点照用原来的精确位置），
+     * 建了的元素没留下来时拒绝。
+     *
+     * <p>design 要先 {@link DysonDesign#validate()} 过（服务端查一次，好把原因告诉玩家）。
+     *
+     * @param importing 导入蓝图：层一点都没建时才行
+     */
+    public EditResult redesign(int layerId, DysonDesign design, boolean importing) {
+        Plan plan = this.plan(layerId, design, importing);
+        if (plan.result != EditResult.OK) {
+            return plan.result;
+        }
+        DysonLayer layer = this.layers.get(layerId);
+        layer.apply(plan.next, plan.nodeMap, plan.frameMap, plan.shellMap, design.nodeColors(), design.frameColors(), design.shellColors());
+        // 在路上的火箭跟着新的下标走（它们的目标都留下来了，plan 查过）
+        this.rockets.replaceAll(rocket -> {
+            if (rocket.layer() != layerId) {
+                return rocket;
+            }
+            int index = rocket.node() ? plan.oldToNew[rocket.index()] : plan.oldFrameToNew[rocket.index()];
+            return new Rocket(rocket.arrival(), rocket.layer(), rocket.node(), index);
+        });
+        this.rockets.removeIf(rocket -> rocket.index() < 0);
+        this.changed();
+        return EditResult.OK;
+    }
+
+    /** 只查 {@link #redesign} 行不行，不改（编辑器在客户端先查一遍，马上告诉玩家）。 */
+    public EditResult check(int layerId, DysonDesign design, boolean importing) {
+        return this.plan(layerId, design, importing).result;
+    }
+
+    /** 换网格的方案：新网格，和新旧下标的对应（-1 是新加的或删掉的）。 */
+    private record Plan(EditResult result, DysonGrid next, int[] nodeMap, int[] frameMap, int[] shellMap, int[] oldToNew,
+            int[] oldFrameToNew) {
+        static Plan fail(EditResult result) {
+            return new Plan(result, null, null, null, null, null, null);
+        }
+    }
+
+    private Plan plan(int layerId, DysonDesign design, boolean importing) {
+        DysonLayer layer = this.layers.get(layerId);
+        if (layer == null) {
+            return Plan.fail(EditResult.NO_LAYER);
+        }
+        if (importing && !layer.empty()) {
+            return Plan.fail(EditResult.NOT_EMPTY);
+        }
+        DysonGrid old = layer.grid();
+        int n = design.nodeCount();
+        int[] nodeMap = new int[n];
+        double[][] positions = new double[n][];
+        boolean[] taken = new boolean[old.nodeCount()];
+        for (int i = 0; i < n; i++) {
+            nodeMap[i] = -1;
+            positions[i] = design.position(i);
+            for (int j = 0; j < old.nodeCount(); j++) {
+                if (!taken[j] && SphereGeometry.angle(positions[i], old.node(j)) < SAME_NODE) {
+                    nodeMap[i] = j;
+                    taken[j] = true;
+                    positions[i] = old.node(j);
+                    break;
+                }
+            }
+        }
+        for (int j = 0; j < old.nodeCount(); j++) {
+            if (!taken[j] && layer.started(DysonLayer.Element.NODE, j)) {
+                return Plan.fail(EditResult.BUILT);
+            }
+        }
+        int[] oldToNew = new int[old.nodeCount()];
+        java.util.Arrays.fill(oldToNew, -1);
+        for (int i = 0; i < n; i++) {
+            if (nodeMap[i] >= 0) {
+                oldToNew[nodeMap[i]] = i;
+            }
+        }
+        java.util.Map<Long, Integer> oldFrames = new java.util.HashMap<>();
+        for (int f = 0; f < old.frameCount(); f++) {
+            int a = oldToNew[old.frame(f)[0]];
+            int b = oldToNew[old.frame(f)[1]];
+            if (a >= 0 && b >= 0) {
+                oldFrames.put(pair(a, b), f);
+            }
+        }
+        int[][] frames = new int[design.frameCount()][];
+        int[] frameMap = new int[design.frameCount()];
+        boolean[] frameKept = new boolean[old.frameCount()];
+        for (int i = 0; i < frames.length; i++) {
+            frames[i] = new int[] {design.frame(i).a(), design.frame(i).b()};
+            frameMap[i] = oldFrames.getOrDefault(pair(frames[i][0], frames[i][1]), -1);
+            if (frameMap[i] >= 0) {
+                frameKept[frameMap[i]] = true;
+            }
+        }
+        for (int f = 0; f < old.frameCount(); f++) {
+            if (!frameKept[f] && layer.started(DysonLayer.Element.FRAME, f)) {
+                return Plan.fail(EditResult.BUILT);
+            }
+        }
+        java.util.Map<String, Integer> oldShells = new java.util.HashMap<>();
+        for (int s = 0; s < old.shellCount(); s++) {
+            int[] mapped = java.util.Arrays.stream(old.shell(s)).map(v -> oldToNew[v]).sorted().toArray();
+            if (mapped.length > 0 && mapped[0] >= 0) {
+                oldShells.put(java.util.Arrays.toString(mapped), s);
+            }
+        }
+        int[][] shells = new int[design.shellCount()][];
+        int[] shellMap = new int[design.shellCount()];
+        boolean[] shellKept = new boolean[old.shellCount()];
+        for (int i = 0; i < shells.length; i++) {
+            shells[i] = design.shell(i).nodes().clone();
+            shellMap[i] = oldShells.getOrDefault(java.util.Arrays.toString(java.util.Arrays.stream(shells[i]).sorted().toArray()), -1);
+            if (shellMap[i] >= 0) {
+                shellKept[shellMap[i]] = true;
+            }
+        }
+        for (int s = 0; s < old.shellCount(); s++) {
+            if (!shellKept[s] && layer.started(DysonLayer.Element.SHELL, s)) {
+                return Plan.fail(EditResult.BUILT);
+            }
+        }
+        DysonGrid next;
+        try {
+            next = DysonGrid.custom(design.base(), design.density(), positions, frames, shells);
+        } catch (IllegalArgumentException e) {
+            return Plan.fail(EditResult.INVALID);
+        }
+        int[] oldFrameToNew = new int[old.frameCount()];
+        java.util.Arrays.fill(oldFrameToNew, -1);
+        for (int i = 0; i < frameMap.length; i++) {
+            if (frameMap[i] >= 0) {
+                oldFrameToNew[frameMap[i]] = i;
+            }
+        }
+        return new Plan(EditResult.OK, next, nodeMap, frameMap, shellMap, oldToNew, oldFrameToNew);
+    }
+
+    /** 拆掉一层里的一些元素：结构点、单元点不退，往这儿飞的火箭作废。 */
+    public EditResult demolish(int layerId, DysonLayer.Element kind, int[] indices) {
+        DysonLayer layer = this.layers.get(layerId);
+        if (layer == null) {
+            return EditResult.NO_LAYER;
+        }
+        java.util.Set<Integer> nodes = new java.util.HashSet<>();
+        java.util.Set<Integer> frames = new java.util.HashSet<>();
+        boolean any = false;
+        for (int index : indices) {
+            if (index < 0 || index >= layer.count(kind)) {
+                return EditResult.STALE;
+            }
+            if (layer.started(kind, index)) {
+                any = true;
+                layer.demolish(kind, index, nodes, frames);
+            }
+        }
+        if (!any) {
+            return EditResult.NOT_BUILT;
+        }
+        this.rockets.removeIf(rocket -> rocket.layer() == layerId && (rocket.node() ? nodes : frames).contains(rocket.index()));
+        this.changed();
+        return EditResult.OK;
+    }
+
+    /** 给一层里的一些元素上色（0 是默认色）。 */
+    public EditResult paint(int layerId, DysonLayer.Element kind, int[] indices, int color) {
+        DysonLayer layer = this.layers.get(layerId);
+        if (layer == null) {
+            return EditResult.NO_LAYER;
+        }
+        for (int index : indices) {
+            if (index < 0 || index >= layer.count(kind)) {
+                return EditResult.STALE;
+            }
+        }
+        int argb = color == 0 ? 0 : 0xFF000000 | color;
+        for (int index : indices) {
+            layer.paint(kind, index, argb);
+        }
+        this.changed();
+        return EditResult.OK;
+    }
+
+    private static long pair(int a, int b) {
+        return ((long) Math.min(a, b) << 32) | Math.max(a, b);
     }
 
     /** 删一层，建好的全部没了，在路上的火箭也作废。 */
@@ -510,6 +727,19 @@ public final class DysonSphere {
         }
         DysonLayer layer = new DysonLayer(id, this.clampRadius(radius), clampInclination(inclination), wrapDegrees(ascendingNode),
                 template, density);
+        layer.restore(nodes, frames, cells);
+        this.layers.put(id, layer);
+        this.changed();
+        return layer;
+    }
+
+    /** 读档、同步：恢复一层自己画了网格的层（ADR-0030 §四）。 */
+    public DysonLayer restoreLayer(int id, double radius, double inclination, double ascendingNode, DysonGrid grid, int[] nodes, int[] frames,
+            int[] cells) {
+        if (id < 1 || id > MAX_LAYERS) {
+            return null;
+        }
+        DysonLayer layer = new DysonLayer(id, this.clampRadius(radius), clampInclination(inclination), wrapDegrees(ascendingNode), grid);
         layer.restore(nodes, frames, cells);
         this.layers.put(id, layer);
         this.changed();

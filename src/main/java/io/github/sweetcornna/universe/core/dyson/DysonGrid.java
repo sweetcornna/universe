@@ -51,10 +51,97 @@ public final class DysonGrid {
     private final int[][] shellFrames;
     private final double[] shellAreas;
     private final int[][] nodeShells;
+    /** 玩家改过的网格（ADR-0030 §四）：不按模板算，元素的顺序就是给定的顺序。 */
+    private final boolean custom;
+    /** 球壳剖成的三角形和凸不凸，画面用，第一次要的时候算。 */
+    private int[][] triangles;
+    private boolean[] convex;
+
+    /**
+     * 自定义网格：节点、框架、球壳照给的顺序（不重新排），球壳转成从球外看逆时针。下标不对、球壳的边不是框架时抛
+     * {@link IllegalArgumentException}；几何上合不合法由 {@link DysonDesign#validate()} 管。
+     */
+    private DysonGrid(Template template, int density, double[][] nodes, int[][] frames, int[][] shells) {
+        this.template = template;
+        this.density = density;
+        this.custom = true;
+        int n = nodes.length;
+        this.nodes = new double[n][];
+        this.latitudes = new double[n];
+        for (int i = 0; i < n; i++) {
+            this.nodes[i] = nodes[i].clone();
+            this.latitudes[i] = Math.toDegrees(Math.asin(clamp(this.nodes[i][1])));
+        }
+        this.frames = new int[frames.length][];
+        this.frameArcs = new double[frames.length];
+        Map<Long, Integer> frameIndex = new HashMap<>();
+        for (int i = 0; i < frames.length; i++) {
+            int a = frames[i][0];
+            int b = frames[i][1];
+            if (a < 0 || b < 0 || a >= n || b >= n || a == b || frameIndex.put(edgeKey(a, b), i) != null) {
+                throw new IllegalArgumentException("bad frame " + i);
+            }
+            this.frames[i] = new int[] {Math.min(a, b), Math.max(a, b)};
+            this.frameArcs[i] = Math.acos(clamp(dot(this.nodes[a], this.nodes[b])));
+        }
+        this.shells = new int[shells.length][];
+        this.shellFrames = new int[shells.length][];
+        this.shellAreas = new double[shells.length];
+        List<List<Integer>> byNode = new ArrayList<>(n);
+        for (int i = 0; i < n; i++) {
+            byNode.add(new ArrayList<>());
+        }
+        for (int s = 0; s < shells.length; s++) {
+            int[] shell = shells[s].clone();
+            if (shell.length < 3) {
+                throw new IllegalArgumentException("bad shell " + s);
+            }
+            double[][] points = new double[shell.length][];
+            for (int k = 0; k < shell.length; k++) {
+                if (shell[k] < 0 || shell[k] >= n) {
+                    throw new IllegalArgumentException("bad shell " + s);
+                }
+                points[k] = this.nodes[shell[k]];
+            }
+            double area = SphereGeometry.signedArea(points);
+            if (area < 0) {
+                for (int k = 0; k < shell.length / 2; k++) {
+                    int t = shell[k];
+                    shell[k] = shell[shell.length - 1 - k];
+                    shell[shell.length - 1 - k] = t;
+                }
+            }
+            this.shells[s] = shell;
+            this.shellAreas[s] = Math.abs(area);
+            this.shellFrames[s] = new int[shell.length];
+            for (int k = 0; k < shell.length; k++) {
+                Integer frame = frameIndex.get(edgeKey(shell[k], shell[(k + 1) % shell.length]));
+                if (frame == null) {
+                    throw new IllegalArgumentException("shell " + s + " edge is not a frame");
+                }
+                this.shellFrames[s][k] = frame;
+                byNode.get(shell[k]).add(s);
+            }
+        }
+        this.nodeShells = new int[n][];
+        for (int i = 0; i < n; i++) {
+            this.nodeShells[i] = byNode.get(i).stream().mapToInt(Integer::intValue).toArray();
+        }
+    }
+
+    /**
+     * 自定义网格。
+     *
+     * @param template 从哪个模板改来的（界面上显示、存档里记着；空网格随便）
+     */
+    public static DysonGrid custom(Template template, int density, double[][] nodes, int[][] frames, int[][] shells) {
+        return new DysonGrid(template, Math.max(1, Math.min(template.maxDensity(), density)), nodes, frames, shells);
+    }
 
     private DysonGrid(Template template, int density, List<double[]> rawNodes, List<int[]> rawShells) {
         this.template = template;
         this.density = density;
+        this.custom = false;
         // 节点按离赤道的远近排，同一纬度按经度
         int n = rawNodes.size();
         Integer[] order = new Integer[n];
@@ -148,6 +235,59 @@ public final class DysonGrid {
 
     public int density() {
         return this.density;
+    }
+
+    /** 玩家改过（不是模板算出来的）。 */
+    public boolean custom() {
+        return this.custom;
+    }
+
+    /** 球壳剖成的三角形：节点下标，每三个一组。 */
+    public int[] shellTriangles(int shell) {
+        this.triangulate();
+        return this.triangles[shell];
+    }
+
+    /** 球壳是凸的（可以从中心扇形地画）。 */
+    public boolean shellConvex(int shell) {
+        this.triangulate();
+        return this.convex[shell];
+    }
+
+    private synchronized void triangulate() {
+        if (this.triangles != null) {
+            return;
+        }
+        int[][] all = new int[this.shells.length][];
+        boolean[] flags = new boolean[this.shells.length];
+        for (int s = 0; s < this.shells.length; s++) {
+            int[] shell = this.shells[s];
+            double[][] points = new double[shell.length][];
+            for (int k = 0; k < shell.length; k++) {
+                points[k] = this.nodes[shell[k]];
+            }
+            double[][] flat = SphereGeometry.gnomonic(SphereGeometry.centroid(points), points);
+            int[] local;
+            if (flat == null) {
+                local = new int[(shell.length - 2) * 3];
+                for (int k = 1; k + 1 < shell.length; k++) {
+                    local[(k - 1) * 3] = 0;
+                    local[(k - 1) * 3 + 1] = k;
+                    local[(k - 1) * 3 + 2] = k + 1;
+                }
+                flags[s] = true;
+            } else {
+                local = SphereGeometry.triangulate(flat);
+                flags[s] = SphereGeometry.convex(flat);
+            }
+            int[] mapped = new int[local.length];
+            for (int k = 0; k < local.length; k++) {
+                mapped[k] = shell[local[k]];
+            }
+            all[s] = mapped;
+        }
+        this.convex = flags;
+        this.triangles = all;
     }
 
     public int nodeCount() {

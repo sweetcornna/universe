@@ -16,7 +16,8 @@ import io.github.sweetcornna.universe.core.tech.TechBonuses;
  *   <li><b>防护</b>：每种危害一条。暴露在危害里持续下降，整套外骨骼标准强度下撑 5 分钟，缺件更快，
  *       不穿只有半分钟；降到零后每两秒掉 1 点血。旁边有热源（防寒）或冷源（防热）时慢下来，
  *       风暴时加快。离开危害后慢慢恢复；待在庇护所里（ADR-0026）不掉，20 秒回满。吃了保暖的菜（ADR-0026），
- *       一段时间里寒冷防护掉得慢一半。</li>
+ *       一段时间里寒冷防护掉得慢一半。泡在酸里（ADR-0030，{@link Acid}）毒性防护掉得快，庇护所不管用，一件外骨骼都不穿
+ *       直接灼伤，耗尽后伤得也更快。</li>
  *   <li><b>喷气背包</b>：胸甲上的，空中推进时消耗，落地很快充满。</li>
  * </ul>
  *
@@ -159,14 +160,16 @@ public final class LifeSupport {
             this.hazardTimers.remove(hazard);
             return 0;
         }
+        // 泡在酸里（ADR-0030）：酸液碰着身子，庇护所挡不住
+        boolean acid = hazard == Hazard.TOXIC && env.acid();
         // 庇护所（ADR-0026）：墙和岩石挡住了外面的环境，防护不掉，还会回满
-        if (env.sheltered()) {
+        if (env.sheltered() && !acid) {
             this.protection.put(hazard, Math.min(HAZARD_MAX, value + SHELTER_RECOVER));
             this.hazardTimers.remove(hazard);
             return 0;
         }
-        Double severity = env.hazards().get(hazard);
-        if (severity == null) {
+        double severity = env.severity(hazard);
+        if (severity <= 0) {
             this.protection.put(hazard, Math.min(HAZARD_MAX, value + HAZARD_RECOVER));
             this.hazardTimers.remove(hazard);
             return 0;
@@ -175,7 +178,8 @@ public final class LifeSupport {
         if (hazard == Hazard.COLD && this.warmth > 0) {
             drain *= WARMTH_FACTOR;
         }
-        value = Math.max(0, value - drain);
+        // 一件外骨骼都没穿就没有东西挡酸
+        value = acid && suit.pieces() == 0 ? 0 : Math.max(0, value - drain);
         this.protection.put(hazard, value);
         if (value > 0) {
             this.hazardTimers.remove(hazard);
@@ -183,17 +187,20 @@ public final class LifeSupport {
         }
         int timer = this.hazardTimers.getOrDefault(hazard, 0);
         this.hazardTimers.put(hazard, timer + 1);
+        if (acid) {
+            return timer % Acid.BURN_INTERVAL == 0 ? Acid.BURN_DAMAGE : 0;
+        }
         return timer % HAZARD_INTERVAL == 0 ? HAZARD_DAMAGE : 0;
     }
 
     /** 环境对消耗速度的影响。 */
     static double modifier(Hazard hazard, Environment env) {
-        // 室内不走到这里（见 tickHazard），只剩热源、冷源和天气
+        // 室内只有泡在酸里时走到这里（见 tickHazard），外面的天气淋不着
         double factor = 1;
         if (hazard == Hazard.COLD && env.nearHeat() || hazard == Hazard.HEAT && env.nearCold()) {
             factor *= 0.25;
         }
-        factor *= switch (env.storm()) {
+        factor *= env.sheltered() ? 1.0 : switch (env.storm()) {
             case 0 -> 1.0;
             case 1 -> 1.3;
             default -> 2.0;

@@ -63,4 +63,24 @@ class BlueprintGeometryTest {
         }
         assertArrayEquals(new int[] {1, 1}, BlueprintGeometry.rotate(3, 1, 5, 3, 2));
     }
+
+    @Test
+    void sidesTurnWithTheBlueprint() {
+        // 分流器的优先出口：蓝图转一次，北边的出口到东边，和方块的位置一起转
+        assertEquals("east", BlueprintGeometry.rotateSide("north", 1));
+        assertEquals("west", BlueprintGeometry.rotateSide("south", 1));
+        assertEquals("north", BlueprintGeometry.rotateSide("west", 1));
+        assertEquals("west", BlueprintGeometry.rotateSide("east", 2));
+        assertEquals("south", BlueprintGeometry.rotateSide("east", 5));
+        assertEquals("south", BlueprintGeometry.rotateSide("west", -1));
+        for (String side : new String[] {"north", "east", "south", "west"}) {
+            assertEquals(side, BlueprintGeometry.rotateSide(side, 4));
+        }
+        // 上下、没设的不转
+        assertEquals("up", BlueprintGeometry.rotateSide("up", 1));
+        assertEquals("", BlueprintGeometry.rotateSide("", 3));
+        // 和方块位置的转法一致：北边一排中间那格转到东边一列
+        int[] r = BlueprintGeometry.rotate(1, 0, 3, 3, 1);
+        assertArrayEquals(new int[] {2, 1}, r);
+    }
 }

@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Set;
 
 import io.github.sweetcornna.universe.entity.PlasmaBolt;
+import io.github.sweetcornna.universe.world.planet.gen.PlanetExoticFeature;
 import io.github.sweetcornna.universe.world.planet.gen.PlanetLandmarkFeature;
 import io.github.sweetcornna.universe.world.planet.gen.PlanetPoiFeature;
 import io.github.sweetcornna.universe.Universe;
@@ -51,6 +52,9 @@ public final class UniverseDataGen {
         event.createProvider(UniverseItemTagsProvider::new);
         event.createProvider(UniverseDamageTypeTagsProvider::new);
         event.createProvider(PlanetEnvironmentProvider::new);
+        // M17 收尾：酸液（A）的数据生成加在这行上面
+        event.createProvider(UniverseFluidTagsProvider::new);
+        // M17 收尾：互通（C）的数据生成加在这行上面
     }
 
     private static void gatherRegistries(GatherDataRegistryEntriesEvent event) {
@@ -66,6 +70,8 @@ public final class UniverseDataGen {
             context.register(OverworldVeinsFeature.KEY, new OverworldVeinsFeature());
             context.register(PlanetPoiFeature.KEY, new PlanetPoiFeature());
             context.register(PlanetLandmarkFeature.KEY, new PlanetLandmarkFeature());
+            context.register(PlanetExoticFeature.KEY, new PlanetExoticFeature());
+            // M17 收尾：奇异星球（B）的地物加在这行上面
         });
         event.add(Registries.PLACED_FEATURE, context -> {
             context.register(PlanetFloraFeature.PLACED,
@@ -78,6 +84,9 @@ public final class UniverseDataGen {
                     new PlacedFeature(context.lookup(Registries.FEATURE).getOrThrow(PlanetPoiFeature.KEY), List.of(BiomeFilter.biome())));
             context.register(PlanetLandmarkFeature.PLACED,
                     new PlacedFeature(context.lookup(Registries.FEATURE).getOrThrow(PlanetLandmarkFeature.KEY), List.of(BiomeFilter.biome())));
+            context.register(PlanetExoticFeature.PLACED,
+                    new PlacedFeature(context.lookup(Registries.FEATURE).getOrThrow(PlanetExoticFeature.KEY), List.of(BiomeFilter.biome())));
+            // M17 收尾：奇异星球（B）的放置的地物加在这行上面
         });
         // 主世界的矿脉露头和原油涌泉在最后一步放，压在树和草之后
         event.add(NeoForgeRegistries.Keys.BIOME_MODIFIERS, context -> context.register(

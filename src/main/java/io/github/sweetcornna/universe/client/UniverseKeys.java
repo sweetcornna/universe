@@ -40,6 +40,10 @@ public final class UniverseKeys {
     /** 召唤飞船；在太空里开船时打开自动驾驶的目的地（默认 N，ADR-0024）。 */
     public static final KeyMapping SUMMON = new KeyMapping("key.universe.summon", InputConstants.Type.KEYBOARD, InputConstants.KEY_N, CATEGORY);
 
+    /** 坐在船上时打开货舱（默认 H，ADR-0030 §六）。 */
+    public static final KeyMapping SHIP_CARGO = new KeyMapping("key.universe.ship_cargo", InputConstants.Type.KEYBOARD, InputConstants.KEY_H,
+            CATEGORY);
+
     private UniverseKeys() {
     }
 
@@ -57,6 +61,7 @@ public final class UniverseKeys {
             event.register(ROTATE_BLUEPRINT);
             event.register(MECHA);
             event.register(SUMMON);
+            event.register(SHIP_CARGO);
         });
     }
 }

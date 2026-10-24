@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.github.sweetcornna.universe.Universe;
+import io.github.sweetcornna.universe.core.dyson.DysonBlueprint;
+import io.github.sweetcornna.universe.core.dyson.DysonDesign;
 import io.github.sweetcornna.universe.core.dyson.DysonGrid;
 import io.github.sweetcornna.universe.core.dyson.DysonLayer;
 import io.github.sweetcornna.universe.core.dyson.DysonSphere;
@@ -13,7 +15,8 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 
 /**
- * 服务端 → 客户端：玩家所在恒星系的戴森球（ADR-0016）。网格由模板算，只发进度；戴森云只发每条轨道的帆数。
+ * 服务端 → 客户端：玩家所在恒星系的戴森球（ADR-0016）。模板网格由模板算，只发进度；自己画的网格（ADR-0030 §四）
+ * 连网格一起发，节点是精确坐标。戴森云只发每条轨道的帆数。
  *
  * @param system        恒星系的序号
  * @param lightFactor   光照系数
@@ -27,12 +30,18 @@ public record DysonSyncPayload(int system, double lightFactor, double maxRadius,
     public static final Type<DysonSyncPayload> TYPE = new Type<>(Universe.id("dyson_sync"));
     public static final StreamCodec<FriendlyByteBuf, DysonSyncPayload> STREAM_CODEC = StreamCodec.of(DysonSyncPayload::write,
             DysonSyncPayload::read);
+    /** 一层自己画的网格压缩后最多多少字节。 */
+    public static final int MAX_GRID_BYTES = 256 * 1024;
 
     public record Orbit(int id, double radius, double inclination, double ascendingNode, long sails) {
     }
 
+    /**
+     * @param grid     自己画的网格（{@link DysonBlueprint#pack}），模板网格是空数组
+     * @param revision 网格的编号，编辑器发改动时带上
+     */
     public record Layer(int id, double radius, double inclination, double ascendingNode, int template, int density, int[] nodes, int[] frames,
-            int[] cells) {
+            int[] cells, byte[] grid, int revision, int[] nodeColors, int[] frameColors, int[] shellColors) {
     }
 
     public static DysonSyncPayload of(int system, DysonSphere sphere, double latitudeLimit) {
@@ -42,8 +51,10 @@ public record DysonSyncPayload(int system, double lightFactor, double maxRadius,
         }
         List<Layer> layers = new ArrayList<>();
         for (DysonLayer layer : sphere.layers()) {
+            byte[] grid = layer.grid().custom() ? DysonBlueprint.pack(DysonDesign.of(layer)) : new byte[0];
             layers.add(new Layer(layer.id(), layer.radius(), layer.inclination(), layer.ascendingNode(), layer.grid().template().ordinal(),
-                    layer.grid().density(), layer.nodeProgress(), layer.frameProgress(), layer.cellProgress()));
+                    layer.grid().density(), layer.nodeProgress(), layer.frameProgress(), layer.cellProgress(), grid, layer.revision(),
+                    layer.nodeColors(), layer.frameColors(), layer.shellColors()));
         }
         return new DysonSyncPayload(system, sphere.lightFactor(), sphere.maxRadius(), latitudeLimit, sphere.lastDrawn(), sphere.rockets().size(),
                 orbits, layers);
@@ -58,8 +69,25 @@ public record DysonSyncPayload(int system, double lightFactor, double maxRadius,
                     count > 0 ? new long[] {Long.MAX_VALUE - SwarmOrbit.BUCKET} : new long[0], count > 0 ? new int[] {(int) count} : new int[0]);
         }
         for (Layer layer : this.layers) {
-            sphere.restoreLayer(layer.id, layer.radius, layer.inclination, layer.ascendingNode, DysonGrid.Template.byOrdinal(layer.template),
-                    layer.density, layer.nodes, layer.frames, layer.cells);
+            DysonGrid.Template template = DysonGrid.Template.byOrdinal(layer.template);
+            DysonLayer restored = null;
+            DysonDesign design = layer.grid.length == 0 ? null : DysonBlueprint.unpack(layer.grid);
+            if (design != null) {
+                try {
+                    restored = sphere.restoreLayer(layer.id, layer.radius, layer.inclination, layer.ascendingNode, design.toGrid(), layer.nodes,
+                            layer.frames, layer.cells);
+                } catch (IllegalArgumentException e) {
+                    restored = null;
+                }
+            }
+            if (restored == null) {
+                restored = sphere.restoreLayer(layer.id, layer.radius, layer.inclination, layer.ascendingNode, template, layer.density,
+                        layer.nodes, layer.frames, layer.cells);
+            }
+            if (restored != null) {
+                restored.restoreColors(layer.nodeColors, layer.frameColors, layer.shellColors);
+                restored.restoreRevision(layer.revision);
+            }
         }
         return sphere;
     }
@@ -90,6 +118,11 @@ public record DysonSyncPayload(int system, double lightFactor, double maxRadius,
             buf.writeVarIntArray(layer.nodes);
             buf.writeVarIntArray(layer.frames);
             buf.writeVarIntArray(layer.cells);
+            buf.writeByteArray(layer.grid);
+            buf.writeVarInt(layer.revision);
+            buf.writeVarIntArray(layer.nodeColors);
+            buf.writeVarIntArray(layer.frameColors);
+            buf.writeVarIntArray(layer.shellColors);
         }
     }
 
@@ -109,7 +142,8 @@ public record DysonSyncPayload(int system, double lightFactor, double maxRadius,
         List<Layer> layers = new ArrayList<>(layerCount);
         for (int i = 0; i < layerCount; i++) {
             layers.add(new Layer(buf.readVarInt(), buf.readDouble(), buf.readFloat(), buf.readFloat(), buf.readVarInt(), buf.readVarInt(),
-                    buf.readVarIntArray(4096), buf.readVarIntArray(4096), buf.readVarIntArray(4096)));
+                    buf.readVarIntArray(4096), buf.readVarIntArray(4096), buf.readVarIntArray(4096), buf.readByteArray(MAX_GRID_BYTES),
+                    buf.readVarInt(), buf.readVarIntArray(4096), buf.readVarIntArray(4096), buf.readVarIntArray(4096)));
         }
         return new DysonSyncPayload(system, light, maxRadius, limit, drawn, rockets, orbits, layers);
     }

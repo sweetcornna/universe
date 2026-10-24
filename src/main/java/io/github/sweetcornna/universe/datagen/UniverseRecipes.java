@@ -85,6 +85,8 @@ final class UniverseRecipes extends RecipeProvider {
         this.darkFogPlasma();
         this.darkFogShield();
         this.planetLife();
+        this.wrapUpInterop();
+        this.wrapUpFactory();
     }
 
     /**
@@ -172,6 +174,36 @@ final class UniverseRecipes extends RecipeProvider {
         this.machine(refining, "radiation_gel", 120, "", in(resource("gamma_root"), 2),
                 out(UniverseItems.GELS.get(Hazard.RADIATION).get(), 1));
         this.machine(refining, "toxin_gel", 120, "", in(resource("fungal_mould"), 2), out(UniverseItems.GELS.get(Hazard.TOXIC).get(), 1));
+    }
+
+    /** M17 收尾的配方：互通（子代理 C，ADR-0030）。 */
+    private void wrapUpInterop() {
+        // 电网接口：蓄电器加电路板、磁线圈、铜（铜线），装配机里做或者手工合成
+        Item accumulator = UniverseItems.ACCUMULATOR.get();
+        Item board = UniverseItems.CIRCUIT_BOARD.get();
+        Item coil = UniverseItems.MAGNETIC_COIL.get();
+        this.machine(Kind.ASSEMBLING, "grid_interface", 60, "grid_interface",
+                in(accumulator, 1, board, 4, coil, 6, Items.COPPER_INGOT, 8), out(UniverseItems.GRID_INTERFACE.get(), 1));
+        this.researchShaped("grid_interface", RecipeCategory.REDSTONE, UniverseItems.GRID_INTERFACE.get(), 1, List.of("CBC", "MAM", "CBC"),
+                Map.of('C', Items.COPPER_INGOT, 'B', board, 'M', coil, 'A', accumulator));
+    }
+
+    /** M17 收尾的配方：工厂物流（子代理 E，ADR-0030）。 */
+    private void wrapUpFactory() {
+        // 高级设备的黑雾配方：打黑雾攒下的零件顶掉奇异物质、引力透镜和量子芯片，比正常配方便宜、做得也快；
+        // 跟正常配方一样由各自的科技解锁
+        Item singularity = UniverseItems.NEGENTROPY_SINGULARITY.get();
+        Item recombinator = UniverseItems.MATTER_RECOMBINATOR.get();
+        Item neuron = UniverseItems.SILICON_NEURON.get();
+        Item core = UniverseItems.CORE_ELEMENT.get();
+        this.machine(Kind.ASSEMBLING, "negentropy_smelter_from_dark_fog", 240, "negentropy_smelting",
+                in(UniverseItems.PLANE_SMELTER.get(), 1, singularity, 2, recombinator, 4), out(UniverseItems.NEGENTROPY_SMELTER.get(), 1));
+        this.machine(Kind.ASSEMBLING, "recomposing_assembler_from_dark_fog", 240, "recomposing_assembly",
+                in(UniverseItems.ASSEMBLER_MK3.get(), 1, recombinator, 4, neuron, 4), out(UniverseItems.RECOMPOSING_ASSEMBLER.get(), 1));
+        this.machine(Kind.ASSEMBLING, "quantum_chemical_plant_from_dark_fog", 240, "quantum_chemistry",
+                in(UniverseItems.CHEMICAL_PLANT.get(), 1, singularity, 2, recombinator, 2), out(UniverseItems.QUANTUM_CHEMICAL_PLANT.get(), 1));
+        this.machine(Kind.ASSEMBLING, "self_evolution_lab_from_dark_fog", 240, "self_evolution",
+                in(UniverseItems.MATRIX_LAB.get(), 1, neuron, 4, core, 1), out(UniverseItems.SELF_EVOLUTION_LAB.get(), 1));
     }
 
     private void dish(Dish dish, int time, List<SizedIngredient> ingredients) {

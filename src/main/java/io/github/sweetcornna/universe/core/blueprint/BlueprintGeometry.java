@@ -9,6 +9,8 @@ public final class BlueprintGeometry {
     public static final int MAX_SIZE = 32;
     private static final int BITS = 6;
     private static final int MASK = (1 << BITS) - 1;
+    /** 水平方向从北起顺时针排。 */
+    private static final String[] SIDES = {"north", "east", "south", "west"};
 
     private BlueprintGeometry() {
     }
@@ -59,5 +61,18 @@ public final class BlueprintGeometry {
             case 3 -> new int[] {z, sizeX - 1 - x};
             default -> new int[] {x, z};
         };
+    }
+
+    /**
+     * 设置里记的水平方向（{@code north}、{@code east}、{@code south}、{@code west}）跟着蓝图顺时针转 quarterTurns 个 90°，
+     * 和 {@link #rotate} 一致。认不出的原样返回（上下、空串）。
+     */
+    public static String rotateSide(String side, int quarterTurns) {
+        for (int i = 0; i < SIDES.length; i++) {
+            if (SIDES[i].equals(side)) {
+                return SIDES[Math.floorMod(i + quarterTurns, SIDES.length)];
+            }
+        }
+        return side;
     }
 }

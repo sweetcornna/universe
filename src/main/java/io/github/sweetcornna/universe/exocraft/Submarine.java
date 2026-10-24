@@ -4,6 +4,7 @@ import java.util.List;
 
 import io.github.sweetcornna.universe.core.vehicle.SubmarineDrive;
 import io.github.sweetcornna.universe.core.vehicle.VehicleKind;
+import io.github.sweetcornna.universe.fluid.AcidFluid;
 import io.github.sweetcornna.universe.network.ScanResultPayload;
 import io.github.sweetcornna.universe.registry.UniverseItems;
 import io.github.sweetcornna.universe.registry.sound.ShipSounds;
@@ -17,7 +18,6 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
-import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
@@ -89,8 +89,8 @@ public class Submarine extends UniverseVehicle {
 
     /** 艇身大半在水里（两端都能算）。 */
     public boolean submerged() {
-        return this.level().getFluidState(BlockPos.containing(this.getX(), this.getY() + this.getBbHeight() * 0.6, this.getZ()))
-                .is(FluidTags.WATER);
+        // 酸海里也开得动（ADR-0030）
+        return AcidFluid.sea(this.level().getFluidState(BlockPos.containing(this.getX(), this.getY() + this.getBbHeight() * 0.6, this.getZ())));
     }
 
     // ---- 每刻

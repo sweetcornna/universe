@@ -10,19 +10,26 @@ import java.util.Set;
 
 import org.jspecify.annotations.Nullable;
 
+import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.client.ClientGalaxy;
 import io.github.sweetcornna.universe.client.TextWrap;
 import io.github.sweetcornna.universe.client.UniverseKeys;
 import io.github.sweetcornna.universe.client.factory.MachineScreen;
 import io.github.sweetcornna.universe.client.galaxy.GalaxyText;
+import io.github.sweetcornna.universe.core.dyson.DysonBlueprint;
+import io.github.sweetcornna.universe.core.dyson.DysonDesign;
 import io.github.sweetcornna.universe.core.dyson.DysonGrid;
 import io.github.sweetcornna.universe.core.dyson.DysonLayer;
+import io.github.sweetcornna.universe.core.dyson.DysonPalette;
 import io.github.sweetcornna.universe.core.dyson.DysonSphere;
+import io.github.sweetcornna.universe.core.dyson.SphereGeometry;
 import io.github.sweetcornna.universe.core.dyson.SwarmOrbit;
 import io.github.sweetcornna.universe.core.galaxy.Planet;
 import io.github.sweetcornna.universe.core.galaxy.StarMapCamera;
 import io.github.sweetcornna.universe.core.galaxy.StarSystem;
 import io.github.sweetcornna.universe.network.DysonEditPayload;
+import io.github.sweetcornna.universe.network.DysonLayerEditPayload;
+import io.github.sweetcornna.universe.network.DysonResultPayload;
 import io.github.sweetcornna.universe.network.DysonSyncPayload;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -30,6 +37,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
+import net.minecraft.util.Util;
 import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 
 /**
@@ -48,6 +56,11 @@ public class DysonEditorScreen extends Screen {
     private static final int FRAME_PLANNED = 0x6090B8D0;
     private static final int FRAME_LOCKED = 0x283A5060;
     private static final int NODE_BUILT = 0xFFFFF2C0;
+    /** 编辑时：选中的、正在连的、不合法的。 */
+    private static final int PICKED = 0xFF7FE0F7;
+    private static final int PENDING = 0xFF9CF08A;
+    /** 调色盘一格多大。 */
+    private static final int SWATCH = 11;
 
     private final StarMapCamera camera = new StarMapCamera();
     private final GuiMesh mesh = new GuiMesh();
@@ -71,12 +84,41 @@ public class DysonEditorScreen extends Screen {
     private int panelWidth;
     private int panelHeight;
     private final List<Hit> hits = new ArrayList<>();
+    /** 正在自由编辑的那一层（ADR-0030 §四）；没在编辑是 null。 */
+    private @Nullable DysonEdit edit;
+    /** 上一次操作的结果：语言键和它是不是错误；没有是 null。 */
+    private @Nullable Component message;
+    private boolean messageBad;
+    /** 视图的下边（编辑模式下工具条占了位置）：鼠标命中判断用。 */
+    private int viewBottom;
+    /** 提示显示到什么时候（客户端刻）。 */
+    private long messageUntil;
+    private long lastEditVersion = -1;
 
-    /** 这一帧画出来的可点的东西。 */
-    private record Hit(int x0, int y0, int x1, int y1, Runnable action) {
+    /** 这一帧画出来的可点的东西。{@code label} 只给开发脚本按文字找，界面上不用。 */
+    private record Hit(int x0, int y0, int x1, int y1, String label, Runnable action) {
         boolean contains(double x, double y) {
             return x >= this.x0 && x < this.x1 && y >= this.y0 && y < this.y1;
         }
+    }
+
+    /** 开发脚本用：这一帧可点的东西都叫什么。见 {@code DevScript} 的 hits。 */
+    public List<String> labels() {
+        return this.hits.stream().map(Hit::label).toList();
+    }
+
+    /** 开发脚本用：按文字点这一帧画出来的东西（^ 开头时按开头比），返回有没有点到。见 {@code DevScript} 的 hit。 */
+    public boolean clickByLabel(String text) {
+        boolean start = text.startsWith("^");
+        String want = start ? text.substring(1) : text;
+        for (Hit hit : this.hits) {
+            if (start ? hit.label().startsWith(want) : hit.label().contains(want)) {
+                hit.action().run();
+                return true;
+            }
+        }
+        Universe.LOGGER.info("Dyson editor hit: no {} among {}", text, this.hits.stream().map(Hit::label).toList());
+        return false;
     }
 
     public DysonEditorScreen() {
@@ -139,14 +181,26 @@ public class DysonEditorScreen extends Screen {
         DysonSphere sphere = found.get();
         this.resolvePending(sphere);
         double limit = ClientDyson.payload().map(DysonSyncPayload::latitudeLimit).orElse(DysonSphere.LATITUDE_BASE);
+        DysonEdit editor = this.editing(sphere);
         int viewX0 = x0 + 8 + LIST_WIDTH;
         int viewX1 = x1 - 8 - PROPS_WIDTH;
         int viewY0 = y0 + 20;
-        int viewY1 = y1 - 28;
+        // 编辑模式下工具条占两行，视图让出位置
+        int viewY1 = y1 - 28 - (editor == null ? 0 : 2 * BUTTON + 4);
+        this.viewBottom = viewY1;
         this.view(graphics, sphere, system.orElse(null), limit, viewX0, viewY0, viewX1, viewY1, partialTick);
         this.list(graphics, sphere, x0 + 6, viewY0, x0 + 6 + LIST_WIDTH, viewY1, mouseX, mouseY);
         this.properties(graphics, sphere, limit, viewX1 + 4, viewY0, x1 - 6, viewY1, mouseX, mouseY);
+        if (editor != null) {
+            DysonLayer layer = sphere.layer(editor.layerId());
+            if (layer != null) {
+                this.tools(graphics, editor, sphere, layer, x0 + 8, viewY1 + 3, x1 - 8, mouseX, mouseY);
+            }
+        }
         this.footer(graphics, sphere, limit, x0 + 8, y1 - 24, x1 - 8);
+        if (this.message != null && Util.getMillis() < this.messageUntil) {
+            graphics.text(this.font, this.message, viewX0 + 4, viewY0 + 4, this.messageBad ? MachineScreen.WARN : MachineScreen.GOOD, true);
+        }
     }
 
     private void resolvePending(DysonSphere sphere) {
@@ -168,6 +222,42 @@ public class DysonEditorScreen extends Screen {
         this.orbitSelected = orbit;
         this.selected = id;
         this.confirmDelete = false;
+        this.edit = null;
+    }
+
+    /** 服务端回的编辑结果（ADR-0030 §四）。 */
+    void showResult(DysonResultPayload result) {
+        this.say(DysonResultText.of(result), !result.ok());
+    }
+
+    private void say(Component text, boolean bad) {
+        this.message = text;
+        this.messageBad = bad;
+        this.messageUntil = Util.getMillis() + 6000;
+    }
+
+    private void problem(DysonDesign.@Nullable Problem problem) {
+        if (problem != null) {
+            this.say(Component.translatable(problem.key()), true);
+        }
+    }
+
+    /** 正在编辑的那一层；选的不是层、没进编辑模式是 null。 */
+    private @Nullable DysonEdit editing(DysonSphere sphere) {
+        DysonEdit current = this.edit;
+        if (current == null) {
+            return null;
+        }
+        DysonLayer layer = sphere.layer(current.layerId());
+        if (layer == null) {
+            this.edit = null;
+            return null;
+        }
+        if (this.lastEditVersion != ClientDyson.version()) {
+            this.lastEditVersion = ClientDyson.version();
+            current.rebase(layer);
+        }
+        return current;
     }
 
     /** 视图单位：半径上限画成 {@link #VIEW_RADIUS}。 */
@@ -230,8 +320,17 @@ public class DysonEditorScreen extends Screen {
             }
             this.mesh.submit(graphics);
         }
+        // 编辑模式：手上这份设计画在最上面
+        DysonEdit editor = this.edit;
+        if (editor != null) {
+            DysonLayer edited = sphere.layer(editor.layerId());
+            if (edited != null) {
+                this.overlay(graphics, editor, edited, scale, time, cx, cy, height);
+            }
+        }
         graphics.disableScissor();
-        graphics.text(this.font, Component.translatable("gui.universe.dyson.hint"), x0 + 4, y1 - 10, 0xFF5D7682, false);
+        graphics.text(this.font, Component.translatable(editor == null ? "gui.universe.dyson.hint" : "gui.universe.dyson.edit.hint"), x0 + 4,
+                y1 - 10, 0xFF5D7682, false);
     }
 
     /** 让最外面的轨道或层占满视图高度的八成左右；还什么都没有就看整个可建的范围。 */
@@ -355,6 +454,62 @@ public class DysonEditorScreen extends Screen {
         }
     }
 
+    /**
+     * 编辑模式：手上这份设计画在上面（没发出去的部分淡一些），选中的高亮。颜色按元素自己的颜色画，和天上一致。
+     */
+    private void overlay(GuiGraphicsExtractor graphics, DysonEdit editor, DysonLayer layer, double scale, double time, double cx, double cy,
+            double height) {
+        DysonDesign design = editor.design();
+        double radius = layer.radius() * scale;
+        double spin = time / DysonSphere.spinPeriod(layer.radius()) * 360;
+        double[][] points = new double[design.nodeCount()][];
+        for (int i = 0; i < design.nodeCount(); i++) {
+            double[] world = DysonSphere.orient(design.position(i), layer.inclination(), layer.ascendingNode(), spin);
+            points[i] = this.project(world[0] * radius, world[1] * radius, world[2] * radius, cx, cy, height);
+        }
+        boolean shells = editor.kind() == DysonLayer.Element.SHELL;
+        for (int s = 0; s < design.shellCount(); s++) {
+            int[] shell = design.shell(s).nodes();
+            boolean picked = shells && editor.selection().contains(s);
+            int rgb = DysonPalette.rgb(design.shell(s).color(), DysonPalette.SHELL);
+            int color = (picked ? 0x90 : 0x40) << 24 | (picked ? PICKED & 0xFFFFFF : rgb);
+            double[] a = points[shell[0]];
+            for (int k = 1; k + 1 < shell.length; k++) {
+                double[] b = points[shell[k]];
+                double[] c = points[shell[k + 1]];
+                if (a != null && b != null && c != null) {
+                    this.mesh.triangle((float) a[0], (float) a[1], (float) b[0], (float) b[1], (float) c[0], (float) c[1], color);
+                }
+            }
+        }
+        boolean frames = editor.kind() == DysonLayer.Element.FRAME;
+        for (int f = 0; f < design.frameCount(); f++) {
+            double[] a = points[design.frame(f).a()];
+            double[] b = points[design.frame(f).b()];
+            if (a == null || b == null) {
+                continue;
+            }
+            boolean picked = frames && editor.selection().contains(f);
+            int rgb = DysonPalette.rgb(design.frame(f).color(), DysonPalette.FRAME);
+            this.mesh.line(a[0], a[1], b[0], b[1], picked ? 2 : 1.2F, picked ? PICKED : 0xC0000000 | rgb);
+        }
+        boolean nodes = editor.kind() == DysonLayer.Element.NODE;
+        for (int i = 0; i < design.nodeCount(); i++) {
+            double[] p = points[i];
+            if (p == null) {
+                continue;
+            }
+            boolean picked = nodes && editor.selection().contains(i);
+            int rgb = DysonPalette.rgb(design.node(i).color(), DysonPalette.NODE);
+            if (i == editor.pendingNode()) {
+                this.mesh.dot(p[0], p[1], 4, PENDING);
+            } else {
+                this.mesh.dot(p[0], p[1], picked ? 4 : 2.5F, picked ? PICKED : 0xE0000000 | rgb);
+            }
+        }
+        this.mesh.submit(graphics);
+    }
+
     private boolean onSide(double[][] points, int[] shell, double focusDepth, boolean far) {
         double depth = 0;
         for (int node : shell) {
@@ -414,7 +569,7 @@ public class DysonEditorScreen extends Screen {
         }
         graphics.text(this.font, label, x0 + 6, y + 2, chosen ? MachineScreen.TEXT : MachineScreen.DIM, false);
         graphics.text(this.font, detail, x1 - 4 - this.font.width(detail), y + 2, chosen ? MachineScreen.TEXT : 0xFF6F8A96, false);
-        this.hits.add(new Hit(x0, y, x1, y + ROW, action));
+        this.hits.add(new Hit(x0, y, x1, y + ROW, label.getString(), action));
         return y + ROW;
     }
 
@@ -425,7 +580,7 @@ public class DysonEditorScreen extends Screen {
         graphics.fill(x + 1, y + 1, x + width - 1, y + BUTTON - 1, !enabled ? 0xFF0C151B : hovered ? 0xFF1F4A5A : 0xFF12303B);
         graphics.centeredText(this.font, label, x + width / 2, y + 2, enabled ? MachineScreen.TEXT : MachineScreen.DIM);
         if (enabled) {
-            this.hits.add(new Hit(x, y, x + width, y + BUTTON, action));
+            this.hits.add(new Hit(x, y, x + width, y + BUTTON, label, action));
         }
     }
 
@@ -499,6 +654,7 @@ public class DysonEditorScreen extends Screen {
                 y += this.wrapped(graphics, Component.translatable("gui.universe.dyson.locked"), x, y, width, MachineScreen.WARN, false);
             }
             y += 3;
+            y = this.gridRow(graphics, layer, x, y, x1 - 5, mouseX, mouseY);
             y = this.layerStats(graphics, sphere, layer, limit, x, y, width);
         }
         // 删除：点两次
@@ -564,6 +720,139 @@ public class DysonEditorScreen extends Screen {
         return y + ROW;
     }
 
+    // ---- 自由编辑（ADR-0030 §四）
+
+    /** 网格那一行：进出编辑模式、导入导出蓝图。 */
+    private int gridRow(GuiGraphicsExtractor graphics, DysonLayer layer, int x, int y, int right, int mouseX, int mouseY) {
+        boolean editing = this.edit != null && this.edit.layerId() == layer.id();
+        Component label = Component.translatable(editing ? "gui.universe.dyson.edit.done" : "gui.universe.dyson.edit.start");
+        int buttonWidth = this.font.width(label) + 10;
+        graphics.text(this.font, Component.translatable("gui.universe.dyson.grid"), x, y + 2, MachineScreen.TEXT, false);
+        this.button(graphics, label, right - buttonWidth, y, buttonWidth, mouseX, mouseY, true, () -> {
+            if (editing) {
+                this.edit = null;
+            } else {
+                this.edit = new DysonEdit(layer);
+                this.lastEditVersion = ClientDyson.version();
+            }
+        });
+        y += ROW + 1;
+        Component paste = Component.translatable("gui.universe.dyson.blueprint.import");
+        Component copy = Component.translatable("gui.universe.dyson.blueprint.export");
+        int pasteWidth = this.font.width(paste) + 8;
+        int copyWidth = this.font.width(copy) + 8;
+        this.button(graphics, copy, right - copyWidth, y, copyWidth, mouseX, mouseY, true, () -> this.exportBlueprint(layer));
+        this.button(graphics, paste, right - copyWidth - pasteWidth - 2, y, pasteWidth, mouseX, mouseY, layer.empty(),
+                () -> Minecraft.getInstance().gui.setScreen(new DysonBlueprintScreen(this, layer.id())));
+        return y + ROW + 2;
+    }
+
+    /** 导出这一层：复制到剪贴板，同时存进本地蓝图库。 */
+    private void exportBlueprint(DysonLayer layer) {
+        String text = DysonBlueprint.export(DysonDesign.of(layer));
+        Minecraft.getInstance().keyboardHandler.setClipboard(text);
+        String name = DysonLibrary.save("layer_" + layer.id(), text);
+        this.say(name == null ? Component.translatable("gui.universe.dyson.blueprint.copied")
+                : Component.translatable("gui.universe.dyson.blueprint.saved", name), false);
+    }
+
+    /** 从蓝图串导入到这一层（{@link DysonBlueprintScreen} 调）。 */
+    void importBlueprint(int layerId, String text) {
+        this.send(DysonLayerEditPayload.importing(layerId, text));
+    }
+
+    /** 编辑模式的工具条、调色盘和几个按钮，画在视图下面。 */
+    private void tools(GuiGraphicsExtractor graphics, DysonEdit editor, DysonSphere sphere, DysonLayer layer, int x0, int y, int x1, int mouseX,
+            int mouseY) {
+        int x = x0;
+        for (DysonEdit.Tool tool : DysonEdit.Tool.values()) {
+            Component label = Component.translatable(tool.key());
+            int width = this.font.width(label) + 8;
+            boolean chosen = editor.tool() == tool;
+            graphics.fill(x, y, x + width, y + BUTTON, chosen ? MachineScreen.ACCENT : MachineScreen.BORDER);
+            boolean hovered = mouseX >= x && mouseX < x + width && mouseY >= y && mouseY < y + BUTTON;
+            graphics.fill(x + 1, y + 1, x + width - 1, y + BUTTON - 1, chosen ? 0xFF1F4A5A : hovered ? 0xFF163B49 : 0xFF0E242D);
+            graphics.centeredText(this.font, label, x + width / 2, y + 2, chosen ? MachineScreen.TEXT : MachineScreen.DIM);
+            this.hits.add(new Hit(x, y, x + width, y + BUTTON, label.getString(), () -> editor.setTool(tool)));
+            x += width + 2;
+        }
+        // 选的种类
+        x += 4;
+        for (DysonLayer.Element kind : DysonLayer.Element.values()) {
+            Component label = Component.translatable("gui.universe.dyson.element." + kind.ordinal());
+            int width = this.font.width(label) + 8;
+            boolean chosen = editor.kind() == kind;
+            graphics.fill(x, y, x + width, y + BUTTON, chosen ? MachineScreen.ACCENT : MachineScreen.BORDER);
+            graphics.fill(x + 1, y + 1, x + width - 1, y + BUTTON - 1, chosen ? 0xFF1F4A5A : 0xFF0E242D);
+            graphics.centeredText(this.font, label, x + width / 2, y + 2, chosen ? MachineScreen.TEXT : MachineScreen.DIM);
+            this.hits.add(new Hit(x, y, x + width, y + BUTTON, label.getString(), () -> editor.setKind(kind)));
+            x += width + 2;
+        }
+        int row2 = y + BUTTON + 2;
+        // 调色盘：默认色 + 预设
+        int sx = x0;
+        this.swatch(graphics, sx, row2, 0, editor, mouseX, mouseY);
+        sx += SWATCH + 2;
+        for (int preset : DysonPalette.PRESETS) {
+            this.swatch(graphics, sx, row2, preset, editor, mouseX, mouseY);
+            sx += SWATCH + 1;
+        }
+        sx += 4;
+        // 上色、拆、铺满、撤销、还原、应用
+        sx = this.action(graphics, "gui.universe.dyson.edit.paint", sx, row2, mouseX, mouseY, !editor.selection().isEmpty(), () -> {
+            DysonLayerEditPayload payload = editor.paint();
+            if (payload != null) {
+                this.send(payload);
+            }
+        });
+        sx = this.action(graphics, "gui.universe.dyson.edit.demolish", sx, row2, mouseX, mouseY, editor.anyBuilt(layer), () -> {
+            DysonLayerEditPayload payload = editor.demolish();
+            if (payload != null) {
+                this.send(payload);
+            }
+        });
+        sx = this.action(graphics, "gui.universe.dyson.edit.fill", sx, row2, mouseX, mouseY, true, () -> {
+            int added = editor.fill();
+            this.say(Component.translatable("gui.universe.dyson.edit.filled", added), added == 0);
+        });
+        sx = this.action(graphics, "gui.universe.dyson.edit.undo", sx, row2, mouseX, mouseY, editor.canUndo(), editor::undo);
+        sx = this.action(graphics, "gui.universe.dyson.edit.revert", sx, row2, mouseX, mouseY, editor.dirty(), editor::revert);
+        this.action(graphics, "gui.universe.dyson.edit.apply", sx, row2, mouseX, mouseY, editor.dirty(), () -> {
+            DysonDesign.Problem problem = editor.validate();
+            if (problem != null) {
+                this.problem(problem);
+                return;
+            }
+            DysonSphere.EditResult check = editor.check(sphere);
+            if (check != DysonSphere.EditResult.OK) {
+                this.say(Component.translatable(check.key()), true);
+                return;
+            }
+            this.send(editor.apply());
+        });
+    }
+
+    private void swatch(GuiGraphicsExtractor graphics, int x, int y, int color, DysonEdit editor, int mouseX, int mouseY) {
+        boolean chosen = editor.color() == color;
+        graphics.fill(x, y, x + SWATCH, y + SWATCH, chosen ? MachineScreen.ACCENT : MachineScreen.BORDER);
+        int rgb = color == 0 ? DysonPalette.FRAME : color;
+        graphics.fill(x + 1, y + 1, x + SWATCH - 1, y + SWATCH - 1, 0xFF000000 | rgb);
+        if (color == 0) {
+            // 默认色：中间一道斜杠，和预设区分开
+            graphics.fill(x + 3, y + SWATCH / 2, x + SWATCH - 3, y + SWATCH / 2 + 1, 0xFF0A1015);
+        }
+        // 色块没有文字，给开发脚本留个记号：默认色是 color:0，预设是 color:RRGGBB
+        this.hits.add(new Hit(x, y, x + SWATCH, y + SWATCH, String.format(Locale.ROOT, "color:%06x", rgb & 0xFFFFFF),
+                () -> editor.setColor(color)));
+    }
+
+    private int action(GuiGraphicsExtractor graphics, String key, int x, int y, int mouseX, int mouseY, boolean enabled, Runnable run) {
+        Component label = Component.translatable(key);
+        int width = this.font.width(label) + 8;
+        this.button(graphics, label, x, y, width, mouseX, mouseY, enabled, run);
+        return x + width + 2;
+    }
+
     /** 一行：标签，右边 − + 两个按钮。 */
     private int stepper(GuiGraphicsExtractor graphics, Component label, int x, int y, int right, int mouseX, int mouseY, boolean enabled,
             Runnable minus, Runnable plus) {
@@ -626,6 +915,10 @@ public class DysonEditorScreen extends Screen {
         ClientPacketDistributor.sendToServer(payload);
     }
 
+    private void send(DysonLayerEditPayload payload) {
+        ClientPacketDistributor.sendToServer(payload);
+    }
+
     // ---- 输入
 
     @Override
@@ -637,6 +930,10 @@ public class DysonEditorScreen extends Screen {
             }
         }
         if (this.inView(event.x(), event.y())) {
+            // 编辑模式：左键是工具，右键照旧转镜头
+            if (event.button() == 0 && this.editClick(event.x(), event.y())) {
+                return true;
+            }
             this.dragging = true;
             this.lastMouseX = event.x();
             this.lastMouseY = event.y();
@@ -645,14 +942,58 @@ public class DysonEditorScreen extends Screen {
         return super.mouseClicked(event, doubleClick);
     }
 
+    /** 编辑模式下在视图里点了一下；没在编辑、没打中球面返回 false（照旧转镜头）。 */
+    private boolean editClick(double mouseX, double mouseY) {
+        DysonEdit editor = this.edit;
+        Optional<DysonSphere> found = this.sphere();
+        if (editor == null || found.isEmpty()) {
+            return false;
+        }
+        DysonSphere sphere = found.get();
+        DysonLayer layer = sphere.layer(editor.layerId());
+        if (layer == null) {
+            return false;
+        }
+        double[] p = this.pointAt(sphere, layer, mouseX, mouseY);
+        if (p == null) {
+            return false;
+        }
+        if (editor.startDrag(p, layer)) {
+            return true;
+        }
+        this.problem(editor.click(p, snapStep(), layer, Minecraft.getInstance().hasShiftDown()));
+        if (editor.tool() == DysonEdit.Tool.PAINT && !editor.selection().isEmpty()) {
+            DysonLayerEditPayload payload = editor.paint();
+            if (payload != null) {
+                this.send(payload);
+            }
+        }
+        return true;
+    }
+
     @Override
     public boolean mouseReleased(MouseButtonEvent event) {
         this.dragging = false;
+        if (this.edit != null) {
+            this.edit.endDrag();
+        }
         return super.mouseReleased(event);
     }
 
     @Override
     public boolean mouseDragged(MouseButtonEvent event, double dragX, double dragY) {
+        DysonEdit editor = this.edit;
+        if (editor != null && editor.dragging()) {
+            Optional<DysonSphere> found = this.sphere();
+            DysonLayer layer = found.map(sphere -> sphere.layer(editor.layerId())).orElse(null);
+            if (layer != null) {
+                double[] p = this.pointAt(found.get(), layer, event.x(), event.y());
+                if (p != null) {
+                    editor.drag(p, snapStep());
+                }
+            }
+            return true;
+        }
         if (this.dragging) {
             this.camera.rotate(-(event.x() - this.lastMouseX) * 0.5, (event.y() - this.lastMouseY) * 0.5);
             this.lastMouseX = event.x();
@@ -677,7 +1018,49 @@ public class DysonEditorScreen extends Screen {
 
     private boolean inView(double x, double y) {
         return x >= this.left + 8 + LIST_WIDTH && x < this.left + this.panelWidth - 8 - PROPS_WIDTH && y >= this.top + 20
-                && y < this.top + this.panelHeight - 28;
+                && y < (this.viewBottom > 0 ? this.viewBottom : this.top + this.panelHeight - 28);
+    }
+
+    /**
+     * 屏幕上的一点打在正在编辑的那一层上的位置，换算回层自己的坐标；没打中（射线没碰到球）是 null。
+     */
+    private double @Nullable [] pointAt(DysonSphere sphere, DysonLayer layer, double mouseX, double mouseY) {
+        int viewX0 = this.left + 8 + LIST_WIDTH;
+        int viewX1 = this.left + this.panelWidth - 8 - PROPS_WIDTH;
+        int viewY0 = this.top + 20;
+        int viewY1 = this.viewBottom > 0 ? this.viewBottom : this.top + this.panelHeight - 28;
+        double cx = (viewX0 + viewX1) / 2.0;
+        double cy = (viewY0 + viewY1) / 2.0;
+        double height = viewY1 - viewY0;
+        double[] eye = this.camera.eye();
+        // 屏幕坐标反推视线方向：project 的逆
+        double focal = height / 2 / Math.tan(Math.toRadians(StarMapCamera.FOV / 2));
+        double yaw = Math.toRadians(this.camera.yaw());
+        double pitch = Math.toRadians(this.camera.pitch());
+        double fx = -Math.sin(yaw) * Math.cos(pitch);
+        double fy = -Math.sin(pitch);
+        double fz = -Math.cos(yaw) * Math.cos(pitch);
+        double rx = Math.cos(yaw);
+        double rz = -Math.sin(yaw);
+        double upX = -rz * fy;
+        double upY = rz * fx - rx * fz;
+        double upZ = rx * fy;
+        double sx = (mouseX - cx) / focal;
+        double sy = -(mouseY - cy) / focal;
+        double[] direction = {fx + rx * sx + upX * sy, fy + upY * sy, fz + rz * sx + upZ * sy};
+        double radius = layer.radius() * viewScale(sphere);
+        double[] hit = SphereGeometry.rayHit(eye, direction, radius);
+        if (hit == null) {
+            return null;
+        }
+        double time = this.time(0);
+        double spin = time / DysonSphere.spinPeriod(layer.radius()) * 360;
+        return SphereGeometry.unorient(SphereGeometry.normalize(hit), layer.inclination(), layer.ascendingNode(), spin);
+    }
+
+    /** 当前吸附的格子：按住 Shift 细一些。 */
+    private static double snapStep() {
+        return Minecraft.getInstance().hasShiftDown() ? DysonEdit.SNAP_FINE : DysonEdit.SNAP;
     }
 
     @Override

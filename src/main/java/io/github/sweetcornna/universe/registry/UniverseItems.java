@@ -514,6 +514,13 @@ public final class UniverseItems {
     // M16 黑雾：等离子炮塔（T）的物品加在这行上面
     public static final DeferredItem<BlockItem> PLANETARY_SHIELD_GENERATOR = ITEMS.registerSimpleBlockItem(UniverseBlocks.PLANETARY_SHIELD_GENERATOR);
     // M16 黑雾：行星护盾（S）的物品加在这行上面
+    /** 酸液桶（ADR-0030 §一）：拿空桶在毒性星球的酸海里舀。 */
+    public static final DeferredItem<net.minecraft.world.item.BucketItem> ACID_BUCKET = ITEMS.registerItem("acid_bucket",
+            p -> new net.minecraft.world.item.BucketItem(UniverseFluids.ACID.get(), p),
+            p -> p.craftRemainder(net.minecraft.world.item.Items.BUCKET).stacksTo(1));
+    // M17 收尾：酸液（A）的物品加在这行上面
+    public static final DeferredItem<BlockItem> GRID_INTERFACE = ITEMS.registerSimpleBlockItem(UniverseBlocks.GRID_INTERFACE);
+    // M17 收尾：互通（C）的物品加在这行上面
 
     /** 蓝图（ADR-0018）。 */
     public static final DeferredItem<BlueprintItem> BLUEPRINT = ITEMS.registerItem("blueprint", BlueprintItem::new);
@@ -624,6 +631,10 @@ public final class UniverseItems {
         // M16 黑雾：等离子炮塔（T）的创造物品栏顺序加在这行上面
         order.add(PLANETARY_SHIELD_GENERATOR);
         // M16 黑雾：行星护盾（S）的创造物品栏顺序加在这行上面
+        order.add(ACID_BUCKET);
+        // M17 收尾：酸液（A）的创造物品栏顺序加在这行上面
+        order.add(GRID_INTERFACE);
+        // M17 收尾：互通（C）的创造物品栏顺序加在这行上面
         return List.copyOf(order);
     }
 

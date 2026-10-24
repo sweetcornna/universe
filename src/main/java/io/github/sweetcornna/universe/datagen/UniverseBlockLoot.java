@@ -199,10 +199,25 @@ final class UniverseBlockLoot extends BlockLootSubProvider {
         this.darkFogSupport();
         this.darkFogPlasma();
         this.darkFogShield();
+        this.wrapUpAcid();
+        this.wrapUpInterop();
     }
 
     /** 黑雾基地的方块（子代理 P）。 */
     private void darkFogBases() {
+    }
+
+    /**
+     * M17 收尾的战利品表：酸液（子代理 A，ADR-0030）。
+     *
+     * <p>酸液方块和原版的水一样注册成 {@code noLootTable()}，没有战利品表，这里不用写；拿桶装走才是取酸液的办法。
+     */
+    private void wrapUpAcid() {
+    }
+
+    /** M17 收尾的战利品表：互通（子代理 C，ADR-0030）。 */
+    private void wrapUpInterop() {
+        this.dropSelf(UniverseBlocks.GRID_INTERFACE.get());
     }
 
     /** 残影、战场分析基地（子代理 Q）。 */

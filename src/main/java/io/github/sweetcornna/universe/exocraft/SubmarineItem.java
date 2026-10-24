@@ -4,6 +4,7 @@ import java.util.function.Consumer;
 
 import org.jspecify.annotations.Nullable;
 
+import io.github.sweetcornna.universe.fluid.AcidFluid;
 import io.github.sweetcornna.universe.registry.UniverseDataComponents;
 import io.github.sweetcornna.universe.registry.UniverseEntities;
 import io.github.sweetcornna.universe.registry.sound.ShipSounds;
@@ -73,7 +74,7 @@ public class SubmarineItem extends Item {
     private static @Nullable Vec3 placement(Level level, Player player) {
         Vec3 eye = player.getEyePosition();
         Vec3 look = player.getLookAngle();
-        if (player.isEyeInFluid(FluidTags.WATER)) {
+        if (player.isEyeInFluid(FluidTags.WATER) || player.isEyeInFluid(AcidFluid.type())) {
             // 水下：眼前三格，前面有墙就放在墙前面
             Vec3 ahead = eye.add(look.scale(3.2));
             BlockHitResult wall = level.clip(new ClipContext(eye, ahead, ClipContext.Block.COLLIDER, ClipContext.Fluid.NONE, player));
@@ -81,7 +82,7 @@ public class SubmarineItem extends Item {
             return water(level, centre) ? centre.subtract(0, 0.75, 0) : null;
         }
         BlockHitResult hit = level.clip(new ClipContext(eye, eye.add(look.scale(5)), ClipContext.Block.OUTLINE, ClipContext.Fluid.ANY, player));
-        if (hit.getType() != HitResult.Type.BLOCK || !level.getFluidState(hit.getBlockPos()).is(FluidTags.WATER)) {
+        if (hit.getType() != HitResult.Type.BLOCK || !AcidFluid.sea(level.getFluidState(hit.getBlockPos()))) {
             return null;
         }
         // 水面：一大半沉在水里
@@ -90,7 +91,7 @@ public class SubmarineItem extends Item {
     }
 
     private static boolean water(Level level, Vec3 at) {
-        return level.getFluidState(BlockPos.containing(at)).is(FluidTags.WATER);
+        return AcidFluid.sea(level.getFluidState(BlockPos.containing(at)));
     }
 
     @Override

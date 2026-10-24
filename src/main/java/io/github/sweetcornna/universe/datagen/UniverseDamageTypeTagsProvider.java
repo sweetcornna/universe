@@ -22,7 +22,7 @@ final class UniverseDamageTypeTagsProvider extends DamageTypeTagsProvider {
     @Override
     protected void addTags(HolderLookup.Provider registries) {
         for (var key : java.util.List.of(SurvivalDamage.VACUUM, SurvivalDamage.COLD, SurvivalDamage.HEAT,
-                SurvivalDamage.TOXIC, SurvivalDamage.RADIATION)) {
+                SurvivalDamage.TOXIC, SurvivalDamage.RADIATION, SurvivalDamage.ACID)) {
             this.tag(DamageTypeTags.BYPASSES_ARMOR).add(key);
             this.tag(DamageTypeTags.NO_KNOCKBACK).add(key);
         }

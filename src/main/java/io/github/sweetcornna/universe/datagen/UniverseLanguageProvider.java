@@ -177,6 +177,12 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         this.darkFogFlights();
         this.darkFogPlasma();
         this.darkFogShield();
+        this.wrapUpAcid();
+        this.wrapUpExotic();
+        this.wrapUpInterop();
+        this.wrapUpDyson();
+        this.wrapUpFactory();
+        this.wrapUpShip();
     }
 
     /** 黑雾的掉落、弹药、投掷物（ADR-0028 §五、§六）：名字在这里，说明归各自的子代理。 */
@@ -200,6 +206,174 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         item(UniverseItems.JAMMING_CAPSULE.get(), "干扰胶囊", "Jamming Capsule");
         item(UniverseItems.EXPLOSIVE_UNIT.get(), "爆破单元", "Explosive Unit");
         item(UniverseItems.CRYSTAL_EXPLOSIVE_UNIT.get(), "晶石爆破单元", "Crystal Explosive Unit");
+    }
+
+    /** M17 收尾的文字：酸液（子代理 A，ADR-0030）。 */
+    private void wrapUpAcid() {
+        block(UniverseBlocks.ACID.get(), "酸液", "Acid");
+        item(UniverseItems.ACID_BUCKET.get(), "酸液桶", "Acid Bucket");
+        both("fluid_type.universe.acid", "酸液", "Acid");
+        both("death.attack.universe.acid", "%1$s掉进了酸液里", "%1$s fell into acid");
+        both("message.universe.acid.burning", "酸液正在灼伤你", "The acid is burning you");
+        both("message.universe.acid.rain", "下酸雨了", "Acid rain");
+        // 毒性那一条的备注：泡在酸里时掉得比吸毒气快
+        both("hud.universe.suit.acid", "泡在酸里", "In acid");
+        both("guide.universe.survival.acid.title", "酸海和酸雨", "Acid Seas and Acid Rain");
+        both("guide.universe.survival.acid",
+                "毒雾星球的海是硫酸。泡进去毒性防护掉得快，躲进室内也不管用；防护耗光就开始灼伤。掉进去的东西会被蚀掉，玻璃、金、塑料这些不怕酸。\n\n"
+                        + "这些星球上下的是酸雨，淋着和吸毒气一起算，撑一会儿就得找地方躲。\n\n"
+                        + "抽水站放在酸液源头上抽出的是硫酸，不用建化工线也有硫酸。拿桶能装一桶酸液带走。\n\n"
+                        + "潜艇在酸液里照样开。海里不长水生植物，也没有鱼。",
+                "The seas of toxic planets are sulfuric acid. Standing in it drains your toxic protection fast and being indoors does not "
+                        + "help; once the protection is gone it burns you. Items dropped in it corrode away — glass, gold and plastic do not.\n\n"
+                        + "These planets get acid rain. It counts together with toxic air, so find cover before your protection runs out.\n\n"
+                        + "A water pump on an acid source pumps sulfuric acid, which gives you acid without a chemical line. A bucket takes "
+                        + "one acid with you.\n\n"
+                        + "Submarines work in acid. Nothing grows in these seas and there are no fish.");
+    }
+
+    /** M17 收尾的文字：奇异星球（子代理 B，ADR-0030）。 */
+    private void wrapUpExotic() {
+        both("guide.universe.exploration.exotic.title", "奇异星球的地貌", "Exotic Terrain");
+        both("guide.universe.exploration.exotic",
+                "每颗奇异星球都长着一种整颗星球都看得到的地貌，六种里挑一种，都照着地球和火星上真有的地方做。\n\n"
+                        + "柱状玄武岩：六棱的石柱成片，石阶一直伸进浅海，偶尔一座孤零零的柱状岩塔\n"
+                        + "石林：细高的岩柱挤在一起，每根顶上压着一块硬岩\n"
+                        + "巨晶：几十格长的晶柱斜插出地面，一簇好几根，水里也长\n"
+                        + "结核球：半埋在地里的圆石球，大的表面一道道白纹，地上撒着小黑球\n"
+                        + "多边形地面：平地上一张多边形的网，边上垒着矮脊——冷的是冰楔，干热的是盐壳，别的是碎石\n"
+                        + "石拱：砂岩的石鳍，有的中间穿了个洞，成一座石拱\n\n"
+                        + "星图、发现日志和分析目镜里写着是哪一种。地貌让开降落点、传送门、守卫塔、兴趣点和地标。",
+                "Every exotic world has one landform you can see all over it, one of six, each taken from a real place on Earth or Mars.\n\n"
+                        + "Columnar basalt: fields of six-sided columns stepping down into shallow water, with the odd lone tower\n"
+                        + "Hoodoos: thin crowded rock spires, each under a hard caprock\n"
+                        + "Giant crystals: shafts tens of blocks long slanting out of the ground in clusters, in water too\n"
+                        + "Concretions: round boulders half buried in the ground, the big ones cracked with white veins, small dark spherules scattered around\n"
+                        + "Polygonal ground: a net of polygons on the flats with low ridges along the edges — ice wedges where it is cold, salt crust where it is hot and dry, sorted stones otherwise\n"
+                        + "Arches: sandstone fins, some pierced through into an arch\n\n"
+                        + "The star map, discovery log and analysis visor all name which one. The terrain keeps clear of landing sites, portals, sentinel pillars, points of interest and landmarks.");
+    }
+
+    /** M17 收尾的文字：互通（子代理 C，ADR-0030）。 */
+    private void wrapUpInterop() {
+        block(UniverseBlocks.GRID_INTERFACE.get(), "电网接口", "Grid Interface");
+        tech("grid_interface", "电网接口", "Grid Interface");
+        both("gui.universe.grid_interface.input", "模式：输入（外部 → 电网）", "Mode: input (external → grid)");
+        both("gui.universe.grid_interface.output", "模式：输出（电网 → 外部）", "Mode: output (grid → external)");
+        both("gui.universe.grid_interface.received", "外部输入 %s", "From outside: %s");
+        both("gui.universe.grid_interface.sent", "向外输出 %s", "To outside: %s");
+        both("gui.universe.grid_interface.devices", "旁边 %s 台能量设备", "%s energy devices adjacent");
+        both("gui.universe.grid_interface.no_devices", "旁边没有能量设备", "No energy devices adjacent");
+        both("gui.universe.grid_interface.buffer", "缓冲 %s / %s", "Buffer %s / %s");
+        both("guide.universe.power.interface.title", "和别的模组接电", "Power from Other Mods");
+        both("guide.universe.power.interface",
+                "电网接口放在电塔覆盖范围里，六个面都能接别的模组的线缆和设备。1 J 算 1 FE。\n输入：收进来的电送进电网\n输出：从电网取电推给旁边的设备\n\n功率：最多 45 kW\n研究：电网接口\n\n储液罐、抽水站、原油萃取站也能接别的模组的管道，一个流体物品算 1000 mB。",
+                "Place it inside a tower's range. Every face takes cables and devices from other mods; 1 J counts as 1 FE.\nInput: feeds incoming power into the grid\nOutput: pushes grid power into adjacent devices\n\nRate: up to 45 kW\nResearch: Grid Interface\n\nStorage tanks, water pumps and oil extractors also take pipes from other mods. One fluid item is 1000 mB.");
+    }
+
+    /** M17 收尾的文字：戴森球（子代理 D，ADR-0030）。 */
+    private void wrapUpDyson() {
+        // 自由编辑
+        both("gui.universe.dyson.grid", "网格", "Grid");
+        both("gui.universe.dyson.edit.start", "编辑", "Edit");
+        both("gui.universe.dyson.edit.done", "结束", "Done");
+        both("gui.universe.dyson.edit.hint", "左键用工具，右键转视角，Shift 细调", "Left-click to use the tool, right-drag to turn, Shift to fine-tune");
+        both("gui.universe.dyson.edit.apply", "应用", "Apply");
+        both("gui.universe.dyson.edit.revert", "放弃改动", "Discard");
+        both("gui.universe.dyson.edit.undo", "撤销", "Undo");
+        both("gui.universe.dyson.edit.fill", "铺满", "Fill");
+        both("gui.universe.dyson.edit.filled", "铺了 %s 片球壳", "Filled %s shells");
+        both("gui.universe.dyson.edit.paint", "上色", "Paint");
+        both("gui.universe.dyson.edit.demolish", "拆掉", "Demolish");
+        both("gui.universe.dyson.tool.select", "选", "Select");
+        both("gui.universe.dyson.tool.node", "节点", "Node");
+        both("gui.universe.dyson.tool.frame", "框架", "Frame");
+        both("gui.universe.dyson.tool.shell", "球壳", "Shell");
+        both("gui.universe.dyson.tool.erase", "擦", "Erase");
+        both("gui.universe.dyson.tool.paint", "上色", "Paint");
+        both("gui.universe.dyson.element.0", "节点", "Nodes");
+        both("gui.universe.dyson.element.1", "框架", "Frames");
+        both("gui.universe.dyson.element.2", "球壳", "Shells");
+        // 蓝图
+        both("gui.universe.dyson.blueprint.title", "导入戴森球蓝图", "Import Dyson Blueprint");
+        both("gui.universe.dyson.blueprint.import", "导入", "Import");
+        both("gui.universe.dyson.blueprint.export", "复制", "Copy");
+        both("gui.universe.dyson.blueprint.do_import", "导入", "Import");
+        both("gui.universe.dyson.blueprint.paste", "粘贴蓝图串", "Paste a blueprint string");
+        both("gui.universe.dyson.blueprint.copied", "蓝图已复制到剪贴板", "Blueprint copied to clipboard");
+        both("gui.universe.dyson.blueprint.saved", "已复制到剪贴板，也存进了蓝图库：%s", "Copied to clipboard and saved as %s");
+        both("gui.universe.dyson.blueprint.summary", "%s 个节点，%s 段框架，%s 片球壳", "%s nodes, %s frames, %s shells");
+        both("gui.universe.dyson.blueprint.only_empty", "只能导入到还没开始建的层", "Only a layer with nothing built can be imported into");
+        both("gui.universe.dyson.blueprint.library", "蓝图库", "Library");
+        both("gui.universe.dyson.blueprint.library_empty", "还没存过蓝图", "No saved blueprints");
+        both("gui.universe.dyson.blueprint.load", "载入", "Load");
+        both("gui.universe.dyson.blueprint.error.empty", "没有蓝图", "Nothing to read");
+        both("gui.universe.dyson.blueprint.error.not_blueprint", "这不是戴森球蓝图", "Not a Dyson blueprint");
+        both("gui.universe.dyson.blueprint.error.wrong_version", "这串是别的版本做的", "This string is from another version");
+        both("gui.universe.dyson.blueprint.error.corrupt", "蓝图坏了", "Blueprint is damaged");
+        both("gui.universe.dyson.blueprint.error.invalid", "蓝图里的网格搭不起来", "The grid in this blueprint does not hold up");
+        // 结果
+        both("gui.universe.dyson.result_detail", "%s：%s", "%s: %s");
+        both("gui.universe.dyson.result.ok", "改好了", "Done");
+        both("gui.universe.dyson.result.no_layer", "没有这一层", "No such layer");
+        both("gui.universe.dyson.result.stale", "别人刚改过这一层，重新来", "Someone just changed this layer; try again");
+        both("gui.universe.dyson.result.not_empty", "这一层已经开始建了", "This layer has already been built on");
+        both("gui.universe.dyson.result.built", "建了的要先拆", "Demolish it first");
+        both("gui.universe.dyson.result.not_built", "这里还没建", "Nothing built here");
+        both("gui.universe.dyson.result.invalid", "网格搭不起来", "The grid does not hold up");
+        // 几何不对的原因
+        both("gui.universe.dyson.problem.too_many_nodes", "节点太多了", "Too many nodes");
+        both("gui.universe.dyson.problem.too_many_frames", "框架太多了", "Too many frames");
+        both("gui.universe.dyson.problem.too_many_shells", "球壳太多了", "Too many shells");
+        both("gui.universe.dyson.problem.node_too_close", "离旁边的节点太近", "Too close to another node");
+        both("gui.universe.dyson.problem.node_on_frame", "压在框架上", "Sits on a frame");
+        both("gui.universe.dyson.problem.node_in_shell", "在球壳里面", "Inside a shell");
+        both("gui.universe.dyson.problem.frame_same_node", "两头是同一个节点", "Both ends are the same node");
+        both("gui.universe.dyson.problem.frame_exists", "这两个节点已经连上了", "These nodes are already connected");
+        both("gui.universe.dyson.problem.frame_too_long", "这段框架太长", "This frame is too long");
+        both("gui.universe.dyson.problem.frame_crosses", "和别的框架交叉", "Crosses another frame");
+        both("gui.universe.dyson.problem.frame_in_shell", "穿过球壳", "Runs through a shell");
+        both("gui.universe.dyson.problem.shell_sides", "球壳的边数不对", "Wrong number of sides");
+        both("gui.universe.dyson.problem.shell_open", "这个圈没连上", "This loop is not closed");
+        both("gui.universe.dyson.problem.shell_twisted", "这个圈自己交叉了", "This loop crosses itself");
+        both("gui.universe.dyson.problem.shell_too_large", "这片球壳太大", "This shell is too large");
+        both("gui.universe.dyson.problem.shell_has_node", "球壳里有节点", "There is a node inside");
+        both("gui.universe.dyson.problem.shell_has_frame", "球壳里有框架", "There is a frame inside");
+        both("gui.universe.dyson.problem.shell_exists", "这里已经铺了球壳", "Already covered");
+        both("gui.universe.dyson.problem.shell_overlap", "和别的球壳重叠", "Overlaps another shell");
+        both("gui.universe.dyson.problem.no_face", "这里没有框架围成的圈", "No closed loop here");
+        both("gui.universe.dyson.problem.broken", "网格对不上", "The grid does not line up");
+        // 手册
+        both("guide.universe.dyson.design.title", "自己设计戴森壳", "Designing a Shell");
+        both("guide.universe.dyson.design",
+                "一层选好模板以后，在编辑器里点「编辑」就能自己改：\n节点——点一下摆一个，吸附在经纬网上，按住 Shift 吸得细一些\n框架——点两个节点连起来，接着点就接着连\n球壳——点框架围成的圈里面，或者按「铺满」一次铺完\n擦——删掉点中的\n\n已经建了的节点和框架不能直接删，要先选中、再「拆掉」；拆下来的结构点不退。\n\n节点、框架、球壳都能上色：选好颜色，用上色工具点，或者选中一批再按「上色」。天上、太空里看到的就是这个颜色。\n\n「复制」把这一层导出成一串文字，存进蓝图库，也放进剪贴板，能贴到聊天里和网上。「导入」把别人的串贴进来，只能导到还没开始建的层。",
+                "Once a layer has a template, click Edit in the editor to change it yourself:\nNode — click to place one; it snaps to the lat/long grid, hold Shift for a finer snap\nFrame — click two nodes to connect them, and keep clicking to keep going\nShell — click inside a loop of frames, or press Fill to cover every loop at once\nErase — delete what you click\n\nNodes and frames that are already built cannot be deleted directly: select them and press Demolish first. Structure points are not refunded.\n\nNodes, frames and shells can be coloured: pick a colour and use the paint tool, or select a batch and press Paint. That is the colour you see in the sky and in space.\n\nCopy exports the layer as a string, saves it to your library and puts it on the clipboard, so you can paste it into chat or online. Import takes someone else's string, and only works on a layer with nothing built.");
+    }
+
+    /** M17 收尾的文字：工厂物流（子代理 E，ADR-0030）。 */
+    private void wrapUpFactory() {
+        both("guide.universe.logistics.vessels.title", "运输船在太空里", "Vessels in Space");
+        both("guide.universe.logistics.vessels",
+                "星际物流站派出的运输船在恒星系的太空维度里看得见：从起点星球的大气层钻出来，飞到终点星球钻进去；"
+                        + "去别的恒星系的飞到恒星系边上跃迁走，从别处来的在那里跃迁进来，跃迁前后船身拉长。\n航线绕开恒星。",
+                "Vessels from interstellar stations are visible in system space: they rise out of the departure planet's atmosphere,"
+                        + " cross to the destination and dive in.\nTrips to other systems warp out at the system edge, stretching as they go."
+                        + " Routes curve around the star.");
+    }
+
+    /** M17 收尾的文字：飞船和星球（子代理 F，ADR-0030）。 */
+    private void wrapUpShip() {
+        both("key.universe.ship_cargo", "打开飞船货舱", "Open Ship Cargo");
+        both("gui.universe.ship_cargo.title", "货舱", "Cargo");
+        both("gui.universe.ship_cargo.empty", "船上没有货柜：装个箱子或木桶", "No holds on this ship: add a chest or barrel");
+        both("gui.universe.ship_cargo.rows", "%s–%s / %s 行", "Rows %s–%s of %s");
+        both("guide.universe.ship.cargo.title", "货舱", "Cargo");
+        both("guide.universe.ship.cargo",
+                "船上的箱子、木桶就是货舱。坐在船上按货舱键，船上所有货柜拼成一个界面，飞着也能开。\n\n"
+                        + "打碎的小行星、打下的海盗残骸直接装进货舱；货值越高，海盗越爱盯着你。",
+                "Chests and barrels on your ship are its cargo. Sit in the ship and press the cargo key: every hold on board "
+                        + "shows up in one screen, in flight too.\n\nMined asteroids and pirate wrecks drop straight into cargo. "
+                        + "The more it is worth, the more pirates want it.");
     }
 
     /** 黑雾的地面基地、威胁、进攻、调试命令（子代理 P）。 */
@@ -1768,8 +1942,9 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("gui.universe.mining_machine.none", "下方 %1$s×%1$s、深 3 格内没有矿", "No ore in the %1$s×%1$s×3 area below");
         both("gui.universe.mining_machine.hint", "放在地表的矿脉露头上", "Place it on a surface vein");
         both("gui.universe.water_pump.ok", "水源正常", "Water source OK");
-        both("gui.universe.water_pump.no_water", "要放在水源方块上面", "Must sit on a water source");
-        both("gui.universe.water_pump.acid", "无法抽取酸液", "Can't pump acid");
+        both("gui.universe.water_pump.no_water", "要放在水源或酸液源头上面", "Must sit on a water or acid source");
+        // 酸液源头上抽的是硫酸（ADR-0030 §一）
+        both("gui.universe.water_pump.acid", "抽酸液，产硫酸", "Pumping acid, making sulfuric acid");
         both("gui.universe.water_pump.rate", "满电产量 %s 个/分钟", "%s per minute at full power");
         both("gui.universe.oil_extractor.rate", "涌泉产量 %s 个/秒", "Seep yield %s/s");
         both("gui.universe.oil_extractor.none", "要放在原油涌泉上面", "Must sit on a crude oil seep");
@@ -2276,8 +2451,8 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
                 "Tesla towers power nearby devices and link to each other into a grid. No wires.\nWhen power runs short, accumulators discharge first, then all machines slow down evenly.\n\nPower radius: 6 blocks\nLink distance: 12 blocks\nRight-click a tower to see its numbers. The stats screen (O) has a power panel.");
         both("guide.universe.power.generators.title", "发电", "Generators");
         both("guide.universe.power.generators",
-                "风力涡轮机\n300 W × 风力系数。越高风越大，下雨 ×1.2，打雷 ×1.5，没有大气不转。\n\n太阳能板\n360 W，要露天。按太阳高度和恒星亮度算，晚上为 0。\n\n火力发电厂\n最多 2.16 kW，烧原版燃料，用多少烧多少。一块煤满负荷烧 11 秒。",
-                "Wind Turbine\n300 W x wind factor. Higher is windier; rain x1.2, thunder x1.5. Nothing on airless planets.\n\nSolar Panel\n360 W with open sky, scaled by sun height and star brightness. Zero at night.\n\nThermal Power Plant\nUp to 2.16 kW from vanilla fuel, burning only what the grid draws. Coal lasts 11 s at full load.");
+                "风力涡轮机\n300 W × 风力系数。越高风越大，下雨 ×1.2，打雷 ×1.5，没有大气不转。\n\n太阳能板\n360 W，要露天。按太阳高度和恒星亮度算，晚上为 0。太空里没有昼夜，板子对着恒星。\n\n火力发电厂\n最多 2.16 kW，烧原版燃料，用多少烧多少。一块煤满负荷烧 11 秒。",
+                "Wind Turbine\n300 W x wind factor. Higher is windier; rain x1.2, thunder x1.5. Nothing on airless planets.\n\nSolar Panel\n360 W with open sky, scaled by sun height and star brightness. Zero at night. Faces the star in space.\n\nThermal Power Plant\nUp to 2.16 kW from vanilla fuel, burning only what the grid draws. Coal lasts 11 s at full load.");
         both("guide.universe.power.storage.title", "蓄电器", "Accumulators");
         both("guide.universe.power.storage",
                 "蓄电器在电网有富余时充电，发电不够时放电。拆下来电量还在。\n\n容量：180 kJ\n充放电：最多 2.7 kW\n研究：能量储存",
@@ -2328,8 +2503,8 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
                 "The arc smelter smelts with electricity and has three input slots: ingots, steel, graphite, silicon, titanium and glass.\nSorters feeding it only insert what the recipe needs.\n\nPower: 360 W\nRaw ore to ingot: 1 s\n3 iron ingots to steel: 3 s (Steel Smelting)");
         both("guide.universe.gathering.fluids.title", "原油和水", "Oil and Water");
         both("guide.universe.gathering.fluids",
-                "原油萃取站\n两格高，下半截放在原油涌泉上。每秒 0.5 到 1.5 原油，越抽越慢，最低三成。耗电 840 W。\n\n抽水站\n放在水源上，每分钟 50 水，耗电 300 W。酸海星球上不能用。",
-                "Oil Extractor\nTwo blocks tall, lower half on a crude oil seep. 0.5 to 1.5 crude oil per second, slowing as it drains, down to 30%. Power 840 W.\n\nWater Pump\nSits on a water source. 50 water a minute for 300 W. Not on acid-ocean planets.");
+                "原油萃取站\n两格高，下半截放在原油涌泉上。每秒 0.5 到 1.5 原油，越抽越慢，最低三成。耗电 840 W。\n\n抽水站\n放在水源上，每分钟 50 水，耗电 300 W。放在酸液源头上抽的是硫酸，速度一样。",
+                "Oil Extractor\nTwo blocks tall, lower half on a crude oil seep. 0.5 to 1.5 crude oil per second, slowing as it drains, down to 30%. Power 840 W.\n\nWater Pump\nSits on a water source. 50 water a minute for 300 W. On an acid source it pumps sulfuric acid at the same rate.");
         both("guide.universe.research.hand_in.title", "上交科技", "Hand-in Research");
         both("guide.universe.research.hand_in",
                 "J 键打开科技树。开头几项不用研究站，在科技树里直接上交材料。研究是全服共用的。\n\n电磁学：10 磁线圈、10 电路板，解锁电力感应塔、风力涡轮机、采矿机\n自动化冶金：20 铁锭、10 磁线圈，解锁电弧熔炉\n基础制造工艺：20 电路板、20 齿轮，解锁制造台\n电磁矩阵：10 电路板、10 磁线圈，解锁研究站",
@@ -2364,8 +2539,8 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
                 "Stations send and receive by each slot's settings. Drones serve one dimension; vessels travel between planets.\nSet each slot's item and limit, then storage, supply or demand for local and remote. Stations charge only from grid surplus.\n\nPlanetary: 4 slots x 5,000, drone range 1,000 by default\nInterstellar: 5 slots x 10,000 plus vessels; other systems cost 2 space warpers a trip");
         both("guide.universe.logistics.blueprint.title", "蓝图", "Blueprints");
         both("guide.universe.logistics.blueprint",
-                "蓝图把一片建筑存下来，在别处照着放。配方、分拣器过滤和物流站设置一起复制，库存不复制。\n\n空白：右键两个方块框选（每边最多 32），潜行右键保存\n画好的：右键放下，R 转 90°，潜行右键清空\n放置距离：64 格\n放下的是工地：蓝色的虚影由机甲的建造无人机一格格建起来，材料从背包和外骨骼货舱里扣。创造模式直接放好。",
-                "Blueprints copy builds with recipes, filters and station settings.\n\nBlank: mark two corners (32 max per side), sneak + right-click to save\nSaved: right-click to place, R rotates, sneak + right-click clears\nRange: 64 blocks\nSurvival: your drones build it\nCreative: placed at once");
+                "蓝图把一片建筑存下来，在别处照着放。配方、过滤、分流器的优先出口和过滤、流速监测器的下限、研究站的增产模式、战场分析基地捡什么，都一起复制；转向时优先出口跟着转。库存不复制。\n\n空白：右键两个方块框选（每边最多 32），潜行右键保存\n画好的：右键放下，R 转 90°，潜行右键清空\n放置距离：64 格\n放下的是工地：蓝色的虚影由机甲的建造无人机一格格建起来，材料从背包和外骨骼货舱里扣。创造模式直接放好。",
+                "Blueprints copy builds with recipes and filters, splitter priority and filter, traffic monitor thresholds, matrix lab proliferator mode and battlefield base pickup. Priority outputs turn with the blueprint.\n\nBlank: mark two corners (32 max per side), sneak + right-click to save\nSaved: right-click to place, R rotates, sneak + right-click clears\nRange: 64 blocks\nSurvival: your drones build it\nCreative: placed at once");
         both("guide.universe.ship.build.title", "造船", "Building a Ship");
         both("guide.universe.ship.build",
                 "飞船由方块拼成。右键驾驶台组装：和它连在一起的方块都算船上的，地形不算。\n\n必需：一个驾驶台（朝向是船头）、至少一个推进器\n可选：燃料舱、脉冲引擎、跃迁引擎、护盾、武器、座椅、船体板\n上限：4096 个方块\n起飞条件：推重比大于 1；一个推进器在 1 倍重力下推 12 吨",

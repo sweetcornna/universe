@@ -10,9 +10,6 @@ import java.util.OptionalInt;
 import java.util.Set;
 
 import org.jspecify.annotations.Nullable;
-import org.slf4j.Logger;
-
-import com.mojang.logging.LogUtils;
 
 import io.github.sweetcornna.universe.core.darkfog.BaseSites;
 import io.github.sweetcornna.universe.core.darkfog.BaseState;
@@ -86,7 +83,6 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
  * 护卫舰清剿调 {@link #strike}。
  */
 public final class DarkFogHives {
-    private static final Logger LOGGER = LogUtils.getLogger();
     private static final int INTERVAL = 20;
     /** 有人在这么近（三维距离）、区块已加载，就把巢穴放出来。 */
     private static final double PLACE_RANGE = 640;
@@ -108,9 +104,6 @@ public final class DarkFogHives {
     /** 游戏内测试用的巢穴：不自动结算、不放出来；原来那座先收着，测完放回去。 */
     private static final Set<Integer> INERT = new HashSet<>();
     private static final Map<Integer, HiveState> STASHED = new HashMap<>();
-    /** 建筑、单位的实体还没做好时只记一次日志。 */
-    private static boolean warnedBuildings;
-    private static boolean warnedUnits;
 
     /** 一座巢穴放出来的实体。 */
     private static final class Live {
@@ -428,10 +421,7 @@ public final class DarkFogHives {
                 continue;
             }
             if (building == null) {
-                building = createBuilding(level, hive, slot);
-                if (building == null) {
-                    continue;
-                }
+                building = HiveBuilding.create(level, HiveLayout.slot(slot).kind(), hive.system(), slot, hive.level(), slotPos(hive, slot));
                 building.setHealth(Math.max(1, building.getMaxHealth() * hive.health(slot)));
                 building.setPowered(true);
                 level.addFreshEntity(building);
@@ -447,18 +437,6 @@ public final class DarkFogHives {
             }
         }
         placeDefenders(level, hive, live);
-    }
-
-    private static @Nullable HiveBuilding createBuilding(ServerLevel level, HiveState hive, int slot) {
-        try {
-            return HiveBuilding.create(level, HiveLayout.slot(slot).kind(), hive.system(), slot, hive.level(), slotPos(hive, slot));
-        } catch (UnsupportedOperationException e) {
-            if (!warnedBuildings) {
-                warnedBuildings = true;
-                LOGGER.warn("巢穴建筑的实体还没做好，先不放：{}", e.getMessage());
-            }
-            return null;
-        }
     }
 
     private static void placeDefenders(ServerLevel level, HiveState hive, Live live) {
@@ -482,24 +460,9 @@ public final class DarkFogHives {
                 live.defenders.remove(ofKind.get(i));
             }
             for (int i = ofKind.size(); i < wanted; i++) {
-                DarkFogSpaceUnit unit = spawnUnit(level, hive, kind, portPos(level, hive, kind), home);
-                if (unit == null) {
-                    return;
-                }
-                live.defenders.add(unit);
+                live.defenders.add(DarkFogSpaceUnit.spawn(level, kind, hive.system(), hive.level(), portPos(level, hive, kind), home,
+                        DarkFogSpaceUnit.Mode.DEFEND));
             }
-        }
-    }
-
-    private static @Nullable DarkFogSpaceUnit spawnUnit(ServerLevel level, HiveState hive, SpaceUnitKind kind, Vec3 at, Vec3 home) {
-        try {
-            return DarkFogSpaceUnit.spawn(level, kind, hive.system(), hive.level(), at, home, DarkFogSpaceUnit.Mode.DEFEND);
-        } catch (UnsupportedOperationException e) {
-            if (!warnedUnits) {
-                warnedUnits = true;
-                LOGGER.warn("太空单位的实体还没做好，先不放：{}", e.getMessage());
-            }
-            return null;
         }
     }
 

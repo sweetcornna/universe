@@ -5,13 +5,18 @@ import java.util.Optional;
 import java.util.OptionalInt;
 import java.util.WeakHashMap;
 
+import io.github.sweetcornna.universe.core.dyson.DysonBlueprint;
+import io.github.sweetcornna.universe.core.dyson.DysonDesign;
 import io.github.sweetcornna.universe.core.dyson.DysonGrid;
+import io.github.sweetcornna.universe.core.dyson.DysonLayer;
 import io.github.sweetcornna.universe.core.dyson.DysonSphere;
 import io.github.sweetcornna.universe.core.galaxy.BodyId;
 import io.github.sweetcornna.universe.core.galaxy.GalaxyGenerator;
 import io.github.sweetcornna.universe.core.galaxy.StarSystem;
 import io.github.sweetcornna.universe.factory.research.Research;
 import io.github.sweetcornna.universe.network.DysonEditPayload;
+import io.github.sweetcornna.universe.network.DysonLayerEditPayload;
+import io.github.sweetcornna.universe.network.DysonResultPayload;
 import io.github.sweetcornna.universe.network.DysonSyncPayload;
 import io.github.sweetcornna.universe.perf.ServerPerf;
 import io.github.sweetcornna.universe.story.Story;
@@ -180,5 +185,69 @@ public final class Dyson {
         }
         // 改不成（比如已经开始建的层改半径）也回一份，让编辑器回到服务端的状态
         sync(server, server.overworld().getGameTime(), true);
+    }
+
+    /** 编辑器改一层的网格（ADR-0030 §四）：服务端重新检查，把结果回给这个玩家，再把戴森球同步给所有人。 */
+    public static void handleLayerEdit(DysonLayerEditPayload payload, IPayloadContext context) {
+        if (!(context.player() instanceof ServerPlayer player)) {
+            return;
+        }
+        OptionalInt system = systemOf(player.level().dimension());
+        if (system.isEmpty()) {
+            return;
+        }
+        MinecraftServer server = player.level().getServer();
+        DysonResultPayload result = editLayer(server, system.getAsInt(), payload);
+        PacketDistributor.sendToPlayer(player, result);
+        sync(server, server.overworld().getGameTime(), true);
+    }
+
+    /** 改恒星系 system 里的一层；游戏内测试也直接调它。改成了会标记存档。 */
+    public static DysonResultPayload editLayer(MinecraftServer server, int system, DysonLayerEditPayload payload) {
+        DysonSphere sphere = sphere(server, system);
+        DysonLayer layer = sphere.layer(payload.layer());
+        if (layer == null) {
+            return fail(payload, DysonSphere.EditResult.NO_LAYER, "");
+        }
+        DysonSphere.EditResult result;
+        switch (payload.action()) {
+            case REDESIGN -> {
+                DysonDesign design = DysonBlueprint.unpack(payload.data());
+                if (design == null) {
+                    return fail(payload, DysonSphere.EditResult.INVALID, DysonDesign.Problem.BROKEN.key());
+                }
+                DysonDesign.Problem problem = design.validate();
+                if (problem != null) {
+                    return fail(payload, DysonSphere.EditResult.INVALID, problem.key());
+                }
+                result = sphere.redesign(payload.layer(), design, false);
+            }
+            case IMPORT -> {
+                DysonBlueprint.Parsed parsed = DysonBlueprint.parse(new String(payload.data(), java.nio.charset.StandardCharsets.UTF_8));
+                if (parsed.error() != null) {
+                    String detail = parsed.problem() != null ? parsed.problem().key() : "";
+                    return new DysonResultPayload(payload.layer(), false, parsed.error().key(), detail);
+                }
+                result = sphere.redesign(payload.layer(), parsed.design(), true);
+            }
+            case DEMOLISH, PAINT -> {
+                if (payload.revision() != layer.revision()) {
+                    return fail(payload, DysonSphere.EditResult.STALE, "");
+                }
+                DysonLayer.Element kind = DysonLayer.Element.byOrdinal(payload.kind());
+                result = payload.action() == DysonLayerEditPayload.Action.DEMOLISH ? sphere.demolish(payload.layer(), kind, payload.indices())
+                        : sphere.paint(payload.layer(), kind, payload.indices(), payload.color());
+            }
+            default -> throw new IllegalStateException();
+        }
+        if (result == DysonSphere.EditResult.OK) {
+            DysonData.get(server).setDirty();
+            return new DysonResultPayload(payload.layer(), true, result.key(), "");
+        }
+        return fail(payload, result, "");
+    }
+
+    private static DysonResultPayload fail(DysonLayerEditPayload payload, DysonSphere.EditResult result, String detail) {
+        return new DysonResultPayload(payload.layer(), false, result.key(), detail);
     }
 }

@@ -192,6 +192,16 @@ public final class Universe {
         // M16 黑雾：等离子炮塔（T）的注册加在这行上面
         io.github.sweetcornna.universe.darkfog.shield.Shields.registerEvents(gameBus);
         // M16 黑雾：行星护盾（S）的注册加在这行上面
+        io.github.sweetcornna.universe.registry.UniverseFluids.register(modBus);
+        io.github.sweetcornna.universe.fluid.AcidEffects.registerEvents(modBus, gameBus);
+        // M17 收尾：酸液（A）的注册加在这行上面
+        // M17 收尾：奇异星球（B）的注册加在这行上面
+        io.github.sweetcornna.universe.factory.fluid.FluidBridge.registerEvents(gameBus);
+        // M17 收尾：互通（C）的注册加在这行上面
+        // M17 收尾：戴森球（D）的注册加在这行上面
+        // M17 收尾：工厂物流（E）的注册加在这行上面
+        io.github.sweetcornna.universe.survival.JetpackFlames.registerEvents(gameBus);
+        // M17 收尾：飞船和星球（F）的注册加在这行上面
     }
 
     private void commonSetup(FMLCommonSetupEvent event) {

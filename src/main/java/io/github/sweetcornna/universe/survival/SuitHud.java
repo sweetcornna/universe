@@ -44,6 +44,8 @@ public record SuitHud(float oxygen, float cold, float heat, float toxic, float r
     public static final int WARM = 1 << 20;
     /** 在深水里，水压让氧气耗得快（ADR-0026）。 */
     public static final int PRESSURE = 1 << 21;
+    /** 泡在酸液里（ADR-0030）。 */
+    public static final int ACID = 1 << 22;
 
     public static final SuitHud FULL = new SuitHud(LifeSupport.OXYGEN_MAX, LifeSupport.HAZARD_MAX, LifeSupport.HAZARD_MAX,
             LifeSupport.HAZARD_MAX, LifeSupport.HAZARD_MAX, LifeSupport.JET_MAX, 0, 0, 0, 0, 1, 1, 0, 0, 0, -1);
@@ -63,6 +65,7 @@ public record SuitHud(float oxygen, float cold, float heat, float toxic, float r
         flags |= overheated ? OVERHEATED : 0;
         flags |= support.warmth() > 0 ? WARM : 0;
         flags |= env.pressure() ? PRESSURE : 0;
+        flags |= env.acid() && !env.supplied() ? ACID : 0;
         for (Hazard hazard : Hazard.values()) {
             if (env.exposedTo(hazard)) {
                 flags |= 1 << (EXPOSED_SHIFT + hazard.ordinal());
