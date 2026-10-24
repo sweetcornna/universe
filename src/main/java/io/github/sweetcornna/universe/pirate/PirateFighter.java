@@ -31,6 +31,7 @@ import net.minecraft.world.entity.LinearInterpolationHandler;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.levelgen.Heightmap;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.Vec3;
@@ -44,6 +45,9 @@ import net.minecraft.world.phys.Vec3;
  *
  * <p>遇险信号（ADR-0024）里的海盗由 {@link SpaceEncounters} 生成：先围着遇险的货船打，玩家飞近或者开火才转过来打玩家。
  * 太空守卫机的拦截机（{@link io.github.sweetcornna.universe.encounter.SentinelInterceptor}）是它的子类，飞法一样。
+ *
+ * <p>聚落来袭（ADR-0034 §二）的海盗在星球上飞：由 {@link io.github.sweetcornna.universe.settlement.SettlementRaids} 生成，一轮一轮俯冲扫射
+ * 地面上的建筑，离地太近就拉起来；挨了打转过来打总督，过一阵又回去扫射。
  */
 public class PirateFighter extends Entity implements Enemy {
     private static final EntityDataAccessor<Float> DATA_HULL = SynchedEntityData.defineId(PirateFighter.class, EntityDataSerializers.FLOAT);
@@ -80,6 +84,12 @@ public class PirateFighter extends Entity implements Enemy {
     private @Nullable Vec3 siege;
     private double siegeClearance;
     private boolean provoked;
+    /** 聚落来袭：扫射的地面目标；不是聚落来袭是 null。 */
+    private @Nullable Vec3 strafe;
+    /** 聚落来袭：挨了打以后追着总督打多久（刻）。 */
+    private int provokedTicks;
+    /** 开了几炮（游戏内测试用）。 */
+    private int shots;
     private int leaveTicks = -1;
     /** 服务端：这一刻速度变了多少（飞船的自动瞄准按它预判转弯）。 */
     private Vec3 acceleration = Vec3.ZERO;
@@ -112,6 +122,28 @@ public class PirateFighter extends Entity implements Enemy {
         fighter.siege = siege;
         fighter.siegeClearance = clearance;
         return fighter;
+    }
+
+    /** 服务端：袭击聚落的一架（ADR-0034 §二），从 {@code pos} 飞过来扫射地面上的 {@code ground}。{@code targetId} 是聚落的总督。 */
+    public static PirateFighter settlementRaider(ServerLevel level, UUID targetId, int slot, int count, Vec3 pos, Vec3 ground) {
+        PirateFighter fighter = create(level, targetId, slot, count, pos, ground.subtract(pos).normalize().scale(PirateFlight.SPEED));
+        fighter.strafe = ground;
+        return fighter;
+    }
+
+    /** 聚落来袭：换一个扫射的地方。 */
+    public void strafe(Vec3 ground) {
+        this.strafe = ground;
+    }
+
+    /** 在扫射地面（没被惹到）。 */
+    public boolean strafing() {
+        return this.strafe != null && !this.provoked;
+    }
+
+    /** 开了几炮。 */
+    public int shots() {
+        return this.shots;
     }
 
     /** 放到 {@code pos}，带上飞法和目标。 */
@@ -213,8 +245,9 @@ public class PirateFighter extends Entity implements Enemy {
         if (this.isRemoved() || this.leaving() || damage <= 0 || source.getEntity() instanceof PirateFighter) {
             return false;
         }
-        // 围攻货船的海盗挨了打就转过来
+        // 围攻货船的海盗挨了打就转过来；扫射聚落的追着打一阵
         this.provoked = true;
+        this.provokedTicks = 200;
         ShipCombat.Hit hit = this.combat.damage(damage);
         this.syncCombat();
         if (hit == ShipCombat.Hit.DESTROYED) {
@@ -245,11 +278,12 @@ public class PirateFighter extends Entity implements Enemy {
     /** 被打下来以后：记战绩、给赏金、掉残骸。 */
     protected void destroyed(ServerLevel level, DamageSource source) {
         Pirates.onDestroyed(this, level, source);
+        io.github.sweetcornna.universe.settlement.SettlementRaids.onDestroyed(this);
     }
 
     /** 还属于一场没结束的袭击（不属于的会撤走）。 */
     protected boolean belongs() {
-        return Pirates.belongs(this) || SpaceEncounters.belongs(this);
+        return Pirates.belongs(this) || SpaceEncounters.belongs(this) || io.github.sweetcornna.universe.settlement.SettlementRaids.belongs(this);
     }
 
     /** 炮火的颜色。 */
@@ -273,7 +307,12 @@ public class PirateFighter extends Entity implements Enemy {
             return;
         }
         Entity target = this.targetId == null ? null : level.getPlayerByUUID(this.targetId);
-        if (target == null || !target.isAlive() || target.level() != level || this.flight == null || !this.belongs()) {
+        boolean present = target != null && target.isAlive() && target.level() == level;
+        // 扫射聚落的不用等总督在场；总督不在了、追够了就回去扫射
+        if (this.strafe != null && (!present || --this.provokedTicks <= 0)) {
+            this.provoked = false;
+        }
+        if (!present && this.strafe == null || this.flight == null || !this.belongs()) {
             this.leave();
         }
         if (this.flight == null) {
@@ -294,7 +333,12 @@ public class PirateFighter extends Entity implements Enemy {
         if (this.siege != null && !this.provoked && aim != null && aim.distanceToSqr(this) < Encounters.PROVOKE_RANGE * Encounters.PROVOKE_RANGE) {
             this.provoked = true;
         }
-        if (this.siege != null && this.besieging() && !this.leaving()) {
+        if (this.strafing() && !this.leaving()) {
+            // 扫射聚落的建筑
+            targetPos = this.strafe;
+            targetVel = Vec3.ZERO;
+            clearance = 3;
+        } else if (this.siege != null && this.besieging() && !this.leaving()) {
             // 围着遇险的货船打
             targetPos = this.siege;
             targetVel = Vec3.ZERO;
@@ -313,6 +357,10 @@ public class PirateFighter extends Entity implements Enemy {
             targetVel = Vec3.ZERO;
             clearance = 0;
         }
+        if (this.strafe != null) {
+            // 在星球上：离地至少留 8 格
+            this.flight.floor(level.getHeight(Heightmap.Types.MOTION_BLOCKING, Mth.floor(pos.x), Mth.floor(pos.z)) + 8);
+        }
         PirateFlight.Step step = this.flight.step(arr(pos), arr(vel), arr(targetPos), arr(targetVel), clearance,
                 this.combat.hull() / this.maxHull, this.combat.shield() / this.maxShield);
         Vec3 next = vec(step.velocity());
@@ -323,13 +371,15 @@ public class PirateFighter extends Entity implements Enemy {
         if (this.horizontalCollision || this.verticalCollision) {
             this.setDeltaMovement(next.scale(-0.5));
         }
-        // 太空维度上下只有几百格：别飞出世界
-        double y = Mth.clamp(this.getY(), level.getMinY() + 24, level.getMaxY() + 200);
+        // 太空维度上下只有几百格：别飞出世界；星球上别钻进地里
+        double low = this.strafe != null ? level.getHeight(Heightmap.Types.MOTION_BLOCKING, Mth.floor(this.getX()), Mth.floor(this.getZ())) + 2
+                : level.getMinY() + 24;
+        double y = Mth.clamp(this.getY(), low, level.getMaxY() + 200);
         if (y != this.getY()) {
             this.setPos(this.getX(), y, this.getZ());
         }
         this.face(this.getDeltaMovement());
-        if (step.fire() && (aim != null || this.besieging())) {
+        if (step.fire() && (aim != null || this.besieging() || this.strafing())) {
             this.fire(level, targetPos, targetVel);
         }
     }
@@ -360,6 +410,7 @@ public class PirateFighter extends Entity implements Enemy {
         level.addFreshEntity(bolt);
         level.playSound(null, from.x, from.y, from.z, ShipSounds.PIRATE_LASER.get(), SoundSource.HOSTILE, 0.8F, 0.95F + this.random.nextFloat() * 0.1F);
         level.broadcastEntityEvent(this, EVENT_FIRE);
+        this.shots++;
     }
 
     /** 一发等离子弹的伤害。 */

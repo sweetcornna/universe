@@ -135,6 +135,34 @@ public final class UniverseAttachments {
                     .serialize(Codec.unboundedMap(PACKED_POS, Codec.INT).<Map<Long, Integer>>xmap(HashMap::new, map -> map).fieldOf("usage"))
                     .build());
 
+    /** 机甲的编队格（ADR-0033 §一）：里面的舰队单位和各编队的开关。死亡不丢（机甲本来就是不丢的）。 */
+    public static final Supplier<AttachmentType<io.github.sweetcornna.universe.mecha.fleet.FleetData>> MECHA_FLEET = ATTACHMENT_TYPES.register(
+            "mecha_fleet", () -> AttachmentType.builder(() -> new io.github.sweetcornna.universe.mecha.fleet.FleetData())
+                    .serialize(io.github.sweetcornna.universe.mecha.fleet.FleetData.CODEC).copyOnDeath().build());
+    // M18 舰队和战斗（A）的附加数据加在这行上面
+    // M18 物流调度（B）的附加数据加在这行上面
+    /** 钉到屏幕上的统计图（ADR-0033 §四）：每个存档各一份，死亡不丢，同步给本人画仪表盘。 */
+    public static final Supplier<AttachmentType<List<io.github.sweetcornna.universe.core.stats.Dashboard.Pin>>> DASHBOARD =
+            ATTACHMENT_TYPES.register("dashboard", () -> AttachmentType.<List<io.github.sweetcornna.universe.core.stats.Dashboard.Pin>>builder(
+                    () -> List.of()).serialize(io.github.sweetcornna.universe.stats.DashboardPins.CODEC).copyOnDeath()
+                    .sync((holder, player) -> holder == player && player.connection != null,
+                            io.github.sweetcornna.universe.stats.DashboardPins.STREAM_CODEC).build());
+    // M18 统计和研究（C）的附加数据加在这行上面
+    /** 多功能工具扫描只看哪种矿（ADR-0033 §八）：开采出来的物品 ID，空字符串是全看。存档、死亡不丢，同步给本人。 */
+    public static final Supplier<AttachmentType<String>> SCAN_FILTER = ATTACHMENT_TYPES.register("scan_filter",
+            () -> AttachmentType.builder(() -> "").serialize(Codec.STRING.fieldOf("item")).copyOnDeath()
+                    .sync((holder, player) -> holder == player && player.connection != null, ByteBufCodecs.STRING_UTF8).build());
+    // M18 信标、透镜、矿脉、蓝图（D）的附加数据加在这行上面
+    /** 钓鱼图鉴（ADR-0034 §一）：钓到过的鱼、最重的一条、放生了几条、还剩几竿放生的加成。死亡不丢，同步给本人。 */
+    public static final Supplier<AttachmentType<io.github.sweetcornna.universe.core.fishing.FishingLog>> FISHING_LOG = ATTACHMENT_TYPES.register("fishing_log",
+            () -> AttachmentType.builder(() -> io.github.sweetcornna.universe.core.fishing.FishingLog.EMPTY).serialize(io.github.sweetcornna.universe.fishing.FishingCodecs.CODEC).copyOnDeath()
+                    .sync((holder, player) -> holder == player && player.connection != null, io.github.sweetcornna.universe.fishing.FishingCodecs.STREAM_CODEC).build());
+    // M19 钓鱼（A）的附加数据加在这行上面
+    // M19 聚落（B）的附加数据加在这行上面
+    // M19 化石（C）的附加数据加在这行上面
+    // M19 深空和重力枪（D）的附加数据加在这行上面
+    // M19 科技布局和局部危害（E）的附加数据加在这行上面
+
     private UniverseAttachments() {
     }
 

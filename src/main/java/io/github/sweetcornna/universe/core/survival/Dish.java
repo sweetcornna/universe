@@ -45,7 +45,15 @@ public enum Dish {
     STAR_CAKE("star_cake", "星莓蛋糕", "Star Cake", 14, 0.9F, Effect.HAZARD, 25),
     // 水下的（ADR-0026 第八节）：海带囊烤干，生鱼裹上海带脆片
     KELP_CRISPS("kelp_crisps", "海带脆片", "Kelp Crisps", 3, 0.3F, Effect.NONE, 0),
-    SEAFOOD_ROLL("seafood_roll", "海味卷", "Seafood Roll", 9, 0.8F, Effect.NONE, 0);
+    SEAFOOD_ROLL("seafood_roll", "海味卷", "Seafood Roll", 9, 0.8F, Effect.NONE, 0),
+    // 钓上来的鱼做的（ADR-0034 §一）：原料用鱼的标签，哪种鱼都行；传说鱼宴要一条传说的鱼
+    GRILLED_FILLET("grilled_fillet", "烤鱼排", "Grilled Fillet", 6, 0.7F, Effect.NONE, 0),
+    FISH_SOUP("fish_soup", "鱼汤", "Fish Soup", 8, 0.7F, Effect.NONE, 0),
+    SASHIMI_PLATTER("sashimi_platter", "生鱼片拼盘", "Sashimi Platter", 9, 0.6F, Effect.NONE, 0),
+    SMOKED_FISH("smoked_fish", "熏鱼", "Smoked Fish", 7, 0.8F, Effect.NONE, 0),
+    DEEP_SEA_STEW("deep_sea_stew", "深海炖菜", "Deep Sea Stew", 10, 0.8F, Effect.OXYGEN, 60),
+    ICE_FISH_SOUP("ice_fish_soup", "冰鱼汤", "Ice Fish Soup", 9, 0.8F, Effect.WARMTH, 300),
+    LEGENDARY_FEAST("legendary_feast", "传说鱼宴", "Legendary Feast", 20, 1.0F, Effect.HAZARD, 100);
 
     /** 吃了以后的额外效果。 */
     public enum Effect {

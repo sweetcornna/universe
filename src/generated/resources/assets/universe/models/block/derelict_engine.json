@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column",
+  "textures": {
+    "end": "universe:block/derelict_engine_top",
+    "side": "universe:block/derelict_engine_side"
+  }
+}

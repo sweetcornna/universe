@@ -55,6 +55,15 @@ public final class UniverseDataGen {
         // M17 收尾：酸液（A）的数据生成加在这行上面
         event.createProvider(UniverseFluidTagsProvider::new);
         // M17 收尾：互通（C）的数据生成加在这行上面
+        // M18 舰队和战斗（A）的数据生成加在这行上面
+        // M18 物流调度（B）的数据生成加在这行上面
+        // M18 统计和研究（C）的数据生成加在这行上面
+        // M18 信标、透镜、矿脉、蓝图（D）的数据生成加在这行上面
+        // M19 钓鱼（A）的数据生成加在这行上面
+        // M19 聚落（B）的数据生成加在这行上面
+        // M19 化石（C）的数据生成加在这行上面
+        // M19 深空和重力枪（D）的数据生成加在这行上面
+        // M19 科技布局和局部危害（E）的数据生成加在这行上面
     }
 
     private static void gatherRegistries(GatherDataRegistryEntriesEvent event) {
@@ -72,6 +81,16 @@ public final class UniverseDataGen {
             context.register(PlanetLandmarkFeature.KEY, new PlanetLandmarkFeature());
             context.register(PlanetExoticFeature.KEY, new PlanetExoticFeature());
             // M17 收尾：奇异星球（B）的地物加在这行上面
+            // M18 舰队和战斗（A）的地物加在这行上面
+            // M18 物流调度（B）的地物加在这行上面
+            // M18 统计和研究（C）的地物加在这行上面
+            // M18 信标、透镜、矿脉、蓝图（D）的地物加在这行上面
+            // M19 钓鱼（A）的地物加在这行上面
+            // M19 聚落（B）的地物加在这行上面
+            // M19 化石（C）的地物加在这行上面
+            // M19 深空和重力枪（D）的地物加在这行上面
+            context.register(io.github.sweetcornna.universe.world.planet.gen.PlanetGeyserFeature.KEY, new io.github.sweetcornna.universe.world.planet.gen.PlanetGeyserFeature());
+            // M19 科技布局和局部危害（E）的地物加在这行上面
         });
         event.add(Registries.PLACED_FEATURE, context -> {
             context.register(PlanetFloraFeature.PLACED,
@@ -87,6 +106,17 @@ public final class UniverseDataGen {
             context.register(PlanetExoticFeature.PLACED,
                     new PlacedFeature(context.lookup(Registries.FEATURE).getOrThrow(PlanetExoticFeature.KEY), List.of(BiomeFilter.biome())));
             // M17 收尾：奇异星球（B）的放置的地物加在这行上面
+            // M18 舰队和战斗（A）的放置的地物加在这行上面
+            // M18 物流调度（B）的放置的地物加在这行上面
+            // M18 统计和研究（C）的放置的地物加在这行上面
+            // M18 信标、透镜、矿脉、蓝图（D）的放置的地物加在这行上面
+            // M19 钓鱼（A）的放置的地物加在这行上面
+            // M19 聚落（B）的放置的地物加在这行上面
+            // M19 化石（C）的放置的地物加在这行上面
+            // M19 深空和重力枪（D）的放置的地物加在这行上面
+            context.register(io.github.sweetcornna.universe.world.planet.gen.PlanetGeyserFeature.PLACED,
+                    new PlacedFeature(context.lookup(Registries.FEATURE).getOrThrow(io.github.sweetcornna.universe.world.planet.gen.PlanetGeyserFeature.KEY), List.of(BiomeFilter.biome())));
+            // M19 科技布局和局部危害（E）的放置的地物加在这行上面
         });
         // 主世界的矿脉露头和原油涌泉在最后一步放，压在树和草之后
         event.add(NeoForgeRegistries.Keys.BIOME_MODIFIERS, context -> context.register(

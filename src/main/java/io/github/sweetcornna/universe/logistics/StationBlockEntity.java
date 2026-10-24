@@ -588,7 +588,6 @@ public class StationBlockEntity extends MachineBlockEntity implements MachineMen
             return false;
         }
         StationSlot slot = station.slot(row);
-        int capacity = this.kind.slotCapacity();
         switch (action) {
             case SET_OR_DEPOSIT -> {
                 ItemStack carried = player.containerMenu.getCarried();
@@ -598,10 +597,7 @@ public class StationBlockEntity extends MachineBlockEntity implements MachineMen
                 String item = idOf(carried.getItem());
                 if (slot.isEmpty() || slot.canChangeItem() && !slot.item().equals(item)) {
                     // 设定物品：同一种物品不能占两格
-                    if (station.slotOf(item) >= 0 || !carried.isComponentsPatchEmpty() || !slot.setItem(item)) {
-                        return false;
-                    }
-                    return true;
+                    return carried.isComponentsPatchEmpty() && station.assign(row, item);
                 }
                 if (!slot.item().equals(item) || !BeltNetwork.canCarry(carried)) {
                     return false;
@@ -620,9 +616,23 @@ public class StationBlockEntity extends MachineBlockEntity implements MachineMen
                 give(player, item, taken, level);
                 return taken > 0;
             }
+            default -> {
+                return applySetting(station, row, action);
+            }
+        }
+    }
+
+    /** 不用玩家手上东西的那几个按钮：供需、上限、清掉。控制面板远程改设置也走这里（ADR-0033 §三）。 */
+    public static boolean applySetting(Station station, int row, int action) {
+        if (row < 0 || row >= station.kind().slots() || station.kind() == StationKind.COLLECTOR) {
+            return false;
+        }
+        StationSlot slot = station.slot(row);
+        int capacity = station.kind().slotCapacity();
+        switch (action) {
             case CYCLE_LOCAL -> slot.setLocal(slot.local().next());
             case CYCLE_REMOTE -> {
-                if (!this.kind.remote()) {
+                if (!station.kind().remote()) {
                     return false;
                 }
                 slot.setRemote(slot.remote().next());

@@ -38,4 +38,27 @@ class RayReceiverTest {
         assertEquals(6, perMinute, 1e-9);
         assertEquals(12_000, RayReceiver.photonRequest(1, true), 1e-9);
     }
+
+    @Test
+    void darkFogLensHalvesLossAndRisesTwiceAsFast() {
+        RayReceiver.Lens lens = RayReceiver.Lens.DARK_FOG;
+        // 功率和光子的需求和引力透镜一样翻倍
+        assertEquals(RayReceiver.maxOutput(1, RayReceiver.Lens.GRAVITON), RayReceiver.maxOutput(1, lens), 1e-9);
+        assertEquals(RayReceiver.photonRequest(0.5, RayReceiver.Lens.GRAVITON), RayReceiver.photonRequest(0.5, lens), 1e-9);
+        // 损耗 70% → 35%，58% 的效率损失的 42% 砍掉一半是 79%
+        assertEquals(0.65, RayReceiver.efficiency(0, lens, 1), 1e-9);
+        assertEquals(0.79, RayReceiver.efficiency(1, lens, 1), 1e-9);
+        assertEquals(1500 / 0.79, RayReceiver.powerRequest(1, lens, 1), 1e-9);
+        // 10 分钟积满
+        double c = 0;
+        for (int t = 0; t < 12_000; t++) {
+            c = RayReceiver.continuity(c, true, lens);
+        }
+        assertEquals(1, c, 1e-6);
+        // 一个能用 18000 刻，引力透镜 12000
+        assertEquals(18_000, lens.ticks());
+        assertEquals(RayReceiver.LENS_TICKS, RayReceiver.Lens.GRAVITON.ticks());
+        assertEquals(lens, RayReceiver.Lens.byKey("dark_fog"));
+        assertEquals(RayReceiver.Lens.NONE, RayReceiver.Lens.byKey("?"));
+    }
 }

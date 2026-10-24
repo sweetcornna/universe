@@ -1,0 +1,24 @@
+{
+  "type": "universe:nutrient",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "#universe:fish/rare"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:energy_shard"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:living_pearl"
+    }
+  ],
+  "research": "fishing",
+  "results": [
+    {
+      "id": "universe:star_core_bait"
+    }
+  ],
+  "time": 50
+}

@@ -1,0 +1,45 @@
+{
+    "parent": "block/block",
+    "textures": {
+        "particle": "universe:block/holo_beacon_side",
+        "top": "universe:block/holo_beacon_top",
+        "side": "universe:block/holo_beacon_side",
+        "emitter": "universe:block/holo_beacon_emitter",
+        "lens": "universe:block/holo_beacon_lens"
+    },
+    "elements": [
+        {   "from": [ 1, 0, 1 ],
+            "to": [ 15, 3, 15 ],
+            "faces": {
+                "down":  { "uv": [ 1, 1, 15, 15 ], "texture": "#side", "cullface": "down" },
+                "up":    { "uv": [ 1, 1, 15, 15 ], "texture": "#top" },
+                "north": { "uv": [ 1, 13, 15, 16 ], "texture": "#side" },
+                "south": { "uv": [ 1, 13, 15, 16 ], "texture": "#side" },
+                "west":  { "uv": [ 1, 13, 15, 16 ], "texture": "#side" },
+                "east":  { "uv": [ 1, 13, 15, 16 ], "texture": "#side" }
+            }
+        },
+        {   "from": [ 4, 3, 4 ],
+            "to": [ 12, 5, 12 ],
+            "faces": {
+                "up":    { "uv": [ 4, 4, 12, 12 ], "texture": "#emitter" },
+                "north": { "uv": [ 4, 14, 12, 16 ], "texture": "#emitter" },
+                "south": { "uv": [ 4, 14, 12, 16 ], "texture": "#emitter" },
+                "west":  { "uv": [ 4, 14, 12, 16 ], "texture": "#emitter" },
+                "east":  { "uv": [ 4, 14, 12, 16 ], "texture": "#emitter" }
+            }
+        },
+        {   "from": [ 5.5, 5, 5.5 ],
+            "to": [ 10.5, 6, 10.5 ],
+            "light_emission": 15,
+            "shade": false,
+            "faces": {
+                "up":    { "uv": [ 5.5, 5.5, 10.5, 10.5 ], "texture": "#lens" },
+                "north": { "uv": [ 5.5, 7, 10.5, 8 ], "texture": "#lens" },
+                "south": { "uv": [ 5.5, 7, 10.5, 8 ], "texture": "#lens" },
+                "west":  { "uv": [ 5.5, 7, 10.5, 8 ], "texture": "#lens" },
+                "east":  { "uv": [ 5.5, 7, 10.5, 8 ], "texture": "#lens" }
+            }
+        }
+    ]
+}

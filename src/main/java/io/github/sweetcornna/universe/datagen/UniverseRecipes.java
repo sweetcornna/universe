@@ -87,6 +87,66 @@ final class UniverseRecipes extends RecipeProvider {
         this.planetLife();
         this.wrapUpInterop();
         this.wrapUpFactory();
+        this.m18Fleet();
+        // M18 舰队和战斗（A）的配方加在这行上面
+        // M18 物流调度（B）的配方加在这行上面
+        // M18 统计和研究（C）的配方加在这行上面
+        this.m18Beacons();
+        // M18 信标、透镜、矿脉、蓝图（D）的配方加在这行上面
+        FishingData.recipes(this.output, this.items);
+        // M19 钓鱼（A）的配方加在这行上面
+        // M19 聚落（B）的配方加在这行上面
+        // 化石底座、骨架展台（ADR-0034 §三）：石头凿的，展台正面嵌一块铜牌；要研究"古生物学"
+        this.researchShaped("paleontology", RecipeCategory.DECORATIONS, UniverseItems.FOSSIL_PEDESTAL.get(), 1, List.of("SSS", " S ", "SSS"),
+                Map.of('S', Items.STONE));
+        this.researchShaped("paleontology", RecipeCategory.DECORATIONS, UniverseItems.SKELETON_DISPLAY.get(), 1, List.of("SCS", "SSS"),
+                Map.of('S', Items.STONE, 'C', Items.COPPER_INGOT));
+        // M19 化石（C）的配方加在这行上面
+        DeepSpaceDatagen.recipes(this.output);
+        // M19 深空和重力枪（D）的配方加在这行上面
+        // M19 科技布局和局部危害（E）的配方加在这行上面
+    }
+
+    /**
+     * M18 的舰队单位（子代理 A，ADR-0033 §一）：都在装配机里做，一级一级拿上一种当底子。原型机是一块电路板加推进器，
+     * 精准无人机加处理器和晶体硅的瞄准镜、钛合金的机身，攻击无人机加电浆激发器的炮；炮艇是钛合金的船身配加力推进器，驱逐舰拿炮艇加钛合金、量子芯片和黑雾的物质重组器。
+     */
+    private void m18Fleet() {
+        Item steel = UniverseItems.STEEL.get();
+        Item board = UniverseItems.CIRCUIT_BOARD.get();
+        Item coil = UniverseItems.MAGNETIC_COIL.get();
+        Item processor = UniverseItems.PROCESSOR.get();
+        Item exciter = UniverseItems.PLASMA_EXCITER.get();
+        Item titanium = UniverseItems.TITANIUM_ALLOY.get();
+        Item reinforced = UniverseItems.REINFORCED_THRUSTER.get();
+        this.machine(Kind.ASSEMBLING, "prototype", 80, "ground_squadron", in(steel, 3, board, 2, coil, 2, UniverseItems.THRUSTER.get(), 1),
+                out(UniverseItems.PROTOTYPE.get(), 1));
+        this.machine(Kind.ASSEMBLING, "precision_drone", 120, "precision_drones",
+                in(UniverseItems.PROTOTYPE.get(), 1, processor, 2, UniverseItems.CRYSTAL_SILICON.get(), 2, titanium, 2),
+                out(UniverseItems.PRECISION_DRONE.get(), 1));
+        this.machine(Kind.ASSEMBLING, "attack_drone", 160, "attack_drones",
+                in(UniverseItems.PRECISION_DRONE.get(), 1, exciter, 2, titanium, 4, UniverseItems.SUPER_MAGNETIC_RING.get(), 1),
+                out(UniverseItems.ATTACK_DRONE.get(), 1));
+        // 装配机最多 4 种原料
+        this.machine(Kind.ASSEMBLING, "corvette", 400, "space_fleet", in(titanium, 20, processor, 6, reinforced, 4, exciter, 4),
+                out(UniverseItems.CORVETTE.get(), 1));
+        this.machine(Kind.ASSEMBLING, "destroyer", 800, "destroyers", in(UniverseItems.CORVETTE.get(), 1, titanium, 30,
+                UniverseItems.QUANTUM_CHIP.get(), 4, UniverseItems.MATTER_RECOMBINATOR.get(), 4), out(UniverseItems.DESTROYER.get(), 1));
+    }
+
+    /** M18 的配方：黑雾透镜、全息信标（子代理 D，ADR-0033 §六、§七）。 */
+    private void m18Beacons() {
+        // 黑雾透镜：引力透镜 1、核心素 1、能量碎片 4，装配机里 8 秒
+        this.machine(Kind.ASSEMBLING, "dark_fog_lens", 160, "dark_fog_lens",
+                in(UniverseItems.GRAVITON_LENS.get(), 1, UniverseItems.CORE_ELEMENT.get(), 1, UniverseItems.ENERGY_SHARD.get(), 4),
+                out(UniverseItems.DARK_FOG_LENS.get(), 1));
+        // 全息信标：铁做底座，电路板和磁线圈做投影，玻璃做发光盘；装配机里做或者手工合成
+        Item board = UniverseItems.CIRCUIT_BOARD.get();
+        Item coil = UniverseItems.MAGNETIC_COIL.get();
+        this.machine(Kind.ASSEMBLING, "holo_beacon", 60, "holo_beacon",
+                in(Items.IRON_INGOT, 4, board, 2, coil, 2, Items.GLASS, 1), out(UniverseItems.HOLO_BEACON.get(), 1));
+        this.researchShaped("holo_beacon", RecipeCategory.DECORATIONS, UniverseItems.HOLO_BEACON.get(), 1, List.of(" G ", "MBM", "III"),
+                Map.of('G', Items.GLASS, 'M', coil, 'B', board, 'I', Items.IRON_INGOT));
     }
 
     /**

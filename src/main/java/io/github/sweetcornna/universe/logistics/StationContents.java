@@ -2,6 +2,7 @@ package io.github.sweetcornna.universe.logistics;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -10,14 +11,46 @@ import io.github.sweetcornna.universe.core.logistics.Logic;
 import io.github.sweetcornna.universe.core.logistics.Station;
 import io.github.sweetcornna.universe.core.logistics.StationSlot;
 import io.netty.buffer.ByteBuf;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 
 /**
- * 拆下来的物流站带着的东西（ADR-0015）：各格的物品、数量、上限和供需设置，载具、翘曲器、电量和航程。
+ * 拆下来的物流站带着的东西（ADR-0015）：各格的物品、数量、上限和供需设置，载具、翘曲器、电量和航程，还有调度的设置。
  * 像潜影盒一样存在掉落的物品里，放下时原样恢复。在外面飞的载具算回来了。
  */
-public record StationContents(List<Slot> slots, int drones, int vessels, int warpers, long energy, int range) {
+public record StationContents(List<Slot> slots, int drones, int vessels, int warpers, long energy, int range, Settings settings) {
+    /** 调度的设置（ADR-0033 §三）：名字、分组、指定配对、运输船最小载货量、点对点的伙伴。编号不带，放下时重新编。 */
+    public record Settings(String name, int group, boolean isolated, int minLoad, List<UUID> partners) {
+        public static final Settings DEFAULT = new Settings("", 0, false, 0, List.of());
+        static final Codec<Settings> CODEC = RecordCodecBuilder.create(i -> i.group(
+                Codec.STRING.optionalFieldOf("name", "").forGetter(Settings::name),
+                Codec.INT.optionalFieldOf("group", 0).forGetter(Settings::group),
+                Codec.BOOL.optionalFieldOf("isolated", false).forGetter(Settings::isolated),
+                Codec.INT.optionalFieldOf("min_load", 0).forGetter(Settings::minLoad),
+                UUIDUtil.CODEC.listOf().optionalFieldOf("partners", List.of()).forGetter(Settings::partners)
+        ).apply(i, Settings::new));
+        static final StreamCodec<ByteBuf, Settings> STREAM_CODEC = StreamCodec.composite(
+                ByteBufCodecs.STRING_UTF8, Settings::name,
+                ByteBufCodecs.VAR_INT, Settings::group,
+                ByteBufCodecs.BOOL, Settings::isolated,
+                ByteBufCodecs.VAR_INT, Settings::minLoad,
+                UUIDUtil.STREAM_CODEC.apply(ByteBufCodecs.list(Station.MAX_PARTNERS)), Settings::partners,
+                Settings::new);
+
+        public Settings {
+            partners = List.copyOf(partners);
+        }
+
+        static Settings of(Station station) {
+            return new Settings(station.name(), station.group(), station.isolated(), station.minLoad(), List.copyOf(station.partners()));
+        }
+
+        boolean isDefault() {
+            return this.equals(DEFAULT);
+        }
+    }
+
     public record Slot(String item, int count, int max, int local, int remote, long points) {
         static final Codec<Slot> CODEC = RecordCodecBuilder.create(i -> i.group(
                 Codec.STRING.optionalFieldOf("item", "").forGetter(Slot::item),
@@ -43,7 +76,8 @@ public record StationContents(List<Slot> slots, int drones, int vessels, int war
             Codec.INT.optionalFieldOf("vessels", 0).forGetter(StationContents::vessels),
             Codec.INT.optionalFieldOf("warpers", 0).forGetter(StationContents::warpers),
             Codec.LONG.optionalFieldOf("energy", 0L).forGetter(StationContents::energy),
-            Codec.INT.optionalFieldOf("range", Station.DEFAULT_RANGE).forGetter(StationContents::range)
+            Codec.INT.optionalFieldOf("range", Station.DEFAULT_RANGE).forGetter(StationContents::range),
+            Settings.CODEC.optionalFieldOf("settings", Settings.DEFAULT).forGetter(StationContents::settings)
     ).apply(i, StationContents::new));
     public static final StreamCodec<ByteBuf, StationContents> STREAM_CODEC = StreamCodec.composite(
             Slot.STREAM_CODEC.apply(ByteBufCodecs.list(8)), StationContents::slots,
@@ -52,6 +86,7 @@ public record StationContents(List<Slot> slots, int drones, int vessels, int war
             ByteBufCodecs.VAR_INT, StationContents::warpers,
             ByteBufCodecs.VAR_LONG, StationContents::energy,
             ByteBufCodecs.VAR_INT, StationContents::range,
+            Settings.STREAM_CODEC, StationContents::settings,
             StationContents::new);
 
     public StationContents {
@@ -63,21 +98,24 @@ public record StationContents(List<Slot> slots, int drones, int vessels, int war
         for (StationSlot slot : station.slots()) {
             slots.add(new Slot(slot.item(), slot.count(), slot.max(), slot.local().ordinal(), slot.remote().ordinal(), slot.points()));
         }
-        return new StationContents(slots, station.drones(), station.vessels(), station.warpers(), station.energy(), station.droneRange());
+        return new StationContents(slots, station.drones(), station.vessels(), station.warpers(), station.energy(), station.droneRange(),
+                Settings.of(station));
     }
 
-    /** 只留每格的物品、上限、供需和无人机范围（蓝图用，ADR-0018）。 */
+    /** 只留每格的物品、上限、供需、无人机范围和分组这些设置（蓝图用，ADR-0018）；名字和伙伴不带。 */
     public StationContents settingsOnly() {
         List<Slot> settings = new ArrayList<>();
         for (Slot slot : this.slots) {
             settings.add(new Slot(slot.item, 0, slot.max, slot.local, slot.remote, 0));
         }
-        return new StationContents(settings, 0, 0, 0, 0, this.range);
+        Settings dispatch = new Settings("", this.settings.group, this.settings.isolated, this.settings.minLoad, List.of());
+        return new StationContents(settings, 0, 0, 0, 0, this.range, dispatch);
     }
 
     /** 什么都没有（没设物品、没有载具），不用存进物品里。 */
     public boolean isEmpty() {
-        return this.drones == 0 && this.vessels == 0 && this.warpers == 0 && this.slots.stream().allMatch(slot -> slot.item.isEmpty());
+        return this.drones == 0 && this.vessels == 0 && this.warpers == 0 && this.slots.stream().allMatch(slot -> slot.item.isEmpty())
+                && this.settings.isDefault();
     }
 
     /** 物品总数，提示里用。 */
@@ -98,5 +136,10 @@ public record StationContents(List<Slot> slots, int drones, int vessels, int war
         station.setWarpers(this.warpers);
         station.setEnergy(this.energy);
         station.setDroneRange(this.range);
+        station.setName(this.settings.name);
+        station.setGroup(this.settings.group);
+        station.setIsolated(this.settings.isolated);
+        station.setMinLoad(this.settings.minLoad);
+        this.settings.partners.forEach(station::addPartner);
     }
 }

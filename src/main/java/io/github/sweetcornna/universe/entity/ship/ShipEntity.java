@@ -105,6 +105,8 @@ public class ShipEntity extends Entity implements IEntityWithComplexSpawn {
     private static final EntityDataAccessor<Float> DATA_HEAT = SynchedEntityData.defineId(ShipEntity.class, EntityDataSerializers.FLOAT);
     private static final EntityDataAccessor<Byte> DATA_WEAPON = SynchedEntityData.defineId(ShipEntity.class, EntityDataSerializers.BYTE);
     private static final EntityDataAccessor<Boolean> DATA_AUTOPILOT = SynchedEntityData.defineId(ShipEntity.class, EntityDataSerializers.BOOLEAN);
+    /** 牵引光束开着（ADR-0034 §四）。 */
+    private static final EntityDataAccessor<Boolean> DATA_TRACTOR = SynchedEntityData.defineId(ShipEntity.class, EntityDataSerializers.BOOLEAN);
     /** {@link #DATA_WEAPON} 的位：采矿模式、过热、光束开着、驾驶员按着开火键。 */
     private static final int WEAPON_BEAM_MODE = 1;
     private static final int WEAPON_OVERHEATED = 2;
@@ -202,6 +204,7 @@ public class ShipEntity extends Entity implements IEntityWithComplexSpawn {
         builder.define(DATA_HEAT, 0F);
         builder.define(DATA_WEAPON, (byte) 0);
         builder.define(DATA_AUTOPILOT, false);
+        builder.define(DATA_TRACTOR, false);
     }
 
     // ---- 查询
@@ -311,6 +314,50 @@ public class ShipEntity extends Entity implements IEntityWithComplexSpawn {
 
     public void setOwner(@Nullable UUID owner) {
         this.owner = owner;
+    }
+
+    /** 牵引光束开着（两端都能读）。 */
+    public boolean tractorOn() {
+        return this.entityData.get(DATA_TRACTOR);
+    }
+
+    /** 服务端：开关牵引光束（{@link io.github.sweetcornna.universe.deepspace.ShipTractor#toggle}）。 */
+    public void setTractor(boolean on) {
+        this.entityData.set(DATA_TRACTOR, on);
+    }
+
+    /** 服务端：在太空里、空间站外面（能出舱，失重）。 */
+    public boolean inOpenSpace() {
+        return this.environment != null && this.environment.space() && !this.docked;
+    }
+
+    /** 服务端：{@code box} 和船身的方块重不重叠（出舱时找放人的地方）。 */
+    public boolean overlapsHull(AABB box) {
+        if (this.structure == null) {
+            return false;
+        }
+        for (AABB part : ShipCollider.boxes(this.structure, this.getX(), this.getY(), this.getZ(), this.getYRot() - this.baseYaw)) {
+            if (part.intersects(box)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** 坐在船上的人在太空里按了出舱键（ADR-0034 §四）。 */
+    public static void handleEva(io.github.sweetcornna.universe.deepspace.DeepSpacePayloads.Eva payload,
+            net.neoforged.neoforge.network.handling.IPayloadContext context) {
+        if (context.player() instanceof ServerPlayer player && player.getVehicle() instanceof ShipEntity ship) {
+            io.github.sweetcornna.universe.deepspace.ShipEva.exit(ship, player);
+        }
+    }
+
+    /** 驾驶员按了牵引光束键（ADR-0034 §四）。 */
+    public static void handleTractor(io.github.sweetcornna.universe.deepspace.DeepSpacePayloads.Tractor payload,
+            net.neoforged.neoforge.network.handling.IPayloadContext context) {
+        if (context.player() instanceof ServerPlayer player && player.getVehicle() instanceof ShipEntity ship && ship.pilot() == player) {
+            io.github.sweetcornna.universe.deepspace.ShipTractor.toggle(ship, player);
+        }
     }
 
     /** 开着自动驾驶（客户端用同步来的值）。 */
@@ -433,6 +480,11 @@ public class ShipEntity extends Entity implements IEntityWithComplexSpawn {
         boolean hit = false;
         for (Asteroid asteroid : level.getEntitiesOfClass(Asteroid.class, swept)) {
             hit |= this.bump(level, asteroid.center(), asteroid.hitRadius());
+        }
+        // 碎片带里不小的碎片也撞船（小块的被牵引光束吸走，或者撞开）
+        for (io.github.sweetcornna.universe.deepspace.DebrisChunk chunk
+                : level.getEntitiesOfClass(io.github.sweetcornna.universe.deepspace.DebrisChunk.class, swept, chunk -> !chunk.small())) {
+            hit |= this.bump(level, chunk.center(), chunk.hitRadius());
         }
         if (hit && impulse) {
             this.impulseLock = BUMP_IMPULSE_LOCK;
@@ -665,7 +717,8 @@ public class ShipEntity extends Entity implements IEntityWithComplexSpawn {
 
     @Override
     protected boolean canAddPassenger(Entity passenger) {
-        return this.structure != null && this.getPassengers().size() < 1 + this.structure.seatCount();
+        return this.structure != null && this.getPassengers().size() < 1 + this.structure.seatCount()
+                && (this.level().isClientSide() || io.github.sweetcornna.universe.deepspace.ShipEva.mayBoard(this, passenger));
     }
 
     @Override
@@ -683,7 +736,13 @@ public class ShipEntity extends Entity implements IEntityWithComplexSpawn {
             if (!this.level().isClientSide() && player.startRiding(this)) {
                 this.noticeLater(Component.translatable(this.pilot() == player
                         ? "message.universe.ship.boarded_pilot" : "message.universe.ship.boarded_passenger"));
+                io.github.sweetcornna.universe.deepspace.ShipEva.boarded(this, player);
             }
+            return InteractionResult.SUCCESS;
+        }
+        if (!this.level().isClientSide() && this.structure != null && this.getPassengers().size() < 1 + this.structure.seatCount()) {
+            // 主人出舱了，别人上不来（ADR-0034 §四）
+            player.sendOverlayMessage(Component.translatable("message.universe.eva.not_yours"));
             return InteractionResult.SUCCESS;
         }
         return InteractionResult.PASS;
@@ -729,6 +788,13 @@ public class ShipEntity extends Entity implements IEntityWithComplexSpawn {
     public Vec3 getDismountLocationForPassenger(LivingEntity passenger) {
         if (this.structure == null) {
             return super.getDismountLocationForPassenger(passenger);
+        }
+        if (this.inOpenSpace()) {
+            // 出舱：放在船的左舷、右舷、顶上或底下（ADR-0034 §四）
+            Vec3 spot = io.github.sweetcornna.universe.deepspace.ShipEva.spot(this, passenger);
+            if (spot != null) {
+                return spot;
+            }
         }
         // 在船边找个能站人的地方
         double r = this.structure.shape().radius() + 1;
@@ -887,6 +953,12 @@ public class ShipEntity extends Entity implements IEntityWithComplexSpawn {
         if (warping) {
             // 充能时不听操纵
             controls = Controls.NONE;
+        } else if (pilot instanceof ServerPlayer player && !io.github.sweetcornna.universe.deepspace.ShipEva.mayPilot(this, player)) {
+            // 主人出舱了，坐在驾驶台上的别人开不走（ADR-0034 §四）
+            controls = Controls.NONE;
+            if (this.tickCount % 40 == 0) {
+                player.sendOverlayMessage(Component.translatable("message.universe.eva.not_yours_pilot"));
+            }
         } else if (pilot instanceof ServerPlayer player) {
             Input input = player.getLastClientInput();
             // 刚穿过大气层时还按着的升降键先不算，松开再按才生效：不然一路冲进太空几百格，从星球上方飞过去
@@ -918,6 +990,10 @@ public class ShipEntity extends Entity implements IEntityWithComplexSpawn {
             if (pilot != null && this.tickCount % 40 == 0) {
                 pilot.sendOverlayMessage(Component.translatable("message.universe.pirate.jammed"));
             }
+        }
+        if (!warping && env.space() && !this.docked && (pilot == null || !io.github.sweetcornna.universe.deepspace.ShipEva.mayPilot(this, pilot))) {
+            // 没人开的船在太空里停在原地，不漂（出舱，ADR-0034 §四）
+            this.flight.restore(0, 0, 0, this.flight.yaw());
         }
         boolean infinite = pilot != null && pilot.hasInfiniteMaterials();
         double used = this.flight.step(stats, controls, env, infinite || this.fuel > 0, this.landed);
@@ -980,14 +1056,21 @@ public class ShipEntity extends Entity implements IEntityWithComplexSpawn {
         } else {
             this.parkingTicks = 0;
         }
-        // 乘客（不是驾驶员）着陆后按 Shift 下船
+        // 乘客（不是驾驶员）着陆后按 Shift 下船；在太空里按 Shift 出舱（ADR-0034 §四）
         if (this.landed) {
             for (Entity passenger : List.copyOf(this.getPassengers())) {
                 if (passenger != pilot && passenger.isShiftKeyDown()) {
                     passenger.stopRiding();
                 }
             }
+        } else if (this.inOpenSpace() && !warping) {
+            for (Entity passenger : List.copyOf(this.getPassengers())) {
+                if (passenger != pilot && passenger.isShiftKeyDown() && passenger instanceof ServerPlayer player) {
+                    io.github.sweetcornna.universe.deepspace.ShipEva.exit(this, player);
+                }
+            }
         }
+        io.github.sweetcornna.universe.deepspace.ShipTractor.tick(this, level);
 
         this.entityData.set(DATA_THROTTLE, (float) this.flight.throttle());
         this.entityData.set(DATA_FUEL, (float) this.fuel);
@@ -1056,6 +1139,7 @@ public class ShipEntity extends Entity implements IEntityWithComplexSpawn {
         output.putDouble("Hull", this.combat.hull());
         output.putDouble("Shield", this.combat.shield());
         output.putBoolean("BeamMode", this.beamMode);
+        output.putBoolean("Tractor", this.tractorOn());
         output.storeNullable("Owner", UUIDUtil.CODEC, this.owner);
         ValueOutput.ValueOutputList list = output.childrenList("Departures");
         this.departures.forEach((dimension, pos) -> {
@@ -1072,6 +1156,7 @@ public class ShipEntity extends Entity implements IEntityWithComplexSpawn {
         this.fuel = input.getDoubleOr("Fuel", 0);
         this.landed = input.getBooleanOr("Landed", false);
         this.owner = input.read("Owner", UUIDUtil.CODEC).orElse(null);
+        this.entityData.set(DATA_TRACTOR, input.getBooleanOr("Tractor", false));
         this.departures.clear();
         for (ValueInput child : input.childrenListOrEmpty("Departures")) {
             Identifier dimension = Identifier.tryParse(child.getStringOr("Dimension", ""));

@@ -1,0 +1,16 @@
+{
+  "values": [
+    "#c:cobblestones",
+    "#c:stones",
+    "#minecraft:stone_bricks",
+    "#c:sandstone/blocks",
+    "minecraft:blackstone",
+    "minecraft:polished_blackstone_bricks",
+    "minecraft:deepslate_bricks",
+    "minecraft:mud_bricks",
+    "minecraft:bricks",
+    "universe:planet_rock",
+    "universe:planet_cobblestone",
+    "universe:planet_strata"
+  ]
+}

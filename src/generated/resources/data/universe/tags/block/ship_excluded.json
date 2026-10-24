@@ -118,6 +118,24 @@
     "universe:plasma_turret",
     "universe:sr_plasma_turret",
     "universe:planetary_shield_generator",
-    "universe:grid_interface"
+    "universe:grid_interface",
+    "universe:holo_beacon",
+    "universe:settlement_terminal",
+    "universe:settlement_turret",
+    "universe:derelict_plating",
+    "universe:derelict_frame",
+    "universe:derelict_radiator",
+    "universe:derelict_tank",
+    "universe:derelict_conduit",
+    "universe:derelict_cargo",
+    "universe:reactor_shielding",
+    "universe:reactor_core",
+    "universe:derelict_window",
+    "universe:derelict_light",
+    "universe:derelict_deck",
+    "universe:derelict_engine",
+    "universe:outpost_solar",
+    "universe:outpost_antenna",
+    "universe:outpost_device"
   ]
 }

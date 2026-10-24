@@ -267,7 +267,7 @@ public final class DysonScreens {
         }
     }
 
-    /** 射线接收站：模式（可以切换）、状态、连续接收和效率、输出或光子进度、引力透镜。 */
+    /** 射线接收站：模式（可以切换）、状态、连续接收和效率、输出或光子进度、透镜（引力透镜或黑雾透镜）。 */
     public static final class Receiver extends DysonMachineScreen {
         public Receiver(MachineMenu menu, Inventory inventory, Component title) {
             super(menu, inventory, title);
@@ -289,14 +289,17 @@ public final class DysonScreens {
             boolean photon = this.menu.data(RayReceiverBlockEntity.MODE) == 1;
             double continuity = this.menu.data(RayReceiverBlockEntity.CONTINUITY) / 1000.0;
             int lensLeft = this.menu.data(RayReceiverBlockEntity.LENS);
-            boolean lensLoaded = this.menu.getSlot(RayReceiverBlockEntity.LENS_SLOT).getItem().is(UniverseItems.GRAVITON_LENS.get());
-            boolean lens = lensLeft > 0 || lensLoaded;
+            RayReceiver.Lens active = RayReceiver.Lens.byOrdinal(this.menu.data(RayReceiverBlockEntity.LENS_KIND));
+            RayReceiver.Lens loaded = RayReceiverBlockEntity.lensOf(this.menu.getSlot(RayReceiverBlockEntity.LENS_SLOT).getItem());
+            // 没在用的时候按格子里的算，看得到放进去以后的数
+            RayReceiver.Lens lens = active != RayReceiver.Lens.NONE ? active : loaded;
+            double loss = Upgrades.rayLoss(ClientResearch.state().level(Upgrades.RAY_EFFICIENCY));
             int share = this.menu.data(RayReceiverBlockEntity.SHARE);
             RayReceiverBlockEntity.Status status = RayReceiverBlockEntity.Status.values()[Math.floorMod(
                     this.menu.data(RayReceiverBlockEntity.STATUS), RayReceiverBlockEntity.Status.values().length)];
             boolean receiving = status == RayReceiverBlockEntity.Status.RECEIVING;
             if (photon) {
-                double draw = receiving ? RayReceiver.photonRequest(continuity, lensLeft > 0) * share / 1000.0 : 0;
+                double draw = receiving ? RayReceiver.photonRequest(continuity, active) * share / 1000.0 : 0;
                 graphics.text(this.font, Component.translatable("gui.universe.receiver.photon_draw", DysonEditorScreen.watts(draw), share / 10), 8,
                         20, receiving ? GOOD : DIM, false);
             } else {
@@ -314,7 +317,7 @@ public final class DysonScreens {
             };
             this.status(graphics, Component.translatable("gui.universe.receiver.status." + status.ordinal()), 44, color);
             graphics.text(this.font, Component.translatable("gui.universe.receiver.continuity", Math.round(continuity * 100),
-                    Math.round(RayReceiver.efficiency(continuity, Upgrades.rayLoss(ClientResearch.state().level(Upgrades.RAY_EFFICIENCY))) * 100)),
+                    Math.round(RayReceiver.efficiency(continuity, lens, loss) * 100)),
                     8, 64, TEXT, false);
             bar(graphics, 8, 74, TEXT_WIDTH, 1, (float) continuity, ACCENT);
             if (photon) {
@@ -324,9 +327,9 @@ public final class DysonScreens {
                 graphics.text(this.font, Component.translatable("gui.universe.receiver.max_output",
                         DysonEditorScreen.watts(RayReceiver.maxOutput(continuity, lens)), share / 10), 8, 77, DIM, false);
             }
-            if (lensLeft > 0 || lensLoaded) {
-                graphics.text(this.font, Component.translatable("gui.universe.receiver.lens", lensLeft > 0 ? lensLeft / 10 : 100), 8, 87, ACCENT,
-                        false);
+            if (lens != RayReceiver.Lens.NONE) {
+                graphics.text(this.font, Component.translatable("gui.universe.receiver.lens." + lens.key(),
+                        active != RayReceiver.Lens.NONE ? lensLeft / 10 : 100), 8, 87, lens == RayReceiver.Lens.DARK_FOG ? 0xFFB070E0 : ACCENT, false);
             } else {
                 graphics.text(this.font, Component.translatable("gui.universe.receiver.no_lens"), 8, 87, 0xFF5D7682, false);
             }

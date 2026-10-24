@@ -1,0 +1,18 @@
+{
+  "values": [
+    "universe:conveyor_belt",
+    "universe:conveyor_belt_mk2",
+    "universe:conveyor_belt_mk3",
+    "universe:sorter",
+    "universe:sorter_mk2",
+    "universe:sorter_mk3",
+    "universe:pile_sorter",
+    "universe:splitter",
+    "universe:automatic_piler",
+    "universe:traffic_monitor",
+    "universe:tesla_tower",
+    "universe:wireless_power_tower",
+    "universe:satellite_substation",
+    "universe:holo_beacon"
+  ]
+}

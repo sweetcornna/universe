@@ -17,10 +17,11 @@ import io.github.sweetcornna.universe.client.TextWrap;
 import io.github.sweetcornna.universe.client.factory.MachineScreen;
 import io.github.sweetcornna.universe.core.survival.MultitoolSpec;
 import io.github.sweetcornna.universe.core.tech.ModuleHost;
+import io.github.sweetcornna.universe.core.tech.ModuleType;
 import io.github.sweetcornna.universe.core.tech.Stat;
 import io.github.sweetcornna.universe.core.tech.SuitSlots;
 import io.github.sweetcornna.universe.core.tech.TechBonuses;
-import io.github.sweetcornna.universe.core.tech.TechModule;
+import io.github.sweetcornna.universe.core.tech.TechGrid;
 import io.github.sweetcornna.universe.tech.TechMenu;
 import io.github.sweetcornna.universe.tech.TechModuleItem;
 import io.github.sweetcornna.universe.survival.MultitoolItem;
@@ -34,6 +35,7 @@ import net.minecraft.world.item.ItemStack;
 /**
  * 技术配置界面（ADR-0014）：左上外骨骼技术槽，左中多功能工具技术槽，左下当前的加成；右边货舱和背包。
  * 没解锁的格子画成带斜纹的暗格。工具格按工具的档次画 4–8 个（ADR-0026），坏的格子画裂纹，鼠标移上去提示怎么修。
+ * 超频格画一圈橙光，挨着的同种模块之间画连线，鼠标移到模块上写出这一格的加成（ADR-0034 §五，{@link TechGridView}）。
  */
 public class TechScreen extends AbstractContainerScreen<TechMenu> {
     private static final int SUIT_COLOR = 0xFF6EDCF5;
@@ -86,6 +88,49 @@ public class TechScreen extends AbstractContainerScreen<TechMenu> {
                 broken(graphics, sx, sy);
             }
         }
+        this.layout(graphics, ModuleHost.EXOSUIT, TechMenu.SUIT_START);
+        if (this.menu.hasTool()) {
+            this.layout(graphics, ModuleHost.MULTITOOL, TechMenu.TOOL_START);
+        }
+    }
+
+    /** 一边网格的超频格和连线。 */
+    private void layout(GuiGraphicsExtractor graphics, ModuleHost host, int start) {
+        TechGrid grid = TechGrid.of(host);
+        List<Slot> slots = this.menu.slots.subList(start, start + grid.size());
+        boolean[] live = new boolean[grid.size()];
+        for (int i = 0; i < live.length; i++) {
+            Slot slot = slots.get(i);
+            live[i] = slot.isActive() && !(slot instanceof TechMenu.TechSlot tech && tech.broken());
+        }
+        TechGridView.grid(graphics, this.leftPos, this.topPos, grid, slots, TechGrid.types(this.menu.moduleSlots(host)),
+                this.menu.supercharged(host), live);
+    }
+
+    /** 鼠标下这一格的加成；不是技术槽时为 {@code null}。 */
+    private TechGrid.Boost hoveredBoost() {
+        if (!(this.hoveredSlot instanceof TechMenu.TechSlot tech)) {
+            return null;
+        }
+        int index = TechMenu.gridIndex(tech.host(), this.hoveredSlot.index);
+        if (index < 0) {
+            return null;
+        }
+        List<ModuleType> types = TechGrid.types(this.menu.moduleSlots(tech.host()));
+        return TechGrid.of(tech.host()).boost(types, this.menu.supercharged(tech.host()), index);
+    }
+
+    @Override
+    protected List<Component> getTooltipFromContainerItem(ItemStack stack) {
+        List<Component> lines = super.getTooltipFromContainerItem(stack);
+        TechGrid.Boost boost = this.hoveredBoost();
+        Component line = boost == null ? null : TechGridView.boostLine(boost);
+        if (line == null) {
+            return lines;
+        }
+        List<Component> withBoost = new ArrayList<>(lines);
+        withBoost.add(Math.min(1, withBoost.size()), line);
+        return withBoost;
     }
 
     /** 坏了的工具格：暗红的底，一道折线裂纹。 */
@@ -142,6 +187,10 @@ public class TechScreen extends AbstractContainerScreen<TechMenu> {
         if (this.hoveredSlot instanceof TechMenu.TechSlot tech && tech.broken()) {
             graphics.setTooltipForNextFrame(this.font, TextWrap.split(this.font,
                     Component.translatable("gui.universe.tech.broken_slot", MultitoolSpec.REPAIR_SCRAP), 160), mouseX, mouseY);
+        } else if (this.hoveredSlot instanceof TechMenu.TechSlot tech && !tech.hasItem() && this.menu.getCarried().isEmpty()
+                && TechGrid.supercharged(this.menu.supercharged(tech.host()), TechMenu.gridIndex(tech.host(), tech.index))) {
+            graphics.setTooltipForNextFrame(this.font, TextWrap.split(this.font, TechGridView.emptySupercharged(tech.isActive()), 160),
+                    mouseX, mouseY);
         }
         // 加成列表放不下时，鼠标移到列表上看全部
         int x = mouseX - this.leftPos;
@@ -194,13 +243,11 @@ public class TechScreen extends AbstractContainerScreen<TechMenu> {
     }
 
     private TechBonuses bonuses(ModuleHost host) {
-        List<TechModule> modules = new ArrayList<>();
-        for (ItemStack stack : this.menu.installed(host)) {
-            if (stack.getItem() instanceof TechModuleItem item) {
-                modules.add(item.module(stack));
-            }
+        if (host == ModuleHost.SHIP) {
+            return TechBonuses.NONE;
         }
-        TechBonuses bonuses = TechBonuses.of(modules);
+        // 和服务端一样按格子算：相邻和超频（ADR-0034 §五）
+        TechBonuses bonuses = TechGrid.of(host).bonuses(this.menu.moduleSlots(host), this.menu.supercharged(host));
         // 工具的类型专长也算进去（ADR-0026）
         return host == ModuleHost.MULTITOOL && this.menu.hasTool() ? bonuses.with(this.menu.spec().specialty()) : bonuses;
     }

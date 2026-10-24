@@ -274,8 +274,9 @@ public final class PlayerSurvival {
         // 酸雨（ADR-0030）：雨真淋到身上才算，和毒雾一起掉毒性防护
         boolean acidRain = !sheltered && planet.map(p -> p.weather().precipitation() == WeatherProfile.Precipitation.ACID_RAIN).orElse(false)
                 && (level.isRainingAt(player.blockPosition()) || level.isRainingAt(BlockPos.containing(player.getX(), player.getBoundingBox().maxY, player.getZ())));
+        // 间歇泉的水汽柱、孢子云（ADR-0034 §六）
         return new Environment(breathable, hazards, sheltered, PlanetWeather.severity(level), sources[0] > 0, sources[1] > 0, supplied)
-                .withPressure(pressure).withAcid(acid, acidRain);
+                .withPressure(pressure).withAcid(acid, acidRain).withLocal(io.github.sweetcornna.universe.hazard.Hazards.exposure(player));
     }
 
     /** 眼睛在水里或酸液里。 */

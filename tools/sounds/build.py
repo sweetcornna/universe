@@ -52,7 +52,7 @@ import synth as s  # noqa: E402
 ROOT = HERE.parents[1]
 SOUNDS = ROOT / "src" / "main" / "resources" / "assets" / "universe" / "sounds"
 PREVIEW = ROOT / "build" / "sound-preview"
-MODULES = ["common", "machines", "ships", "gear", "hostile", "world"]
+MODULES = ["common", "machines", "ships", "gear", "hostile", "world", "fishing", "settlement", "fossil", "deepspace", "hazard"]
 # 统一响度时限幅器最多压掉的分贝数
 MAX_LIMITING = 4.0
 WINGET_FFMPEG = Path(os.environ.get("LOCALAPPDATA", "")) / "Microsoft" / "WinGet" / "Packages"

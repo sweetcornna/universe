@@ -521,6 +521,95 @@ public final class UniverseItems {
     // M17 收尾：酸液（A）的物品加在这行上面
     public static final DeferredItem<BlockItem> GRID_INTERFACE = ITEMS.registerSimpleBlockItem(UniverseBlocks.GRID_INTERFACE);
     // M17 收尾：互通（C）的物品加在这行上面
+    // M18 舰队（ADR-0033 §一）：放进机甲的编队格里出动
+    public static final DeferredItem<io.github.sweetcornna.universe.mecha.fleet.FleetUnitItem> PROTOTYPE = ITEMS.registerItem("prototype",
+            p -> new io.github.sweetcornna.universe.mecha.fleet.FleetUnitItem(io.github.sweetcornna.universe.core.mecha.fleet.FleetUnitKind.PROTOTYPE, p),
+            p -> p.stacksTo(16));
+    public static final DeferredItem<io.github.sweetcornna.universe.mecha.fleet.FleetUnitItem> PRECISION_DRONE = ITEMS.registerItem("precision_drone",
+            p -> new io.github.sweetcornna.universe.mecha.fleet.FleetUnitItem(io.github.sweetcornna.universe.core.mecha.fleet.FleetUnitKind.PRECISION_DRONE, p),
+            p -> p.stacksTo(16));
+    public static final DeferredItem<io.github.sweetcornna.universe.mecha.fleet.FleetUnitItem> ATTACK_DRONE = ITEMS.registerItem("attack_drone",
+            p -> new io.github.sweetcornna.universe.mecha.fleet.FleetUnitItem(io.github.sweetcornna.universe.core.mecha.fleet.FleetUnitKind.ATTACK_DRONE, p),
+            p -> p.stacksTo(16));
+    public static final DeferredItem<io.github.sweetcornna.universe.mecha.fleet.FleetUnitItem> CORVETTE = ITEMS.registerItem("corvette",
+            p -> new io.github.sweetcornna.universe.mecha.fleet.FleetUnitItem(io.github.sweetcornna.universe.core.mecha.fleet.FleetUnitKind.CORVETTE, p),
+            p -> p.stacksTo(4));
+    public static final DeferredItem<io.github.sweetcornna.universe.mecha.fleet.FleetUnitItem> DESTROYER = ITEMS.registerItem("destroyer",
+            p -> new io.github.sweetcornna.universe.mecha.fleet.FleetUnitItem(io.github.sweetcornna.universe.core.mecha.fleet.FleetUnitKind.DESTROYER, p),
+            p -> p.stacksTo(4).rarity(Rarity.RARE));
+    // M18 舰队和战斗（A）的物品加在这行上面
+    // M18 物流调度（B）的物品加在这行上面
+    // M18 统计和研究（C）的物品加在这行上面
+    /** 黑雾透镜（ADR-0033 §七）：射线接收站的透镜格里用，损耗减半、积累快一倍。 */
+    public static final DeferredItem<Item> DARK_FOG_LENS = ITEMS.registerSimpleItem("dark_fog_lens");
+    /** 全息信标（ADR-0033 §六）。 */
+    public static final DeferredItem<BlockItem> HOLO_BEACON = ITEMS.registerSimpleBlockItem(UniverseBlocks.HOLO_BEACON);
+    // M18 信标、透镜、矿脉、蓝图（D）的物品加在这行上面
+    // M19 钓鱼（ADR-0034 §一）：96 种鱼、六种专门的鱼饵、三样杂物、漂流瓶、密封补给舱、捕鱼笼
+    public static final Map<io.github.sweetcornna.universe.core.fishing.FishSpecies, DeferredItem<io.github.sweetcornna.universe.fishing.FishItem>> FISH = registerFish();
+    public static final Map<io.github.sweetcornna.universe.core.fishing.Bait, DeferredItem<io.github.sweetcornna.universe.fishing.BaitItem>> BAITS = registerBaits();
+    public static final Map<io.github.sweetcornna.universe.core.fishing.Junk, DeferredItem<Item>> JUNK = registerJunk();
+    public static final DeferredItem<io.github.sweetcornna.universe.fishing.FishingFindItem> MESSAGE_BOTTLE = ITEMS.registerItem("message_bottle",
+            p -> new io.github.sweetcornna.universe.fishing.FishingFindItem(io.github.sweetcornna.universe.fishing.FishingFindItem.Kind.BOTTLE, p), p -> p.stacksTo(16).rarity(Rarity.UNCOMMON));
+    public static final DeferredItem<io.github.sweetcornna.universe.fishing.FishingFindItem> SEALED_CACHE = ITEMS.registerItem("sealed_cache",
+            p -> new io.github.sweetcornna.universe.fishing.FishingFindItem(io.github.sweetcornna.universe.fishing.FishingFindItem.Kind.CACHE, p), p -> p.stacksTo(16).rarity(Rarity.UNCOMMON));
+    public static final DeferredItem<BlockItem> FISH_TRAP = ITEMS.registerSimpleBlockItem(UniverseBlocks.FISH_TRAP);
+
+    /** 每种鱼一个物品：能叠，生吃按个头给一两点饱食度。 */
+    private static Map<io.github.sweetcornna.universe.core.fishing.FishSpecies, DeferredItem<io.github.sweetcornna.universe.fishing.FishItem>> registerFish() {
+        Map<io.github.sweetcornna.universe.core.fishing.FishSpecies, DeferredItem<io.github.sweetcornna.universe.fishing.FishItem>> items = new LinkedHashMap<>();
+        for (io.github.sweetcornna.universe.core.fishing.FishSpecies species : io.github.sweetcornna.universe.core.fishing.FishTable.ALL) {
+            int nutrition = 1 + species.size().ordinal() / 2;
+            items.put(species, ITEMS.registerItem(species.itemId(), p -> new io.github.sweetcornna.universe.fishing.FishItem(species, p),
+                    p -> p.food(new FoodProperties.Builder().nutrition(nutrition).saturationModifier(0.1F).build())));
+        }
+        return items;
+    }
+
+    private static Map<io.github.sweetcornna.universe.core.fishing.Bait, DeferredItem<io.github.sweetcornna.universe.fishing.BaitItem>> registerBaits() {
+        Map<io.github.sweetcornna.universe.core.fishing.Bait, DeferredItem<io.github.sweetcornna.universe.fishing.BaitItem>> items = new EnumMap<>(io.github.sweetcornna.universe.core.fishing.Bait.class);
+        for (io.github.sweetcornna.universe.core.fishing.Bait bait : io.github.sweetcornna.universe.core.fishing.Bait.specials()) {
+            items.put(bait, ITEMS.registerItem(bait.id(), p -> new io.github.sweetcornna.universe.fishing.BaitItem(bait, p),
+                    p -> bait == io.github.sweetcornna.universe.core.fishing.Bait.STAR_CORE ? p.rarity(Rarity.RARE) : p));
+        }
+        return items;
+    }
+
+    private static Map<io.github.sweetcornna.universe.core.fishing.Junk, DeferredItem<Item>> registerJunk() {
+        Map<io.github.sweetcornna.universe.core.fishing.Junk, DeferredItem<Item>> items = new EnumMap<>(io.github.sweetcornna.universe.core.fishing.Junk.class);
+        for (io.github.sweetcornna.universe.core.fishing.Junk junk : io.github.sweetcornna.universe.core.fishing.Junk.values()) {
+            items.put(junk, ITEMS.registerSimpleItem(junk.id()));
+        }
+        return items;
+    }
+    // M19 钓鱼（A）的物品加在这行上面
+    // M19 聚落（B）的物品加在这行上面
+    // ---- M19 化石（ADR-0034 §三）
+    /** 40 种骨头：8 个类群 × 5 个部位。 */
+    public static final Map<io.github.sweetcornna.universe.core.fossil.Bone, DeferredItem<io.github.sweetcornna.universe.fossil.BoneItem>> BONES = io.github.sweetcornna.universe.fossil.BoneItem.register(ITEMS);
+    /** 化石展品：骨架展台封装出来的，记着五个部件。 */
+    public static final DeferredItem<io.github.sweetcornna.universe.fossil.FossilExhibitItem> FOSSIL_EXHIBIT = ITEMS.registerItem("fossil_exhibit", io.github.sweetcornna.universe.fossil.FossilExhibitItem::new,
+            p -> p.stacksTo(16).rarity(Rarity.UNCOMMON));
+    public static final DeferredItem<BlockItem> FOSSIL_PEDESTAL = ITEMS.registerSimpleBlockItem(UniverseBlocks.FOSSIL_PEDESTAL);
+    public static final DeferredItem<BlockItem> SKELETON_DISPLAY = ITEMS.registerSimpleBlockItem(UniverseBlocks.SKELETON_DISPLAY);
+    // M19 化石（C）的物品加在这行上面
+    // ---- M19 深空（ADR-0034 §四）：拆残骸、打碎片得到的打捞物
+    /** 废金属：残骸的舱板、桁架拆下来的，两块回炉成一块铁。 */
+    public static final DeferredItem<Item> SCRAP_METAL = ITEMS.registerSimpleItem("scrap_metal");
+    /** 合金板：散热板、屏蔽层上拆下来的，回炉成钛合金。 */
+    public static final DeferredItem<Item> ALLOY_PLATE = ITEMS.registerSimpleItem("alloy_plate");
+    /** 电子元件：导管和设备里拆出来的，在装配机里拼回电路板。 */
+    public static final DeferredItem<Item> SALVAGED_ELECTRONICS = ITEMS.registerSimpleItem("salvaged_electronics");
+    /** 反应堆芯：一艘残骸只有一个，拆下来残骸就要熔毁。 */
+    public static final DeferredItem<Item> SALVAGED_REACTOR_CORE = ITEMS.registerSimpleItem("salvaged_reactor_core",
+            properties -> properties.rarity(Rarity.RARE).stacksTo(16));
+    // M19 深空和重力枪（D）的物品加在这行上面
+    /** 间歇泉的喷口、结壳（ADR-0034 §六）。 */
+    public static final Map<io.github.sweetcornna.universe.core.hazard.GeyserKind, DeferredItem<BlockItem>> GEYSER_VENTS =
+            io.github.sweetcornna.universe.hazard.HazardBlocks.items(ITEMS, UniverseBlocks.GEYSER_VENTS);
+    public static final Map<io.github.sweetcornna.universe.core.hazard.GeyserKind, DeferredItem<BlockItem>> GEYSER_CRUSTS =
+            io.github.sweetcornna.universe.hazard.HazardBlocks.items(ITEMS, UniverseBlocks.GEYSER_CRUSTS);
+    // M19 科技布局和局部危害（E）的物品加在这行上面
 
     /** 蓝图（ADR-0018）。 */
     public static final DeferredItem<BlueprintItem> BLUEPRINT = ITEMS.registerItem("blueprint", BlueprintItem::new);
@@ -635,6 +724,26 @@ public final class UniverseItems {
         // M17 收尾：酸液（A）的创造物品栏顺序加在这行上面
         order.add(GRID_INTERFACE);
         // M17 收尾：互通（C）的创造物品栏顺序加在这行上面
+        order.addAll(List.of(PROTOTYPE, PRECISION_DRONE, ATTACK_DRONE, CORVETTE, DESTROYER));
+        // M18 舰队和战斗（A）的创造物品栏顺序加在这行上面
+        // M18 物流调度（B）的创造物品栏顺序加在这行上面
+        // M18 统计和研究（C）的创造物品栏顺序加在这行上面
+        order.addAll(List.of(DARK_FOG_LENS, HOLO_BEACON));
+        // M18 信标、透镜、矿脉、蓝图（D）的创造物品栏顺序加在这行上面
+        order.addAll(FISH.values());
+        order.addAll(BAITS.values());
+        order.addAll(JUNK.values());
+        order.addAll(List.of(MESSAGE_BOTTLE, SEALED_CACHE, FISH_TRAP));
+        // M19 钓鱼（A）的创造物品栏顺序加在这行上面
+        // M19 聚落（B）的创造物品栏顺序加在这行上面
+        order.addAll(List.of(FOSSIL_PEDESTAL, SKELETON_DISPLAY, FOSSIL_EXHIBIT));
+        order.addAll(BONES.values());
+        // M19 化石（C）的创造物品栏顺序加在这行上面
+        order.addAll(List.of(SCRAP_METAL, ALLOY_PLATE, SALVAGED_ELECTRONICS, SALVAGED_REACTOR_CORE));
+        // M19 深空和重力枪（D）的创造物品栏顺序加在这行上面
+        order.addAll(GEYSER_CRUSTS.values());
+        order.addAll(GEYSER_VENTS.values());
+        // M19 科技布局和局部危害（E）的创造物品栏顺序加在这行上面
         return List.copyOf(order);
     }
 

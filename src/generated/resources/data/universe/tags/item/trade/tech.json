@@ -39,6 +39,7 @@
     "universe:module_deflector",
     "universe:module_hull_reinforcement",
     "universe:module_fire_control",
+    "universe:module_tractor_beam",
     "universe:hull_plating_white",
     "universe:hull_plating_orange",
     "universe:hull_plating_magenta",

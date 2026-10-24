@@ -1,0 +1,9 @@
+{
+  "parent": "minecraft:block/orientable_with_bottom",
+  "textures": {
+    "bottom": "universe:block/outpost_device_top",
+    "front": "universe:block/outpost_device_front",
+    "side": "universe:block/outpost_device_side",
+    "top": "universe:block/outpost_device_top"
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "type": "universe:research_shaped",
+  "key": {
+    "C": "minecraft:copper_ingot",
+    "S": "minecraft:stone"
+  },
+  "pattern": [
+    "SCS",
+    "SSS"
+  ],
+  "research": "paleontology",
+  "result": {
+    "id": "universe:skeleton_display"
+  }
+}

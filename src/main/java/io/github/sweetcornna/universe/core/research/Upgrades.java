@@ -40,6 +40,16 @@ public final class Upgrades {
     /** 批量建造：一次能放多大的蓝图。 */
     public static final String MASS_CONSTRUCTION = "mass_construction";
 
+    /** 能量护盾（ADR-0033 §二）：外骨骼护盾的容量每级 +20，五级。 */
+    public static final String ENERGY_SHIELD = "energy_shield";
+    /** 编队扩充（ADR-0033 §一）：地面编队从 1 个加到 2、3 个，两级。 */
+    public static final String SQUADRON_EXPANSION = "squadron_expansion";
+    /** 舰队扩充：太空舰队从 1 个加到 2 个，一级。 */
+    public static final String FLEET_EXPANSION = "fleet_expansion";
+    /** "能量护盾"每级加的护盾容量。 */
+    public static final int ENERGY_SHIELD_STEP = 20;
+    public static final int ENERGY_SHIELD_MAX = 5;
+
     /** 太阳帆原来的寿命：90 分钟（刻）。 */
     public static final long BASE_SAIL_LIFETIME = 108_000;
     /** 每级加的寿命：15 分钟（刻）。 */
@@ -147,6 +157,11 @@ public final class Upgrades {
         return BUILD_LIMIT[Math.clamp(level, 0, BUILD_LIMIT.length - 1)];
     }
 
+    /** "能量护盾"加的护盾容量。 */
+    public static int energyShield(int level) {
+        return ENERGY_SHIELD_STEP * Math.clamp(level, 0, ENERGY_SHIELD_MAX);
+    }
+
     /** 表里有的级数查表，之后每级加 step。 */
     private static long tail(long[] table, int level, long step) {
         int last = table.length - 1;
@@ -226,6 +241,9 @@ public final class Upgrades {
             case COMMUNICATION_CONTROL -> List.of(Integer.toString(drones(level)), Integer.toString(droneTasks(level)));
             case DRONE_ENGINE -> List.of(Integer.toString(droneSpeed(level)));
             case MASS_CONSTRUCTION -> List.of(buildLimit(level) == UNLIMITED ? "\u221e" : Integer.toString(buildLimit(level)));
+            case ENERGY_SHIELD -> List.of(Integer.toString(energyShield(level)));
+            case SQUADRON_EXPANSION -> List.of(Integer.toString(1 + Math.clamp(level, 0, 2)));
+            case FLEET_EXPANSION -> List.of(Integer.toString(1 + Math.clamp(level, 0, 1)));
             default -> List.of();
         };
     }

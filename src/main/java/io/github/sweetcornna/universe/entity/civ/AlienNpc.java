@@ -246,7 +246,12 @@ public class AlienNpc extends PathfinderMob {
             return InteractionResult.PASS;
         }
         if (player instanceof ServerPlayer serverPlayer) {
-            Dialogues.open(serverPlayer, this);
+            if (this.role() == NpcRole.FOSSIL_COLLECTOR) {
+                // 化石收藏家（ADR-0034 §三）：不聊天，直接打开收展品、换骨头的界面
+                io.github.sweetcornna.universe.fossil.FossilCollector.open(serverPlayer, this);
+            } else {
+                Dialogues.open(serverPlayer, this);
+            }
         }
         return InteractionResult.SUCCESS;
     }

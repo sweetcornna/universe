@@ -31,7 +31,8 @@ import net.minecraft.world.item.ItemStack;
  * 下面是背包。
  *
  * <p>客户端拿到部件的个数和容器的格数，自己算评级；数值按技术槽里现在放着的东西实时算，算法和服务端组装时一样。
- * 档次降下来以后多出来的格子里还有东西时照样画出来，能拿走，但不生效。
+ * 档次降下来以后多出来的格子里还有东西时照样画出来，能拿走，但不生效。技术槽排成 3 × 2，挨着的同种模块和超频格
+ * 的加成照 ADR-0034 §五 算，超频格是哪几格也从服务端发来。
  */
 public class ShipPanelMenu extends AbstractContainerMenu {
     public static final int WIDTH = 236;
@@ -49,21 +50,25 @@ public class ShipPanelMenu extends AbstractContainerMenu {
     private final Map<ShipPart, Integer> counts;
     private final int cargoSlots;
     private final boolean flying;
+    /** 驾驶台的超频格，按位记。 */
+    private final int supercharged;
     private final ShipRating rating;
     private final ShipStats base;
     private final Predicate<Player> valid;
 
     /** 客户端：部件的个数和格数从服务端发来，格子里的东西由菜单同步。 */
     public ShipPanelMenu(int id, Inventory inventory, RegistryFriendlyByteBuf buf) {
-        this(id, inventory, readCounts(buf), buf.readVarInt(), buf.readBoolean(), new SimpleContainer(HelmBlockEntity.SLOTS), player -> true);
+        this(id, inventory, readCounts(buf), buf.readVarInt(), buf.readBoolean(), buf.readVarInt(), new SimpleContainer(HelmBlockEntity.SLOTS),
+                player -> true);
     }
 
-    ShipPanelMenu(int id, Inventory inventory, Map<ShipPart, Integer> counts, int cargoSlots, boolean flying, Container tech,
+    ShipPanelMenu(int id, Inventory inventory, Map<ShipPart, Integer> counts, int cargoSlots, boolean flying, int supercharged, Container tech,
             Predicate<Player> valid) {
         super(UniverseMenus.SHIP_PANEL.get(), id);
         this.counts = counts;
         this.cargoSlots = cargoSlots;
         this.flying = flying;
+        this.supercharged = supercharged;
         this.rating = ShipRating.of(counts, cargoSlots);
         this.base = ShipStats.of(counts);
         this.valid = valid;
@@ -80,8 +85,8 @@ public class ShipPanelMenu extends AbstractContainerMenu {
         }
     }
 
-    /** 打开界面时发给客户端：部件的个数、容器的格数、是不是在飞。 */
-    static void writeOpenData(ShipStructure structure, boolean flying, RegistryFriendlyByteBuf buf) {
+    /** 打开界面时发给客户端：部件的个数、容器的格数、是不是在飞、超频格。 */
+    static void writeOpenData(ShipStructure structure, boolean flying, int supercharged, RegistryFriendlyByteBuf buf) {
         buf.writeVarInt(structure.counts().size());
         structure.counts().forEach((part, count) -> {
             buf.writeVarInt(part.ordinal());
@@ -89,6 +94,7 @@ public class ShipPanelMenu extends AbstractContainerMenu {
         });
         buf.writeVarInt(structure.cargoSlots());
         buf.writeBoolean(flying);
+        buf.writeVarInt(supercharged);
     }
 
     private static Map<ShipPart, Integer> readCounts(RegistryFriendlyByteBuf buf) {
@@ -117,6 +123,11 @@ public class ShipPanelMenu extends AbstractContainerMenu {
         return this.flying;
     }
 
+    /** 驾驶台的超频格，按位记（{@link io.github.sweetcornna.universe.core.tech.TechGrid}）。 */
+    public int supercharged() {
+        return this.supercharged;
+    }
+
     public Map<ShipPart, Integer> counts() {
         return this.counts;
     }
@@ -132,7 +143,7 @@ public class ShipPanelMenu extends AbstractContainerMenu {
         for (int i = 0; i < HelmBlockEntity.SLOTS; i++) {
             items.add(this.slots.get(i).getItem());
         }
-        return ShipTech.of(HelmBlockEntity.summary(items), this.rating.slots());
+        return ShipTech.of(HelmBlockEntity.summary(items, this.supercharged), this.rating.slots());
     }
 
     /** 加上评级和技术以后的性能。 */

@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "universe:block/settlement_turret",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "universe:block/settlement_turret"
+    },
+    "facing=south": {
+      "model": "universe:block/settlement_turret",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "universe:block/settlement_turret",
+      "y": 270
+    }
+  }
+}

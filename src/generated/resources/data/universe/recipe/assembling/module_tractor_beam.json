@@ -1,0 +1,28 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 2,
+      "ingredient": "universe:sentinel_scrap"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:survey_data"
+    },
+    {
+      "count": 4,
+      "ingredient": "universe:magnetic_coil"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:circuit_board"
+    }
+  ],
+  "research": "tractor_beam",
+  "results": [
+    {
+      "id": "universe:module_tractor_beam"
+    }
+  ],
+  "time": 100
+}

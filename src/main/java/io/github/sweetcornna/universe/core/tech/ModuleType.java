@@ -27,7 +27,9 @@ public enum ModuleType {
     HYPERDRIVE_BOOSTER(ModuleHost.SHIP, "超空间增幅", "Hyperdrive Booster", Stat.WARP_RANGE),
     DEFLECTOR(ModuleHost.SHIP, "偏导护盾", "Deflector Shield", Stat.SHIP_SHIELD),
     HULL_REINFORCEMENT(ModuleHost.SHIP, "船体加固", "Hull Reinforcement", Stat.HULL),
-    FIRE_CONTROL(ModuleHost.SHIP, "火控校准", "Fire Control", Stat.DAMAGE, Stat.FIRE_RATE);
+    FIRE_CONTROL(ModuleHost.SHIP, "火控校准", "Fire Control", Stat.DAMAGE, Stat.FIRE_RATE),
+    // ---- 深空（ADR-0034 §四）：装在驾驶台，开着时把附近的掉落物和碎片吸进货舱
+    TRACTOR_BEAM(ModuleHost.SHIP, "牵引光束", "Tractor Beam", Stat.TRACTOR_RANGE);
 
     /** 同一种模块最多几个叠加生效。 */
     public static final int MAX_STACK = 3;

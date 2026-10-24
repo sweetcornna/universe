@@ -67,6 +67,9 @@ final class UniverseBiomes {
         // 地标在兴趣点之后（ADR-0026）
         generation.addFeature(GenerationStep.Decoration.TOP_LAYER_MODIFICATION, PlanetLandmarkFeature.PLACED);
         generation.addFeature(GenerationStep.Decoration.TOP_LAYER_MODIFICATION, MiscOverworldPlacements.FREEZE_TOP_LAYER);
+        // 间歇泉（ADR-0034 §六）在积雪之后放，喷口上不压雪；是哪种星球、有没有水在放的时候判断
+        generation.addFeature(GenerationStep.Decoration.TOP_LAYER_MODIFICATION,
+                io.github.sweetcornna.universe.world.planet.gen.PlanetGeyserFeature.PLACED);
         return new Biome.BiomeBuilder()
                 .hasPrecipitation(kind.precipitation())
                 .temperature(kind.temperature())

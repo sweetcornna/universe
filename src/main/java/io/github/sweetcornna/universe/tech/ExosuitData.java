@@ -10,6 +10,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.github.sweetcornna.universe.core.survival.Shield;
 import io.github.sweetcornna.universe.core.tech.SuitSlots;
 import io.github.sweetcornna.universe.core.tech.TechBonuses;
+import io.github.sweetcornna.universe.core.tech.TechGrid;
 import io.github.sweetcornna.universe.core.tech.TechModule;
 import net.minecraft.core.NonNullList;
 import net.minecraft.world.item.ItemStack;
@@ -30,6 +31,8 @@ public final class ExosuitData {
     private final NonNullList<ItemStack> cargo = NonNullList.withSize(SuitSlots.CARGO_MAX, ItemStack.EMPTY);
     private final Shield shield = new Shield();
     private TechBonuses bonuses;
+    /** 算 {@link #bonuses} 时用的超频格。 */
+    private int bonusesSupercharged;
 
     public ExosuitData() {
     }
@@ -74,17 +77,20 @@ public final class ExosuitData {
         return this.shield;
     }
 
-    /** 已解锁的技术槽里装着的模块合起来的加成（缓存，模块变了要调 {@link #changed}）。 */
-    public TechBonuses bonuses() {
-        if (this.bonuses == null) {
-            List<TechModule> list = new ArrayList<>();
+    /**
+     * 已解锁的技术槽里装着的模块合起来的加成，算上相邻和超频（ADR-0034 §五；缓存，模块变了要调 {@link #changed}）。
+     *
+     * @param supercharged 这个玩家的超频格（{@link SuitTech#suitSupercharged}）
+     */
+    public TechBonuses bonuses(int supercharged) {
+        if (this.bonuses == null || this.bonusesSupercharged != supercharged) {
+            List<TechModule> slots = new ArrayList<>();
             for (int i = 0; i < this.techSlots(); i++) {
                 ItemStack stack = this.modules.get(i);
-                if (stack.getItem() instanceof TechModuleItem item) {
-                    list.add(item.module(stack));
-                }
+                slots.add(stack.getItem() instanceof TechModuleItem item ? item.module(stack) : null);
             }
-            this.bonuses = TechBonuses.of(list);
+            this.bonuses = TechGrid.EXOSUIT.bonuses(slots, supercharged);
+            this.bonusesSupercharged = supercharged;
         }
         return this.bonuses;
     }

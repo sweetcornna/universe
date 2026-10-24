@@ -34,6 +34,11 @@ import io.github.sweetcornna.universe.core.survival.VeinClusters;
 import io.github.sweetcornna.universe.core.tech.Stat;
 import io.github.sweetcornna.universe.core.tech.TechBonuses;
 import io.github.sweetcornna.universe.network.ScanResultPayload;
+import io.github.sweetcornna.universe.network.ScanFilterPayload;
+import io.github.sweetcornna.universe.factory.resource.VeinNodes;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
 import io.github.sweetcornna.universe.tech.SuitTech;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 import net.minecraft.world.phys.EntityHitResult;
@@ -155,6 +160,14 @@ public final class Multitool {
         } else if (mode == ToolMode.BLAZE_JAVELIN) {
             clearTarget(player, state);
             javelin(player, state, trigger, heatFactor, bonuses);
+        } else if (mode.weapon() != null && mode.weapon().attachment()) {
+            // 钓鱼器、引力抓取器不开火（ADR-0034 §一、§七），按着右键时做什么在各自的类里
+            clearTarget(player, state);
+            // M19 钓鱼（A）的按住右键的每一刻加在这行上面
+            if (mode == ToolMode.GRAVITY) {
+                io.github.sweetcornna.universe.gravity.GravityCoils.hold(player, trigger);
+            }
+            // M19 深空和重力枪（D）的按住右键的每一刻加在这行上面
         } else {
             clearTarget(player, state);
             boolean firing = state.heat.tick(trigger, heatFactor);
@@ -399,11 +412,12 @@ public final class Multitool {
         state.scanCooldown = (int) Math.round(SCAN_COOLDOWN * bonuses.scanCooldown());
         ServerLevel level = player.level();
         int radius = (int) Math.round(SCAN_RADIUS * bonuses.boost(Stat.SCAN_RADIUS));
-        List<ScanResultPayload.Marker> markers = scanOres(level, player.blockPosition(), radius);
+        Item filter = scanFilter(player);
+        List<ScanResultPayload.Marker> markers = scanOres(level, player.blockPosition(), radius, filter);
         int poiRadius = (int) Math.round(POI_RADIUS * bonuses.boost(Stat.SCAN_RADIUS));
         List<ScanResultPayload.PoiMarker> pois = scanPois(player, poiRadius);
         List<ScanResultPayload.LandmarkMarker> landmarks = scanLandmarks(player, poiRadius);
-        PacketDistributor.sendToPlayer(player, new ScanResultPayload(markers, pois, landmarks));
+        PacketDistributor.sendToPlayer(player, new ScanResultPayload(markers, pois, landmarks, filter != null));
         level.playSound(null, player.getX(), player.getY(), player.getZ(), GearSounds.SCAN, SoundSource.PLAYERS, 0.9F, 1.0F);
         for (int i = 0; i < 48; i++) {
             double angle = i * Math.PI * 2 / 48;
@@ -412,9 +426,42 @@ public final class Multitool {
         }
         int total = markers.stream().mapToInt(ScanResultPayload.Marker::count).sum();
         int sites = pois.size() + landmarks.size();
+        if (filter != null) {
+            player.sendOverlayMessage(Component.translatable("message.universe.multitool.scanned_filter", new ItemStack(filter).getHoverName(),
+                    markers.size(), total));
+            return;
+        }
         player.sendOverlayMessage(sites == 0
                 ? Component.translatable("message.universe.multitool.scanned", markers.size(), total)
                 : Component.translatable("message.universe.multitool.scanned_poi", markers.size(), total, sites));
+    }
+
+    // ---- 按矿种高亮（ADR-0033 §八）
+
+    /** 扫描只看哪种矿（矿石开采出来的物品），没选是空。 */
+    public static @Nullable Item scanFilter(ServerPlayer player) {
+        String id = player.getData(UniverseAttachments.SCAN_FILTER);
+        if (id.isEmpty()) {
+            return null;
+        }
+        Identifier key = Identifier.tryParse(id);
+        Item item = key == null ? Items.AIR : BuiltInRegistries.ITEM.getValue(key);
+        return item == Items.AIR ? null : item;
+    }
+
+    /** 客户端选了只看一种矿；空字符串是不筛。不是矿的物品不认。 */
+    public static void handleScanFilter(ScanFilterPayload payload, IPayloadContext context) {
+        if (!(context.player() instanceof ServerPlayer player)) {
+            return;
+        }
+        String id = payload.item();
+        if (!id.isEmpty()) {
+            Identifier key = Identifier.tryParse(id);
+            if (key == null || !VeinNodes.isOreDrop(BuiltInRegistries.ITEM.getValue(key))) {
+                return;
+            }
+        }
+        player.setData(UniverseAttachments.SCAN_FILTER, id);
     }
 
     /** 半径内的地标（ADR-0026），由近到远；和兴趣点一样由星球种子算位置。 */
@@ -439,6 +486,11 @@ public final class Multitool {
 
     /** 半径内已加载区块里的矿石，按矿脉合并，由近到远。 */
     public static List<ScanResultPayload.Marker> scanOres(ServerLevel level, BlockPos center, int radius) {
+        return scanOres(level, center, radius, null);
+    }
+
+    /** 同上，filter 不为空时只要开采出来是这种物品的矿石（ADR-0033 §八）。 */
+    public static List<ScanResultPayload.Marker> scanOres(ServerLevel level, BlockPos center, int radius, @Nullable Item filter) {
         VeinClusters clusters = new VeinClusters();
         List<Block> kinds = new ArrayList<>();
         Map<Block, Integer> ids = new HashMap<>();
@@ -461,7 +513,7 @@ public final class Multitool {
                         for (int z = 0; z < 16; z++) {
                             for (int x = 0; x < 16; x++) {
                                 BlockState state = section.getBlockState(x, y, z);
-                                if (!state.is(ORES)) {
+                                if (!state.is(ORES) || filter != null && !VeinNodes.yields(state, filter)) {
                                     continue;
                                 }
                                 int wx = (cx << 4) + x;

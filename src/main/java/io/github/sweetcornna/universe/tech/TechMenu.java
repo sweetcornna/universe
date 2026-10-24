@@ -1,5 +1,6 @@
 package io.github.sweetcornna.universe.tech;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import io.github.sweetcornna.universe.core.survival.MultitoolClass;
@@ -8,6 +9,8 @@ import io.github.sweetcornna.universe.core.tech.Grade;
 import io.github.sweetcornna.universe.core.tech.ModuleHost;
 import io.github.sweetcornna.universe.core.tech.ModuleType;
 import io.github.sweetcornna.universe.core.tech.SuitSlots;
+import io.github.sweetcornna.universe.core.tech.TechGrid;
+import io.github.sweetcornna.universe.core.tech.TechModule;
 import io.github.sweetcornna.universe.registry.UniverseAttachments;
 import io.github.sweetcornna.universe.registry.UniverseDataComponents;
 import io.github.sweetcornna.universe.registry.UniverseItems;
@@ -40,6 +43,9 @@ import net.minecraft.world.item.component.ItemContainerContents;
  *
  * <p>工具格按工具的档次有 4–8 个（ADR-0026），坏的格子放不进东西；拿着 {@value MultitoolSpec#REPAIR_SCRAP} 个守卫机残骸点一下
  * 坏格子修好一格（服务端判定，坏了几格用数据槽同步）。工具格还能装武器（{@link ToolWeaponItem}），同一种只能装一个。
+ *
+ * <p>两边的技术槽都是网格（外骨骼 4 × 3、工具 4 × 2），挨着的同种模块和超频格的加成照 ADR-0034 §五 算
+ * （{@link TechGrid}）；超频格是哪几格打开时从服务端发来。
  */
 public class TechMenu extends AbstractContainerMenu {
     public static final int SUIT_X = 8;
@@ -72,16 +78,20 @@ public class TechMenu extends AbstractContainerMenu {
     private final MultitoolSpec spec;
     /** 工具坏了几格：修好一格时服务端改，数据槽同步给客户端。 */
     private int broken;
+    /** 外骨骼和工具的超频格，按位记。 */
+    private final int suitSupercharged;
+    private final int toolSupercharged;
 
     /** 客户端：格数和工具的类型从服务端发来，内容由菜单同步。 */
     public TechMenu(int id, Inventory inventory, RegistryFriendlyByteBuf buf) {
         this(id, inventory, buf.readVarInt(), buf.readVarInt(), buf.readVarInt(),
                 new MultitoolSpec(MultitoolClass.values()[buf.readVarInt()], Grade.values()[buf.readVarInt()], buf.readVarInt()),
+                buf.readVarInt(), buf.readVarInt(),
                 new SimpleContainer(SuitSlots.TECH_MAX), new SimpleContainer(SuitSlots.TOOL_SLOTS), new SimpleContainer(SuitSlots.CARGO_MAX));
     }
 
-    private TechMenu(int id, Inventory inventory, int techSlots, int cargoSlots, int toolSlot, MultitoolSpec spec, Container suit, Container tool,
-            Container cargo) {
+    private TechMenu(int id, Inventory inventory, int techSlots, int cargoSlots, int toolSlot, MultitoolSpec spec, int suitSupercharged,
+            int toolSupercharged, Container suit, Container tool, Container cargo) {
         super(UniverseMenus.TECH.get(), id);
         this.player = inventory.player;
         this.techSlots = techSlots;
@@ -89,6 +99,8 @@ public class TechMenu extends AbstractContainerMenu {
         this.toolSlot = toolSlot;
         this.spec = spec;
         this.broken = spec.broken();
+        this.suitSupercharged = suitSupercharged;
+        this.toolSupercharged = toolSupercharged;
         for (int i = 0; i < SuitSlots.TECH_MAX; i++) {
             this.addSlot(new TechSlot(suit, i, SUIT_X + i % SUIT_COLUMNS * 18, SUIT_Y + i / SUIT_COLUMNS * 18, ModuleHost.EXOSUIT, techSlots, null));
         }
@@ -131,20 +143,24 @@ public class TechMenu extends AbstractContainerMenu {
         });
         Container tool;
         MultitoolSpec spec = MultitoolSpec.LEGACY;
+        int toolSupercharged = 0;
         if (toolSlot >= 0) {
             NonNullList<ItemStack> items = NonNullList.withSize(SuitSlots.TOOL_SLOTS, ItemStack.EMPTY);
             ItemStack stack = inventory.getItem(toolSlot);
+            SuitTech.seedTool(stack, player.getRandom());
             spec = MultitoolItem.spec(stack);
+            toolSupercharged = SuitTech.toolSupercharged(stack);
             stack.getOrDefault(UniverseDataComponents.TOOL_MODULES.get(), ItemContainerContents.EMPTY).copyInto(items);
             tool = new ListContainer(items, () -> inventory.getItem(toolSlot)
                     .set(UniverseDataComponents.TOOL_MODULES.get(), ItemContainerContents.fromItems(items)));
         } else {
             tool = new SimpleContainer(SuitSlots.TOOL_SLOTS);
         }
-        return new TechMenu(id, inventory, data.techSlots(), data.cargoSlots(), toolSlot, spec, suit, tool, cargo);
+        return new TechMenu(id, inventory, data.techSlots(), data.cargoSlots(), toolSlot, spec, SuitTech.suitSupercharged(player.getUUID()),
+                toolSupercharged, suit, tool, cargo);
     }
 
-    /** 打开界面时发给客户端的格数和工具的类型。 */
+    /** 打开界面时发给客户端的格数、工具的类型和两边的超频格。 */
     public static void writeOpenData(ServerPlayer player, RegistryFriendlyByteBuf buf) {
         ExosuitData data = player.getData(UniverseAttachments.EXOSUIT);
         int toolSlot = toolSlot(player);
@@ -155,6 +171,8 @@ public class TechMenu extends AbstractContainerMenu {
         buf.writeVarInt(spec.type().ordinal());
         buf.writeVarInt(spec.grade().ordinal());
         buf.writeVarInt(spec.broken());
+        buf.writeVarInt(SuitTech.suitSupercharged(player.getUUID()));
+        buf.writeVarInt(toolSlot >= 0 ? SuitTech.toolSupercharged(player.getInventory().getItem(toolSlot)) : 0);
     }
 
     private static int toolSlot(Player player) {
@@ -383,6 +401,41 @@ public class TechMenu extends AbstractContainerMenu {
         public boolean mayPlace(ItemStack stack) {
             return false;
         }
+    }
+
+    /** 外骨骼或工具的超频格，按位记（{@link TechGrid}）。 */
+    public int supercharged(ModuleHost host) {
+        return switch (host) {
+            case EXOSUIT -> this.suitSupercharged;
+            case MULTITOOL -> this.hasTool() ? this.toolSupercharged : 0;
+            case SHIP -> 0;
+        };
+    }
+
+    /**
+     * 外骨骼或工具每一格里生效的模块，按格子序号；空格、没解锁、坏了的格子和武器是 {@code null}。和服务端算加成时
+     * 用的格子一样（{@link ExosuitData#bonuses}、{@link SuitTech#tool}）。
+     */
+    public List<TechModule> moduleSlots(ModuleHost host) {
+        if (host == ModuleHost.SHIP) {
+            return List.of();
+        }
+        int start = host == ModuleHost.EXOSUIT ? SUIT_START : TOOL_START;
+        int size = TechGrid.of(host).size();
+        List<TechModule> modules = new ArrayList<>(size);
+        for (int i = 0; i < size; i++) {
+            Slot slot = this.slots.get(start + i);
+            ItemStack stack = slot.getItem();
+            boolean live = slot.isActive() && !(slot instanceof TechSlot tech && tech.broken());
+            modules.add(live && stack.getItem() instanceof TechModuleItem item ? item.module(stack) : null);
+        }
+        return modules;
+    }
+
+    /** 外骨骼或工具这一格在网格里的序号；不是这一边的格子时为 -1。 */
+    public static int gridIndex(ModuleHost host, int menuSlot) {
+        int start = host == ModuleHost.EXOSUIT ? SUIT_START : host == ModuleHost.MULTITOOL ? TOOL_START : -1;
+        return start >= 0 && menuSlot >= start && menuSlot < start + TechGrid.of(host).size() ? menuSlot - start : -1;
     }
 
     /** 技术槽里装着的模块和武器（界面统计加成用）。 */

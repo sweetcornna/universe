@@ -40,6 +40,8 @@ public final class UniverseGameRules {
     public static final DeferredHolder<GameRule<?>, GameRule<Integer>> RESOURCE_MULTIPLIER = integer("resource_multiplier", 100, 0, 1000);
     /** 星系里的恒星系数量：只在建世界时读一次（{@code rules.GalaxySettings}），以后改不了。 */
     public static final DeferredHolder<GameRule<?>, GameRule<Integer>> STAR_SYSTEMS = integer("star_systems", 64, 32, 256);
+    /** 局部危害的频率（ADR-0034 §六）：火山喷发、孢子云、尘卷风多久来一次，100 是默认；0 时这些和间歇泉都停下。 */
+    public static final DeferredHolder<GameRule<?>, GameRule<Integer>> LOCAL_HAZARDS = integer("local_hazards", 100, 0, 300);
 
     private UniverseGameRules() {
     }

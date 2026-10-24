@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "universe:item/module_tractor_beam",
+    "layer1": "universe:item/module_tractor_beam_overlay"
+  }
+}

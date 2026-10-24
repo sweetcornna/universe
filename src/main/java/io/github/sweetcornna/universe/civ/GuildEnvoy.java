@@ -21,6 +21,7 @@ import io.github.sweetcornna.universe.registry.UniverseDataComponents;
 import io.github.sweetcornna.universe.registry.UniverseItems;
 import io.github.sweetcornna.universe.registry.sound.WorldSounds;
 import io.github.sweetcornna.universe.trade.Credits;
+import io.github.sweetcornna.universe.world.planet.Planets;
 import io.github.sweetcornna.universe.world.space.SpaceDimensions;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
@@ -36,7 +37,8 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
  * 公会使者（ADR-0027 §六）：对话里按"公会任务"打开，每天 2 个这个公会的任务（和任务板共用"手上只能有一个"），
  * 档越高报酬越高；每升一档能来领一次礼物。使者是哪个公会的按 NPC 的种子定，空间站的使者不换人。
  *
- * <p>只有空间站上有使者，任务回这座空间站交付（在使者这儿或者任务板上都行）。除名的人使者不给任务、不给礼物。
+ * <p>空间站上有使者，聚落的市场里也有（ADR-0034 §二）；任务按使者所在的星系发，回这个星系的空间站交付（在使者这儿或者
+ * 任务板上都行）。除名的人使者不给任务、不给礼物。
  */
 public final class GuildEnvoy {
     private static final double REACH = 8;
@@ -51,7 +53,7 @@ public final class GuildEnvoy {
 
     /** 打开这个使者今天的任务。 */
     public static void open(ServerPlayer player, AlienNpc npc) {
-        if (SpaceDimensions.system(player.level().dimension()).isEmpty()) {
+        if (system(player).isEmpty()) {
             overlay(player, Component.translatable("message.universe.guild.no_missions"));
             return;
         }
@@ -63,7 +65,7 @@ public final class GuildEnvoy {
             return;
         }
         Entity entity = player.level().getEntity(payload.entity());
-        OptionalInt system = SpaceDimensions.system(player.level().dimension());
+        OptionalInt system = system(player);
         if (!(entity instanceof AlienNpc npc) || !npc.isAlive() || npc.role() != NpcRole.GUILD_ENVOY || system.isEmpty()
                 || player.distanceToSqr(npc) > REACH * REACH || !Standing.canTalk(Civ.state(player).tier(npc.race()))) {
             return;
@@ -137,7 +139,7 @@ public final class GuildEnvoy {
     }
 
     private static void send(ServerPlayer player, AlienNpc npc, boolean open) {
-        OptionalInt system = SpaceDimensions.system(player.level().dimension());
+        OptionalInt system = system(player);
         if (system.isEmpty() || player.connection == null) {
             return;
         }
@@ -151,6 +153,15 @@ public final class GuildEnvoy {
         PacketDistributor.sendToPlayer(player, new GuildEnvoyPayloads.Open(open, npc.getId(), npc.npcName().zh(), npc.npcName().en(),
                 guild.ordinal(), state.standing(guild), system.getAsInt(), offers, states, Missions.state(player).active(),
                 Missions.have(player), gift));
+    }
+
+    /** 使者在哪个星系：空间站在太空维度里，聚落市场的在星球上。 */
+    private static OptionalInt system(ServerPlayer player) {
+        OptionalInt space = SpaceDimensions.system(player.level().dimension());
+        if (space.isPresent()) {
+            return space;
+        }
+        return Planets.bodyId(player.level().dimension()).map(body -> OptionalInt.of(body.system())).orElse(OptionalInt.empty());
     }
 
     private static void overlay(ServerPlayer player, Component message) {

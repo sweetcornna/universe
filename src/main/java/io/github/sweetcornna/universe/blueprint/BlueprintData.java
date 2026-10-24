@@ -13,6 +13,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import io.github.sweetcornna.universe.Universe;
+import io.github.sweetcornna.universe.core.blueprint.BlueprintMeta;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.block.state.BlockState;
@@ -34,9 +35,10 @@ public final class BlueprintData extends SavedData {
      * @param positions 每个方块在蓝图里的位置（{@code BlueprintGeometry.pack}）
      * @param states    每个方块的状态在 palette 里的下标
      * @param settings  第几个方块 → 它的设备设置
+     * @param meta      作者、版本、说明（ADR-0033 §九），M18 以前存的蓝图没有作者、是第 1 版
      */
     public record Stored(String name, int sizeX, int sizeY, int sizeZ, List<BlockState> palette, int[] positions, int[] states,
-            Map<Integer, CompoundTag> settings) {
+            Map<Integer, CompoundTag> settings, Meta meta) {
         private static final Codec<int[]> INTS = Codec.INT_STREAM.xmap(IntStream::toArray, Arrays::stream);
         static final Codec<Stored> CODEC = RecordCodecBuilder.create(i -> i.group(
                 Codec.STRING.fieldOf("name").forGetter(Stored::name),
@@ -47,12 +49,33 @@ public final class BlueprintData extends SavedData {
                 INTS.fieldOf("positions").forGetter(Stored::positions),
                 INTS.fieldOf("states").forGetter(Stored::states),
                 Codec.unboundedMap(Codec.STRING, CompoundTag.CODEC).xmap(BlueprintData::intKeys, BlueprintData::stringKeys)
-                        .optionalFieldOf("settings", Map.of()).forGetter(Stored::settings)
+                        .optionalFieldOf("settings", Map.of()).forGetter(Stored::settings),
+                Meta.MAP_CODEC.forGetter(Stored::meta)
         ).apply(i, Stored::new));
 
         public int blocks() {
             return this.positions.length;
         }
+
+        public Stored withMeta(Meta meta) {
+            return new Stored(this.name, this.sizeX, this.sizeY, this.sizeZ, this.palette, this.positions, this.states, this.settings, meta);
+        }
+    }
+
+    /** 蓝图的作者（保存的玩家）、版本号（同名的再存一次加 1）、说明。 */
+    public record Meta(String author, int version, String description) {
+        public static final Meta NONE = new Meta("", 1, "");
+        static final com.mojang.serialization.MapCodec<Meta> MAP_CODEC = RecordCodecBuilder.mapCodec(i -> i.group(
+                Codec.STRING.optionalFieldOf("author", "").forGetter(Meta::author),
+                Codec.INT.optionalFieldOf("version", 1).forGetter(Meta::version),
+                Codec.STRING.optionalFieldOf("description", "").forGetter(Meta::description)
+        ).apply(i, Meta::new));
+        static final net.minecraft.network.codec.StreamCodec<io.netty.buffer.ByteBuf, Meta> STREAM_CODEC =
+                net.minecraft.network.codec.StreamCodec.composite(
+                        net.minecraft.network.codec.ByteBufCodecs.STRING_UTF8, Meta::author,
+                        net.minecraft.network.codec.ByteBufCodecs.VAR_INT, Meta::version,
+                        net.minecraft.network.codec.ByteBufCodecs.STRING_UTF8, Meta::description,
+                        Meta::new);
     }
 
     private static final Codec<BlueprintData> CODEC = RecordCodecBuilder.create(i -> i.group(
@@ -90,6 +113,12 @@ public final class BlueprintData extends SavedData {
 
     public @Nullable Stored get(int id) {
         return this.blueprints.get(id);
+    }
+
+    /** 同名的蓝图再存一次是第几版（ADR-0033 §九）。 */
+    public int nextVersion(String name) {
+        return BlueprintMeta.nextVersion(this.blueprints.values().stream().filter(stored -> stored.name().equals(name))
+                .map(stored -> stored.meta().version()).toList());
     }
 
     private static <V> Map<Integer, V> intKeys(Map<String, V> map) {

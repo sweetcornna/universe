@@ -276,7 +276,7 @@ public abstract class DarkFogSpaceUnit extends Mob implements DarkFogEnemy, Enem
             this.thinkCooldown = THINK_INTERVAL + this.random.nextInt(3);
         }
         LivingEntity target = this.focus;
-        if (target != null && (!target.isAlive() || target.level() != level || !DarkFogDamage.targetable(target))) {
+        if (target != null && (!target.isAlive() || target.level() != level || !DarkFogDamage.engageable(target))) {
             target = this.focus = null;
         }
         double jam = this.jamFactor();
@@ -306,13 +306,13 @@ public abstract class DarkFogSpaceUnit extends Mob implements DarkFogEnemy, Enem
             return;
         }
         LivingEntity attacker = this.getLastHurtByMob();
-        boolean grudge = attacker != null && attacker.isAlive() && DarkFogDamage.targetable(attacker) && attacker.level() == level
+        boolean grudge = attacker != null && attacker.isAlive() && DarkFogDamage.engageable(attacker) && attacker.level() == level
                 && this.tickCount - this.getLastHurtByMobTimestamp() < GRUDGE && aimPoint(attacker).distanceTo(pos) < kind.sight() * 1.5;
         if (grudge) {
             this.focus = attacker;
             return;
         }
-        Player best = null;
+        LivingEntity best = null;
         double bestDistance = kind.sight();
         for (Player player : level.players()) {
             if (!DarkFogDamage.targetable(player)) {
@@ -323,6 +323,15 @@ public abstract class DarkFogSpaceUnit extends Mob implements DarkFogEnemy, Enem
             if (distance < bestDistance && aim.distanceTo(this.home) < kind.leash()) {
                 bestDistance = distance;
                 best = player;
+            }
+        }
+        // 玩家的太空舰队也打
+        for (LivingEntity unit : DarkFogDamage.fleetUnits(level, pos, kind.sight())) {
+            Vec3 aim = aimPoint(unit);
+            double distance = aim.distanceTo(pos);
+            if (distance < bestDistance && aim.distanceTo(this.home) < kind.leash()) {
+                bestDistance = distance;
+                best = unit;
             }
         }
         this.focus = best;

@@ -1,0 +1,15 @@
+{
+  "type": "universe:research_shaped",
+  "key": {
+    "S": "minecraft:stone"
+  },
+  "pattern": [
+    "SSS",
+    " S ",
+    "SSS"
+  ],
+  "research": "paleontology",
+  "result": {
+    "id": "universe:fossil_pedestal"
+  }
+}

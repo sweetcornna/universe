@@ -40,7 +40,7 @@ import net.neoforged.neoforge.server.ServerLifecycleHooks;
  */
 public final class UniverseNetwork {
     /** 协议版本：任何包的格式改动都要加一，版本不同的客户端和服务端会拒绝连接。 */
-    private static final String PROTOCOL_VERSION = "32";
+    private static final String PROTOCOL_VERSION = "34";
 
     private UniverseNetwork() {
     }
@@ -165,6 +165,71 @@ public final class UniverseNetwork {
                 .playToServer(ShipCargoPayloads.Open.TYPE, ShipCargoPayloads.Open.STREAM_CODEC, ShipCargoPayloads::handleOpen)
                 .playToClient(ShipCargoPayloads.Jetpack.TYPE, ShipCargoPayloads.Jetpack.STREAM_CODEC)
                 // M17 收尾：飞船和星球（F）的包加在这行上面
+                .playToServer(io.github.sweetcornna.universe.mecha.fleet.FleetPayloads.Toggle.TYPE,
+                        io.github.sweetcornna.universe.mecha.fleet.FleetPayloads.Toggle.STREAM_CODEC,
+                        io.github.sweetcornna.universe.mecha.fleet.MechaFleet::handleToggle)
+                .playToServer(io.github.sweetcornna.universe.mecha.combat.CombatPayloads.Burst.TYPE,
+                        io.github.sweetcornna.universe.mecha.combat.CombatPayloads.Burst.STREAM_CODEC,
+                        io.github.sweetcornna.universe.mecha.combat.MechaCombat::handleBurst)
+                .playToClient(io.github.sweetcornna.universe.mecha.combat.CombatPayloads.BurstState.TYPE,
+                        io.github.sweetcornna.universe.mecha.combat.CombatPayloads.BurstState.STREAM_CODEC)
+                // M18 舰队和战斗（A）的包加在这行上面
+                .playToServer(ControlPanelPayloads.Request.TYPE, ControlPanelPayloads.Request.STREAM_CODEC,
+                        io.github.sweetcornna.universe.logistics.ControlPanel::handleRequest)
+                .playToClient(ControlPanelPayloads.Snapshot.TYPE, ControlPanelPayloads.Snapshot.STREAM_CODEC)
+                .playToServer(ControlPanelPayloads.StationEdit.TYPE, ControlPanelPayloads.StationEdit.STREAM_CODEC,
+                        io.github.sweetcornna.universe.logistics.ControlPanel::handleStation)
+                .playToServer(ControlPanelPayloads.DistributorEdit.TYPE, ControlPanelPayloads.DistributorEdit.STREAM_CODEC,
+                        io.github.sweetcornna.universe.logistics.ControlPanel::handleDistributor)
+                .playToServer(ControlPanelPayloads.RouteEdit.TYPE, ControlPanelPayloads.RouteEdit.STREAM_CODEC,
+                        io.github.sweetcornna.universe.logistics.ControlPanel::handleRoute)
+                // M18 物流调度（B）的包加在这行上面
+                .playToClient(StatsDetailPayload.TYPE, StatsDetailPayload.STREAM_CODEC)
+                .playToClient(StatsDysonPayload.TYPE, StatsDysonPayload.STREAM_CODEC)
+                .playToServer(DashboardEditPayload.TYPE, DashboardEditPayload.STREAM_CODEC,
+                        io.github.sweetcornna.universe.stats.Dashboards::handleEdit)
+                .playToClient(DashboardDataPayload.TYPE, DashboardDataPayload.STREAM_CODEC)
+                // M18 统计和研究（C）的包加在这行上面
+                .playToClient(VeinAlertPayload.TYPE, VeinAlertPayload.STREAM_CODEC)
+                .playToServer(ScanFilterPayload.TYPE, ScanFilterPayload.STREAM_CODEC,
+                        io.github.sweetcornna.universe.survival.Multitool::handleScanFilter)
+                .playToServer(BlueprintPayloads.StockRequest.TYPE, BlueprintPayloads.StockRequest.STREAM_CODEC, Blueprints::handleStock)
+                .playToClient(BlueprintPayloads.Stock.TYPE, BlueprintPayloads.Stock.STREAM_CODEC)
+                .playToClient(HoloBeaconPayloads.Open.TYPE, HoloBeaconPayloads.Open.STREAM_CODEC)
+                .playToServer(HoloBeaconPayloads.Update.TYPE, HoloBeaconPayloads.Update.STREAM_CODEC,
+                        io.github.sweetcornna.universe.beacon.HoloBeaconBlockEntity::handleUpdate)
+                .playToClient(HoloBeaconPayloads.All.TYPE, HoloBeaconPayloads.All.STREAM_CODEC)
+                .playToServer(MemoPayloads.Open.TYPE, MemoPayloads.Open.STREAM_CODEC, io.github.sweetcornna.universe.beacon.Memos::handleOpen)
+                .playToClient(MemoPayloads.Content.TYPE, MemoPayloads.Content.STREAM_CODEC)
+                .playToServer(MemoPayloads.Save.TYPE, MemoPayloads.Save.STREAM_CODEC, io.github.sweetcornna.universe.beacon.Memos::handleSave)
+                // M18 信标、透镜、矿脉、蓝图（D）的包加在这行上面
+                .playToClient(io.github.sweetcornna.universe.fishing.FishCaughtPayload.TYPE, io.github.sweetcornna.universe.fishing.FishCaughtPayload.STREAM_CODEC)
+                // M19 钓鱼（A）的包加在这行上面
+                .playToClient(io.github.sweetcornna.universe.settlement.SettlementPayloads.View.TYPE,
+                        io.github.sweetcornna.universe.settlement.SettlementPayloads.View.STREAM_CODEC)
+                .playToServer(io.github.sweetcornna.universe.settlement.SettlementPayloads.Action.TYPE,
+                        io.github.sweetcornna.universe.settlement.SettlementPayloads.Action.STREAM_CODEC,
+                        io.github.sweetcornna.universe.settlement.Settlements::handleAction)
+                // M19 聚落（B）的包加在这行上面
+                // M19 化石（C）的包加在这行上面
+                .playToClient(io.github.sweetcornna.universe.deepspace.DeepSpacePayloads.Sites.TYPE,
+                        io.github.sweetcornna.universe.deepspace.DeepSpacePayloads.Sites.STREAM_CODEC)
+                .playToServer(io.github.sweetcornna.universe.deepspace.DeepSpacePayloads.Eva.TYPE,
+                        io.github.sweetcornna.universe.deepspace.DeepSpacePayloads.Eva.STREAM_CODEC,
+                        io.github.sweetcornna.universe.entity.ship.ShipEntity::handleEva)
+                .playToServer(io.github.sweetcornna.universe.deepspace.DeepSpacePayloads.Tractor.TYPE,
+                        io.github.sweetcornna.universe.deepspace.DeepSpacePayloads.Tractor.STREAM_CODEC,
+                        io.github.sweetcornna.universe.entity.ship.ShipEntity::handleTractor)
+                .playToServer(io.github.sweetcornna.universe.gravity.GravityPayloads.Action.TYPE,
+                        io.github.sweetcornna.universe.gravity.GravityPayloads.Action.STREAM_CODEC,
+                        io.github.sweetcornna.universe.gravity.GravityCoils::handleAction)
+                .playToClient(io.github.sweetcornna.universe.gravity.GravityPayloads.Beam.TYPE,
+                        io.github.sweetcornna.universe.gravity.GravityPayloads.Beam.STREAM_CODEC)
+                .playToClient(io.github.sweetcornna.universe.gravity.GravityPayloads.Pushed.TYPE,
+                        io.github.sweetcornna.universe.gravity.GravityPayloads.Pushed.STREAM_CODEC)
+                // M19 深空和重力枪（D）的包加在这行上面
+                .playToClient(io.github.sweetcornna.universe.hazard.HazardPayloads.Shake.TYPE, io.github.sweetcornna.universe.hazard.HazardPayloads.Shake.STREAM_CODEC)
+                // M19 科技布局和局部危害（E）的包加在这行上面
                 ;
     }
 }

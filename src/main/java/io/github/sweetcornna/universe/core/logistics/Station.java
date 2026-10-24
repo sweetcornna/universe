@@ -1,7 +1,10 @@
 package io.github.sweetcornna.universe.core.logistics;
 
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -32,6 +35,13 @@ public final class Station {
     /** 轨道采集器每格每秒产出多少，以及攒着的零头。 */
     private final double[] production;
     private final double[] accumulated;
+    // ---- 调度的设置（ADR-0033 §三）
+    private String name = "";
+    private int number;
+    private int group;
+    private final Set<UUID> partners = new LinkedHashSet<>();
+    private boolean isolated;
+    private int minLoad;
 
     public Station(UUID id, StationKind kind, String dimension, int x, int y, int z, Location location) {
         this.id = id;
@@ -93,6 +103,125 @@ public final class Station {
             }
         }
         return -1;
+    }
+
+    /**
+     * 给一格设定物品（空串是清掉）：同一种物品不能占两格，格子里有货或有在途的货时不能换，采集器的格子是固定的。
+     * 站前的界面和控制面板都走这里。
+     *
+     * @return 改成了没有
+     */
+    public boolean assign(int index, String item) {
+        if (index < 0 || index >= this.slots.length || this.kind == StationKind.COLLECTOR) {
+            return false;
+        }
+        StationSlot slot = this.slots[index];
+        if (slot.item().equals(item)) {
+            return false;
+        }
+        if (!item.isEmpty() && this.slotOf(item) >= 0) {
+            return false;
+        }
+        return slot.setItem(item);
+    }
+
+    // ---- 调度的设置
+
+    /** 名字最长几个字，分组最大到几，最多几个点对点的伙伴。 */
+    public static final int MAX_NAME = 32;
+    public static final int MAX_GROUP = 9;
+    public static final int MAX_PARTNERS = 16;
+    /** 运输船最小载货量能选的百分数；0 是默认的 {@link LogisticsNetwork#VESSEL_MIN_LOAD} 个。 */
+    public static final int[] MIN_LOADS = {0, 10, 25, 50, 100};
+
+    /** 玩家起的名字；空的时候界面上显示"种类 + 编号"。 */
+    public String name() {
+        return this.name;
+    }
+
+    public void setName(String name) {
+        String trimmed = name.strip();
+        this.name = trimmed.length() > MAX_NAME ? trimmed.substring(0, MAX_NAME) : trimmed;
+    }
+
+    /** 同一种站里的编号，从 1 起；0 是还没编（加进账本时编上）。 */
+    public int number() {
+        return this.number;
+    }
+
+    public void setNumber(int number) {
+        this.number = Math.max(0, number);
+    }
+
+    /** 分组：0 不分组，1–{@link #MAX_GROUP}。 */
+    public int group() {
+        return this.group;
+    }
+
+    public void setGroup(int group) {
+        this.group = Math.max(0, Math.min(MAX_GROUP, group));
+    }
+
+    /** 点对点的伙伴。 */
+    public Set<UUID> partners() {
+        return Collections.unmodifiableSet(this.partners);
+    }
+
+    /** 加一个伙伴，返回加上了没有（不能是自己，不能超过 {@link #MAX_PARTNERS} 个）。 */
+    public boolean addPartner(UUID partner) {
+        if (partner.equals(this.id) || this.partners.size() >= MAX_PARTNERS) {
+            return false;
+        }
+        return this.partners.add(partner);
+    }
+
+    public boolean removePartner(UUID partner) {
+        return this.partners.remove(partner);
+    }
+
+    /** 和这座站是不是点对点的伙伴（任一方加了另一方就算）。 */
+    public boolean partneredWith(Station other) {
+        return this.partners.contains(other.id) || other.partners.contains(this.id);
+    }
+
+    /** 指定配对：只和伙伴、路线、同组的站往来，别的站普通配对时也不找它。 */
+    public boolean isolated() {
+        return this.isolated;
+    }
+
+    public void setIsolated(boolean isolated) {
+        this.isolated = isolated;
+    }
+
+    /** 运输船最小载货量的百分数（{@link #MIN_LOADS} 里的一个）。 */
+    public int minLoad() {
+        return this.minLoad;
+    }
+
+    public void setMinLoad(int percent) {
+        int best = 0;
+        for (int option : MIN_LOADS) {
+            if (Math.abs(option - percent) < Math.abs(best - percent)) {
+                best = option;
+            }
+        }
+        this.minLoad = best;
+    }
+
+    /** 换到下一档最小载货量。 */
+    public void cycleMinLoad() {
+        for (int i = 0; i < MIN_LOADS.length; i++) {
+            if (MIN_LOADS[i] == this.minLoad) {
+                this.minLoad = MIN_LOADS[(i + 1) % MIN_LOADS.length];
+                return;
+            }
+        }
+        this.minLoad = 0;
+    }
+
+    /** 这座站派出的运输船至少装几个才走（{@code capacity} 是一艘的容量）。 */
+    public int vesselMinLoad(int capacity) {
+        return this.minLoad == 0 ? LogisticsNetwork.VESSEL_MIN_LOAD : Math.max(1, (capacity * this.minLoad + 99) / 100);
     }
 
     // ---- 载具

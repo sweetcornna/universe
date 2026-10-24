@@ -9,7 +9,7 @@ import java.util.Map;
  * 没有配方的东西（原油、水、氢、重氢、临界光子）和探索得到的东西也在这里定价。
  */
 public final class RawValues {
-    public static final Map<String, Double> DEFAULT = Map.ofEntries(
+    public static final Map<String, Double> DEFAULT = withExtras(Map.ofEntries(
             // 原版：采来的
             Map.entry("minecraft:raw_iron", 4.0),
             Map.entry("minecraft:raw_copper", 4.0),
@@ -118,7 +118,22 @@ public final class RawValues {
             Map.entry("universe:warp_drive_mk2", 2200.0),
             Map.entry("universe:alloy_hull_plating", 24.0),
             // 应急信号接收器只在空间站买、在废弃货船里找到（ADR-0024）
-            Map.entry("universe:emergency_receiver", 500.0));
+            Map.entry("universe:emergency_receiver", 500.0)));
+
+    /** 后来各个玩法自己的价钱表（鱼、骨头、打捞物……）并进来，表在各自的 core 类里。 */
+    private static Map<String, Double> withExtras(Map<String, Double> base) {
+        Map<String, Double> all = new java.util.HashMap<>(base);
+        all.putAll(io.github.sweetcornna.universe.core.fishing.FishValues.prices());
+        // M19 钓鱼（A）的价钱（all.putAll(...)）加在这行上面
+        // M19 聚落（B）的价钱（all.putAll(...)）加在这行上面
+        // 40 种骨头（ADR-0034 §三）：常见 300、少见 700、稀有 1500、奇异种 3500，再按部位乘（头骨最贵、尾骨最便宜）
+        all.putAll(io.github.sweetcornna.universe.core.fossil.CollectorTrade.rawValues());
+        // M19 化石（C）的价钱（all.putAll(...)）加在这行上面
+        all.putAll(io.github.sweetcornna.universe.core.deepspace.DeepSpacePrices.VALUES);
+        // M19 深空和重力枪（D）的价钱（all.putAll(...)）加在这行上面
+        // M19 科技布局和局部危害（E）的价钱（all.putAll(...)）加在这行上面
+        return Map.copyOf(all);
+    }
 
     private RawValues() {
     }

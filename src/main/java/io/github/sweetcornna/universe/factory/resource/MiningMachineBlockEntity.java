@@ -7,7 +7,9 @@ import java.util.Map;
 
 import org.jspecify.annotations.Nullable;
 
+import io.github.sweetcornna.universe.blueprint.BlueprintSettings;
 import io.github.sweetcornna.universe.core.factory.Throughput;
+import io.github.sweetcornna.universe.core.factory.VeinWarnings;
 import io.github.sweetcornna.universe.core.factory.Veins;
 import io.github.sweetcornna.universe.core.research.Upgrades;
 import io.github.sweetcornna.universe.factory.MachineBlock;
@@ -19,7 +21,9 @@ import io.github.sweetcornna.universe.registry.UniverseMenus;
 import io.github.sweetcornna.universe.stats.ProductionLog;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -33,8 +37,10 @@ import net.minecraft.world.level.storage.ValueOutput;
  * 范围里有几种矿时只采节点最多的那种（和戴森球计划一样，一台只出一种）。
  *
  * <p>高级采矿机（ADR-0015）也是这个类：范围 7×7，每个节点的速度翻倍，2.94 MW。
+ *
+ * <p>矿点采完时按界面里选的枯竭提醒（ADR-0033 §八）告诉这个维度里的玩家，见 {@link VeinWarnings}、{@link VeinAlerts}。
  */
-public class MiningMachineBlockEntity extends MachineBlockEntity {
+public class MiningMachineBlockEntity extends MachineBlockEntity implements MachineMenu.ButtonTarget, BlueprintSettings {
     /** 戴森球计划的 420 kW。 */
     public static final long POWER = 21;
     /** 每个节点多少刻出一个。 */
@@ -54,7 +60,10 @@ public class MiningMachineBlockEntity extends MachineBlockEntity {
     /** 范围的半径、速度（百分数），界面算产量用。 */
     public static final int AREA = BASE_DATA + 5;
     public static final int SPEED = BASE_DATA + 6;
-    public static final int DATA_COUNT = BASE_DATA + 7;
+    /** 枯竭提醒，{@link VeinWarnings.Mode} 的序号。 */
+    public static final int WARNING = BASE_DATA + 7;
+    public static final int DATA_COUNT = BASE_DATA + 8;
+    public static final int BUTTON_WARNING = 0;
 
     private final long power;
     private final int radius;
@@ -68,6 +77,9 @@ public class MiningMachineBlockEntity extends MachineBlockEntity {
     private double progress;
     private boolean active;
     private double supplied;
+    private VeinWarnings.Mode warning = VeinWarnings.DEFAULT;
+    /** 上次提醒的游戏时间，没提醒过是 -1。 */
+    private long warnedAt = -1;
 
     public MiningMachineBlockEntity(BlockPos pos, BlockState state) {
         this(UniverseBlockEntities.MINING_MACHINE.get(), pos, state, POWER, RADIUS, 1);
@@ -135,6 +147,12 @@ public class MiningMachineBlockEntity extends MachineBlockEntity {
         if (level.getRandom().nextDouble() < Upgrades.veinConsumption(Research.level(level, Upgrades.VEIN_UTILIZATION))) {
             if (VeinNodes.extract(level, pos, node)) {
                 this.nodes.remove(pos);
+                Item depleted = node.item();
+                if (this.nodes.isEmpty()) {
+                    // 这种矿采光了：范围里还有别的矿就接着采，没有了才算全部采完
+                    this.scan();
+                }
+                this.depleted(level, depleted, this.nodes.isEmpty());
             }
             if (this.remaining < Veins.INFINITE) {
                 this.remaining = Math.max(0, this.remaining - 1);
@@ -142,6 +160,52 @@ public class MiningMachineBlockEntity extends MachineBlockEntity {
         }
         ProductionLog.produced(level, node.item(), 1);
         this.addOutput(OUTPUT, new ItemStack(node.item()));
+    }
+
+    /**
+     * 一个矿点采完了：按枯竭提醒的设置和 5 分钟的限流决定要不要告诉这个维度里的玩家。
+     *
+     * @param all 范围里一个矿点都不剩了
+     * @return 发了提醒
+     */
+    public boolean depleted(ServerLevel level, Item item, boolean all) {
+        if (!VeinWarnings.warn(this.warning, true, all) || !VeinWarnings.cooledDown(this.warnedAt, level.getGameTime())) {
+            return false;
+        }
+        this.warnedAt = level.getGameTime();
+        this.setChanged();
+        VeinAlerts.send(level, this.worldPosition, this.getBlockState().getBlock(), item, all);
+        return true;
+    }
+
+    public VeinWarnings.Mode warning() {
+        return this.warning;
+    }
+
+    public void setWarning(VeinWarnings.Mode warning) {
+        this.warning = warning;
+        this.setChanged();
+    }
+
+    @Override
+    public boolean clickButton(ServerPlayer player, int button) {
+        if (button != BUTTON_WARNING) {
+            return false;
+        }
+        this.setWarning(this.warning.next());
+        return true;
+    }
+
+    @Override
+    public CompoundTag blueprintSettings() {
+        CompoundTag tag = new CompoundTag();
+        tag.putString("Warning", this.warning.key());
+        return tag;
+    }
+
+    @Override
+    public void applyBlueprintSettings(CompoundTag settings) {
+        this.setWarning(VeinWarnings.Mode.byKey(settings.getStringOr("Warning", VeinWarnings.DEFAULT.key())));
     }
 
     /** 设备本身的速度乘上矿脉利用的加成。 */
@@ -212,7 +276,7 @@ public class MiningMachineBlockEntity extends MachineBlockEntity {
         return DATA_COUNT;
     }
 
-    /** 节点数、开采的物品（注册表序号 + 1，没有是 0，拆两格）、剩余储量（拆两格）、范围的边长、速度百分数。 */
+    /** 节点数、开采的物品（注册表序号 + 1，没有是 0，拆两格）、剩余储量（拆两格）、范围的边长、速度百分数、枯竭提醒。 */
     @Override
     protected int dataValue(int index) {
         int item = this.mined == null ? 0 : BuiltInRegistries.ITEM.getId(this.mined) + 1;
@@ -225,6 +289,7 @@ public class MiningMachineBlockEntity extends MachineBlockEntity {
             case REMAINING + 1 -> MachineMenu.high(remaining);
             case AREA -> this.radius * 2 + 1;
             case SPEED -> (int) Math.round(this.effectiveSpeed() * 100);
+            case WARNING -> this.warning.ordinal();
             default -> super.dataValue(index);
         };
     }
@@ -235,11 +300,15 @@ public class MiningMachineBlockEntity extends MachineBlockEntity {
     protected void loadAdditional(ValueInput input) {
         super.loadAdditional(input);
         this.progress = input.getDoubleOr("Progress", 0);
+        this.warning = VeinWarnings.Mode.byKey(input.getStringOr("Warning", VeinWarnings.DEFAULT.key()));
+        this.warnedAt = input.getLongOr("WarnedAt", -1);
     }
 
     @Override
     protected void saveAdditional(ValueOutput output) {
         super.saveAdditional(output);
         output.putDouble("Progress", this.progress);
+        output.putString("Warning", this.warning.key());
+        output.putLong("WarnedAt", this.warnedAt);
     }
 }

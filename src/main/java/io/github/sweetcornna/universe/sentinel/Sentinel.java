@@ -62,6 +62,8 @@ public class Sentinel extends PathfinderMob {
     private int scanCooldown = 100;
     /** 撤退（脱离通缉后）：往上飞一段时间后消失；-1 表示没在撤退。 */
     private int retreat = -1;
+    /** 被引力抓取器抓着、扔出去以后晕着的刻数（ADR-0034 §七）：不飞不开火，往下掉。 */
+    private int stunned;
 
     public Sentinel(EntityType<? extends Sentinel> type, Level level) {
         super(type, level);
@@ -119,6 +121,26 @@ public class Sentinel extends PathfinderMob {
         }
     }
 
+    /** 晕 {@code ticks} 刻（已经在晕的取长的）。 */
+    public void stun(int ticks) {
+        this.stunned = Math.max(this.stunned, ticks);
+    }
+
+    public boolean stunned() {
+        return this.stunned > 0;
+    }
+
+    /** 被玩家的引力抓取器抓住了：算挨打（通缉），抓着的时候一直晕着。 */
+    public void grabbed(ServerPlayer by) {
+        this.stun(10);
+        Sentinels.onAttacked(by, this);
+    }
+
+    @Override
+    protected boolean isImmobile() {
+        return super.isImmobile() || this.stunned > 0;
+    }
+
     /** 脱离通缉后撤退：往上飞走，几秒后消失。 */
     public void retreat() {
         this.setHostile(null);
@@ -163,6 +185,17 @@ public class Sentinel extends PathfinderMob {
                 this.level().addParticle(new DustParticleOptions(this.isHostile() ? 0xFF6A4A : 0x9AD8FF, 0.5F),
                         this.getX() + (this.random.nextDouble() - 0.5) * spread, this.getY() + 0.05,
                         this.getZ() + (this.random.nextDouble() - 0.5) * spread, 0, -0.05, 0);
+            }
+            return;
+        }
+        if (this.stunned > 0) {
+            // 晕着：推进器熄了往下掉，机身冒电火花
+            this.stunned--;
+            if (this.kind().flying()) {
+                this.setNoGravity(this.stunned == 0);
+            }
+            if (this.tickCount % 4 == 0 && this.level() instanceof ServerLevel level) {
+                level.sendParticles(ParticleTypes.ELECTRIC_SPARK, this.getX(), this.getY(0.5), this.getZ(), 3, 0.25, 0.2, 0.25, 0.15);
             }
             return;
         }

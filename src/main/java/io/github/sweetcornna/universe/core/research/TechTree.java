@@ -253,6 +253,39 @@ public final class TechTree {
             // 电网接口（ADR-0030 §三）：有了蓄电器就能和别的模组的电接上
             Tech.lab("grid_interface", List.of("energy_storage"), List.of(BLUE, RED), 30, items("grid_interface")),
             // M17 收尾：互通（C）的科技（每条末尾带逗号）加在这行上面
+            // 机甲的舰队（ADR-0033 §一）：激光炮塔以后开地面编队和原型机，攻击无人机、驱逐舰要等离子炮塔
+            Tech.lab("ground_squadron", List.of("laser_turret"), List.of(BLUE, RED), 80, items("prototype")),
+            // 精准无人机要钛合金（放在钛合金后面一列，第 10 列已经排满）
+            Tech.lab("precision_drones", List.of("ground_squadron", "titanium_alloy"), List.of(BLUE, RED, YELLOW), 120,
+                    items("precision_drone")),
+            Tech.lab("attack_drones", List.of("precision_drones", "plasma_turret"), List.of(BLUE, RED, YELLOW, PURPLE, DARK_FOG), 180,
+                    items("attack_drone")),
+            Tech.lab("space_fleet", List.of("precision_drones", "interstellar_logistics"), List.of(BLUE, RED, YELLOW, PURPLE), 180,
+                    items("corvette")),
+            Tech.lab("destroyers", List.of("space_fleet", "plasma_turret"), List.of(BLUE, RED, YELLOW, PURPLE, DARK_FOG), 260,
+                    items("destroyer")),
+            // M18 舰队和战斗（A）的科技（每条末尾带逗号）加在这行上面
+            // M18 物流调度（B）的科技（每条末尾带逗号）加在这行上面
+            // M18 统计和研究（C）的科技（每条末尾带逗号）加在这行上面
+            // 全息信标（ADR-0033 §六）：基础装配以后就能做；黑雾透镜（§七）要引力透镜和黑雾分析
+            Tech.lab("holo_beacon", List.of("basic_assembling"), List.of(BLUE), 20, items("holo_beacon")),
+            Tech.lab("dark_fog_lens", List.of("gravitational_wave_refraction", "dark_fog_analysis"), List.of(BLUE, RED, YELLOW, PURPLE, DARK_FOG),
+                    200, items("dark_fog_lens")),
+            // M18 信标、透镜、矿脉、蓝图（D）的科技（每条末尾带逗号）加在这行上面
+            // 钓鱼（ADR-0034 §一）：电磁学之后，交异星鱼肉和磁线圈；解锁钓鱼器、捕鱼笼、六种鱼饵和海鲜菜
+            Tech.handIn("fishing", List.of("electromagnetism"), List.of(cost("alien_fish", 4), cost("magnetic_coil", 6)),
+                    items("fishing_rig", "fish_trap", "stink_bait", "spinner_lure", "deep_sinker", "glow_bait", "static_lure", "star_core_bait")),
+            // M19 钓鱼（A）的科技（每条末尾带逗号）加在这行上面
+            // M19 聚落（B）的科技（每条末尾带逗号）加在这行上面
+            // 古生物学（ADR-0034 §三）：交几块化石坑里挖的化石，开化石底座和骨架展台
+            Tech.handIn("paleontology", List.of("electromagnetism"), List.of(cost("shell_fossil", 4), cost("arthropod_fossil", 2)),
+                    items("fossil_pedestal", "skeleton_display")),
+            // M19 化石（C）的科技（每条末尾带逗号）加在这行上面
+            // 深空（ADR-0034 §四、§七）：牵引光束模块装在驾驶台；引力抓取器装进多功能工具，研究后在装配机里做
+            Tech.lab("tractor_beam", List.of("tech_modules"), List.of(BLUE), 40, items("module_tractor_beam")),
+            Tech.lab("gravity_coil", List.of("tractor_beam", "electromagnetic_drive"), List.of(BLUE, RED), 80, items("gravity_coil")),
+            // M19 深空和重力枪（D）的科技（每条末尾带逗号）加在这行上面
+            // M19 科技布局和局部危害（E）的科技（每条末尾带逗号）加在这行上面
             Tech.lab("gravity_missiles", List.of("supersonic_missiles", "gravity_matrix"), List.of(BLUE, RED, YELLOW, PURPLE, GREEN, DARK_FOG), 200,
                     items("gravity_missile_set"))),
             // 升级科技：前几级用低档矩阵，之后用白矩阵无限研究
@@ -313,7 +346,24 @@ public final class TechTree {
                             new Infinite(List.of(WHITE), 300, 100)),
                     new Upgrade(Upgrades.MASS_CONSTRUCTION, NS + "blueprint", List.of("blueprint"), List.of(
                             tier(60, BLUE), tier(120, BLUE, RED), tier(200, BLUE, RED, YELLOW), tier(300, BLUE, RED, YELLOW, PURPLE)),
-                            null)));
+                            null),
+                    // M18（ADR-0033）：机甲的能量护盾，地面编队和太空舰队的个数
+                    new Upgrade(Upgrades.ENERGY_SHIELD, NS + "exosuit_chestplate", List.of("electromagnetic_matrix"), List.of(
+                            tier(40, BLUE), tier(80, BLUE, RED), tier(120, BLUE, RED, YELLOW), tier(160, BLUE, RED, YELLOW, PURPLE),
+                            tier(200, BLUE, RED, YELLOW, PURPLE, GREEN)),
+                            null),
+                    new Upgrade(Upgrades.SQUADRON_EXPANSION, NS + "prototype", List.of("ground_squadron"), List.of(
+                            tier(150, BLUE, RED, YELLOW), tier(240, BLUE, RED, YELLOW, PURPLE)),
+                            null),
+                    new Upgrade(Upgrades.FLEET_EXPANSION, NS + "corvette", List.of("space_fleet"), List.of(
+                            tier(300, BLUE, RED, YELLOW, PURPLE, GREEN)),
+                            null)
+                    // M19 钓鱼（A）的升级（每条开头带逗号）加在这行上面
+                    // M19 聚落（B）的升级（每条开头带逗号）加在这行上面
+                    // M19 化石（C）的升级（每条开头带逗号）加在这行上面
+                    // M19 深空和重力枪（D）的升级（每条开头带逗号）加在这行上面
+                    // M19 科技布局和局部危害（E）的升级（每条开头带逗号）加在这行上面
+            ));
 
     private final List<Tech> techs;
     private final Map<String, Tech> byId;

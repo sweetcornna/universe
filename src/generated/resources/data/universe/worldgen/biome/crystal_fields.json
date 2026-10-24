@@ -38,7 +38,8 @@
     [
       "universe:planet_poi",
       "universe:planet_landmark",
-      "minecraft:freeze_top_layer"
+      "minecraft:freeze_top_layer",
+      "universe:planet_geyser"
     ]
   ],
   "has_precipitation": false,

@@ -1,0 +1,23 @@
+{
+  "type": "universe:nutrient",
+  "ingredients": [
+    {
+      "count": 2,
+      "ingredient": "#universe:fish"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:kelp_pod"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:water"
+    }
+  ],
+  "results": [
+    {
+      "id": "universe:deep_sea_stew"
+    }
+  ],
+  "time": 100
+}

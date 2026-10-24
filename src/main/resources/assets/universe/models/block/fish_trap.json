@@ -1,0 +1,219 @@
+{
+    "parent": "minecraft:block/block",
+    "ambientocclusion": false,
+    "textures": {
+        "particle": "universe:block/fish_trap_side",
+        "side": "universe:block/fish_trap_side",
+        "top": "universe:block/fish_trap_top",
+        "bottom": "universe:block/fish_trap_bottom"
+    },
+    "elements": [
+        {
+            "from": [
+                1,
+                0,
+                1
+            ],
+            "to": [
+                15,
+                12,
+                15
+            ],
+            "faces": {
+                "north": {
+                    "uv": [
+                        1,
+                        4,
+                        15,
+                        16
+                    ],
+                    "texture": "#side"
+                },
+                "south": {
+                    "uv": [
+                        1,
+                        4,
+                        15,
+                        16
+                    ],
+                    "texture": "#side"
+                },
+                "east": {
+                    "uv": [
+                        1,
+                        4,
+                        15,
+                        16
+                    ],
+                    "texture": "#side"
+                },
+                "west": {
+                    "uv": [
+                        1,
+                        4,
+                        15,
+                        16
+                    ],
+                    "texture": "#side"
+                },
+                "up": {
+                    "uv": [
+                        1,
+                        1,
+                        15,
+                        15
+                    ],
+                    "texture": "#top"
+                },
+                "down": {
+                    "uv": [
+                        1,
+                        1,
+                        15,
+                        15
+                    ],
+                    "texture": "#bottom",
+                    "cullface": "down"
+                }
+            }
+        },
+        {
+            "from": [
+                1,
+                0,
+                1.05
+            ],
+            "to": [
+                15,
+                12,
+                1.05
+            ],
+            "faces": {
+                "south": {
+                    "uv": [
+                        1,
+                        4,
+                        15,
+                        16
+                    ],
+                    "texture": "#side"
+                }
+            }
+        },
+        {
+            "from": [
+                1,
+                0,
+                14.95
+            ],
+            "to": [
+                15,
+                12,
+                14.95
+            ],
+            "faces": {
+                "north": {
+                    "uv": [
+                        1,
+                        4,
+                        15,
+                        16
+                    ],
+                    "texture": "#side"
+                }
+            }
+        },
+        {
+            "from": [
+                1.05,
+                0,
+                1
+            ],
+            "to": [
+                1.05,
+                12,
+                15
+            ],
+            "faces": {
+                "east": {
+                    "uv": [
+                        1,
+                        4,
+                        15,
+                        16
+                    ],
+                    "texture": "#side"
+                }
+            }
+        },
+        {
+            "from": [
+                14.95,
+                0,
+                1
+            ],
+            "to": [
+                14.95,
+                12,
+                15
+            ],
+            "faces": {
+                "west": {
+                    "uv": [
+                        1,
+                        4,
+                        15,
+                        16
+                    ],
+                    "texture": "#side"
+                }
+            }
+        },
+        {
+            "from": [
+                1,
+                11.95,
+                1
+            ],
+            "to": [
+                15,
+                11.95,
+                15
+            ],
+            "faces": {
+                "down": {
+                    "uv": [
+                        1,
+                        1,
+                        15,
+                        15
+                    ],
+                    "texture": "#top"
+                }
+            }
+        },
+        {
+            "from": [
+                1,
+                0.05,
+                1
+            ],
+            "to": [
+                15,
+                0.05,
+                15
+            ],
+            "faces": {
+                "up": {
+                    "uv": [
+                        1,
+                        1,
+                        15,
+                        15
+                    ],
+                    "texture": "#bottom"
+                }
+            }
+        }
+    ]
+}

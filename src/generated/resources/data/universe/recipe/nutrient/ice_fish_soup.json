@@ -1,0 +1,23 @@
+{
+  "type": "universe:nutrient",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "#universe:fish"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:solar_sauce"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:water"
+    }
+  ],
+  "results": [
+    {
+      "id": "universe:ice_fish_soup"
+    }
+  ],
+  "time": 100
+}

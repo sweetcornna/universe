@@ -44,6 +44,10 @@ public final class UniverseKeys {
     public static final KeyMapping SHIP_CARGO = new KeyMapping("key.universe.ship_cargo", InputConstants.Type.KEYBOARD, InputConstants.KEY_H,
             CATEGORY);
 
+    /** 物流控制面板：全服的物流站、配送器和物品路线（默认 I，ADR-0033 §三）。 */
+    public static final KeyMapping CONTROL_PANEL = new KeyMapping("key.universe.control_panel", InputConstants.Type.KEYBOARD,
+            InputConstants.KEY_I, CATEGORY);
+
     private UniverseKeys() {
     }
 
@@ -62,6 +66,22 @@ public final class UniverseKeys {
             event.register(MECHA);
             event.register(SUMMON);
             event.register(SHIP_CARGO);
+            event.register(io.github.sweetcornna.universe.client.mecha.CombatClient.FLEET);
+            event.register(io.github.sweetcornna.universe.client.mecha.CombatClient.SHIELD_BURST);
+            // M18 舰队和战斗（A）的按键注册加在这行上面
+            event.register(CONTROL_PANEL);
+            // M18 物流调度（B）的按键注册加在这行上面
+            event.register(io.github.sweetcornna.universe.client.stats.DashboardHud.EDIT_KEY);
+            // M18 统计和研究（C）的按键注册加在这行上面
+            // M18 信标、透镜、矿脉、蓝图（D）的按键注册加在这行上面
+            // M19 钓鱼（A）的按键注册加在这行上面
+            event.register(io.github.sweetcornna.universe.client.settlement.SettlementClient.SETTLEMENTS);
+            // M19 聚落（B）的按键注册加在这行上面
+            // M19 化石（C）的按键注册加在这行上面
+            event.register(io.github.sweetcornna.universe.client.deepspace.DeepSpaceClient.EVA);
+            event.register(io.github.sweetcornna.universe.client.deepspace.DeepSpaceClient.TRACTOR);
+            // M19 深空和重力枪（D）的按键注册加在这行上面
+            // M19 科技布局和局部危害（E）的按键注册加在这行上面
         });
     }
 }

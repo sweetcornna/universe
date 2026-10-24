@@ -3,12 +3,17 @@ package io.github.sweetcornna.universe.tech;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.UUID;
 
 import io.github.sweetcornna.universe.Universe;
+import io.github.sweetcornna.universe.core.procgen.Seeds;
 import io.github.sweetcornna.universe.core.survival.Shield;
 import io.github.sweetcornna.universe.core.tech.Stat;
+import io.github.sweetcornna.universe.core.tech.SuitSlots;
 import io.github.sweetcornna.universe.core.tech.TechBonuses;
+import io.github.sweetcornna.universe.core.tech.TechGrid;
 import io.github.sweetcornna.universe.core.tech.TechModule;
+import io.github.sweetcornna.universe.mecha.combat.MechaCombat;
 import io.github.sweetcornna.universe.network.OpenTechPayload;
 import io.github.sweetcornna.universe.perf.ServerPerf;
 import io.github.sweetcornna.universe.registry.UniverseAttachments;
@@ -16,6 +21,7 @@ import io.github.sweetcornna.universe.registry.UniverseDataComponents;
 import io.github.sweetcornna.universe.survival.MultitoolItem;
 import io.github.sweetcornna.universe.registry.UniverseItems;
 import io.github.sweetcornna.universe.registry.sound.GearSounds;
+import net.minecraft.core.NonNullList;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
@@ -23,6 +29,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.tags.DamageTypeTags;
+import net.minecraft.util.RandomSource;
 import net.minecraft.util.TriState;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.damagesource.DamageSource;
@@ -48,6 +55,9 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
  * 外骨骼和多功能工具的模块在服务端的效果（ADR-0014）：动力伺服的移速、个人护盾、货舱（背包满了自动收进货舱，
  * 死亡时掉出来），以及打开技术配置界面。生命维持、危害、喷气背包、采矿激光、扫描的加成在各自的代码里读
  * {@link #suit}、{@link #tool}。
+ *
+ * <p>两边的加成都算上格子的相邻和超频（ADR-0034 §五）：外骨骼的超频格按玩家定，多功能工具的按工具自己的种子
+ * （{@link UniverseDataComponents#TOOL_SUPERCHARGE}，第一次打开技术配置界面时定下）。
  */
 public final class SuitTech {
     private static final Identifier SERVO = Universe.id("servo");
@@ -86,43 +96,62 @@ public final class SuitTech {
         if (!player.getItemBySlot(EquipmentSlot.CHEST).is(UniverseItems.EXOSUIT_CHESTPLATE)) {
             return TechBonuses.NONE;
         }
-        return player.getData(UniverseAttachments.EXOSUIT).bonuses();
+        return player.getData(UniverseAttachments.EXOSUIT).bonuses(suitSupercharged(player.getUUID()));
+    }
+
+    /** 外骨骼的超频格，按位记：跟着玩家走，换了胸甲也不变。 */
+    public static int suitSupercharged(UUID player) {
+        long seed = Seeds.derive(player.getMostSignificantBits() ^ Long.rotateLeft(player.getLeastSignificantBits(), 17), "exosuit");
+        return TechGrid.EXOSUIT.superchargedSlots(seed, TechGrid.EXOSUIT.size());
+    }
+
+    /** 多功能工具的超频格，按位记；还没定下种子的旧工具没有超频格。只落在工具这一档有的格子上。 */
+    public static int toolSupercharged(ItemStack tool) {
+        Long seed = tool.get(UniverseDataComponents.TOOL_SUPERCHARGE.get());
+        if (seed == null || !(tool.getItem() instanceof MultitoolItem)) {
+            return 0;
+        }
+        return TechGrid.MULTITOOL.superchargedSlots(seed, MultitoolItem.spec(tool).slots());
+    }
+
+    /** 工具还没有超频格的种子就定一个（打开技术配置界面时）。 */
+    public static void seedTool(ItemStack tool, RandomSource random) {
+        if (tool.getItem() instanceof MultitoolItem && !tool.has(UniverseDataComponents.TOOL_SUPERCHARGE.get())) {
+            tool.set(UniverseDataComponents.TOOL_SUPERCHARGE.get(), random.nextLong());
+        }
     }
 
     /**
-     * 多功能工具的加成：装着的模块加上工具类型的专长（ADR-0026）。槽里的武器（{@link ToolWeaponItem}）不算模块。
-     * 不是多功能工具时没有加成。
+     * 多功能工具的加成：装着的模块（算上相邻和超频）加上工具类型的专长（ADR-0026）。槽里的武器（{@link ToolWeaponItem}）
+     * 不算模块，也不和模块相邻。不是多功能工具时没有加成。
      */
     public static TechBonuses tool(ItemStack tool) {
         if (!(tool.getItem() instanceof MultitoolItem)) {
             return TechBonuses.NONE;
         }
         ItemContainerContents contents = tool.getOrDefault(UniverseDataComponents.TOOL_MODULES.get(), ItemContainerContents.EMPTY);
-        List<TechModule> modules = new ArrayList<>();
-        contents.nonEmptyItemCopyStream().forEach(stack -> {
-            if (stack.getItem() instanceof TechModuleItem item) {
-                modules.add(item.module(stack));
-            }
-        });
-        return TechBonuses.of(modules).with(MultitoolItem.spec(tool).specialty());
+        NonNullList<ItemStack> items = NonNullList.withSize(SuitSlots.TOOL_SLOTS, ItemStack.EMPTY);
+        contents.copyInto(items);
+        List<TechModule> slots = new ArrayList<>(items.size());
+        for (ItemStack stack : items) {
+            slots.add(stack.getItem() instanceof TechModuleItem item ? item.module(stack) : null);
+        }
+        return TechGrid.MULTITOOL.bonuses(slots, toolSupercharged(tool)).with(MultitoolItem.spec(tool).specialty());
     }
 
     /** 客户端按了技术配置键。 */
     public static void handleOpen(OpenTechPayload payload, IPayloadContext context) {
         if (context.player() instanceof ServerPlayer player && player.isAlive()) {
+            seedTool(player.getMainHandItem(), player.getRandom());
             player.openMenu(new SimpleMenuProvider((id, inventory, p) -> TechMenu.server(id, inventory, player),
                     Component.translatable("gui.universe.tech.title")), buf -> TechMenu.writeOpenData(player, buf));
         }
     }
 
     private static void tick(ServerPlayer player) {
-        ExosuitData data = player.getData(UniverseAttachments.EXOSUIT);
         TechBonuses bonuses = suit(player);
-        Shield shield = data.shield();
-        shield.tick((float) bonuses.get(Stat.SHIELD));
-        if (player.isCreative()) {
-            shield.refill();
-        }
+        // 护盾：模块那部分自己回充，机甲核心再用电补（ADR-0033 §二）
+        MechaCombat.tickShield(player);
         if (player.tickCount % 10 == 0) {
             AttributeInstance speed = player.getAttribute(Attributes.MOVEMENT_SPEED);
             double amount = bonuses.get(Stat.SPEED);
@@ -138,26 +167,33 @@ public final class SuitTech {
         }
     }
 
-    /** 护盾只挡战斗伤害：来自生物、投射物、爆炸；缺氧、危害、摔落、饥饿不挡。 */
     private static void shield(ServerPlayer player, LivingIncomingDamageEvent event) {
-        DamageSource source = event.getSource();
+        event.setAmount(absorb(player, event.getSource(), event.getAmount()));
+    }
+
+    /**
+     * 护盾挡一次伤害（GameTest 也直接调）。只挡战斗伤害：来自生物、投射物、爆炸；缺氧、危害、摔落、饥饿不挡。
+     *
+     * @return 挡不住、还要落到玩家身上的部分
+     */
+    public static float absorb(ServerPlayer player, DamageSource source, float amount) {
         boolean combat = source.getEntity() != null || source.is(DamageTypeTags.IS_PROJECTILE) || source.is(DamageTypeTags.IS_EXPLOSION);
         if (!combat || source.is(DamageTypeTags.BYPASSES_INVULNERABILITY)) {
-            return;
+            return amount;
         }
         Shield shield = player.getData(UniverseAttachments.EXOSUIT).shield();
         if (shield.capacity() <= 0) {
-            return;
+            return amount;
         }
         boolean had = shield.value() > 0;
-        float left = shield.absorb(event.getAmount());
+        float left = shield.absorb(amount);
         ServerLevel level = player.level();
         if (had) {
             level.playSound(null, player.getX(), player.getY(), player.getZ(),
                     shield.value() > 0 ? GearSounds.SHIELD_HIT : GearSounds.SHIELD_BREAK, SoundSource.PLAYERS, 0.8F,
                     0.95F + player.getRandom().nextFloat() * 0.1F);
         }
-        event.setAmount(left);
+        return left;
     }
 
     /** 背包放不下这件东西时收进货舱。 */

@@ -1,0 +1,15 @@
+{
+  "type": "universe:nutrient",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "#universe:fish"
+    }
+  ],
+  "results": [
+    {
+      "id": "universe:grilled_fillet"
+    }
+  ],
+  "time": 50
+}

@@ -178,6 +178,35 @@ final class UniverseModelProvider extends ModelProvider {
         darkFogShield(blockModels, itemModels);
         wrapUpAcid(blockModels, itemModels);
         wrapUpInterop(blockModels, itemModels);
+        // M18 舰队单位（ADR-0033 §一）：平面物品
+        for (var unit : List.of(UniverseItems.PROTOTYPE, UniverseItems.PRECISION_DRONE, UniverseItems.ATTACK_DRONE, UniverseItems.CORVETTE,
+                UniverseItems.DESTROYER)) {
+            itemModels.generateFlatItem(unit.get(), ModelTemplates.FLAT_ITEM);
+        }
+        // M18 舰队和战斗（A）的模型加在这行上面
+        // M18 物流调度（B）的模型加在这行上面
+        // M18 统计和研究（C）的模型加在这行上面
+        m18Beacons(blockModels, itemModels);
+        // M18 信标、透镜、矿脉、蓝图（D）的模型加在这行上面
+        FishingData.models(blockModels, itemModels);
+        // M19 钓鱼（A）的模型加在这行上面
+        SettlementDatagen.models(blockModels);
+        // M19 聚落（B）的模型加在这行上面
+        FossilData.models(blockModels, itemModels);
+        // M19 化石（C）的模型加在这行上面
+        DeepSpaceDatagen.models(blockModels, itemModels);
+        // M19 深空和重力枪（D）的模型加在这行上面
+        HazardModels.add(blockModels);
+        // M19 科技布局和局部危害（E）的模型加在这行上面
+    }
+
+    /** M18：黑雾透镜（平面物品）、全息信标（手写的投影台模型 models/block/holo_beacon.json，ADR-0033 §六、§七）。 */
+    private static void m18Beacons(BlockModelGenerators blockModels, ItemModelGenerators itemModels) {
+        itemModels.generateFlatItem(UniverseItems.DARK_FOG_LENS.get(), ModelTemplates.FLAT_ITEM);
+        Block beacon = UniverseBlocks.HOLO_BEACON.get();
+        Identifier model = ModelLocationUtils.getModelLocation(beacon);
+        blockModels.blockStateOutput.accept(BlockModelGenerators.createSimpleBlock(beacon, BlockModelGenerators.plainVariant(model)));
+        blockModels.registerSimpleItemModel(beacon, model);
     }
 
     /** 黑雾的掉落、弹药、投掷物（ADR-0028）：平面物品。 */

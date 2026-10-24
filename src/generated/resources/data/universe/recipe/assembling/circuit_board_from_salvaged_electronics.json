@@ -1,0 +1,17 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 3,
+      "ingredient": "universe:salvaged_electronics"
+    }
+  ],
+  "research": "basic_assembling",
+  "results": [
+    {
+      "count": 2,
+      "id": "universe:circuit_board"
+    }
+  ],
+  "time": 60
+}

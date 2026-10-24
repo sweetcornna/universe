@@ -443,6 +443,99 @@ public final class UniverseGameTests {
     private static final ResourceKey<Consumer<GameTestHelper>> PLACED_PLANT_PICKS_LOCAL_SPECIES = function("placed_plant_picks_local_species",
             ShipTailGameTests::placedPlantPicksLocalSpecies);
     // M17 收尾：飞船和星球（F）的测试函数加在这行上面
+    private static final ResourceKey<Consumer<GameTestHelper>> GROUND_SQUADRON_KILLS_RAIDER = function("ground_squadron_kills_raider",
+            FleetCombatGameTests::groundSquadronKillsRaider);
+    private static final ResourceKey<Consumer<GameTestHelper>> SPACE_FLEET_KILLS_HIVE_BUILDING = function("space_fleet_kills_hive_building",
+            FleetCombatGameTests::spaceFleetKillsHiveBuilding);
+    private static final ResourceKey<Consumer<GameTestHelper>> MECHA_SHIELD_ABSORBS_AND_CORE_RECHARGES = function(
+            "mecha_shield_absorbs_and_core_recharges", FleetCombatGameTests::shieldAbsorbsAndCoreRecharges);
+    private static final ResourceKey<Consumer<GameTestHelper>> SHIELD_BURST_HITS_ONLY_DARK_FOG = function("shield_burst_hits_only_dark_fog",
+            FleetCombatGameTests::shieldBurstHitsOnlyDarkFog);
+    private static final ResourceKey<Consumer<GameTestHelper>> JAMMING_CAPSULE_SLOWS_RAIDER = function("jamming_capsule_slows_raider",
+            FleetCombatGameTests::jammingCapsuleSlowsRaider);
+    private static final ResourceKey<Consumer<GameTestHelper>> LASER_TOWER_SHOOTS_FLEET_UNIT = function("laser_tower_shoots_fleet_unit",
+            FleetCombatGameTests::laserTowerShootsFleetUnit);
+    // M18 舰队和战斗（A）的测试函数加在这行上面
+    private static final ResourceKey<Consumer<GameTestHelper>> PARTNER_BEATS_NEARER_STATION = function("partner_beats_nearer_station",
+            LogisticsDispatchGameTests::partnerBeatsNearerStation);
+    private static final ResourceKey<Consumer<GameTestHelper>> ROUTE_STARTS_ONCE_STATION_BUILT = function("route_starts_once_station_built",
+            LogisticsDispatchGameTests::routeStartsOnceStationBuilt);
+    private static final ResourceKey<Consumer<GameTestHelper>> ISOLATED_STATION_KEEPS_GOODS = function("isolated_station_keeps_goods",
+            LogisticsDispatchGameTests::isolatedStationKeepsItsGoods);
+    private static final ResourceKey<Consumer<GameTestHelper>> REMOTE_EDIT_APPLIES = function("remote_edit_applies",
+            LogisticsDispatchGameTests::remoteEditApplies);
+    // M18 物流调度（B）的测试函数加在这行上面
+    private static final ResourceKey<Consumer<GameTestHelper>> RESEARCH_QUEUE_ADVANCES = function("research_queue_advances",
+            StatsGameTests::researchQueueAdvances);
+    private static final ResourceKey<Consumer<GameTestHelper>> REFERENCE_COUNTS_RUNNING_MACHINES = function("reference_counts_running_machines",
+            StatsGameTests::referenceCountsRunningMachines);
+    private static final ResourceKey<Consumer<GameTestHelper>> SHIPMENT_COUNTS_AS_TRADE = function("shipment_counts_as_trade",
+            StatsGameTests::shipmentCountsAsTrade);
+    private static final ResourceKey<Consumer<GameTestHelper>> DASHBOARD_PINS_AND_READS = function("dashboard_pins_and_reads",
+            StatsGameTests::dashboardPinsAndReads);
+    // M18 统计和研究（C）的测试函数加在这行上面
+    private static final ResourceKey<Consumer<GameTestHelper>> DARK_FOG_LENS_POWER_AND_LOSS = function("dark_fog_lens_power_and_loss",
+            BeaconGameTests::darkFogLensPowerAndLoss);
+    private static final ResourceKey<Consumer<GameTestHelper>> VEIN_ALERT_ONCE_THEN_QUIET = function("vein_alert_once_then_quiet",
+            BeaconGameTests::veinAlertOnceThenQuiet);
+    private static final ResourceKey<Consumer<GameTestHelper>> DEVICES_ONLY_SKIPS_FLOOR = function("devices_only_skips_floor",
+            BeaconGameTests::devicesOnlySkipsFloor);
+    private static final ResourceKey<Consumer<GameTestHelper>> SAME_NAME_BUMPS_VERSION = function("same_name_bumps_version",
+            BeaconGameTests::sameNameBumpsVersion);
+    private static final ResourceKey<Consumer<GameTestHelper>> BEACON_SETTINGS_PERSIST = function("beacon_settings_persist",
+            BeaconGameTests::beaconSettingsPersist);
+    // M18 信标、透镜、矿脉、蓝图（D）的测试函数加在这行上面
+    private static final ResourceKey<Consumer<GameTestHelper>> FISHING_CONDITIONS_AND_HABITAT = function("fishing_conditions_and_habitat",
+            FishingGameTests::conditionsAndHabitat);
+    private static final ResourceKey<Consumer<GameTestHelper>> FISHING_REELING_LANDS_FISH = function("fishing_reeling_lands_fish",
+            FishingGameTests::reelingLandsFish);
+    private static final ResourceKey<Consumer<GameTestHelper>> FISHING_BAIT_USED_ON_HOOK = function("fishing_bait_used_on_hook",
+            FishingGameTests::baitUsedOnHook);
+    private static final ResourceKey<Consumer<GameTestHelper>> FISHING_RELEASE_BLESSES_NEXT_CASTS = function("fishing_release_blesses_next_casts",
+            FishingGameTests::releaseBlessesNextCasts);
+    private static final ResourceKey<Consumer<GameTestHelper>> FISH_TRAP_CATCHES_UNDER_WATER = function("fish_trap_catches_under_water",
+            FishingGameTests::trapCatchesUnderWater);
+    // M19 钓鱼（A）的测试函数加在这行上面
+    private static final ResourceKey<Consumer<GameTestHelper>> SETTLEMENT_CLAIM_NEEDS_STANDING_AND_MATERIALS = function(
+            "settlement_claim_needs_standing_and_materials", SettlementGameTests::claimNeedsStandingAndMaterials);
+    private static final ResourceKey<Consumer<GameTestHelper>> SETTLEMENT_CONSTRUCTION_THREE_STAGES = function("settlement_construction_three_stages",
+            SettlementGameTests::constructionThreeStages);
+    private static final ResourceKey<Consumer<GameTestHelper>> SETTLEMENT_DECISION_APPLIES = function("settlement_decision_applies",
+            SettlementGameTests::decisionApplies);
+    private static final ResourceKey<Consumer<GameTestHelper>> SETTLEMENT_RAID_RESOLVES_BY_DEFENSE = function("settlement_raid_resolves_by_defense",
+            SettlementGameTests::raidResolvesByDefense);
+    private static final ResourceKey<Consumer<GameTestHelper>> SETTLEMENT_RAIDERS_STRAFE_ABOVE_GROUND = function(
+            "settlement_raiders_strafe_above_ground", SettlementGameTests::raidersStrafeAboveGround);
+    // M19 聚落（B）的测试函数加在这行上面
+    private static final ResourceKey<Consumer<GameTestHelper>> SKELETON_DISPLAY_PACKS_AND_RESTORES = function(
+            "skeleton_display_packs_and_restores", FossilGameTests::displayCompletesPacksAndRestores);
+    private static final ResourceKey<Consumer<GameTestHelper>> FOSSIL_COLLECTOR_SWAPS = function("fossil_collector_swaps",
+            FossilGameTests::collectorSwap);
+    private static final ResourceKey<Consumer<GameTestHelper>> FOSSIL_DIG_WAKES_SENTRY = function("fossil_dig_wakes_sentry",
+            FossilGameTests::digWakesSentry);
+    // M19 化石（C）的测试函数加在这行上面
+    private static final ResourceKey<Consumer<GameTestHelper>> HULK_SALVAGE_TO_MELTDOWN = function("hulk_salvage_to_meltdown",
+            DeepSpaceGameTests::hulkSalvageToMeltdown);
+    private static final ResourceKey<Consumer<GameTestHelper>> TRACTOR_STOWS_INTO_CARGO = function("tractor_stows_into_cargo",
+            DeepSpaceGameTests::tractorStowsIntoCargo);
+    private static final ResourceKey<Consumer<GameTestHelper>> JETTISON_EMPTIES_CARGO = function("jettison_empties_cargo",
+            DeepSpaceGameTests::jettisonEmptiesCargo);
+    private static final ResourceKey<Consumer<GameTestHelper>> EVA_AND_REBOARD = function("eva_and_reboard", DeepSpaceGameTests::evaAndReboard);
+    private static final ResourceKey<Consumer<GameTestHelper>> GRAVITY_GRAB_AND_THROW = function("gravity_grab_and_throw",
+            DeepSpaceGameTests::gravityGrabAndThrow);
+    private static final ResourceKey<Consumer<GameTestHelper>> GRAVITY_PUSH_CONE = function("gravity_push_cone", DeepSpaceGameTests::gravityPushCone);
+    // M19 深空和重力枪（D）的测试函数加在这行上面
+    private static final ResourceKey<Consumer<GameTestHelper>> GEYSER_LIFTS_ITEMS = function("geyser_lifts_items",
+            HazardGameTests::geyserLiftsItems);
+    private static final ResourceKey<Consumer<GameTestHelper>> LOCAL_EXPOSURE_MARKS = function("local_exposure_marks",
+            HazardGameTests::localExposureMarks);
+    private static final ResourceKey<Consumer<GameTestHelper>> HAZARDS_QUIET_NEAR_BASE = function("hazards_quiet_near_base",
+            HazardGameTests::hazardsQuietNearBase);
+    private static final ResourceKey<Consumer<GameTestHelper>> MULTITOOL_LAYOUT_BOOSTS = function("multitool_layout_boosts",
+            TechLayoutGameTests::multitoolLayoutBoosts);
+    private static final ResourceKey<Consumer<GameTestHelper>> HELM_SUPERCHARGE_TUNES_SHIP = function("helm_supercharge_tunes_ship",
+            TechLayoutGameTests::helmSuperchargeTunesShip);
+    // M19 科技布局和局部危害（E）的测试函数加在这行上面
 
     private UniverseGameTests() {
     }
@@ -590,6 +683,61 @@ public final class UniverseGameTests {
         test(event, environment, ENTITY_GRAVITY_FOLLOWS_PLANET, 20);
         test(event, environment, PLACED_PLANT_PICKS_LOCAL_SPECIES, 20);
         // M17 收尾：飞船和星球（F）的测试加在这行上面
+        spaced(event, environment, GROUND_SQUADRON_KILLS_RAIDER, HANGAR, 300);
+        spaced(event, environment, SPACE_FLEET_KILLS_HIVE_BUILDING, HANGAR, 400, true);
+        test(event, environment, MECHA_SHIELD_ABSORBS_AND_CORE_RECHARGES, 200);
+        spaced(event, environment, SHIELD_BURST_HITS_ONLY_DARK_FOG, HANGAR, 20);
+        spaced(event, environment, JAMMING_CAPSULE_SLOWS_RAIDER, HANGAR, 100);
+        spaced(event, environment, LASER_TOWER_SHOOTS_FLEET_UNIT, HANGAR, 200);
+        // M18 舰队和战斗（A）的测试加在这行上面
+        test(event, environment, PARTNER_BEATS_NEARER_STATION, 200);
+        test(event, environment, ROUTE_STARTS_ONCE_STATION_BUILT, 300);
+        test(event, environment, ISOLATED_STATION_KEEPS_GOODS, 200);
+        test(event, environment, REMOTE_EDIT_APPLIES, 40);
+        // M18 物流调度（B）的测试加在这行上面
+        test(event, environment, RESEARCH_QUEUE_ADVANCES, 20);
+        test(event, environment, REFERENCE_COUNTS_RUNNING_MACHINES, 300);
+        test(event, environment, SHIPMENT_COUNTS_AS_TRADE, 100);
+        test(event, environment, DASHBOARD_PINS_AND_READS, 20);
+        // M18 统计和研究（C）的测试加在这行上面
+        test(event, environment, DARK_FOG_LENS_POWER_AND_LOSS, 200);
+        test(event, environment, VEIN_ALERT_ONCE_THEN_QUIET, 20);
+        test(event, environment, DEVICES_ONLY_SKIPS_FLOOR, 20);
+        test(event, environment, SAME_NAME_BUMPS_VERSION, 20);
+        test(event, environment, BEACON_SETTINGS_PERSIST, 20);
+        // M18 信标、透镜、矿脉、蓝图（D）的测试加在这行上面
+        test(event, environment, FISHING_CONDITIONS_AND_HABITAT, 40);
+        test(event, environment, FISHING_REELING_LANDS_FISH, 900);
+        test(event, environment, FISHING_BAIT_USED_ON_HOOK, 200);
+        test(event, environment, FISHING_RELEASE_BLESSES_NEXT_CASTS, 200);
+        test(event, environment, FISH_TRAP_CATCHES_UNDER_WATER, 100);
+        // M19 钓鱼（A）的测试加在这行上面
+        spaced(event, environment, SETTLEMENT_CLAIM_NEEDS_STANDING_AND_MATERIALS, 100);
+        spaced(event, environment, SETTLEMENT_CONSTRUCTION_THREE_STAGES, 200);
+        spaced(event, environment, SETTLEMENT_DECISION_APPLIES, 20);
+        spaced(event, environment, SETTLEMENT_RAID_RESOLVES_BY_DEFENSE, 60);
+        test(event, environment, SETTLEMENT_RAIDERS_STRAFE_ABOVE_GROUND, 600);
+        // M19 聚落（B）的测试加在这行上面
+        test(event, environment, SKELETON_DISPLAY_PACKS_AND_RESTORES, 20);
+        test(event, environment, FOSSIL_COLLECTOR_SWAPS, 20);
+        test(event, environment, FOSSIL_DIG_WAKES_SENTRY, 20);
+        // M19 化石（C）的测试加在这行上面
+        // 熔毁炸 24 格，牵引光束吸 40 格，四周留空地
+        spaced(event, environment, HULK_SALVAGE_TO_MELTDOWN, 600);
+        spaced(event, environment, TRACTOR_STOWS_INTO_CARGO, HANGAR, 200);
+        spaced(event, environment, JETTISON_EMPTIES_CARGO, HANGAR, 120);
+        test(event, environment, EVA_AND_REBOARD, 40);
+        test(event, environment, GRAVITY_GRAB_AND_THROW, 60);
+        test(event, environment, GRAVITY_PUSH_CONE, 20);
+        // M19 深空和重力枪（D）的测试加在这行上面
+        test(event, environment, GEYSER_LIFTS_ITEMS, HANGAR, 100);
+        // 孢子云贴着地面飘：上面不能封屏障，不然它往屏障顶上飘
+        spaced(event, environment, LOCAL_EXPOSURE_MARKS, HANGAR, 200, true);
+        // 基地的免除范围有 32 格，四周留出空地，免得管到隔壁的测试
+        spaced(event, environment, HAZARDS_QUIET_NEAR_BASE, HANGAR, 100);
+        test(event, environment, MULTITOOL_LAYOUT_BOOSTS, 20);
+        test(event, environment, HELM_SUPERCHARGE_TUNES_SHIP, 20);
+        // M19 科技布局和局部危害（E）的测试加在这行上面
     }
 
     /**

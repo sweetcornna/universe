@@ -1,0 +1,24 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 2,
+      "ingredient": "universe:titanium_alloy"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:magnetic_coil"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:circuit_board"
+    }
+  ],
+  "research": "fishing",
+  "results": [
+    {
+      "id": "universe:fishing_rig"
+    }
+  ],
+  "time": 100
+}

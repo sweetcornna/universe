@@ -21,7 +21,7 @@ import net.minecraft.world.level.saveddata.SavedDataType;
 public final class ResearchData extends SavedData {
     /**
      * 存档格式版本。改格式时加一，并在读取时迁移旧格式（技术架构 §3.10）。2：加了升级科技的级数（ADR-0018），
-     * 旧存档没有这一项，读成全是 0 级。
+     * 旧存档没有这一项，读成全是 0 级。研究队列（ADR-0033 §五）是可选的一项，旧存档读成空队列，不用加版本。
      */
     private static final int FORMAT = 2;
 
@@ -30,9 +30,10 @@ public final class ResearchData extends SavedData {
             Codec.STRING.listOf().fieldOf("done").forGetter(data -> List.copyOf(data.state.done())),
             Codec.STRING.optionalFieldOf("current").forGetter(data -> Optional.ofNullable(data.state.current())),
             Codec.unboundedMap(Codec.STRING, Codec.INT).fieldOf("progress").forGetter(data -> data.state.progress()),
-            Codec.unboundedMap(Codec.STRING, Codec.INT).optionalFieldOf("levels", Map.of()).forGetter(data -> data.state.levels())
-    ).apply(i, (format, done, current, progress, levels) ->
-            new ResearchData(new ResearchState(new LinkedHashSet<>(done), current.orElse(null), progress, levels))));
+            Codec.unboundedMap(Codec.STRING, Codec.INT).optionalFieldOf("levels", Map.of()).forGetter(data -> data.state.levels()),
+            Codec.STRING.listOf().optionalFieldOf("queue", List.of()).forGetter(data -> List.copyOf(data.state.queue()))
+    ).apply(i, (format, done, current, progress, levels, queue) ->
+            new ResearchData(new ResearchState(new LinkedHashSet<>(done), current.orElse(null), progress, levels, queue))));
 
     public static final SavedDataType<ResearchData> TYPE = new SavedDataType<>(Universe.id("research"), ResearchData::new, CODEC);
 

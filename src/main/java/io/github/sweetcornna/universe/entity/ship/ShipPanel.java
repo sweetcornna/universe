@@ -39,14 +39,16 @@ public final class ShipPanel {
         }
         RegistryAccess registries = player.level().registryAccess();
         NonNullList<ItemStack> items = NonNullList.withSize(HelmBlockEntity.SLOTS, ItemStack.EMPTY);
-        List<ItemStack> loaded = helm(structure, registries).items();
+        HelmBlockEntity helm = helm(structure, registries);
+        List<ItemStack> loaded = helm.items();
         for (int i = 0; i < items.size(); i++) {
             items.set(i, loaded.get(i).copy());
         }
+        int supercharged = helm.superchargedSlots();
         ListContainer tech = new ListContainer(items, () -> writeBack(ship, items));
         player.openMenu(new SimpleMenuProvider((id, inventory, p) -> new ShipPanelMenu(id, inventory, structure.counts(), structure.cargoSlots(),
-                true, tech, viewer -> !ship.isRemoved() && viewer.getVehicle() == ship), Component.translatable("gui.universe.ship_panel.title")),
-                buf -> ShipPanelMenu.writeOpenData(structure, true, buf));
+                true, supercharged, tech, viewer -> !ship.isRemoved() && viewer.getVehicle() == ship),
+                Component.translatable("gui.universe.ship_panel.title")), buf -> ShipPanelMenu.writeOpenData(structure, true, supercharged, buf));
     }
 
     /**
@@ -74,9 +76,10 @@ public final class ShipPanel {
             return;
         }
         ListContainer tech = new ListContainer(helm.items(), helm::setChanged);
+        int supercharged = helm.superchargedSlots();
         player.openMenu(new SimpleMenuProvider((id, inventory, p) -> new ShipPanelMenu(id, inventory, structure.counts(), structure.cargoSlots(),
-                false, tech, viewer -> !helm.isRemoved() && viewer.distanceToSqr(Vec3.atCenterOf(helmPos)) < REACH * REACH),
-                Component.translatable("gui.universe.ship_panel.title")), buf -> ShipPanelMenu.writeOpenData(structure, false, buf));
+                false, supercharged, tech, viewer -> !helm.isRemoved() && viewer.distanceToSqr(Vec3.atCenterOf(helmPos)) < REACH * REACH),
+                Component.translatable("gui.universe.ship_panel.title")), buf -> ShipPanelMenu.writeOpenData(structure, false, supercharged, buf));
     }
 
     /** 和驾驶台相连、组装时会装上船的方块（不带方块实体的数据，只用来评级）；太大时为 {@code null}。 */

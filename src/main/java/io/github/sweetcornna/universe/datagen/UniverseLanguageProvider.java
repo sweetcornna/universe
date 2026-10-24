@@ -183,6 +183,142 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         this.wrapUpDyson();
         this.wrapUpFactory();
         this.wrapUpShip();
+        FleetLanguage.add(this::both);
+        // M18 舰队和战斗（A）的语言加在这行上面
+        this.logisticsDispatch();
+        // M18 物流调度（B）的语言加在这行上面
+        StatsLanguage.add(this::both);
+        // M18 统计和研究（C）的语言加在这行上面
+        this.m18Beacons();
+        // M18 信标、透镜、矿脉、蓝图（D）的语言加在这行上面
+        FishingLanguage.add(this::both);
+        // M19 钓鱼（A）的语言加在这行上面
+        SettlementLanguage.add(this::both);
+        // M19 聚落（B）的语言加在这行上面
+        FossilLanguage.add(this::both);
+        // M19 化石（C）的语言加在这行上面
+        DeepSpaceLanguage.add(this::both);
+        // M19 深空和重力枪（D）的语言加在这行上面
+        HazardLanguage.add(this::both);
+        // M19 科技布局和局部危害（E）的语言加在这行上面
+    }
+
+    /** M18 的文字：全息信标和备忘、黑雾透镜、矿脉、蓝图（子代理 D，ADR-0033 §六–§九）。 */
+    private void m18Beacons() {
+        // 黑雾透镜（§七）
+        item(UniverseItems.DARK_FOG_LENS.get(), "黑雾透镜", "Dark Fog Lens");
+        tech("dark_fog_lens", "黑雾透镜", "Dark Fog Lens");
+        both("guide.universe.dyson.dark_fog_lens.title", "黑雾透镜", "Dark Fog Lens");
+        both("guide.universe.dyson.dark_fog_lens",
+                "研究黑雾透镜（先要引力波折射和黑雾分析）以后，在装配机里用引力透镜、核心素和能量碎片做。\n\n"
+                        + "放进射线接收站的透镜格：功率和光子产量和引力透镜一样翻倍，另外损耗减半，连续接收积累得快一倍。"
+                        + "一个能用 15 分钟，引力透镜是 10 分钟。接收站界面写着正在用哪种透镜。",
+                "Research Dark Fog Lens (needs Gravitational Wave Refraction and Dark Fog Analysis), then make it in an assembler from a "
+                        + "graviton lens, a core element and energy shards.\n\n"
+                        + "In a ray receiver's lens slot it doubles power and photon output like a graviton lens, halves the loss on top of that "
+                        + "and builds continuity twice as fast. One lasts 15 min; a graviton lens lasts 10. The receiver shows which lens is in use.");
+        // 全息信标和备忘（§六）
+        block(UniverseBlocks.HOLO_BEACON.get(), "全息信标", "Holo Beacon");
+        tech("holo_beacon", "全息信标", "Holo Beacon");
+        both("gui.universe.holo_beacon.label", "名字", "Label");
+        both("gui.universe.holo_beacon.label_hint", "浮在信标上的一行字", "Text shown above the beacon");
+        both("gui.universe.holo_beacon.icon", "图标", "Icon");
+        both("gui.universe.holo_beacon.color", "颜色", "Color");
+        both("gui.universe.holo_beacon.range", "范围", "Range");
+        both("gui.universe.holo_beacon.range.planet", "本星球", "Planet");
+        both("gui.universe.holo_beacon.range.system", "本星系", "System");
+        both("gui.universe.holo_beacon.range.cluster", "整个星团", "Cluster");
+        both("gui.universe.holo_beacon.range_hint.planet", "只在这颗星球的 HUD 上", "HUD on this planet only");
+        both("gui.universe.holo_beacon.range_hint.system", "星系里的星图也标", "Star map, inside this system");
+        both("gui.universe.holo_beacon.range_hint.cluster", "在哪都能在星图上看到", "Star map, from anywhere");
+        both("gui.universe.holo_beacon.memo", "备忘", "Notes");
+        both("gui.universe.memo.title", "备忘", "Notes");
+        both("gui.universe.memo.line", "备忘的一行", "Note line");
+        both("gui.universe.memo.hint", "一行一件事，做完了在左边打勾", "One thing per line, tick it off when done");
+        both("gui.universe.memo.save", "保存", "Save");
+        both("gui.universe.memo.open", "备忘", "Notes");
+        both("gui.universe.star_map.beacons", "信标", "Beacons");
+        both("gui.universe.star_map.memo", "▸ 星系备忘", "▸ System notes");
+        both("guide.universe.exploration.holo_beacon.title", "全息信标", "Holo Beacons");
+        both("guide.universe.exploration.holo_beacon",
+                "放下以后右键设置：一行字、图标（点快捷栏里的物品）、颜色和范围。信标上方浮着图标和字，还有一道光柱。\n\n"
+                        + "同一颗星球上，HUD 标出所有信标和距离。范围选本星系，在这个星系里打开星图能看到它；选整个星团，在哪都能看到。"
+                        + "星图上信标是星系旁边的一个小点，选中星系后列在信息栏里。\n\n"
+                        + "每个信标还有一页备忘，最多 8 行，每行能打勾。信标和备忘所有玩家共用。",
+                "Place it and right-click to set a label, an icon (click an item in your hotbar), a color and a range. The icon and label float "
+                        + "above it with a beam of light.\n\n"
+                        + "On the same planet the HUD marks every beacon with its distance. With range System it shows on the star map while you "
+                        + "are in that system; with Cluster it shows from anywhere, as a dot beside the system and a line in its info panel.\n\n"
+                        + "Each beacon also holds a page of notes: up to 8 lines you can tick off. Beacons and notes are shared by everyone.");
+        both("guide.universe.exploration.memos.title", "星球备忘", "Planet Notes");
+        both("guide.universe.exploration.memos",
+                "发现过的星球和星系都能写一页备忘。在发现日志里选中星球或星系，点右上角的“备忘”；星图里选中星系，信息栏里也有入口。\n\n"
+                        + "格式和信标的一样：最多 8 行，每行能打勾。备忘存在世界里，同一个世界的玩家都看得到、都能改。",
+                "Every planet and system you have discovered can hold a page of notes. Select it in the discovery log and click Notes at the "
+                        + "top right, or select a system on the star map and use the link in its info panel.\n\n"
+                        + "Same format as a beacon's: up to 8 lines, each with a tick box. Notes are saved with the world and anyone in it can "
+                        + "read and edit them.");
+        // 矿脉（§八）
+        both("gui.universe.mining_machine.warning", "枯竭提醒：%s", "Depletion alert: %s");
+        both("gui.universe.mining_machine.warning.none", "不提醒", "Off");
+        both("gui.universe.mining_machine.warning.node", "一个矿点采完时", "Each node");
+        both("gui.universe.mining_machine.warning.all", "全部采完时", "All nodes");
+        both("message.universe.vein_alert.where", "%s（%s, %s, %s）", "%s (%s, %s, %s)");
+        both("message.universe.vein_alert.node", "%s：一处%s采完了", "%s: a %s node ran dry");
+        both("message.universe.vein_alert.all", "%s：范围里的矿采完了", "%s: out of ore");
+        both("hud.universe.vein_alert.node", "%s采完一处", "%s node depleted");
+        both("hud.universe.vein_alert.all", "矿采完了", "Out of ore");
+        both("hud.universe.vein_alert.marker", "%s · %s 格", "%s · %sm");
+        both("gui.universe.scan_filter.title", "扫描矿种", "Scan Filter");
+        both("gui.universe.scan_filter.hint", "选一种，扫描只标它", "Pick one and scans mark only that ore");
+        both("gui.universe.scan_filter.all", "全部", "All ores");
+        both("gui.universe.scan_filter.none", "这里没有矿", "No ores here");
+        both("message.universe.multitool.scanned_filter", "只看%s：%s 条矿脉，共 %s 块", "%s only: %s veins, %s blocks");
+        both("guide.universe.gathering.depletion.title", "矿脉枯竭", "Depleted Veins");
+        both("guide.universe.gathering.depletion",
+                "每个矿点的储量有限，采完变回石头。采矿机界面下面的按钮选枯竭提醒：不提醒、一个矿点采完时、全部采完时（默认）。\n\n"
+                        + "提醒发给这个维度里的所有人：聊天栏一行带坐标，HUD 上标出那台采矿机半分钟。同一台机器 5 分钟里只提醒一次。\n\n"
+                        + "范围里一种矿采光了，采矿机会换着采剩下最多的那种；全都没了才算全部采完。",
+                "Every node holds a limited amount and turns back to stone when empty. The button at the bottom of the mining machine picks "
+                        + "the depletion alert: off, each node, or all nodes (default).\n\n"
+                        + "Alerts go to everyone in the dimension: a chat line with coordinates and a HUD marker on the machine for 30 s. The same "
+                        + "machine alerts at most once every 5 minutes.\n\n"
+                        + "When one ore runs out the machine switches to whatever is left; only when nothing is left does it count as all nodes.");
+        both("guide.universe.gathering.scan_filter.title", "只扫一种矿", "Scanning for One Ore");
+        both("guide.universe.gathering.scan_filter",
+                "拿着多功能工具按 Shift + 模式键，列出这颗星球有的矿。选一种，之后的扫描只标这种矿，标记大一圈，留 60 秒。选“全部”恢复。\n\n"
+                        + "列表照着星球的资源表，这里没有的矿不会出现。主世界列原版的矿。",
+                "Hold the multitool and press Shift + mode key to list the ores this planet has. Pick one and later scans mark only that ore, "
+                        + "with bigger markers that stay for 60 s. Pick All to go back.\n\n"
+                        + "The list follows the planet's resource table, so ores that are not here do not show up. The overworld lists vanilla ores.");
+        // 蓝图（§九）
+        both("message.universe.blueprint.saved_version", "蓝图「%s」第 %s 版已保存，%s 个方块", "Saved blueprint \"%s\" v%s with %s blocks");
+        both("message.universe.blueprint.devices_only", "只贴设备", "Devices only");
+        both("message.universe.blueprint.all_blocks", "贴全部方块", "All blocks");
+        both("message.universe.blueprint.no_devices", "这张蓝图里没有设备", "No devices in this blueprint");
+        both("tooltip.universe.blueprint.author", "%s · 第 %s 版", "By %s · v%s");
+        both("tooltip.universe.blueprint.version", "第 %s 版", "v%s");
+        both("tooltip.universe.blueprint.devices_only", "只贴设备（Shift + 旋转键切换）", "Devices only (Shift + rotate to toggle)");
+        both("gui.universe.blueprint.save.description", "说明", "Description");
+        both("gui.universe.blueprint.save.description_hint", "可以不写", "Optional");
+        both("hud.universe.blueprint.cost", "要花的材料", "Materials");
+        both("hud.universe.blueprint.cost_devices", "要花的材料（只贴设备）", "Materials (devices only)");
+        both("hud.universe.blueprint.cost_line", "%s ×%s（有 %s）", "%s ×%s (have %s)");
+        both("hud.universe.blueprint.cost_more", "还有 %s 种", "+%s more");
+        both("hud.universe.blueprint.cost_none", "都已经建好了", "Nothing left to place");
+        both("guide.universe.logistics.blueprint_devices.title", "蓝图的版本和只贴设备", "Blueprint Versions, Devices Only");
+        both("guide.universe.logistics.blueprint_devices",
+                "保存蓝图时可以写一段说明。蓝图记下保存的人；同名的蓝图再存一次，版本加 1。这些都写在物品的提示里。\n\n"
+                        + "拿着画好的蓝图按 Shift + 旋转键（默认 R）切到只贴设备：只放设备、传送带、分拣器这些，地板、墙和装饰跳过，"
+                        + "适合在铺好的地基上补一套产线。再按一次切回贴全部。\n\n"
+                        + "预览时 HUD 右上角列出要花的材料：要多少、身上有多少，不够的标红。背包和外骨骼货舱都算。",
+                "You can add a description when saving a blueprint. It records who saved it, and saving again under the same name bumps the "
+                        + "version. All of this shows in the item tooltip.\n\n"
+                        + "Hold a drawn blueprint and press Shift + rotate (R by default) to switch to devices only: machines, belts, sorters "
+                        + "and the like are placed, floors, walls and decoration are skipped. Handy for adding a line onto foundations you already "
+                        + "laid. Press again for all blocks.\n\n"
+                        + "While previewing, the top right of the HUD lists the materials: how many you need, how many you carry, shortages in red. "
+                        + "Inventory and exosuit cargo both count.");
     }
 
     /** 黑雾的掉落、弹药、投掷物（ADR-0028 §五、§六）：名字在这里，说明归各自的子代理。 */
@@ -362,6 +498,127 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
     }
 
     /** M17 收尾的文字：飞船和星球（子代理 F，ADR-0030）。 */
+    /** 星际物流的调度和控制面板（ADR-0033 §三）。 */
+    private void logisticsDispatch() {
+        both("key.universe.control_panel", "物流控制面板", "Logistics Control Panel");
+        both("gui.universe.control_panel.title", "物流控制面板", "Logistics Control Panel");
+        both("gui.universe.control_panel.open", "面板", "Panel");
+        both("gui.universe.control_panel.tab.interstellar", "星际", "Interstellar");
+        both("gui.universe.control_panel.tab.planetary", "行星内", "Planetary");
+        both("gui.universe.control_panel.tab.distributors", "配送器", "Distributors");
+        both("gui.universe.control_panel.tab.routes", "路线", "Routes");
+        both("gui.universe.control_panel.search", "搜索", "Search");
+        both("gui.universe.control_panel.filter", "筛选：%s", "Filter: %s");
+        both("gui.universe.control_panel.filter.all", "全部", "All");
+        both("gui.universe.control_panel.filter.name", "名字", "Name");
+        both("gui.universe.control_panel.filter.planet", "星球", "Planet");
+        both("gui.universe.control_panel.filter.system", "星系", "System");
+        both("gui.universe.control_panel.filter.item", "物品", "Item");
+        both("gui.universe.control_panel.sort", "排序：%s", "Sort: %s");
+        both("gui.universe.control_panel.sort.name", "名字", "Name");
+        both("gui.universe.control_panel.sort.number", "编号", "Number");
+        both("gui.universe.control_panel.sort.item", "物品", "Item");
+        both("gui.universe.control_panel.waiting", "读取中…", "Loading...");
+        both("gui.universe.control_panel.empty.stations", "还没有物流站", "No stations yet");
+        both("gui.universe.control_panel.empty.distributors", "还没有配送器", "No distributors yet");
+        both("gui.universe.control_panel.empty.routes", "还没有路线，点右上角的「新建路线」", "No routes yet. Use New Route at the top right");
+        both("gui.universe.control_panel.empty.filtered", "没有符合的", "Nothing matches");
+        both("gui.universe.control_panel.select_hint", "在左边选一行", "Pick a row on the left");
+        both("gui.universe.control_panel.default_name.planetary", "行星物流站 %s", "Planetary Station %s");
+        both("gui.universe.control_panel.default_name.interstellar", "星际物流站 %s", "Interstellar Station %s");
+        both("gui.universe.control_panel.default_name.collector", "轨道采集器 %s", "Orbital Collector %s");
+        both("gui.universe.control_panel.space", "%s 太空", "%s Space");
+        both("gui.universe.control_panel.name_hint", "名字", "Name");
+        both("gui.universe.control_panel.rename", "改名", "Rename");
+        both("gui.universe.control_panel.short_drones", "无人机 %s/%s", "Drones %s/%s");
+        both("gui.universe.control_panel.short_vessels", "运输船 %s/%s", "Vessels %s/%s");
+        both("gui.universe.control_panel.logic_local", "本地：%s", "Local: %s");
+        both("gui.universe.control_panel.logic_remote", "远程：%s", "Remote: %s");
+        both("gui.universe.control_panel.group", "分组", "Group");
+        both("gui.universe.control_panel.group_none", "无", "None");
+        both("gui.universe.control_panel.isolated", "指定配对", "Paired only");
+        both("gui.universe.control_panel.isolated_hint", "只和伙伴、路线两头、同组的站往来，别的站也不会来配它",
+                "Only trades with partners, route ends and its group. Other stations leave it alone");
+        both("gui.universe.control_panel.on", "开", "On");
+        both("gui.universe.control_panel.off", "关", "Off");
+        both("gui.universe.control_panel.range", "航程", "Range");
+        both("gui.universe.control_panel.min_load", "起送量", "Min load");
+        both("gui.universe.control_panel.min_load_default", "100 个", "100");
+        both("gui.universe.control_panel.min_load_hint", "运输船装到一船的这么多才出发；需求比这少的，够数就走",
+                "Vessels leave once this full. Smaller demands go as soon as they're covered");
+        both("gui.universe.control_panel.partners", "伙伴 %s", "Partners %s");
+        both("gui.universe.control_panel.no_partners", "没有", "None");
+        both("gui.universe.control_panel.manage", "设置", "Edit");
+        both("gui.universe.control_panel.partners_full", "最多 %s 个伙伴", "Up to %s partners");
+        both("gui.universe.control_panel.slot_empty", "空", "Empty");
+        both("gui.universe.control_panel.slot_hint", "点一下换物品", "Click to change the item");
+        both("gui.universe.control_panel.slot_locked", "格子里有货或在途的货，空了才能换", "Has stock or goods in transit. Empty it first");
+        both("gui.universe.control_panel.clear", "清掉这一格", "Clear this slot");
+        both("gui.universe.control_panel.limit_hint", "上限 −/+ 100，按住 Shift 一次 1000", "Limit -/+ 100, hold Shift for 1000");
+        both("gui.universe.control_panel.collector_note", "采集器的格子是固定的", "Collector slots are fixed");
+        both("gui.universe.control_panel.vehicles", "无人机 %s/%s　运输船 %s/%s　翘曲器 %s", "Drones %s/%s  Vessels %s/%s  Warpers %s");
+        both("gui.universe.control_panel.drones", "无人机 %s/%s", "Drones %s/%s");
+        both("gui.universe.control_panel.locate", "定位", "Locate");
+        both("gui.universe.control_panel.locate_off", "取消定位", "Clear Mark");
+        both("gui.universe.control_panel.pin", "钉到仪表盘", "Pin to Dashboard");
+        both("gui.universe.control_panel.pin_short", "钉住", "Pin");
+        both("gui.universe.control_panel.pin_wait", "还没拿到站的信息，稍等再点", "Station info not loaded yet. Try again");
+        both("gui.universe.control_panel.located_elsewhere", "标记在%s，到了那边才看得见", "Marked on %s. Visible once you're there");
+        both("gui.universe.control_panel.bots", "机器人 %s 个", "Bots: %s");
+        both("gui.universe.control_panel.pending", "改过了，等那边的区块加载时生效", "Changed. Takes effect when its chunk loads");
+        both("gui.universe.control_panel.item_onsite", "物品要到配送器跟前设", "Set the item at the distributor itself");
+        both("gui.universe.control_panel.duplicate_item", "这座站已经有一格是这种物品了", "This station already has a slot for that item");
+        both("gui.universe.control_panel.route.new", "新建路线", "New Route");
+        both("gui.universe.control_panel.route.planets", "星球路线", "Planet route");
+        both("gui.universe.control_panel.route.systems", "星系路线", "System route");
+        both("gui.universe.control_panel.route.from_to", "%s → %s", "%s → %s");
+        both("gui.universe.control_panel.route.stations", "在走的站：%s", "Stations on it: %s");
+        both("gui.universe.control_panel.route.none", "还没有站在走。出发的一头设远程供应，到达的一头设远程需求",
+                "No stations on it yet. Set remote supply at the start and remote demand at the end");
+        both("gui.universe.control_panel.route.delete", "删除", "Delete");
+        both("gui.universe.control_panel.route.item", "物品", "Item");
+        both("gui.universe.control_panel.route.scope", "范围", "Scope");
+        both("gui.universe.control_panel.route.scope.planets", "星球", "Planets");
+        both("gui.universe.control_panel.route.scope.systems", "星系", "Systems");
+        both("gui.universe.control_panel.route.from", "从", "From");
+        both("gui.universe.control_panel.route.to", "到", "To");
+        both("gui.universe.control_panel.route.pick", "选择…", "Choose...");
+        both("gui.universe.control_panel.route.create", "创建", "Create");
+        both("gui.universe.control_panel.route.cancel", "取消", "Cancel");
+        both("gui.universe.control_panel.route.same", "两头不能是同一个地方", "Both ends can't be the same place");
+        both("gui.universe.control_panel.route.hint", "那边还没有站也能先设，站建好了就按路线走", "Works before the far end has a station. It kicks in once one is built");
+        both("gui.universe.control_panel.picker.item", "选物品", "Choose Item");
+        both("gui.universe.control_panel.picker.place", "选地方", "Choose Place");
+        both("gui.universe.control_panel.picker.partner", "点对点的伙伴", "Point-to-Point Partners");
+        both("hud.universe.control_panel.locate", "%s %s 米", "%s %sm");
+        both("guide.universe.logistics.dispatch.title", "配对的先后", "Pairing Priority");
+        both("guide.universe.logistics.dispatch",
+                "每一格找对方时分五层：\n1. 点对点的伙伴\n2. 星球路线\n3. 星系路线\n4. 同一组的站\n5. 别的站，按远近\n\n"
+                        + "高一层能配上就不往下找。那一层的站没货了或者满了，才轮到下一层；高一层有站等着的货，低一层的不来抢。\n\n"
+                        + "开了「指定配对」的站只走前四层。物品路线只管运输船，伙伴和分组无人机也认。\n"
+                        + "星际物流站能设运输船的起送量：一船的 10%、25%、50%、100%，默认 100 个。",
+                "Each slot looks for a match in five tiers:\n1. Point-to-point partners\n2. Planet routes\n3. System routes\n"
+                        + "4. Stations in the same group\n5. Everything else, nearest first\n\n"
+                        + "A higher tier wins whenever it can trade. Only when its stations are empty or full does the next tier get a turn, "
+                        + "and lower tiers keep off goods a higher tier is waiting for.\n\n"
+                        + "Paired-only stations use the first four tiers. Item routes are for vessels; partners and groups work for drones too.\n"
+                        + "Interstellar stations set a vessel min load: 10%, 25%, 50% or 100% of a vessel, 100 items by default.");
+        both("guide.universe.logistics.control_panel.title", "物流控制面板", "Logistics Control Panel");
+        both("guide.universe.logistics.control_panel",
+                "按 I 打开。星际、行星内、配送器三页列出全服的站和配送器，能按名字、星球、星系、物品筛，按名字、编号、物品排。\n\n"
+                        + "选中一座站，名字、分组、伙伴、指定配对、起送量、航程，还有每格的物品、供需和上限，都能在这里改，和走到站前面改一样。"
+                        + "格子空了才能换物品。配送器远程只改两种模式。\n\n"
+                        + "「路线」页新建物品路线：选物品，选星球还是星系，再选两头。那边还没有站也能设。\n"
+                        + "「定位」在 HUD 上标出那个地方。星图上选中一个星系，画出从它出发的路线和正在飞的运输船。",
+                "Press I. The Interstellar, Planetary and Distributors tabs list every station and distributor on the server. "
+                        + "Filter by name, planet, system or item; sort by name, number or item.\n\n"
+                        + "Select a station to change its name, group, partners, paired-only switch, min load and range, plus each slot's item, "
+                        + "logic and limit, same as at the station. A slot has to be empty before its item changes. Distributors only take "
+                        + "mode changes from here.\n\n"
+                        + "The Routes tab makes item routes: pick an item, planets or systems, then both ends. The far end doesn't need a station yet.\n"
+                        + "Locate marks the spot on your HUD. Select a system on the star map to see its routes and the vessels in flight.");
+    }
+
     private void wrapUpShip() {
         both("key.universe.ship_cargo", "打开飞船货舱", "Open Ship Cargo");
         both("gui.universe.ship_cargo.title", "货舱", "Cargo");
@@ -1724,9 +1981,9 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("tooltip.universe.fossil_dirt.summary", "化石坑底的土，里面埋着化石\n用铲子挖开，掉一块化石\n精准采集拿走整块土",
                 "Soil from the floor of a fossil pit, with a fossil inside\nDig it with a shovel for the fossil\nSilk Touch takes the whole block");
         item(UniverseItems.SHELL_FOSSIL.get(), "螺壳化石", "Coiled Shell Fossil");
-        both("tooltip.universe.shell_fossil.summary", "盘成一圈的外壳，和地球上的菊石很像\n化石坑里常见。只能卖", "A coiled shell, much like an ammonite\nCommon in fossil pits. Sell-only");
+        both("tooltip.universe.shell_fossil.summary", "盘成一圈的外壳，和地球上的菊石很像\n化石坑里常见。研究「古生物学」要交，别的时候只能卖", "A coiled shell, much like an ammonite\nCommon in fossil pits. Paleontology research needs it; otherwise sell-only");
         item(UniverseItems.ARTHROPOD_FOSSIL.get(), "节肢动物化石", "Arthropod Fossil");
-        both("tooltip.universe.arthropod_fossil.summary", "一节一节的硬壳，有点像三叶虫\n化石坑里不多见。只能卖", "A segmented shell, a bit like a trilobite\nUncommon in fossil pits. Sell-only");
+        both("tooltip.universe.arthropod_fossil.summary", "一节一节的硬壳，有点像三叶虫\n化石坑里不多见。研究「古生物学」要交，别的时候只能卖", "A segmented shell, a bit like a trilobite\nUncommon in fossil pits. Paleontology research needs it; otherwise sell-only");
         item(UniverseItems.SKULL_FOSSIL.get(), "头骨化石", "Skull Fossil");
         both("tooltip.universe.skull_fossil.summary", "一种大型动物的头骨，保存得很完整\n化石坑里很少见。只能卖，价钱高",
                 "The skull of a large animal, well preserved\nRare in fossil pits. Sell-only, and worth a lot");
@@ -1741,8 +1998,8 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         // 手册（探索一章）
         both("guide.universe.exploration.fossils.title", "化石坑", "Fossil Pits");
         both("guide.universe.exploration.fossils",
-                "宜居、荒芜、灼热、冰冻的星球上有没人管的化石发掘坑，多功能工具的扫描能标出来。\n\n坑底露着 6–10 块化石土，用铲子挖开，每块掉一块化石：\n螺壳化石：常见\n节肢动物化石：不多见\n头骨化石：很少见，最值钱\n\n化石只能在空间站卖。",
-                "Habitable, barren, scorched and frozen planets have abandoned fossil digs. Multitool scans mark them.\n\nThe pit floor shows 6–10 Fossil Dirt. Dig each with a shovel for one fossil:\nCoiled Shell Fossil: common\nArthropod Fossil: uncommon\nSkull Fossil: rare, worth the most\n\nFossils are sell-only.");
+                "宜居、荒芜、灼热、冰冻的星球上有没人管的化石发掘坑，多功能工具的扫描能标出来。\n\n坑底露着 6–10 块化石土，用铲子挖开，每块掉一块化石：\n螺壳化石：常见\n节肢动物化石：不多见\n头骨化石：很少见，最值钱\n\n化石在空间站能卖，螺壳化石和节肢动物化石也是研究「古生物学」要交的。星球上的化石土还常带出骨头，见「古生物」一章。",
+                "Habitable, barren, scorched and frozen planets have abandoned fossil digs. Multitool scans mark them.\n\nThe pit floor shows 6–10 Fossil Dirt. Dig each with a shovel for one fossil:\nCoiled Shell Fossil: common\nArthropod Fossil: uncommon\nSkull Fossil: rare, worth the most\n\nFossils sell at stations, and Paleontology research takes shell and arthropod fossils. Fossil dirt on planets often gives a bone too; see Paleontology.");
         both("guide.universe.exploration.salvage.title", "打捞点和废弃建筑", "Salvage and Abandoned Buildings");
         both("guide.universe.exploration.salvage",
                 "打捞点：一片烧焦的地，旁边一根亮灯的信标。从正中往下挖开 3 块保护壳，下面是打捞舱，右键打开，倒出打捞的废料和零件，只能开一次。废料只能卖。\n\n废弃建筑：门坏了的旧居住舱。里面的数据终端第一次读给一份导航数据，还有一个补给箱。",
@@ -1752,8 +2009,8 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
                 "雷暴时雷打在沙、土、石头上，有时把落点熔成一根往下伸的玻璃管，这就是雷击石。用镐挖，在空间站能卖。\n\n下雨的星球有雷暴，火山灰的风暴里也打雷。打在基地和建筑附近的雷熔不出雷击石。\n\n雷会打到人，风暴里别站在空地上。",
                 "In thunderstorms, lightning that hits sand, soil or rock sometimes fuses a glass tube down into the ground: fulgurite. Mine it with a pickaxe and sell it at a station.\n\nRainy planets get thunderstorms, and volcanic ash storms throw lightning too. Strikes near bases and buildings leave none.\n\nLightning can hit you. Don't stand in the open during a storm.");
         // JEI 的说明页
-        both("jei.universe.info.fossil", "化石坑里的化石土用铲子挖出来。宜居、荒芜、灼热、冰冻的星球上有化石坑。只能卖。",
-                "Dug from Fossil Dirt in fossil pits on habitable, barren, scorched and frozen planets. Sell-only.");
+        both("jei.universe.info.fossil", "化石坑里的化石土用铲子挖出来。宜居、荒芜、灼热、冰冻的星球上有化石坑。在空间站卖，螺壳和节肢动物化石也用来研究古生物学。",
+                "Dug from Fossil Dirt in fossil pits on habitable, barren, scorched and frozen planets. Sells at stations; shell and arthropod fossils also go to Paleontology research.");
         both("jei.universe.info.salvaged_scrap", "打捞点的打捞舱里有，舱埋在 3 块保护壳下面。只能卖。",
                 "Found in salvage capsules, buried under 3 shell plates at salvage sites. Sell-only.");
         both("jei.universe.info.fulgurite", "雷暴时雷打在沙、土、石头上熔成的。用镐挖，在空间站能卖。",
@@ -3579,9 +3836,11 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("gui.universe.receiver.max_output", "最大输出 %s · 分到 %s%%", "Max output %s · share %s%%");
         both("gui.universe.receiver.photon_draw", "从戴森球取 %s · 分到 %s%%", "Drawing %s · share %s%%");
         both("gui.universe.receiver.photon", "下一个临界光子 %s%%", "Next critical photon %s%%");
-        both("gui.universe.receiver.lens", "引力透镜 %s%%（功率×2）", "Graviton lens %s%% (power ×2)");
-        both("gui.universe.receiver.no_lens", "没有引力透镜", "No graviton lens");
-        both("gui.universe.receiver.lens_hint", "功率翻倍；有大气的星球上不用看见恒星", "Doubles power; no line of sight needed under an atmosphere");
+        both("gui.universe.receiver.lens.graviton", "引力透镜 %s%%（功率×2）", "Graviton lens %s%% (power ×2)");
+        both("gui.universe.receiver.lens.dark_fog", "黑雾透镜 %s%%（功率×2，损耗减半）", "Dark fog lens %s%% (power ×2, half loss)");
+        both("gui.universe.receiver.no_lens", "没有透镜", "No lens");
+        both("gui.universe.receiver.lens_hint", "引力透镜或黑雾透镜：功率翻倍；有大气的星球上不用看见恒星",
+                "Graviton or dark fog lens: doubles power; no line of sight needed under an atmosphere");
         both("gui.universe.receiver.status.0", "正在接收", "Receiving");
         both("gui.universe.receiver.status.1", "戴森球没有发电", "The Dyson sphere generates no power");
         both("gui.universe.receiver.status.2", "恒星在地平线以下", "The star is below the horizon");
@@ -3756,8 +4015,8 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
                 "Stone pillars carved with glowing script. Every planet you can land on has them, barren ones included, and scans mark them.\n\nRight-click one to learn a word of the system's dominant race. Each stone teaches each player once; after that it just tells you you've read it.\n\nThey can't be mined or moved.");
         both("guide.universe.civilization.settlements.title", "聚落", "Settlements");
         both("guide.universe.civilization.settlements",
-                "有大气、不荒芜的星球上有聚落，扫描能标出来。几间小屋围着一片广场，样子随这个恒星系的主导种族：商旅族搭帐篷，学者族住白墙玻璃房，戍卫族住厚墙石堡。\n\n广场上立着一块知识石\n货摊里的交易终端和交易站的一样\n两个访客站在广场两边\n技术商在货摊旁边",
-                "Found on planets with an atmosphere that aren't barren. Scans mark them. The huts follow the system's dominant race: tents for Traders, white glass houses for Scholars, stone forts for Wardens.\n\nA Knowledge Stone stands in the plaza\nThe stall's terminal works like a trading post's\nTwo visitors wait by the plaza\nA tech merchant stands at the stall");
+                "有大气、不荒芜的星球上有聚落，扫描能标出来。几间小屋围着一片广场，样子随这个恒星系的主导种族：商旅族搭帐篷，学者族住白墙玻璃房，戍卫族住厚墙石堡。\n\n广场上立着一块知识石\n货摊里的交易终端和交易站的一样\n两个访客站在广场两边\n技术商在货摊旁边\n\n没有总督的聚落能接管，见「管理聚落」一章。",
+                "Found on planets with an atmosphere that aren't barren. Scans mark them. The huts follow the system's dominant race: tents for Traders, white glass houses for Scholars, stone forts for Wardens.\n\nA Knowledge Stone stands in the plaza\nThe stall's terminal works like a trading post's\nTwo visitors wait by the plaza\nA tech merchant stands at the stall\n\nA settlement with no governor can be claimed; see Running a Settlement.");
     }
 
     /** 外星 NPC 和对话（ADR-0027 §三、§四）：角色、头顶的名字、对话界面、送礼的反应、手册"外星文明"一章的对话页。 */

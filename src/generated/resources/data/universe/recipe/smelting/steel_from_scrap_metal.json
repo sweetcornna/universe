@@ -1,0 +1,16 @@
+{
+  "type": "universe:smelting",
+  "ingredients": [
+    {
+      "count": 6,
+      "ingredient": "universe:scrap_metal"
+    }
+  ],
+  "research": "steel_smelting",
+  "results": [
+    {
+      "id": "universe:steel"
+    }
+  ],
+  "time": 120
+}

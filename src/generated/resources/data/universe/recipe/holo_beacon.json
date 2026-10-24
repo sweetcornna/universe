@@ -1,0 +1,18 @@
+{
+  "type": "universe:research_shaped",
+  "key": {
+    "B": "universe:circuit_board",
+    "G": "minecraft:glass",
+    "I": "minecraft:iron_ingot",
+    "M": "universe:magnetic_coil"
+  },
+  "pattern": [
+    " G ",
+    "MBM",
+    "III"
+  ],
+  "research": "holo_beacon",
+  "result": {
+    "id": "universe:holo_beacon"
+  }
+}

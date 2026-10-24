@@ -1,0 +1,28 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 3,
+      "ingredient": "universe:steel"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:circuit_board"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:magnetic_coil"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:thruster"
+    }
+  ],
+  "research": "ground_squadron",
+  "results": [
+    {
+      "id": "universe:prototype"
+    }
+  ],
+  "time": 80
+}

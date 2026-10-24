@@ -14,6 +14,8 @@ import java.util.SplittableRandom;
  * <li>{@link Mode#REGROUP 后撤}：船体剩三成五以下时退到 {@link #REGROUP_RANGE} 格外绕圈，等护盾回满再回来；之后一段时间不再后撤。
  * <li>{@link Mode#LEAVE 撤走}：袭击结束（玩家跃迁、降落、飞进空间站附近）时背对目标加速飞走。
  * </ul>
+ *
+ * <p>在星球上（聚落来袭，ADR-0034 §二）给一个{@link #floor 最低高度}：俯冲扫射地面目标时离地太近就拉起来，拉开时往上爬。
  */
 public final class PirateFlight {
     public enum Mode {
@@ -65,6 +67,8 @@ public final class PirateFlight {
     private int cooldown;
     private int regroupCooldown;
     private double[] extendDirection = {0, 0, 1};
+    /** 最低高度：在星球上飞时是脚下地面往上几格；太空里没有。 */
+    private double floor = Double.NEGATIVE_INFINITY;
 
     /**
      * @param seed  随机数种子
@@ -96,6 +100,11 @@ public final class PirateFlight {
 
     public Mode mode() {
         return this.mode;
+    }
+
+    /** 在星球上飞：这一刻脚下的最低高度（地面往上留几格），低于它就拉起来。 */
+    public void floor(double y) {
+        this.floor = y;
     }
 
     /** 袭击结束：撤走。 */
@@ -144,7 +153,8 @@ public final class PirateFlight {
                 if (gap < BREAK_DISTANCE) {
                     this.mode = Mode.EXTEND;
                     this.timer = 0;
-                    double climb = (this.random.nextDouble() - 0.5) * 0.4;
+                    // 星球上扫射完往上拉，太空里上下随便
+                    double climb = Double.isFinite(this.floor) ? 0.35 + this.random.nextDouble() * 0.3 : (this.random.nextDouble() - 0.5) * 0.4;
                     this.extendDirection = ShipCombat.normalize(add(add(forward, scale(lateral, 0.9)), scale(UP, climb)));
                 }
             }
@@ -176,6 +186,14 @@ public final class PirateFlight {
         // 别撞上目标
         if (gap < 5 && this.mode != Mode.LEAVE) {
             desired = add(desired, scale(dir, -this.speed * 1.5));
+        }
+        // 别撞上地面：照现在的速度再飞 12 刻会低于最低高度，就往上拉
+        if (Double.isFinite(this.floor)) {
+            double ahead = pos[1] + vel[1] * 12;
+            if (ahead < this.floor) {
+                double pull = Math.min(1, (this.floor - ahead) / 10);
+                desired = new double[] {desired[0] * (1 - 0.5 * pull), Math.max(desired[1], this.speed * pull), desired[2] * (1 - 0.5 * pull)};
+            }
         }
 
         double[] change = sub(desired, vel);

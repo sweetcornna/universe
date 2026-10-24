@@ -8,6 +8,7 @@ import io.github.sweetcornna.universe.core.darkfog.HiveWeapons;
 import io.github.sweetcornna.universe.darkfog.entity.DarkFogDamage;
 import io.github.sweetcornna.universe.entity.PlasmaBolt;
 import io.github.sweetcornna.universe.entity.ship.ShipEntity;
+import io.github.sweetcornna.universe.mecha.fleet.FleetUnit;
 import io.github.sweetcornna.universe.registry.UniverseEntities;
 import io.github.sweetcornna.universe.registry.sound.HostileSounds;
 import net.minecraft.core.particles.DustParticleOptions;
@@ -104,7 +105,7 @@ public class HivePlasmaShell extends ThrowableProjectile {
         }
     }
 
-    /** 近炸：飞船或者人在 {@link #FUSE} 格内。 */
+    /** 近炸：飞船、人或者机甲的舰队单位在 {@link #FUSE} 格内。 */
     private boolean nearTarget(ServerLevel level) {
         AABB box = this.getBoundingBox().inflate(FUSE + 8);
         for (ShipEntity ship : level.getEntitiesOfClass(ShipEntity.class, box, HiveBuilding::shootableShip)) {
@@ -115,6 +116,11 @@ public class HivePlasmaShell extends ThrowableProjectile {
         for (Player player : this.players(level)) {
             if (DarkFogDamage.targetable(player) && !(player.getVehicle() instanceof ShipEntity)
                     && player.getBoundingBox().inflate(FUSE).contains(this.position())) {
+                return true;
+            }
+        }
+        for (FleetUnit unit : DarkFogDamage.fleetUnits(level, this.position(), FUSE + 8)) {
+            if (unit.getBoundingBox().inflate(FUSE).contains(this.position())) {
                 return true;
             }
         }
@@ -139,7 +145,7 @@ public class HivePlasmaShell extends ThrowableProjectile {
         }
     }
 
-    /** 炸开：范围里的飞船、没坐飞船的人挨打，离爆心越远越轻。 */
+    /** 炸开：范围里的飞船、没坐飞船的人、舰队单位挨打，离爆心越远越轻。 */
     private void burst(ServerLevel level, Vec3 at) {
         double radius = HiveWeapons.Weapon.PLASMA.splash();
         Set<Entity> hit = new LinkedHashSet<>();
@@ -153,6 +159,11 @@ public class HivePlasmaShell extends ThrowableProjectile {
             if (DarkFogDamage.targetable(player) && !(player.getVehicle() instanceof ShipEntity)
                     && Math.sqrt(player.getBoundingBox().distanceToSqr(at)) <= radius) {
                 hit.add(player);
+            }
+        }
+        for (FleetUnit unit : DarkFogDamage.fleetUnits(level, at, radius + 8)) {
+            if (Math.sqrt(unit.getBoundingBox().distanceToSqr(at)) <= radius) {
+                hit.add(unit);
             }
         }
         for (Entity entity : hit) {

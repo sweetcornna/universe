@@ -200,6 +200,68 @@ public final class UniverseEntities {
             ENTITIES.registerEntityType("turret_plasma", io.github.sweetcornna.universe.darkfog.turret.TurretPlasma::new, MobCategory.MISC,
                     builder -> builder.sized(0.4F, 0.4F).clientTrackingRange(8).updateInterval(1).noSave().noLootTable().fireImmune());
     // M16 黑雾：等离子炮塔（T）的实体加在这行上面
+    // ---- M18 舰队和战斗（ADR-0033 §一、§二）
+    /** 机甲放出来的舰队单位：物品一直在编队格里，实体只是它在外面的样子，不存档。 */
+    public static final DeferredHolder<EntityType<?>, EntityType<io.github.sweetcornna.universe.mecha.fleet.FleetUnit>> FLEET_PROTOTYPE =
+            fleet("fleet_prototype", io.github.sweetcornna.universe.core.mecha.fleet.FleetUnitKind.PROTOTYPE, 0.7F, 0.5F, 10);
+    public static final DeferredHolder<EntityType<?>, EntityType<io.github.sweetcornna.universe.mecha.fleet.FleetUnit>> FLEET_PRECISION_DRONE =
+            fleet("fleet_precision_drone", io.github.sweetcornna.universe.core.mecha.fleet.FleetUnitKind.PRECISION_DRONE, 0.8F, 0.5F, 10);
+    public static final DeferredHolder<EntityType<?>, EntityType<io.github.sweetcornna.universe.mecha.fleet.FleetUnit>> FLEET_ATTACK_DRONE =
+            fleet("fleet_attack_drone", io.github.sweetcornna.universe.core.mecha.fleet.FleetUnitKind.ATTACK_DRONE, 1.0F, 0.7F, 10);
+    public static final DeferredHolder<EntityType<?>, EntityType<io.github.sweetcornna.universe.mecha.fleet.FleetUnit>> FLEET_CORVETTE =
+            fleet("fleet_corvette", io.github.sweetcornna.universe.core.mecha.fleet.FleetUnitKind.CORVETTE, 2.5F, 1.2F, 20);
+    public static final DeferredHolder<EntityType<?>, EntityType<io.github.sweetcornna.universe.mecha.fleet.FleetUnit>> FLEET_DESTROYER =
+            fleet("fleet_destroyer", io.github.sweetcornna.universe.core.mecha.fleet.FleetUnitKind.DESTROYER, 5.0F, 2.0F, 24);
+    /** 舰队单位、机甲等离子炮打出的等离子团：算放它的玩家打的，直线飞，每刻同步；不存档。 */
+    public static final DeferredHolder<EntityType<?>, EntityType<io.github.sweetcornna.universe.mecha.combat.PlasmaShot>> PLASMA_SHOT =
+            ENTITIES.registerEntityType("plasma_shot", io.github.sweetcornna.universe.mecha.combat.PlasmaShot::new, MobCategory.MISC,
+                    builder -> builder.sized(0.4F, 0.4F).clientTrackingRange(10).updateInterval(1).noSave().noLootTable().fireImmune());
+    /** 机甲的导弹：会拐弯，每刻同步；不存档。 */
+    public static final DeferredHolder<EntityType<?>, EntityType<io.github.sweetcornna.universe.mecha.combat.MechaMissile>> MECHA_MISSILE =
+            ENTITIES.registerEntityType("mecha_missile", io.github.sweetcornna.universe.mecha.combat.MechaMissile::new, MobCategory.MISC,
+                    builder -> builder.sized(0.35F, 0.35F).clientTrackingRange(8).updateInterval(1).noSave().noLootTable().fireImmune());
+
+    private static DeferredHolder<EntityType<?>, EntityType<io.github.sweetcornna.universe.mecha.fleet.FleetUnit>> fleet(String name,
+            io.github.sweetcornna.universe.core.mecha.fleet.FleetUnitKind kind, float width, float height, int tracking) {
+        return ENTITIES.registerEntityType(name, (type, level) -> new io.github.sweetcornna.universe.mecha.fleet.FleetUnit(type, level, kind),
+                MobCategory.MISC, builder -> builder.sized(width, height).eyeHeight(height * 0.5F).clientTrackingRange(tracking).updateInterval(1)
+                        .noSave().noLootTable().fireImmune());
+    }
+    // M18 舰队和战斗（A）的实体加在这行上面
+    // M18 物流调度（B）的实体加在这行上面
+    // M18 统计和研究（C）的实体加在这行上面
+    // M18 信标、透镜、矿脉、蓝图（D）的实体加在这行上面
+    /** 钓鱼器的浮标（ADR-0034 §一）。 */
+    public static final DeferredHolder<EntityType<?>, EntityType<io.github.sweetcornna.universe.fishing.FishingBobber>> FISHING_BOBBER = ENTITIES.registerEntityType("fishing_bobber",
+            io.github.sweetcornna.universe.fishing.FishingBobber::new, MobCategory.MISC,
+            builder -> builder.sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(5).noSave().noSummon().noLootTable());
+    // M19 钓鱼（A）的实体加在这行上面
+    // M19 聚落（B）的实体加在这行上面
+    /** 石哨兵（ADR-0034 §三）：发掘场边上睡着的石头醒过来变的，存档；附近没人了落回去变回方块。 */
+    public static final DeferredHolder<EntityType<?>, EntityType<io.github.sweetcornna.universe.fossil.StoneSentry>> STONE_SENTRY = ENTITIES.registerEntityType("stone_sentry",
+            io.github.sweetcornna.universe.fossil.StoneSentry::new, MobCategory.MONSTER,
+            builder -> builder.sized(1.0F, 1.0F).eyeHeight(0.55F).clientTrackingRange(10).fireImmune());
+    /** 石哨兵扔的石块：吊着飞，不存档。 */
+    public static final DeferredHolder<EntityType<?>, EntityType<io.github.sweetcornna.universe.fossil.SentryRock>> SENTRY_ROCK = ENTITIES.registerEntityType("sentry_rock",
+            io.github.sweetcornna.universe.fossil.SentryRock::new, MobCategory.MISC,
+            builder -> builder.sized(0.4F, 0.4F).clientTrackingRange(6).updateInterval(2).noSave().noLootTable());
+    // M19 化石（C）的实体加在这行上面
+    /** 碎片带里的残骸碎片（ADR-0034 §四）：大小按种子定，打碎了按战利品表掉打捞物；不存档，由碎片带重新生成。 */
+    public static final DeferredHolder<EntityType<?>, EntityType<io.github.sweetcornna.universe.deepspace.DebrisChunk>> DEBRIS_CHUNK =
+            ENTITIES.registerEntityType("debris_chunk", io.github.sweetcornna.universe.deepspace.DebrisChunk::new, MobCategory.MISC,
+                    builder -> builder.sized(1.0F, 1.0F).clientTrackingRange(16).updateInterval(2).noSave().fireImmune());
+    // M19 深空和重力枪（D）的实体加在这行上面
+    /** 局部危害（ADR-0034 §六）：火山喷发的熔岩弹、孢子云、尘卷风，都不存档。熔岩弹飞得高，远远就要看得见。 */
+    public static final DeferredHolder<EntityType<?>, EntityType<io.github.sweetcornna.universe.hazard.LavaBomb>> LAVA_BOMB = ENTITIES.registerEntityType(
+            "lava_bomb", io.github.sweetcornna.universe.hazard.LavaBomb::new, MobCategory.MISC,
+            builder -> builder.sized(0.7F, 0.7F).clientTrackingRange(12).updateInterval(2).noSave().noLootTable().fireImmune());
+    public static final DeferredHolder<EntityType<?>, EntityType<io.github.sweetcornna.universe.hazard.SporeCloud>> SPORE_CLOUD = ENTITIES.registerEntityType(
+            "spore_cloud", io.github.sweetcornna.universe.hazard.SporeCloud::new, MobCategory.MISC,
+            builder -> builder.sized(10.0F, 5.0F).clientTrackingRange(10).updateInterval(5).noSave().noLootTable().fireImmune().noSummon());
+    public static final DeferredHolder<EntityType<?>, EntityType<io.github.sweetcornna.universe.hazard.DustDevil>> DUST_DEVIL = ENTITIES.registerEntityType(
+            "dust_devil", io.github.sweetcornna.universe.hazard.DustDevil::new, MobCategory.MISC,
+            builder -> builder.sized(6.0F, 12.0F).clientTrackingRange(10).updateInterval(2).noSave().noLootTable().fireImmune().noSummon());
+    // M19 科技布局和局部危害（E）的实体加在这行上面
 
     private UniverseEntities() {
     }

@@ -3,9 +3,18 @@ package io.github.sweetcornna.universe.entity.ship;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.github.sweetcornna.universe.core.deepspace.ShipSides;
+import io.github.sweetcornna.universe.core.ship.ShipShape;
+import io.github.sweetcornna.universe.deepspace.ShipTractor;
+import io.github.sweetcornna.universe.registry.sound.DeepSpaceSounds;
+import io.github.sweetcornna.universe.world.space.SpaceDimensions;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Container;
+import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -66,6 +75,86 @@ public final class ShipCargoContainer implements Container {
             innerOf[i] = slots.get(i)[1];
         }
         return new ShipCargoContainer(ship, registries, blocks, holds, holdOf, innerOf);
+    }
+
+    /**
+     * 往这艘船的货舱里装东西用的容器（ADR-0034 §四 牵引光束、碎片）：有人开着这艘船的货舱界面时用界面那一份，
+     * 不然两份各写各的，后写回去的会把先装进去的冲掉。
+     */
+    public static ShipCargoContainer forShip(ShipEntity ship, RegistryAccess registries) {
+        if (ship.level() instanceof ServerLevel level) {
+            for (ServerPlayer player : level.getServer().getPlayerList().getPlayers()) {
+                if (player.containerMenu instanceof ShipCargoMenu menu && menu.cargo() instanceof ShipCargoContainer open && open.ship == ship) {
+                    return open;
+                }
+            }
+        }
+        return of(ship, registries);
+    }
+
+    public ShipEntity ship() {
+        return this.ship;
+    }
+
+    /**
+     * 装东西：先叠到同样的东西上，再放进空格。{@code stack} 会被减掉装进去的数量，返回装进去了几件。
+     * 改动要等 {@link #setChanged()} 才写回船上（一批装完再写一次）。
+     */
+    public int insert(ItemStack stack) {
+        int before = stack.getCount();
+        for (int pass = 0; pass < 2 && !stack.isEmpty(); pass++) {
+            for (int i = 0; i < this.getContainerSize() && !stack.isEmpty(); i++) {
+                if (!this.canPlaceItem(i, stack)) {
+                    continue;
+                }
+                ItemStack there = this.getItem(i);
+                int limit = Math.min(this.getMaxStackSize(stack), stack.getMaxStackSize());
+                if (pass == 0 && !there.isEmpty() && ItemStack.isSameItemSameComponents(there, stack) && there.getCount() < limit) {
+                    int move = Math.min(stack.getCount(), limit - there.getCount());
+                    there.grow(move);
+                    this.setItem(i, there);
+                    stack.shrink(move);
+                } else if (pass == 1 && there.isEmpty()) {
+                    this.setItem(i, stack.split(Math.min(stack.getCount(), limit)));
+                }
+            }
+        }
+        return before - stack.getCount();
+    }
+
+    /**
+     * 抛货（ADR-0034 §四）：第 {@code slot} 格的东西从船尾飘出去；{@code slot} 为 −1 时全部抛出。返回抛了几格。
+     * 抛出去的东西一会儿之内牵引光束不吸回来。
+     */
+    public int jettison(int slot) {
+        if (!(this.ship.level() instanceof ServerLevel level) || this.ship.structure() == null) {
+            return 0;
+        }
+        ShipShape shape = this.ship.structure().shape();
+        double[] center = {this.ship.getX(), this.ship.getY() + shape.height() / 2.0, this.ship.getZ()};
+        boolean space = SpaceDimensions.isSpace(level.dimension());
+        int from = slot < 0 ? 0 : slot;
+        int to = slot < 0 ? this.getContainerSize() : Math.min(slot + 1, this.getContainerSize());
+        int thrown = 0;
+        for (int i = from; i < to; i++) {
+            ItemStack stack = this.removeItemNoUpdate(i);
+            if (stack.isEmpty()) {
+                continue;
+            }
+            double[] at = ShipSides.jettison(center, this.ship.getYRot(), shape.radius(), thrown);
+            ItemEntity item = new ItemEntity(level, at[0], at[1], at[2], stack, at[3], at[4], at[5]);
+            item.setPickUpDelay(40);
+            item.setNoGravity(space);
+            ShipTractor.ignore(item, level.getGameTime() + ShipTractor.JETTISON_IGNORE);
+            level.addFreshEntity(item);
+            thrown++;
+        }
+        if (thrown > 0) {
+            this.setChanged();
+            double[] at = ShipSides.jettison(center, this.ship.getYRot(), shape.radius(), 0);
+            level.playSound(null, at[0], at[1], at[2], DeepSpaceSounds.JETTISON.get(), SoundSource.NEUTRAL, 0.9F, thrown > 3 ? 0.85F : 1.0F);
+        }
+        return thrown;
     }
 
     @Override

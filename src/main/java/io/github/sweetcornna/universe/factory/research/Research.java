@@ -104,9 +104,27 @@ public final class Research {
             return;
         }
         data.state().complete(tech);
+        // 上交物品完成的科技可能让队里排着的能研究了
+        data.state().advance(TREE);
         data.setDirty();
         announce(server, tech);
         sync(server);
+    }
+
+    /** 研究队列最多排几项：通关后变多（ADR-0033 §五）。 */
+    public static int queueLimit(ResearchState state) {
+        return ResearchState.queueLimit(state.isDone(Story.FINAL_TECH));
+    }
+
+    /** 排进研究队列（科技树界面、开发脚本、GameTest 用）。 */
+    public static boolean enqueue(MinecraftServer server, String tech) {
+        ResearchData data = ResearchData.get(server);
+        if (!data.state().enqueue(TREE, tech, queueLimit(data.state()))) {
+            return false;
+        }
+        data.setDirty();
+        sync(server);
+        return true;
     }
 
     /** 研究站攒了一点。 */
@@ -179,6 +197,36 @@ public final class Research {
             }
             case STOP -> {
                 state.stop();
+                // 停下来也接着研究队里的下一项
+                state.advance(TREE);
+                data.setDirty();
+                sync(server);
+            }
+            case QUEUE_ADD -> {
+                if (!enqueue(server, id)) {
+                    player.sendSystemMessage(Component.translatable(state.queue().size() >= queueLimit(state)
+                            ? "research.universe.queue_full" : "research.universe.queue_blocked").withStyle(ChatFormatting.RED));
+                }
+            }
+            case QUEUE_REMOVE, QUEUE_UP, QUEUE_DOWN -> {
+                int index = payload.index();
+                if (index < 0 || index >= state.queue().size() || !state.queue().get(index).equals(id)) {
+                    // 别人刚改过队列：把现在的发回去
+                    sync(server);
+                    return;
+                }
+                boolean changed = switch (payload.action()) {
+                    case QUEUE_REMOVE -> state.dequeue(TREE, index);
+                    case QUEUE_UP -> state.move(index, -1);
+                    default -> state.move(index, 1);
+                };
+                if (changed) {
+                    data.setDirty();
+                    sync(server);
+                }
+            }
+            case QUEUE_CLEAR -> {
+                state.clearQueue();
                 data.setDirty();
                 sync(server);
             }

@@ -111,11 +111,33 @@ public class ShipCargoMenu extends AbstractContainerMenu {
     /**
      * 客户端滚了滚动条：按钮号就是要滚到的行。服务端也要跟着滚，不然两边的格子对着货舱里不同的格，
      * 拿东西会拿错一格。
+     *
+     * <p>负数是抛货（ADR-0034 §四）：{@link #JETTISON_ALL} 全部抛出，{@link #jettisonButton} 换算出来的是抛第几格。
+     * 只有坐在船上的人能抛。
      */
     @Override
     public boolean clickMenuButton(Player player, int id) {
+        if (id < 0) {
+            if (this.cargo instanceof ShipCargoContainer ship && player.getVehicle() == ship.ship()) {
+                return ship.jettison(id == JETTISON_ALL ? -1 : -2 - id) > 0;
+            }
+            return false;
+        }
         this.setScroll(id);
         return true;
+    }
+
+    /** 抛货的按钮号：全部抛出。 */
+    public static final int JETTISON_ALL = -1;
+
+    /** 抛货的按钮号：抛货舱的第 {@code index} 格。 */
+    public static int jettisonButton(int index) {
+        return -2 - index;
+    }
+
+    /** 服务端是 {@link ShipCargoContainer}，客户端是同步用的 {@link SimpleContainer}。 */
+    Container cargo() {
+        return this.cargo;
     }
 
     @Override

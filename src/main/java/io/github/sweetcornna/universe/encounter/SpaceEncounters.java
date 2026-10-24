@@ -408,6 +408,11 @@ public final class SpaceEncounters {
         for (Map.Entry<UUID, FleetData.Entry> entry : FleetData.get(server).inSystem(system)) {
             entry.getValue().placed().ifPresent(p -> taken.add(new double[] {p.x(), p.y(), p.z()}));
         }
+        // 也别放进深空的兴趣点（碎片带、前哨站、残骸，ADR-0034 §四）
+        for (io.github.sweetcornna.universe.core.deepspace.DeepSpaceSites.Site site
+                : io.github.sweetcornna.universe.deepspace.DeepSpace.sites(server, system)) {
+            taken.add(new double[] {site.x(), site.y(), site.z()});
+        }
         for (int attempt = 0; attempt < 8; attempt++) {
             float yaw = ship.getYRot() + (attempt == 0 ? 0 : (float) rng.range(-120.0, 120.0));
             double[] at = Encounters.ahead(ship.getX(), ship.getY(), ship.getZ(), yaw, min, max, rng);

@@ -55,6 +55,7 @@ public class BlueprintItem extends Item {
             if (stack.has(UniverseDataComponents.BLUEPRINT.get())) {
                 stack.remove(UniverseDataComponents.BLUEPRINT.get());
                 stack.remove(UniverseDataComponents.BLUEPRINT_ROTATION.get());
+                stack.remove(UniverseDataComponents.BLUEPRINT_DEVICES_ONLY.get());
                 serverPlayer.sendOverlayMessage(Component.translatable("message.universe.blueprint.cleared"));
             } else {
                 Blueprints.requestSave(serverPlayer, stack);
@@ -102,8 +103,22 @@ public class BlueprintItem extends Item {
             }
             return;
         }
+        // 作者、版本、说明（ADR-0033 §九）；M18 以前存的蓝图没有作者
+        BlueprintData.Meta meta = info.meta();
+        if (!meta.author().isEmpty()) {
+            builder.accept(Component.translatable("tooltip.universe.blueprint.author", meta.author(), meta.version())
+                    .withStyle(ChatFormatting.GRAY));
+        } else if (meta.version() > 1) {
+            builder.accept(Component.translatable("tooltip.universe.blueprint.version", meta.version()).withStyle(ChatFormatting.GRAY));
+        }
+        if (!meta.description().isEmpty()) {
+            builder.accept(Component.literal(meta.description()).withStyle(ChatFormatting.ITALIC, ChatFormatting.DARK_AQUA));
+        }
         builder.accept(Component.translatable("tooltip.universe.blueprint.size", info.sizeX(), info.sizeY(), info.sizeZ(), info.blocks())
                 .withStyle(ChatFormatting.GRAY));
+        if (stack.getOrDefault(UniverseDataComponents.BLUEPRINT_DEVICES_ONLY.get(), false)) {
+            builder.accept(Component.translatable("tooltip.universe.blueprint.devices_only").withStyle(ChatFormatting.GOLD));
+        }
         int shown = 0;
         for (BlueprintInfo.Material material : info.materials()) {
             if (shown == Blueprints.LISTED_MATERIALS) {

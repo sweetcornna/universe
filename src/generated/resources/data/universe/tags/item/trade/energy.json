@@ -21,6 +21,7 @@
     "universe:cold_gel",
     "universe:heat_gel",
     "universe:toxin_gel",
-    "universe:radiation_gel"
+    "universe:radiation_gel",
+    "universe:salvaged_reactor_core"
   ]
 }

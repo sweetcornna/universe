@@ -1,0 +1,24 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:graviton_lens"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:core_element"
+    },
+    {
+      "count": 4,
+      "ingredient": "universe:energy_shard"
+    }
+  ],
+  "research": "dark_fog_lens",
+  "results": [
+    {
+      "id": "universe:dark_fog_lens"
+    }
+  ],
+  "time": 160
+}
