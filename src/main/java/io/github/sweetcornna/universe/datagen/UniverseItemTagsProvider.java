@@ -53,6 +53,14 @@ final class UniverseItemTagsProvider extends ItemTagsProvider {
         this.trade();
         this.wrapUpAcid();
         this.wrapUpInterop();
+        FishingData.itemTags(this::tag);
+        // M19 钓鱼（A）的物品标签（调自己的方法）加在这行上面
+        SettlementDatagen.itemTags(this::tag);
+        // M19 聚落（B）的物品标签（调自己的方法）加在这行上面
+        // M19 化石（C）的物品标签（调自己的方法）加在这行上面
+        DeepSpaceDatagen.itemTags(this::tag);
+        // M19 深空和重力枪（D）的物品标签（调自己的方法）加在这行上面
+        // M19 科技布局和局部危害（E）的物品标签（调自己的方法）加在这行上面
     }
 
     private static ResourceKey<Item> vanilla(Item item) {

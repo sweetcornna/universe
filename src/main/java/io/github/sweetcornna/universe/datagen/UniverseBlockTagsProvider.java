@@ -261,6 +261,22 @@ final class UniverseBlockTagsProvider extends BlockTagsProvider {
         this.wrapUpAcid();
         this.wrapUpInterop();
         this.m18Beacons();
+        FishingData.blockTags(this::tag);
+        // M19 钓鱼（A）的方块标签（调自己的方法）加在这行上面
+        SettlementDatagen.blockTags(this::tag);
+        // M19 聚落（B）的方块标签（调自己的方法）加在这行上面
+        FossilData.blockTags(this::tag);
+        // M19 化石（C）的方块标签（调自己的方法）加在这行上面
+        DeepSpaceDatagen.blockTags(this::tag);
+        // M19 深空和重力枪（D）的方块标签（调自己的方法）加在这行上面
+        this.m19Hazards();
+        // M19 科技布局和局部危害（E）的方块标签（调自己的方法）加在这行上面
+    }
+
+    /** M19：间歇泉的喷口、结壳用镐挖（ADR-0034 §六，子代理 E）。 */
+    private void m19Hazards() {
+        UniverseBlocks.GEYSER_VENTS.values().forEach(block -> this.tag(BlockTags.MINEABLE_WITH_PICKAXE).add(block.key()));
+        UniverseBlocks.GEYSER_CRUSTS.values().forEach(block -> this.tag(BlockTags.MINEABLE_WITH_PICKAXE).add(block.key()));
     }
 
     /** M18：全息信标；蓝图"只贴设备"放的方块（ADR-0033 §六、§九，子代理 D）。 */

@@ -257,7 +257,9 @@ public final class SettlementStructures {
         p.set(terminal[0], b + 1, tz, UniverseBlocks.OUTPOST_TRADE_TERMINAL.get().defaultBlockState()
                 .setValue(HorizontalDirectionalBlock.FACING, Direction.NORTH));
         p.set(terminal[0] - 1, b + 1, tz, style.counter());
-        p.set(terminal[0] + 1, b + 1, tz, style.counter());
+        // 交易终端右边是聚落终端（ADR-0034 §二）：没有总督时在这里接管，有了总督打开概况
+        p.set(terminal[0] + 1, b + 1, tz, UniverseBlocks.SETTLEMENT_TERMINAL.get().defaultBlockState()
+                .setValue(HorizontalDirectionalBlock.FACING, Direction.NORTH));
         p.set(terminal[0] - 1, b + 1, front, style.counter());
         p.set(terminal[0] + 1, b + 1, front, style.counter());
         p.set(terminal[0], b + 3, tz - 1, hanging(style.lamp()));

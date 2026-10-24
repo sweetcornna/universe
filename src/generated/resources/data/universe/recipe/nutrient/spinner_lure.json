@@ -1,0 +1,21 @@
+{
+  "type": "universe:nutrient",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:bio_gel"
+    },
+    {
+      "count": 2,
+      "ingredient": "minecraft:gold_nugget"
+    }
+  ],
+  "research": "fishing",
+  "results": [
+    {
+      "count": 2,
+      "id": "universe:spinner_lure"
+    }
+  ],
+  "time": 50
+}

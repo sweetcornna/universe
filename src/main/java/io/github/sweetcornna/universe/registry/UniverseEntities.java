@@ -231,6 +231,37 @@ public final class UniverseEntities {
     // M18 物流调度（B）的实体加在这行上面
     // M18 统计和研究（C）的实体加在这行上面
     // M18 信标、透镜、矿脉、蓝图（D）的实体加在这行上面
+    /** 钓鱼器的浮标（ADR-0034 §一）。 */
+    public static final DeferredHolder<EntityType<?>, EntityType<io.github.sweetcornna.universe.fishing.FishingBobber>> FISHING_BOBBER = ENTITIES.registerEntityType("fishing_bobber",
+            io.github.sweetcornna.universe.fishing.FishingBobber::new, MobCategory.MISC,
+            builder -> builder.sized(0.25F, 0.25F).clientTrackingRange(4).updateInterval(5).noSave().noSummon().noLootTable());
+    // M19 钓鱼（A）的实体加在这行上面
+    // M19 聚落（B）的实体加在这行上面
+    /** 石哨兵（ADR-0034 §三）：发掘场边上睡着的石头醒过来变的，存档；附近没人了落回去变回方块。 */
+    public static final DeferredHolder<EntityType<?>, EntityType<io.github.sweetcornna.universe.fossil.StoneSentry>> STONE_SENTRY = ENTITIES.registerEntityType("stone_sentry",
+            io.github.sweetcornna.universe.fossil.StoneSentry::new, MobCategory.MONSTER,
+            builder -> builder.sized(1.0F, 1.0F).eyeHeight(0.55F).clientTrackingRange(10).fireImmune());
+    /** 石哨兵扔的石块：吊着飞，不存档。 */
+    public static final DeferredHolder<EntityType<?>, EntityType<io.github.sweetcornna.universe.fossil.SentryRock>> SENTRY_ROCK = ENTITIES.registerEntityType("sentry_rock",
+            io.github.sweetcornna.universe.fossil.SentryRock::new, MobCategory.MISC,
+            builder -> builder.sized(0.4F, 0.4F).clientTrackingRange(6).updateInterval(2).noSave().noLootTable());
+    // M19 化石（C）的实体加在这行上面
+    /** 碎片带里的残骸碎片（ADR-0034 §四）：大小按种子定，打碎了按战利品表掉打捞物；不存档，由碎片带重新生成。 */
+    public static final DeferredHolder<EntityType<?>, EntityType<io.github.sweetcornna.universe.deepspace.DebrisChunk>> DEBRIS_CHUNK =
+            ENTITIES.registerEntityType("debris_chunk", io.github.sweetcornna.universe.deepspace.DebrisChunk::new, MobCategory.MISC,
+                    builder -> builder.sized(1.0F, 1.0F).clientTrackingRange(16).updateInterval(2).noSave().fireImmune());
+    // M19 深空和重力枪（D）的实体加在这行上面
+    /** 局部危害（ADR-0034 §六）：火山喷发的熔岩弹、孢子云、尘卷风，都不存档。熔岩弹飞得高，远远就要看得见。 */
+    public static final DeferredHolder<EntityType<?>, EntityType<io.github.sweetcornna.universe.hazard.LavaBomb>> LAVA_BOMB = ENTITIES.registerEntityType(
+            "lava_bomb", io.github.sweetcornna.universe.hazard.LavaBomb::new, MobCategory.MISC,
+            builder -> builder.sized(0.7F, 0.7F).clientTrackingRange(12).updateInterval(2).noSave().noLootTable().fireImmune());
+    public static final DeferredHolder<EntityType<?>, EntityType<io.github.sweetcornna.universe.hazard.SporeCloud>> SPORE_CLOUD = ENTITIES.registerEntityType(
+            "spore_cloud", io.github.sweetcornna.universe.hazard.SporeCloud::new, MobCategory.MISC,
+            builder -> builder.sized(10.0F, 5.0F).clientTrackingRange(10).updateInterval(5).noSave().noLootTable().fireImmune().noSummon());
+    public static final DeferredHolder<EntityType<?>, EntityType<io.github.sweetcornna.universe.hazard.DustDevil>> DUST_DEVIL = ENTITIES.registerEntityType(
+            "dust_devil", io.github.sweetcornna.universe.hazard.DustDevil::new, MobCategory.MISC,
+            builder -> builder.sized(6.0F, 12.0F).clientTrackingRange(10).updateInterval(2).noSave().noLootTable().fireImmune().noSummon());
+    // M19 科技布局和局部危害（E）的实体加在这行上面
 
     private UniverseEntities() {
     }

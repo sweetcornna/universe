@@ -195,6 +195,13 @@ final class UniverseChestLoot implements LootTableSubProvider {
                 .withPool(chance(LootItem.lootTableItem(UniverseItems.MODULES.get(ModuleType.LIFE_SUPPORT).get())
                         .apply(RandomModuleFunction.randomModule(0)), 0.25F)));
         this.companionDig();
+        // M19 钓鱼（A）的箱子战利品（调自己的方法）加在这行上面
+        // M19 聚落（B）的箱子战利品（调自己的方法）加在这行上面
+        FossilData.chestLoot(this.context::accept);
+        // M19 化石（C）的箱子战利品（调自己的方法）加在这行上面
+        DeepSpaceDatagen.chestLoot(this.context::accept);
+        // M19 深空和重力枪（D）的箱子战利品（调自己的方法）加在这行上面
+        // M19 科技布局和局部危害（E）的箱子战利品（调自己的方法）加在这行上面
     }
 
     /** 伙伴挖出来的（ADR-0026 §九）：一份矿石，心情好的（幸运 1）多一份；常有勘测数据，偶尔有技术模块。 */

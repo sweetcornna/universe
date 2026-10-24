@@ -17,13 +17,23 @@ import net.minecraft.world.inventory.Slot;
  *
  * <p>滚动是服务端也知道的状态（{@link ShipCargoMenu#clickMenuButton}）：滚完先发给服务端，再本地滚，
  * 两边的格子对着货舱里同一格。
+ *
+ * <p>坐在船上时右下角有"抛出"和"全部抛出"（ADR-0034 §四）：点"抛出"再点一格货，那一格从船尾飘出去；
+ * "全部抛出"要点两下确认。
  */
 public class ShipCargoScreen extends AbstractContainerScreen<ShipCargoMenu> {
     /** 滚动条和格子之间空几格像素。 */
     private static final int SCROLLBAR_GAP = 4;
     private static final int HANDLE_HEIGHT = 15;
 
+    private static final int BUTTON_HEIGHT = 11;
+    /** "全部抛出"点第一下以后多久内再点算确认（毫秒）。 */
+    private static final long CONFIRM_MILLIS = 3000;
+
     private boolean dragging;
+    /** 点了"抛出"，等着点一格货。 */
+    private boolean arming;
+    private long confirmAllUntil;
 
     public ShipCargoScreen(ShipCargoMenu menu, Inventory inventory, Component title) {
         super(menu, inventory, title, ShipCargoMenu.WIDTH,
@@ -48,6 +58,60 @@ public class ShipCargoScreen extends AbstractContainerScreen<ShipCargoMenu> {
         if (this.menu.scrollable()) {
             this.scrollbar(graphics);
         }
+        if (this.aboard()) {
+            boolean confirming = System.currentTimeMillis() < this.confirmAllUntil;
+            this.button(graphics, this.jettisonRect(), this.jettisonLabel(), this.arming, this.inside(this.jettisonRect(), mouseX, mouseY), false);
+            this.button(graphics, this.allRect(), this.allLabel(), confirming, this.inside(this.allRect(), mouseX, mouseY), true);
+            if (this.arming && this.hoveredSlot instanceof ShipCargoMenu.CargoSlot slot && slot.hasItem()) {
+                // 要抛的那一格描红
+                int sx = x + slot.x;
+                int sy = y + slot.y;
+                graphics.fill(sx - 1, sy - 1, sx + 17, sy + 17, 0x80E5583F);
+            }
+        }
+    }
+
+    /** 坐在这艘船上（只有船上的人能抛货），货舱里有格子。 */
+    private boolean aboard() {
+        return this.minecraft != null && this.minecraft.player != null
+                && this.minecraft.player.getVehicle() instanceof io.github.sweetcornna.universe.entity.ship.ShipEntity && this.menu.cargoSize() > 0;
+    }
+
+    private Component jettisonLabel() {
+        return Component.translatable(this.arming ? "gui.universe.ship_cargo.jettison_armed" : "gui.universe.ship_cargo.jettison");
+    }
+
+    private Component allLabel() {
+        return Component.translatable(System.currentTimeMillis() < this.confirmAllUntil
+                ? "gui.universe.ship_cargo.jettison_confirm" : "gui.universe.ship_cargo.jettison_all");
+    }
+
+    /** "全部抛出"：物品栏那一行的最右边。返回 {x, y, 宽, 高}（相对界面左上角）。 */
+    private int[] allRect() {
+        int w = this.font.width(this.allLabel()) + 8;
+        return new int[] {this.imageWidth - 6 - w, this.inventoryLabelY - 2, w, BUTTON_HEIGHT};
+    }
+
+    /** "抛出"：在"全部抛出"左边。 */
+    private int[] jettisonRect() {
+        int[] all = this.allRect();
+        int w = this.font.width(this.jettisonLabel()) + 8;
+        return new int[] {all[0] - 4 - w, all[1], w, BUTTON_HEIGHT};
+    }
+
+    private boolean inside(int[] rect, double mouseX, double mouseY) {
+        double rx = mouseX - this.leftPos;
+        double ry = mouseY - this.topPos;
+        return rx >= rect[0] && rx < rect[0] + rect[2] && ry >= rect[1] && ry < rect[1] + rect[3];
+    }
+
+    private void button(GuiGraphicsExtractor graphics, int[] rect, Component label, boolean active, boolean hover, boolean danger) {
+        int x = this.leftPos + rect[0];
+        int y = this.topPos + rect[1];
+        int edge = active ? MachineScreen.BAD : hover ? MachineScreen.ACCENT : MachineScreen.BORDER;
+        graphics.fill(x, y, x + rect[2], y + rect[3], edge);
+        graphics.fill(x + 1, y + 1, x + rect[2] - 1, y + rect[3] - 1, active ? 0xFF3A1612 : MachineScreen.INSET);
+        graphics.text(this.font, label, x + 4, y + 2, active ? 0xFFFFB0A0 : danger ? 0xFFE8A090 : MachineScreen.TEXT, false);
     }
 
     /** 右边的滚动条：槽加一个滑块。 */
@@ -93,6 +157,9 @@ public class ShipCargoScreen extends AbstractContainerScreen<ShipCargoMenu> {
 
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+        if (this.aboard() && this.jettisonClick(event.x(), event.y())) {
+            return true;
+        }
         if (this.menu.scrollable() && this.overScrollbar(event.x(), event.y())) {
             this.dragging = true;
             this.dragTo(event.y());
@@ -114,6 +181,49 @@ public class ShipCargoScreen extends AbstractContainerScreen<ShipCargoMenu> {
     public boolean mouseReleased(MouseButtonEvent event) {
         this.dragging = false;
         return super.mouseReleased(event);
+    }
+
+    /** 抛货的两个按钮、选格子；返回这一下是不是给抛货用掉了。 */
+    private boolean jettisonClick(double mouseX, double mouseY) {
+        long now = System.currentTimeMillis();
+        if (this.inside(this.allRect(), mouseX, mouseY)) {
+            this.arming = false;
+            if (now < this.confirmAllUntil) {
+                this.confirmAllUntil = 0;
+                this.send(ShipCargoMenu.JETTISON_ALL);
+            } else {
+                this.confirmAllUntil = now + CONFIRM_MILLIS;
+                this.click();
+            }
+            return true;
+        }
+        if (this.inside(this.jettisonRect(), mouseX, mouseY)) {
+            this.arming = !this.arming;
+            this.confirmAllUntil = 0;
+            this.click();
+            return true;
+        }
+        if (this.arming) {
+            this.arming = false;
+            if (this.hoveredSlot instanceof ShipCargoMenu.CargoSlot slot && slot.index() >= 0 && slot.hasItem()) {
+                this.send(ShipCargoMenu.jettisonButton(slot.index()));
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void send(int button) {
+        if (this.minecraft != null && this.minecraft.gameMode != null) {
+            this.minecraft.gameMode.handleInventoryButtonClick(this.menu.containerId, button);
+        }
+        this.click();
+    }
+
+    private void click() {
+        if (this.minecraft != null) {
+            this.minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 0.6F));
+        }
     }
 
     private boolean overScrollbar(double mouseX, double mouseY) {

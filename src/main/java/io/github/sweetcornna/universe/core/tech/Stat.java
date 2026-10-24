@@ -33,7 +33,10 @@ public enum Stat {
     /** 飞船护盾。 */
     SHIP_SHIELD(false, 0.08, 0.15, 0.25, 0.38, 0.55),
     /** 飞船船体。 */
-    HULL(false, 0.06, 0.12, 0.20, 0.30, 0.42);
+    HULL(false, 0.06, 0.12, 0.20, 0.30, 0.42),
+    // ---- 深空（ADR-0034 §四）
+    /** 牵引光束的范围。 */
+    TRACTOR_RANGE(false, 0.05, 0.10, 0.20, 0.32, 0.50);
 
     private final boolean absolute;
     /** 五个分界点：C 是 [0, 1]，B 是 [1, 2]，A 是 [2, 3]，S 是 [3, 4]。 */

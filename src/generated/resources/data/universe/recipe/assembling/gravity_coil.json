@@ -1,0 +1,28 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 4,
+      "ingredient": "universe:sentinel_scrap"
+    },
+    {
+      "count": 6,
+      "ingredient": "universe:magnetic_coil"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:electric_motor"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:salvaged_electronics"
+    }
+  ],
+  "research": "gravity_coil",
+  "results": [
+    {
+      "id": "universe:gravity_coil"
+    }
+  ],
+  "time": 240
+}

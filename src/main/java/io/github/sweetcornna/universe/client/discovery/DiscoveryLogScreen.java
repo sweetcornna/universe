@@ -21,6 +21,7 @@ import org.jspecify.annotations.Nullable;
 
 import com.mojang.blaze3d.platform.InputConstants;
 
+import io.github.sweetcornna.universe.client.fishing.FishingPage;
 import io.github.sweetcornna.universe.client.TextWrap;
 import io.github.sweetcornna.universe.core.sentinel.SentinelLevel;
 import io.github.sweetcornna.universe.client.ClientGalaxy;
@@ -97,9 +98,14 @@ public class DiscoveryLogScreen extends Screen {
     private @Nullable Button memoButton;
     /** 改名框现在对着的东西；切换选中时清空重填。 */
     private @Nullable DiscoveryKey editing;
-    /** 标题栏上的两页：发现、文明（ADR-0027）。 */
-    private boolean civTab;
+    /** 标题栏上的三页：发现、文明（ADR-0027）、钓鱼（ADR-0034）。 */
+    private static final int TAB_LOG = 0;
+    private static final int TAB_CIV = 1;
+    private static final int TAB_FISHING = 2;
+    private static final int TABS = 3;
+    private int tab = TAB_LOG;
     private @Nullable CivPage civPage;
+    private @Nullable FishingPage fishingPage;
 
     public DiscoveryLogScreen() {
         super(Component.translatable("gui.universe.discovery.title"));
@@ -111,6 +117,13 @@ public class DiscoveryLogScreen extends Screen {
         } else if (!this.systems.isEmpty()) {
             this.selectSystem(this.systems.getFirst().index());
         }
+    }
+
+    /** 直接翻到钓鱼图鉴那一页。 */
+    public static DiscoveryLogScreen fishing() {
+        DiscoveryLogScreen screen = new DiscoveryLogScreen();
+        screen.tab = TAB_FISHING;
+        return screen;
     }
 
     @Override
@@ -219,7 +232,7 @@ public class DiscoveryLogScreen extends Screen {
         }
         DiscoveryKey key = this.selectedKey();
         Optional<DiscoveryLog.Entry> entry = key == null ? Optional.empty() : ClientDiscoveries.entry(key);
-        boolean renamable = !this.civTab && entry.isPresent() && this.minecraft.player != null
+        boolean renamable = this.tab == TAB_LOG && entry.isPresent() && this.minecraft.player != null
                 && entry.get().renamableBy(this.minecraft.player.getUUID());
         this.nameBox.visible = renamable;
         this.saveButton.visible = renamable;
@@ -232,7 +245,7 @@ public class DiscoveryLogScreen extends Screen {
         Optional<String> clean = DiscoveryLog.cleanName(this.nameBox.getValue());
         this.saveButton.active = renamable && clean.isPresent() && !clean.get().equals(current);
         if (this.memoButton != null) {
-            this.memoButton.visible = !this.civTab && entry.isPresent();
+            this.memoButton.visible = this.tab == TAB_LOG && entry.isPresent();
         }
     }
 
@@ -298,15 +311,21 @@ public class DiscoveryLogScreen extends Screen {
             return;
         }
         this.drawHeader(graphics, mouseX, mouseY);
-        if (this.civTab) {
+        if (this.tab == TAB_CIV) {
             this.civPage().draw(graphics, HEADER, this.listBottom(), this.width, mouseX, mouseY);
+        } else if (this.tab == TAB_FISHING) {
+            this.fishingPage().draw(graphics, HEADER, this.listBottom(), this.width, mouseX, mouseY);
         } else {
             this.drawSystems(graphics, mouseX, mouseY);
             this.drawBodies(graphics, mouseX, mouseY);
             this.drawDetail(graphics);
         }
         graphics.fill(0, this.height - FOOTER, this.width, this.height, 0xE0050A0E);
-        Component hint = Component.translatable(this.civTab ? "gui.universe.civ.footer" : "gui.universe.discovery.footer");
+        Component hint = Component.translatable(switch (this.tab) {
+            case TAB_CIV -> "gui.universe.civ.footer";
+            case TAB_FISHING -> "gui.universe.fishing.footer";
+            default -> "gui.universe.discovery.footer";
+        });
         graphics.text(this.font, hint, 6, this.height - FOOTER + 3, DIM, false);
         super.extractRenderState(graphics, mouseX, mouseY, a);
     }
@@ -315,16 +334,16 @@ public class DiscoveryLogScreen extends Screen {
         graphics.fill(0, 0, this.width, HEADER, 0xE0050A0E);
         graphics.fill(0, HEADER - 1, this.width, HEADER, LINE);
         graphics.text(this.font, this.title, 6, 5, ACCENT, false);
-        for (int tab = 0; tab < 2; tab++) {
+        for (int tab = 0; tab < TABS; tab++) {
             int[] span = this.tabSpan(tab);
-            boolean active = (tab == 1) == this.civTab;
+            boolean active = tab == this.tab;
             boolean hover = !active && mouseY < HEADER && mouseX >= span[0] && mouseX < span[1];
             if (active) {
                 graphics.fill(span[0], HEADER - 3, span[1], HEADER - 1, ACCENT);
             }
             graphics.text(this.font, this.tabName(tab), span[0] + 4, 5, active ? 0xFFFFFFFF : hover ? TEXT : DIM, false);
         }
-        if (this.civTab) {
+        if (this.tab != TAB_LOG) {
             return;
         }
         DiscoveryLog log = ClientDiscoveries.log();
@@ -335,7 +354,11 @@ public class DiscoveryLogScreen extends Screen {
     }
 
     private Component tabName(int tab) {
-        return Component.translatable(tab == 0 ? "gui.universe.discovery.tab.log" : "gui.universe.discovery.tab.civ");
+        return Component.translatable(switch (tab) {
+            case TAB_CIV -> "gui.universe.discovery.tab.civ";
+            case TAB_FISHING -> "gui.universe.discovery.tab.fishing";
+            default -> "gui.universe.discovery.tab.log";
+        });
     }
 
     /** 标题栏上第几页的左右边界（标题后面依次排开）。 */
@@ -352,6 +375,13 @@ public class DiscoveryLogScreen extends Screen {
             this.civPage = new CivPage(this.font);
         }
         return this.civPage;
+    }
+
+    private FishingPage fishingPage() {
+        if (this.fishingPage == null) {
+            this.fishingPage = new FishingPage(this.font);
+        }
+        return this.fishingPage;
     }
 
     private void columnTitle(GuiGraphicsExtractor graphics, Component title, int left, int right) {
@@ -747,18 +777,25 @@ public class DiscoveryLogScreen extends Screen {
         double x = event.x();
         double y = event.y();
         if (event.button() == InputConstants.MOUSE_BUTTON_LEFT && y < HEADER) {
-            for (int tab = 0; tab < 2; tab++) {
+            for (int tab = 0; tab < TABS; tab++) {
                 int[] span = this.tabSpan(tab);
-                if (x >= span[0] && x < span[1] && (tab == 1) != this.civTab) {
-                    this.civTab = tab == 1;
+                if (x >= span[0] && x < span[1] && tab != this.tab) {
+                    this.tab = tab;
                     this.updateRename();
                     this.click();
                     return true;
                 }
             }
         }
-        if (this.civTab) {
+        if (this.tab == TAB_CIV) {
             if (event.button() == InputConstants.MOUSE_BUTTON_LEFT && y < this.listBottom() && this.civPage().click(x, y)) {
+                this.click();
+                return true;
+            }
+            return false;
+        }
+        if (this.tab == TAB_FISHING) {
+            if (event.button() == InputConstants.MOUSE_BUTTON_LEFT && y >= HEADER && y < this.listBottom() && this.fishingPage().click(x, y)) {
                 this.click();
                 return true;
             }
@@ -787,8 +824,10 @@ public class DiscoveryLogScreen extends Screen {
 
     @Override
     public boolean mouseScrolled(double x, double y, double scrollX, double scrollY) {
-        if (this.civTab) {
+        if (this.tab == TAB_CIV) {
             this.civPage().scroll(x, scrollY);
+        } else if (this.tab == TAB_FISHING) {
+            this.fishingPage().scroll(x, scrollY);
         } else if (x < this.bodyLeft()) {
             this.systemScroll = this.clampScroll(this.systemScroll - scrollY * ROW, this.systems.size() * ROW);
         } else if (x < this.detailLeft()) {

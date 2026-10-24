@@ -666,6 +666,94 @@ public final class UniverseBlocks {
             p -> p.mapColor(MapColor.METAL).strength(2.0F, 6.0F).sound(SoundType.METAL).requiresCorrectToolForDrops().noOcclusion()
                     .lightLevel(state -> 9));
     // M18 信标、透镜、矿脉、蓝图（D）的方块加在这行上面
+    /** 捕鱼笼（ADR-0034 §一）：泡在水里的铁丝笼子。 */
+    public static final DeferredBlock<io.github.sweetcornna.universe.fishing.FishTrapBlock> FISH_TRAP = BLOCKS.registerBlock("fish_trap", io.github.sweetcornna.universe.fishing.FishTrapBlock::new,
+            p -> p.mapColor(MapColor.METAL).strength(1.5F, 3.0F).sound(SoundType.CHAIN).noOcclusion());
+    // M19 钓鱼（A）的方块加在这行上面
+    /** 聚落终端（ADR-0034 §二）：广场上一台，开工的地基前沿各一台。挖不掉、没有物品。 */
+    public static final DeferredBlock<io.github.sweetcornna.universe.settlement.SettlementTerminalBlock> SETTLEMENT_TERMINAL = BLOCKS.registerBlock(
+            "settlement_terminal", io.github.sweetcornna.universe.settlement.SettlementTerminalBlock::new,
+            p -> p.mapColor(MapColor.METAL).strength(-1.0F, 3600000.0F).sound(SoundType.METAL).noLootTable().lightLevel(state -> 8)
+                    .pushReaction(PushReaction.IMMOVEABLE));
+    /** 聚落的防御炮台（ADR-0034 §二）：炮台建筑顶上那门，海盗来时朝战机开火。 */
+    public static final DeferredBlock<io.github.sweetcornna.universe.settlement.SettlementTurretBlock> SETTLEMENT_TURRET = BLOCKS.registerBlock(
+            "settlement_turret", io.github.sweetcornna.universe.settlement.SettlementTurretBlock::new,
+            p -> p.mapColor(MapColor.METAL).strength(-1.0F, 3600000.0F).sound(SoundType.METAL).noLootTable().noOcclusion()
+                    .pushReaction(PushReaction.IMMOVEABLE));
+    // M19 聚落（B）的方块加在这行上面
+    // ---- M19 化石（ADR-0034 §三）
+    /** 化石底座：一根石头的展示柱，顶上放一块骨头。 */
+    public static final DeferredBlock<io.github.sweetcornna.universe.fossil.FossilPedestalBlock> FOSSIL_PEDESTAL = BLOCKS.registerBlock("fossil_pedestal",
+            io.github.sweetcornna.universe.fossil.FossilPedestalBlock::new,
+            p -> p.mapColor(MapColor.STONE).strength(1.5F, 6.0F).sound(SoundType.STONE).requiresCorrectToolForDrops().noOcclusion());
+    /** 骨架展台：矮石台，上面拼一副立体的骨架。 */
+    public static final DeferredBlock<io.github.sweetcornna.universe.fossil.SkeletonDisplayBlock> SKELETON_DISPLAY = BLOCKS.registerBlock("skeleton_display",
+            io.github.sweetcornna.universe.fossil.SkeletonDisplayBlock::new,
+            p -> p.mapColor(MapColor.STONE).strength(1.5F, 6.0F).sound(SoundType.STONE).requiresCorrectToolForDrops().noOcclusion());
+    /** 睡着的石哨兵：发掘场边上的石头，石缝的亮度跟着躁动走；没有物品，挖掉就醒。 */
+    public static final DeferredBlock<io.github.sweetcornna.universe.fossil.DormantSentryBlock> DORMANT_STONE_SENTRY = BLOCKS.registerBlock("dormant_stone_sentry",
+            io.github.sweetcornna.universe.fossil.DormantSentryBlock::new,
+            p -> p.mapColor(MapColor.STONE).strength(2.0F, 6.0F).sound(SoundType.STONE).noLootTable().noOcclusion()
+                    .lightLevel(io.github.sweetcornna.universe.fossil.DormantSentryBlock::light));
+    // M19 化石（C）的方块加在这行上面
+    // ---- M19 深空（ADR-0034 §四）：残骸和废弃前哨站的方块，没有物品，拆下来按各自的战利品表掉打捞物
+    public static final DeferredBlock<io.github.sweetcornna.universe.deepspace.DerelictBlock> DERELICT_PLATING = BLOCKS.registerBlock(
+            "derelict_plating", p -> new io.github.sweetcornna.universe.deepspace.DerelictBlock(io.github.sweetcornna.universe.core.deepspace.Part.PLATING, p),
+            p -> io.github.sweetcornna.universe.deepspace.DerelictBlock.derelict(p, 3.0F));
+    public static final DeferredBlock<io.github.sweetcornna.universe.deepspace.DerelictBlock> DERELICT_FRAME = BLOCKS.registerBlock(
+            "derelict_frame", p -> new io.github.sweetcornna.universe.deepspace.DerelictBlock(io.github.sweetcornna.universe.core.deepspace.Part.FRAME, p),
+            p -> io.github.sweetcornna.universe.deepspace.DerelictBlock.derelict(p, 2.5F).noOcclusion().isViewBlocking((state, level, pos, box) -> false)
+                    .isSuffocating((state, level, pos) -> false));
+    public static final DeferredBlock<io.github.sweetcornna.universe.deepspace.DerelictBlock> DERELICT_RADIATOR = BLOCKS.registerBlock(
+            "derelict_radiator", p -> new io.github.sweetcornna.universe.deepspace.DerelictBlock(io.github.sweetcornna.universe.core.deepspace.Part.RADIATOR, p),
+            p -> io.github.sweetcornna.universe.deepspace.DerelictBlock.derelict(p, 2.0F).mapColor(MapColor.COLOR_LIGHT_GRAY));
+    public static final DeferredBlock<io.github.sweetcornna.universe.deepspace.DerelictBlock> DERELICT_TANK = BLOCKS.registerBlock(
+            "derelict_tank", p -> new io.github.sweetcornna.universe.deepspace.DerelictBlock(io.github.sweetcornna.universe.core.deepspace.Part.TANK, p),
+            p -> io.github.sweetcornna.universe.deepspace.DerelictBlock.derelict(p, 3.0F).mapColor(MapColor.SNOW));
+    public static final DeferredBlock<io.github.sweetcornna.universe.deepspace.DerelictConduitBlock> DERELICT_CONDUIT = BLOCKS.registerBlock(
+            "derelict_conduit", io.github.sweetcornna.universe.deepspace.DerelictConduitBlock::new,
+            p -> io.github.sweetcornna.universe.deepspace.DerelictBlock.derelict(p, 2.0F).mapColor(MapColor.COLOR_ORANGE).lightLevel(state -> 3));
+    public static final DeferredBlock<io.github.sweetcornna.universe.deepspace.DerelictBlock> DERELICT_CARGO = BLOCKS.registerBlock(
+            "derelict_cargo", p -> new io.github.sweetcornna.universe.deepspace.DerelictBlock(io.github.sweetcornna.universe.core.deepspace.Part.CARGO, p),
+            p -> io.github.sweetcornna.universe.deepspace.DerelictBlock.derelict(p, 2.5F).mapColor(MapColor.COLOR_YELLOW));
+    public static final DeferredBlock<io.github.sweetcornna.universe.deepspace.DerelictBlock> REACTOR_SHIELDING = BLOCKS.registerBlock(
+            "reactor_shielding", p -> new io.github.sweetcornna.universe.deepspace.DerelictBlock(io.github.sweetcornna.universe.core.deepspace.Part.SHIELDING, p),
+            p -> io.github.sweetcornna.universe.deepspace.DerelictBlock.derelict(p, 6.0F).mapColor(MapColor.COLOR_GRAY).sound(SoundType.NETHERITE_BLOCK));
+    public static final DeferredBlock<io.github.sweetcornna.universe.deepspace.ReactorCoreBlock> REACTOR_CORE = BLOCKS.registerBlock(
+            "reactor_core", io.github.sweetcornna.universe.deepspace.ReactorCoreBlock::new,
+            p -> io.github.sweetcornna.universe.deepspace.DerelictBlock.derelict(p, 5.0F).mapColor(MapColor.DIAMOND).lightLevel(state -> 13)
+                    .sound(SoundType.NETHERITE_BLOCK).emissiveRendering(state -> true));
+    public static final DeferredBlock<io.github.sweetcornna.universe.deepspace.DerelictWindowBlock> DERELICT_WINDOW = BLOCKS.registerBlock(
+            "derelict_window", io.github.sweetcornna.universe.deepspace.DerelictWindowBlock::new,
+            p -> io.github.sweetcornna.universe.deepspace.DerelictBlock.derelict(p, 1.5F).mapColor(MapColor.NONE).sound(SoundType.GLASS).noOcclusion()
+                    .isRedstoneConductor((state, level, pos) -> false).isSuffocating((state, level, pos) -> false)
+                    .isViewBlocking((state, level, pos, box) -> false));
+    public static final DeferredBlock<io.github.sweetcornna.universe.deepspace.DerelictLightBlock> DERELICT_LIGHT = BLOCKS.registerBlock(
+            "derelict_light", io.github.sweetcornna.universe.deepspace.DerelictLightBlock::new,
+            p -> io.github.sweetcornna.universe.deepspace.DerelictBlock.derelict(p, 1.5F).sound(SoundType.GLASS)
+                    .lightLevel(io.github.sweetcornna.universe.deepspace.DerelictLightBlock::light));
+    public static final DeferredBlock<io.github.sweetcornna.universe.deepspace.DerelictBlock> DERELICT_DECK = BLOCKS.registerBlock(
+            "derelict_deck", p -> new io.github.sweetcornna.universe.deepspace.DerelictBlock(io.github.sweetcornna.universe.core.deepspace.Part.DECK, p),
+            p -> io.github.sweetcornna.universe.deepspace.DerelictBlock.derelict(p, 2.5F).mapColor(MapColor.COLOR_GRAY));
+    public static final DeferredBlock<io.github.sweetcornna.universe.deepspace.DerelictBlock> DERELICT_ENGINE = BLOCKS.registerBlock(
+            "derelict_engine", p -> new io.github.sweetcornna.universe.deepspace.DerelictBlock(io.github.sweetcornna.universe.core.deepspace.Part.ENGINE, p),
+            p -> io.github.sweetcornna.universe.deepspace.DerelictBlock.derelict(p, 4.0F).mapColor(MapColor.COLOR_BLACK));
+    public static final DeferredBlock<io.github.sweetcornna.universe.deepspace.DerelictBlock> OUTPOST_SOLAR = BLOCKS.registerBlock(
+            "outpost_solar", p -> new io.github.sweetcornna.universe.deepspace.DerelictBlock(io.github.sweetcornna.universe.core.deepspace.Part.SOLAR, p),
+            p -> io.github.sweetcornna.universe.deepspace.DerelictBlock.derelict(p, 1.5F).mapColor(MapColor.COLOR_BLUE).sound(SoundType.GLASS));
+    public static final DeferredBlock<io.github.sweetcornna.universe.deepspace.DerelictBlock> OUTPOST_ANTENNA = BLOCKS.registerBlock(
+            "outpost_antenna", p -> new io.github.sweetcornna.universe.deepspace.DerelictBlock(io.github.sweetcornna.universe.core.deepspace.Part.ANTENNA, p),
+            p -> io.github.sweetcornna.universe.deepspace.DerelictBlock.derelict(p, 2.0F).mapColor(MapColor.SNOW));
+    public static final DeferredBlock<io.github.sweetcornna.universe.deepspace.DerelictDeviceBlock> OUTPOST_DEVICE = BLOCKS.registerBlock(
+            "outpost_device", io.github.sweetcornna.universe.deepspace.DerelictDeviceBlock::new,
+            p -> io.github.sweetcornna.universe.deepspace.DerelictBlock.derelict(p, 2.5F));
+    // M19 深空和重力枪（D）的方块加在这行上面
+    /** 间歇泉的喷口和结壳（ADR-0034 §六），照星球分四种。 */
+    public static final Map<io.github.sweetcornna.universe.core.hazard.GeyserKind, DeferredBlock<io.github.sweetcornna.universe.hazard.GeyserVentBlock>> GEYSER_VENTS =
+            io.github.sweetcornna.universe.hazard.HazardBlocks.vents(BLOCKS);
+    public static final Map<io.github.sweetcornna.universe.core.hazard.GeyserKind, DeferredBlock<io.github.sweetcornna.universe.hazard.GeyserCrustBlock>> GEYSER_CRUSTS =
+            io.github.sweetcornna.universe.hazard.HazardBlocks.crusts(BLOCKS);
+    // M19 科技布局和局部危害（E）的方块加在这行上面
 
     /**
      * 按星球配色染色的方块。

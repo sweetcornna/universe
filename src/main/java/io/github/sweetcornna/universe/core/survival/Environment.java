@@ -5,6 +5,7 @@ import java.util.Map;
 
 import io.github.sweetcornna.universe.core.galaxy.Hazard;
 import io.github.sweetcornna.universe.core.galaxy.Planet;
+import io.github.sweetcornna.universe.core.hazard.LocalExposure;
 
 /**
  * 玩家此刻所处的环境（玩法设计 §3.2）：能不能呼吸、有哪些危害、各有多强，以及会减缓、加快消耗的条件。
@@ -19,45 +20,55 @@ import io.github.sweetcornna.universe.core.galaxy.Planet;
  * @param pressure   在深水里（水面以下 40 格更深，ADR-0026）：氧气掉得快一半
  * @param acid       泡在酸液里（ADR-0030）：毒性防护掉得快，庇护所不管用
  * @param acidRain   淋着酸雨（ADR-0030）：和毒雾一起算
+ * @param local      身边的局部危害（ADR-0034 §六）：间歇泉的水汽柱、孢子云
  */
 public record Environment(boolean breathable, Map<Hazard, Double> hazards, boolean sheltered, int storm,
-        boolean nearHeat, boolean nearCold, boolean supplied, boolean pressure, boolean acid, boolean acidRain) {
+        boolean nearHeat, boolean nearCold, boolean supplied, boolean pressure, boolean acid, boolean acidRain, LocalExposure local) {
     /** 主世界这样的安全环境。 */
     public static final Environment SAFE = new Environment(true, Map.of(), false, 0, false, false, false);
 
     public Environment {
         hazards = hazards.isEmpty() ? Map.of() : Map.copyOf(hazards);
+        local = local == null ? LocalExposure.NONE : local;
     }
 
     public Environment(boolean breathable, Map<Hazard, Double> hazards, boolean sheltered, int storm, boolean nearHeat, boolean nearCold,
             boolean supplied) {
-        this(breathable, hazards, sheltered, storm, nearHeat, nearCold, supplied, false, false, false);
+        this(breathable, hazards, sheltered, storm, nearHeat, nearCold, supplied, false, false, false, LocalExposure.NONE);
     }
 
     public Environment withPressure(boolean pressure) {
         return new Environment(this.breathable, this.hazards, this.sheltered, this.storm, this.nearHeat, this.nearCold, this.supplied,
-                pressure, this.acid, this.acidRain);
+                pressure, this.acid, this.acidRain, this.local);
     }
 
     /** 泡在酸里、淋着酸雨（ADR-0030）。 */
     public Environment withAcid(boolean acid, boolean acidRain) {
         return new Environment(this.breathable, this.hazards, this.sheltered, this.storm, this.nearHeat, this.nearCold, this.supplied,
-                this.pressure, acid, acidRain);
+                this.pressure, acid, acidRain, this.local);
+    }
+
+    /** 身边的局部危害（ADR-0034 §六）。 */
+    public Environment withLocal(LocalExposure local) {
+        return new Environment(this.breathable, this.hazards, this.sheltered, this.storm, this.nearHeat, this.nearCold, this.supplied,
+                this.pressure, this.acid, this.acidRain, local);
     }
 
     public boolean exposedTo(Hazard hazard) {
-        return !this.supplied && (this.hazards.containsKey(hazard) || hazard == Hazard.TOXIC && (this.acid || this.acidRain));
+        return !this.supplied && (this.hazards.containsKey(hazard) || hazard == Hazard.TOXIC && (this.acid || this.acidRain)
+                || this.local.adds(hazard));
     }
 
     /**
      * 这种危害此刻的强度，没有为 0。毒性加上酸液和酸雨（ADR-0030）：没有毒性的星球上泡进玩家倒的酸、淋到酸雨也掉毒性防护。
+     * 最后算上身边的局部危害（ADR-0034 §六）：水汽柱加一份强度，孢子云里毒性再乘 4。
      */
     public double severity(Hazard hazard) {
         double severity = this.hazards.getOrDefault(hazard, 0.0);
         if (hazard == Hazard.TOXIC) {
             severity += (this.acid ? Acid.IMMERSED_SEVERITY : 0) + (this.acidRain ? Acid.RAIN_SEVERITY : 0);
         }
-        return severity;
+        return this.local.apply(hazard, severity);
     }
 
     /** 需要生命维持：不能呼吸，又不在飞船里。 */

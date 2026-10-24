@@ -191,6 +191,16 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         // M18 统计和研究（C）的语言加在这行上面
         this.m18Beacons();
         // M18 信标、透镜、矿脉、蓝图（D）的语言加在这行上面
+        FishingLanguage.add(this::both);
+        // M19 钓鱼（A）的语言加在这行上面
+        SettlementLanguage.add(this::both);
+        // M19 聚落（B）的语言加在这行上面
+        FossilLanguage.add(this::both);
+        // M19 化石（C）的语言加在这行上面
+        DeepSpaceLanguage.add(this::both);
+        // M19 深空和重力枪（D）的语言加在这行上面
+        HazardLanguage.add(this::both);
+        // M19 科技布局和局部危害（E）的语言加在这行上面
     }
 
     /** M18 的文字：全息信标和备忘、黑雾透镜、矿脉、蓝图（子代理 D，ADR-0033 §六–§九）。 */
@@ -1971,9 +1981,9 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("tooltip.universe.fossil_dirt.summary", "化石坑底的土，里面埋着化石\n用铲子挖开，掉一块化石\n精准采集拿走整块土",
                 "Soil from the floor of a fossil pit, with a fossil inside\nDig it with a shovel for the fossil\nSilk Touch takes the whole block");
         item(UniverseItems.SHELL_FOSSIL.get(), "螺壳化石", "Coiled Shell Fossil");
-        both("tooltip.universe.shell_fossil.summary", "盘成一圈的外壳，和地球上的菊石很像\n化石坑里常见。只能卖", "A coiled shell, much like an ammonite\nCommon in fossil pits. Sell-only");
+        both("tooltip.universe.shell_fossil.summary", "盘成一圈的外壳，和地球上的菊石很像\n化石坑里常见。研究「古生物学」要交，别的时候只能卖", "A coiled shell, much like an ammonite\nCommon in fossil pits. Paleontology research needs it; otherwise sell-only");
         item(UniverseItems.ARTHROPOD_FOSSIL.get(), "节肢动物化石", "Arthropod Fossil");
-        both("tooltip.universe.arthropod_fossil.summary", "一节一节的硬壳，有点像三叶虫\n化石坑里不多见。只能卖", "A segmented shell, a bit like a trilobite\nUncommon in fossil pits. Sell-only");
+        both("tooltip.universe.arthropod_fossil.summary", "一节一节的硬壳，有点像三叶虫\n化石坑里不多见。研究「古生物学」要交，别的时候只能卖", "A segmented shell, a bit like a trilobite\nUncommon in fossil pits. Paleontology research needs it; otherwise sell-only");
         item(UniverseItems.SKULL_FOSSIL.get(), "头骨化石", "Skull Fossil");
         both("tooltip.universe.skull_fossil.summary", "一种大型动物的头骨，保存得很完整\n化石坑里很少见。只能卖，价钱高",
                 "The skull of a large animal, well preserved\nRare in fossil pits. Sell-only, and worth a lot");
@@ -1988,8 +1998,8 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         // 手册（探索一章）
         both("guide.universe.exploration.fossils.title", "化石坑", "Fossil Pits");
         both("guide.universe.exploration.fossils",
-                "宜居、荒芜、灼热、冰冻的星球上有没人管的化石发掘坑，多功能工具的扫描能标出来。\n\n坑底露着 6–10 块化石土，用铲子挖开，每块掉一块化石：\n螺壳化石：常见\n节肢动物化石：不多见\n头骨化石：很少见，最值钱\n\n化石只能在空间站卖。",
-                "Habitable, barren, scorched and frozen planets have abandoned fossil digs. Multitool scans mark them.\n\nThe pit floor shows 6–10 Fossil Dirt. Dig each with a shovel for one fossil:\nCoiled Shell Fossil: common\nArthropod Fossil: uncommon\nSkull Fossil: rare, worth the most\n\nFossils are sell-only.");
+                "宜居、荒芜、灼热、冰冻的星球上有没人管的化石发掘坑，多功能工具的扫描能标出来。\n\n坑底露着 6–10 块化石土，用铲子挖开，每块掉一块化石：\n螺壳化石：常见\n节肢动物化石：不多见\n头骨化石：很少见，最值钱\n\n化石在空间站能卖，螺壳化石和节肢动物化石也是研究「古生物学」要交的。星球上的化石土还常带出骨头，见「古生物」一章。",
+                "Habitable, barren, scorched and frozen planets have abandoned fossil digs. Multitool scans mark them.\n\nThe pit floor shows 6–10 Fossil Dirt. Dig each with a shovel for one fossil:\nCoiled Shell Fossil: common\nArthropod Fossil: uncommon\nSkull Fossil: rare, worth the most\n\nFossils sell at stations, and Paleontology research takes shell and arthropod fossils. Fossil dirt on planets often gives a bone too; see Paleontology.");
         both("guide.universe.exploration.salvage.title", "打捞点和废弃建筑", "Salvage and Abandoned Buildings");
         both("guide.universe.exploration.salvage",
                 "打捞点：一片烧焦的地，旁边一根亮灯的信标。从正中往下挖开 3 块保护壳，下面是打捞舱，右键打开，倒出打捞的废料和零件，只能开一次。废料只能卖。\n\n废弃建筑：门坏了的旧居住舱。里面的数据终端第一次读给一份导航数据，还有一个补给箱。",
@@ -1999,8 +2009,8 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
                 "雷暴时雷打在沙、土、石头上，有时把落点熔成一根往下伸的玻璃管，这就是雷击石。用镐挖，在空间站能卖。\n\n下雨的星球有雷暴，火山灰的风暴里也打雷。打在基地和建筑附近的雷熔不出雷击石。\n\n雷会打到人，风暴里别站在空地上。",
                 "In thunderstorms, lightning that hits sand, soil or rock sometimes fuses a glass tube down into the ground: fulgurite. Mine it with a pickaxe and sell it at a station.\n\nRainy planets get thunderstorms, and volcanic ash storms throw lightning too. Strikes near bases and buildings leave none.\n\nLightning can hit you. Don't stand in the open during a storm.");
         // JEI 的说明页
-        both("jei.universe.info.fossil", "化石坑里的化石土用铲子挖出来。宜居、荒芜、灼热、冰冻的星球上有化石坑。只能卖。",
-                "Dug from Fossil Dirt in fossil pits on habitable, barren, scorched and frozen planets. Sell-only.");
+        both("jei.universe.info.fossil", "化石坑里的化石土用铲子挖出来。宜居、荒芜、灼热、冰冻的星球上有化石坑。在空间站卖，螺壳和节肢动物化石也用来研究古生物学。",
+                "Dug from Fossil Dirt in fossil pits on habitable, barren, scorched and frozen planets. Sells at stations; shell and arthropod fossils also go to Paleontology research.");
         both("jei.universe.info.salvaged_scrap", "打捞点的打捞舱里有，舱埋在 3 块保护壳下面。只能卖。",
                 "Found in salvage capsules, buried under 3 shell plates at salvage sites. Sell-only.");
         both("jei.universe.info.fulgurite", "雷暴时雷打在沙、土、石头上熔成的。用镐挖，在空间站能卖。",
@@ -4005,8 +4015,8 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
                 "Stone pillars carved with glowing script. Every planet you can land on has them, barren ones included, and scans mark them.\n\nRight-click one to learn a word of the system's dominant race. Each stone teaches each player once; after that it just tells you you've read it.\n\nThey can't be mined or moved.");
         both("guide.universe.civilization.settlements.title", "聚落", "Settlements");
         both("guide.universe.civilization.settlements",
-                "有大气、不荒芜的星球上有聚落，扫描能标出来。几间小屋围着一片广场，样子随这个恒星系的主导种族：商旅族搭帐篷，学者族住白墙玻璃房，戍卫族住厚墙石堡。\n\n广场上立着一块知识石\n货摊里的交易终端和交易站的一样\n两个访客站在广场两边\n技术商在货摊旁边",
-                "Found on planets with an atmosphere that aren't barren. Scans mark them. The huts follow the system's dominant race: tents for Traders, white glass houses for Scholars, stone forts for Wardens.\n\nA Knowledge Stone stands in the plaza\nThe stall's terminal works like a trading post's\nTwo visitors wait by the plaza\nA tech merchant stands at the stall");
+                "有大气、不荒芜的星球上有聚落，扫描能标出来。几间小屋围着一片广场，样子随这个恒星系的主导种族：商旅族搭帐篷，学者族住白墙玻璃房，戍卫族住厚墙石堡。\n\n广场上立着一块知识石\n货摊里的交易终端和交易站的一样\n两个访客站在广场两边\n技术商在货摊旁边\n\n没有总督的聚落能接管，见「管理聚落」一章。",
+                "Found on planets with an atmosphere that aren't barren. Scans mark them. The huts follow the system's dominant race: tents for Traders, white glass houses for Scholars, stone forts for Wardens.\n\nA Knowledge Stone stands in the plaza\nThe stall's terminal works like a trading post's\nTwo visitors wait by the plaza\nA tech merchant stands at the stall\n\nA settlement with no governor can be claimed; see Running a Settlement.");
     }
 
     /** 外星 NPC 和对话（ADR-0027 §三、§四）：角色、头顶的名字、对话界面、送礼的反应、手册"外星文明"一章的对话页。 */

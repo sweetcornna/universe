@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "alarm=false,lit=false": {
+      "model": "universe:block/derelict_light"
+    },
+    "alarm=false,lit=true": {
+      "model": "universe:block/derelict_light_on"
+    },
+    "alarm=true,lit=false": {
+      "model": "universe:block/derelict_light_alarm"
+    },
+    "alarm=true,lit=true": {
+      "model": "universe:block/derelict_light_alarm"
+    }
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "type": "universe:nutrient",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:bio_gel"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:fulgurite"
+    }
+  ],
+  "research": "fishing",
+  "results": [
+    {
+      "count": 2,
+      "id": "universe:static_lure"
+    }
+  ],
+  "time": 50
+}

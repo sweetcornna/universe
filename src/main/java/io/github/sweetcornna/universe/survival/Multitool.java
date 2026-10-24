@@ -160,6 +160,14 @@ public final class Multitool {
         } else if (mode == ToolMode.BLAZE_JAVELIN) {
             clearTarget(player, state);
             javelin(player, state, trigger, heatFactor, bonuses);
+        } else if (mode.weapon() != null && mode.weapon().attachment()) {
+            // 钓鱼器、引力抓取器不开火（ADR-0034 §一、§七），按着右键时做什么在各自的类里
+            clearTarget(player, state);
+            // M19 钓鱼（A）的按住右键的每一刻加在这行上面
+            if (mode == ToolMode.GRAVITY) {
+                io.github.sweetcornna.universe.gravity.GravityCoils.hold(player, trigger);
+            }
+            // M19 深空和重力枪（D）的按住右键的每一刻加在这行上面
         } else {
             clearTarget(player, state);
             boolean firing = state.heat.tick(trigger, heatFactor);

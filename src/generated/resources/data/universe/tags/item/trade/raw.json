@@ -18,6 +18,7 @@
     "universe:salt",
     "universe:optical_crystal",
     "universe:crude_oil",
-    "universe:water"
+    "universe:water",
+    "universe:scrap_metal"
   ]
 }

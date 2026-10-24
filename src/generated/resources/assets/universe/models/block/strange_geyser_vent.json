@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/cube_bottom_top",
+  "textures": {
+    "bottom": "universe:block/strange_geyser_crust",
+    "side": "universe:block/strange_geyser_vent_side",
+    "top": "universe:block/strange_geyser_vent_top"
+  }
+}

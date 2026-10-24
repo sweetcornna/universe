@@ -1,0 +1,17 @@
+{
+  "type": "universe:smelting",
+  "ingredients": [
+    {
+      "count": 4,
+      "ingredient": "universe:scrap_metal"
+    }
+  ],
+  "research": "automatic_metallurgy",
+  "results": [
+    {
+      "count": 2,
+      "id": "minecraft:iron_ingot"
+    }
+  ],
+  "time": 40
+}

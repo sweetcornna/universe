@@ -62,13 +62,40 @@ public final class MultitoolItem extends Item {
             return vehicle;
         }
         if (player.isSecondaryUseActive()) {
+            // 钓鱼模式下潜行右键打开饵格（ADR-0034 §一）
+            if (io.github.sweetcornna.universe.fishing.Fishing.fishing(player.getItemInHand(hand))) {
+                if (player instanceof ServerPlayer serverPlayer) {
+                    io.github.sweetcornna.universe.fishing.Fishing.openBait(serverPlayer);
+                }
+                return InteractionResult.SUCCESS;
+            }
+            // M19 钓鱼（A）的潜行右键加在这行上面
+            // M19 深空和重力枪（D）的潜行右键加在这行上面
             if (player instanceof ServerPlayer serverPlayer) {
                 Multitool.scan(serverPlayer);
             }
             return InteractionResult.SUCCESS;
         }
+        // 钓鱼模式下右键：甩竿、收回、钩住，按住收线（ADR-0034 §一）
+        if (io.github.sweetcornna.universe.fishing.Fishing.fishing(player.getItemInHand(hand))) {
+            return io.github.sweetcornna.universe.fishing.Fishing.use(level, player, hand);
+        }
+        // M19 钓鱼（A）的右键加在这行上面
+        // M19 深空和重力枪（D）的右键加在这行上面
         player.startUsingItem(hand);
         return InteractionResult.CONSUME;
+    }
+
+    @Override
+    public boolean releaseUsing(ItemStack stack, Level level, LivingEntity entity, int remainingTime) {
+        // M19 钓鱼（A）的松开右键加在这行上面
+        // 引力抓取器松开右键：轻轻放下抓着的东西（ADR-0034 §七）
+        if (entity instanceof net.minecraft.server.level.ServerPlayer player && io.github.sweetcornna.universe.gravity.GravityCoils.active(player)) {
+            io.github.sweetcornna.universe.gravity.GravityCoils.release(player, true);
+            return true;
+        }
+        // M19 深空和重力枪（D）的松开右键加在这行上面
+        return false;
     }
 
     @Override

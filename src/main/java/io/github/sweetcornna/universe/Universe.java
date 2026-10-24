@@ -210,6 +210,16 @@ public final class Universe {
         // M18 统计和研究（C）的注册加在这行上面
         io.github.sweetcornna.universe.beacon.HoloBeacons.registerEvents(gameBus);
         // M18 信标、透镜、矿脉、蓝图（D）的注册加在这行上面
+        io.github.sweetcornna.universe.fishing.Fishing.registerEvents(modBus);
+        // M19 钓鱼（A）的注册加在这行上面
+        io.github.sweetcornna.universe.settlement.Settlements.registerEvents(gameBus);
+        // M19 聚落（B）的注册加在这行上面
+        io.github.sweetcornna.universe.fossil.Fossils.registerEvents(modBus, gameBus);
+        // M19 化石（C）的注册加在这行上面
+        io.github.sweetcornna.universe.deepspace.DeepSpace.registerEvents(modBus, gameBus);
+        // M19 深空和重力枪（D）的注册加在这行上面
+        io.github.sweetcornna.universe.hazard.Hazards.registerEvents(gameBus);
+        // M19 科技布局和局部危害（E）的注册加在这行上面
     }
 
     private void commonSetup(FMLCommonSetupEvent event) {

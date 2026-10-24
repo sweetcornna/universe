@@ -272,6 +272,20 @@ public final class TechTree {
             Tech.lab("dark_fog_lens", List.of("gravitational_wave_refraction", "dark_fog_analysis"), List.of(BLUE, RED, YELLOW, PURPLE, DARK_FOG),
                     200, items("dark_fog_lens")),
             // M18 信标、透镜、矿脉、蓝图（D）的科技（每条末尾带逗号）加在这行上面
+            // 钓鱼（ADR-0034 §一）：电磁学之后，交异星鱼肉和磁线圈；解锁钓鱼器、捕鱼笼、六种鱼饵和海鲜菜
+            Tech.handIn("fishing", List.of("electromagnetism"), List.of(cost("alien_fish", 4), cost("magnetic_coil", 6)),
+                    items("fishing_rig", "fish_trap", "stink_bait", "spinner_lure", "deep_sinker", "glow_bait", "static_lure", "star_core_bait")),
+            // M19 钓鱼（A）的科技（每条末尾带逗号）加在这行上面
+            // M19 聚落（B）的科技（每条末尾带逗号）加在这行上面
+            // 古生物学（ADR-0034 §三）：交几块化石坑里挖的化石，开化石底座和骨架展台
+            Tech.handIn("paleontology", List.of("electromagnetism"), List.of(cost("shell_fossil", 4), cost("arthropod_fossil", 2)),
+                    items("fossil_pedestal", "skeleton_display")),
+            // M19 化石（C）的科技（每条末尾带逗号）加在这行上面
+            // 深空（ADR-0034 §四、§七）：牵引光束模块装在驾驶台；引力抓取器装进多功能工具，研究后在装配机里做
+            Tech.lab("tractor_beam", List.of("tech_modules"), List.of(BLUE), 40, items("module_tractor_beam")),
+            Tech.lab("gravity_coil", List.of("tractor_beam", "electromagnetic_drive"), List.of(BLUE, RED), 80, items("gravity_coil")),
+            // M19 深空和重力枪（D）的科技（每条末尾带逗号）加在这行上面
+            // M19 科技布局和局部危害（E）的科技（每条末尾带逗号）加在这行上面
             Tech.lab("gravity_missiles", List.of("supersonic_missiles", "gravity_matrix"), List.of(BLUE, RED, YELLOW, PURPLE, GREEN, DARK_FOG), 200,
                     items("gravity_missile_set"))),
             // 升级科技：前几级用低档矩阵，之后用白矩阵无限研究
@@ -343,7 +357,13 @@ public final class TechTree {
                             null),
                     new Upgrade(Upgrades.FLEET_EXPANSION, NS + "corvette", List.of("space_fleet"), List.of(
                             tier(300, BLUE, RED, YELLOW, PURPLE, GREEN)),
-                            null)));
+                            null)
+                    // M19 钓鱼（A）的升级（每条开头带逗号）加在这行上面
+                    // M19 聚落（B）的升级（每条开头带逗号）加在这行上面
+                    // M19 化石（C）的升级（每条开头带逗号）加在这行上面
+                    // M19 深空和重力枪（D）的升级（每条开头带逗号）加在这行上面
+                    // M19 科技布局和局部危害（E）的升级（每条开头带逗号）加在这行上面
+            ));
 
     private final List<Tech> techs;
     private final Map<String, Tech> byId;

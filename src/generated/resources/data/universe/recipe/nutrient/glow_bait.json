@@ -1,0 +1,21 @@
+{
+  "type": "universe:nutrient",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:alien_meat"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:gamma_root"
+    }
+  ],
+  "research": "fishing",
+  "results": [
+    {
+      "count": 2,
+      "id": "universe:glow_bait"
+    }
+  ],
+  "time": 50
+}

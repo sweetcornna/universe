@@ -1,0 +1,21 @@
+{
+  "type": "universe:nutrient",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:alien_fish"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:alien_meat"
+    }
+  ],
+  "research": "fishing",
+  "results": [
+    {
+      "count": 4,
+      "id": "universe:stink_bait"
+    }
+  ],
+  "time": 50
+}

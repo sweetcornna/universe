@@ -70,6 +70,8 @@
     "universe:live_conduit",
     "universe:dark_fog_plating",
     "universe:dark_fog_conduit",
-    "universe:dark_fog_core_remnant"
+    "universe:dark_fog_core_remnant",
+    "universe:settlement_terminal",
+    "universe:settlement_turret"
   ]
 }

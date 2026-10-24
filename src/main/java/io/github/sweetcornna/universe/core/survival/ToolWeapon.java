@@ -1,8 +1,8 @@
 package io.github.sweetcornna.universe.core.survival;
 
 /**
- * 装进多功能工具槽里的武器（ADR-0026 §六）。研究后在制造台里做，装上以后按切换键能切到它。
- * 只能往后加，免得存档里的模式对不上。
+ * 装进多功能工具槽里的武器（ADR-0026 §六），和不开火的附件（ADR-0034：钓鱼器、引力抓取器）。研究后在制造台里做，
+ * 装上以后按切换键能切到它。只能往后加，免得存档里的模式对不上。
  *
  * <p>伤害、射速和爆能枪一样吃工具上的加成：伤害按 {@code 基础值 × (1 + 伤害加成)}，射速（标枪是蓄力快慢）按
  * {@code 基础值 × (1 + 射速加成)}；升温和采矿激光共用一份热量，每种武器有自己的升温倍数。
@@ -15,7 +15,11 @@ public enum ToolWeapon {
     /** 烈焰标枪：按住蓄力 1.5 秒，松开立刻打中 120 格内的第一个目标，18 点。射速加成让蓄力变快。 */
     BLAZE_JAVELIN("blaze_javelin", 18, 0, 0.6F, 1, 120, 0xFF6A2A),
     /** 等离子发射器：会弹跳的榴弹，2 秒后炸开，半径 3 格 10 点，不破坏方块，3 秒一发。 */
-    PLASMA_LAUNCHER("plasma_launcher", 10, 1 / 3.0, 0.5F, 1, 3, 0xD46AFF);
+    PLASMA_LAUNCHER("plasma_launcher", 10, 1 / 3.0, 0.5F, 1, 3, 0xD46AFF),
+    /** 钓鱼器（ADR-0034 §一）：不开火，射程是能甩多远。 */
+    FISHING_RIG("fishing_rig", 0, 0, 0F, 0, 24, 0x6FD8C8),
+    /** 引力抓取器（ADR-0034 §七）：不开火，射程是能抓多远。 */
+    GRAVITY_COIL("gravity_coil", 0, 0, 0F, 0, 16, 0xB58CFF);
 
     /** 弹丸和脉冲弹每刻飞几格（和爆能枪一样）。 */
     public static final double BOLT_SPEED = PlasmaWeapon.SPEED;
@@ -55,6 +59,11 @@ public enum ToolWeapon {
     /** 物品的注册名，也是语言键的后缀。 */
     public String id() {
         return this.id;
+    }
+
+    /** 装在工具上、不开火的附件（钓鱼器、引力抓取器）：不吃伤害和射速加成，不升温。 */
+    public boolean attachment() {
+        return this == FISHING_RIG || this == GRAVITY_COIL;
     }
 
     /** 一颗弹丸（榴弹是爆心）的基础伤害。 */

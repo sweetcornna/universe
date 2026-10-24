@@ -398,6 +398,12 @@ io.github.sweetcornna.universe
 | 流体标签提供器 `FluidTagsProvider(output, lookup, modId)`；原版水的 ID 在 `world.level.material.FluidIds`（`WATER`、`FLOWING_WATER`）；`Registry.getTagOrEmpty` 返回 `Iterable<Holder<T>>`；`TagsUpdatedEvent` 是密封类 | 已确认，流体互通（ADR-0030） |
 | 菜单的点击：`ClickType` 改名为 `ContainerInput`（`world.inventory`），客户端发点击是 `MultiPlayerGameMode.handleContainerInput(containerId, slot, button, ContainerInput, player)`；按菜单按钮还是 `handleInventoryButtonClick(containerId, buttonId)` | 已确认，开发脚本的 `quickmove`、`menubutton` |
 | `GameTestHelper.assertValueEqual(actual, expected, …)` 拿实际值调 `equals`，实际值是 null 时直接抛空指针；在 `startSequence` 里抛出去会让整个测试服务端崩掉，可能为 null 的值改用 `assertTrue(expected.equals(actual), …)` | 已确认，`StatsGameTests` |
+| `GameTestHelper.makeMockServerPlayerInLevel()` 走 `PlayerList.placeNewPlayer`，NeoForge 的 `NetworkRegistry.checkPacket` 发本模组的负载时抛 "Payload … may not be sent to the client!"（假连接没协商过频道），在测试里会把服务端带崩。要一个在世界里、收得下消息的假玩家：`new ServerGamePacketListenerImpl(server, new Connection(PacketFlow.SERVERBOUND), player, CommonListenerCookie.createInitial(profile, false))`，覆盖两个 `send` 什么都不做，再 `level.addNewPlayer(player)`（不进玩家列表，收尾用 `removePlayerImmediately`）。`makeMockServerPlayer()` 的玩家照样包一层就不会在 `sendOverlayMessage` 上空指针。`FakePlayer.startRiding` 总是返回 false | 已确认，`gametest.QuietPlayers` |
+| 测试结构自带的地板在测试世界里摆不出来，脚下只有屏障，要地面（水池底、站的地方）就在测试里自己铺；同一批的测试按 `StructureGridSpawner` 摆成网格（横向隔 结构宽 + 5，纵向隔 结构深 + 6），结构从测试方块往 (0, 1, 1) 偏，padding 把框往外扩；飞行的生物撞上测试框的屏障会来回弹，要在开阔地方飞的测试挪到几千格外的真实地面上做 | 已确认，钓鱼、聚落的游戏内测试 |
+| `LivingEntity.swing(InteractionHand, SwingAnimation, boolean)` 返回 boolean；`Item.releaseUsing(...)` 返回 boolean；`Level.random` 是 protected，外面用 `getRandom()`；`ServerGamePacketListenerImpl.resetFlyingTicks()` 是公开的；结构模板管理器是 `ServerLevel.getStructureTemplateManager()`（没有 `getStructureManager`）；`TextureMapping` 用的 `Material` 在 `client.resources.model.sprite` | 已确认 |
+| `RenderTypes.entityTranslucent` 的管线不剔除背面（`withCull(false)`），半透明混合；`RenderTypes.eyes` 是半透明混合、测深度但不写深度，能当自发光的一层叠在模型上 | 已确认 |
+| 实体的移动分边算：`Entity.getMoveSimulationType()` 默认 `AUTHORITATIVE_SIDE`，客户端上没人骑的实体调 `move(MoverType.SELF, …)`，开发环境里直接抛 "Attempted to move entity on a logical side not permitted to simulate movement"（正式包不抛，但也不该在客户端算）。两边都推的自由漂移物照原版掉落物、下落方块覆盖成 `SERVER_AND_CLIENT`；`Projectile` 已经是 | 已确认，深空的残骸碎片 |
+| 服务端在等客户端确认传送（`awaitingPositionFromClient` 不为 null）时，`handleUseItemOn` 整次丢掉，只回一条"建筑高度上限"的提示；开发脚本传送以后要等几刻再右键 | 已确认 |
 
 拿不准的 API 先查源码再写，核实后把结果补进这张表。源码在：
 
@@ -421,6 +427,7 @@ M9 实测（2026-10-20，本机，ADR-0019）：主世界 5,000 段传送带、5
   - 脚本的路径按游戏目录（`run/`）的上一级算，也就是项目根目录，不是脚本自己待的地方。
   - `push`、`buttons` 只认原版的 `AbstractButton`。戴森球编辑器自己画可点的区域（`DysonEditorScreen.Hit`），用 `hits` 列出这一帧的文字、`hit <文字>` 点一个（色块的文字是 `color:RRGGBB`）。要选中三维视图里的东西（上色、拆掉要先选）还是得靠鼠标，脚本够不着，那条路由 `DysonEditGameTests` 在服务端验。
   - 菜单里的格子和按钮不用算坐标：`quickmove <格子序号>` 是 Shift 点一格，`menubutton <编号>` 按菜单的按钮（编号见各菜单的 `clickMenuButton`，比如机甲面板 51 是舰队页、70 是出动第一个地面编队）。M18 加的还有 `pin <种类> [目标]`（往仪表盘上钉图）、`stats <物品>`（打开统计并选中）、`queue <科技>`（排研究队列）、`press controlpanel|fleet`、`key burst on|off`（按住、松开护盾爆发）。
+  - M19 的动词由各个玩法的客户端类登记（`DevScript.EXTRA_VERBS`）：钓鱼 `fishcast`（按一下右键）、`fishauto [off]`（咬钩自动钩住、看张力收放线）、`fishreel [off]`、`fishlog`；聚落 `settleclaim`、`settleopen`、`settletab <页> [地基]`、`settlebuild <地基> <建筑>`、`settleskip`、`settlefinish`、`settleday [天数]`、`settleraid`、`settlelist`；化石 `fossilput <类群> <部位>`、`fossilfill`、`fossilopen`、`fossilpack`、`fossilwant`、`fossilsell`、`fossilswap`；深空 `dshulk [长度]`、`dsoutpost`、`dsdebris`、`dsgoto hulk|outpost|debris`、`dsstatus`、`dsdetonate`、`dsclear`、`eva`、`board`、`tractor [off]`；重力枪 `grab`、`drop`、`throw`、`shove`（潜行左键的推开；内置的 `push` 是按界面按钮，扩展动词不能和内置的重名）；局部危害 `hazard <种类>`、`hazardlog`，`techscreen` 打开科技布局。找地方用命令：`/universe settlement goto`、`/universe fossil goto` 传送到最近的聚落、发掘场边上。
 - 性能：core 层做基准测试（M1 定方案）。游戏内 `/universe perf` 按子系统计时，`/universe bench <传送带> <设备>` 搭参照基地；要看方法栈时再装 Spark。
 - 多人：`runClient2`（游戏目录 `run2`，用户名 Dev2）。两个客户端都带开发脚本无头启动：主机用 `lan <端口>` 开放（只监听回环地址），`waitplayers <人数>` 等客人连上、退出；客人用 `-PjoinServer=localhost:<端口>` 直接连。
 - 回归：保留几个固定种子的测试世界，每次升级 MC 版本后手动走一遍。

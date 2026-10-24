@@ -159,6 +159,17 @@ public final class UniverseClient {
         io.github.sweetcornna.universe.client.beacon.BeaconClient.registerEvents(modBus, NeoForge.EVENT_BUS);
         io.github.sweetcornna.universe.client.factory.VeinAlertClient.registerEvents(modBus, NeoForge.EVENT_BUS);
         // M18 信标、透镜、矿脉、蓝图（D）的注册加在这行上面
+        io.github.sweetcornna.universe.client.fishing.FishingClient.registerEvents(modBus, NeoForge.EVENT_BUS);
+        // M19 钓鱼（A）的注册加在这行上面
+        io.github.sweetcornna.universe.client.settlement.SettlementClient.registerEvents(modBus, NeoForge.EVENT_BUS);
+        // M19 聚落（B）的注册加在这行上面
+        io.github.sweetcornna.universe.client.fossil.FossilClient.registerEvents(modBus, NeoForge.EVENT_BUS);
+        // M19 化石（C）的注册加在这行上面
+        io.github.sweetcornna.universe.client.deepspace.DeepSpaceClient.registerEvents(modBus, NeoForge.EVENT_BUS);
+        io.github.sweetcornna.universe.client.gravity.GravityClient.registerEvents(modBus, NeoForge.EVENT_BUS);
+        // M19 深空和重力枪（D）的注册加在这行上面
+        io.github.sweetcornna.universe.client.hazard.HazardClient.registerEvents(modBus, NeoForge.EVENT_BUS);
+        // M19 科技布局和局部危害（E）的注册加在这行上面
         // 开发用：带了 -Duniverse.devScript 才启用
         DevScript.registerEvents(NeoForge.EVENT_BUS);
         // 客户端世界建立环境属性时，从客户端的星团里查星球

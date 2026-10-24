@@ -93,6 +93,18 @@ final class UniverseRecipes extends RecipeProvider {
         // M18 统计和研究（C）的配方加在这行上面
         this.m18Beacons();
         // M18 信标、透镜、矿脉、蓝图（D）的配方加在这行上面
+        FishingData.recipes(this.output, this.items);
+        // M19 钓鱼（A）的配方加在这行上面
+        // M19 聚落（B）的配方加在这行上面
+        // 化石底座、骨架展台（ADR-0034 §三）：石头凿的，展台正面嵌一块铜牌；要研究"古生物学"
+        this.researchShaped("paleontology", RecipeCategory.DECORATIONS, UniverseItems.FOSSIL_PEDESTAL.get(), 1, List.of("SSS", " S ", "SSS"),
+                Map.of('S', Items.STONE));
+        this.researchShaped("paleontology", RecipeCategory.DECORATIONS, UniverseItems.SKELETON_DISPLAY.get(), 1, List.of("SCS", "SSS"),
+                Map.of('S', Items.STONE, 'C', Items.COPPER_INGOT));
+        // M19 化石（C）的配方加在这行上面
+        DeepSpaceDatagen.recipes(this.output);
+        // M19 深空和重力枪（D）的配方加在这行上面
+        // M19 科技布局和局部危害（E）的配方加在这行上面
     }
 
     /**

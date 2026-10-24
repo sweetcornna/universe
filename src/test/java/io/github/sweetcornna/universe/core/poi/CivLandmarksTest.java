@@ -22,7 +22,8 @@ class CivLandmarksTest {
     void newTypesAreAppendedWithTheirOwnSeedKeys() {
         assertEquals(LandmarkType.ABANDONED_BUILDING.ordinal() + 1, LandmarkType.KNOWLEDGE_STONE.ordinal());
         assertEquals(LandmarkType.KNOWLEDGE_STONE.ordinal() + 1, LandmarkType.SETTLEMENT.ordinal());
-        assertEquals(LandmarkType.values().length, LandmarkType.SETTLEMENT.ordinal() + 1);
+        // 后面只接着加了发掘场（ADR-0034 §三）
+        assertEquals(LandmarkType.SETTLEMENT.ordinal() + 1, LandmarkType.DIG_SITE.ordinal());
         assertEquals("landmark/knowledge_stone", LandmarkType.KNOWLEDGE_STONE.seedKey());
         assertEquals("landmark/settlement", LandmarkType.SETTLEMENT.seedKey());
         // ADR 的数：知识石网格 500 格、一格五成、占地半径 2；聚落网格 1400 格、一格四成

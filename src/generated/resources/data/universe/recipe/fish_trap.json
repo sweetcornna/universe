@@ -1,0 +1,17 @@
+{
+  "type": "universe:research_shaped",
+  "key": {
+    "B": "minecraft:iron_bars",
+    "C": "minecraft:chest",
+    "I": "minecraft:iron_ingot"
+  },
+  "pattern": [
+    "BIB",
+    "B B",
+    "BCB"
+  ],
+  "research": "fishing",
+  "result": {
+    "id": "universe:fish_trap"
+  }
+}

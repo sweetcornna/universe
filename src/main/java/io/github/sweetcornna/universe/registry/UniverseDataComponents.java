@@ -109,6 +109,22 @@ public final class UniverseDataComponents {
     public static final Supplier<DataComponentType<Integer>> FLEET_DAMAGE = COMPONENTS.registerComponentType("fleet_damage",
             builder -> builder.persistent(Codec.intRange(0, 100000)).networkSynchronized(ByteBufCodecs.VAR_INT));
 
+    /** 钓鱼器的饵格（ADR-0034 §一）：多功能工具上放一样鱼饵。 */
+    public static final Supplier<DataComponentType<ItemContainerContents>> TOOL_BAIT = COMPONENTS.registerComponentType("tool_bait",
+            builder -> builder.persistent(ItemContainerContents.CODEC).networkSynchronized(ItemContainerContents.STREAM_CODEC).cacheEncoding());
+    // M19 钓鱼（A）的数据组件加在这行上面
+    // M19 聚落（B）的数据组件加在这行上面
+    /** 化石展品里的骨架（ADR-0034 §三）。 */
+    public static final Supplier<DataComponentType<io.github.sweetcornna.universe.core.fossil.Skeleton>> FOSSIL_EXHIBIT =
+            COMPONENTS.registerComponentType("fossil_exhibit", builder -> builder.persistent(io.github.sweetcornna.universe.fossil.FossilCodecs.SKELETON)
+                    .networkSynchronized(io.github.sweetcornna.universe.fossil.FossilCodecs.SKELETON_STREAM).cacheEncoding());
+    // M19 化石（C）的数据组件加在这行上面
+    // M19 深空和重力枪（D）的数据组件加在这行上面
+    /** 多功能工具超频格的种子（ADR-0034 §五）：第一次打开技术配置界面时定下；没有这一项的旧工具在那之前没有超频格。 */
+    public static final Supplier<DataComponentType<Long>> TOOL_SUPERCHARGE = COMPONENTS.registerComponentType("tool_supercharge",
+            builder -> builder.persistent(Codec.LONG).networkSynchronized(ByteBufCodecs.VAR_LONG));
+    // M19 科技布局和局部危害（E）的数据组件加在这行上面
+
     private UniverseDataComponents() {
     }
 

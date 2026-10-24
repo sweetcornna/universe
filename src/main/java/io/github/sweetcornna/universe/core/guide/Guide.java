@@ -105,6 +105,8 @@ public final class Guide {
                     page("hazards", "universe:hazard_cell", "universe:oxygen_capsule", "universe:hazard_cell"),
                     // 酸海和酸雨（ADR-0030 §一）
                     page("acid", "", "universe:acid_bucket", "universe:sulfuric_acid", "universe:water_pump"),
+                    // 间歇泉、火山喷发、孢子云、尘卷风（ADR-0034 §六）
+                    page("local_hazards", "", "universe:hot_geyser_crust", "universe:sulfur", "universe:salt", "universe:frost_crystal"),
                     // M14（ADR-0026）
                     page("resources", "", "universe:oxygen", "universe:sodium", "universe:star_bulb", "universe:solanium",
                             "universe:cactus_flesh", "universe:marrow_bulb"),
@@ -117,6 +119,8 @@ public final class Guide {
                     page("sentinels", ""),
                     page("weapons", "", "universe:scatter_blaster", "universe:pulse_spitter", "universe:blaze_javelin", "universe:plasma_launcher"),
                     page("modules", "", "universe:drop_pod"),
+                    // 相邻和超频（ADR-0034 §五）
+                    page("tech_layout", ""),
                     page("core", "", "universe:exosuit_chestplate", "universe:combustible_unit", "universe:hydrogen_fuel_rod"),
                     page("flight", ""),
                     // M18 机甲的舰队和战斗（ADR-0033 §一、§二）
@@ -218,6 +222,40 @@ public final class Guide {
                     page("loot", "", "universe:energy_shard", "universe:silicon_neuron", "universe:matter_recombinator",
                             "universe:negentropy_singularity", "universe:core_element", "universe:dark_fog_matrix"),
                     page("world_options", "")),
+            // 钓鱼（ADR-0034 §一）
+            chapter("fishing", "universe:fishing_rig",
+                    page("rig", "universe:fishing_rig", "universe:fishing_rig", "universe:multitool"),
+                    page("reeling", ""),
+                    page("waters", ""),
+                    page("conditions", "", "universe:message_bottle", "universe:sealed_cache"),
+                    page("bait", "universe:stink_bait", "universe:stink_bait", "universe:spinner_lure", "universe:deep_sinker", "universe:glow_bait",
+                            "universe:static_lure", "universe:star_core_bait"),
+                    page("release_trap", "universe:fish_trap", "universe:fish_trap"),
+                    page("seafood", "universe:deep_sea_stew", "universe:grilled_fillet", "universe:fish_soup", "universe:sashimi_platter",
+                            "universe:deep_sea_stew", "universe:ice_fish_soup", "universe:legendary_feast")),
+            // 管理聚落（ADR-0034 §二）
+            chapter("settlement", "minecraft:bell",
+                    page("claim", "", "universe:steel", "universe:carbon_nanotube", "universe:circuit_board"),
+                    page("construction", ""),
+                    page("buildings", ""),
+                    page("days", ""),
+                    page("products", ""),
+                    page("decisions", ""),
+                    page("raids", "")),
+            // 古生物（ADR-0034 §三）
+            chapter("paleontology", "universe:skeleton_display",
+                    page("bones", "", "universe:fossil_dirt", "universe:bone_titan_skull", "universe:bone_predator_ribcage", "universe:bone_flyer_limbs",
+                            "universe:bone_worm_limbs"),
+                    page("displays", "universe:skeleton_display", "universe:fossil_pedestal", "universe:skeleton_display", "universe:fossil_exhibit"),
+                    page("collectors", "", "universe:fossil_exhibit"),
+                    page("dig_sites", "", "universe:fossil_dirt")),
+            // 深空和引力抓取器（ADR-0034 §四、§七）
+            chapter("deep_space", "universe:salvaged_reactor_core",
+                    page("sites", "", "universe:scrap_metal", "universe:alloy_plate", "universe:salvaged_electronics"),
+                    page("hulks", "", "universe:salvaged_reactor_core"),
+                    page("tractor", "universe:module_tractor_beam", "universe:module_tractor_beam"),
+                    page("eva", ""),
+                    page("gravity_coil", "universe:gravity_coil", "universe:gravity_coil")),
             chapter(LOG, "minecraft:writable_book"),
             chapter(ENDING, "minecraft:nether_star"));
 

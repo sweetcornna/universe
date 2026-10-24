@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "universe:block/settlement_terminal",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "universe:block/settlement_terminal"
+    },
+    "facing=south": {
+      "model": "universe:block/settlement_terminal",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "universe:block/settlement_terminal",
+      "y": 270
+    }
+  }
+}

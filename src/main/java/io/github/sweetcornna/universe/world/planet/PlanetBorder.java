@@ -13,7 +13,7 @@ import net.neoforged.neoforge.event.level.LevelEvent;
 
 /**
  * 星球的世界边界（ADR-0026，玩法设计 §2.3）：以原点为中心、边长等于星球的世界尺寸。离边界 {@link #WARNING} 格以内
- * 外骨骼面板提示距离，屏幕边缘泛红。母星（主世界）不设边界。
+ * 外骨骼面板提示距离，屏幕边缘泛红。母星（主世界）和气态巨行星不设边界。
  *
  * <p>加边界以前的存档里可能有人停在边界外：进星球维度时把他挪回边界以内的地面上。
  */
@@ -49,10 +49,19 @@ public final class PlanetBorder {
         if (border.getCenterX() != 0 || border.getCenterZ() != 0) {
             border.setCenter(0, 0);
         }
-        if (border.getSize() != planet.worldSize()) {
-            border.setSize(planet.worldSize());
+        double size = size(planet);
+        if (border.getSize() != size) {
+            border.setSize(size);
         }
         border.setWarningBlocks(WARNING);
+    }
+
+    /**
+     * 边界的边长。气态巨行星的世界尺寸是 0（不限），用原版的默认边界；真设成 0 的话整颗星球都在边界外：
+     * 实体不走、人碰不了方块，一进来就被"挪回"原地。
+     */
+    static double size(Planet planet) {
+        return planet.worldSize() > 0 ? planet.worldSize() : WorldBorder.Settings.DEFAULT.size();
     }
 
     private static void bringInside(ServerPlayer player) {

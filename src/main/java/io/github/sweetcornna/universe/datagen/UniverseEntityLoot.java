@@ -109,6 +109,14 @@ final class UniverseEntityLoot extends EntityLootSubProvider {
                 .withPool(LootPool.lootPool().setRolls(ContextIntProviders.exactly(1))
                         .add(LootItem.lootTableItem(UniverseItems.NAVIGATION_DATA.get()))
                         .when(LootItemRandomChanceCondition.randomChance(0.2F))));
+        // M19 钓鱼（A）的实体战利品（调自己的方法）加在这行上面
+        // M19 聚落（B）的实体战利品（调自己的方法）加在这行上面
+        FossilData.entityLoot(builder -> this.add(UniverseEntities.STONE_SENTRY.get(), builder));
+        // M19 化石（C）的实体战利品（调自己的方法）加在这行上面
+        DeepSpaceDatagen.entityLoot(builder -> this.add(UniverseEntities.DEBRIS_CHUNK.get(), builder),
+                (key, builder) -> this.add(UniverseEntities.DEBRIS_CHUNK.get(), key, builder));
+        // M19 深空和重力枪（D）的实体战利品（调自己的方法）加在这行上面
+        // M19 科技布局和局部危害（E）的实体战利品（调自己的方法）加在这行上面
     }
 
     private LootPool.Builder scrap(int min, int max) {

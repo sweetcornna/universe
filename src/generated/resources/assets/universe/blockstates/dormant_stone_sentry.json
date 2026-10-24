@@ -1,0 +1,13 @@
+{
+  "variants": {
+    "unrest=0": {
+      "model": "universe:block/dormant_stone_sentry_0"
+    },
+    "unrest=1": {
+      "model": "universe:block/dormant_stone_sentry_1"
+    },
+    "unrest=2": {
+      "model": "universe:block/dormant_stone_sentry_2"
+    }
+  }
+}

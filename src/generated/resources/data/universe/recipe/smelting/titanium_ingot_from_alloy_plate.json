@@ -1,0 +1,15 @@
+{
+  "type": "universe:smelting",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:alloy_plate"
+    }
+  ],
+  "results": [
+    {
+      "id": "universe:titanium_ingot"
+    }
+  ],
+  "time": 80
+}

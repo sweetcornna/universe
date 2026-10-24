@@ -218,6 +218,21 @@ public final class UniverseBlockEntities {
             BLOCK_ENTITIES.register("holo_beacon", () -> new BlockEntityType<>(
                     io.github.sweetcornna.universe.beacon.HoloBeaconBlockEntity::new, UniverseBlocks.HOLO_BEACON.get()));
     // M18 信标、透镜、矿脉、蓝图（D）的方块实体加在这行上面
+    public static final Supplier<BlockEntityType<io.github.sweetcornna.universe.fishing.FishTrapBlockEntity>> FISH_TRAP = BLOCK_ENTITIES.register("fish_trap",
+            () -> new BlockEntityType<>(io.github.sweetcornna.universe.fishing.FishTrapBlockEntity::new, UniverseBlocks.FISH_TRAP.get()));
+    // M19 钓鱼（A）的方块实体加在这行上面
+    // M19 聚落（B）的方块实体加在这行上面
+    public static final Supplier<BlockEntityType<io.github.sweetcornna.universe.fossil.FossilPedestalBlockEntity>> FOSSIL_PEDESTAL = BLOCK_ENTITIES.register("fossil_pedestal",
+            () -> new BlockEntityType<>(io.github.sweetcornna.universe.fossil.FossilPedestalBlockEntity::new, UniverseBlocks.FOSSIL_PEDESTAL.get()));
+    public static final Supplier<BlockEntityType<io.github.sweetcornna.universe.fossil.SkeletonDisplayBlockEntity>> SKELETON_DISPLAY = BLOCK_ENTITIES.register("skeleton_display",
+            () -> new BlockEntityType<>(io.github.sweetcornna.universe.fossil.SkeletonDisplayBlockEntity::new, UniverseBlocks.SKELETON_DISPLAY.get()));
+    // M19 化石（C）的方块实体加在这行上面
+    // M19 深空和重力枪（D）的方块实体加在这行上面
+    /** 间歇泉的喷口（ADR-0034 §六）：按世界时间走安静、咕嘟、喷发的节奏。 */
+    public static final Supplier<BlockEntityType<io.github.sweetcornna.universe.hazard.GeyserVentBlockEntity>> GEYSER_VENT = BLOCK_ENTITIES.register("geyser_vent",
+            () -> new BlockEntityType<>(io.github.sweetcornna.universe.hazard.GeyserVentBlockEntity::new, UniverseBlocks.GEYSER_VENTS.values().stream()
+                    .map(block -> (net.minecraft.world.level.block.Block) block.get()).collect(java.util.stream.Collectors.toSet())));
+    // M19 科技布局和局部危害（E）的方块实体加在这行上面
 
     private UniverseBlockEntities() {
     }

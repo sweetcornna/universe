@@ -82,6 +82,7 @@ public final class LandmarkStructures {
             case ABANDONED_BUILDING -> WildStructures.abandonedBuilding(p, landmark);
             case KNOWLEDGE_STONE -> SettlementStructures.knowledgeStone(p, SettlementStructures.race(level));
             case SETTLEMENT -> SettlementStructures.settlement(p, landmark, SettlementStructures.race(level));
+            case DIG_SITE -> WildStructures.digSite(p, landmark);
         }
         return true;
     }

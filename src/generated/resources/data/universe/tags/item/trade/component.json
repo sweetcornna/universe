@@ -13,6 +13,7 @@
     "universe:thruster",
     "universe:reinforced_thruster",
     "universe:logistics_drone",
-    "universe:carbon_nanotube"
+    "universe:carbon_nanotube",
+    "universe:salvaged_electronics"
   ]
 }

@@ -12,7 +12,9 @@ public enum ToolMode {
     SCATTER_BLASTER(ToolWeapon.SCATTER_BLASTER),
     PULSE_SPITTER(ToolWeapon.PULSE_SPITTER),
     BLAZE_JAVELIN(ToolWeapon.BLAZE_JAVELIN),
-    PLASMA_LAUNCHER(ToolWeapon.PLASMA_LAUNCHER);
+    PLASMA_LAUNCHER(ToolWeapon.PLASMA_LAUNCHER),
+    FISHING(ToolWeapon.FISHING_RIG),
+    GRAVITY(ToolWeapon.GRAVITY_COIL);
 
     private final ToolWeapon weapon;
 
@@ -34,9 +36,9 @@ public enum ToolMode {
         throw new IllegalArgumentException(String.valueOf(weapon));
     }
 
-    /** 开火的模式（不是采矿）。 */
+    /** 开火的模式（不是采矿，也不是钓鱼器、引力抓取器这种附件）。 */
     public boolean combat() {
-        return this != MINING;
+        return this != MINING && (this.weapon == null || !this.weapon.attachment());
     }
 
     /** 实际用的模式：选中的武器已经从工具上拆下来了，退回爆能枪。 */

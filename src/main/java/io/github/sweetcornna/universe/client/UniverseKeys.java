@@ -74,6 +74,14 @@ public final class UniverseKeys {
             event.register(io.github.sweetcornna.universe.client.stats.DashboardHud.EDIT_KEY);
             // M18 统计和研究（C）的按键注册加在这行上面
             // M18 信标、透镜、矿脉、蓝图（D）的按键注册加在这行上面
+            // M19 钓鱼（A）的按键注册加在这行上面
+            event.register(io.github.sweetcornna.universe.client.settlement.SettlementClient.SETTLEMENTS);
+            // M19 聚落（B）的按键注册加在这行上面
+            // M19 化石（C）的按键注册加在这行上面
+            event.register(io.github.sweetcornna.universe.client.deepspace.DeepSpaceClient.EVA);
+            event.register(io.github.sweetcornna.universe.client.deepspace.DeepSpaceClient.TRACTOR);
+            // M19 深空和重力枪（D）的按键注册加在这行上面
+            // M19 科技布局和局部危害（E）的按键注册加在这行上面
         });
     }
 }

@@ -1,0 +1,19 @@
+{
+  "type": "universe:nutrient",
+  "ingredients": [
+    {
+      "count": 2,
+      "ingredient": "#universe:fish"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:kelp_crisps"
+    }
+  ],
+  "results": [
+    {
+      "id": "universe:sashimi_platter"
+    }
+  ],
+  "time": 100
+}

@@ -167,6 +167,7 @@ final class UniverseBlockLoot extends BlockLootSubProvider {
                 .add(LootItem.lootTableItem(clam).when(this.hasSilkTouch()).otherwise(LootItem.lootTableItem(UniverseItems.LIVING_PEARL.get())))));
         this.dropSelf(UniverseBlocks.SEALED_CRATE.get());
         // 野外的地标（ADR-0026）：化石土挖出一块化石（普通七成、少见两成半、稀有半成），精准采集拿走化石土本身；
+        // 化石土还有四成的机会多出一块骨头，类群按星球抽（ADR-0034 §三）；
         // 打捞舱挖的时候先打开（东西在打开时倒出来），舱壳掉两块灰色船体板；雷击石掉自己
         Block fossilDirt = UniverseBlocks.FOSSIL_DIRT.get();
         this.add(fossilDirt, LootTable.lootTable()
@@ -175,7 +176,8 @@ final class UniverseBlockLoot extends BlockLootSubProvider {
                 .withPool(LootPool.lootPool().setRolls(ContextIntProviders.exactly(1)).when(this.doesNotHaveSilkTouch())
                         .add(LootItem.lootTableItem(UniverseItems.SHELL_FOSSIL.get()).setWeight(14))
                         .add(LootItem.lootTableItem(UniverseItems.ARTHROPOD_FOSSIL.get()).setWeight(5))
-                        .add(LootItem.lootTableItem(UniverseItems.SKULL_FOSSIL.get()).setWeight(1))));
+                        .add(LootItem.lootTableItem(UniverseItems.SKULL_FOSSIL.get()).setWeight(1)))
+                .withPool(FossilData.dirtBones(LootPool.lootPool().when(this.doesNotHaveSilkTouch()))));
         this.add(UniverseBlocks.SALVAGE_CAPSULE.get(), LootTable.lootTable().withPool(LootPool.lootPool().setRolls(ContextIntProviders.exactly(1))
                 .add(LootItem.lootTableItem(UniverseBlocks.HULL_PLATING.get(DyeColor.GRAY).get())
                         .apply(SetItemCountFunction.setCount(ContextIntProviders.exactly(2))))));
@@ -206,6 +208,21 @@ final class UniverseBlockLoot extends BlockLootSubProvider {
         // M18 统计和研究（C）的战利品表加在这行上面
         this.dropSelf(UniverseBlocks.HOLO_BEACON.get());
         // M18 信标、透镜、矿脉、蓝图（D）的战利品表加在这行上面
+        this.dropSelf(UniverseBlocks.FISH_TRAP.get());
+        // M19 钓鱼（A）的战利品表加在这行上面
+        // M19 聚落（B）的战利品表加在这行上面
+        FossilData.blockLoot(this::dropSelf);
+        // M19 化石（C）的战利品表加在这行上面
+        DeepSpaceDatagen.blockLoot(this::add);
+        // M19 深空和重力枪（D）的战利品表加在这行上面
+        // 间歇泉（ADR-0034 §六）：喷口只有精准采集拿得走；结壳精准采集掉本体，不然掉矿物，时运加成
+        UniverseBlocks.GEYSER_VENTS.values().forEach(block -> this.add(block.get(), this.createSilkTouchOnlyTable(block.get())));
+        UniverseBlocks.GEYSER_CRUSTS.forEach((kind, block) -> this.add(block.get(), this.createSilkTouchDispatchTable(block.get(),
+                (LootPoolEntryContainer.Builder<?>) this.applyExplosionDecay(block.get(), LootItem.lootTableItem(
+                                BuiltInRegistries.ITEM.getValue(net.minecraft.resources.Identifier.parse(kind.crustDrop())))
+                        .apply(SetItemCountFunction.setCount(ContextIntProviders.between(kind.crustMin(), kind.crustMax())))
+                        .apply(ApplyBonusCount.addOreBonusCount(this.enchantments.getOrThrow(Enchantments.FORTUNE)))))));
+        // M19 科技布局和局部危害（E）的战利品表加在这行上面
     }
 
     /** 黑雾基地的方块（子代理 P）。 */

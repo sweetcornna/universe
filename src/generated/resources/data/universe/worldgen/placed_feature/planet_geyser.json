@@ -1,0 +1,8 @@
+{
+  "feature": "universe:planet_geyser",
+  "placement": [
+    {
+      "type": "minecraft:biome"
+    }
+  ]
+}

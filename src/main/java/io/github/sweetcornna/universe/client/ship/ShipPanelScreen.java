@@ -8,25 +8,33 @@ import static io.github.sweetcornna.universe.client.factory.MachineScreen.GOOD;
 import static io.github.sweetcornna.universe.client.factory.MachineScreen.PANEL;
 import static io.github.sweetcornna.universe.client.factory.MachineScreen.TEXT;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 import org.joml.Matrix3x2fStack;
 
 import io.github.sweetcornna.universe.client.TextWrap;
 import io.github.sweetcornna.universe.client.factory.MachineScreen;
+import io.github.sweetcornna.universe.client.tech.TechGridView;
 import io.github.sweetcornna.universe.core.ship.ShipRating;
 import io.github.sweetcornna.universe.core.ship.ShipStats;
 import io.github.sweetcornna.universe.core.ship.ShipType;
+import io.github.sweetcornna.universe.core.tech.ModuleType;
+import io.github.sweetcornna.universe.core.tech.TechGrid;
 import io.github.sweetcornna.universe.entity.ship.ShipPanelMenu;
+import io.github.sweetcornna.universe.tech.TechModuleItem;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
 
 /**
  * 飞船面板（ADR-0024）：左边类型、档次和各项数值（比只按部件算的高出多少），右边驾驶台的技术槽，下面是背包。
  * 数值随技术槽里放的东西实时变。档次给不到的格子画成锁住；里面还有东西时画红框，提示不生效。
+ * 超频格画一圈橙光，挨着的同种模块之间画连线，鼠标移到模块上写出这一格的加成（ADR-0034 §五）。
  */
 public class ShipPanelScreen extends AbstractContainerScreen<ShipPanelMenu> {
     private static final int LOCKED = 0xFF151B20;
@@ -73,6 +81,48 @@ public class ShipPanelScreen extends AbstractContainerScreen<ShipPanelMenu> {
             } else {
                 MachineScreen.slotFrame(graphics, sx, sy);
             }
+        }
+        List<Slot> techSlots = this.menu.slots.subList(0, TechGrid.SHIP.size());
+        boolean[] live = new boolean[techSlots.size()];
+        for (int i = 0; i < live.length; i++) {
+            live[i] = techSlots.get(i) instanceof ShipPanelMenu.TechSlot tech && tech.unlocked();
+        }
+        TechGridView.grid(graphics, x, y, TechGrid.SHIP, techSlots, this.types(), this.menu.supercharged(), live);
+    }
+
+    /** 每格生效的模块种类（档次给不到的格子不算），算相邻用。 */
+    private List<ModuleType> types() {
+        List<ModuleType> types = new ArrayList<>();
+        for (int i = 0; i < TechGrid.SHIP.size(); i++) {
+            Slot slot = this.menu.slots.get(i);
+            boolean live = slot instanceof ShipPanelMenu.TechSlot tech && tech.unlocked();
+            types.add(live && slot.getItem().getItem() instanceof TechModuleItem module ? module.type() : null);
+        }
+        return types;
+    }
+
+    @Override
+    protected List<Component> getTooltipFromContainerItem(ItemStack stack) {
+        List<Component> lines = super.getTooltipFromContainerItem(stack);
+        if (this.hoveredSlot == null || this.hoveredSlot.index >= TechGrid.SHIP.size()) {
+            return lines;
+        }
+        Component line = TechGridView.boostLine(TechGrid.SHIP.boost(this.types(), this.menu.supercharged(), this.hoveredSlot.index));
+        if (line == null) {
+            return lines;
+        }
+        List<Component> withBoost = new ArrayList<>(lines);
+        withBoost.add(Math.min(1, withBoost.size()), line);
+        return withBoost;
+    }
+
+    @Override
+    public void extractRenderState(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float a) {
+        super.extractRenderState(graphics, mouseX, mouseY, a);
+        if (this.hoveredSlot instanceof ShipPanelMenu.TechSlot tech && !tech.hasItem() && this.menu.getCarried().isEmpty()
+                && TechGrid.supercharged(this.menu.supercharged(), tech.index)) {
+            graphics.setTooltipForNextFrame(this.font, TextWrap.split(this.font, TechGridView.emptySupercharged(tech.unlocked()), 160),
+                    mouseX, mouseY);
         }
     }
 

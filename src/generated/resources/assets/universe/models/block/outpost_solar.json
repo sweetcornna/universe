@@ -1,0 +1,7 @@
+{
+  "parent": "minecraft:block/cube_column",
+  "textures": {
+    "end": "universe:block/outpost_solar_top",
+    "side": "universe:block/outpost_solar_side"
+  }
+}

@@ -188,6 +188,16 @@ final class UniverseModelProvider extends ModelProvider {
         // M18 统计和研究（C）的模型加在这行上面
         m18Beacons(blockModels, itemModels);
         // M18 信标、透镜、矿脉、蓝图（D）的模型加在这行上面
+        FishingData.models(blockModels, itemModels);
+        // M19 钓鱼（A）的模型加在这行上面
+        SettlementDatagen.models(blockModels);
+        // M19 聚落（B）的模型加在这行上面
+        FossilData.models(blockModels, itemModels);
+        // M19 化石（C）的模型加在这行上面
+        DeepSpaceDatagen.models(blockModels, itemModels);
+        // M19 深空和重力枪（D）的模型加在这行上面
+        HazardModels.add(blockModels);
+        // M19 科技布局和局部危害（E）的模型加在这行上面
     }
 
     /** M18：黑雾透镜（平面物品）、全息信标（手写的投影台模型 models/block/holo_beacon.json，ADR-0033 §六、§七）。 */

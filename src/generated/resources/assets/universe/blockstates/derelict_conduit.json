@@ -1,0 +1,16 @@
+{
+  "variants": {
+    "axis=x": {
+      "model": "universe:block/derelict_conduit",
+      "x": 90,
+      "y": 90
+    },
+    "axis=y": {
+      "model": "universe:block/derelict_conduit"
+    },
+    "axis=z": {
+      "model": "universe:block/derelict_conduit",
+      "x": 90
+    }
+  }
+}

@@ -153,6 +153,15 @@ public final class UniverseAttachments {
             () -> AttachmentType.builder(() -> "").serialize(Codec.STRING.fieldOf("item")).copyOnDeath()
                     .sync((holder, player) -> holder == player && player.connection != null, ByteBufCodecs.STRING_UTF8).build());
     // M18 信标、透镜、矿脉、蓝图（D）的附加数据加在这行上面
+    /** 钓鱼图鉴（ADR-0034 §一）：钓到过的鱼、最重的一条、放生了几条、还剩几竿放生的加成。死亡不丢，同步给本人。 */
+    public static final Supplier<AttachmentType<io.github.sweetcornna.universe.core.fishing.FishingLog>> FISHING_LOG = ATTACHMENT_TYPES.register("fishing_log",
+            () -> AttachmentType.builder(() -> io.github.sweetcornna.universe.core.fishing.FishingLog.EMPTY).serialize(io.github.sweetcornna.universe.fishing.FishingCodecs.CODEC).copyOnDeath()
+                    .sync((holder, player) -> holder == player && player.connection != null, io.github.sweetcornna.universe.fishing.FishingCodecs.STREAM_CODEC).build());
+    // M19 钓鱼（A）的附加数据加在这行上面
+    // M19 聚落（B）的附加数据加在这行上面
+    // M19 化石（C）的附加数据加在这行上面
+    // M19 深空和重力枪（D）的附加数据加在这行上面
+    // M19 科技布局和局部危害（E）的附加数据加在这行上面
 
     private UniverseAttachments() {
     }

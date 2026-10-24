@@ -9,6 +9,7 @@ import java.util.OptionalInt;
 
 import io.github.sweetcornna.universe.core.civ.NpcRole;
 import io.github.sweetcornna.universe.core.civ.Race;
+import io.github.sweetcornna.universe.core.fossil.DigSiteLayout;
 import io.github.sweetcornna.universe.core.poi.Landmark;
 import io.github.sweetcornna.universe.core.poi.LandmarkLayout;
 import io.github.sweetcornna.universe.core.poi.LandmarkType;
@@ -49,12 +50,16 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
  *   <li>空间站：大厅里 4 个（{@link StationLayout#NPC_SPOTS}）：主导种族的访客、随机种族的访客、技术商、公会使者。</li>
  *   <li>交易站：交易终端旁边 1 个访客。</li>
  *   <li>聚落：2 个访客、1 个技术商。</li>
+ *   <li>化石收藏家（ADR-0034 §三）：空间站大厅一个，古生物发掘场收藏家帐篷门口一个。</li>
  * </ul>
- * 种族都是这个恒星系的主导种族，只有空间站的第二个访客是随机的。
+ * 种族都是这个恒星系的主导种族，只有空间站的第二个访客是随机的。收藏家四处收化石，种族按站位的种子挑，
+ * 没有主导种族的恒星系里也有。
  */
 public final class NpcSpawner {
     private static final int SPAWN_RANGE = 48;
     private static final int KEEP_RANGE = 64;
+    /** 空间站里化石收藏家站的地方（本地 x、z）：大厅靠机库那一侧，避开柱子和设备。 */
+    static final int[] STATION_COLLECTOR = {-4, 13};
     /** 交易站的站位离交易终端这么近以内才算地标真的盖起来了（中心落在湖里的地标不放）。 */
     private static final int TERMINAL_REACH = 3;
     /** 放着的 NPC，按维度、站位的键。 */
@@ -112,12 +117,13 @@ public final class NpcSpawner {
             return List.of();
         }
         Optional<Race> dominant = Civ.dominant(level);
-        if (dominant.isEmpty()) {
-            return List.of();
-        }
         long galaxySeed = Planets.galaxySeed(server);
         int[] facing = site.toWorld(-4, 1, 0);
         List<Spot> spots = new ArrayList<>();
+        stationCollector(level, site, near, galaxySeed, system.getAsInt(), facing).ifPresent(spots::add);
+        if (dominant.isEmpty()) {
+            return spots;
+        }
         for (int slot = 0; slot < StationLayout.NPC_SPOTS.length; slot++) {
             int[] local = StationLayout.NPC_SPOTS[slot];
             int[] world = site.toWorld(local[0], 1, local[1]);
@@ -138,18 +144,38 @@ public final class NpcSpawner {
         return spots;
     }
 
-    /** 星球上离 {@code near} 够近的交易站、聚落的站位。 */
+    /** 空间站大厅里的化石收藏家。 */
+    private static Optional<Spot> stationCollector(ServerLevel level, StationLayout.Site site, Vec3 near, long galaxySeed, int system,
+            int[] facing) {
+        int[] world = site.toWorld(STATION_COLLECTOR[0], 1, STATION_COLLECTOR[1]);
+        Vec3 pos = new Vec3(world[0] + 0.5, world[1], world[2] + 0.5);
+        BlockPos floor = new BlockPos(world[0], world[1] - 1, world[2]);
+        if (pos.distanceToSqr(near) > SPAWN_RANGE * SPAWN_RANGE || !level.isLoaded(floor) || level.getBlockState(floor).isAir()) {
+            return Optional.empty();
+        }
+        long seed = Seeds.derive(galaxySeed, "npc/station/" + system + "/collector");
+        Race race = Rng.of(Seeds.derive(seed, "race")).pick(Race.values());
+        return Optional.of(new Spot("station:" + system + ":collector", pos, yaw(pos, facing[0] + 0.5, facing[2] + 0.5), race,
+                NpcRole.FOSSIL_COLLECTOR, seed));
+    }
+
+    /** 星球上离 {@code near} 够近的交易站、聚落、发掘场的站位。 */
     static List<Spot> landmarkSpots(ServerLevel level, Vec3 near, long day) {
         Optional<LandmarkLayout> layout = Landmarks.layout(level);
         if (layout.isEmpty()) {
             return List.of();
         }
         Optional<Race> dominant = Civ.dominant(level);
-        if (dominant.isEmpty()) {
-            return List.of();
-        }
         List<Spot> spots = new ArrayList<>();
-        for (Landmark landmark : layout.get().within(near.x, near.z, SPAWN_RANGE + landmark(LandmarkType.SETTLEMENT))) {
+        double reach = SPAWN_RANGE + Math.max(landmark(LandmarkType.SETTLEMENT), landmark(LandmarkType.DIG_SITE));
+        for (Landmark landmark : layout.get().within(near.x, near.z, reach)) {
+            if (landmark.type() == LandmarkType.DIG_SITE) {
+                digSiteCollector(level, landmark, near, dominant).ifPresent(spots::add);
+                continue;
+            }
+            if (dominant.isEmpty()) {
+                continue;
+            }
             boolean post = landmark.type() == LandmarkType.TRADING_POST;
             if (!post && landmark.type() != LandmarkType.SETTLEMENT) {
                 continue;
@@ -178,6 +204,37 @@ public final class NpcSpawner {
             }
         }
         return spots;
+    }
+
+    /** 发掘场收藏家帐篷门口的收藏家：发掘场真的盖起来了（中心不在水里）才放。 */
+    private static Optional<Spot> digSiteCollector(ServerLevel level, Landmark landmark, Vec3 near, Optional<Race> dominant) {
+        int[] column = DigSiteLayout.collectorSpot(landmark);
+        double dx = column[0] + 0.5 - near.x;
+        double dz = column[1] + 0.5 - near.z;
+        if (dx * dx + dz * dz > SPAWN_RANGE * SPAWN_RANGE) {
+            return Optional.empty();
+        }
+        long seed = Seeds.derive(landmark.seed(), "npc/collector");
+        Race race = dominant.orElseGet(() -> Rng.of(Seeds.derive(seed, "race")).pick(Race.values()));
+        String key = "landmark:" + landmark.type().id() + ":" + landmark.key() + ":collector";
+        if (present(level, key, seed, race)) {
+            return Optional.empty();
+        }
+        LevelChunk center = level.getChunkSource().getChunkNow(landmark.x() >> 4, landmark.z() >> 4);
+        if (center == null) {
+            return Optional.empty();
+        }
+        int top = center.getHeight(Heightmap.Types.MOTION_BLOCKING_NO_LEAVES, landmark.x() & 15, landmark.z() & 15);
+        if (!level.getFluidState(new BlockPos(landmark.x(), top - 1, landmark.z())).isEmpty()) {
+            return Optional.empty();
+        }
+        OptionalInt y = standY(level, column[0], column[1]);
+        if (y.isEmpty() || !level.getFluidState(new BlockPos(column[0], y.getAsInt(), column[1])).isEmpty()) {
+            return Optional.empty();
+        }
+        Vec3 pos = new Vec3(column[0] + 0.5, y.getAsInt(), column[1] + 0.5);
+        // 面朝探方
+        return Optional.of(new Spot(key, pos, yaw(pos, landmark.x() + 0.5, landmark.z() + 0.5), race, NpcRole.FOSSIL_COLLECTOR, seed));
     }
 
     private static int landmark(LandmarkType type) {

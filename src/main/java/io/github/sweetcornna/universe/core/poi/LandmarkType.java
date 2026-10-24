@@ -31,7 +31,9 @@ public enum LandmarkType {
     /** 知识石（ADR-0027 §五）：刻字的石柱，碰一下学一个这个恒星系主导种族的词。能登陆的星球都有。 */
     KNOWLEDGE_STONE("knowledge_stone", 500, 0.5, 2, 3, false, 0xC8A0FF),
     /** 聚落（ADR-0027 §五）：主导种族的几间小屋、交易终端、知识石，3 个 NPC。有大气、不是荒芜的星球。 */
-    SETTLEMENT("settlement", 1400, 0.4, 13, 6, false, 0xF0C060);
+    SETTLEMENT("settlement", 1400, 0.4, 13, 6, false, 0xF0C060),
+    /** 古生物发掘场（ADR-0034 §三）：一片探方、三顶帐篷、一个化石收藏家，边上睡着石哨兵。能登陆的星球都有。 */
+    DIG_SITE("dig_site", 1300, 0.45, 13, 5, false, 0xE8A35A);
 
     private final String id;
     private final int grid;

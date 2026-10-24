@@ -582,6 +582,7 @@ public final class DevScript {
             }
             case "push" -> {
                 // push 序号|文字：按界面上第几个按钮（从 0 数），或者文字里带这一段的第一个（^ 开头时按开头比）。
+                // 好几个都对得上时先挑按得动的：选中的页签是灰的，字可能和下面的按钮一样（聚落界面的"接管"）。
                 // 列表长短会改面板的高度，按钮的位置不固定，这时比 click 好用
                 Screen screen = minecraft.gui.screen();
                 if (screen != null) {
@@ -595,9 +596,8 @@ public final class DevScript {
                         String text = start ? rest.substring(1) : rest;
                         for (AbstractButton button : buttons) {
                             String label = button.getMessage().getString();
-                            if (start ? label.startsWith(text) : label.contains(text)) {
+                            if ((start ? label.startsWith(text) : label.contains(text)) && (target == null || !target.active && button.active)) {
                                 target = button;
-                                break;
                             }
                         }
                     }

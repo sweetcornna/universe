@@ -1,0 +1,21 @@
+{
+  "type": "universe:nutrient",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:alien_meat"
+    },
+    {
+      "count": 3,
+      "ingredient": "minecraft:iron_nugget"
+    }
+  ],
+  "research": "fishing",
+  "results": [
+    {
+      "count": 2,
+      "id": "universe:deep_sinker"
+    }
+  ],
+  "time": 50
+}

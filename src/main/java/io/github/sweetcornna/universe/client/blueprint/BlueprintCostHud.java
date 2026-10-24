@@ -68,8 +68,12 @@ final class BlueprintCostHud {
     }
 
     private static boolean showing(Minecraft minecraft) {
-        return minecraft.level != null && minecraft.player != null && !minecraft.player.isCreative()
-                && minecraft.level.getGameTime() - previewAt <= 2;
+        // 没预览过时 previewAt 是 Long.MIN_VALUE，直接相减会溢出成负数，一直画
+        if (minecraft.level == null || minecraft.player == null || minecraft.player.isCreative() || previewAt == Long.MIN_VALUE) {
+            return false;
+        }
+        long age = minecraft.level.getGameTime() - previewAt;
+        return age >= 0 && age <= 2;
     }
 
     /** 每秒问一次身上有多少；要的材料变了马上问。 */

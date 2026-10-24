@@ -78,6 +78,16 @@ public final class UniverseSounds {
         GearSounds.init();
         HostileSounds.init();
         WorldSounds.init();
+        io.github.sweetcornna.universe.registry.sound.FishingSounds.init();
+        // M19 钓鱼（A）的声音类加在这行上面
+        io.github.sweetcornna.universe.registry.sound.SettlementSounds.init();
+        // M19 聚落（B）的声音类加在这行上面
+        io.github.sweetcornna.universe.registry.sound.FossilSounds.init();
+        // M19 化石（C）的声音类加在这行上面
+        io.github.sweetcornna.universe.registry.sound.DeepSpaceSounds.init();
+        // M19 深空和重力枪（D）的声音类加在这行上面
+        io.github.sweetcornna.universe.registry.sound.HazardSounds.init();
+        // M19 科技布局和局部危害（E）的声音类加在这行上面
         SOUNDS.register(modBus);
     }
 }

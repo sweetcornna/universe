@@ -8,6 +8,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -23,6 +24,11 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import io.github.sweetcornna.universe.core.ecology.ResourcePlant;
+import io.github.sweetcornna.universe.core.fishing.FishSpecies;
+import io.github.sweetcornna.universe.core.fishing.FishTable;
+import io.github.sweetcornna.universe.core.fishing.Junk;
+import io.github.sweetcornna.universe.core.fishing.Rarity;
+import io.github.sweetcornna.universe.core.fossil.Bone;
 import io.github.sweetcornna.universe.core.research.Tech;
 import io.github.sweetcornna.universe.core.research.TechTree;
 
@@ -51,10 +57,12 @@ class SurvivalProgressionTest {
      * 蛋、绒毛、胶质是驯服的异星动物产的，喂得起饲料就能养；生物卵是喂饱的伙伴下的（ADR-0026 §九）。
      * 黑雾的零件和黑雾矩阵是打黑雾掉的（{@code DarkFogLoot}，不走战利品表），有多功能工具就打得动（ADR-0028 §六）。
      * 酸液桶是拿空桶在酸海里舀的，和原版打水一样（ADR-0030 §一）。
+     * 鱼、杂物、漂流瓶、补给舱是钓鱼器钓上来的（ADR-0034 §一），配方里按标签用鱼；骨头是化石土按星球换出来的
+     * （{@code universe:fossil_bone} 战利品函数，表里只写了一块占位）；化石展品是骨架展台封装出来的（§三）。
      *
      * <p>值按 {@link #available} 判断，所以可以是原版物品或标签。
      */
-    private static final Map<String, String> EXTRACTED = Map.ofEntries(
+    private static final Map<String, String> EXTRACTED = extracted(Map.ofEntries(
             Map.entry(NS + "crude_oil", NS + "oil_extractor"),
             Map.entry(NS + "water", NS + "water_pump"),
             Map.entry(NS + "acid_bucket", "minecraft:bucket"),
@@ -70,7 +78,7 @@ class SurvivalProgressionTest {
             Map.entry(NS + "matter_recombinator", NS + "multitool"),
             Map.entry(NS + "negentropy_singularity", NS + "multitool"),
             Map.entry(NS + "core_element", NS + "multitool"),
-            Map.entry(NS + "dark_fog_matrix", NS + "multitool"));
+            Map.entry(NS + "dark_fog_matrix", NS + "multitool")));
     /** 生存里本来就拿不到的：挖不掉的涌泉、掉落舱和石碑、空间站的交易终端和建材，只在坠毁点箱子里的损坏工具，机甲的建造无人机。刷怪蛋另算。 */
     private static final Set<String> UNOBTAINABLE = Set.of(NS + "crude_oil_seep", NS + "damaged_multitool", NS + "drop_pod",
             NS + "monolith", NS + "trade_terminal",
@@ -104,9 +112,34 @@ class SurvivalProgressionTest {
     private static final Set<String> STRUCTURE_BLOCKS = Set.of(NS + "data_terminal", NS + "supply_crate", NS + "tech_cache",
             NS + "smoldering_wreck", NS + "damaged_ship_helm", NS + "clam", NS + "sealed_crate",
             // 野外的地标（ADR-0026）：化石坑的化石土、打捞点的打捞舱；雷击石是风暴里雷劈出来的
-            NS + "fossil_dirt", NS + "salvage_capsule", NS + "fulgurite");
+            NS + "fossil_dirt", NS + "salvage_capsule", NS + "fulgurite",
+            // 间歇泉的喷口和结壳是世界生成的地物（ADR-0034 §六）
+            NS + "hot_geyser_vent", NS + "hot_geyser_crust", NS + "toxic_geyser_vent", NS + "toxic_geyser_crust",
+            NS + "cold_geyser_vent", NS + "cold_geyser_crust", NS + "strange_geyser_vent", NS + "strange_geyser_crust");
 
     private record Recipe(String name, List<List<String>> ingredients, String research) {
+    }
+
+    private static Map<String, String> extracted(Map<String, String> base) {
+        Map<String, String> all = new HashMap<>(base);
+        String rig = NS + "fishing_rig";
+        for (FishSpecies fish : FishTable.ALL) {
+            all.put(NS + fish.itemId(), rig);
+        }
+        all.put("#" + NS + "fish", rig);
+        for (Rarity rarity : Rarity.values()) {
+            all.put("#" + NS + "fish/" + rarity.key(), rig);
+        }
+        for (Junk junk : Junk.values()) {
+            all.put(NS + junk.id(), rig);
+        }
+        all.put(NS + "message_bottle", rig);
+        all.put(NS + "sealed_cache", rig);
+        for (Bone bone : Bone.all()) {
+            all.put(NS + bone.id(), NS + "fossil_dirt");
+        }
+        all.put(NS + "fossil_exhibit", NS + "skeleton_display");
+        return Map.copyOf(all);
     }
 
     private record Producer(Recipe recipe, List<String> results) {

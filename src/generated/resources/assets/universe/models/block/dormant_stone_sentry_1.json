@@ -1,0 +1,9 @@
+{
+  "parent": "universe:block/dormant_stone_sentry_template",
+  "textures": {
+    "bottom": "universe:block/dormant_stone_sentry_bottom",
+    "front": "universe:block/dormant_stone_sentry_front_1",
+    "side": "universe:block/dormant_stone_sentry_side_1",
+    "top": "universe:block/dormant_stone_sentry_top"
+  }
+}
