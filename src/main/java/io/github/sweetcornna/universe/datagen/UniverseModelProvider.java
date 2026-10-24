@@ -1,5 +1,7 @@
 package io.github.sweetcornna.universe.datagen;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -88,9 +90,25 @@ final class UniverseModelProvider extends ModelProvider {
     /** 矿石：底层是染成星岩色的岩石（索引 0），上面一层不染色的矿点；会发光的矿点层自发光。 */
     private static final ModelTemplate TINTED_ORE = template("tinted_ore", TextureSlot.ALL, OVERLAY);
     private static final ModelTemplate TINTED_ORE_EMISSIVE = template("tinted_ore_emissive", TextureSlot.ALL, OVERLAY);
+    /** 设备运转时正面叠一层和它共面的自发光贴图（只含灯、屏幕这些像素，ADR-0031 §三）。 */
+    private static final TextureSlot GLOW = TextureSlot.create("glow");
+    private static final ModelTemplate MACHINE_GLOW = template("machine_glow", TextureSlot.FRONT, TextureSlot.SIDE, TextureSlot.TOP,
+            TextureSlot.BOTTOM, GLOW);
+    /** 顶面也亮的设备（电弧熔炉这类）：正面和顶面各叠一层。 */
+    private static final TextureSlot GLOW_TOP = TextureSlot.create("glow_top");
+    private static final ModelTemplate MACHINE_GLOW_TOP = template("machine_glow_top", TextureSlot.FRONT, TextureSlot.SIDE,
+            TextureSlot.TOP, TextureSlot.BOTTOM, GLOW, GLOW_TOP);
+
+    /** 手画的贴图所在的目录：看某张发光层贴图在不在。 */
+    private static Path textures;
 
     UniverseModelProvider(PackOutput output) {
         super(output, Universe.MOD_ID);
+        textures = output.getOutputFolder().getParent().getParent().resolve("main/resources/assets/universe/textures");
+    }
+
+    private static boolean hasTexture(String name) {
+        return Files.exists(textures.resolve("block/" + name + ".png"));
     }
 
     @Override
@@ -559,7 +577,10 @@ final class UniverseModelProvider extends ModelProvider {
                 ItemModelUtils.when(ItemDisplayContext.GUI, ItemModelUtils.plainModel(flat))));
     }
 
-    /** 一格的设备：正面（和电弧熔炉的顶面）工作时换成发光的贴图。 */
+    /**
+     * 一格的设备：正面（和电弧熔炉的顶面）工作时换成发光的贴图；有 {@code <名字>_front_on_glow} 贴图的，
+     * 正面再叠一层自发光，夜里灯和屏幕是亮的。顶面也亮、又有 {@code <名字>_top_on_glow} 的，顶面也叠一层。
+     */
     private static void recipeMachine(BlockModelGenerators blockModels, Block block, String name, boolean topLit, String bottom) {
         Identifier[] models = new Identifier[2];
         for (int on = 0; on < 2; on++) {
@@ -569,7 +590,17 @@ final class UniverseModelProvider extends ModelProvider {
                     .put(TextureSlot.SIDE, texture(name + "_side"))
                     .put(TextureSlot.TOP, texture(name + "_top" + (topLit ? suffix : "")))
                     .put(TextureSlot.BOTTOM, texture(bottom));
-            models[on] = ModelTemplates.CUBE_ORIENTABLE_TOP_BOTTOM.createWithSuffix(block, suffix, textures, blockModels.modelOutput);
+            if (on == 1 && hasTexture(name + "_front_on_glow")) {
+                textures.put(GLOW, texture(name + "_front_on_glow"));
+                if (topLit && hasTexture(name + "_top_on_glow")) {
+                    textures.put(GLOW_TOP, texture(name + "_top_on_glow"));
+                    models[on] = MACHINE_GLOW_TOP.createWithSuffix(block, suffix, textures, blockModels.modelOutput);
+                } else {
+                    models[on] = MACHINE_GLOW.createWithSuffix(block, suffix, textures, blockModels.modelOutput);
+                }
+            } else {
+                models[on] = ModelTemplates.CUBE_ORIENTABLE_TOP_BOTTOM.createWithSuffix(block, suffix, textures, blockModels.modelOutput);
+            }
         }
         blockModels.blockStateOutput.accept(MultiVariantGenerator.dispatch(block)
                 .with(PropertyDispatch.initial(MachineBlock.WORKING).generate(on -> BlockModelGenerators.plainVariant(models[on ? 1 : 0])))

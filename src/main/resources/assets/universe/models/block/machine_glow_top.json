@@ -1,0 +1,37 @@
+{
+    "parent": "minecraft:block/block",
+    "display": {
+        "firstperson_righthand": {
+            "rotation": [0, 135, 0],
+            "translation": [0, 0, 0],
+            "scale": [0.40, 0.40, 0.40]
+        }
+    },
+    "textures": {
+        "particle": "#front"
+    },
+    "elements": [
+        {
+            "from": [0, 0, 0],
+            "to": [16, 16, 16],
+            "faces": {
+                "down": {"texture": "#bottom", "cullface": "down"},
+                "up": {"texture": "#top", "cullface": "up"},
+                "north": {"texture": "#front", "cullface": "north"},
+                "south": {"texture": "#side", "cullface": "south"},
+                "west": {"texture": "#side", "cullface": "west"},
+                "east": {"texture": "#side", "cullface": "east"}
+            }
+        },
+        {
+            "from": [0, 0, 0],
+            "to": [16, 16, 16],
+            "shade": false,
+            "light_emission": 15,
+            "faces": {
+                "north": {"texture": "#glow", "cullface": "north"},
+                "up": {"texture": "#glow_top", "cullface": "up"}
+            }
+        }
+    ]
+}

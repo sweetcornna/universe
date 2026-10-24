@@ -392,6 +392,8 @@ io.github.sweetcornna.universe
 | `Attenuation.NONE` 只关掉距离衰减，声音照样按位置分左右（`relative` 才跟着听者）；音量为 0 起播要 `canStartSilent()` 返回真 | 已确认，机器的环境声 |
 | 换维度时 `SoundManager.stop()` 停掉所有声音，但可刻声音实例的 `isStopped()` 不变；判断循环声还在不在要用 `SoundManager.isActive(instance)` | 已确认，`client.audio.Loops` |
 | 服务端非玩家实体只在实体更新范围里更新（`DistanceManager.inEntityTickingRange`，按票据算，跟着玩家走）。实体进了没加载的区块，`PersistentEntitySectionManager` 把它藏起来并从客户端删掉，除非 `isAlwaysTicking()`；这个值只在加入、换区段、区块状态变化时读，必须固定，中途变会漏掉开始追踪。`ChunkMap.TrackedEntity.updatePlayer` 在实体所在的区块还没发给这个玩家时（`chunkSender.isPending`）停止同步 | 已确认，飞船（脉冲引擎一刻 40 格） |
+| 方块状态的编解码键是小写的 `id` 和 `properties`（`StateHolder.codec`），方块展示实体的 NBT 写 `{block_state:{id:"…",properties:{…}}}`；旧的 `Name`/`Properties` 读不出来，实体照样生成但看不见 | 已确认，开发脚本摆运转中的设备 |
+| 方块模型的元素可以写 `light_emission`（0–15），渲染层按每个面单独选；和底下的面共面的第二个元素能当自发光覆盖层 | 已确认，`models/block/machine_glow.json` |
 | 能量能力：`Capabilities.Energy.BLOCK` 是 `BlockCapability<EnergyHandler, @Nullable Direction>`，`transfer.energy.EnergyHandler` 用 long 读数（`getAmountAsLong`、`getCapacityAsLong`），`insert(int, TransactionContext)`、`extract(int, TransactionContext)` 读写；`EnergyHandlerUtil.move` 在两个处理器之间搬电。流体能力 `Capabilities.Fluid.BLOCK` 是 `ResourceHandler<FluidResource>`。事务用 `Transaction.openRoot()`，自己的状态用 `SnapshotJournal` 回滚 | 已确认，电网接口（ADR-0030） |
 | 流体标签提供器 `FluidTagsProvider(output, lookup, modId)`；原版水的 ID 在 `world.level.material.FluidIds`（`WATER`、`FLOWING_WATER`）；`Registry.getTagOrEmpty` 返回 `Iterable<Holder<T>>`；`TagsUpdatedEvent` 是密封类 | 已确认，流体互通（ADR-0030） |
 
