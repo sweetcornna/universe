@@ -24,15 +24,18 @@ import io.github.sweetcornna.universe.network.FleetPayloads;
 import io.github.sweetcornna.universe.network.WarpPayload;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
 import io.github.sweetcornna.universe.registry.UniverseItems;
+import io.github.sweetcornna.universe.registry.sound.ShipSounds;
 import io.github.sweetcornna.universe.world.freighter.FreighterDimensions;
 import io.github.sweetcornna.universe.world.planet.Planets;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.game.ClientboundSoundPacket;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
@@ -178,12 +181,21 @@ public final class FreighterConsole {
         }
         SPOOLS.put(session.freighter(), new Spool(player.getUUID(), target));
         ServerLevel interior = player.level();
-        interior.playSound(null, player.blockPosition(), SoundEvents.PORTAL_TRIGGER, SoundSource.BLOCKS, 0.8F, 0.9F);
+        // 和飞船同一条充能声，音高不能变，撕开空间那一下才对得上 SPOOL_TICKS
+        playAboard(interior, ShipSounds.WARP_CHARGE, 1.0F);
         for (ServerPlayer aboard : interior.players()) {
             PacketDistributor.sendToPlayer(aboard, new WarpPayload(WarpPayload.Stage.SPOOL, Warp.SPOOL_TICKS, target));
         }
         Name name = Discoveries.resolve(server, DiscoveryKey.system(to.get().index()), to.get().name());
         return Component.translatable("message.universe.freighter.spooling", name.zh(), name.en());
+    }
+
+    /** 船舱里每个人在自己身边听到一声：舱很大，放在一处有人听不见，各放一处又会叠成好几声。 */
+    private static void playAboard(ServerLevel interior, Holder<SoundEvent> sound, float pitch) {
+        long seed = interior.getRandom().nextLong();
+        for (ServerPlayer aboard : interior.players()) {
+            aboard.connection.send(new ClientboundSoundPacket(sound, SoundSource.BLOCKS, aboard.getX(), aboard.getY(), aboard.getZ(), 1.0F, pitch, seed));
+        }
     }
 
     /** 每刻末尾：充能满了的货船挪过去。 */
@@ -206,11 +218,11 @@ public final class FreighterConsole {
             }
             StarSystem system = Planets.galaxy(server).system(spool.target).orElseThrow();
             Name name = Discoveries.resolve(server, DiscoveryKey.system(system.index()), system.name());
+            playAboard(interior, ShipSounds.WARP_EXIT, 0.75F);
             for (ServerPlayer aboard : interior.players()) {
                 PacketDistributor.sendToPlayer(aboard, new WarpPayload(WarpPayload.Stage.ARRIVE, Warp.ARRIVAL_TICKS, spool.target));
                 aboard.sendOverlayMessage(Component.translatable("message.universe.freighter.arrived", name.zh(), name.en()));
                 Discoveries.discover(aboard, DiscoveryKey.system(system.index()));
-                interior.playSound(null, aboard.blockPosition(), SoundEvents.TRIDENT_RIPTIDE_3.value(), SoundSource.BLOCKS, 1.0F, 0.6F);
                 Session session = SESSIONS.get(aboard.getUUID());
                 if (session != null && session.freighter() == entry.getKey()) {
                     send(aboard, session, false, null);

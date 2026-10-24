@@ -4,6 +4,7 @@ import io.github.sweetcornna.universe.core.darkfog.Tactics;
 import io.github.sweetcornna.universe.darkfog.Facilities;
 import io.github.sweetcornna.universe.entity.PlasmaBolt;
 import io.github.sweetcornna.universe.registry.UniverseEntities;
+import io.github.sweetcornna.universe.registry.UniverseSounds;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
@@ -11,7 +12,6 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityEvent;
@@ -121,7 +121,7 @@ public class DarkFogBolt extends ThrowableProjectile {
             Entity target = hitResult.getEntity();
             PlasmaBolt.clearHurtCooldown(target);
             target.hurtServer(level, DarkFogDamage.source(level, this, this.getOwner()), this.damage);
-            level.playSound(null, target.getX(), target.getY(0.5), target.getZ(), SoundEvents.SHULKER_BULLET_HIT, SoundSource.HOSTILE, 0.4F, 1.8F);
+            level.playSound(null, target.getX(), target.getY(0.5), target.getZ(), UniverseSounds.IMPACT_ENERGY.get(), SoundSource.HOSTILE, 0.6F, 1.0F);
         }
     }
 

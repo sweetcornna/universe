@@ -20,13 +20,13 @@ import io.github.sweetcornna.universe.perf.ServerPerf;
 import io.github.sweetcornna.universe.registry.UniverseBlockEntities;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
 import io.github.sweetcornna.universe.registry.UniverseItems;
+import io.github.sweetcornna.universe.registry.sound.WorldSounds;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -297,7 +297,7 @@ public final class FacilityRepairs {
                 return false;
             }
             level.sendParticles(ParticleTypes.ELECTRIC_SPARK, pos.getX() + 0.5, pos.getY() + 0.9, pos.getZ() + 0.5, 6, 0.3, 0.2, 0.3, 0.05);
-            level.playSound(null, pos, SoundEvents.ANVIL_USE, SoundSource.BLOCKS, 0.25F, 1.6F);
+            level.playSound(null, pos, WorldSounds.REPAIR.get(), SoundSource.BLOCKS, 0.3F, 1.2F);
             return true;
         }
         Item item = needed(level, pos);

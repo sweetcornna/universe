@@ -10,6 +10,7 @@ import io.github.sweetcornna.universe.core.vehicle.VehicleKind;
 import io.github.sweetcornna.universe.core.vehicle.WheelDrive;
 import io.github.sweetcornna.universe.network.ScanResultPayload;
 import io.github.sweetcornna.universe.registry.UniverseItems;
+import io.github.sweetcornna.universe.registry.sound.ShipSounds;
 import io.github.sweetcornna.universe.sentinel.Sentinels;
 import io.github.sweetcornna.universe.survival.Multitool;
 import net.minecraft.core.BlockPos;
@@ -21,7 +22,6 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.util.Mth;
@@ -302,8 +302,9 @@ public class Exocraft extends UniverseVehicle {
         BlockHitResult hit = aim(level, driver, driver.getEyePosition(), driver.getLookAngle(), driver.getUpVector(1.0F), this.thirdPersonAim);
         Vec3 to = hit.getLocation();
         beam(level, this.muzzle(), to);
+        // 每段 1 秒、两头淡入淡出，10 刻放一段正好接上；音高不能变，变了接缝处会错相
         if (this.tickCount % 10 == 0) {
-            level.playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.BEACON_AMBIENT, SoundSource.NEUTRAL, 0.6F, 1.6F);
+            level.playSound(null, this.getX(), this.getY(), this.getZ(), ShipSounds.LASER.get(), SoundSource.NEUTRAL, 0.6F, 1.0F);
         }
         if (hit.getType() != HitResult.Type.BLOCK) {
             this.clearTarget(level);
@@ -396,7 +397,7 @@ public class Exocraft extends UniverseVehicle {
         List<ScanResultPayload.PoiMarker> pois = Multitool.scanPois(player, POI_RADIUS);
         List<ScanResultPayload.LandmarkMarker> landmarks = Multitool.scanLandmarks(player, POI_RADIUS);
         PacketDistributor.sendToPlayer(player, new ScanResultPayload(markers, pois, landmarks));
-        level.playSound(null, vehicle.getX(), vehicle.getY(), vehicle.getZ(), SoundEvents.BEACON_ACTIVATE, SoundSource.NEUTRAL, 1.0F, 1.4F);
+        level.playSound(null, vehicle.getX(), vehicle.getY(), vehicle.getZ(), ShipSounds.SCAN.get(), SoundSource.NEUTRAL, 1.0F, 1.0F);
         for (int i = 0; i < 72; i++) {
             double angle = i * Math.PI * 2 / 72;
             level.sendParticles(ParticleTypes.END_ROD, vehicle.getX() + Math.cos(angle) * 3, vehicle.getY() + 0.3,

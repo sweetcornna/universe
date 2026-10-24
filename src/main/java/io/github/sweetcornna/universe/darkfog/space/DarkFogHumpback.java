@@ -3,8 +3,8 @@ package io.github.sweetcornna.universe.darkfog.space;
 import io.github.sweetcornna.universe.core.darkfog.SpaceFlight;
 import io.github.sweetcornna.universe.core.darkfog.SpaceUnitKind;
 import io.github.sweetcornna.universe.darkfog.entity.DarkFogBolt;
+import io.github.sweetcornna.universe.registry.sound.HostileSounds;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
@@ -83,7 +83,7 @@ public class DarkFogHumpback extends DarkFogSpaceUnit {
             }
             Vec3 muzzle = this.position().add(0, this.getBbHeight() * 0.95, 0);
             this.shoot(level, muzzle, aim, targetVelocity, DarkFogBolt.GUARDIAN_COLOR, 1.4F, SHELL_SPEED, 1.5F, SHELL_LIFETIME);
-            this.playSound(SoundEvents.BLAZE_SHOOT, 1.2F, 0.5F + this.random.nextFloat() * 0.1F);
+            this.playSound(HostileSounds.HUMPBACK_SHOT.get(), 1.0F, 0.95F + this.random.nextFloat() * 0.1F);
         }
     }
 }

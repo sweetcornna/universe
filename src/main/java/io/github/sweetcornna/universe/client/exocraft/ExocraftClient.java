@@ -9,12 +9,14 @@ import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.client.HudRegions;
 import io.github.sweetcornna.universe.client.ship.ShipClient;
 import io.github.sweetcornna.universe.core.survival.LaserHeat;
+import io.github.sweetcornna.universe.client.audio.Loops;
 import io.github.sweetcornna.universe.exocraft.Exocraft;
 import io.github.sweetcornna.universe.exocraft.HeavyRover;
 import io.github.sweetcornna.universe.exocraft.HoverCar;
 import io.github.sweetcornna.universe.network.ExocraftControlPayload;
 import io.github.sweetcornna.universe.network.VehiclePayloads;
 import io.github.sweetcornna.universe.registry.UniverseEntities;
+import io.github.sweetcornna.universe.registry.sound.ShipSounds;
 import net.minecraft.client.Camera;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.DeltaTracker;
@@ -23,8 +25,8 @@ import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
+import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.network.chat.Component;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -122,7 +124,7 @@ public final class ExocraftClient {
             minecraft.options.setCameraType(cameraBeforeBoarding);
             cameraBeforeBoarding = null;
         }
-        if (exocraft != null && (engineSound == null || engineSound.isStopped())) {
+        if (exocraft != null && (!Loops.playing(engineSound))) {
             engineSound = new EngineSound(exocraft);
             minecraft.getSoundManager().play(engineSound);
         } else if (exocraft == null) {
@@ -240,18 +242,21 @@ public final class ExocraftClient {
         return Component.translatable("hud.universe.exocraft.target", state.getBlock().getName(), distance);
     }
 
-    /** 发动机：低沉的嗡嗡声，车越快调越高；停着时小声怠速。 */
+    /** 电机和传动：车越快越响、调越高；停着时小声怠速，没燃料就停。重型车往低处放，悬浮车往高处放。 */
     private static final class EngineSound extends AbstractTickableSoundInstance {
         private final Exocraft exocraft;
+        private final float base;
 
         EngineSound(Exocraft exocraft) {
-            super(SoundEvents.BEACON_AMBIENT, SoundSource.NEUTRAL, RandomSource.create());
+            super(ShipSounds.ROVER.get(), SoundSource.NEUTRAL, RandomSource.create());
             this.exocraft = exocraft;
+            this.base = exocraft instanceof HeavyRover ? 0.85F : exocraft instanceof HoverCar ? 1.15F : 1.0F;
             this.looping = true;
             this.delay = 0;
             this.volume = 0.01F;
-            this.pitch = 0.5F;
+            this.pitch = 0.8F * this.base;
             this.relative = true;
+            this.attenuation = SoundInstance.Attenuation.NONE;
         }
 
         @Override
@@ -264,9 +269,10 @@ public final class ExocraftClient {
             double dz = this.exocraft.getZ() - this.exocraft.zo;
             float speed = (float) Math.sqrt(dx * dx + dz * dz);
             boolean running = this.exocraft.fuel() > 0 || Minecraft.getInstance().player.hasInfiniteMaterials();
-            float target = running ? 0.25F + 0.5F * Mth.clamp(speed / 0.6F, 0, 1) : 0;
+            float share = Mth.clamp(speed / 0.6F, 0, 1);
+            float target = running ? 0.25F + 0.5F * share : 0;
             this.volume = Mth.lerp(0.15F, this.volume, target);
-            this.pitch = Mth.lerp(0.15F, this.pitch, 0.5F + 0.6F * Mth.clamp(speed / 0.6F, 0, 1));
+            this.pitch = Mth.lerp(0.15F, this.pitch, (0.8F + 0.45F * share) * this.base);
         }
 
         @Override

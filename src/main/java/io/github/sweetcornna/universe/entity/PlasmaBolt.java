@@ -6,6 +6,8 @@ import io.github.sweetcornna.universe.encounter.SpaceEncounters;
 import io.github.sweetcornna.universe.pirate.PirateFighter;
 import io.github.sweetcornna.universe.registry.UniverseEntities;
 import io.github.sweetcornna.universe.sentinel.Sentinel;
+import io.github.sweetcornna.universe.registry.UniverseSounds;
+import io.github.sweetcornna.universe.registry.sound.GearSounds;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.Registries;
@@ -15,7 +17,6 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.damagesource.DamageScaling;
 import net.minecraft.world.damagesource.DamageSource;
@@ -112,7 +113,7 @@ public class PlasmaBolt extends ThrowableProjectile {
             return;
         }
         if (this.isInWater()) {
-            this.playSound(SoundEvents.FIRE_EXTINGUISH, 0.4F, 2.0F);
+            this.playSound(GearSounds.BOLT_FIZZLE.get(), 0.6F, 0.95F + this.random.nextFloat() * 0.1F);
             this.level().broadcastEntityEvent(this, EVENT_IMPACT);
             this.discard();
         } else if (this.tickCount > this.lifetime) {
@@ -171,8 +172,9 @@ public class PlasmaBolt extends ThrowableProjectile {
                 target.push(push.normalize().scale(KNOCKBACK * (1 - resistance)));
             }
         }
-        level.playSound(null, target.getX(), target.getY(0.5), target.getZ(), SoundEvents.SHULKER_BULLET_HIT,
-                owner instanceof Sentinel || owner instanceof PirateFighter ? SoundSource.HOSTILE : SoundSource.PLAYERS, 0.5F, 1.6F);
+        level.playSound(null, target.getX(), target.getY(0.5), target.getZ(), UniverseSounds.IMPACT_ENERGY,
+                owner instanceof Sentinel || owner instanceof PirateFighter ? SoundSource.HOSTILE : SoundSource.PLAYERS, 0.8F,
+                0.9F + this.random.nextFloat() * 0.2F);
     }
 
     /**
@@ -191,7 +193,7 @@ public class PlasmaBolt extends ThrowableProjectile {
         super.onHit(hitResult);
         if (!this.level().isClientSide()) {
             if (hitResult instanceof BlockHitResult block && hitResult.getType() == HitResult.Type.BLOCK) {
-                this.playSound(SoundEvents.FIRE_EXTINGUISH, 0.25F, 2.0F);
+                this.playSound(UniverseSounds.IMPACT_ENERGY.get(), 0.5F, 1.05F + this.random.nextFloat() * 0.15F);
                 // 打中遇险的货船（ADR-0024）
                 SpaceEncounters.onBoltHit((ServerLevel) this.level(), this.getOwner(), block.getBlockPos());
             }

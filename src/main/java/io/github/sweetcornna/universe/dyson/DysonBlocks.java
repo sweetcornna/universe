@@ -5,8 +5,6 @@ import io.github.sweetcornna.universe.factory.TallMachineBlock;
 import io.github.sweetcornna.universe.registry.UniverseBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -88,7 +86,7 @@ public final class DysonBlocks {
         }
     }
 
-    /** 微型粒子对撞机：工作时环里闪着紫光，偶尔一声嗡鸣。 */
+    /** 微型粒子对撞机：工作时环里闪着紫光。 */
     public static class Collider extends MachineBlock {
         public Collider(Properties properties) {
             super(properties, UniverseBlockEntities.MINIATURE_PARTICLE_COLLIDER);
@@ -103,10 +101,6 @@ public final class DysonBlocks {
                 double angle = random.nextDouble() * Math.PI * 2;
                 level.addParticle(ParticleTypes.ELECTRIC_SPARK, pos.getX() + 0.5 + Math.cos(angle) * 0.55, pos.getY() + 0.5 + random.nextDouble() * 0.3,
                         pos.getZ() + 0.5 + Math.sin(angle) * 0.55, 0, 0, 0);
-            }
-            if (random.nextInt(40) == 0) {
-                level.playLocalSound(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, SoundEvents.BEACON_AMBIENT, SoundSource.BLOCKS,
-                        0.5F, 0.6F, false);
             }
         }
     }

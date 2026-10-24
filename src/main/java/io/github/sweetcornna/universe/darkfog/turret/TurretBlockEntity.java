@@ -19,6 +19,7 @@ import io.github.sweetcornna.universe.factory.MachineBlockEntity;
 import io.github.sweetcornna.universe.factory.MachineMenu;
 import io.github.sweetcornna.universe.factory.power.LevelPower;
 import io.github.sweetcornna.universe.registry.UniverseMenus;
+import io.github.sweetcornna.universe.registry.sound.HostileSounds;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.particles.DustParticleOptions;
@@ -28,7 +29,6 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
@@ -335,12 +335,12 @@ public class TurretBlockEntity extends MachineBlockEntity {
                 if (level.getRandom().nextDouble() < this.kind.hitChance(aim.distanceTo(pivot))) {
                     this.hit(level, target, ammo.damage());
                 }
-                level.playSound(null, muzzle.x, muzzle.y, muzzle.z, SoundEvents.FIREWORK_ROCKET_BLAST, SoundSource.BLOCKS, 0.45F,
-                        1.7F + level.getRandom().nextFloat() * 0.3F);
+                level.playSound(null, muzzle.x, muzzle.y, muzzle.z, HostileSounds.GAUSS.get(), SoundSource.BLOCKS, 0.9F,
+                        0.96F + level.getRandom().nextFloat() * 0.08F);
             }
             case LASER -> {
                 this.hit(level, target, TurretKind.LASER_DAMAGE);
-                level.playSound(null, muzzle.x, muzzle.y, muzzle.z, SoundEvents.AMETHYST_BLOCK_RESONATE, SoundSource.BLOCKS, 0.5F, 2.0F);
+                level.playSound(null, muzzle.x, muzzle.y, muzzle.z, HostileSounds.LASER.get(), SoundSource.BLOCKS, 0.8F, 0.96F + level.getRandom().nextFloat() * 0.08F);
             }
             case IMPLOSION -> {
                 this.rounds--;
@@ -348,24 +348,24 @@ public class TurretBlockEntity extends MachineBlockEntity {
                 Vec3 lead = aim.add(target.getDeltaMovement().multiply(1, 0, 1).scale(10));
                 TurretShell shell = TurretShell.launch(level, this.worldPosition, muzzle, lead, ammo);
                 level.addFreshEntity(shell);
-                level.playSound(null, muzzle.x, muzzle.y, muzzle.z, SoundEvents.BLAZE_SHOOT, SoundSource.BLOCKS, 0.8F, 0.55F);
+                level.playSound(null, muzzle.x, muzzle.y, muzzle.z, HostileSounds.IMPLOSION.get(), SoundSource.BLOCKS, 1.0F, 1.0F);
             }
             case MISSILE -> {
                 this.rounds--;
                 AmmoKind ammo = this.loaded == null ? AmmoKind.MISSILE : this.loaded;
                 TurretMissile missile = TurretMissile.launch(level, this.worldPosition, pivot.add(0, 0.4, 0), target, ammo);
                 level.addFreshEntity(missile);
-                level.playSound(null, muzzle.x, muzzle.y, muzzle.z, SoundEvents.FIREWORK_ROCKET_LAUNCH, SoundSource.BLOCKS, 0.9F, 0.8F);
+                level.playSound(null, muzzle.x, muzzle.y, muzzle.z, HostileSounds.MISSILE.get(), SoundSource.BLOCKS, 1.0F, 1.0F);
             }
             case PLASMA -> {
                 this.rounds--;
                 AmmoKind ammo = this.loaded == null ? AmmoKind.PLASMA_CAPSULE : this.loaded;
                 level.addFreshEntity(TurretPlasma.launch(level, this.worldPosition, muzzle, lead(muzzle, aim, target), ammo));
-                level.playSound(null, muzzle.x, muzzle.y, muzzle.z, SoundEvents.SHULKER_SHOOT, SoundSource.BLOCKS, 0.9F, 0.55F);
+                level.playSound(null, muzzle.x, muzzle.y, muzzle.z, HostileSounds.PLASMA.get(), SoundSource.BLOCKS, 1.0F, 1.0F);
             }
             case SR_PLASMA -> {
                 level.addFreshEntity(TurretPlasma.shortRange(level, this.worldPosition, muzzle, lead(muzzle, aim, target)));
-                level.playSound(null, muzzle.x, muzzle.y, muzzle.z, SoundEvents.SHULKER_SHOOT, SoundSource.BLOCKS, 0.7F, 1.4F);
+                level.playSound(null, muzzle.x, muzzle.y, muzzle.z, HostileSounds.SR_PLASMA.get(), SoundSource.BLOCKS, 0.9F, 0.96F + level.getRandom().nextFloat() * 0.08F);
             }
         }
         level.blockEvent(this.worldPosition, this.getBlockState().getBlock(), EVENT_FIRE, target.getId());

@@ -2,9 +2,9 @@ package io.github.sweetcornna.universe.darkfog.entity;
 
 import io.github.sweetcornna.universe.core.darkfog.Tactics;
 import io.github.sweetcornna.universe.core.darkfog.UnitKind;
+import io.github.sweetcornna.universe.registry.sound.HostileSounds;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
@@ -65,7 +65,7 @@ public class DarkFogGuardian extends DarkFogUnit {
         Vec3 aim = enemy.getEyePosition().add(0, -0.4, 0);
         aim = aim.add(enemy.getDeltaMovement().multiply(1, 0, 1).scale(from.distanceTo(aim) / SPEED * 0.8));
         DarkFogBolt.fire(level, this, from, aim.subtract(from), damage, DarkFogBolt.GUARDIAN_COLOR, 0.9F, SPEED, 2.5F);
-        this.playSound(SoundEvents.BLAZE_SHOOT, 0.6F, 1.0F);
+        this.playSound(HostileSounds.GUARDIAN_SHOT.get(), 0.9F, 0.96F + this.random.nextFloat() * 0.08F);
     }
 
     @Override
@@ -73,6 +73,6 @@ public class DarkFogGuardian extends DarkFogUnit {
         Vec3 from = this.getEyePosition().add(0, -0.3, 0);
         Vec3 aim = Vec3.atCenterOf(pos);
         DarkFogBolt.fire(level, this, from, aim.subtract(from), damage, DarkFogBolt.GUARDIAN_COLOR, 0.9F, SPEED, 1.0F);
-        this.playSound(SoundEvents.BLAZE_SHOOT, 0.6F, 1.0F);
+        this.playSound(HostileSounds.GUARDIAN_SHOT.get(), 0.9F, 0.96F + this.random.nextFloat() * 0.08F);
     }
 }

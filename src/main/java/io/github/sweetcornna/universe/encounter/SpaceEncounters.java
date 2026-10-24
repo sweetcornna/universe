@@ -39,6 +39,9 @@ import io.github.sweetcornna.universe.pirate.PirateFighter;
 import io.github.sweetcornna.universe.pirate.Pirates;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
 import io.github.sweetcornna.universe.registry.UniverseStats;
+import io.github.sweetcornna.universe.registry.sound.HostileSounds;
+import io.github.sweetcornna.universe.registry.sound.ShipSounds;
+import io.github.sweetcornna.universe.registry.sound.WorldSounds;
 import io.github.sweetcornna.universe.rules.UniverseRules;
 import io.github.sweetcornna.universe.station.Stations;
 import io.github.sweetcornna.universe.survival.SurvivalDamage;
@@ -60,7 +63,6 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.RandomizableContainer;
@@ -493,7 +495,7 @@ public final class SpaceEncounters {
                 level.sendParticles(ParticleTypes.REVERSE_PORTAL, c.x, c.y, c.z, 400, 14, 5, 14, 0.4);
                 level.sendParticles(ParticleTypes.END_ROD, c.x, c.y, c.z, 120, 12, 4, 12, 0.3);
                 level.sendParticles(ColorParticleOption.create(ParticleTypes.FLASH, 0xFFE8F0FF), c.x, c.y, c.z, 3, 4, 2, 4, 0);
-                level.playSound(null, c.x, c.y, c.z, SoundEvents.BEACON_DEACTIVATE, SoundSource.NEUTRAL, 4.0F, 0.6F);
+                level.playSound(null, c.x, c.y, c.z, ShipSounds.WARP, SoundSource.NEUTRAL, 1.0F, 0.7F);
             }
             LOGGER.info("Encounter {} ({}) removed from system {}", site.seed(), site.kind(), site.system());
         });
@@ -548,7 +550,7 @@ public final class SpaceEncounters {
                     }
                     player.hurtServer(level, level.damageSources().source(SurvivalDamage.SHOCK), Encounters.HAZARD_DAMAGE);
                     level.sendParticles(ParticleTypes.ELECTRIC_SPARK, eye.x, eye.y - 0.4, eye.z, 16, 0.3, 0.5, 0.3, 0.3);
-                    level.playSound(null, at, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.7F, 1.9F);
+                    level.playSound(null, at, WorldSounds.CONDUIT_SHOCK.get(), SoundSource.BLOCKS, 1.0F, 1.0F);
                     break;
                 }
             }
@@ -579,7 +581,7 @@ public final class SpaceEncounters {
         Freighters.later(() -> build(server, site));
         int distance = (int) Math.round(ship.position().distanceTo(new Vec3(at[0], at[1], at[2])));
         notify(player, Component.translatable("message.universe.encounter.derelict", distance).withStyle(ChatFormatting.AQUA),
-                SoundEvents.BEACON_POWER_SELECT, 1.4F);
+                WorldSounds.SIGNAL.get(), 1.0F);
         return true;
     }
 
@@ -611,7 +613,7 @@ public final class SpaceEncounters {
                 now + Encounters.SIGNAL_TIME));
         int distance = (int) Math.round(ship.position().distanceTo(new Vec3(at[0], at[1], at[2])));
         notify(player, Component.translatable("message.universe.encounter.distress", distance).withStyle(ChatFormatting.GOLD),
-                SoundEvents.NOTE_BLOCK_BIT.value(), 0.7F);
+                WorldSounds.DISTRESS.get(), 1.0F);
         return true;
     }
 
@@ -670,14 +672,14 @@ public final class SpaceEncounters {
         Component message = Component.translatable("message.universe.encounter.under_attack", distress.count).withStyle(ChatFormatting.RED);
         player.sendSystemMessage(message);
         player.sendOverlayMessage(message);
-        level.playSound(null, distress.center.x, distress.center.y, distress.center.z, SoundEvents.RAID_HORN, SoundSource.HOSTILE, 3.0F, 1.4F);
+        level.playSound(null, distress.center.x, distress.center.y, distress.center.z, WorldSounds.FREIGHTER_ALARM, SoundSource.HOSTILE, 1.0F, 1.0F);
     }
 
     /** 海盗打光了：没有货船的收到船长的报价，有货船的拿信用点。 */
     private static void win(MinecraftServer server, ServerPlayer player, Distress distress, long now) {
         distress.state = State.WON;
         player.awardStat(UniverseStats.FREIGHTERS_RESCUED.get());
-        notify(player, Component.translatable("message.universe.encounter.rescued").withStyle(ChatFormatting.GREEN), SoundEvents.PLAYER_LEVELUP, 1.2F);
+        notify(player, Component.translatable("message.universe.encounter.rescued").withStyle(ChatFormatting.GREEN), WorldSounds.REWARD.get(), 1.0F);
         if (hasFreighter(server, player.getUUID())) {
             pay(player, "message.universe.encounter.reward");
             distress.leaveAt = now + FAREWELL;
@@ -704,7 +706,7 @@ public final class SpaceEncounters {
     private static void pay(ServerPlayer player, String key) {
         Credits.add(player, Encounters.RESCUE_REWARD);
         player.sendSystemMessage(Component.translatable(key, Credits.format(Encounters.RESCUE_REWARD)).withStyle(ChatFormatting.GOLD));
-        player.level().playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 0.8F, 0.9F);
+        player.level().playSound(null, player.getX(), player.getY(), player.getZ(), WorldSounds.CREDITS, SoundSource.PLAYERS, 0.8F, 1.0F);
     }
 
     /** 遇险信号结束：海盗撤走，货船跳走。 */
@@ -752,7 +754,7 @@ public final class SpaceEncounters {
             Site s = site.get();
             Freighters.grant(server, player.getUUID(), offer.seed(), offer.grade(), s.system(), new double[] {s.x(), s.y(), s.z()});
             notify(player, Component.translatable("message.universe.encounter.freighter_yours", offer.grade().letter()).withStyle(ChatFormatting.GREEN),
-                    SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, 1.0F);
+                    WorldSounds.ACHIEVEMENT.get(), 1.0F);
             return true;
         }
         pay(player, "message.universe.encounter.reward");
@@ -823,7 +825,7 @@ public final class SpaceEncounters {
         Component warning = Component.translatable("message.universe.encounter.sentinels_locked").withStyle(ChatFormatting.RED);
         player.sendSystemMessage(warning);
         player.sendOverlayMessage(warning);
-        level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.BEACON_ACTIVATE, SoundSource.HOSTILE, 1.0F, 0.5F);
+        level.playSound(null, player.getX(), player.getY(), player.getZ(), WorldSounds.LOCK_ON, SoundSource.HOSTILE, 1.0F, 1.0F);
         return true;
     }
 
@@ -862,7 +864,7 @@ public final class SpaceEncounters {
             notify(player, (pursuit.destroyed > 0
                     ? Component.translatable("message.universe.encounter.sentinels_destroyed", pursuit.destroyed)
                     : Component.translatable("message.universe.encounter.sentinels_gone")).withStyle(ChatFormatting.GREEN),
-                    SoundEvents.PLAYER_LEVELUP, 1.2F);
+                    WorldSounds.REWARD.get(), 1.0F);
             return;
         }
         double giveUp = Encounters.INTERCEPTOR_GIVE_UP * Encounters.INTERCEPTOR_GIVE_UP;
@@ -893,7 +895,7 @@ public final class SpaceEncounters {
         Component incoming = Component.translatable("message.universe.encounter.sentinels_incoming", pursuit.count).withStyle(ChatFormatting.RED);
         player.sendSystemMessage(incoming);
         player.sendOverlayMessage(incoming);
-        level.playSound(null, center.x, center.y, center.z, SoundEvents.BEACON_ACTIVATE, SoundSource.HOSTILE, 1.5F, 0.4F);
+        level.playSound(null, center.x, center.y, center.z, HostileSounds.SENTINEL_WARP, SoundSource.HOSTILE, 1.0F, 0.9F);
     }
 
     /** 追捕结束（不是打光的）：剩下的拦截机撤走。 */

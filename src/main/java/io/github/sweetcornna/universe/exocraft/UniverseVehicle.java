@@ -9,6 +9,7 @@ import io.github.sweetcornna.universe.core.vehicle.VehicleKind;
 import io.github.sweetcornna.universe.core.ship.ShipFlight;
 import io.github.sweetcornna.universe.entity.ship.ShipEnvironment;
 import io.github.sweetcornna.universe.registry.UniverseDataComponents;
+import io.github.sweetcornna.universe.registry.sound.ShipSounds;
 import net.minecraft.core.NonNullList;
 import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.component.DataComponents;
@@ -296,7 +297,7 @@ public abstract class UniverseVehicle extends VehicleEntity {
         this.setHurtTime(10);
         this.markHurt();
         this.setDamage(this.getDamage() + HIT_DAMAGE);
-        this.playSound(SoundEvents.ANVIL_PLACE, 0.4F, 1.4F);
+        this.playSound(ShipSounds.HULL_HIT.get(), 0.5F, 1.5F);
         if (creative || this.getDamage() > 40) {
             this.destroy(level, source);
         }

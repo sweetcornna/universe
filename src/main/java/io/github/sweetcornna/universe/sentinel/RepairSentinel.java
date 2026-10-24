@@ -5,10 +5,10 @@ import java.util.EnumSet;
 import org.jspecify.annotations.Nullable;
 
 import io.github.sweetcornna.universe.core.sentinel.SentinelKind;
+import io.github.sweetcornna.universe.registry.sound.HostileSounds;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
@@ -155,7 +155,7 @@ public class RepairSentinel extends Sentinel {
                 level.sendParticles(ParticleTypes.HAPPY_VILLAGER, to.x, to.y, to.z, 2, 0.3, 0.3, 0.3, 0);
             }
             if (self.tickCount % 30 == 0) {
-                self.playSound(SoundEvents.BEACON_AMBIENT, 0.6F, 1.8F);
+                self.playSound(HostileSounds.REPAIR_WELD.get(), 0.6F, 1.0F);
             }
         }
     }

@@ -26,6 +26,7 @@ import io.github.sweetcornna.universe.fleet.FleetData;
 import io.github.sweetcornna.universe.fleet.Freighters;
 import io.github.sweetcornna.universe.network.ShipPayloads;
 import io.github.sweetcornna.universe.perf.ServerPerf;
+import io.github.sweetcornna.universe.registry.sound.ShipSounds;
 import io.github.sweetcornna.universe.station.Stations;
 import io.github.sweetcornna.universe.world.DimensionTemplate;
 import io.github.sweetcornna.universe.world.RuntimeDimensions;
@@ -40,7 +41,6 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.TicketType;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.entity.Entity;
@@ -311,7 +311,7 @@ public final class ShipSummon {
         arrived.flight().restore(0, 0, 0, yaw);
         arrived.setDeltaMovement(Vec3.ZERO);
         ShipOwners.get(level.getServer()).moved(arrived);
-        level.playSound(null, BlockPos.containing(spot), SoundEvents.BEACON_POWER_SELECT, SoundSource.NEUTRAL, 1.0F, 1.4F);
+        level.playSound(null, BlockPos.containing(spot), ShipSounds.SUMMON.get(), SoundSource.NEUTRAL, 1.0F, 1.0F);
         player.sendOverlayMessage(Component.translatable("message.universe.summon.arrived"));
     }
 

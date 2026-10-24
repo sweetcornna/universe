@@ -635,6 +635,13 @@ public final class DevScript {
                     player.getAttributeValue(net.minecraft.world.entity.ai.attributes.Attributes.GRAVITY), minecraft.getFps()
                             + ", dyson sky " + DysonSkyRenderer.takeStats() + ", " + io.github.sweetcornna.universe.client.sky.SpaceDust.stats()
                             + ", shield domes " + io.github.sweetcornna.universe.client.darkfog.shield.ShieldClient.domeCount());
+            // sounds [秒]：最近几秒放过的声音、机器的环境声、真空和水下的处理（ADR-0029）
+            case "sounds" -> {
+                int seconds = args.length > 0 && !args[0].isEmpty() ? Integer.parseInt(args[0]) : 5;
+                Universe.LOGGER.info("Dev script {}", io.github.sweetcornna.universe.client.audio.SoundLog.describe(seconds));
+                Universe.LOGGER.info("Dev script {}", io.github.sweetcornna.universe.client.audio.MachineSoundscape.describe());
+                Universe.LOGGER.info("Dev script {}", io.github.sweetcornna.universe.client.audio.AcousticsClient.describe());
+            }
             // 测帧率：不限帧、关垂直同步（无头验收结束后 options.txt 会还原）
             case "unlimitedfps" -> {
                 minecraft.options.framerateLimit().set(260);

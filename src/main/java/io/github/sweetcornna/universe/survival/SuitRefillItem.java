@@ -7,8 +7,8 @@ import org.jspecify.annotations.Nullable;
 import io.github.sweetcornna.universe.core.galaxy.Hazard;
 import io.github.sweetcornna.universe.core.survival.LifeSupport;
 import io.github.sweetcornna.universe.registry.UniverseAttachments;
+import io.github.sweetcornna.universe.registry.sound.GearSounds;
 import net.minecraft.network.chat.Component;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -108,7 +108,7 @@ public class SuitRefillItem extends Item {
         }
         stack.consume(1, player);
         player.level().playSound(null, player.getX(), player.getY(), player.getZ(),
-                item.kind == Kind.OXYGEN ? SoundEvents.BOTTLE_EMPTY : SoundEvents.BEACON_POWER_SELECT, SoundSource.PLAYERS, 0.6F, 1.4F);
+                item.kind == Kind.OXYGEN ? GearSounds.REFILL_OXYGEN : GearSounds.REFILL, SoundSource.PLAYERS, 0.7F, 1.0F);
         player.sendOverlayMessage(message);
     }
 }

@@ -14,6 +14,7 @@ import io.github.sweetcornna.universe.entity.ship.ShipBeamTarget;
 import io.github.sweetcornna.universe.entity.ship.ShipCargo;
 import io.github.sweetcornna.universe.entity.ship.ShipEntity;
 import io.github.sweetcornna.universe.registry.UniverseEntities;
+import io.github.sweetcornna.universe.registry.UniverseSounds;
 import io.github.sweetcornna.universe.registry.UniverseStats;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.particles.BlockParticleOption;
@@ -249,7 +250,7 @@ public class Asteroid extends Entity implements ShipBeamTarget, IEntityWithCompl
         level.sendParticles(ParticleTypes.POOF, c.x, c.y, c.z, 12, r, r, r, 0.05);
         level.sendParticles(ParticleTypes.EXPLOSION, c.x, c.y, c.z, 1, 0, 0, 0, 0);
         level.playSound(null, c.x, c.y, c.z, SoundEvents.STONE_BREAK, SoundSource.BLOCKS, 1.5F, 0.6F);
-        level.playSound(null, c.x, c.y, c.z, SoundEvents.GENERIC_EXPLODE.value(), SoundSource.BLOCKS, 0.5F, 1.4F);
+        level.playSound(null, c.x, c.y, c.z, UniverseSounds.EXPLOSION_SMALL.get(), SoundSource.BLOCKS, 0.5F, 1.2F);
         Asteroids.onShattered(level, this);
         this.discard();
     }

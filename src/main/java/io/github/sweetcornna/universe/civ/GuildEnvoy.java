@@ -19,12 +19,12 @@ import io.github.sweetcornna.universe.mission.Missions;
 import io.github.sweetcornna.universe.network.GuildEnvoyPayloads;
 import io.github.sweetcornna.universe.registry.UniverseDataComponents;
 import io.github.sweetcornna.universe.registry.UniverseItems;
+import io.github.sweetcornna.universe.registry.sound.WorldSounds;
 import io.github.sweetcornna.universe.trade.Credits;
 import io.github.sweetcornna.universe.world.space.SpaceDimensions;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Prediction;
 import net.minecraft.world.entity.Entity;
@@ -127,7 +127,7 @@ public final class GuildEnvoy {
             player.sendSystemMessage(Component.translatable("message.universe.guild.gift", Civ.guildName(guild), Civ.guildTierName(tier.get()),
                     Credits.format(gift.get().credits())).withStyle(ChatFormatting.GOLD));
         }
-        player.level().playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 0.7F, 1.2F);
+        player.level().playSound(null, player.getX(), player.getY(), player.getZ(), WorldSounds.GUILD_GIFT, SoundSource.PLAYERS, 0.9F, 1.0F);
         return true;
     }
 

@@ -28,6 +28,8 @@ import io.github.sweetcornna.universe.network.FleetPayloads;
 import io.github.sweetcornna.universe.portal.PortalGlyphs;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
 import io.github.sweetcornna.universe.registry.UniverseItems;
+import io.github.sweetcornna.universe.registry.sound.ShipSounds;
+import io.github.sweetcornna.universe.registry.sound.WorldSounds;
 import io.github.sweetcornna.universe.trade.Credits;
 import io.github.sweetcornna.universe.world.freighter.FreighterDimensions;
 import io.github.sweetcornna.universe.world.planet.Planets;
@@ -39,7 +41,6 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Prediction;
 import net.minecraft.world.entity.player.Inventory;
@@ -214,7 +215,7 @@ public final class FleetTerminal {
         Fleet.Voyage voyage = fleet.launch(day, slot, offers.get(slot), team, now(server), rng);
         data.changed();
         Freighters.refreshFrigates(server, player.getUUID());
-        player.level().playSound(null, player.blockPosition(), SoundEvents.BEACON_POWER_SELECT, SoundSource.BLOCKS, 0.8F, 1.3F);
+        player.level().playSound(null, player.blockPosition(), ShipSounds.TERMINAL.get(), SoundSource.BLOCKS, 0.8F, 1.0F);
         return Component.translatable("message.universe.fleet.launched", voyage.team().size(), voyage.offer().minutes());
     }
 
@@ -242,7 +243,7 @@ public final class FleetTerminal {
         Fleet.Voyage voyage = fleet.sortie(system, HiveSortie.offer(hive.get().level()), team, now(server), rng);
         data.changed();
         Freighters.refreshFrigates(server, player.getUUID());
-        player.level().playSound(null, player.blockPosition(), SoundEvents.BEACON_POWER_SELECT, SoundSource.BLOCKS, 0.8F, 1.1F);
+        player.level().playSound(null, player.blockPosition(), ShipSounds.TERMINAL.get(), SoundSource.BLOCKS, 0.8F, 0.9F);
         return Component.translatable("message.universe.fleet.launched", voyage.team().size(), voyage.offer().minutes());
     }
 
@@ -328,7 +329,7 @@ public final class FleetTerminal {
             PortalGlyphs.learn(player, rng);
         }
         Freighters.refreshFrigates(server, player.getUUID());
-        player.level().playSound(null, player.blockPosition(), SoundEvents.PLAYER_LEVELUP, SoundSource.BLOCKS, 0.6F, 1.2F);
+        player.level().playSound(null, player.blockPosition(), WorldSounds.REWARD.get(), SoundSource.BLOCKS, 0.9F, 1.0F);
         long won = voyage.events().stream().filter(Expedition.Event::success).count();
         if (voyage.sortie()) {
             return Component.translatable("message.universe.fleet.claimed_hive", won, voyage.events().size(), strike.hive().unitsKilled(),
@@ -352,7 +353,7 @@ public final class FleetTerminal {
         }
         fleet.repair(id);
         data.changed();
-        player.level().playSound(null, player.blockPosition(), SoundEvents.ANVIL_USE, SoundSource.BLOCKS, 0.6F, 1.3F);
+        player.level().playSound(null, player.blockPosition(), WorldSounds.REPAIR.get(), SoundSource.BLOCKS, 0.9F, 1.0F);
         return Component.translatable("message.universe.fleet.repaired", frigate.designation());
     }
 

@@ -13,12 +13,12 @@ import io.github.sweetcornna.universe.darkfog.entity.DarkFogDamage;
 import io.github.sweetcornna.universe.darkfog.shield.Shields;
 import io.github.sweetcornna.universe.entity.PlasmaBolt;
 import io.github.sweetcornna.universe.registry.UniverseEntities;
+import io.github.sweetcornna.universe.registry.UniverseSounds;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.Entity;
@@ -86,7 +86,7 @@ public class LancerBomb extends ThrowableProjectile {
                 Vec3 at = contact.get();
                 float left = Shields.absorb(level, at, this.damage);
                 level.sendParticles(ParticleTypes.EXPLOSION, at.x, at.y, at.z, 1, 0, 0, 0, 0);
-                level.playSound(null, at.x, at.y, at.z, SoundEvents.GENERIC_EXPLODE, SoundSource.HOSTILE, 1.5F, 1.3F);
+                level.playSound(null, at.x, at.y, at.z, UniverseSounds.EXPLOSION_SMALL.get(), SoundSource.HOSTILE, 1.0F, 1.1F);
                 if (left <= 0) {
                     this.discard();
                     return;
@@ -160,6 +160,6 @@ public class LancerBomb extends ThrowableProjectile {
         level.sendParticles(ParticleTypes.EXPLOSION, at.x, at.y + 0.3, at.z, 2, 0.6, 0.3, 0.6, 0);
         level.sendParticles(new DustParticleOptions(COLOR, 1.8F), at.x, at.y + 0.3, at.z, 20, radius * 0.5, 0.3, radius * 0.5, 0);
         level.sendParticles(ParticleTypes.ELECTRIC_SPARK, at.x, at.y + 0.3, at.z, 16, 0.4, 0.2, 0.4, 0.4);
-        level.playSound(null, at.x, at.y, at.z, SoundEvents.GENERIC_EXPLODE, SoundSource.HOSTILE, 1.2F, 0.9F);
+        level.playSound(null, at.x, at.y, at.z, UniverseSounds.EXPLOSION_LARGE.get(), SoundSource.HOSTILE, 1.0F, 1.0F);
     }
 }

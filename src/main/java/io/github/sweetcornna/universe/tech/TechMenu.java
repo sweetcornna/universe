@@ -12,12 +12,12 @@ import io.github.sweetcornna.universe.registry.UniverseAttachments;
 import io.github.sweetcornna.universe.registry.UniverseDataComponents;
 import io.github.sweetcornna.universe.registry.UniverseItems;
 import io.github.sweetcornna.universe.registry.UniverseMenus;
+import io.github.sweetcornna.universe.registry.sound.WorldSounds;
 import io.github.sweetcornna.universe.survival.MultitoolItem;
 import net.minecraft.core.NonNullList;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Container;
 import net.minecraft.world.SimpleContainer;
@@ -220,7 +220,7 @@ public class TechMenu extends AbstractContainerMenu {
         this.setCarried(carried.isEmpty() ? ItemStack.EMPTY : carried);
         tool.set(UniverseDataComponents.TOOL_SPEC.get(), repaired);
         this.broken = repaired.broken();
-        player.level().playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.ANVIL_USE, SoundSource.PLAYERS, 0.5F, 1.6F);
+        player.level().playSound(null, player.getX(), player.getY(), player.getZ(), WorldSounds.REPAIR, SoundSource.PLAYERS, 0.7F, 1.15F);
         this.broadcastChanges();
     }
 

@@ -8,17 +8,19 @@ import org.jspecify.annotations.Nullable;
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.client.HudRegions;
 import io.github.sweetcornna.universe.client.ship.ShipClient;
+import io.github.sweetcornna.universe.client.audio.Loops;
 import io.github.sweetcornna.universe.exocraft.ExoMech;
 import io.github.sweetcornna.universe.network.ExocraftControlPayload;
 import io.github.sweetcornna.universe.registry.UniverseEntities;
+import io.github.sweetcornna.universe.registry.sound.ShipSounds;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
+import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.network.chat.Component;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -93,7 +95,7 @@ public final class ExoMechClient {
             minecraft.options.setCameraType(cameraBeforeBoarding);
             cameraBeforeBoarding = null;
         }
-        if (mech != null && (jetSound == null || jetSound.isStopped())) {
+        if (mech != null && (!Loops.playing(jetSound))) {
             jetSound = new JetSound(mech);
             minecraft.getSoundManager().play(jetSound);
         } else if (mech == null) {
@@ -185,18 +187,19 @@ public final class ExoMechClient {
         return y + 6;
     }
 
-    /** 喷气：开着时呼呼响，关了很快静下来。 */
+    /** 喷气：开着时呼呼响，关了很快静下来；储量见底时音调往下掉。 */
     private static final class JetSound extends AbstractTickableSoundInstance {
         private final ExoMech mech;
 
         JetSound(ExoMech mech) {
-            super(SoundEvents.FIRE_AMBIENT, SoundSource.NEUTRAL, RandomSource.create());
+            super(ShipSounds.MECH_JET.get(), SoundSource.NEUTRAL, RandomSource.create());
             this.mech = mech;
             this.looping = true;
             this.delay = 0;
             this.volume = 0.01F;
-            this.pitch = 0.6F;
+            this.pitch = 1.0F;
             this.relative = true;
+            this.attenuation = SoundInstance.Attenuation.NONE;
         }
 
         @Override
@@ -206,6 +209,7 @@ public final class ExoMechClient {
                 return;
             }
             this.volume = Mth.lerp(0.3F, this.volume, this.mech.thrusting() ? 0.9F : 0);
+            this.pitch = Mth.lerp(0.2F, this.pitch, 0.9F + 0.15F * this.mech.jetShare());
         }
 
         @Override

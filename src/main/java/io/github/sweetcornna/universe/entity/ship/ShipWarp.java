@@ -19,13 +19,17 @@ import io.github.sweetcornna.universe.discovery.Discoveries;
 import io.github.sweetcornna.universe.network.WarpPayload;
 import io.github.sweetcornna.universe.network.WarpRequestPayload;
 import io.github.sweetcornna.universe.registry.UniverseItems;
+import io.github.sweetcornna.universe.registry.sound.ShipSounds;
 import io.github.sweetcornna.universe.world.planet.Planets;
 import io.github.sweetcornna.universe.world.space.SpaceDimensions;
+import net.minecraft.core.Holder;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.game.ClientboundSoundPacket;
+import net.minecraft.network.protocol.game.ClientboundStopSoundPacket;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundEvent;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Inventory;
@@ -54,7 +58,8 @@ public final class ShipWarp {
             return;
         }
         ship.startWarp(payload.system());
-        ship.level().playSound(null, ship.getX(), ship.getY(), ship.getZ(), SoundEvents.PORTAL_TRIGGER, SoundSource.NEUTRAL, 0.7F, 1.35F);
+        // 充能声 4.4 秒，3.45 秒处撕开空间，正好在充能满（SPOOL_TICKS）跳出去的那一下
+        ship.level().playSound(null, ship.getX(), ship.getY(), ship.getZ(), ShipSounds.WARP_CHARGE.get(), SoundSource.NEUTRAL, 1.0F, 1.0F);
         sendToPassengers(ship, new WarpPayload(WarpPayload.Stage.SPOOL, Warp.SPOOL_TICKS, payload.system()));
     }
 
@@ -136,14 +141,28 @@ public final class ShipWarp {
             return;
         }
         double[] arrival = Warp.arrival(from.get(), to.get(), ShipTransit.layout(level.getServer(), target));
+        warpAway(ship, level);
         ShipTransit.warp(ship, target, new Vec3(arrival[0], arrival[1], arrival[2]), (float) arrival[3]);
     }
 
-    /** 跃迁中断：告诉船上的人，画面恢复。 */
+    /** 船外的人听到船跃迁离开；船上的人在充能声的尾巴里已经听到了，不再放给他们。 */
+    private static void warpAway(ShipEntity ship, ServerLevel level) {
+        Holder<SoundEvent> sound = ShipSounds.WARP;
+        double range = sound.value().getRange(1.0F);
+        long seed = level.getRandom().nextLong();
+        for (ServerPlayer player : level.players()) {
+            if (player.getRootVehicle() != ship && player.distanceToSqr(ship) < range * range) {
+                player.connection.send(new ClientboundSoundPacket(sound, SoundSource.NEUTRAL, ship.getX(), ship.getY(), ship.getZ(), 1.0F, 1.0F, seed));
+            }
+        }
+    }
+
+    /** 跃迁中断：告诉船上的人，画面恢复，掐掉充能声（不然还会撕开空间）。 */
     static void cancel(ShipEntity ship, Component reason) {
         for (Entity passenger : ship.getPassengers()) {
             if (passenger instanceof ServerPlayer player) {
                 player.sendOverlayMessage(reason);
+                player.connection.send(new ClientboundStopSoundPacket(ShipSounds.WARP_CHARGE.getId(), SoundSource.NEUTRAL));
             }
         }
         sendToPassengers(ship, new WarpPayload(WarpPayload.Stage.CANCEL, 0, -1));
@@ -151,7 +170,7 @@ public final class ShipWarp {
 
     /** 到了：放一声、发画面效果。 */
     static void arrived(ShipEntity ship, int system) {
-        ship.level().playSound(null, ship.getX(), ship.getY(), ship.getZ(), SoundEvents.TRIDENT_RIPTIDE_3, SoundSource.NEUTRAL, 1.0F, 0.6F);
+        ship.level().playSound(null, ship.getX(), ship.getY(), ship.getZ(), ShipSounds.WARP_EXIT.get(), SoundSource.NEUTRAL, 1.0F, 1.0F);
         sendToPassengers(ship, new WarpPayload(WarpPayload.Stage.ARRIVE, Warp.ARRIVAL_TICKS, system));
         // 传送会保留乘客相对船头的朝向；出来时让大家都看向船头，一眼看到前面那颗行星
         for (Entity passenger : ship.getPassengers()) {

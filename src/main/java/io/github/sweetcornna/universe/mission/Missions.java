@@ -44,6 +44,7 @@ import io.github.sweetcornna.universe.registry.UniverseBlocks;
 import io.github.sweetcornna.universe.registry.UniverseDataComponents;
 import io.github.sweetcornna.universe.registry.UniverseItems;
 import io.github.sweetcornna.universe.registry.UniverseStats;
+import io.github.sweetcornna.universe.registry.sound.WorldSounds;
 import io.github.sweetcornna.universe.sentinel.Sentinel;
 import io.github.sweetcornna.universe.trade.Credits;
 import io.github.sweetcornna.universe.trade.Trading;
@@ -59,7 +60,6 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.util.Prediction;
@@ -271,7 +271,7 @@ public final class Missions {
         };
         MissionState.Active active = new MissionState.Active(mission, baseline, List.of(), 0);
         set(player, state.withActive(Optional.of(active.withProgress(progress(player, active)))));
-        player.level().playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.UI_CARTOGRAPHY_TABLE_TAKE_RESULT, SoundSource.PLAYERS, 0.8F, 1.2F);
+        player.level().playSound(null, player.getX(), player.getY(), player.getZ(), WorldSounds.MISSION_ACCEPT, SoundSource.PLAYERS, 0.8F, 1.0F);
         return Component.translatable("message.universe.mission.accepted");
     }
 
@@ -348,7 +348,7 @@ public final class Missions {
         done.add(mission.id());
         set(player, new MissionState(Optional.empty(), done));
         raiseStanding(player, mission);
-        player.level().playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 0.7F, 1.4F);
+        player.level().playSound(null, player.getX(), player.getY(), player.getZ(), WorldSounds.MISSION_COMPLETE, SoundSource.PLAYERS, 0.9F, 1.0F);
         return null;
     }
 
@@ -482,7 +482,7 @@ public final class Missions {
                 player.sendOverlayMessage(Component.translatable("message.universe.mission.ready",
                         stationName(player.level().getServer(), updated.mission().system())));
             }
-            player.level().playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.NOTE_BLOCK_CHIME.value(), SoundSource.PLAYERS, 0.8F, 1.5F);
+            player.level().playSound(null, player.getX(), player.getY(), player.getZ(), WorldSounds.MISSION_UPDATE, SoundSource.PLAYERS, 0.8F, 1.0F);
         }
     }
 

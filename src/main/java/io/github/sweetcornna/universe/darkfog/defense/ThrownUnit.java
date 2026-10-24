@@ -4,6 +4,7 @@ import io.github.sweetcornna.universe.core.darkfog.Support;
 import io.github.sweetcornna.universe.entity.PlasmaBolt;
 import io.github.sweetcornna.universe.registry.UniverseEntities;
 import io.github.sweetcornna.universe.registry.UniverseItems;
+import io.github.sweetcornna.universe.registry.UniverseSounds;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvents;
@@ -110,8 +111,8 @@ public class ThrownUnit extends ThrowableItemProjectile {
             if (charge == Support.Charge.CRYSTAL) {
                 level.sendParticles(ParticleTypes.END_ROD, center.x, center.y, center.z, 30, radius * 0.3, radius * 0.3, radius * 0.3, 0.2);
             }
-            level.playSound(null, center.x, center.y, center.z, SoundEvents.GENERIC_EXPLODE, SoundSource.PLAYERS, 1.2F,
-                    charge == Support.Charge.CRYSTAL ? 0.8F : 1.1F);
+            level.playSound(null, center.x, center.y, center.z, UniverseSounds.EXPLOSION_SMALL.get(), SoundSource.PLAYERS, 1.0F,
+                    charge == Support.Charge.CRYSTAL ? 0.85F : 1.05F);
         }
         this.discard();
     }

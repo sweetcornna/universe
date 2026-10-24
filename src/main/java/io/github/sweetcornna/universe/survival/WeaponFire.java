@@ -6,10 +6,11 @@ import io.github.sweetcornna.universe.core.survival.ToolWeapon;
 import io.github.sweetcornna.universe.encounter.SpaceEncounters;
 import io.github.sweetcornna.universe.entity.PlasmaBolt;
 import io.github.sweetcornna.universe.entity.PlasmaGrenade;
+import io.github.sweetcornna.universe.registry.UniverseSounds;
+import io.github.sweetcornna.universe.registry.sound.GearSounds;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
@@ -46,9 +47,8 @@ public final class WeaponFire {
             level.addFreshEntity(PlasmaBolt.shoot(level, shooter, from, direction, weapon.damage(damageBoost), weapon.color(),
                     ToolWeapon.BOLT_SPEED, ToolWeapon.SCATTER_SPREAD, lifetime));
         }
-        level.playSound(null, shooter.getX(), shooter.getEyeY(), shooter.getZ(), SoundEvents.FIREWORK_ROCKET_BLAST, SoundSource.PLAYERS,
-                0.6F, 0.7F + shooter.getRandom().nextFloat() * 0.1F);
-        level.playSound(null, shooter.getX(), shooter.getEyeY(), shooter.getZ(), SoundEvents.BLAZE_SHOOT, SoundSource.PLAYERS, 0.4F, 1.3F);
+        level.playSound(null, shooter.getX(), shooter.getEyeY(), shooter.getZ(), GearSounds.SCATTER, SoundSource.PLAYERS, 0.9F,
+                0.95F + shooter.getRandom().nextFloat() * 0.1F);
         muzzleFlash(level, from, direction, weapon.color(), 4);
     }
 
@@ -57,8 +57,8 @@ public final class WeaponFire {
         ToolWeapon weapon = ToolWeapon.PULSE_SPITTER;
         level.addFreshEntity(PlasmaBolt.shoot(level, shooter, from, direction, weapon.damage(damageBoost), weapon.color(),
                 ToolWeapon.BOLT_SPEED, ToolWeapon.PULSE_SPREAD, weapon.lifetime(ToolWeapon.BOLT_SPEED)));
-        level.playSound(null, shooter.getX(), shooter.getEyeY(), shooter.getZ(), SoundEvents.BLAZE_SHOOT, SoundSource.PLAYERS, 0.15F,
-                2.0F);
+        level.playSound(null, shooter.getX(), shooter.getEyeY(), shooter.getZ(), GearSounds.PULSE, SoundSource.PLAYERS, 0.6F,
+                0.94F + shooter.getRandom().nextFloat() * 0.12F);
         muzzleFlash(level, from, direction, weapon.color(), 1);
     }
 
@@ -99,9 +99,9 @@ public final class WeaponFire {
             SpaceEncounters.onBoltHit(level, shooter, block.getBlockPos());
         }
         beam(level, muzzle, impact, weapon.color());
-        level.playSound(null, shooter.getX(), shooter.getEyeY(), shooter.getZ(), SoundEvents.FIRECHARGE_USE, SoundSource.PLAYERS, 0.9F,
-                0.6F);
-        level.playSound(null, impact.x, impact.y, impact.z, SoundEvents.FIRE_EXTINGUISH, SoundSource.PLAYERS, 0.6F, 1.4F);
+        level.playSound(null, shooter.getX(), shooter.getEyeY(), shooter.getZ(), GearSounds.JAVELIN_FIRE, SoundSource.PLAYERS, 1.0F,
+                0.97F + shooter.getRandom().nextFloat() * 0.06F);
+        level.playSound(null, impact.x, impact.y, impact.z, UniverseSounds.IMPACT_ENERGY, SoundSource.PLAYERS, 1.0F, 0.8F);
         return struck;
     }
 
@@ -109,8 +109,8 @@ public final class WeaponFire {
     public static PlasmaGrenade launch(ServerLevel level, LivingEntity shooter, Vec3 from, Vec3 direction, double damageBoost) {
         PlasmaGrenade grenade = PlasmaGrenade.launch(level, shooter, from, direction, damageBoost);
         level.addFreshEntity(grenade);
-        level.playSound(null, shooter.getX(), shooter.getEyeY(), shooter.getZ(), SoundEvents.CROSSBOW_SHOOT, SoundSource.PLAYERS, 0.8F,
-                0.6F);
+        level.playSound(null, shooter.getX(), shooter.getEyeY(), shooter.getZ(), GearSounds.LAUNCHER, SoundSource.PLAYERS, 0.9F,
+                0.95F + shooter.getRandom().nextFloat() * 0.1F);
         muzzleFlash(level, from, direction, ToolWeapon.PLASMA_LAUNCHER.color(), 3);
         return grenade;
     }

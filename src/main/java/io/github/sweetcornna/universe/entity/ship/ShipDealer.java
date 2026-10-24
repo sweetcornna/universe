@@ -30,6 +30,7 @@ import io.github.sweetcornna.universe.network.FleetPayloads;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
 import io.github.sweetcornna.universe.registry.UniverseDataComponents;
 import io.github.sweetcornna.universe.registry.UniverseItems;
+import io.github.sweetcornna.universe.registry.sound.WorldSounds;
 import io.github.sweetcornna.universe.station.Stations;
 import io.github.sweetcornna.universe.trade.Credits;
 import io.github.sweetcornna.universe.trade.ItemValues;
@@ -41,7 +42,6 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Prediction;
 import net.minecraft.world.entity.Entity;
@@ -259,7 +259,7 @@ public final class ShipDealer {
         Credits.spend(player, price);
         data.markSold(session.system(), day, SHIPS, slot);
         ShipOwners.get(server).piloted(player.getUUID(), ship);
-        level.playSound(null, center, SoundEvents.PLAYER_LEVELUP, SoundSource.BLOCKS, 0.6F, 1.4F);
+        level.playSound(null, center, WorldSounds.PURCHASE.get(), SoundSource.BLOCKS, 0.9F, 1.0F);
         return Component.translatable("message.universe.dealer.bought", typeName(offer.type().key()), offer.grade().letter(), Credits.format(price));
     }
 
@@ -287,7 +287,7 @@ public final class ShipDealer {
         fleets.changed();
         data.markSold(session.system(), day, FRIGATES, slot);
         Freighters.refreshFrigates(server, player.getUUID());
-        player.level().playSound(null, session.pos(), SoundEvents.PLAYER_LEVELUP, SoundSource.BLOCKS, 0.6F, 1.4F);
+        player.level().playSound(null, session.pos(), WorldSounds.PURCHASE.get(), SoundSource.BLOCKS, 0.9F, 1.0F);
         return Component.translatable("message.universe.dealer.hired", hired.designation(),
                 Component.translatable("gui.universe.fleet.type." + hired.type().key()), Credits.format(price));
     }
@@ -311,7 +311,7 @@ public final class ShipDealer {
         }
         Freighters.grant(server, player.getUUID(), offer.get().seed(), offer.get().grade(), session.system(), null);
         data.markSold(session.system(), day, FREIGHTER, 0);
-        player.level().playSound(null, session.pos(), SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, SoundSource.BLOCKS, 0.8F, 1.0F);
+        player.level().playSound(null, session.pos(), WorldSounds.ACHIEVEMENT.get(), SoundSource.BLOCKS, 1.0F, 1.0F);
         return Component.translatable("message.universe.dealer.bought_freighter", offer.get().grade().letter(), Credits.format(price));
     }
 
@@ -376,7 +376,7 @@ public final class ShipDealer {
         ShipOwners.get(server).forget(ship.getUUID());
         ship.discard();
         Credits.add(player, price);
-        level.playSound(null, ship.blockPosition(), SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.BLOCKS, 0.6F, 0.8F);
+        level.playSound(null, ship.blockPosition(), WorldSounds.CREDITS.get(), SoundSource.BLOCKS, 0.8F, 1.0F);
         ShipRating rating = structure.rating();
         return Component.translatable("message.universe.dealer.sold", typeName(rating.type().key()), rating.grade().letter(),
                 Credits.format(price));

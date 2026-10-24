@@ -32,6 +32,7 @@ import io.github.sweetcornna.universe.entity.ship.ShipEntity;
 import io.github.sweetcornna.universe.entity.ship.ShipTransit;
 import io.github.sweetcornna.universe.network.FleetPayloads;
 import io.github.sweetcornna.universe.perf.ServerPerf;
+import io.github.sweetcornna.universe.registry.sound.ShipSounds;
 import io.github.sweetcornna.universe.station.Stations;
 import io.github.sweetcornna.universe.world.freighter.FreighterDimensions;
 import io.github.sweetcornna.universe.world.planet.Planets;
@@ -41,7 +42,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -150,7 +150,7 @@ public final class Freighters {
                 if (voyage.done(now) && NOTIFIED.add(entry.getKey() + "/" + voyage.start() + "/" + voyage.slot())) {
                     player.sendSystemMessage(Component.translatable("message.universe.fleet.returned",
                             Component.translatable("gui.universe.fleet.kind." + (voyage.sortie() ? "hive" : voyage.offer().kind().key()))));
-                    player.level().playSound(null, player.blockPosition(), SoundEvents.NOTE_BLOCK_CHIME.value(), SoundSource.PLAYERS, 0.7F, 1.2F);
+                    player.level().playSound(null, player.blockPosition(), ShipSounds.TERMINAL.get(), SoundSource.PLAYERS, 0.7F, 1.0F);
                 }
             }
         }
@@ -402,7 +402,8 @@ public final class Freighters {
         UUID owner = player.getUUID();
         int target = system.getAsInt();
         later(() -> moveTo(server, owner, target, spot));
-        ship.level().playSound(null, ship.blockPosition(), SoundEvents.BEACON_ACTIVATE, SoundSource.NEUTRAL, 1.0F, 0.6F);
+        // 落点在 SUMMON_DISTANCE（220 格）外，超出声音的距离；放在召唤的人这里，当作远处传来的
+        ship.level().playSound(null, ship.blockPosition(), ShipSounds.FREIGHTER_WARP_IN.get(), SoundSource.NEUTRAL, 1.0F, 1.0F);
         return Component.translatable("message.universe.freighter.summoned");
     }
 

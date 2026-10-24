@@ -6,6 +6,7 @@ import io.github.sweetcornna.universe.core.darkfog.AmmoKind;
 import io.github.sweetcornna.universe.core.darkfog.Ballistics;
 import io.github.sweetcornna.universe.darkfog.DarkFogEnemy;
 import io.github.sweetcornna.universe.registry.UniverseEntities;
+import io.github.sweetcornna.universe.registry.UniverseSounds;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
@@ -13,7 +14,6 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -125,7 +125,7 @@ public class TurretShell extends ThrowableProjectile {
             level.sendParticles(ParticleTypes.LAVA, center.x, center.y, center.z, 8, 0.6, 0.2, 0.6, 0);
         }
         level.sendParticles(ParticleTypes.LARGE_SMOKE, center.x, center.y, center.z, 10, ammo.radius() * 0.3, 0.3, ammo.radius() * 0.3, 0.02);
-        level.playSound(null, center.x, center.y, center.z, SoundEvents.GENERIC_EXPLODE, SoundSource.BLOCKS, 1.2F, 1.1F);
+        level.playSound(null, center.x, center.y, center.z, UniverseSounds.EXPLOSION_SMALL.get(), SoundSource.BLOCKS, 1.0F, 0.95F);
         this.discard();
     }
 }

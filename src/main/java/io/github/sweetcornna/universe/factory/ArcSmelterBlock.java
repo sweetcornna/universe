@@ -4,13 +4,11 @@ import io.github.sweetcornna.universe.registry.UniverseBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
-/** 电弧熔炉：工作时坩埚冒热气、溅火星，观察窗里闪电弧。 */
+/** 电弧熔炉：工作时坩埚冒热气、溅火星，观察窗里闪电弧。运转声由客户端的环境声放。 */
 public class ArcSmelterBlock extends MachineBlock {
     public ArcSmelterBlock(Properties properties) {
         super(properties, UniverseBlockEntities.ARC_SMELTER);
@@ -37,9 +35,6 @@ public class ArcSmelterBlock extends MachineBlock {
             level.addParticle(ParticleTypes.ELECTRIC_SPARK,
                     x + facing.getStepX() * 0.53 + facing.getStepZ() * side, pos.getY() + 0.35 + random.nextDouble() * 0.25,
                     z + facing.getStepZ() * 0.53 + facing.getStepX() * side, facing.getStepX() * 0.05, 0.02, facing.getStepZ() * 0.05);
-        }
-        if (random.nextInt(30) == 0) {
-            level.playLocalSound(x, pos.getY() + 0.5, z, SoundEvents.BLASTFURNACE_FIRE_CRACKLE, SoundSource.BLOCKS, 0.8F, 1.2F, false);
         }
     }
 }

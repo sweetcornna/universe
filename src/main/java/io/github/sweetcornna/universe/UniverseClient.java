@@ -133,6 +133,16 @@ public final class UniverseClient {
         BlueprintClient.registerEvents(modBus, NeoForge.EVENT_BUS);
         GhostClient.registerEvents(modBus, NeoForge.EVENT_BUS);
         MechaClient.registerEvents(modBus, NeoForge.EVENT_BUS);
+        // 声音（ADR-0029）：机器的环境声、真空和水下的处理、给开发脚本记的日志
+        io.github.sweetcornna.universe.client.audio.MachineSoundscape.registerEvents(NeoForge.EVENT_BUS);
+        io.github.sweetcornna.universe.client.audio.AcousticsClient.registerEvents(modBus, NeoForge.EVENT_BUS);
+        io.github.sweetcornna.universe.client.audio.SoundLog.registerEvents(NeoForge.EVENT_BUS);
+        // M17 音效：机器（M）的注册加在这行上面
+        io.github.sweetcornna.universe.client.ship.ShipAudio.registerEvents(NeoForge.EVENT_BUS);
+        // M17 音效：飞船和载具（S）的注册加在这行上面
+        io.github.sweetcornna.universe.client.GearAudio.registerEvents(NeoForge.EVENT_BUS);
+        // M17 音效：玩家的装备（G）的注册加在这行上面
+        // M17 音效：敌人和炮塔（H）的注册加在这行上面
         // 开发用：带了 -Duniverse.devScript 才启用
         DevScript.registerEvents(NeoForge.EVENT_BUS);
         // 客户端世界建立环境属性时，从客户端的星团里查星球

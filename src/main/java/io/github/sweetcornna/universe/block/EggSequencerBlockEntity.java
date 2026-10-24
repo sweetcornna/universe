@@ -13,8 +13,8 @@ import io.github.sweetcornna.universe.factory.MachineMenu;
 import io.github.sweetcornna.universe.factory.power.LevelPower;
 import io.github.sweetcornna.universe.registry.UniverseBlockEntities;
 import io.github.sweetcornna.universe.registry.UniverseMenus;
+import io.github.sweetcornna.universe.registry.sound.MachineSounds;
 import net.minecraft.core.BlockPos;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
@@ -69,7 +69,7 @@ public class EggSequencerBlockEntity extends MachineBlockEntity {
             this.consumeInput(MATERIAL, 1);
             this.addOutput(OUTPUT, product);
             if (this.level != null) {
-                this.level.playSound(null, this.worldPosition, SoundEvents.BREWING_STAND_BREW, SoundSource.BLOCKS, 0.6F, 1.2F);
+                this.level.playSound(null, this.worldPosition, MachineSounds.SEQUENCER_DONE.get(), SoundSource.BLOCKS, 0.8F, 1.0F);
             }
         }
         this.setChanged();

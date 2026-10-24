@@ -12,6 +12,8 @@ import io.github.sweetcornna.universe.encounter.SpaceEncounters;
 import io.github.sweetcornna.universe.entity.PlasmaBolt;
 import io.github.sweetcornna.universe.entity.ship.ShipEntity;
 import io.github.sweetcornna.universe.registry.UniverseEntities;
+import io.github.sweetcornna.universe.registry.UniverseSounds;
+import io.github.sweetcornna.universe.registry.sound.ShipSounds;
 import net.minecraft.core.particles.ColorParticleOption;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
@@ -19,7 +21,6 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
@@ -222,9 +223,10 @@ public class PirateFighter extends Entity implements Enemy {
         }
         level.broadcastEntityEvent(this, hit == ShipCombat.Hit.SHIELD ? EVENT_SHIELD_HIT : EVENT_HULL_HIT);
         if (hit == ShipCombat.Hit.SHIELD) {
-            this.playSound(SoundEvents.SHIELD_BLOCK.value(), 0.6F, 1.7F + this.random.nextFloat() * 0.2F);
+            // 战机比玩家的船小一号，同一套受击声往高处放
+            this.playSound(ShipSounds.SHIELD_HIT.get(), 0.7F, 1.2F + this.random.nextFloat() * 0.1F);
         } else {
-            this.playSound(SoundEvents.ZOMBIE_ATTACK_IRON_DOOR, 0.5F, 1.6F + this.random.nextFloat() * 0.2F);
+            this.playSound(ShipSounds.HULL_HIT.get(), 0.7F, 1.2F + this.random.nextFloat() * 0.1F);
         }
         return true;
     }
@@ -235,7 +237,7 @@ public class PirateFighter extends Entity implements Enemy {
         level.sendParticles(ParticleTypes.LARGE_SMOKE, c.x, c.y, c.z, 16, 0.6, 0.3, 0.6, 0.04);
         level.sendParticles(ParticleTypes.LAVA, c.x, c.y, c.z, 8, 0.4, 0.2, 0.4, 0);
         level.sendParticles(ParticleTypes.ELECTRIC_SPARK, c.x, c.y, c.z, 24, 0.5, 0.3, 0.5, 0.4);
-        level.playSound(null, c.x, c.y, c.z, SoundEvents.GENERIC_EXPLODE, SoundSource.HOSTILE, 2.0F, 1.3F);
+        level.playSound(null, c.x, c.y, c.z, UniverseSounds.EXPLOSION_SMALL.get(), SoundSource.HOSTILE, 1.0F, 1.0F + this.random.nextFloat() * 0.15F);
         this.destroyed(level, source);
         this.discard();
     }
@@ -356,7 +358,7 @@ public class PirateFighter extends Entity implements Enemy {
                 BOLT_LIFETIME);
         bolt.setDeltaMovement(bolt.getDeltaMovement().add(this.getDeltaMovement()));
         level.addFreshEntity(bolt);
-        level.playSound(null, from.x, from.y, from.z, SoundEvents.BLAZE_SHOOT, SoundSource.HOSTILE, 0.5F, 1.6F + this.random.nextFloat() * 0.2F);
+        level.playSound(null, from.x, from.y, from.z, ShipSounds.PIRATE_LASER.get(), SoundSource.HOSTILE, 0.8F, 0.95F + this.random.nextFloat() * 0.1F);
         level.broadcastEntityEvent(this, EVENT_FIRE);
     }
 

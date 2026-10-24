@@ -6,11 +6,11 @@ import org.jspecify.annotations.Nullable;
 
 import io.github.sweetcornna.universe.registry.UniverseDataComponents;
 import io.github.sweetcornna.universe.registry.UniverseEntities;
+import io.github.sweetcornna.universe.registry.sound.ShipSounds;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.InteractionHand;
@@ -62,7 +62,7 @@ public class SubmarineItem extends Item {
             submarine.loadFrom(stack);
             submarine.setOwner(player.getUUID());
             server.addFreshEntity(submarine);
-            server.playSound(null, at.x, at.y, at.z, SoundEvents.BUCKET_EMPTY, SoundSource.NEUTRAL, 0.8F, 0.8F);
+            server.playSound(null, at.x, at.y, at.z, ShipSounds.VEHICLE_SUMMON.get(), SoundSource.NEUTRAL, 0.9F, 0.85F);
             server.gameEvent(player, GameEvent.ENTITY_PLACE, at);
             stack.consume(1, player);
         }

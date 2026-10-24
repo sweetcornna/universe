@@ -5,7 +5,6 @@ import org.jspecify.annotations.Nullable;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionResult;
@@ -23,6 +22,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
+import io.github.sweetcornna.universe.registry.sound.WorldSounds;
 
 /** 坠毁飞船和据点里的补给箱（ADR-0014）：金属箱子，第一次打开时按战利品表装上物资，偶尔有模块。 */
 public class SupplyCrateBlock extends BaseEntityBlock {
@@ -47,7 +47,7 @@ public class SupplyCrateBlock extends BaseEntityBlock {
     protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
         if (level instanceof ServerLevel && level.getBlockEntity(pos) instanceof SupplyCrateBlockEntity crate) {
             player.openMenu(crate);
-            level.playSound(null, pos, SoundEvents.IRON_TRAPDOOR_OPEN, SoundSource.BLOCKS, 0.7F, 0.8F);
+            level.playSound(null, pos, WorldSounds.CRATE_OPEN.get(), SoundSource.BLOCKS, 0.9F, 1.0F);
         }
         return InteractionResult.SUCCESS;
     }

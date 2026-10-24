@@ -5,9 +5,9 @@ import io.github.sweetcornna.universe.core.research.ResearchState;
 import io.github.sweetcornna.universe.factory.recipe.MachineRecipes;
 import io.github.sweetcornna.universe.factory.research.Research;
 import io.github.sweetcornna.universe.network.ResearchStatePayload;
+import io.github.sweetcornna.universe.registry.sound.WorldSounds;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.item.crafting.RecipeMap;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.IEventBus;
@@ -66,7 +66,7 @@ public final class ClientResearch {
         boolean finished = next.done().stream().anyMatch(id -> !state.isDone(id))
                 || next.levels().entrySet().stream().anyMatch(entry -> entry.getValue() > state.level(entry.getKey()));
         if (received && finished) {
-            Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_TOAST_CHALLENGE_COMPLETE, 1.0F, 0.6F));
+            Minecraft.getInstance().getSoundManager().play(SimpleSoundInstance.forUI(WorldSounds.RESEARCH_DONE.get(), 1.0F, 0.8F));
         }
         state = next;
         received = true;

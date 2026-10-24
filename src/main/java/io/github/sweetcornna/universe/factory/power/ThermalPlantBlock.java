@@ -5,8 +5,6 @@ import io.github.sweetcornna.universe.registry.UniverseBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -36,10 +34,6 @@ public class ThermalPlantBlock extends TallMachineBlock {
                 double[] offset = rotate(facing, (random.nextDouble() - 0.5) * 0.4, -0.52);
                 level.addParticle(ParticleTypes.FLAME, pos.getX() + 0.5 + offset[0], pos.getY() + 0.25 + random.nextDouble() * 0.15,
                         pos.getZ() + 0.5 + offset[1], 0, 0, 0);
-            }
-            if (random.nextInt(40) == 0) {
-                level.playLocalSound(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, SoundEvents.FURNACE_FIRE_CRACKLE, SoundSource.BLOCKS,
-                        1.0F, 0.8F, false);
             }
         }
     }

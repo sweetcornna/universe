@@ -23,6 +23,7 @@ import io.github.sweetcornna.universe.network.PortalPayloads;
 import io.github.sweetcornna.universe.poi.PoiProgress;
 import io.github.sweetcornna.universe.registry.UniverseAttachments;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
+import io.github.sweetcornna.universe.registry.sound.WorldSounds;
 import io.github.sweetcornna.universe.world.DimensionTemplate;
 import io.github.sweetcornna.universe.world.RuntimeDimensions;
 import io.github.sweetcornna.universe.world.planet.PlanetCommand;
@@ -35,8 +36,8 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -324,7 +325,7 @@ public final class Portals {
         Component problem = dial(level, site.get(), glyphs);
         if (problem != null) {
             player.sendOverlayMessage(problem);
-            level.playSound(null, payload.dial(), SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.BLOCKS, 1.0F, 0.5F);
+            level.playSound(null, payload.dial(), WorldSounds.PORTAL_DENY.get(), SoundSource.BLOCKS, 1.0F, 1.0F);
         }
     }
 
@@ -359,7 +360,7 @@ public final class Portals {
         }
         OPEN.put(level.dimension(), new Open(target, closes));
         BlockPos center = site.at(0, 3, 0);
-        level.playSound(null, center, SoundEvents.BEACON_ACTIVATE, SoundSource.BLOCKS, 1.5F, 0.7F);
+        level.playSound(null, center, WorldSounds.PORTAL_OPEN.get(), SoundSource.BLOCKS, 1.0F, 1.0F);
         level.sendParticles(ParticleTypes.END_ROD, center.getX() + 0.5, center.getY() + 0.5, center.getZ() + 0.5, 60, 1.6, 1.6, 0.3, 0.05);
     }
 
@@ -378,7 +379,7 @@ public final class Portals {
                 level.setBlock(pos, Blocks.AIR.defaultBlockState(), Block.UPDATE_CLIENTS);
             }
         }
-        level.playSound(null, site.at(0, 3, 0), SoundEvents.BEACON_DEACTIVATE, SoundSource.BLOCKS, 1.2F, 0.7F);
+        level.playSound(null, site.at(0, 3, 0), WorldSounds.PORTAL_CLOSE.get(), SoundSource.BLOCKS, 1.0F, 1.0F);
     }
 
     /** 这个维度的门开着没有（那层光查自己该不该还在）。 */
@@ -415,9 +416,14 @@ public final class Portals {
         float yaw = (float) Math.toDegrees(Math.atan2(-front.getStepX(), front.getStepZ()));
         COOLDOWNS.put(player.getUUID(), now + COOLDOWN);
         player.teleport(new TeleportTransition(target, Vec3.atBottomCenterOf(arrival), Vec3.ZERO, yaw, 0,
-                TeleportTransition.PLAY_PORTAL_SOUND.then(TeleportTransition.PLACE_PORTAL_TICKET)));
+                TeleportTransition.PLACE_PORTAL_TICKET.then(Portals::arrived)));
         Planet planet = Planets.galaxy(server).body(open.target()).orElseThrow();
         Name name = Discoveries.resolve(server, DiscoveryKey.body(planet.id()), planet.name());
         player.sendOverlayMessage(Component.translatable("message.universe.portal.arrived", name.zh(), name.en()));
+    }
+
+    /** 从门里出来：在门前放一声穿过传送门的声音，旁边的人也听得见。 */
+    private static void arrived(Entity entity) {
+        entity.level().playSound(null, entity.getX(), entity.getY(), entity.getZ(), WorldSounds.PORTAL_TRAVEL, SoundSource.PLAYERS, 1.0F, 1.0F);
     }
 }

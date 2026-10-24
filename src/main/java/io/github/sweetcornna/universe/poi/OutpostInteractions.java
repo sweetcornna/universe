@@ -32,6 +32,7 @@ import io.github.sweetcornna.universe.registry.UniverseAttachments;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
 import io.github.sweetcornna.universe.registry.UniverseDataComponents;
 import io.github.sweetcornna.universe.registry.UniverseItems;
+import io.github.sweetcornna.universe.registry.sound.WorldSounds;
 import io.github.sweetcornna.universe.sentinel.SentinelPillars;
 import io.github.sweetcornna.universe.sentinel.Sentinels;
 import io.github.sweetcornna.universe.world.planet.PlanetCommand;
@@ -42,7 +43,6 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.SimpleMenuProvider;
@@ -145,8 +145,7 @@ public final class OutpostInteractions {
             level.sendParticles(ParticleTypes.FLAME, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 4, 0.3, 0.3, 0.3, 0.02);
         }
         BlockPos first = door.isEmpty() ? BlockPos.ZERO : door.getLast();
-        level.playSound(null, first, SoundEvents.IRON_DOOR_OPEN, SoundSource.BLOCKS, 1.2F, 0.5F);
-        level.playSound(null, first, SoundEvents.GENERIC_EXPLODE.value(), SoundSource.BLOCKS, 0.6F, 1.4F);
+        level.playSound(null, first, WorldSounds.DOOR_BREACH.get(), SoundSource.BLOCKS, 1.0F, 1.0F);
         if (player != null) {
             player.sendOverlayMessage(Component.translatable("message.universe.reinforced_door.open"));
             Sentinels.offend(player, Offense.FACILITY_DOOR);
@@ -166,7 +165,7 @@ public final class OutpostInteractions {
         PoiProgress progress = player.getData(UniverseAttachments.POI_PROGRESS);
         if (progress.claimed(key)) {
             player.sendOverlayMessage(Component.translatable("message.universe.facility_terminal.used"));
-            level.playSound(null, pos, SoundEvents.BEACON_DEACTIVATE, SoundSource.BLOCKS, 0.5F, 1.6F);
+            level.playSound(null, pos, WorldSounds.TERMINAL_DENY.get(), SoundSource.BLOCKS, 0.8F, 1.0F);
             return;
         }
         List<TechModule> modules = FacilityModules.offers(key, Pois.rarity(level));
@@ -177,12 +176,12 @@ public final class OutpostInteractions {
             stack.set(UniverseDataComponents.TECH_MODULE.get(), module);
             offers.setItem(i, stack);
         }
-        level.playSound(null, pos, SoundEvents.BEACON_POWER_SELECT, SoundSource.BLOCKS, 0.7F, 1.4F);
+        level.playSound(null, pos, WorldSounds.TERMINAL_ACCESS.get(), SoundSource.BLOCKS, 0.8F, 1.0F);
         player.openMenu(new SimpleMenuProvider((id, inventory, p) -> new FacilityTerminalMenu(id, inventory, offers,
                 viewer -> viewer.distanceToSqr(Vec3.atCenterOf(pos)) <= REACH * REACH && level.getBlockState(pos).is(UniverseBlocks.FACILITY_TERMINAL.get()),
                 () -> {
                     progress.claim(key);
-                    level.playSound(null, pos, SoundEvents.BEACON_ACTIVATE, SoundSource.BLOCKS, 0.8F, 1.5F);
+                    level.playSound(null, pos, WorldSounds.TERMINAL_CONFIRM.get(), SoundSource.BLOCKS, 0.8F, 1.0F);
                 }), Component.translatable("container.universe.facility_terminal")), buf -> {
                 });
     }
@@ -233,14 +232,14 @@ public final class OutpostInteractions {
         PoiProgress progress = player.getData(UniverseAttachments.POI_PROGRESS);
         if (progress.claimed(key)) {
             player.sendOverlayMessage(Component.translatable("message.universe.observatory.used"));
-            level.playSound(null, pos, SoundEvents.BEACON_DEACTIVATE, SoundSource.BLOCKS, 0.5F, 1.6F);
+            level.playSound(null, pos, WorldSounds.TERMINAL_DENY.get(), SoundSource.BLOCKS, 0.8F, 1.0F);
             return;
         }
         Optional<Target> found = targets(level, pos, progress).stream()
                 .min(Comparator.comparingDouble(target -> horizontalSq(pos, target.pos())));
         if (found.isEmpty()) {
             player.sendOverlayMessage(Component.translatable("message.universe.observatory.nothing", OBSERVATORY_RADIUS));
-            level.playSound(null, pos, SoundEvents.BEACON_DEACTIVATE, SoundSource.BLOCKS, 0.6F, 1.4F);
+            level.playSound(null, pos, WorldSounds.TERMINAL_DENY.get(), SoundSource.BLOCKS, 0.8F, 1.0F);
             return;
         }
         progress.claim(key);
@@ -249,7 +248,7 @@ public final class OutpostInteractions {
         int distance = (int) Math.round(Math.sqrt(horizontalSq(player.blockPosition(), target.pos())));
         player.sendSystemMessage(Component.translatable("message.universe.observatory.located", target.name(),
                 Component.translatable("direction.universe." + direction(player, target.pos())), distance));
-        level.playSound(null, pos, SoundEvents.BEACON_POWER_SELECT, SoundSource.BLOCKS, 0.8F, 1.2F);
+        level.playSound(null, pos, WorldSounds.SIGNAL.get(), SoundSource.BLOCKS, 0.9F, 1.0F);
         level.sendParticles(ParticleTypes.END_ROD, pos.getX() + 0.5, pos.getY() + 1.2, pos.getZ() + 0.5, 20, 0.2, 0.6, 0.2, 0.05);
     }
 

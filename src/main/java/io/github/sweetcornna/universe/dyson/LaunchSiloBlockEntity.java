@@ -8,6 +8,7 @@ import io.github.sweetcornna.universe.factory.MachineMenu;
 import io.github.sweetcornna.universe.registry.UniverseBlockEntities;
 import io.github.sweetcornna.universe.registry.UniverseItems;
 import io.github.sweetcornna.universe.registry.UniverseMenus;
+import io.github.sweetcornna.universe.registry.sound.MachineSounds;
 import io.github.sweetcornna.universe.stats.ProductionLog;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -17,7 +18,6 @@ import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.item.ItemStack;
@@ -164,7 +164,7 @@ public class LaunchSiloBlockEntity extends MachineBlockEntity {
                 this.lastLaunch = level.getGameTime();
                 this.setChanged();
                 level.sendBlockUpdated(this.worldPosition, this.getBlockState(), this.getBlockState(), 2);
-                level.playSound(null, this.worldPosition.above(), SoundEvents.FIREWORK_ROCKET_LAUNCH, SoundSource.BLOCKS, 3.0F, 0.5F);
+                level.playSound(null, this.worldPosition.above(), MachineSounds.SILO_LAUNCH.get(), SoundSource.BLOCKS, 1.0F, 1.0F);
             }
         }
         return this.satisfaction > 0;

@@ -6,6 +6,7 @@ import io.github.sweetcornna.universe.core.vehicle.SubmarineDrive;
 import io.github.sweetcornna.universe.core.vehicle.VehicleKind;
 import io.github.sweetcornna.universe.network.ScanResultPayload;
 import io.github.sweetcornna.universe.registry.UniverseItems;
+import io.github.sweetcornna.universe.registry.sound.ShipSounds;
 import io.github.sweetcornna.universe.survival.Multitool;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
@@ -15,7 +16,6 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.util.Mth;
@@ -217,7 +217,7 @@ public class Submarine extends UniverseVehicle {
         level.addFreshEntity(Torpedo.launch(level, driver, nose, driver.getLookAngle()));
         this.burnFuel(driver, TORPEDO_FUEL);
         this.entityData.set(DATA_RELOAD, TORPEDO_RELOAD);
-        level.playSound(null, nose.x, nose.y, nose.z, SoundEvents.TRIDENT_RIPTIDE_1.value(), SoundSource.PLAYERS, 0.8F, 0.7F);
+        level.playSound(null, nose.x, nose.y, nose.z, ShipSounds.TORPEDO.get(), SoundSource.PLAYERS, 0.9F, 0.95F + this.random.nextFloat() * 0.1F);
         level.sendParticles(ParticleTypes.BUBBLE, nose.x, nose.y, nose.z, 12, 0.2, 0.2, 0.2, 0.1);
     }
 
@@ -234,7 +234,7 @@ public class Submarine extends UniverseVehicle {
         List<ScanResultPayload.PoiMarker> pois = Multitool.scanPois(player, SONAR_RADIUS);
         List<ScanResultPayload.LandmarkMarker> landmarks = Multitool.scanLandmarks(player, SONAR_RADIUS);
         PacketDistributor.sendToPlayer(player, new ScanResultPayload(List.of(), pois, landmarks));
-        level.playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.NOTE_BLOCK_BELL.value(), SoundSource.NEUTRAL, 1.0F, 0.5F);
+        level.playSound(null, this.getX(), this.getY(), this.getZ(), ShipSounds.SONAR.get(), SoundSource.NEUTRAL, 1.0F, 1.0F);
         for (int i = 0; i < 60; i++) {
             double angle = i * Math.PI * 2 / 60;
             level.sendParticles(ParticleTypes.NAUTILUS, this.getX() + Math.cos(angle) * 3, this.getY() + 0.7, this.getZ() + Math.sin(angle) * 3,

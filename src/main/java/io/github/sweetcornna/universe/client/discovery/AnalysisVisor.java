@@ -41,6 +41,7 @@ import io.github.sweetcornna.universe.network.AnalyzePayload;
 import io.github.sweetcornna.universe.registry.UniverseItems;
 import io.github.sweetcornna.universe.tech.SuitTech;
 import io.github.sweetcornna.universe.world.planet.Planets;
+import io.github.sweetcornna.universe.registry.sound.GearSounds;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -51,7 +52,6 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.ARGB;
 import net.minecraft.util.Util;
@@ -144,7 +144,7 @@ public final class AnalysisVisor {
             if (holdingTool(player)) {
                 active = !active;
                 toggledAt = Util.getMillis();
-                player.playSound(active ? SoundEvents.SPYGLASS_USE : SoundEvents.SPYGLASS_STOP_USING, 0.8F, 1.3F);
+                player.playSound(active ? GearSounds.VISOR_OPEN.get() : GearSounds.VISOR_CLOSE.get(), 0.6F, 1.0F);
             } else {
                 player.sendOverlayMessage(Component.translatable("hud.universe.visor.need_tool"));
             }
@@ -168,10 +168,12 @@ public final class AnalysisVisor {
         boolean holding = minecraft.options.keyUse.isDown() && minecraft.gui.screen() == null;
         if (target != null && target.key() != null && holding && cooldown == 0) {
             progress++;
+            int full = analyzeTicks(player);
             if (progress % 6 == 1) {
-                player.playSound(SoundEvents.NOTE_BLOCK_HAT.value(), 0.3F, 1.4F + progress * 0.03F);
+                player.playSound(GearSounds.VISOR_TICK.get(), 0.35F, 0.85F + 0.5F * progress / full);
             }
-            if (progress >= analyzeTicks(player)) {
+            if (progress >= full) {
+                player.playSound(GearSounds.VISOR_COMPLETE.get(), 0.6F, 1.0F);
                 ClientPacketDistributor.sendToServer(target.payload());
                 progress = 0;
                 cooldown = 20;

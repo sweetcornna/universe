@@ -13,6 +13,7 @@ import org.jspecify.annotations.Nullable;
 import io.github.sweetcornna.universe.core.vehicle.VehicleKind;
 import io.github.sweetcornna.universe.network.VehiclePayloads;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
+import io.github.sweetcornna.universe.registry.sound.ShipSounds;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
@@ -24,7 +25,6 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.level.TicketType;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.FluidTags;
 import net.minecraft.world.entity.Entity;
@@ -203,7 +203,7 @@ public final class VehicleSummoning {
             roster.update(owner, moved);
         }
         flash(level, spot);
-        level.playSound(null, spot.x, spot.y, spot.z, SoundEvents.ENDERMAN_TELEPORT, SoundSource.NEUTRAL, 0.8F, 0.8F);
+        level.playSound(null, spot.x, spot.y, spot.z, ShipSounds.VEHICLE_SUMMON.get(), SoundSource.NEUTRAL, 1.0F, 1.0F);
         return Result.ARRIVED;
     }
 

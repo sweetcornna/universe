@@ -22,12 +22,12 @@ import io.github.sweetcornna.universe.core.ship.ShipShape;
 import io.github.sweetcornna.universe.core.ship.ShipStats;
 import io.github.sweetcornna.universe.registry.UniverseAttachments;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
+import io.github.sweetcornna.universe.registry.sound.ShipSounds;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.ProblemReporter;
 import net.minecraft.world.entity.Entity;
@@ -141,7 +141,7 @@ public final class ShipAssembly {
         ShipEntity ship = ShipEntity.create(level, structure, placed.originX() + 0.5, placed.originY(), placed.originZ() + 0.5, yaw, fuel);
         ship.setOwner(owner);
         level.addFreshEntity(ship);
-        level.playSound(null, helmPos, SoundEvents.BEACON_ACTIVATE, SoundSource.BLOCKS, 0.8F, 1.6F);
+        level.playSound(null, helmPos, ShipSounds.POWER_UP.get(), SoundSource.BLOCKS, 0.8F, 1.0F);
         return ship;
     }
 
@@ -230,7 +230,7 @@ public final class ShipAssembly {
             BlockPos pos = targets.get(structure.blocks().indexOf(seatBlock));
             passenger.teleportTo(pos.getX() + 0.5, pos.getY() + height, pos.getZ() + 0.5);
         }
-        level.playSound(null, BlockPos.containing(ship.position()), SoundEvents.BEACON_DEACTIVATE, SoundSource.BLOCKS, 0.8F, 1.6F);
+        level.playSound(null, BlockPos.containing(ship.position()), ShipSounds.POWER_DOWN.get(), SoundSource.BLOCKS, 0.8F, 1.0F);
         ShipOwners.get(level.getServer()).parked(ship);
         ship.discard();
         return true;

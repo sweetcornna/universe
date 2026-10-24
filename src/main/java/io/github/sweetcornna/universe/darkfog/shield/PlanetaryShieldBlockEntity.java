@@ -7,9 +7,9 @@ import io.github.sweetcornna.universe.factory.MachineBlockEntity;
 import io.github.sweetcornna.universe.factory.MachineMenu;
 import io.github.sweetcornna.universe.registry.UniverseBlockEntities;
 import io.github.sweetcornna.universe.registry.UniverseMenus;
+import io.github.sweetcornna.universe.registry.sound.MachineSounds;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -106,7 +106,7 @@ public class PlanetaryShieldBlockEntity extends MachineBlockEntity {
         if (before.raised() != after.raised()) {
             BlockPos pos = this.worldPosition;
             level.playSound(null, pos.getX() + 0.5, pos.getY() + 1.5, pos.getZ() + 0.5,
-                    after.raised() ? SoundEvents.BEACON_ACTIVATE : SoundEvents.BEACON_DEACTIVATE, SoundSource.BLOCKS, 2.0F, 0.8F);
+                    after.raised() ? MachineSounds.SHIELD_RAISE : MachineSounds.SHIELD_COLLAPSE, SoundSource.BLOCKS, 1.0F, 1.0F);
             Shields.changed(level);
         }
         this.status = after.raised() ? RAISED : CHARGING;

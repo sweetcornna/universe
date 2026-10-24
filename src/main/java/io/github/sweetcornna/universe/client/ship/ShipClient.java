@@ -16,6 +16,7 @@ import io.github.sweetcornna.universe.client.HudRegions;
 import io.github.sweetcornna.universe.client.ScreenProjection;
 import io.github.sweetcornna.universe.client.UniverseKeys;
 import io.github.sweetcornna.universe.client.asteroid.AsteroidClient;
+import io.github.sweetcornna.universe.client.audio.Loops;
 import io.github.sweetcornna.universe.client.galaxy.GalaxyText;
 import io.github.sweetcornna.universe.client.pirate.PirateClient;
 import io.github.sweetcornna.universe.core.ship.ShipStats;
@@ -158,7 +159,7 @@ public final class ShipClient {
                 cameraBeforeBoarding = minecraft.options.getCameraType();
                 minecraft.options.setCameraType(CameraType.THIRD_PERSON_BACK);
             }
-            if (engineSound == null || engineSound.isStopped()) {
+            if (!Loops.playing(engineSound)) {
                 engineSound = new ShipEngineSound(ship);
                 minecraft.getSoundManager().play(engineSound);
             }

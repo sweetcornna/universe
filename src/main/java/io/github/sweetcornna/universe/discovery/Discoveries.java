@@ -30,6 +30,7 @@ import io.github.sweetcornna.universe.network.AnalyzePayload;
 import io.github.sweetcornna.universe.network.DiscoveryPayload;
 import io.github.sweetcornna.universe.network.RenamePayload;
 import io.github.sweetcornna.universe.registry.UniverseItems;
+import io.github.sweetcornna.universe.registry.sound.GearSounds;
 import io.github.sweetcornna.universe.world.planet.Planets;
 import io.github.sweetcornna.universe.world.space.SpaceDimensions;
 import net.minecraft.ChatFormatting;
@@ -40,7 +41,6 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.entity.Entity;
@@ -150,7 +150,7 @@ public final class Discoveries {
             }
         }
         give(player, reward);
-        player.level().playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.PLAYERS, 1.0F, 1.4F);
+        player.level().playSound(null, player.getX(), player.getY(), player.getZ(), GearSounds.VISOR_DISCOVERY, SoundSource.PLAYERS, 1.0F, 1.0F);
         for (ServerPlayer other : server.getPlayerList().getPlayers()) {
             PacketDistributor.sendToPlayer(other, DiscoveryPayload.of(false, List.of(entry.get()), other == player ? reward : 0));
         }

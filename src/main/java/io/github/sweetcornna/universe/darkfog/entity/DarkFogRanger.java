@@ -1,9 +1,9 @@
 package io.github.sweetcornna.universe.darkfog.entity;
 
 import io.github.sweetcornna.universe.core.darkfog.UnitKind;
+import io.github.sweetcornna.universe.registry.sound.HostileSounds;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
@@ -53,7 +53,7 @@ public class DarkFogRanger extends DarkFogUnit {
         Vec3 aim = enemy.getEyePosition().add(0, -0.4, 0);
         aim = aim.add(enemy.getDeltaMovement().multiply(1, 0, 1).scale(from.distanceTo(aim) / SPEED * 0.8));
         DarkFogBolt.fire(level, this, from, aim.subtract(from), damage, DarkFogBolt.RANGER_COLOR, 0.55F, SPEED, 3.0F);
-        this.playSound(SoundEvents.BLAZE_SHOOT, 0.4F, 1.7F + this.random.nextFloat() * 0.2F);
+        this.playSound(HostileSounds.RANGER_SHOT.get(), 0.8F, 0.95F + this.random.nextFloat() * 0.1F);
     }
 
     @Override
@@ -61,6 +61,6 @@ public class DarkFogRanger extends DarkFogUnit {
         Vec3 from = this.getEyePosition().add(this.getLookAngle().scale(0.6));
         Vec3 aim = Vec3.atCenterOf(pos);
         DarkFogBolt.fire(level, this, from, aim.subtract(from), damage, DarkFogBolt.RANGER_COLOR, 0.55F, SPEED, 1.0F);
-        this.playSound(SoundEvents.BLAZE_SHOOT, 0.4F, 1.7F + this.random.nextFloat() * 0.2F);
+        this.playSound(HostileSounds.RANGER_SHOT.get(), 0.8F, 0.95F + this.random.nextFloat() * 0.1F);
     }
 }

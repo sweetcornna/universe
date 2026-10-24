@@ -8,17 +8,19 @@ import org.jspecify.annotations.Nullable;
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.client.HudRegions;
 import io.github.sweetcornna.universe.client.ship.ShipClient;
+import io.github.sweetcornna.universe.client.audio.Loops;
 import io.github.sweetcornna.universe.exocraft.Submarine;
 import io.github.sweetcornna.universe.network.ExocraftControlPayload;
 import io.github.sweetcornna.universe.registry.UniverseEntities;
+import io.github.sweetcornna.universe.registry.sound.ShipSounds;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.resources.sounds.AbstractTickableSoundInstance;
+import net.minecraft.client.resources.sounds.SoundInstance;
 import net.minecraft.network.chat.Component;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.util.RandomSource;
@@ -95,7 +97,7 @@ public final class SubmarineClient {
             minecraft.options.setCameraType(cameraBeforeBoarding);
             cameraBeforeBoarding = null;
         }
-        if (submarine != null && (engineSound == null || engineSound.isStopped())) {
+        if (submarine != null && (!Loops.playing(engineSound))) {
             engineSound = new EngineSound(submarine);
             minecraft.getSoundManager().play(engineSound);
         } else if (submarine == null) {
@@ -202,18 +204,19 @@ public final class SubmarineClient {
         return y + 6;
     }
 
-    /** 推进器：低沉的嗡嗡声，越快调越高；停着时小声怠速。 */
+    /** 螺旋桨和电机：越快越响、调越高；停着时小声怠速，出了水就停。 */
     private static final class EngineSound extends AbstractTickableSoundInstance {
         private final Submarine submarine;
 
         EngineSound(Submarine submarine) {
-            super(SoundEvents.BEACON_AMBIENT, SoundSource.NEUTRAL, RandomSource.create());
+            super(ShipSounds.SUBMARINE.get(), SoundSource.NEUTRAL, RandomSource.create());
             this.submarine = submarine;
             this.looping = true;
             this.delay = 0;
             this.volume = 0.01F;
-            this.pitch = 0.4F;
+            this.pitch = 0.8F;
             this.relative = true;
+            this.attenuation = SoundInstance.Attenuation.NONE;
         }
 
         @Override
@@ -227,7 +230,7 @@ public final class SubmarineClient {
             float share = Mth.clamp(speed / 0.9F, 0, 1);
             float target = running ? 0.2F + 0.45F * share : 0;
             this.volume = Mth.lerp(0.15F, this.volume, target);
-            this.pitch = Mth.lerp(0.15F, this.pitch, 0.4F + 0.5F * share);
+            this.pitch = Mth.lerp(0.15F, this.pitch, 0.8F + 0.4F * share);
         }
 
         @Override

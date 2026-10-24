@@ -1,6 +1,7 @@
 package io.github.sweetcornna.universe.sentinel;
 
 import io.github.sweetcornna.universe.core.sentinel.SentinelKind;
+import io.github.sweetcornna.universe.registry.sound.HostileSounds;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -8,7 +9,6 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.attributes.AttributeSupplier;
@@ -90,7 +90,7 @@ public class SummonerSentinel extends Sentinel {
         if (this.summonCooldown <= CHARGE && this.summonCooldown > 0 && this.summonCooldown % 4 == 0) {
             level.sendParticles(ParticleTypes.PORTAL, this.getX(), this.getY(0.5), this.getZ(), 10, 0.8, 0.6, 0.8, 0.4);
             if (this.summonCooldown == CHARGE) {
-                this.playSound(SoundEvents.EVOKER_PREPARE_SUMMON, 0.8F, 1.6F);
+                this.playSound(HostileSounds.SUMMON_CHARGE.get(), 0.9F, 1.0F);
             }
         }
         if (this.summonCooldown <= 0) {
@@ -130,7 +130,7 @@ public class SummonerSentinel extends Sentinel {
             }
         }
         if (placed > 0) {
-            level.playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.EVOKER_CAST_SPELL, SoundSource.HOSTILE, 1.0F, 1.4F);
+            level.playSound(null, this.getX(), this.getY(), this.getZ(), HostileSounds.SUMMON.get(), SoundSource.HOSTILE, 1.0F, 1.0F);
         }
     }
 }

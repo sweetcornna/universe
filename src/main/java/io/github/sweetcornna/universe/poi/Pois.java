@@ -17,13 +17,13 @@ import io.github.sweetcornna.universe.perf.ServerPerf;
 import io.github.sweetcornna.universe.registry.UniverseAttachments;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
 import io.github.sweetcornna.universe.registry.UniverseItems;
+import io.github.sweetcornna.universe.registry.sound.WorldSounds;
 import io.github.sweetcornna.universe.world.planet.Planets;
 import io.github.sweetcornna.universe.world.space.SpaceDimensions;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
@@ -118,8 +118,8 @@ public final class Pois {
         for (Poi poi : layout.get().within(player.getX(), player.getZ(), 13 + VISIT_MARGIN)) {
             if (poi.distance(player.getX(), player.getZ()) <= poi.type().radius() + VISIT_MARGIN && progress.visit(poi.key())) {
                 player.sendOverlayMessage(Component.translatable("message.universe.poi.found", name(poi.type())));
-                level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.AMETHYST_BLOCK_CHIME,
-                        SoundSource.PLAYERS, 1.0F, 0.8F);
+                level.playSound(null, player.getX(), player.getY(), player.getZ(), WorldSounds.POI_FOUND,
+                        SoundSource.PLAYERS, 1.0F, 1.0F);
             }
         }
     }
@@ -165,7 +165,7 @@ public final class Pois {
                 poi -> poi.type() == type && !progress.visited(poi.key()));
         if (found.isEmpty()) {
             player.sendOverlayMessage(Component.translatable("message.universe.poi.none_found", name(type), LOCATE_RADIUS));
-            level.playSound(null, booster, SoundEvents.BEACON_DEACTIVATE, SoundSource.BLOCKS, 0.6F, 1.4F);
+            level.playSound(null, booster, WorldSounds.TERMINAL_DENY.get(), SoundSource.BLOCKS, 0.8F, 1.0F);
             return;
         }
         if (slot >= 0 && !player.isCreative()) {
@@ -177,7 +177,7 @@ public final class Pois {
         int distance = (int) Math.round(poi.distance(player.getX(), player.getZ()));
         player.sendSystemMessage(Component.translatable("message.universe.poi.located", name(type),
                 Component.translatable("direction.universe." + direction(player, poi)), distance));
-        level.playSound(null, booster, SoundEvents.BEACON_POWER_SELECT, SoundSource.BLOCKS, 0.8F, 1.6F);
+        level.playSound(null, booster, WorldSounds.SIGNAL.get(), SoundSource.BLOCKS, 0.9F, 1.0F);
     }
 
     private static int findNavigationData(Inventory inventory) {

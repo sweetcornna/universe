@@ -58,6 +58,7 @@ import io.github.sweetcornna.universe.registry.UniverseGameRules;
 import io.github.sweetcornna.universe.registry.UniverseItems;
 import io.github.sweetcornna.universe.registry.UniverseMenus;
 import io.github.sweetcornna.universe.registry.UniverseRecipeTypes;
+import io.github.sweetcornna.universe.registry.UniverseSounds;
 import io.github.sweetcornna.universe.registry.UniverseStats;
 import io.github.sweetcornna.universe.registry.UniverseTriggers;
 import io.github.sweetcornna.universe.registry.UniverseWorldgen;
@@ -101,6 +102,7 @@ public final class Universe {
         UniverseAttachments.register(modBus);
         UniverseItems.register(modBus);
         UniverseEntities.register(modBus);
+        UniverseSounds.register(modBus);
         UniverseStats.register(modBus);
         UniverseTriggers.register(modBus);
         UniverseMenus.register(modBus);
