@@ -1,8 +1,9 @@
 {
-  "parent": "minecraft:block/orientable_with_bottom",
+  "parent": "universe:block/machine_glow",
   "textures": {
     "bottom": "universe:block/fractionator_top",
     "front": "universe:block/fractionator_front_on",
+    "glow": "universe:block/fractionator_front_on_glow",
     "side": "universe:block/fractionator_side",
     "top": "universe:block/fractionator_top"
   }

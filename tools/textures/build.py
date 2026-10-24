@@ -41,7 +41,7 @@ from preview import palette_sheet, sheet  # noqa: E402
 TEXTURES = ROOT / "src" / "main" / "resources" / "assets" / "universe" / "textures"
 PREVIEW = ROOT / "build" / "texture-preview"
 # 不是配方的文件
-TOOLS = {"build", "recipe", "parts", "gen_planet_textures"}
+TOOLS = {"build", "recipe", "parts"}
 
 
 def modules() -> list[str]:
@@ -80,6 +80,7 @@ def main():
     ap.add_argument("--list", action="store_true")
     ap.add_argument("--coverage", action="store_true")
     args = ap.parse_args()
+    sys.stdout.reconfigure(newline="\n")  # Windows 上也输出 LF，好拿名单去比
     mods = modules() if args.module == "all" else [args.module]
     for m in mods:
         importlib.import_module(m)

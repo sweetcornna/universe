@@ -1,8 +1,9 @@
 {
-  "parent": "minecraft:block/orientable_with_bottom",
+  "parent": "universe:block/machine_glow",
   "textures": {
     "bottom": "universe:block/machine_casing_top",
     "front": "universe:block/quantum_chemical_plant_front_on",
+    "glow": "universe:block/quantum_chemical_plant_front_on_glow",
     "side": "universe:block/quantum_chemical_plant_side",
     "top": "universe:block/quantum_chemical_plant_top"
   }

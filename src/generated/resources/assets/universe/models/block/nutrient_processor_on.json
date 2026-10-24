@@ -1,8 +1,10 @@
 {
-  "parent": "minecraft:block/orientable_with_bottom",
+  "parent": "universe:block/machine_glow_top",
   "textures": {
     "bottom": "universe:block/nutrient_processor_side",
     "front": "universe:block/nutrient_processor_front_on",
+    "glow": "universe:block/nutrient_processor_front_on_glow",
+    "glow_top": "universe:block/nutrient_processor_top_on_glow",
     "side": "universe:block/nutrient_processor_side",
     "top": "universe:block/nutrient_processor_top_on"
   }

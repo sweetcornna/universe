@@ -1,8 +1,10 @@
 {
-  "parent": "minecraft:block/orientable_with_bottom",
+  "parent": "universe:block/machine_glow_top",
   "textures": {
     "bottom": "universe:block/machine_casing_top",
     "front": "universe:block/arc_smelter_front_on",
+    "glow": "universe:block/arc_smelter_front_on_glow",
+    "glow_top": "universe:block/arc_smelter_top_on_glow",
     "side": "universe:block/arc_smelter_side",
     "top": "universe:block/arc_smelter_top_on"
   }

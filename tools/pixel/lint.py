@@ -57,12 +57,13 @@ def lint(c: Canvas, kind: str = "block", rough: bool = False, tinted: bool = Fal
             mean = sum(Ls[rgb] * n for rgb, n in colors.items()) / opaque
             if not 0.66 <= mean <= 0.90:
                 problems.append(f"染色贴图的平均亮度 {mean:.2f}，应在 0.66–0.90（太暗会把配色压黑）")
-    if opaque and Ls:
+    # 只有零星几个像素的叠加层（发光层、矿点）不看明暗跨度：它贴在别的面上，远看是那个面
+    if opaque >= c.w * c.h // 4 and Ls:
         span = max(Ls.values()) - min(Ls.values())
         need = 0.12 if tinted else 0.22
         if span < need and kind in ("block", "item"):
             problems.append(f"明暗跨度太小（{span:.2f}），远看是一片")
-    # 孤立像素：四邻都和它不同色，又不是登记过的高光点
+    # 孤立像素：八邻都和它不同色，又不是登记过的高光点（斜线、圆的边只在角上相接，不算孤立）
     orphans = 0
     for y in range(c.h):
         for x in range(c.w):
@@ -70,7 +71,7 @@ def lint(c: Canvas, kind: str = "block", rough: bool = False, tinted: bool = Fal
             if not px or (x, y) in c.glints:
                 continue
             same = False
-            for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+            for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1), (1, 1), (1, -1), (-1, 1), (-1, -1)):
                 q = c.get(x + dx, y + dy)
                 if q and q[0][q[1]] == px[0][px[1]]:
                     same = True

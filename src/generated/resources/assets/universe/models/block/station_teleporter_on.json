@@ -1,8 +1,10 @@
 {
-  "parent": "minecraft:block/orientable_with_bottom",
+  "parent": "universe:block/machine_glow_top",
   "textures": {
     "bottom": "universe:block/station_hull",
     "front": "universe:block/station_teleporter_front_on",
+    "glow": "universe:block/station_teleporter_front_on_glow",
+    "glow_top": "universe:block/station_teleporter_top_on_glow",
     "side": "universe:block/station_teleporter_side",
     "top": "universe:block/station_teleporter_top_on"
   }

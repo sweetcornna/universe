@@ -35,6 +35,7 @@ import io.github.sweetcornna.universe.dyson.LaunchSiloBlockEntity;
 import io.github.sweetcornna.universe.entity.ship.ShipEntity;
 import io.github.sweetcornna.universe.network.ResearchActionPayload;
 import io.github.sweetcornna.universe.registry.UniverseAttachments;
+import io.github.sweetcornna.universe.registry.UniverseCreativeTabs;
 import io.github.sweetcornna.universe.survival.SuitHud;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
@@ -43,6 +44,7 @@ import net.minecraft.client.gui.components.AbstractButton;
 import net.minecraft.client.gui.components.events.GuiEventListener;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.advancements.AdvancementsScreen;
+import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.client.input.CharacterEvent;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -502,6 +504,18 @@ public final class DevScript {
             }
             case "rightclick" -> KeyMapping.click(minecraft.options.keyUse.getKey()); // 按一下右键，走原版的完整流程
             case "advancements" -> minecraft.gui.setScreen(new AdvancementsScreen(player.connection.getAdvancements()));
+            case "creative" -> {
+                // 打开创造物品栏，停在本模组那一栏（看物品贴图用）；翻页用 scroll 0 -5。
+                // 选中的栏是私有的静态字段，打开前设好，init 会翻到它所在的那页
+                try {
+                    var field = CreativeModeInventoryScreen.class.getDeclaredField("selectedTab");
+                    field.setAccessible(true);
+                    field.set(null, UniverseCreativeTabs.MAIN.get());
+                } catch (ReflectiveOperationException e) {
+                    Universe.LOGGER.warn("Dev script creative: {}", e.toString());
+                }
+                minecraft.gui.setScreen(new CreativeModeInventoryScreen(player, player.connection.enabledFeatures(), false));
+            }
             // 和科技树上"研究"按钮发的一样，服务端照样检查前置
             case "research" -> ClientPacketDistributor.sendToServer(new ResearchActionPayload(ResearchActionPayload.Action.START, args[0]));
             case "guide" -> {

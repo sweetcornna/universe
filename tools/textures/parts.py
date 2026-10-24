@@ -8,6 +8,7 @@ import math
 import random
 
 from canvas import Canvas
+from color import Ramp
 from palette import AMBER, BLUE, CYAN_GLOW, GRAPHITE, GREEN, SCREEN, STEEL
 
 # 等级色：Mk.I 琥珀、Mk.II 绿、Mk.III 蓝
@@ -47,10 +48,10 @@ def casing(rng: random.Random, base: int = 4, edge: bool = True) -> Canvas:
     return c
 
 
-def bolts(c: Canvas, inset: int = 2, base: int = 4):
-    """四个角上的螺栓。"""
+def bolts(c: Canvas, inset: int = 2, base: int = 4, r: Ramp = STEEL):
+    """四个角上的螺栓，默认是钢的；白漆、金色的机身传自己的色阶。"""
     for x, y in ((inset, inset), (15 - inset - 1, inset), (inset, 15 - inset - 1), (15 - inset - 1, 15 - inset - 1)):
-        c.rivet(x, y, STEEL, base)
+        c.rivet(x, y, r, base)
 
 
 def status_lights(c: Canvas, on: bool, y: int = 2, xs=(6, 8, 10)):
