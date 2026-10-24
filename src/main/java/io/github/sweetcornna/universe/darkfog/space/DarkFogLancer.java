@@ -12,10 +12,10 @@ import io.github.sweetcornna.universe.core.ship.PirateFlight;
 import io.github.sweetcornna.universe.darkfog.Facilities;
 import io.github.sweetcornna.universe.darkfog.entity.DarkFogBolt;
 import io.github.sweetcornna.universe.darkfog.shield.Shields;
+import io.github.sweetcornna.universe.registry.sound.HostileSounds;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.SectionPos;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
@@ -134,7 +134,7 @@ public class DarkFogLancer extends DarkFogSpaceUnit {
             }
             Vec3 from = pos.add(nose.normalize().scale(this.getBbWidth() * 0.6));
             this.shoot(level, from, aim, targetVelocity, DarkFogBolt.RANGER_COLOR, 0.7F, BOLT_SPEED, 2.0F, BOLT_LIFETIME);
-            this.playSound(SoundEvents.BLAZE_SHOOT, 0.5F, 1.8F + this.random.nextFloat() * 0.2F);
+            this.playSound(HostileSounds.LANCER_SHOT.get(), 0.8F, 0.95F + this.random.nextFloat() * 0.1F);
         }
     }
 
@@ -266,6 +266,6 @@ public class DarkFogLancer extends DarkFogSpaceUnit {
         this.bombs--;
         this.bombCooldown = (int) Math.ceil(LancerRaid.BOMB_INTERVAL / Math.max(0.2, this.jamFactor()));
         this.bombAim = null;
-        this.playSound(SoundEvents.SHULKER_SHOOT, 0.8F, 0.6F + this.random.nextFloat() * 0.2F);
+        this.playSound(HostileSounds.BOMB_DROP.get(), 1.0F, 0.95F + this.random.nextFloat() * 0.1F);
     }
 }

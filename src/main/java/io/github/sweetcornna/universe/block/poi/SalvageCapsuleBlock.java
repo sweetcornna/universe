@@ -4,13 +4,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 import io.github.sweetcornna.universe.Universe;
+import io.github.sweetcornna.universe.registry.sound.WorldSounds;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -70,8 +70,7 @@ public class SalvageCapsuleBlock extends Block {
         for (ItemStack stack : contents(level, pos, player)) {
             Block.popResourceFromFace(level, pos, face, stack);
         }
-        level.playSound(null, pos, SoundEvents.IRON_TRAPDOOR_OPEN, SoundSource.BLOCKS, 1.0F, 0.6F);
-        level.playSound(null, pos, SoundEvents.FIRE_EXTINGUISH, SoundSource.BLOCKS, 0.5F, 1.4F);
+        level.playSound(null, pos, WorldSounds.CAPSULE_OPEN.get(), SoundSource.BLOCKS, 1.0F, 1.0F);
         Vec3 out = Vec3.atCenterOf(pos).relative(face, 0.6);
         level.sendParticles(ParticleTypes.CLOUD, out.x, out.y, out.z, 8, 0.2, 0.2, 0.2, 0.02);
         BlockState opened = state.setValue(OPEN, true);

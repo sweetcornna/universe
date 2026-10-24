@@ -70,6 +70,11 @@ public final class SuitClient {
 
     // ---- 喷气背包
 
+    /** 本地玩家的喷气背包这一刻在不在推（推进的循环声音用，{@link GearAudio}）。 */
+    public static boolean thrusting() {
+        return thrusting;
+    }
+
     private static void jetpack(LocalPlayer player) {
         boolean jumpDown = player.input.keyPresses.jump();
         boolean chest = player.getItemBySlot(EquipmentSlot.CHEST).is(UniverseItems.EXOSUIT_CHESTPLATE);

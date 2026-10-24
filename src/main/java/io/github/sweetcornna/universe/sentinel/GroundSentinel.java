@@ -3,10 +3,10 @@ package io.github.sweetcornna.universe.sentinel;
 import java.util.EnumSet;
 
 import io.github.sweetcornna.universe.core.sentinel.Flank;
+import io.github.sweetcornna.universe.registry.sound.HostileSounds;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.Difficulty;
@@ -90,7 +90,7 @@ public abstract class GroundSentinel extends Sentinel {
             Vec3 vent = this.vent();
             level.sendParticles(ParticleTypes.ELECTRIC_SPARK, vent.x, vent.y, vent.z, 14, 0.25, 0.25, 0.25, 0.4);
             level.sendParticles(ParticleTypes.CRIT, vent.x, vent.y, vent.z, 8, 0.2, 0.2, 0.2, 0.3);
-            level.playSound(null, vent.x, vent.y, vent.z, SoundEvents.PLAYER_ATTACK_CRIT, SoundSource.HOSTILE, 1.0F, 0.8F);
+            level.playSound(null, vent.x, vent.y, vent.z, HostileSounds.SENTINEL_VENT_HIT.get(), SoundSource.HOSTILE, 1.0F, 1.0F);
         }
         return hurt;
     }
@@ -108,7 +108,7 @@ public abstract class GroundSentinel extends Sentinel {
     @Override
     protected void playStepSound(BlockPos pos, BlockState state) {
         float size = this.getBbHeight();
-        this.playSound(SoundEvents.IRON_GOLEM_STEP, 0.25F + size * 0.15F, 1.9F - size * 0.3F);
+        this.playSound(HostileSounds.SENTINEL_STEP.get(), 0.35F + size * 0.15F, 1.2F - size * 0.1F);
     }
 
     /** 巡逻：在附近的玩家周围（没有玩家就在原地附近）找一块地面走过去。 */

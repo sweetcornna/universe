@@ -24,6 +24,7 @@ import io.github.sweetcornna.universe.network.TeleportRequestPayload;
 import io.github.sweetcornna.universe.perf.ServerPerf;
 import io.github.sweetcornna.universe.registry.UniverseAttachments;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
+import io.github.sweetcornna.universe.registry.sound.MachineSounds;
 import io.github.sweetcornna.universe.station.Stations;
 import io.github.sweetcornna.universe.world.DimensionTemplate;
 import io.github.sweetcornna.universe.world.RuntimeDimensions;
@@ -36,7 +37,6 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.portal.TeleportTransition;
@@ -273,9 +273,9 @@ public final class Teleporters {
             return;
         }
         TamedCreatures.bring(player, pets);
-        from.playSound(null, departure.x, departure.y, departure.z, SoundEvents.PLAYER_TELEPORT, SoundSource.PLAYERS, 1, 1);
+        from.playSound(null, departure.x, departure.y, departure.z, MachineSounds.TELEPORT, SoundSource.PLAYERS, 1, 1);
         from.sendParticles(ParticleTypes.PORTAL, departure.x, departure.y + 1, departure.z, 40, 0.4, 0.8, 0.4, 0.3);
-        to.level().playSound(null, to.pos().x, to.pos().y, to.pos().z, SoundEvents.PLAYER_TELEPORT, SoundSource.PLAYERS, 1, 1);
+        to.level().playSound(null, to.pos().x, to.pos().y, to.pos().z, MachineSounds.TELEPORT, SoundSource.PLAYERS, 1, 1);
         to.level().sendParticles(ParticleTypes.REVERSE_PORTAL, to.pos().x, to.pos().y + 1, to.pos().z, 40, 0.4, 0.8, 0.4, 0.05);
         player.sendOverlayMessage(Component.translatable("message.universe.teleport.arrived", to.name()));
         MilestoneTrigger.reach(player, MilestoneTrigger.TELEPORT);

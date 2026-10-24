@@ -15,6 +15,7 @@ import io.github.sweetcornna.universe.portal.PortalGlyphs;
 import io.github.sweetcornna.universe.registry.UniverseAttachments;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
 import io.github.sweetcornna.universe.registry.UniverseItems;
+import io.github.sweetcornna.universe.registry.sound.WorldSounds;
 import io.github.sweetcornna.universe.story.Story;
 import io.github.sweetcornna.universe.tech.ExosuitData;
 import net.minecraft.core.BlockPos;
@@ -25,7 +26,6 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Prediction;
 import net.minecraft.world.entity.player.Inventory;
@@ -69,7 +69,7 @@ public final class PoiInteractions {
             }
             if (!missing.isEmpty()) {
                 player.sendOverlayMessage(Component.translatable("message.universe.drop_pod.needs", list(cost)));
-                level.playSound(null, pos, SoundEvents.CHAIN_HIT, SoundSource.BLOCKS, 0.8F, 0.7F);
+                level.playSound(null, pos, WorldSounds.TERMINAL_DENY.get(), SoundSource.BLOCKS, 0.8F, 0.9F);
                 return;
             }
             for (Tech.ItemCost c : cost) {
@@ -79,8 +79,7 @@ public final class PoiInteractions {
         data.addPod();
         data.changed();
         level.setBlock(pos, state.setValue(DropPodBlock.REPAIRED, true), 3);
-        level.playSound(null, pos, SoundEvents.ANVIL_USE, SoundSource.BLOCKS, 0.6F, 1.3F);
-        level.playSound(null, pos, SoundEvents.BEACON_POWER_SELECT, SoundSource.BLOCKS, 0.9F, 1.2F);
+        level.playSound(null, pos, WorldSounds.REPAIR.get(), SoundSource.BLOCKS, 0.9F, 1.0F);
         level.sendParticles(ParticleTypes.HAPPY_VILLAGER, pos.getX() + 0.5, pos.getY() + 0.8, pos.getZ() + 0.5, 16, 0.5, 0.4, 0.5, 0);
         player.sendSystemMessage(Component.translatable("message.universe.drop_pod.upgraded",
                 data.techSlots(), SuitSlots.TECH_MAX, data.cargoSlots(), SuitSlots.CARGO_MAX));
@@ -94,7 +93,7 @@ public final class PoiInteractions {
             for (Tech.ItemCost c : cost) {
                 if (count(inventory, item(c)) < c.count()) {
                     player.sendOverlayMessage(Component.translatable("message.universe.damaged_helm.needs", list(cost)));
-                    level.playSound(null, pos, SoundEvents.CHAIN_HIT, SoundSource.BLOCKS, 0.8F, 0.7F);
+                    level.playSound(null, pos, WorldSounds.TERMINAL_DENY.get(), SoundSource.BLOCKS, 0.8F, 0.9F);
                     return;
                 }
             }
@@ -103,8 +102,7 @@ public final class PoiInteractions {
             }
         }
         fixHelm(level, pos, state);
-        level.playSound(null, pos, SoundEvents.ANVIL_USE, SoundSource.BLOCKS, 0.6F, 1.3F);
-        level.playSound(null, pos, SoundEvents.BEACON_ACTIVATE, SoundSource.BLOCKS, 0.7F, 1.5F);
+        level.playSound(null, pos, WorldSounds.REPAIR.get(), SoundSource.BLOCKS, 0.9F, 1.0F);
         level.sendParticles(ParticleTypes.HAPPY_VILLAGER, pos.getX() + 0.5, pos.getY() + 0.8, pos.getZ() + 0.5, 16, 0.5, 0.4, 0.5, 0);
         player.sendOverlayMessage(Component.translatable("message.universe.damaged_helm.repaired"));
     }
@@ -122,7 +120,7 @@ public final class PoiInteractions {
         if (first) {
             give(player, new ItemStack(UniverseItems.NAVIGATION_DATA.get()));
         }
-        level.playSound(null, pos, SoundEvents.BEACON_AMBIENT, SoundSource.BLOCKS, 0.6F, 1.8F);
+        level.playSound(null, pos, WorldSounds.TERMINAL_ACCESS.get(), SoundSource.BLOCKS, 0.8F, 1.0F);
         PacketDistributor.sendToPlayer(player, new PoiTextPayload(PoiTextPayload.Kind.TERMINAL, key, 0, first));
     }
 
@@ -141,10 +139,10 @@ public final class PoiInteractions {
             give(player, new ItemStack(UniverseItems.SURVEY_DATA.get(), MONOLITH_SURVEY_DATA));
             // 第一次碰的巨石教一个没学过的传送门符文（ADR-0024）
             PortalGlyphs.learn(player, Rng.of(key ^ player.getUUID().getMostSignificantBits()));
-            level.playSound(null, pos, SoundEvents.AMETHYST_BLOCK_RESONATE, SoundSource.BLOCKS, 1.0F, 0.6F);
+            level.playSound(null, pos, WorldSounds.MONOLITH.get(), SoundSource.BLOCKS, 1.0F, 1.0F);
             level.sendParticles(ParticleTypes.ENCHANT, pos.getX() + 0.5, pos.getY() + 1.2, pos.getZ() + 0.5, 60, 0.6, 0.8, 0.6, 0.6);
         } else {
-            level.playSound(null, pos, SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.BLOCKS, 0.8F, 0.6F);
+            level.playSound(null, pos, WorldSounds.STONE_TOUCH.get(), SoundSource.BLOCKS, 0.9F, 0.8F);
         }
         if (answered) {
             level.sendParticles(ParticleTypes.END_ROD, pos.getX() + 0.5, pos.getY() + 1.4, pos.getZ() + 0.5, 30, 0.4, 0.9, 0.4, 0.04);

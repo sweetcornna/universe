@@ -23,6 +23,7 @@ import io.github.sweetcornna.universe.network.CabinetPayloads;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
 import io.github.sweetcornna.universe.registry.UniverseDataComponents;
 import io.github.sweetcornna.universe.registry.UniverseItems;
+import io.github.sweetcornna.universe.registry.sound.WorldSounds;
 import io.github.sweetcornna.universe.survival.MultitoolItem;
 import io.github.sweetcornna.universe.tech.TechModuleItem;
 import io.github.sweetcornna.universe.tech.ToolWeaponItem;
@@ -37,7 +38,6 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Prediction;
 import net.minecraft.world.InteractionHand;
@@ -190,7 +190,7 @@ public final class MultitoolCabinet {
             player.getInventory().placeItemBackInInventory(stack, Prediction.SERVER_ONLY);
         }
         data.markSold(session.system(), day, TOOLS, slot);
-        player.level().playSound(null, session.pos(), SoundEvents.PLAYER_LEVELUP, SoundSource.BLOCKS, 0.6F, 1.4F);
+        player.level().playSound(null, session.pos(), WorldSounds.PURCHASE.get(), SoundSource.BLOCKS, 0.9F, 1.0F);
         Component name = Component.translatable("multitool.universe.class." + spec.type().key());
         if (!leftover.isEmpty()) {
             player.sendSystemMessage(Component.translatable("message.universe.cabinet.returned", leftover.size()));

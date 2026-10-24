@@ -1,10 +1,10 @@
 package io.github.sweetcornna.universe.exocraft;
 
 import io.github.sweetcornna.universe.registry.UniverseEntities;
+import io.github.sweetcornna.universe.registry.UniverseSounds;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
@@ -122,7 +122,7 @@ public class Torpedo extends Projectile {
         }
         level.sendParticles(ParticleTypes.EXPLOSION, at.x, at.y, at.z, 2, 0.4, 0.4, 0.4, 0);
         level.sendParticles(this.isInWater() ? ParticleTypes.BUBBLE : ParticleTypes.SMOKE, at.x, at.y, at.z, 40, 1.0, 1.0, 1.0, 0.15);
-        level.playSound(null, at.x, at.y, at.z, SoundEvents.GENERIC_EXPLODE, SoundSource.PLAYERS, 1.2F, this.isInWater() ? 0.6F : 1.0F);
+        level.playSound(null, at.x, at.y, at.z, UniverseSounds.EXPLOSION_SMALL.get(), SoundSource.PLAYERS, 1.0F, this.isInWater() ? 0.7F : 1.0F);
         this.discard();
     }
 

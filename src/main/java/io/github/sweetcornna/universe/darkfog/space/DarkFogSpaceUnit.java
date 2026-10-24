@@ -12,6 +12,8 @@ import io.github.sweetcornna.universe.darkfog.entity.DarkFogDamage;
 import io.github.sweetcornna.universe.darkfog.hive.DarkFogHives;
 import io.github.sweetcornna.universe.entity.ship.ShipEntity;
 import io.github.sweetcornna.universe.registry.UniverseEntities;
+import io.github.sweetcornna.universe.registry.UniverseSounds;
+import io.github.sweetcornna.universe.registry.sound.HostileSounds;
 import io.github.sweetcornna.universe.survival.SurvivalDamage;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.DustParticleOptions;
@@ -21,7 +23,6 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.Mth;
@@ -429,8 +430,8 @@ public abstract class DarkFogSpaceUnit extends Mob implements DarkFogEnemy, Enem
             level.sendParticles(ParticleTypes.LARGE_SMOKE, c.x, c.y, c.z, 16, spread, spread, spread, 0.03);
             level.sendParticles(new DustParticleOptions(0xFF2A3A, 1.2F), c.x, c.y, c.z, 14, spread, spread, spread, 0);
             level.sendParticles(ParticleTypes.ELECTRIC_SPARK, c.x, c.y, c.z, 20, spread, spread, spread, 0.4);
-            level.playSound(null, c.x, c.y, c.z, SoundEvents.GENERIC_EXPLODE, SoundSource.HOSTILE,
-                    this.kind() == SpaceUnitKind.HUMPBACK ? 2.0F : 0.8F, this.kind() == SpaceUnitKind.HUMPBACK ? 0.7F : 1.4F);
+            level.playSound(null, c.x, c.y, c.z, (this.kind() == SpaceUnitKind.HUMPBACK ? UniverseSounds.EXPLOSION_LARGE : UniverseSounds.EXPLOSION_SMALL).get(),
+                    SoundSource.HOSTILE, this.kind() == SpaceUnitKind.HUMPBACK ? 1.0F : 0.7F, this.kind() == SpaceUnitKind.HUMPBACK ? 0.9F : 1.2F);
             DarkFogHives.onUnitKilled(level, this.system, this.kind(), this.mode == Mode.DEFEND, this.position(), this.darkFogLevel());
         }
     }
@@ -451,7 +452,7 @@ public abstract class DarkFogSpaceUnit extends Mob implements DarkFogEnemy, Enem
 
     @Override
     protected @Nullable SoundEvent getAmbientSound() {
-        return SoundEvents.BEACON_AMBIENT;
+        return this.kind() == SpaceUnitKind.HUMPBACK ? HostileSounds.CRAFT_HUM.get() : HostileSounds.UNIT_AMBIENT.get();
     }
 
     @Override
@@ -461,22 +462,22 @@ public abstract class DarkFogSpaceUnit extends Mob implements DarkFogEnemy, Enem
 
     @Override
     protected SoundEvent getHurtSound(DamageSource source) {
-        return SoundEvents.IRON_GOLEM_HURT;
+        return this.kind() == SpaceUnitKind.HUMPBACK ? HostileSounds.BUILDING_HURT.get() : HostileSounds.UNIT_HURT.get();
     }
 
     @Override
     protected SoundEvent getDeathSound() {
-        return SoundEvents.IRON_GOLEM_DEATH;
+        return HostileSounds.UNIT_DEATH.get();
     }
 
     @Override
     protected float getSoundVolume() {
-        return this.kind() == SpaceUnitKind.HUMPBACK ? 1.2F : 0.5F;
+        return this.kind() == SpaceUnitKind.HUMPBACK ? 1.0F : 0.6F;
     }
 
     @Override
     public float getVoicePitch() {
-        return (this.kind() == SpaceUnitKind.HUMPBACK ? 0.45F : 0.75F) + (this.random.nextFloat() - 0.5F) * 0.15F;
+        return (this.kind() == SpaceUnitKind.HUMPBACK ? 0.8F : 1.0F) + (this.random.nextFloat() - 0.5F) * 0.1F;
     }
 
     @Override

@@ -57,6 +57,10 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         for (BiomeKind kind : BiomeKind.values()) {
             both("biome.universe." + kind.serializedName(), kind.nameZh(), kind.nameEn());
         }
+        // 声音的字幕跟着注册写（ADR-0029）
+        for (io.github.sweetcornna.universe.registry.UniverseSounds.Spec spec : io.github.sweetcornna.universe.registry.UniverseSounds.specs()) {
+            both(spec.subtitle(), spec.zh(), spec.en());
+        }
 
         block(UniverseBlocks.PLANET_ROCK.get(), "星岩", "Planet Rock");
         block(UniverseBlocks.PLANET_COBBLESTONE.get(), "星岩碎石", "Planet Cobblestone");

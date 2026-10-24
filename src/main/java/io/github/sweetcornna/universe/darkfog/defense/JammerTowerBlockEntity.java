@@ -9,11 +9,11 @@ import io.github.sweetcornna.universe.factory.MachineMenu;
 import io.github.sweetcornna.universe.registry.UniverseBlockEntities;
 import io.github.sweetcornna.universe.registry.UniverseItems;
 import io.github.sweetcornna.universe.registry.UniverseMenus;
+import io.github.sweetcornna.universe.registry.sound.MachineSounds;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
@@ -118,7 +118,8 @@ public class JammerTowerBlockEntity extends MachineBlockEntity {
             level.sendParticles(ParticleTypes.ELECTRIC_SPARK, center.x + Math.cos(angle) * 1.2, center.y + 0.8, center.z + Math.sin(angle) * 1.2,
                     1, 0, 0, 0, 0.05);
         }
-        level.playSound(null, center.x, center.y, center.z, SoundEvents.BEACON_AMBIENT, SoundSource.BLOCKS, 0.4F, 1.6F);
+        level.playSound(null, center.x, center.y, center.z, MachineSounds.JAMMER_PULSE, SoundSource.BLOCKS, 0.8F,
+                0.95F + level.getRandom().nextFloat() * 0.1F);
     }
 
     /** 用掉一次胶囊：正在用的用完了就从格子里拿一个新的。 */

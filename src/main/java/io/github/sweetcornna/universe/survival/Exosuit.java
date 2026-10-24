@@ -5,8 +5,8 @@ import java.util.Map;
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.core.survival.Suit;
 import io.github.sweetcornna.universe.registry.UniverseItems;
+import io.github.sweetcornna.universe.registry.sound.GearSounds;
 import net.minecraft.resources.ResourceKey;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
@@ -23,7 +23,7 @@ public final class Exosuit {
     public static final ResourceKey<EquipmentAsset> ASSET = ResourceKey.create(EquipmentAssets.ROOT_ID, Universe.id("exosuit"));
     public static final ArmorMaterial MATERIAL = new ArmorMaterial(20,
             Map.of(ArmorType.BOOTS, 2, ArmorType.LEGGINGS, 5, ArmorType.CHESTPLATE, 6, ArmorType.HELMET, 2, ArmorType.BODY, 5),
-            12, SoundEvents.ARMOR_EQUIP_IRON, 1.0F, 0.0F, ItemTags.REPAIRS_IRON_ARMOR, ASSET);
+            12, GearSounds.EQUIP, 1.0F, 0.0F, ItemTags.REPAIRS_IRON_ARMOR, ASSET);
 
     private Exosuit() {
     }

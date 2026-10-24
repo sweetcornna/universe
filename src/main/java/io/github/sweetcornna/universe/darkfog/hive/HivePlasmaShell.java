@@ -9,11 +9,11 @@ import io.github.sweetcornna.universe.darkfog.entity.DarkFogDamage;
 import io.github.sweetcornna.universe.entity.PlasmaBolt;
 import io.github.sweetcornna.universe.entity.ship.ShipEntity;
 import io.github.sweetcornna.universe.registry.UniverseEntities;
+import io.github.sweetcornna.universe.registry.sound.HostileSounds;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityEvent;
@@ -160,7 +160,7 @@ public class HivePlasmaShell extends ThrowableProjectile {
             PlasmaBolt.clearHurtCooldown(entity);
             entity.hurtServer(level, DarkFogDamage.source(level, this, this.getOwner()), amount);
         }
-        level.playSound(null, at.x, at.y, at.z, SoundEvents.GENERIC_EXPLODE, SoundSource.HOSTILE, 1.4F, 1.3F);
+        level.playSound(null, at.x, at.y, at.z, HostileSounds.PLASMA_BURST.get(), SoundSource.HOSTILE, 1.0F, 0.85F);
         this.setPos(at);
         level.broadcastEntityEvent(this, EVENT_BURST);
         this.discard();

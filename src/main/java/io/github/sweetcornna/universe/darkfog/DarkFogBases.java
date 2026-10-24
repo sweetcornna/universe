@@ -37,6 +37,7 @@ import io.github.sweetcornna.universe.darkfog.shield.Shields;
 import io.github.sweetcornna.universe.factory.power.LevelPower;
 import io.github.sweetcornna.universe.network.DarkFogPayloads;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
+import io.github.sweetcornna.universe.registry.UniverseSounds;
 import io.github.sweetcornna.universe.rules.UniverseRules;
 import io.github.sweetcornna.universe.stats.ProductionData;
 import io.github.sweetcornna.universe.world.planet.Planets;
@@ -51,7 +52,6 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
@@ -824,7 +824,7 @@ public final class DarkFogBases {
         if (base.ground()) {
             BlockPos remnant = new BlockPos(base.x(), base.y(), base.z());
             level.setBlock(remnant, UniverseBlocks.DARK_FOG_CORE_REMNANT.get().defaultBlockState(), Block.UPDATE_ALL);
-            level.playSound(null, remnant, SoundEvents.GENERIC_EXPLODE.value(), SoundSource.HOSTILE, 3.0F, 0.6F);
+            level.playSound(null, remnant, UniverseSounds.EXPLOSION_LARGE.get(), SoundSource.HOSTILE, 1.0F, 0.8F);
         }
         notice(level, core(base), Component.translatable("message.universe.dark_fog.base_destroyed").withStyle(ChatFormatting.GOLD), NOTICE_RANGE);
     }

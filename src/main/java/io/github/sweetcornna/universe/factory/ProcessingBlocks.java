@@ -4,13 +4,11 @@ import io.github.sweetcornna.universe.registry.UniverseBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 
-/** 中期的加工设备（ADR-0015）：方块本身只多了工作时的粒子和声音，干活的是方块实体。 */
+/** 中期的加工设备（ADR-0015）：方块本身只多了工作时的粒子，干活的是方块实体；运转声由客户端的环境声放。 */
 public final class ProcessingBlocks {
     private ProcessingBlocks() {
     }
@@ -44,10 +42,6 @@ public final class ProcessingBlocks {
                 level.addParticle(ParticleTypes.END_ROD, pos.getX() + 0.3 + random.nextDouble() * 0.4, pos.getY() + 1.02,
                         pos.getZ() + 0.3 + random.nextDouble() * 0.4, 0, 0.02, 0);
             }
-            if (random.nextInt(40) == 0) {
-                level.playLocalSound(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, SoundEvents.BEACON_AMBIENT, SoundSource.BLOCKS,
-                        0.4F, 1.6F, false);
-            }
         }
     }
 
@@ -69,10 +63,6 @@ public final class ProcessingBlocks {
             if (random.nextInt(2) == 0) {
                 double[] at = window(pos, state.getValue(FACING), random, 0.25);
                 level.addParticle(ParticleTypes.BUBBLE_POP, at[0], at[1], at[2], 0, 0.03, 0);
-            }
-            if (random.nextInt(30) == 0) {
-                level.playLocalSound(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, SoundEvents.BREWING_STAND_BREW, SoundSource.BLOCKS,
-                        0.5F, 0.8F, false);
             }
         }
     }

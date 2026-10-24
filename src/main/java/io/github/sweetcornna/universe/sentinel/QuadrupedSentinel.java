@@ -4,13 +4,13 @@ import java.util.EnumSet;
 
 import io.github.sweetcornna.universe.core.sentinel.SentinelKind;
 import io.github.sweetcornna.universe.entity.PlasmaBolt;
+import io.github.sweetcornna.universe.registry.sound.HostileSounds;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
@@ -114,7 +114,7 @@ public class QuadrupedSentinel extends GroundSentinel {
             if (target.hurtServer(level, source, POUNCE_DAMAGE)) {
                 target.knockback(0.8, this.getX() - target.getX(), this.getZ() - target.getZ(), source, POUNCE_DAMAGE);
             }
-            this.playSound(SoundEvents.IRON_GOLEM_ATTACK, 1.0F, 1.4F);
+            this.playSound(HostileSounds.QUAD_STRIKE.get(), 1.0F, 1.0F);
         }
         if (this.pounceTicks > 4 && this.onGround() || this.pounceTicks > 40) {
             this.pounceTicks = -1;
@@ -131,7 +131,7 @@ public class QuadrupedSentinel extends GroundSentinel {
     private void startCharge() {
         this.entityData.set(DATA_CHARGE, CHARGE_TICKS);
         this.getNavigation().stop();
-        this.playSound(SoundEvents.GUARDIAN_ATTACK, 1.6F, 1.9F);
+        this.playSound(HostileSounds.QUAD_CHARGE.get(), 1.0F, 1.0F);
     }
 
     /** 蓄力的预警：发射口聚起越来越大的红光，最后半秒沿着锁定的方向画一条虚线。 */
@@ -178,8 +178,7 @@ public class QuadrupedSentinel extends GroundSentinel {
         }
         level.sendParticles(ParticleTypes.ELECTRIC_SPARK, to.x, to.y, to.z, 12, 0.2, 0.2, 0.2, 0.3);
         level.sendParticles(ParticleTypes.SMOKE, to.x, to.y, to.z, 6, 0.1, 0.1, 0.1, 0.02);
-        level.playSound(null, from.x, from.y, from.z, SoundEvents.GENERIC_EXPLODE.value(), SoundSource.HOSTILE, 0.5F, 1.9F);
-        level.playSound(null, from.x, from.y, from.z, SoundEvents.BEACON_DEACTIVATE, SoundSource.HOSTILE, 0.8F, 2.0F);
+        level.playSound(null, from.x, from.y, from.z, HostileSounds.QUAD_LASER.get(), SoundSource.HOSTILE, 1.0F, 1.0F);
     }
 
     private static boolean beamTarget(Entity entity) {
@@ -197,7 +196,7 @@ public class QuadrupedSentinel extends GroundSentinel {
         this.pounceTicks = 0;
         this.pounceHit = false;
         this.entityData.set(DATA_POUNCING, true);
-        this.playSound(SoundEvents.PISTON_EXTEND, 0.9F, 1.4F);
+        this.playSound(HostileSounds.QUAD_POUNCE.get(), 0.9F, 1.0F);
     }
 
     /**

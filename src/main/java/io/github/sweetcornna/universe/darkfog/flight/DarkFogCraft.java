@@ -7,6 +7,8 @@ import io.github.sweetcornna.universe.core.darkfog.FlightPlan;
 import io.github.sweetcornna.universe.darkfog.DarkFogEnemy;
 import io.github.sweetcornna.universe.darkfog.entity.DarkFogDamage;
 import io.github.sweetcornna.universe.registry.UniverseEntities;
+import io.github.sweetcornna.universe.registry.UniverseSounds;
+import io.github.sweetcornna.universe.registry.sound.HostileSounds;
 import io.github.sweetcornna.universe.survival.SurvivalDamage;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
@@ -15,7 +17,6 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.Mth;
@@ -44,6 +45,8 @@ public class DarkFogCraft extends Mob implements DarkFogEnemy, Enemy {
     public static final float SEED_HEALTH = 460;
     /** 多远以内都画（格）：在太空里要远远就看得见。 */
     private static final double RENDER_RANGE = 640;
+    /** 降落声提前多少刻放：声音里落地的那一下在 1.05 秒左右。 */
+    private static final int LANDING_LEAD = 21;
 
     /** 怎么走：直线（起飞、种子进入恒星系），或者从高空落到落点（中继站降落）。 */
     enum Path {
@@ -58,6 +61,8 @@ public class DarkFogCraft extends Mob implements DarkFogEnemy, Enemy {
     private double speed;
     private long start;
     private long stop;
+    /** 降落声放过了（不存档：重新放出来时已经过了那一段就不再放）。 */
+    private boolean landingSounded;
 
     public DarkFogCraft(EntityType<? extends DarkFogCraft> type, Level level) {
         super(type, level);
@@ -159,11 +164,22 @@ public class DarkFogCraft extends Mob implements DarkFogEnemy, Enemy {
         this.setDeltaMovement(Vec3.ZERO);
         if (this.level() instanceof ServerLevel level) {
             if (this.flightId >= 0 && this.isAlive()) {
-                this.moveAlong(now(level));
+                long now = now(level);
+                this.moveAlong(now);
+                this.soundLanding(level, now);
             }
         } else {
             this.trail();
         }
+    }
+
+    /** 中继站快落地时在落点放一次降落声，落地的那一下对上 {@code stop}。 */
+    private void soundLanding(ServerLevel level, long now) {
+        if (this.path != Path.DESCENT || this.landingSounded || now < this.stop - LANDING_LEAD || now > this.stop) {
+            return;
+        }
+        this.landingSounded = true;
+        level.playSound(null, this.origin.x, this.origin.y, this.origin.z, HostileSounds.RELAY_LAND.get(), SoundSource.HOSTILE, 1.0F, 1.0F);
     }
 
     /** 尾迹：中继站紫色，种子红色；降落的中继站底下喷着。 */
@@ -256,7 +272,7 @@ public class DarkFogCraft extends Mob implements DarkFogEnemy, Enemy {
             level.sendParticles(ParticleTypes.EXPLOSION_EMITTER, this.getX(), y, this.getZ(), 1, 0, 0, 0, 0);
             level.sendParticles(new DustParticleOptions(this.seed() ? 0xFF2A48 : 0xB040FF, 1.5F), this.getX(), y, this.getZ(), 40, 1, 1, 1, 0);
             level.sendParticles(ParticleTypes.ELECTRIC_SPARK, this.getX(), y, this.getZ(), 40, 1, 1, 1, 0.4);
-            level.playSound(null, this.getX(), y, this.getZ(), SoundEvents.GENERIC_EXPLODE, SoundSource.HOSTILE, 3.0F, 0.7F);
+            level.playSound(null, this.getX(), y, this.getZ(), UniverseSounds.EXPLOSION_LARGE.get(), SoundSource.HOSTILE, 1.0F, 1.0F);
             DarkFogFlights.onCraftDestroyed(level, this, source);
         }
     }
@@ -276,7 +292,7 @@ public class DarkFogCraft extends Mob implements DarkFogEnemy, Enemy {
 
     @Override
     protected @Nullable SoundEvent getAmbientSound() {
-        return SoundEvents.BEACON_AMBIENT;
+        return HostileSounds.CRAFT_HUM.get();
     }
 
     @Override
@@ -286,17 +302,17 @@ public class DarkFogCraft extends Mob implements DarkFogEnemy, Enemy {
 
     @Override
     protected SoundEvent getHurtSound(DamageSource source) {
-        return SoundEvents.IRON_GOLEM_DAMAGE;
+        return HostileSounds.BUILDING_HURT.get();
     }
 
     @Override
     protected SoundEvent getDeathSound() {
-        return SoundEvents.GENERIC_EXPLODE.value();
+        return HostileSounds.UNIT_DEATH.get();
     }
 
     @Override
     public float getVoicePitch() {
-        return 0.6F;
+        return 0.85F + this.random.nextFloat() * 0.1F;
     }
 
     @Override

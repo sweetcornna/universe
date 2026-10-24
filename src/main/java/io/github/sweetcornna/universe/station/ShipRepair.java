@@ -8,13 +8,13 @@ import java.util.UUID;
 
 import io.github.sweetcornna.universe.core.space.StationLayout.Site;
 import io.github.sweetcornna.universe.entity.ship.ShipEntity;
+import io.github.sweetcornna.universe.registry.sound.WorldSounds;
 import io.github.sweetcornna.universe.trade.Credits;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.phys.AABB;
 import net.neoforged.bus.api.IEventBus;
@@ -77,8 +77,7 @@ public final class ShipRepair {
         for (ShipEntity ship : ships) {
             ship.repair();
         }
-        level.playSound(null, pos, SoundEvents.ANVIL_USE, SoundSource.BLOCKS, 0.7F, 1.2F);
-        level.playSound(null, pos, SoundEvents.BEACON_POWER_SELECT, SoundSource.BLOCKS, 0.6F, 1.5F);
+        level.playSound(null, pos, WorldSounds.REPAIR.get(), SoundSource.BLOCKS, 1.0F, 1.0F);
         player.sendOverlayMessage(Component.translatable("message.universe.repair.done", (int) Math.ceil(missing),
                 Credits.format(cost)).withStyle(ChatFormatting.GREEN));
     }

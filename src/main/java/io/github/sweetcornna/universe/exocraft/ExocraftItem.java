@@ -5,6 +5,7 @@ import java.util.function.Supplier;
 
 import io.github.sweetcornna.universe.advancement.MilestoneTrigger;
 import io.github.sweetcornna.universe.registry.UniverseDataComponents;
+import io.github.sweetcornna.universe.registry.sound.ShipSounds;
 import io.github.sweetcornna.universe.world.space.SpaceDimensions;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -12,7 +13,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EntitySpawnReason;
@@ -72,7 +72,7 @@ public class ExocraftItem extends Item {
                 exocraft.setOwner(player.getUUID());
             }
             server.addFreshEntity(exocraft);
-            server.playSound(null, at.x, at.y, at.z, SoundEvents.ANVIL_PLACE, SoundSource.NEUTRAL, 0.5F, 1.3F);
+            server.playSound(null, at.x, at.y, at.z, ShipSounds.VEHICLE_SUMMON.get(), SoundSource.NEUTRAL, 0.9F, 1.0F);
             server.gameEvent(player, GameEvent.ENTITY_PLACE, at);
             stack.consume(1, player);
             if (player instanceof ServerPlayer serverPlayer) {

@@ -20,6 +20,7 @@ import io.github.sweetcornna.universe.core.tech.ModuleType;
 import io.github.sweetcornna.universe.entity.civ.AlienNpc;
 import io.github.sweetcornna.universe.network.DialoguePayloads;
 import io.github.sweetcornna.universe.registry.UniverseItems;
+import io.github.sweetcornna.universe.registry.sound.WorldSounds;
 import io.github.sweetcornna.universe.tech.TechModuleItem;
 import io.github.sweetcornna.universe.tech.ToolWeaponItem;
 import io.github.sweetcornna.universe.trade.Credits;
@@ -28,7 +29,6 @@ import net.minecraft.core.component.DataComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Prediction;
 import net.minecraft.world.entity.Entity;
@@ -136,7 +136,7 @@ public final class Dialogues {
         notes.add(standing(Standing.RIGHT_ANSWER));
         learned(player, race, Civ.teachWord(player, race, encounter.wordMask(), Seeds.derive(seed, "word")), notes);
         notes.add(give(player, Reward.forAnswer(race, Seeds.derive(seed, "reward")), Seeds.derive(seed, "item")));
-        player.level().playSound(null, npc.getX(), npc.getY(), npc.getZ(), SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.NEUTRAL, 0.6F, 1.2F);
+        player.level().playSound(null, npc.getX(), npc.getY(), npc.getZ(), WorldSounds.DIALOGUE, SoundSource.NEUTRAL, 0.8F, 1.0F);
         return notes;
     }
 

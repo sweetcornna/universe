@@ -12,6 +12,8 @@ import io.github.sweetcornna.universe.darkfog.DarkFogEnemy;
 import io.github.sweetcornna.universe.darkfog.Facilities;
 import io.github.sweetcornna.universe.darkfog.Taunts;
 import io.github.sweetcornna.universe.registry.UniverseEntities;
+import io.github.sweetcornna.universe.registry.UniverseSounds;
+import io.github.sweetcornna.universe.registry.sound.HostileSounds;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
@@ -20,7 +22,6 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
@@ -513,14 +514,14 @@ public abstract class DarkFogUnit extends PathfinderMob implements DarkFogEnemy 
             level.sendParticles(ParticleTypes.LARGE_SMOKE, this.getX(), this.getY(0.5), this.getZ(), 14, 0.3, 0.3, 0.3, 0.02);
             level.sendParticles(new DustParticleOptions(0xFF2A3A, 1.0F), this.getX(), this.getY(0.5), this.getZ(), 12, 0.4, 0.4, 0.4, 0);
             level.sendParticles(ParticleTypes.ELECTRIC_SPARK, this.getX(), this.getY(0.5), this.getZ(), 16, 0.3, 0.3, 0.3, 0.3);
-            level.playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.GENERIC_EXPLODE, SoundSource.HOSTILE, 0.6F, 1.5F);
+            level.playSound(null, this.getX(), this.getY(), this.getZ(), UniverseSounds.EXPLOSION_SMALL.get(), SoundSource.HOSTILE, 0.5F, 1.25F);
             DarkFogBases.onUnitKilled(level, this, source);
         }
     }
 
     @Override
     protected @Nullable SoundEvent getAmbientSound() {
-        return SoundEvents.BEACON_AMBIENT;
+        return HostileSounds.UNIT_AMBIENT.get();
     }
 
     @Override
@@ -530,22 +531,22 @@ public abstract class DarkFogUnit extends PathfinderMob implements DarkFogEnemy 
 
     @Override
     protected SoundEvent getHurtSound(DamageSource source) {
-        return SoundEvents.IRON_GOLEM_HURT;
+        return HostileSounds.UNIT_HURT.get();
     }
 
     @Override
     protected SoundEvent getDeathSound() {
-        return SoundEvents.IRON_GOLEM_DEATH;
+        return HostileSounds.UNIT_DEATH.get();
     }
 
     @Override
     protected float getSoundVolume() {
-        return 0.5F;
+        return 0.6F;
     }
 
     @Override
     public float getVoicePitch() {
-        return 0.6F + (this.random.nextFloat() - 0.5F) * 0.15F;
+        return 1.0F + (this.random.nextFloat() - 0.5F) * 0.1F;
     }
 
     @Override

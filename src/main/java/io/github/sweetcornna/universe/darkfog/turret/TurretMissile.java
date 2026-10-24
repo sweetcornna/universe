@@ -5,13 +5,13 @@ import org.jspecify.annotations.Nullable;
 import io.github.sweetcornna.universe.core.darkfog.AmmoKind;
 import io.github.sweetcornna.universe.darkfog.DarkFogEnemy;
 import io.github.sweetcornna.universe.registry.UniverseEntities;
+import io.github.sweetcornna.universe.registry.UniverseSounds;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -174,7 +174,7 @@ public class TurretMissile extends ThrowableProjectile {
             level.sendParticles(ParticleTypes.FLAME, center.x, center.y, center.z, 16, 0.5, 0.4, 0.5, 0.08);
         }
         level.sendParticles(ParticleTypes.LARGE_SMOKE, center.x, center.y, center.z, 8, 0.6, 0.4, 0.6, 0.02);
-        level.playSound(null, center.x, center.y, center.z, SoundEvents.GENERIC_EXPLODE, SoundSource.BLOCKS, 1.0F, 1.3F);
+        level.playSound(null, center.x, center.y, center.z, UniverseSounds.EXPLOSION_SMALL.get(), SoundSource.BLOCKS, 1.0F, 1.1F);
         this.discard();
     }
 }

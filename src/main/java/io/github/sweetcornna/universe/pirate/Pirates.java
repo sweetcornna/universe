@@ -19,6 +19,8 @@ import io.github.sweetcornna.universe.entity.ship.ShipCargo;
 import io.github.sweetcornna.universe.entity.ship.ShipEntity;
 import io.github.sweetcornna.universe.perf.ServerPerf;
 import io.github.sweetcornna.universe.registry.UniverseStats;
+import io.github.sweetcornna.universe.registry.sound.ShipSounds;
+import io.github.sweetcornna.universe.registry.sound.WorldSounds;
 import io.github.sweetcornna.universe.station.Stations;
 import io.github.sweetcornna.universe.trade.Credits;
 import io.github.sweetcornna.universe.world.planet.Planets;
@@ -29,7 +31,6 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.damagesource.DamageSource;
@@ -195,7 +196,7 @@ public final class Pirates {
         }
         player.sendSystemMessage(Component.translatable("message.universe.pirate.scanning").withStyle(ChatFormatting.GOLD));
         player.sendOverlayMessage(Component.translatable("message.universe.pirate.scanning").withStyle(ChatFormatting.GOLD));
-        level.playSound(null, ship.getX(), ship.getY(), ship.getZ(), SoundEvents.BEACON_POWER_SELECT, SoundSource.HOSTILE, 1.0F, 0.6F);
+        level.playSound(null, ship.getX(), ship.getY(), ship.getZ(), ShipSounds.PIRATE_SCAN.get(), SoundSource.HOSTILE, 1.0F, 1.0F);
         return count;
     }
 
@@ -243,7 +244,7 @@ public final class Pirates {
                 MilestoneTrigger.reach(player, MilestoneTrigger.PIRATES);
                 player.sendSystemMessage(Component.translatable("message.universe.pirate.repelled", raid.destroyed).withStyle(ChatFormatting.GREEN));
                 player.sendOverlayMessage(Component.translatable("message.universe.pirate.repelled", raid.destroyed).withStyle(ChatFormatting.GREEN));
-                level.playSound(null, target.getX(), target.getY(), target.getZ(), SoundEvents.PLAYER_LEVELUP, SoundSource.PLAYERS, 0.8F, 1.2F);
+                level.playSound(null, target.getX(), target.getY(), target.getZ(), WorldSounds.REWARD, SoundSource.PLAYERS, 1.0F, 1.0F);
             }
             raid.over = true;
             RAIDS.remove(raid.player, raid);
@@ -276,7 +277,8 @@ public final class Pirates {
         Component incoming = Component.translatable("message.universe.pirate.incoming", raid.count).withStyle(ChatFormatting.RED);
         player.sendSystemMessage(incoming);
         player.sendOverlayMessage(incoming);
-        level.playSound(null, center.x, center.y, center.z, SoundEvents.RAID_HORN, SoundSource.HOSTILE, 0.8F, 1.4F);
+        // 自己船上的警报：放在船上，真空里也顺着船体传进驾驶舱
+        level.playSound(null, center.x, center.y, center.z, ShipSounds.PIRATE_ALARM.get(), SoundSource.HOSTILE, 1.0F, 1.0F);
     }
 
     /** 袭击结束（不是打退的）：剩下的海盗撤走。 */
@@ -334,7 +336,7 @@ public final class Pirates {
         Credits.add(killer, bounty);
         killer.sendSystemMessage(Component.translatable(stowed ? "message.universe.pirate.destroyed_stowed" : "message.universe.pirate.destroyed",
                 Credits.format(bounty)).withStyle(ChatFormatting.GOLD));
-        level.playSound(null, killer.getX(), killer.getY(), killer.getZ(), SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 0.7F, 0.8F);
+        level.playSound(null, killer.getX(), killer.getY(), killer.getZ(), WorldSounds.CREDITS, SoundSource.PLAYERS, 0.8F, 1.0F);
     }
 
     /**

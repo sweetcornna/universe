@@ -1,8 +1,9 @@
 {
-  "parent": "minecraft:block/orientable_with_bottom",
+  "parent": "universe:block/machine_glow",
   "textures": {
     "bottom": "universe:block/water_pump_bottom",
     "front": "universe:block/water_pump_front_on",
+    "glow": "universe:block/water_pump_front_on_glow",
     "side": "universe:block/water_pump_side",
     "top": "universe:block/water_pump_top"
   }

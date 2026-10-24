@@ -12,13 +12,13 @@ import java.util.Set;
 import org.jspecify.annotations.Nullable;
 
 import io.github.sweetcornna.universe.core.darkfog.ShieldMath;
+import io.github.sweetcornna.universe.registry.sound.MachineSounds;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
@@ -176,10 +176,10 @@ public final class Shields {
     /** 挨打的地方：火花、声音，再告诉附近的客户端闪一下。 */
     private static void flash(ServerLevel level, ShieldData.Generator generator, Vec3 at, float stopped, boolean collapsed) {
         level.sendParticles(ParticleTypes.ELECTRIC_SPARK, at.x, at.y, at.z, 12, 0.8, 0.8, 0.8, 0.2);
-        level.playSound(null, at.x, at.y, at.z, SoundEvents.AMETHYST_BLOCK_RESONATE, SoundSource.BLOCKS, 2.5F, 0.6F + level.getRandom().nextFloat() * 0.2F);
+        level.playSound(null, at.x, at.y, at.z, MachineSounds.SHIELD_HIT, SoundSource.BLOCKS, 1.0F, 0.9F + level.getRandom().nextFloat() * 0.2F);
         if (collapsed) {
             Vec3 center = generator.center();
-            level.playSound(null, center.x, center.y, center.z, SoundEvents.BEACON_DEACTIVATE, SoundSource.BLOCKS, 3.0F, 0.7F);
+            level.playSound(null, center.x, center.y, center.z, MachineSounds.SHIELD_COLLAPSE, SoundSource.BLOCKS, 1.0F, 1.0F);
         }
         ShieldPayloads.Hit hit = new ShieldPayloads.Hit(generator.pos(), at.x, at.y, at.z, stopped, collapsed);
         for (ServerPlayer player : level.players()) {

@@ -7,10 +7,10 @@ import io.github.sweetcornna.universe.core.logistics.StationKind;
 import io.github.sweetcornna.universe.factory.MachineBlockEntity;
 import io.github.sweetcornna.universe.factory.TallMachineBlock;
 import io.github.sweetcornna.universe.registry.UniverseItems;
+import io.github.sweetcornna.universe.registry.sound.MachineSounds;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -65,7 +65,7 @@ public class StationBlock extends TallMachineBlock {
         }
         stack.consume(added, player);
         station.setChanged();
-        level.playSound(null, pos, SoundEvents.ARMOR_EQUIP_IRON.value(), SoundSource.BLOCKS, 0.8F, 1.2F);
+        level.playSound(null, pos, MachineSounds.STATION_LOAD.get(), SoundSource.BLOCKS, 0.9F, 0.95F + level.getRandom().nextFloat() * 0.1F);
         player.sendOverlayMessage(drone
                 ? Component.translatable("message.universe.station.drones", ledger.drones(), ledger.kind().maxDrones())
                 : vessel ? Component.translatable("message.universe.station.vessels", ledger.vessels(), ledger.kind().maxVessels())

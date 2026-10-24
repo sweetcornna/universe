@@ -24,6 +24,7 @@ import io.github.sweetcornna.universe.network.ShipPayloads;
 import io.github.sweetcornna.universe.encounter.SpaceEncounters;
 import io.github.sweetcornna.universe.pirate.Pirates;
 import io.github.sweetcornna.universe.registry.UniverseEntities;
+import io.github.sweetcornna.universe.registry.sound.ShipSounds;
 import io.github.sweetcornna.universe.station.Stations;
 import io.github.sweetcornna.universe.world.space.SpaceDimensions;
 import net.minecraft.core.BlockPos;
@@ -41,7 +42,6 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionHand;
@@ -123,6 +123,8 @@ public class ShipEntity extends Entity implements IEntityWithComplexSpawn {
     private double fuel;
     private final ShipFlight flight = new ShipFlight(0);
     private boolean landed;
+    /** 上次放起飞声的刻：贴着地面一跳一跳时不连着放。 */
+    private int lastTakeoff = -1000;
     private int parkingTicks;
     /** 撞上小行星后还有几刻开不了脉冲引擎。 */
     private int impulseLock;
@@ -474,9 +476,9 @@ public class ShipEntity extends Entity implements IEntityWithComplexSpawn {
         double impact = -along;
         if (impact > RAM_SPEED) {
             this.damageShip(level, (float) Math.min(RAM_MAX_DAMAGE, (impact - RAM_SPEED) * RAM_DAMAGE));
-            this.playSound(SoundEvents.ANVIL_LAND, 0.8F, 0.6F);
+            this.playSound(ShipSounds.HULL_HIT.get(), 0.9F, 0.8F);
         } else if (impact > 0.1) {
-            this.playSound(SoundEvents.STONE_HIT, 0.8F, 0.7F);
+            this.playSound(ShipSounds.BUMP.get(), 0.8F, 0.9F + this.random.nextFloat() * 0.2F);
         }
         return true;
     }
@@ -489,9 +491,9 @@ public class ShipEntity extends Entity implements IEntityWithComplexSpawn {
         ShipCombat.Hit hit = this.combat.damage(damage);
         level.broadcastEntityEvent(this, hit == ShipCombat.Hit.SHIELD ? EVENT_SHIELD_HIT : EVENT_HULL_HIT);
         if (hit == ShipCombat.Hit.SHIELD) {
-            this.playSound(SoundEvents.SHIELD_BLOCK.value(), 0.7F, 1.5F + this.random.nextFloat() * 0.2F);
+            this.playSound(ShipSounds.SHIELD_HIT.get(), 0.8F, 0.95F + this.random.nextFloat() * 0.1F);
         } else {
-            this.playSound(SoundEvents.ZOMBIE_ATTACK_IRON_DOOR, 0.6F, 1.3F + this.random.nextFloat() * 0.2F);
+            this.playSound(ShipSounds.HULL_HIT.get(), 0.8F, 0.95F + this.random.nextFloat() * 0.1F);
         }
         this.syncCombat();
         if (hit == ShipCombat.Hit.DESTROYED) {
@@ -635,6 +637,20 @@ public class ShipEntity extends Entity implements IEntityWithComplexSpawn {
     @Override
     protected boolean isLocalClientAuthoritative() {
         return false;
+    }
+
+    /**
+     * 船和玩家一样算"一直在更新"：脉冲引擎一刻飞几十格，比区块加载、发送都快。不这样的话，
+     * 服务端的船一进还没加载好的区块就被藏起来、从客户端删掉，等区块好了再加回来，每秒好几次；
+     * 客户端的船进了还没收到的区块也会停住，船上的人（乘客靠载具带着更新）跟着不动，按键都不起作用。
+     * <p>
+     * 必须是固定值：原版的实体区段只在加入、换区段、区块状态变化时看这个值，中途变了（比如按有没有人坐来算）
+     * 会对不上账，换维度时新船先加进世界、玩家后坐上去，船就一直藏着发不到客户端。服务端照旧只在实体更新范围
+     * （跟着玩家的票据）里更新它，停在远处的船不多花时间。
+     */
+    @Override
+    public boolean isAlwaysTicking() {
+        return true;
     }
 
     @Override
@@ -942,8 +958,13 @@ public class ShipEntity extends Entity implements IEntityWithComplexSpawn {
         }
         boolean wasLanded = this.landed;
         this.landed = !env.space() && collider.onGround(ShipCollider.boxes(this.structure, this.getX(), this.getY(), this.getZ(), relative));
-        if (this.landed && !wasLanded && wanted.y < -0.6) {
-            this.playSound(net.minecraft.sounds.SoundEvents.ANVIL_LAND, 0.6F, 0.7F);
+        if (this.landed && !wasLanded && wanted.y < -0.3) {
+            // 落得越重越响、越沉
+            float hard = (float) Mth.clamp(-wanted.y / 1.5, 0, 1);
+            this.playSound(ShipSounds.LAND.get(), 0.5F + 0.5F * hard, 1.05F - 0.2F * hard);
+        } else if (wasLanded && !this.landed && moved.y > 0.05 && this.tickCount - this.lastTakeoff > 100) {
+            this.lastTakeoff = this.tickCount;
+            this.playSound(ShipSounds.TAKEOFF.get(), 1.0F, 0.95F + this.random.nextFloat() * 0.1F);
         }
 
         // 停船：着陆后驾驶员按住 Shift

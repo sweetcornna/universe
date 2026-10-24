@@ -5,9 +5,9 @@ import java.util.OptionalInt;
 import io.github.sweetcornna.universe.core.portal.Glyphs;
 import io.github.sweetcornna.universe.core.procgen.Rng;
 import io.github.sweetcornna.universe.registry.UniverseAttachments;
+import io.github.sweetcornna.universe.registry.sound.WorldSounds;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 
 /** 玩家学会的先驱者符文（ADR-0024）：巨石、第一次走到的传送门、探索远征各教一个没学过的。 */
@@ -29,7 +29,7 @@ public final class PortalGlyphs {
         int now = known | 1 << glyph;
         player.setData(UniverseAttachments.GLYPHS, now);
         player.sendSystemMessage(Component.translatable("message.universe.glyph.learned", Glyphs.count(now), Glyphs.count(Glyphs.ALL)));
-        player.level().playSound(null, player.blockPosition(), SoundEvents.AMETHYST_BLOCK_RESONATE, SoundSource.PLAYERS, 1.0F, 1.2F);
+        player.level().playSound(null, player.blockPosition(), WorldSounds.PORTAL_GLYPH.get(), SoundSource.PLAYERS, 1.0F, 1.0F);
         return OptionalInt.of(glyph);
     }
 }

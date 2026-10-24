@@ -11,6 +11,7 @@ import io.github.sweetcornna.universe.core.space.StationLayout;
 import io.github.sweetcornna.universe.core.space.StationLayout.Site;
 import io.github.sweetcornna.universe.dyson.Dyson;
 import io.github.sweetcornna.universe.pirate.Pirates;
+import io.github.sweetcornna.universe.registry.UniverseSounds;
 import io.github.sweetcornna.universe.station.Stations;
 import io.github.sweetcornna.universe.world.planet.Planets;
 import io.github.sweetcornna.universe.world.space.SpaceDimensions;
@@ -20,7 +21,6 @@ import net.minecraft.core.RegistryAccess;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.Entity;
@@ -47,7 +47,7 @@ public final class ShipWreck {
         level.sendParticles(ParticleTypes.EXPLOSION, center.x, center.y, center.z, 10, r * 0.6, h, r * 0.6, 0);
         level.sendParticles(ParticleTypes.LARGE_SMOKE, center.x, center.y, center.z, 30, r * 0.6, h, r * 0.6, 0.05);
         level.sendParticles(ParticleTypes.LAVA, center.x, center.y, center.z, 16, r * 0.5, h, r * 0.5, 0);
-        level.playSound(null, center.x, center.y, center.z, SoundEvents.GENERIC_EXPLODE, SoundSource.NEUTRAL, 4.0F, 0.7F);
+        level.playSound(null, center.x, center.y, center.z, UniverseSounds.EXPLOSION_LARGE.get(), SoundSource.NEUTRAL, 1.0F, 0.9F);
 
         int lost = loseCargo(ship, level);
         Pirates.onShipWrecked(ship);

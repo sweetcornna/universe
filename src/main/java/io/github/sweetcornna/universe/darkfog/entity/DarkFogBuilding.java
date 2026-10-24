@@ -7,12 +7,15 @@ import org.jspecify.annotations.Nullable;
 import io.github.sweetcornna.universe.core.darkfog.BuildingKind;
 import io.github.sweetcornna.universe.core.darkfog.DarkFogLevels;
 import io.github.sweetcornna.universe.core.darkfog.Tactics;
+import io.github.sweetcornna.universe.darkfog.Collapses;
 import io.github.sweetcornna.universe.darkfog.DarkFogBases;
 import io.github.sweetcornna.universe.darkfog.DarkFogEnemy;
 import io.github.sweetcornna.universe.darkfog.Facilities;
 import io.github.sweetcornna.universe.darkfog.Taunts;
 import io.github.sweetcornna.universe.entity.PlasmaBolt;
 import io.github.sweetcornna.universe.registry.UniverseEntities;
+import io.github.sweetcornna.universe.registry.UniverseSounds;
+import io.github.sweetcornna.universe.registry.sound.HostileSounds;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
@@ -22,7 +25,6 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.world.damagesource.DamageSource;
@@ -76,6 +78,9 @@ public class DarkFogBuilding extends Mob implements DarkFogEnemy {
     private int retarget;
     private @Nullable LivingEntity aimEntity;
     private @Nullable BlockPos aimBlock;
+    /** 倒塌的声音放不放，在哪一刻定的（{@link #loudCollapse}）。 */
+    private long collapseTick = -1;
+    private boolean collapseLoud;
 
     public DarkFogBuilding(EntityType<? extends DarkFogBuilding> type, Level level) {
         super(type, level);
@@ -328,7 +333,7 @@ public class DarkFogBuilding extends Mob implements DarkFogEnemy {
             }
         }
         if (this.tickCount % 20 < LASER_INTERVAL) {
-            level.playSound(null, this.getX(), this.getY() + 3.5, this.getZ(), SoundEvents.BEACON_AMBIENT, SoundSource.HOSTILE, 0.8F, 1.8F);
+            level.playSound(null, this.getX(), this.getY() + 3.5, this.getZ(), HostileSounds.TOWER_LASER.get(), SoundSource.HOSTILE, 1.0F, 0.96F + this.random.nextFloat() * 0.08F);
         }
     }
 
@@ -347,7 +352,7 @@ public class DarkFogBuilding extends Mob implements DarkFogEnemy {
         } else {
             return;
         }
-        level.playSound(null, muzzle.x, muzzle.y, muzzle.z, SoundEvents.FIREWORK_ROCKET_LAUNCH, SoundSource.HOSTILE, 1.0F, 0.6F);
+        level.playSound(null, muzzle.x, muzzle.y, muzzle.z, HostileSounds.SENTRY_FIRE.get(), SoundSource.HOSTILE, 1.0F, 0.96F + this.random.nextFloat() * 0.08F);
         level.sendParticles(ParticleTypes.FLAME, muzzle.x, muzzle.y, muzzle.z, 6, 0.15, 0.1, 0.15, 0.02);
     }
 
@@ -375,7 +380,9 @@ public class DarkFogBuilding extends Mob implements DarkFogEnemy {
             level.sendParticles(new DustParticleOptions(0xFF2A3A, 1.5F), this.getX(), y, this.getZ(), 30, size * 0.4, this.getBbHeight() * 0.4,
                     size * 0.4, 0);
             level.sendParticles(ParticleTypes.ELECTRIC_SPARK, this.getX(), y, this.getZ(), 40, size * 0.4, this.getBbHeight() * 0.4, size * 0.4, 0.4);
-            level.playSound(null, this.getX(), y, this.getZ(), SoundEvents.GENERIC_EXPLODE, SoundSource.HOSTILE, 2.0F, 0.8F);
+            if (this.loudCollapse()) {
+                level.playSound(null, this.getX(), y, this.getZ(), UniverseSounds.EXPLOSION_SMALL.get(), SoundSource.HOSTILE, 1.0F, 0.85F);
+            }
             DarkFogBases.onBuildingDestroyed(level, this, source);
         }
     }
@@ -391,7 +398,7 @@ public class DarkFogBuilding extends Mob implements DarkFogEnemy {
 
     @Override
     protected @Nullable SoundEvent getAmbientSound() {
-        return this.powered() ? SoundEvents.BEACON_AMBIENT : null;
+        return this.powered() ? HostileSounds.BUILDING_HUM.get() : null;
     }
 
     @Override
@@ -401,17 +408,27 @@ public class DarkFogBuilding extends Mob implements DarkFogEnemy {
 
     @Override
     protected SoundEvent getHurtSound(DamageSource source) {
-        return SoundEvents.IRON_GOLEM_DAMAGE;
+        return HostileSounds.BUILDING_HURT.get();
     }
 
     @Override
-    protected SoundEvent getDeathSound() {
-        return SoundEvents.GENERIC_EXPLODE.value();
+    protected @Nullable SoundEvent getDeathSound() {
+        return this.loudCollapse() ? HostileSounds.COLLAPSE.get() : null;
+    }
+
+    /** 这次倒塌放不放声音（一次清掉整座基地时只放头几声，{@link Collapses}）；同一刻里问几次答案一样。 */
+    private boolean loudCollapse() {
+        long now = this.level().getGameTime();
+        if (this.collapseTick != now) {
+            this.collapseTick = now;
+            this.collapseLoud = Collapses.allow(this);
+        }
+        return this.collapseLoud;
     }
 
     @Override
     public float getVoicePitch() {
-        return 0.5F;
+        return 0.95F + this.random.nextFloat() * 0.1F;
     }
 
     @Override

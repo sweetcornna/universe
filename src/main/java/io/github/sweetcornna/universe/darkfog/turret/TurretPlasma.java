@@ -6,6 +6,8 @@ import io.github.sweetcornna.universe.core.darkfog.AmmoKind;
 import io.github.sweetcornna.universe.core.darkfog.TurretKind;
 import io.github.sweetcornna.universe.darkfog.DarkFogEnemy;
 import io.github.sweetcornna.universe.registry.UniverseEntities;
+import io.github.sweetcornna.universe.registry.UniverseSounds;
+import io.github.sweetcornna.universe.registry.sound.HostileSounds;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
@@ -13,7 +15,6 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
@@ -203,8 +204,8 @@ public class TurretPlasma extends ThrowableProjectile {
             level.sendParticles(ParticleTypes.EXPLOSION, center.x, center.y, center.z, 1, 0, 0, 0, 0);
             level.sendParticles(ParticleTypes.REVERSE_PORTAL, center.x, center.y, center.z, 40, this.radius * 0.4, this.radius * 0.4, this.radius * 0.4, 0.4);
         }
-        level.playSound(null, center.x, center.y, center.z, variant == ANTIMATTER ? SoundEvents.GENERIC_EXPLODE.value() : SoundEvents.FIRECHARGE_USE,
-                SoundSource.BLOCKS, variant == ANTIMATTER ? 1.2F : 0.7F, variant == SHORT_RANGE ? 1.6F : 1.2F);
+        level.playSound(null, center.x, center.y, center.z, (variant == ANTIMATTER ? UniverseSounds.EXPLOSION_SMALL : HostileSounds.PLASMA_BURST).get(),
+                SoundSource.BLOCKS, variant == ANTIMATTER ? 1.0F : 0.8F, variant == SHORT_RANGE ? 1.15F : 1.0F);
         this.discard();
     }
 }

@@ -1,10 +1,10 @@
 package io.github.sweetcornna.universe.encounter;
 
 import io.github.sweetcornna.universe.core.space.Encounters;
+import io.github.sweetcornna.universe.registry.sound.WorldSounds;
 import io.github.sweetcornna.universe.trade.Credits;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -30,7 +30,7 @@ public class CreditChipItem extends Item {
         stack.consume(stack.getCount(), player);
         player.sendOverlayMessage(Component.translatable("message.universe.encounter.chips_cashed", Credits.format(amount))
                 .withStyle(ChatFormatting.GOLD));
-        level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.EXPERIENCE_ORB_PICKUP, SoundSource.PLAYERS, 0.7F, 1.3F);
+        level.playSound(null, player.getX(), player.getY(), player.getZ(), WorldSounds.CREDITS, SoundSource.PLAYERS, 0.8F, 1.0F);
         return InteractionResult.SUCCESS;
     }
 }

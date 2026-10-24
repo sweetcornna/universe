@@ -4,8 +4,6 @@ import io.github.sweetcornna.universe.factory.TallMachineBlock;
 import io.github.sweetcornna.universe.registry.UniverseBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.Level;
@@ -48,10 +46,6 @@ public class ArtificialStarBlock extends TallMachineBlock {
             double dz = Math.sin(yaw) * Math.cos(pitch);
             level.addParticle(ParticleTypes.END_ROD, pos.getX() + 0.5 + dx * 0.3, pos.getY() + 0.45 + dy * 0.3, pos.getZ() + 0.5 + dz * 0.3,
                     dx * 0.03, dy * 0.03, dz * 0.03);
-        }
-        if (random.nextInt(50) == 0) {
-            level.playLocalSound(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, SoundEvents.BEACON_AMBIENT, SoundSource.BLOCKS,
-                    0.7F, 0.5F, false);
         }
     }
 }

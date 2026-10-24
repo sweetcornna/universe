@@ -16,6 +16,7 @@ import org.jspecify.annotations.Nullable;
 import io.github.sweetcornna.universe.sentinel.Sentinels;
 import io.github.sweetcornna.universe.core.sentinel.Offense;
 import io.github.sweetcornna.universe.registry.UniverseDataComponents;
+import io.github.sweetcornna.universe.registry.sound.GearSounds;
 import io.github.sweetcornna.universe.network.ToolModePayload;
 import io.github.sweetcornna.universe.entity.PlasmaBolt;
 import io.github.sweetcornna.universe.core.survival.ToolMode;
@@ -45,7 +46,6 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.TagKey;
 import net.minecraft.util.Mth;
@@ -164,7 +164,8 @@ public final class Multitool {
             }
         }
         if (state.heat.overheated() && !state.wasOverheated) {
-            player.level().playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.FIRE_EXTINGUISH, SoundSource.PLAYERS, 0.7F, 1.6F);
+            player.level().playSound(null, player.getX(), player.getY(), player.getZ(), GearSounds.OVERHEAT, SoundSource.PLAYERS, 0.8F,
+                    0.95F + player.getRandom().nextFloat() * 0.1F);
             player.sendOverlayMessage(Component.translatable("message.universe.multitool.overheated"));
         }
         state.wasOverheated = state.heat.overheated();
@@ -219,8 +220,8 @@ public final class Multitool {
         State state = state(player);
         clearTarget(player, state);
         state.charge = 0;
-        player.level().playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.CROSSBOW_LOADING_END, SoundSource.PLAYERS, 0.7F,
-                mode.combat() ? 1.5F - mode.ordinal() * 0.08F : 1.0F);
+        player.level().playSound(null, player.getX(), player.getY(), player.getZ(), GearSounds.MODE, SoundSource.PLAYERS, 0.7F,
+                mode.combat() ? 1.1F - mode.ordinal() * 0.03F : 0.95F);
         player.sendOverlayMessage(Component.translatable("message.universe.multitool.mode." + mode.name().toLowerCase(Locale.ROOT)));
     }
 
@@ -265,8 +266,8 @@ public final class Multitool {
     private static void blaster(ServerLevel level, ServerPlayer player, Muzzle muzzle, double damage) {
         level.addFreshEntity(PlasmaBolt.shoot(level, player, muzzle.from(), muzzle.direction(), PlasmaWeapon.damage(damage),
                 PlasmaBolt.PLAYER_COLOR));
-        level.playSound(null, player.getX(), player.getEyeY(), player.getZ(), SoundEvents.BLAZE_SHOOT, SoundSource.PLAYERS, 0.3F,
-                1.8F + player.getRandom().nextFloat() * 0.2F);
+        level.playSound(null, player.getX(), player.getEyeY(), player.getZ(), GearSounds.BLASTER, SoundSource.PLAYERS, 0.8F,
+                0.95F + player.getRandom().nextFloat() * 0.1F);
         // 火花放在枪口前一格多：贴着镜头的粒子会大得遮住视野
         Vec3 flash = muzzle.from().add(muzzle.direction().normalize().scale(1.2));
         level.sendParticles(ParticleTypes.ELECTRIC_SPARK, flash.x, flash.y, flash.z, 1, 0.02, 0.02, 0.02, 0.02);
@@ -287,12 +288,10 @@ public final class Multitool {
             }
             if (heating) {
                 state.charge++;
+                // 蓄力的嗡声是客户端按蓄力进度放的循环（client.GearAudio），这里只报蓄满
                 if (state.charge == full) {
-                    player.level().playSound(null, player.getX(), player.getEyeY(), player.getZ(), SoundEvents.AMETHYST_BLOCK_CHIME,
-                            SoundSource.PLAYERS, 1.0F, 1.6F);
-                } else if (state.charge % 6 == 1) {
-                    player.level().playSound(null, player.getX(), player.getEyeY(), player.getZ(), SoundEvents.BEACON_AMBIENT,
-                            SoundSource.PLAYERS, 0.4F, 1.0F + state.charge / (float) full);
+                    player.level().playSound(null, player.getX(), player.getEyeY(), player.getZ(), GearSounds.JAVELIN_READY,
+                            SoundSource.PLAYERS, 0.8F, 1.0F);
                 }
             }
             return;
@@ -325,10 +324,8 @@ public final class Multitool {
         Vec3 right = look.cross(new Vec3(0, 1, 0)).normalize();
         Vec3 from = player.getEyePosition().add(look.scale(0.4)).add(right.scale(0.3)).add(0, -0.25, 0);
         Vec3 to = hit.getLocation();
+        // 激光的声音是客户端按正在用、采矿模式放的循环（client.GearAudio）
         beam(level, from, to);
-        if (player.tickCount % 10 == 0) {
-            level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.BEACON_AMBIENT, SoundSource.PLAYERS, 0.5F, 2.0F);
-        }
         if (!(hit instanceof BlockHitResult blockHit) || hit.getType() != HitResult.Type.BLOCK) {
             clearTarget(player, state);
             return;
@@ -407,7 +404,7 @@ public final class Multitool {
         List<ScanResultPayload.PoiMarker> pois = scanPois(player, poiRadius);
         List<ScanResultPayload.LandmarkMarker> landmarks = scanLandmarks(player, poiRadius);
         PacketDistributor.sendToPlayer(player, new ScanResultPayload(markers, pois, landmarks));
-        level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.BEACON_ACTIVATE, SoundSource.PLAYERS, 0.8F, 1.8F);
+        level.playSound(null, player.getX(), player.getY(), player.getZ(), GearSounds.SCAN, SoundSource.PLAYERS, 0.9F, 1.0F);
         for (int i = 0; i < 48; i++) {
             double angle = i * Math.PI * 2 / 48;
             level.sendParticles(ParticleTypes.END_ROD, player.getX() + Math.cos(angle) * 1.5, player.getY() + 0.2,

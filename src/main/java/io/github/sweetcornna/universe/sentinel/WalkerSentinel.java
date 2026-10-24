@@ -4,6 +4,7 @@ import java.util.EnumSet;
 
 import io.github.sweetcornna.universe.core.sentinel.SentinelKind;
 import io.github.sweetcornna.universe.entity.PlasmaBolt;
+import io.github.sweetcornna.universe.registry.sound.HostileSounds;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.DustParticleOptions;
@@ -12,7 +13,6 @@ import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.EntityType;
@@ -109,7 +109,7 @@ public class WalkerSentinel extends GroundSentinel {
         aim = aim.add(target.getDeltaMovement().multiply(1, 0, 1).scale(from.distanceTo(aim) / speed * 0.8));
         PlasmaBolt bolt = PlasmaBolt.shoot(this.level(), this, from, aim.subtract(from), BOLT_DAMAGE, HEAVY_BOLT_COLOR, speed, 4.0F, 40);
         this.level().addFreshEntity(bolt);
-        this.playSound(SoundEvents.BLAZE_SHOOT, 0.9F, 0.6F + this.random.nextFloat() * 0.1F);
+        this.playSound(HostileSounds.SENTINEL_HEAVY_SHOT.get(), 1.0F, 0.82F + this.random.nextFloat() * 0.08F);
     }
 
     /** 谁站在踩地的范围里：守卫机、创造和旁观模式的人除外。 */
@@ -127,7 +127,7 @@ public class WalkerSentinel extends GroundSentinel {
         this.entityData.set(DATA_STOMP, STOMP_WINDUP);
         this.getNavigation().stop();
         this.burstLeft = 0;
-        this.playSound(SoundEvents.RAVAGER_ROAR, 1.3F, 0.6F);
+        this.playSound(HostileSounds.WALKER_ROAR.get(), 1.0F, 1.0F);
     }
 
     /** 抬腿时地上一圈红光，标出震到的范围。 */
@@ -168,8 +168,7 @@ public class WalkerSentinel extends GroundSentinel {
         }
         level.sendParticles(ParticleTypes.EXPLOSION, this.getX(), this.getY() + 0.3, this.getZ(), 2, 1.0, 0.1, 1.0, 0);
         level.sendParticles(ParticleTypes.POOF, this.getX(), this.getY() + 0.2, this.getZ(), 30, STOMP_RADIUS * 0.4, 0.1, STOMP_RADIUS * 0.4, 0.05);
-        level.playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.MACE_SMASH_GROUND_HEAVY, SoundSource.HOSTILE, 1.6F, 0.6F);
-        level.playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.GENERIC_EXPLODE.value(), SoundSource.HOSTILE, 0.9F, 0.5F);
+        level.playSound(null, this.getX(), this.getY(), this.getZ(), HostileSounds.WALKER_STOMP.get(), SoundSource.HOSTILE, 1.0F, 1.0F);
     }
 
     /**

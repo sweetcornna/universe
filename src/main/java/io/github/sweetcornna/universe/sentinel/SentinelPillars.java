@@ -17,6 +17,8 @@ import io.github.sweetcornna.universe.poi.Pois;
 import io.github.sweetcornna.universe.poi.Waypoint;
 import io.github.sweetcornna.universe.registry.UniverseAttachments;
 import io.github.sweetcornna.universe.registry.UniverseItems;
+import io.github.sweetcornna.universe.registry.sound.HostileSounds;
+import io.github.sweetcornna.universe.registry.sound.WorldSounds;
 import io.github.sweetcornna.universe.survival.MultitoolItem;
 import io.github.sweetcornna.universe.world.planet.PlanetCommand;
 import io.github.sweetcornna.universe.world.planet.Planets;
@@ -28,7 +30,6 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Prediction;
 import net.minecraft.world.entity.player.Inventory;
@@ -207,7 +208,7 @@ public final class SentinelPillars {
         PoiProgress progress = player.getData(UniverseAttachments.POI_PROGRESS);
         if (progress.claim(Seeds.derive(planet.get().seed(), "pillar_seen"))) {
             player.sendOverlayMessage(Component.translatable("message.universe.pillar.found"));
-            level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.BEACON_AMBIENT, SoundSource.HOSTILE, 1.0F, 0.6F);
+            level.playSound(null, player.getX(), player.getY(), player.getZ(), WorldSounds.PILLAR_FOUND, SoundSource.HOSTILE, 1.0F, 1.0F);
         }
     }
 
@@ -305,19 +306,19 @@ public final class SentinelPillars {
         switch (result) {
             case WANTED -> {
                 player.sendOverlayMessage(Component.translatable("message.universe.pillar.wanted"));
-                level.playSound(null, pos, SoundEvents.BEACON_DEACTIVATE, SoundSource.BLOCKS, 0.8F, 1.6F);
+                level.playSound(null, pos, HostileSounds.SENTINEL_ALERT.get(), SoundSource.BLOCKS, 0.8F, 1.0F);
             }
             case TAKEN -> {
                 player.sendOverlayMessage(Component.translatable("message.universe.pillar.tool_taken"));
-                level.playSound(null, pos, SoundEvents.DISPENSER_FAIL, SoundSource.BLOCKS, 0.8F, 1.2F);
+                level.playSound(null, pos, WorldSounds.TERMINAL_DENY.get(), SoundSource.BLOCKS, 0.8F, 0.9F);
             }
             case NO_BRAIN -> {
                 player.sendOverlayMessage(Component.translatable("message.universe.pillar.tool_needs_brain"));
-                level.playSound(null, pos, SoundEvents.DISPENSER_FAIL, SoundSource.BLOCKS, 0.8F, 1.2F);
+                level.playSound(null, pos, WorldSounds.TERMINAL_DENY.get(), SoundSource.BLOCKS, 0.8F, 0.9F);
             }
             case GIVEN -> {
                 player.sendOverlayMessage(Component.translatable("message.universe.pillar.tool", toolGrade(Sentinels.level(level)).letter()));
-                level.playSound(null, pos, SoundEvents.BEACON_POWER_SELECT, SoundSource.BLOCKS, 1.0F, 0.6F);
+                level.playSound(null, pos, WorldSounds.PILLAR_GIVE.get(), SoundSource.BLOCKS, 1.0F, 1.0F);
                 level.sendParticles(ParticleTypes.ELECTRIC_SPARK, center.x, center.y, center.z, 16, 0.3, 0.3, 0.3, 0.1);
             }
         }
@@ -331,16 +332,16 @@ public final class SentinelPillars {
         switch (result) {
             case WANTED -> {
                 player.sendOverlayMessage(Component.translatable("message.universe.pillar.wanted"));
-                level.playSound(null, pos, SoundEvents.BEACON_DEACTIVATE, SoundSource.BLOCKS, 0.8F, 1.6F);
+                level.playSound(null, pos, HostileSounds.SENTINEL_ALERT.get(), SoundSource.BLOCKS, 0.8F, 1.0F);
             }
             case USED_TODAY -> {
                 long ticksLeft = DAY_TICKS - level.getServer().overworld().getGameTime() % DAY_TICKS;
                 player.sendOverlayMessage(Component.translatable("message.universe.pillar.used", (ticksLeft + 1199) / 1200));
-                level.playSound(null, pos, SoundEvents.DISPENSER_FAIL, SoundSource.BLOCKS, 0.8F, 1.2F);
+                level.playSound(null, pos, WorldSounds.TERMINAL_DENY.get(), SoundSource.BLOCKS, 0.8F, 0.9F);
             }
             case SHUT_DOWN -> {
                 player.sendOverlayMessage(Component.translatable("message.universe.pillar.shutdown", SHUTDOWN_MINUTES));
-                level.playSound(null, pos, SoundEvents.BEACON_DEACTIVATE, SoundSource.BLOCKS, 1.5F, 0.5F);
+                level.playSound(null, pos, HostileSounds.SENTINEL_STAND_DOWN.get(), SoundSource.BLOCKS, 1.0F, 0.85F);
                 level.sendParticles(ParticleTypes.ELECTRIC_SPARK, center.x, center.y, center.z, 24, 0.4, 0.4, 0.4, 0.2);
             }
         }

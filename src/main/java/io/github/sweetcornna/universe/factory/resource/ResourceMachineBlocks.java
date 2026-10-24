@@ -10,15 +10,13 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.BlockParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.sounds.SoundEvents;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 
-/** 采集和精炼设备的方块：只多了工作时的粒子和声音。 */
+/** 采集和精炼设备的方块：只多了工作时的粒子；运转声由客户端的环境声放。 */
 public final class ResourceMachineBlocks {
     private ResourceMachineBlocks() {
     }
@@ -46,10 +44,6 @@ public final class ResourceMachineBlocks {
                         pos.getX() + 0.5 + side.getStepX() * 0.55 + side.getStepZ() * along, pos.getY() + 0.05,
                         pos.getZ() + 0.5 + side.getStepZ() * 0.55 + side.getStepX() * along, 0, 0.1, 0);
             }
-            if (random.nextInt(25) == 0) {
-                level.playLocalSound(pos.getX() + 0.5, pos.getY(), pos.getZ() + 0.5, below.getSoundType().getHitSound(), SoundSource.BLOCKS,
-                        0.5F, 0.6F, false);
-            }
         }
     }
 
@@ -75,7 +69,7 @@ public final class ResourceMachineBlocks {
         }
     }
 
-    /** 原油萃取站：工作时抽油机咔哒作响，排气口冒烟。 */
+    /** 原油萃取站：工作时排气口冒烟。 */
     public static class OilExtractor extends TallMachineBlock {
         public OilExtractor(Properties properties) {
             super(properties, UniverseBlockEntities.OIL_EXTRACTOR);
@@ -89,10 +83,6 @@ public final class ResourceMachineBlocks {
             if (random.nextInt(4) == 0) {
                 level.addParticle(ParticleTypes.SMOKE, pos.getX() + 0.5 + (random.nextDouble() - 0.5) * 0.6, pos.getY() + 0.8,
                         pos.getZ() + 0.5 + (random.nextDouble() - 0.5) * 0.6, 0, 0.03, 0);
-            }
-            if (random.nextInt(20) == 0) {
-                level.playLocalSound(pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, SoundEvents.PISTON_EXTEND, SoundSource.BLOCKS,
-                        0.15F, 0.5F, false);
             }
         }
     }

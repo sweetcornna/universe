@@ -387,6 +387,13 @@ io.github.sweetcornna.universe
 | `Attributes.MAX_HEALTH` 的上限是 1024，设大了被截断。血量更多的实体（巢穴核心 6000 起）按"真实血量 / 实体血量"的倍率记，挨打时伤害除以倍率再交给原版，报出去的伤害再乘回来 | 已确认，黑雾建筑、巢穴建筑 |
 | 深度是反过来的：`DepthStencilState.DEFAULT` 是 `GREATER_THAN_OR_EQUAL` 加写深度。`RenderTypes.debugQuads()`（位置加颜色、半透明混合、不写深度、不剔除）适合大片半透明的面，比如护盾穹顶；`RenderTypes.lightning()` 是叠加混合、写深度。两种都能在 `SubmitCustomGeometryEvent` 里用 | 已确认，护盾穹顶、炮塔光束 |
 | 实体按 16 格的区段查，碰撞箱宽过 6 格时，挨着边的弹体查不到它；大模型照画，碰撞箱只罩住主体 | 已确认，巢穴建筑 |
+| 声音的音量在播放时夹到 0–1，音高夹到 0.5–2。客户端的衰减距离是 `max(音量, 1) × attenuation_distance`（`sounds.json`，默认 16）；服务端发给谁看 `SoundEvent.getRange`，不固定范围时是 16 × 音量。要传得远就注册成 `createFixedRangeEvent` 并在 `sounds.json` 写同样的距离 | 已确认，模组的声音 |
+| 声源开始播放后 NeoForge 在声音线程上发 `PlaySoundSourceEvent`/`PlayStreamingSourceEvent`，带 `com.mojang.blaze3d.audio.Channel`；OpenAL 的声源编号是私有的 `Channel.source`（访问转换器公开）。每个声音新建一个声源，可调用的 OpenAL 是 LWJGL 3.4.3，带 `EXTEfx`。原版每刻重设可刻声音的音量，不碰直达滤波器 | 已确认，真空里的声音 |
+| `Attenuation.NONE` 只关掉距离衰减，声音照样按位置分左右（`relative` 才跟着听者）；音量为 0 起播要 `canStartSilent()` 返回真 | 已确认，机器的环境声 |
+| 换维度时 `SoundManager.stop()` 停掉所有声音，但可刻声音实例的 `isStopped()` 不变；判断循环声还在不在要用 `SoundManager.isActive(instance)` | 已确认，`client.audio.Loops` |
+| 服务端非玩家实体只在实体更新范围里更新（`DistanceManager.inEntityTickingRange`，按票据算，跟着玩家走）。实体进了没加载的区块，`PersistentEntitySectionManager` 把它藏起来并从客户端删掉，除非 `isAlwaysTicking()`；这个值只在加入、换区段、区块状态变化时读，必须固定，中途变会漏掉开始追踪。`ChunkMap.TrackedEntity.updatePlayer` 在实体所在的区块还没发给这个玩家时（`chunkSender.isPending`）停止同步 | 已确认，飞船（脉冲引擎一刻 40 格） |
+| 方块状态的编解码键是小写的 `id` 和 `properties`（`StateHolder.codec`），方块展示实体的 NBT 写 `{block_state:{id:"…",properties:{…}}}`；旧的 `Name`/`Properties` 读不出来，实体照样生成但看不见 | 已确认，开发脚本摆运转中的设备 |
+| 方块模型的元素可以写 `light_emission`（0–15），渲染层按每个面单独选；和底下的面共面的第二个元素能当自发光覆盖层 | 已确认，`models/block/machine_glow.json` |
 | 能量能力：`Capabilities.Energy.BLOCK` 是 `BlockCapability<EnergyHandler, @Nullable Direction>`，`transfer.energy.EnergyHandler` 用 long 读数（`getAmountAsLong`、`getCapacityAsLong`），`insert(int, TransactionContext)`、`extract(int, TransactionContext)` 读写；`EnergyHandlerUtil.move` 在两个处理器之间搬电。流体能力 `Capabilities.Fluid.BLOCK` 是 `ResourceHandler<FluidResource>`。事务用 `Transaction.openRoot()`，自己的状态用 `SnapshotJournal` 回滚 | 已确认，电网接口（ADR-0030） |
 | 流体标签提供器 `FluidTagsProvider(output, lookup, modId)`；原版水的 ID 在 `world.level.material.FluidIds`（`WATER`、`FLOWING_WATER`）；`Registry.getTagOrEmpty` 返回 `Iterable<Holder<T>>`；`TagsUpdatedEvent` 是密封类 | 已确认，流体互通（ADR-0030） |
 

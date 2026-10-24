@@ -2,12 +2,13 @@ package io.github.sweetcornna.universe.entity;
 
 import io.github.sweetcornna.universe.core.survival.ToolWeapon;
 import io.github.sweetcornna.universe.registry.UniverseEntities;
+import io.github.sweetcornna.universe.registry.UniverseSounds;
+import io.github.sweetcornna.universe.registry.sound.GearSounds;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
@@ -124,7 +125,7 @@ public class PlasmaGrenade extends ThrowableProjectile {
         }
         this.needsSync = true;
         if (!this.level().isClientSide() && velocity.lengthSqr() > 0.04) {
-            this.playSound(SoundEvents.COPPER_HIT, 0.6F, 1.6F);
+            this.playSound(GearSounds.GRENADE_BOUNCE.get(), 0.6F, 0.95F + this.random.nextFloat() * 0.1F);
         }
     }
 
@@ -167,7 +168,8 @@ public class PlasmaGrenade extends ThrowableProjectile {
             level.sendParticles(glow, center.x + Math.cos(angle) * radius * 0.8, center.y + 0.2, center.z + Math.sin(angle) * radius * 0.8,
                     1, 0, 0, 0, 0);
         }
-        level.playSound(null, center.x, center.y, center.z, SoundEvents.GENERIC_EXPLODE, SoundSource.PLAYERS, 0.9F, 1.5F);
+        level.playSound(null, center.x, center.y, center.z, UniverseSounds.EXPLOSION_SMALL, SoundSource.PLAYERS, 1.0F,
+                1.05F + this.random.nextFloat() * 0.1F);
         this.discard();
     }
 }

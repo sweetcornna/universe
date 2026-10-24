@@ -7,13 +7,13 @@ import org.jspecify.annotations.Nullable;
 import io.github.sweetcornna.universe.civ.Civ;
 import io.github.sweetcornna.universe.core.civ.Race;
 import io.github.sweetcornna.universe.poi.Pois;
+import io.github.sweetcornna.universe.registry.sound.WorldSounds;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.RandomSource;
 import net.minecraft.world.InteractionResult;
@@ -128,12 +128,12 @@ public class KnowledgeStoneBlock extends Block {
         }
         if (!Civ.state(player).touchStone(key(level, lower))) {
             tell(player, Component.translatable("message.universe.knowledge_stone.read"));
-            level.playSound(null, lower, SoundEvents.AMETHYST_BLOCK_CHIME, SoundSource.BLOCKS, 0.8F, 0.6F);
+            level.playSound(null, lower, WorldSounds.STONE_TOUCH.get(), SoundSource.BLOCKS, 0.9F, 1.0F);
             return Reading.READ_BEFORE;
         }
         // 学会了会提示、连同摸过的这一块一起同步；都认识时这里自己同步
         int concept = Civ.teachWord(player, race.get(), -1L, Pois.claimKey(level, lower));
-        level.playSound(null, lower, SoundEvents.AMETHYST_BLOCK_RESONATE, SoundSource.BLOCKS, 1.0F, 0.8F);
+        level.playSound(null, lower, WorldSounds.STONE_LEARN.get(), SoundSource.BLOCKS, 1.0F, 1.0F);
         level.sendParticles(ParticleTypes.ENCHANT, lower.getX() + 0.5, lower.getY() + 1.4, lower.getZ() + 0.5, 50, 0.5, 0.9, 0.5, 0.6);
         if (concept < 0) {
             Civ.sync(player);

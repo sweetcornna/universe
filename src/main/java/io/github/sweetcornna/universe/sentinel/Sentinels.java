@@ -21,6 +21,7 @@ import io.github.sweetcornna.universe.entity.AlienCreature;
 import io.github.sweetcornna.universe.perf.ServerPerf;
 import io.github.sweetcornna.universe.registry.UniverseAttachments;
 import io.github.sweetcornna.universe.registry.UniverseEntities;
+import io.github.sweetcornna.universe.registry.sound.HostileSounds;
 import io.github.sweetcornna.universe.rules.UniverseRules;
 import io.github.sweetcornna.universe.world.planet.Planets;
 import net.minecraft.core.BlockPos;
@@ -30,7 +31,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.damagesource.DamageSource;
@@ -212,8 +212,8 @@ public final class Sentinels {
         session.seen = true;
         session.waveDelay = 0;
         player.sendOverlayMessage(Component.translatable("message.universe.sentinel.wanted", after));
-        player.level().playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.BEACON_DEACTIVATE, SoundSource.HOSTILE,
-                1.0F, 0.5F + after * 0.1F);
+        player.level().playSound(null, player.getX(), player.getY(), player.getZ(), HostileSounds.SENTINEL_ALERT.get(), SoundSource.HOSTILE,
+                1.0F, 0.9F + after * 0.04F);
         for (Sentinel sentinel : Sentinel.near(player.level(), player.position(), NEAR)) {
             if (!sentinel.isHostile() && !sentinel.retreating()) {
                 sentinel.setHostile(player);
@@ -332,7 +332,7 @@ public final class Sentinels {
         }
         if (wanted.tick(session.seen)) {
             player.sendOverlayMessage(Component.translatable("message.universe.sentinel.escaped"));
-            level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.BEACON_POWER_SELECT, SoundSource.HOSTILE, 0.8F, 1.2F);
+            level.playSound(null, player.getX(), player.getY(), player.getZ(), HostileSounds.SENTINEL_STAND_DOWN.get(), SoundSource.HOSTILE, 0.8F, 1.0F);
             calm(player, true);
             session.resetWave();
             session.patrolCooldown = Math.max(session.patrolCooldown, PATROL_AFTER_LOSS);
@@ -470,8 +470,8 @@ public final class Sentinels {
                 session.resetWave();
                 session.waveDelay = NEXT_WAVE_DELAY;
                 player.sendOverlayMessage(Component.translatable("message.universe.sentinel.wave_cleared", wanted.level()));
-                level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.BEACON_DEACTIVATE, SoundSource.HOSTILE,
-                        1.0F, 0.5F + wanted.level() * 0.1F);
+                level.playSound(null, player.getX(), player.getY(), player.getZ(), HostileSounds.SENTINEL_ALERT.get(), SoundSource.HOSTILE,
+                        1.0F, 0.9F + wanted.level() * 0.04F);
             }
             case WITHDRAWN -> {
                 session.resetWave();
@@ -479,8 +479,8 @@ public final class Sentinels {
                 shutdown(level, WITHDRAW_TICKS);
                 SentinelPillars.reveal(player);
                 player.sendOverlayMessage(Component.translatable("message.universe.sentinel.withdrawn", WITHDRAW_TICKS / 1200));
-                level.playSound(null, player.getX(), player.getY(), player.getZ(), SoundEvents.BEACON_POWER_SELECT, SoundSource.HOSTILE,
-                        1.0F, 0.8F);
+                level.playSound(null, player.getX(), player.getY(), player.getZ(), HostileSounds.SENTINEL_STAND_DOWN.get(), SoundSource.HOSTILE,
+                        1.0F, 0.9F);
             }
             case NONE -> session.resetWave();
         }
@@ -616,6 +616,6 @@ public final class Sentinels {
         level.sendParticles(ParticleTypes.REVERSE_PORTAL, x, y, z, 30, spread, sentinel.getBbHeight() * 0.4, spread, 0.1);
         level.sendParticles(ParticleTypes.END_ROD, x, y, z, 12, spread * 0.7, sentinel.getBbHeight() * 0.3, spread * 0.7, 0.08);
         boolean big = sentinel.getBbWidth() > 1.2F;
-        level.playSound(null, x, y, z, SoundEvents.BEACON_ACTIVATE, SoundSource.HOSTILE, 1.0F, big ? 0.8F : 1.4F);
+        level.playSound(null, x, y, z, HostileSounds.SENTINEL_WARP.get(), SoundSource.HOSTILE, 1.0F, big ? 0.85F : 1.0F);
     }
 }

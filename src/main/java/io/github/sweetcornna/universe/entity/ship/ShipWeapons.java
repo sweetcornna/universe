@@ -7,13 +7,13 @@ import io.github.sweetcornna.universe.core.ship.ShipCombat;
 import io.github.sweetcornna.universe.entity.PlasmaBolt;
 import io.github.sweetcornna.universe.network.ShipControlPayload;
 import io.github.sweetcornna.universe.pirate.PirateFighter;
+import io.github.sweetcornna.universe.registry.sound.ShipSounds;
 import io.github.sweetcornna.universe.sentinel.Sentinel;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.entity.Entity;
@@ -217,8 +217,8 @@ public final class ShipWeapons {
                     0.4F, ShipCombat.BOLT_LIFETIME);
             bolt.setDeltaMovement(bolt.getDeltaMovement().add(shipVelocity));
             level.addFreshEntity(bolt);
-            level.playSound(null, muzzle.x, muzzle.y, muzzle.z, SoundEvents.BLAZE_SHOOT, SoundSource.PLAYERS, 0.35F,
-                    1.9F + level.getRandom().nextFloat() * 0.1F);
+            level.playSound(null, muzzle.x, muzzle.y, muzzle.z, ShipSounds.PHOTON.get(), SoundSource.PLAYERS, 0.8F,
+                    0.95F + level.getRandom().nextFloat() * 0.1F);
         }
     }
 
@@ -298,8 +298,9 @@ public final class ShipWeapons {
         } else if (entity != null && ship.tickCount % BEAM_HURT_INTERVAL == 0) {
             entity.hurtServer(level, level.damageSources().source(PlasmaBolt.DAMAGE, ship, pilot), BEAM_HURT);
         }
+        // 每段 0.8 秒、两头淡入淡出，8 刻放一段正好接上；音高不能变，变了接缝处会错相
         if (ship.tickCount % 8 == 0) {
-            level.playSound(null, hit.from().x, hit.from().y, hit.from().z, SoundEvents.BEACON_AMBIENT, SoundSource.PLAYERS, 0.8F, 1.8F);
+            level.playSound(null, hit.from().x, hit.from().y, hit.from().z, ShipSounds.BEAM.get(), SoundSource.PLAYERS, 0.7F, 1.0F);
         }
     }
 

@@ -1,8 +1,9 @@
 {
-  "parent": "minecraft:block/orientable_with_bottom",
+  "parent": "universe:block/machine_glow",
   "textures": {
     "bottom": "universe:block/mining_machine_bottom",
     "front": "universe:block/advanced_mining_machine_front_on",
+    "glow": "universe:block/advanced_mining_machine_front_on_glow",
     "side": "universe:block/advanced_mining_machine_side",
     "top": "universe:block/advanced_mining_machine_top"
   }

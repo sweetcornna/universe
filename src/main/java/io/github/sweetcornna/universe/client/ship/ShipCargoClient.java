@@ -31,6 +31,11 @@ public final class ShipCargoClient {
     private ShipCargoClient() {
     }
 
+    /** 服务端说这个玩家（实体 id）正在喷气（{@code GearAudio} 给别人的喷气背包放声音用）。 */
+    public static boolean flaming(int entity) {
+        return FLAMING.contains(entity);
+    }
+
     public static void registerEvents(IEventBus modBus, IEventBus gameBus) {
         modBus.addListener(RegisterMenuScreensEvent.class,
                 event -> event.register(UniverseMenus.SHIP_CARGO.get(), ShipCargoScreen::new));

@@ -8,6 +8,8 @@ import org.jspecify.annotations.Nullable;
 import io.github.sweetcornna.universe.core.sentinel.SentinelKind;
 import io.github.sweetcornna.universe.entity.PlasmaBolt;
 import io.github.sweetcornna.universe.registry.UniverseEntities;
+import io.github.sweetcornna.universe.registry.UniverseSounds;
+import io.github.sweetcornna.universe.registry.sound.HostileSounds;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
@@ -17,7 +19,6 @@ import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.Difficulty;
 import net.minecraft.world.damagesource.DamageSource;
@@ -196,7 +197,7 @@ public class Sentinel extends PathfinderMob {
     void vanish() {
         if (this.level() instanceof ServerLevel level) {
             level.sendParticles(ParticleTypes.REVERSE_PORTAL, this.getX(), this.getY(0.5), this.getZ(), 20, 0.3, 0.3, 0.3, 0.05);
-            level.playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.BEACON_DEACTIVATE, SoundSource.HOSTILE, 0.5F, 1.8F);
+            level.playSound(null, this.getX(), this.getY(), this.getZ(), HostileSounds.SENTINEL_WARP.get(), SoundSource.HOSTILE, 0.8F, 1.1F);
         }
         this.discard();
     }
@@ -221,8 +222,8 @@ public class Sentinel extends PathfinderMob {
             level.sendParticles(ParticleTypes.EXPLOSION, this.getX(), this.getY(0.5), this.getZ(), this.isHeavy() ? 3 : 1, 0.2, 0.2, 0.2, 0);
             level.sendParticles(ParticleTypes.LARGE_SMOKE, this.getX(), this.getY(0.5), this.getZ(), 12, 0.3, 0.3, 0.3, 0.02);
             level.sendParticles(ParticleTypes.ELECTRIC_SPARK, this.getX(), this.getY(0.5), this.getZ(), 16, 0.3, 0.3, 0.3, 0.3);
-            level.playSound(null, this.getX(), this.getY(), this.getZ(), SoundEvents.GENERIC_EXPLODE, SoundSource.HOSTILE,
-                    this.isHeavy() ? 1.2F : 0.6F, 1.4F);
+            level.playSound(null, this.getX(), this.getY(), this.getZ(), UniverseSounds.EXPLOSION_SMALL.get(), SoundSource.HOSTILE,
+                    this.isHeavy() ? 1.0F : 0.6F, this.isHeavy() ? 0.95F : 1.25F);
             Sentinels.onDestroyed(this, source);
         }
     }
@@ -240,14 +241,14 @@ public class Sentinel extends PathfinderMob {
         PlasmaBolt bolt = PlasmaBolt.shoot(this.level(), this, from, aim.subtract(from), heavy ? 3.0F : 1.5F,
                 heavy ? HEAVY_BOLT_COLOR : DRONE_BOLT_COLOR, speed, heavy ? 3.5F : 5.0F, 30);
         this.level().addFreshEntity(bolt);
-        this.playSound(SoundEvents.BLAZE_SHOOT, heavy ? 0.6F : 0.4F, heavy ? 1.0F : 1.4F + this.random.nextFloat() * 0.2F);
+        this.playSound((heavy ? HostileSounds.SENTINEL_HEAVY_SHOT : HostileSounds.SENTINEL_SHOT).get(), heavy ? 1.0F : 0.8F, 0.95F + this.random.nextFloat() * 0.1F);
     }
 
     // ---- 声音、杂项
 
     @Override
     protected @Nullable SoundEvent getAmbientSound() {
-        return SoundEvents.BEACON_AMBIENT;
+        return HostileSounds.SENTINEL_AMBIENT.get();
     }
 
     @Override
@@ -257,22 +258,22 @@ public class Sentinel extends PathfinderMob {
 
     @Override
     protected SoundEvent getHurtSound(DamageSource source) {
-        return SoundEvents.IRON_GOLEM_HURT;
+        return HostileSounds.SENTINEL_HURT.get();
     }
 
     @Override
     protected SoundEvent getDeathSound() {
-        return SoundEvents.IRON_GOLEM_DEATH;
+        return HostileSounds.SENTINEL_DEATH.get();
     }
 
     @Override
     protected float getSoundVolume() {
-        return 0.5F;
+        return 0.7F;
     }
 
     @Override
     public float getVoicePitch() {
-        return (this.isHeavy() ? 1.0F : 1.6F) + (this.random.nextFloat() - 0.5F) * 0.2F;
+        return (this.isHeavy() ? 0.85F : 1.05F) + (this.random.nextFloat() - 0.5F) * 0.1F;
     }
 
     @Override
@@ -360,7 +361,7 @@ public class Sentinel extends PathfinderMob {
             this.time = 60 + self.random.nextInt(40);
             self.getNavigation().stop();
             self.entityData.set(DATA_SCANNING, true);
-            self.playSound(SoundEvents.BEACON_POWER_SELECT, 0.6F, 1.8F);
+            self.playSound(HostileSounds.SENTINEL_SCAN.get(), 0.8F, 1.0F);
         }
 
         @Override

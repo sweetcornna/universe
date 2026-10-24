@@ -38,6 +38,7 @@ import io.github.sweetcornna.universe.darkfog.space.LancerRaids;
 import io.github.sweetcornna.universe.dyson.Dyson;
 import io.github.sweetcornna.universe.entity.ship.ShipTransit;
 import io.github.sweetcornna.universe.factory.power.LevelPower;
+import io.github.sweetcornna.universe.registry.UniverseSounds;
 import io.github.sweetcornna.universe.rules.UniverseRules;
 import io.github.sweetcornna.universe.stats.ProductionData;
 import io.github.sweetcornna.universe.world.planet.Planets;
@@ -53,7 +54,6 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -653,7 +653,7 @@ public final class DarkFogHives {
             }
             live.defenders.forEach(Entity::discard);
             if (at != null && live.level != null) {
-                live.level.playSound(null, at.x, at.y, at.z, SoundEvents.GENERIC_EXPLODE.value(), SoundSource.HOSTILE, 6.0F, 0.5F);
+                live.level.playSound(null, at.x, at.y, at.z, UniverseSounds.EXPLOSION_LARGE.get(), SoundSource.HOSTILE, 1.0F, 0.7F);
             }
         }
         boolean relays = relays(server, system) > 0;

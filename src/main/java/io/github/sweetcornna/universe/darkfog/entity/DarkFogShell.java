@@ -4,11 +4,11 @@ import io.github.sweetcornna.universe.core.darkfog.Tactics;
 import io.github.sweetcornna.universe.darkfog.Facilities;
 import io.github.sweetcornna.universe.entity.PlasmaBolt;
 import io.github.sweetcornna.universe.registry.UniverseEntities;
+import io.github.sweetcornna.universe.registry.UniverseSounds;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityEvent;
@@ -114,7 +114,7 @@ public class DarkFogShell extends ThrowableProjectile {
                         (float) (this.damage * Tactics.splashFactor(horizontal, RADIUS)));
             }
         }
-        level.playSound(null, at.x, at.y, at.z, SoundEvents.GENERIC_EXPLODE, SoundSource.HOSTILE, 0.6F, 1.6F);
+        level.playSound(null, at.x, at.y, at.z, UniverseSounds.EXPLOSION_SMALL.get(), SoundSource.HOSTILE, 0.6F, 1.3F);
     }
 
     @Override

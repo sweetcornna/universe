@@ -8,11 +8,14 @@ import org.jspecify.annotations.Nullable;
 import io.github.sweetcornna.universe.core.darkfog.DarkFogLevels;
 import io.github.sweetcornna.universe.core.darkfog.HiveBuildingKind;
 import io.github.sweetcornna.universe.core.darkfog.HiveWeapons;
+import io.github.sweetcornna.universe.darkfog.Collapses;
 import io.github.sweetcornna.universe.darkfog.DarkFogEnemy;
 import io.github.sweetcornna.universe.darkfog.entity.DarkFogBolt;
 import io.github.sweetcornna.universe.darkfog.entity.DarkFogDamage;
 import io.github.sweetcornna.universe.entity.ship.ShipEntity;
 import io.github.sweetcornna.universe.registry.UniverseEntities;
+import io.github.sweetcornna.universe.registry.UniverseSounds;
+import io.github.sweetcornna.universe.registry.sound.HostileSounds;
 import io.github.sweetcornna.universe.survival.SurvivalDamage;
 import net.minecraft.core.particles.DustParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
@@ -22,7 +25,6 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.sounds.SoundEvent;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.tags.DamageTypeTags;
 import net.minecraft.util.Mth;
@@ -77,6 +79,9 @@ public class HiveBuilding extends Mob implements DarkFogEnemy, Enemy {
     private int cooldown = 20;
     private int retarget;
     private @Nullable Entity aim;
+    /** 倒塌的声音放不放，在哪一刻定的（{@link #loudCollapse}）。 */
+    private long collapseTick = -1;
+    private boolean collapseLoud;
     /** 游戏内测试用：把塔的射程收小，免得打到隔壁的测试。 */
     private double rangeLimit = Double.MAX_VALUE;
     /** 游戏内测试用：假玩家不在世界的玩家列表里，挑目标、近炸、溅射时把它们也算上。 */
@@ -430,11 +435,13 @@ public class HiveBuilding extends Mob implements DarkFogEnemy, Enemy {
         float damage = weapon.damage(this.darkFogLevel());
         if (weapon == HiveWeapons.Weapon.PLASMA) {
             HivePlasmaShell.fire(level, this, from, direction, damage, weapon.speed(), weapon.inaccuracy(), weapon.lifetime());
-            level.playSound(null, from.x, from.y, from.z, SoundEvents.BLAZE_SHOOT, SoundSource.HOSTILE, 1.6F, 0.5F);
+            level.playSound(null, from.x, from.y, from.z, HostileSounds.HIVE_PLASMA.get(), SoundSource.HOSTILE, 1.0F,
+                    0.96F + this.random.nextFloat() * 0.08F);
             level.sendParticles(new DustParticleOptions(PLASMA_COLOR, 1.6F), from.x, from.y, from.z, 6, 0.3, 0.3, 0.3, 0);
         } else {
             DarkFogBolt.fire(level, this, from, direction, damage, LASER_COLOR, 0.7F, weapon.speed(), weapon.inaccuracy(), weapon.lifetime());
-            level.playSound(null, from.x, from.y, from.z, SoundEvents.SHULKER_SHOOT, SoundSource.HOSTILE, 0.8F, 1.8F);
+            level.playSound(null, from.x, from.y, from.z, HostileSounds.HIVE_LASER.get(), SoundSource.HOSTILE, 1.0F,
+                    0.96F + this.random.nextFloat() * 0.08F);
         }
     }
 
@@ -485,7 +492,9 @@ public class HiveBuilding extends Mob implements DarkFogEnemy, Enemy {
             level.sendParticles(new DustParticleOptions(0xFF2A3A, 2.0F), this.getX(), y, this.getZ(), 50, size * 0.5, this.getBbHeight() * 0.5,
                     size * 0.5, 0);
             level.sendParticles(ParticleTypes.ELECTRIC_SPARK, this.getX(), y, this.getZ(), 60, size * 0.5, this.getBbHeight() * 0.5, size * 0.5, 0.6);
-            level.playSound(null, this.getX(), y, this.getZ(), SoundEvents.GENERIC_EXPLODE, SoundSource.HOSTILE, 4.0F, 0.6F);
+            if (this.loudCollapse()) {
+                level.playSound(null, this.getX(), y, this.getZ(), UniverseSounds.EXPLOSION_LARGE.get(), SoundSource.HOSTILE, 1.0F, 0.9F);
+            }
             DarkFogHives.onBuildingDestroyed(level, this.system, this.slot, this.position(), this.darkFogLevel());
         }
     }
@@ -501,7 +510,10 @@ public class HiveBuilding extends Mob implements DarkFogEnemy, Enemy {
 
     @Override
     protected @Nullable SoundEvent getAmbientSound() {
-        return this.powered() ? SoundEvents.BEACON_AMBIENT : null;
+        if (!this.powered()) {
+            return null;
+        }
+        return this.hiveKind() == HiveBuildingKind.CORE ? HostileSounds.HIVE_CORE.get() : HostileSounds.BUILDING_HUM.get();
     }
 
     @Override
@@ -511,17 +523,27 @@ public class HiveBuilding extends Mob implements DarkFogEnemy, Enemy {
 
     @Override
     protected SoundEvent getHurtSound(DamageSource source) {
-        return SoundEvents.IRON_GOLEM_DAMAGE;
+        return HostileSounds.BUILDING_HURT.get();
     }
 
     @Override
-    protected SoundEvent getDeathSound() {
-        return SoundEvents.GENERIC_EXPLODE.value();
+    protected @Nullable SoundEvent getDeathSound() {
+        return this.loudCollapse() ? HostileSounds.COLLAPSE.get() : null;
+    }
+
+    /** 这次倒塌放不放声音（一次清掉整座基地时只放头几声，{@link Collapses}）；同一刻里问几次答案一样。 */
+    private boolean loudCollapse() {
+        long now = this.level().getGameTime();
+        if (this.collapseTick != now) {
+            this.collapseTick = now;
+            this.collapseLoud = Collapses.allow(this);
+        }
+        return this.collapseLoud;
     }
 
     @Override
     public float getVoicePitch() {
-        return 0.4F;
+        return 0.85F + this.random.nextFloat() * 0.1F;
     }
 
     @Override

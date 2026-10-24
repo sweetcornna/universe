@@ -14,6 +14,7 @@ import io.github.sweetcornna.universe.factory.research.Research;
 import io.github.sweetcornna.universe.registry.UniverseBlockEntities;
 import io.github.sweetcornna.universe.registry.UniverseItems;
 import io.github.sweetcornna.universe.registry.UniverseMenus;
+import io.github.sweetcornna.universe.registry.sound.MachineSounds;
 import io.github.sweetcornna.universe.stats.ProductionLog;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -23,7 +24,6 @@ import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
@@ -141,7 +141,8 @@ public class EmRailEjectorBlockEntity extends MachineBlockEntity implements Mach
                 this.lastShot = level.getGameTime();
                 this.setChanged();
                 level.sendBlockUpdated(this.worldPosition, this.getBlockState(), this.getBlockState(), 2);
-                level.playSound(null, this.worldPosition, SoundEvents.BREEZE_SHOOT, SoundSource.BLOCKS, 0.6F, 1.5F);
+                level.playSound(null, this.worldPosition, MachineSounds.EJECTOR_FIRE.get(), SoundSource.BLOCKS, 1.0F,
+                        0.95F + level.getRandom().nextFloat() * 0.1F);
             }
         }
         return this.satisfaction > 0;

@@ -4,6 +4,7 @@ import io.github.sweetcornna.universe.core.vehicle.MechDrive;
 import io.github.sweetcornna.universe.core.vehicle.VehicleKind;
 import io.github.sweetcornna.universe.entity.PlasmaBolt;
 import io.github.sweetcornna.universe.registry.UniverseItems;
+import io.github.sweetcornna.universe.registry.sound.ShipSounds;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.syncher.EntityDataAccessor;
@@ -11,7 +12,6 @@ import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.damagesource.DamageSource;
@@ -113,6 +113,11 @@ public class ExoMech extends UniverseVehicle {
             this.strideO = this.stride;
             this.stride += (float) (moved * 1.6);
             this.strideAmount = Mth.lerp(0.3F, this.strideAmount, (float) Math.min(1, moved / MechDrive.WALK_SPEED));
+            // 每迈过半个周期落一只脚，正是身子压到最低的那一下；各个客户端自己算，不走网络
+            if (this.onGround() && this.strideAmount > 0.2F && Mth.floor(this.strideO / Mth.PI) != Mth.floor(this.stride / Mth.PI)) {
+                this.level().playLocalSound(this.getX(), this.getY(), this.getZ(), ShipSounds.MECH_STEP.get(), SoundSource.NEUTRAL,
+                        0.4F + 0.5F * this.strideAmount, 0.9F + this.random.nextFloat() * 0.15F, false);
+            }
             if (this.thrusting()) {
                 for (int side = -1; side <= 1; side += 2) {
                     Vec3 nozzle = this.position().add(new Vec3(side * 0.375, 1.85, -0.66).yRot(-this.getYRot() * Mth.DEG_TO_RAD));
@@ -204,7 +209,7 @@ public class ExoMech extends UniverseVehicle {
         level.addFreshEntity(PlasmaBolt.shoot(level, driver, from, direction, CANNON_DAMAGE, CANNON_COLOR));
         this.burnFuel(driver, CANNON_FUEL);
         this.cannonCooldown = CANNON_INTERVAL;
-        level.playSound(null, from.x, from.y, from.z, SoundEvents.BLAZE_SHOOT, SoundSource.PLAYERS, 0.6F, 0.9F + this.random.nextFloat() * 0.1F);
+        level.playSound(null, from.x, from.y, from.z, ShipSounds.CANNON.get(), SoundSource.PLAYERS, 0.8F, 0.95F + this.random.nextFloat() * 0.1F);
         level.sendParticles(ParticleTypes.ELECTRIC_SPARK, from.x, from.y, from.z, 3, 0.05, 0.05, 0.05, 0.05);
     }
 

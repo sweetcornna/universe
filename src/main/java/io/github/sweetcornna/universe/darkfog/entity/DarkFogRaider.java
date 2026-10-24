@@ -4,9 +4,9 @@ import io.github.sweetcornna.universe.core.darkfog.Tactics;
 import io.github.sweetcornna.universe.core.darkfog.UnitKind;
 import io.github.sweetcornna.universe.darkfog.Facilities;
 import io.github.sweetcornna.universe.entity.PlasmaBolt;
+import io.github.sweetcornna.universe.registry.sound.HostileSounds;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerLevel;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
@@ -70,7 +70,7 @@ public class DarkFogRaider extends DarkFogUnit {
     }
 
     private void zap(ServerLevel level, Vec3 at) {
-        level.playSound(null, at.x, at.y, at.z, SoundEvents.BEACON_POWER_SELECT, SoundSource.HOSTILE, 0.5F, 1.9F + this.random.nextFloat() * 0.1F);
+        level.playSound(null, at.x, at.y, at.z, HostileSounds.RAIDER_ZAP.get(), SoundSource.HOSTILE, 0.7F, 0.95F + this.random.nextFloat() * 0.1F);
         level.sendParticles(net.minecraft.core.particles.ParticleTypes.ELECTRIC_SPARK, at.x, at.y, at.z, 6, 0.2, 0.2, 0.2, 0.2);
     }
 }

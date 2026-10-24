@@ -15,11 +15,11 @@ import io.github.sweetcornna.universe.registry.UniverseAttachments;
 import io.github.sweetcornna.universe.registry.UniverseDataComponents;
 import io.github.sweetcornna.universe.survival.MultitoolItem;
 import io.github.sweetcornna.universe.registry.UniverseItems;
+import io.github.sweetcornna.universe.registry.sound.GearSounds;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.tags.DamageTypeTags;
@@ -154,8 +154,8 @@ public final class SuitTech {
         ServerLevel level = player.level();
         if (had) {
             level.playSound(null, player.getX(), player.getY(), player.getZ(),
-                    shield.value() > 0 ? SoundEvents.SHIELD_BLOCK.value() : SoundEvents.GLASS_BREAK, SoundSource.PLAYERS, 0.7F,
-                    shield.value() > 0 ? 1.6F : 1.2F);
+                    shield.value() > 0 ? GearSounds.SHIELD_HIT : GearSounds.SHIELD_BREAK, SoundSource.PLAYERS, 0.8F,
+                    0.95F + player.getRandom().nextFloat() * 0.1F);
         }
         event.setAmount(left);
     }
