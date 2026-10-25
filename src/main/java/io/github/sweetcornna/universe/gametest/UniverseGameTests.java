@@ -464,6 +464,11 @@ public final class UniverseGameTests {
             LogisticsDispatchGameTests::isolatedStationKeepsItsGoods);
     private static final ResourceKey<Consumer<GameTestHelper>> REMOTE_EDIT_APPLIES = function("remote_edit_applies",
             LogisticsDispatchGameTests::remoteEditApplies);
+    // 1.0 复查：控制面板远程改设置的权限
+    private static final ResourceKey<Consumer<GameTestHelper>> OWNED_STATION_REFUSES_OTHERS = function("owned_station_refuses_others",
+            ControlPanelGameTests::ownedStationRefusesOthers);
+    private static final ResourceKey<Consumer<GameTestHelper>> LEGACY_STATION_ACCEPTS_EDITS = function("legacy_station_accepts_edits",
+            ControlPanelGameTests::legacyStationAcceptsEdits);
     // M18 物流调度（B）的测试函数加在这行上面
     private static final ResourceKey<Consumer<GameTestHelper>> RESEARCH_QUEUE_ADVANCES = function("research_queue_advances",
             StatsGameTests::researchQueueAdvances);
@@ -708,6 +713,8 @@ public final class UniverseGameTests {
         test(event, environment, ROUTE_STARTS_ONCE_STATION_BUILT, 300);
         test(event, environment, ISOLATED_STATION_KEEPS_GOODS, 200);
         test(event, environment, REMOTE_EDIT_APPLIES, 40);
+        test(event, environment, OWNED_STATION_REFUSES_OTHERS, 40);
+        test(event, environment, LEGACY_STATION_ACCEPTS_EDITS, 40);
         // M18 物流调度（B）的测试加在这行上面
         test(event, environment, RESEARCH_QUEUE_ADVANCES, 20);
         test(event, environment, REFERENCE_COUNTS_RUNNING_MACHINES, 300);

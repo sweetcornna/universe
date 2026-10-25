@@ -22,6 +22,9 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -51,6 +54,15 @@ public class OrbitalCollectorBlock extends MachineBlock {
             return null;
         }
         return super.getStateForPlacement(context);
+    }
+
+    /** 放下它的玩家是主人，控制面板远程改设置时认他（ADR-0033 §三）。 */
+    @Override
+    public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity by, ItemStack stack) {
+        super.setPlacedBy(level, pos, state, by, stack);
+        if (!level.isClientSide() && by instanceof Player player && level.getBlockEntity(pos) instanceof StationBlockEntity station) {
+            station.setOwner(player.getUUID());
+        }
     }
 
     /** 放不下时告诉玩家原因：不在太空里、这个星系没有气态巨行星，或者离最近的那颗还有多远、在哪个方向。 */

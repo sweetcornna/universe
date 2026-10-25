@@ -166,6 +166,9 @@ public class ControlPanelScreen extends Screen {
     private @Nullable UUID renameFor;
     private List<Component> tooltip = List.of();
     private ItemStack tooltipStack = ItemStack.EMPTY;
+    /** 详情里是别的玩家的东西（快照说不能改）：按钮都是灰的，指着灰按钮时提示为什么。 */
+    private boolean readOnly;
+    private boolean lockedHover;
 
     /** 从物流站的界面打开时，选中那座站。 */
     public ControlPanelScreen(@Nullable BlockPos focus) {
@@ -454,6 +457,7 @@ public class ControlPanelScreen extends Screen {
         this.pickerHits.clear();
         this.tooltip = List.of();
         this.tooltipStack = ItemStack.EMPTY;
+        this.lockedHover = false;
         int x = this.left;
         int y = this.top;
         graphics.fill(x, y, x + this.panelWidth, y + this.panelHeight, MachineScreen.BORDER);
@@ -473,6 +477,11 @@ public class ControlPanelScreen extends Screen {
             this.applyFocus(snapshot);
             this.list(graphics, snapshot, mouseX, mouseY);
             this.detail(graphics, snapshot, mouseX, mouseY);
+            if (this.lockedHover) {
+                List<Component> lines = new ArrayList<>(this.tooltip);
+                lines.add(Component.translatable("gui.universe.control_panel.not_yours").withStyle(net.minecraft.ChatFormatting.GRAY));
+                this.tooltip = lines;
+            }
         }
         super.extractRenderState(graphics, mouseX, mouseY, a);
         if (this.pickerSearch != null) {
@@ -786,6 +795,7 @@ public class ControlPanelScreen extends Screen {
         graphics.enableScissor(x - 3, y, x + this.detailWidth, this.bottom());
         int start = y + 4 - this.detailScroll;
         int end = start;
+        this.readOnly = false;
         switch (this.tab) {
             case INTERSTELLAR, PLANETARY -> {
                 StationRow row = station(snapshot, this.selectedStation);
@@ -803,6 +813,7 @@ public class ControlPanelScreen extends Screen {
         }
         graphics.disableScissor();
         this.clipping = false;
+        this.readOnly = false;
         this.detailHeight = end + this.detailScroll - y;
         int room = this.bottom() - y;
         this.detailScroll = Math.max(0, Math.min(this.detailScroll, this.detailHeight - room));
@@ -835,6 +846,9 @@ public class ControlPanelScreen extends Screen {
     private int stationDetail(GuiGraphicsExtractor graphics, Snapshot snapshot, StationRow row, int x, int y, int mouseX, int mouseY) {
         StationKind kind = kind(row);
         int w = this.detailWidth - 6;
+        // 别的玩家的站只能看
+        boolean edit = row.editable();
+        this.readOnly = !edit;
         // 名字：输入框加"改名"
         if (this.rename != null) {
             if (!row.id().equals(this.renameFor)) {
@@ -849,11 +863,15 @@ public class ControlPanelScreen extends Screen {
             this.rename.setX(x);
             this.rename.setY(y);
             this.rename.setWidth(w - 42);
+            this.rename.setEditable(edit);
             this.rename.visible = y >= this.clipTop && y + BUTTON <= this.clipBottom && this.pick == null;
         }
         this.button(graphics, x + w - 40, y, 40, BUTTON, Component.translatable("gui.universe.control_panel.rename"), false, mouseX, mouseY,
-                this::commitRename, true);
+                this::commitRename, edit);
         y += BUTTON + 4;
+        if (!edit) {
+            y = this.wrapped(graphics, Component.translatable("gui.universe.control_panel.not_yours"), x, y, MachineScreen.WARN) + 2;
+        }
         String place = ControlPanelClient.placeName(row.body()) + " · " + ControlPanelClient.systemName(row.system());
         graphics.text(this.font, this.font.plainSubstrByWidth(place, w), x, y, MachineScreen.TEXT, false);
         y += 10;
@@ -868,18 +886,18 @@ public class ControlPanelScreen extends Screen {
         graphics.text(this.font, Component.translatable("gui.universe.control_panel.group"), x, y + 3, MachineScreen.DIM, false);
         int gx = x + 46;
         this.button(graphics, gx, y, SMALL, BUTTON, Component.literal("-"), false, mouseX, mouseY,
-                () -> this.sendStation(row.id(), StationEdit.GROUP, Math.floorMod(row.group() - 1, Station.MAX_GROUP + 1)), true);
+                () -> this.sendStation(row.id(), StationEdit.GROUP, Math.floorMod(row.group() - 1, Station.MAX_GROUP + 1)), edit);
         Component group = row.group() == 0 ? Component.translatable("gui.universe.control_panel.group_none") : Component.literal(
                 Integer.toString(row.group()));
         graphics.centeredText(this.font, group, gx + SMALL + 14, y + 3, row.group() == 0 ? MachineScreen.DIM : MachineScreen.ACCENT);
         this.button(graphics, gx + SMALL + 28, y, SMALL, BUTTON, Component.literal("+"), false, mouseX, mouseY,
-                () -> this.sendStation(row.id(), StationEdit.GROUP, (row.group() + 1) % (Station.MAX_GROUP + 1)), true);
+                () -> this.sendStation(row.id(), StationEdit.GROUP, (row.group() + 1) % (Station.MAX_GROUP + 1)), edit);
         Component isolated = Component.translatable(row.isolated() ? "gui.universe.control_panel.on" : "gui.universe.control_panel.off");
         int isolatedX = x + w - 34;
         Component isolatedLabel = Component.translatable("gui.universe.control_panel.isolated");
         graphics.text(this.font, isolatedLabel, isolatedX - 4 - this.font.width(isolatedLabel), y + 3, MachineScreen.DIM, false);
         this.button(graphics, isolatedX, y, 34, BUTTON, isolated, row.isolated(), mouseX, mouseY,
-                () -> this.sendStation(row.id(), StationEdit.ISOLATE, row.isolated() ? 0 : 1), true);
+                () -> this.sendStation(row.id(), StationEdit.ISOLATE, row.isolated() ? 0 : 1), edit);
         if (this.hovering(isolatedX - 60, y, 94, BUTTON, mouseX, mouseY)) {
             this.tooltip = List.of(Component.translatable("gui.universe.control_panel.isolated_hint"));
         }
@@ -889,10 +907,10 @@ public class ControlPanelScreen extends Screen {
             graphics.text(this.font, Component.translatable("gui.universe.control_panel.range"), x, y + 3, MachineScreen.DIM, false);
             int rx = x + 46;
             this.button(graphics, rx, y, SMALL, BUTTON, Component.literal("-"), false, mouseX, mouseY,
-                    () -> this.sendStation(row.id(), StationEdit.RANGE, row.range() - RANGE_STEP), true);
+                    () -> this.sendStation(row.id(), StationEdit.RANGE, row.range() - RANGE_STEP), edit);
             graphics.centeredText(this.font, Component.literal(Integer.toString(row.range())), rx + SMALL + 14, y + 3, MachineScreen.TEXT);
             this.button(graphics, rx + SMALL + 28, y, SMALL, BUTTON, Component.literal("+"), false, mouseX, mouseY,
-                    () -> this.sendStation(row.id(), StationEdit.RANGE, row.range() + RANGE_STEP), true);
+                    () -> this.sendStation(row.id(), StationEdit.RANGE, row.range() + RANGE_STEP), edit);
             if (kind.remote()) {
                 // 运输船的起送量
                 Component load = row.minLoad() == 0 ? Component.translatable("gui.universe.control_panel.min_load_default")
@@ -909,7 +927,7 @@ public class ControlPanelScreen extends Screen {
                         }
                     }
                     this.sendStation(row.id(), StationEdit.MIN_LOAD, next);
-                }, true);
+                }, edit);
                 if (this.hovering(loadX - 50, y, loadWidth + 50, BUTTON, mouseX, mouseY)) {
                     this.tooltip = List.of(Component.translatable("gui.universe.control_panel.min_load_hint"));
                 }
@@ -930,7 +948,7 @@ public class ControlPanelScreen extends Screen {
         graphics.text(this.font, this.font.plainSubstrByWidth(joined, w - 44 - (namesX - x)), namesX, y + 3,
                 names.isEmpty() ? MachineScreen.DIM : MachineScreen.TEXT, false);
         this.button(graphics, x + w - 40, y, 40, BUTTON, Component.translatable("gui.universe.control_panel.manage"), false, mouseX, mouseY,
-                () -> this.openPicker(Pick.PARTNER, 0), true);
+                () -> this.openPicker(Pick.PARTNER, 0), edit);
         if (!names.isEmpty() && this.hovering(namesX, y, w - 44 - (namesX - x), BUTTON, mouseX, mouseY)) {
             List<Component> lines = new ArrayList<>();
             names.forEach(name -> lines.add(Component.literal(name)));
@@ -976,7 +994,9 @@ public class ControlPanelScreen extends Screen {
     }
 
     private void commitRename() {
-        if (this.rename == null || this.renameFor == null) {
+        UUID id = this.renameFor;
+        StationRow row = id == null ? null : ControlPanelClient.snapshot().map(snapshot -> station(snapshot, id)).orElse(null);
+        if (this.rename == null || row == null || !row.editable()) {
             return;
         }
         this.sendStation(this.renameFor, StationEdit.RENAME, 0, 0, this.rename.getValue(), StationEdit.NONE);
@@ -988,8 +1008,9 @@ public class ControlPanelScreen extends Screen {
         SlotRow slot = row.slots().get(index);
         StationKind kind = kind(row);
         boolean collector = kind == StationKind.COLLECTOR;
+        boolean edit = row.editable();
         boolean hovered = this.hovering(x, y, 18, 18, mouseX, mouseY);
-        graphics.fill(x, y, x + 18, y + 18, hovered && !collector ? MachineScreen.ACCENT : 0xFF2A4A58);
+        graphics.fill(x, y, x + 18, y + 18, hovered && !collector && edit ? MachineScreen.ACCENT : 0xFF2A4A58);
         graphics.fill(x + 1, y + 1, x + 17, y + 17, MachineScreen.INSET);
         boolean empty = slot.item().isEmpty();
         if (!empty) {
@@ -999,13 +1020,14 @@ public class ControlPanelScreen extends Screen {
         if (hovered) {
             List<Component> lines = new ArrayList<>(empty ? List.of(Component.translatable("gui.universe.control_panel.slot_empty"))
                     : this.slotTooltip(row, slot));
-            if (!collector) {
+            if (!collector && edit) {
                 lines.add(Component.translatable(locked ? "gui.universe.control_panel.slot_locked" : "gui.universe.control_panel.slot_hint")
                         .withStyle(net.minecraft.ChatFormatting.DARK_GRAY));
             }
+            this.lockedHover |= !collector && !edit;
             this.tooltip = lines;
         }
-        if (!collector) {
+        if (!collector && edit) {
             this.hit(x, y, 18, 18, () -> {
                 if (!locked) {
                     this.openPicker(Pick.SLOT_ITEM, index);
@@ -1028,31 +1050,35 @@ public class ControlPanelScreen extends Screen {
         }
         this.button(graphics, bx, y + 2, SMALL, BUTTON, Component.literal("-"), false, mouseX, mouseY, () -> this.sendStation(row.id(),
                 StationEdit.SLOT_BUTTON, index, this.shift ? StationBlockEntity.MAX_MINUS_BIG : StationBlockEntity.MAX_MINUS, "", StationEdit.NONE),
-                !empty);
+                !empty && edit);
         this.button(graphics, bx + SMALL + 1, y + 2, SMALL, BUTTON, Component.literal("+"), false, mouseX, mouseY, () -> this.sendStation(
                 row.id(), StationEdit.SLOT_BUTTON, index, this.shift ? StationBlockEntity.MAX_PLUS_BIG : StationBlockEntity.MAX_PLUS, "",
-                StationEdit.NONE), !empty);
+                StationEdit.NONE), !empty && edit);
         this.button(graphics, bx + 2 * (SMALL + 1), y + 2, SMALL, BUTTON, Component.literal("×"), false, mouseX, mouseY,
-                () -> this.sendStation(row.id(), StationEdit.SLOT_BUTTON, index, StationBlockEntity.CLEAR, "", StationEdit.NONE), !empty && !locked);
-        if (this.hovering(bx, y + 2, 2 * SMALL + 1, BUTTON, mouseX, mouseY) && !empty) {
+                () -> this.sendStation(row.id(), StationEdit.SLOT_BUTTON, index, StationBlockEntity.CLEAR, "", StationEdit.NONE),
+                !empty && !locked && edit);
+        if (this.hovering(bx, y + 2, 2 * SMALL + 1, BUTTON, mouseX, mouseY) && !empty && edit) {
             this.tooltip = List.of(Component.translatable("gui.universe.control_panel.limit_hint"));
-        } else if (this.hovering(bx + 2 * (SMALL + 1), y + 2, SMALL, BUTTON, mouseX, mouseY) && !empty) {
+        } else if (this.hovering(bx + 2 * (SMALL + 1), y + 2, SMALL, BUTTON, mouseX, mouseY) && !empty && edit) {
             this.tooltip = List.of(Component.translatable(locked ? "gui.universe.control_panel.slot_locked" : "gui.universe.control_panel.clear"));
         }
     }
 
+    /** 供需按钮；别的玩家的站照样显示颜色，只是点不了。 */
     private void logicButton(GuiGraphicsExtractor graphics, StationRow row, int index, Logic logic, int action, int x, int y, int mouseX, int mouseY,
             boolean empty) {
         Component label = Component.translatable("gui.universe.station.logic." + logic.name().toLowerCase(Locale.ROOT));
-        boolean hovered = !empty && this.hovering(x, y, LOGIC_WIDTH, BUTTON, mouseX, mouseY);
+        boolean pointed = !empty && this.hovering(x, y, LOGIC_WIDTH, BUTTON, mouseX, mouseY);
+        boolean hovered = pointed && row.editable();
         int color = logicColor(logic);
         graphics.fill(x, y, x + LOGIC_WIDTH, y + BUTTON, hovered ? MachineScreen.ACCENT : empty ? 0xFF1C2A31 : color);
         graphics.fill(x + 1, y + 1, x + LOGIC_WIDTH - 1, y + BUTTON - 1, hovered ? 0xFF16303B : MachineScreen.INSET);
         graphics.centeredText(this.font, Component.literal(this.font.plainSubstrByWidth(label.getString(), LOGIC_WIDTH - 4)),
                 x + LOGIC_WIDTH / 2, y + 3, empty ? 0xFF3A4A52 : color);
-        if (!empty) {
+        if (!empty && row.editable()) {
             this.hit(x, y, LOGIC_WIDTH, BUTTON, () -> this.sendStation(row.id(), StationEdit.SLOT_BUTTON, index, action, "", StationEdit.NONE));
         }
+        this.lockedHover |= pointed && !row.editable();
     }
 
     /** "定位"按钮：再点一下取消；标在别的星球上时写一句。站的后面跟一个"钉到仪表盘"（{@code pin}）。 */
@@ -1099,18 +1125,23 @@ public class ControlPanelScreen extends Screen {
         y += 10;
         graphics.text(this.font, Component.translatable("gui.universe.control_panel.bots", row.bots()), x, y, MachineScreen.DIM, false);
         y += 14;
+        boolean edit = row.editable();
+        this.readOnly = !edit;
+        if (!edit) {
+            y = this.wrapped(graphics, Component.translatable("gui.universe.control_panel.not_yours"), x, y, MachineScreen.WARN) + 2;
+        }
         Distribution.Icarus[] icarus = Distribution.Icarus.values();
         Distribution.Peer[] peers = Distribution.Peer.values();
         String icarusKey = icarus[Math.floorMod(row.icarus(), icarus.length)].name().toLowerCase(Locale.ROOT);
         String peerKey = peers[Math.floorMod(row.peer(), peers.length)].name().toLowerCase(Locale.ROOT);
         this.button(graphics, x, y, w, BUTTON, icarus(row), false, mouseX, mouseY,
-                () -> this.sendDistributor(row, DistributorBlockEntity.CYCLE_ICARUS), true);
+                () -> this.sendDistributor(row, DistributorBlockEntity.CYCLE_ICARUS), edit);
         if (this.hovering(x, y, w, BUTTON, mouseX, mouseY)) {
             this.tooltip = List.of(Component.translatable("gui.universe.distributor.icarus_hint." + icarusKey));
         }
         y += BUTTON + 3;
         this.button(graphics, x, y, w, BUTTON, peer(row), false, mouseX, mouseY,
-                () -> this.sendDistributor(row, DistributorBlockEntity.CYCLE_PEER), true);
+                () -> this.sendDistributor(row, DistributorBlockEntity.CYCLE_PEER), edit);
         if (this.hovering(x, y, w, BUTTON, mouseX, mouseY)) {
             this.tooltip = List.of(Component.translatable("gui.universe.distributor.peer_hint." + peerKey));
         }
@@ -1163,13 +1194,18 @@ public class ControlPanelScreen extends Screen {
             y += 11;
         }
         y += 4;
+        this.readOnly = !row.editable();
         this.button(graphics, x, y, 50, BUTTON, Component.translatable("gui.universe.control_panel.route.delete"), false, mouseX, mouseY, () -> {
             ClientPacketDistributor.sendToServer(new ControlPanelPayloads.RouteEdit(false, row.id(), "", false, "", ""));
             this.selectedRoute = null;
             this.refresh = REFRESH_TICKS;
             this.click();
-        }, true);
-        return y + BUTTON + 4;
+        }, row.editable());
+        y += BUTTON + 4;
+        if (!row.editable()) {
+            y = this.wrapped(graphics, Component.translatable("gui.universe.control_panel.not_yours"), x, y, MachineScreen.WARN) + 2;
+        }
+        return y;
     }
 
     private void startDraft() {
@@ -1507,11 +1543,19 @@ public class ControlPanelScreen extends Screen {
                 graphics.fill(x, rowY, x + width, rowY + PICKER_ROW, 0x30FFFFFF);
             }
             boolean on = partner.get(row.id());
-            graphics.fill(x + 3, rowY + 2, x + 11, rowY + 10, on ? MachineScreen.ACCENT : 0xFF2A4A58);
+            // 伙伴两边都算：别的玩家的站加不了，已经是伙伴的能去掉
+            boolean locked = !on && !row.editable();
+            graphics.fill(x + 3, rowY + 2, x + 11, rowY + 10, on ? MachineScreen.ACCENT : locked ? 0xFF1C2A31 : 0xFF2A4A58);
             graphics.fill(x + 4, rowY + 3, x + 10, rowY + 9, on ? MachineScreen.ACCENT : MachineScreen.INSET);
             String text = ControlPanelClient.stationName(row).getString() + " · " + ControlPanelClient.placeName(row.body());
-            graphics.text(this.font, this.font.plainSubstrByWidth(text, width - 18), x + 14, rowY + 2, on ? MachineScreen.TEXT : MachineScreen.DIM,
-                    false);
+            graphics.text(this.font, this.font.plainSubstrByWidth(text, width - 18), x + 14, rowY + 2,
+                    on ? MachineScreen.TEXT : locked ? 0xFF3A4A52 : MachineScreen.DIM, false);
+            if (locked) {
+                if (hovered) {
+                    this.tooltip = List.of(Component.translatable("gui.universe.control_panel.partner_not_yours"));
+                }
+                continue;
+            }
             this.pickerHits.add(new Hit(x, rowY, width, PICKER_ROW, () -> this.sendStation(self.id(),
                     on ? StationEdit.PARTNER_REMOVE : StationEdit.PARTNER_ADD, 0, 0, "", row.id())));
         }
@@ -1545,6 +1589,7 @@ public class ControlPanelScreen extends Screen {
     private void button(GuiGraphicsExtractor graphics, int x, int y, int width, int height, Component label, boolean selected, int mouseX, int mouseY,
             Runnable action, boolean active) {
         boolean hovered = active && this.hovering(x, y, width, height, mouseX, mouseY);
+        this.lockedHover |= !active && this.readOnly && this.hovering(x, y, width, height, mouseX, mouseY);
         int border = selected ? MachineScreen.ACCENT : hovered ? 0xFF4FA3C0 : active ? 0xFF2A4A58 : 0xFF1C2A31;
         graphics.fill(x, y, x + width, y + height, border);
         graphics.fill(x + 1, y + 1, x + width - 1, y + height - 1, selected ? 0xFF1C4352 : hovered ? 0xFF16303B : MachineScreen.INSET);

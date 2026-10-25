@@ -96,6 +96,8 @@ public class StationBlockEntity extends MachineBlockEntity implements MachineMen
     private final StationHandler handler = new StationHandler(this);
     /** 拆掉、读档时只认投放口，免得把账本的映射格当成真东西掉出来或存进去。 */
     private boolean portsOnly;
+    /** 放下它的玩家：建账本记录时记成站的主人（控制面板远程改设置时认它）。 */
+    private @Nullable UUID owner;
 
     public StationBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state, StationKind kind) {
         super(type, pos, state, ports(kind));
@@ -203,8 +205,22 @@ public class StationBlockEntity extends MachineBlockEntity implements MachineMen
             this.pending.applyTo(station);
             this.pending = null;
         }
+        if (this.owner != null) {
+            station.setOwner(this.owner);
+        }
         this.setupNew(level, station);
         network.add(station);
+        this.setChanged();
+    }
+
+    /** 玩家放下了这座站（方块的 {@code setPlacedBy}）：记成主人。账本里通常还没有这座站（{@link #onLoad} 在下一刻），有就直接改。 */
+    public void setOwner(UUID owner) {
+        this.owner = owner;
+        Station station = this.station();
+        if (station != null && this.level instanceof ServerLevel serverLevel) {
+            station.setOwner(owner);
+            LogisticsData.get(serverLevel.getServer()).setDirty();
+        }
         this.setChanged();
     }
 
@@ -622,13 +638,14 @@ public class StationBlockEntity extends MachineBlockEntity implements MachineMen
         }
     }
 
-    /** 不用玩家手上东西的那几个按钮：供需、上限、清掉。控制面板远程改设置也走这里（ADR-0033 §三）。 */
+    /** 不用玩家手上东西的那几个按钮：供需、上限、清掉。控制面板远程改设置也走这里（ADR-0033 §三）。返回真的改了没有。 */
     public static boolean applySetting(Station station, int row, int action) {
         if (row < 0 || row >= station.kind().slots() || station.kind() == StationKind.COLLECTOR) {
             return false;
         }
         StationSlot slot = station.slot(row);
         int capacity = station.kind().slotCapacity();
+        int max = slot.max();
         switch (action) {
             case CYCLE_LOCAL -> slot.setLocal(slot.local().next());
             case CYCLE_REMOTE -> {
@@ -648,7 +665,8 @@ public class StationBlockEntity extends MachineBlockEntity implements MachineMen
                 return false;
             }
         }
-        return true;
+        // 上限到头了再按不算改
+        return action == CYCLE_LOCAL || action == CYCLE_REMOTE || slot.max() != max;
     }
 
     // ---- 物品组件（拆了带着内容）
@@ -680,6 +698,7 @@ public class StationBlockEntity extends MachineBlockEntity implements MachineMen
             this.portsOnly = false;
         }
         this.id = input.read("Station", UUIDUtil.CODEC).orElse(null);
+        this.owner = input.read("Owner", UUIDUtil.CODEC).orElse(null);
     }
 
     @Override
@@ -687,6 +706,9 @@ public class StationBlockEntity extends MachineBlockEntity implements MachineMen
         super.saveAdditional(output);
         if (this.id != null) {
             output.store("Station", UUIDUtil.CODEC, this.id);
+        }
+        if (this.owner != null) {
+            output.store("Owner", UUIDUtil.CODEC, this.owner);
         }
     }
 }

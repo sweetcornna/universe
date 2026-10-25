@@ -2,6 +2,8 @@ package io.github.sweetcornna.universe.logistics;
 
 import java.util.function.Supplier;
 
+import org.jspecify.annotations.Nullable;
+
 import io.github.sweetcornna.universe.core.logistics.Station;
 import io.github.sweetcornna.universe.core.logistics.StationKind;
 import io.github.sweetcornna.universe.factory.MachineBlockEntity;
@@ -14,6 +16,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -28,6 +31,16 @@ import net.minecraft.world.phys.BlockHitResult;
 public class StationBlock extends TallMachineBlock {
     public StationBlock(Properties properties, Supplier<? extends BlockEntityType<? extends MachineBlockEntity>> type) {
         super(properties, type);
+    }
+
+    /** 放下它的玩家是站的主人，控制面板远程改设置时认他（ADR-0033 §三）。 */
+    @Override
+    public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity by, ItemStack itemStack) {
+        super.setPlacedBy(level, pos, state, by, itemStack);
+        if (!level.isClientSide() && by instanceof Player player
+                && level.getBlockEntity(this.machinePos(state, pos)) instanceof StationBlockEntity station) {
+            station.setOwner(player.getUUID());
+        }
     }
 
     @Override

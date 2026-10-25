@@ -58,6 +58,7 @@ public final class Logistics {
     public static void registerEvents(IEventBus gameBus) {
         gameBus.addListener(ServerTickEvent.Post.class, event -> ServerPerf.time("logistics", () -> tick(event.getServer())));
         gameBus.addListener(ServerStoppedEvent.class, event -> SENT.clear());
+        ControlPanel.registerEvents(gameBus);
     }
 
     public static LogisticsNetwork network(MinecraftServer server) {

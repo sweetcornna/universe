@@ -1,9 +1,15 @@
 package io.github.sweetcornna.universe.logistics;
 
+import org.jspecify.annotations.Nullable;
+
 import io.github.sweetcornna.universe.factory.MachineBlock;
 import io.github.sweetcornna.universe.registry.UniverseBlockEntities;
 import net.minecraft.core.BlockPos;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -22,5 +28,14 @@ public class DistributorBlock extends MachineBlock {
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         return SHAPE;
+    }
+
+    /** 放下它的玩家是主人，控制面板远程改模式时认他（ADR-0033 §三）。 */
+    @Override
+    public void setPlacedBy(Level level, BlockPos pos, BlockState state, @Nullable LivingEntity by, ItemStack stack) {
+        super.setPlacedBy(level, pos, state, by, stack);
+        if (!level.isClientSide() && by instanceof Player player && level.getBlockEntity(pos) instanceof DistributorBlockEntity distributor) {
+            distributor.setOwner(player.getUUID());
+        }
     }
 }
