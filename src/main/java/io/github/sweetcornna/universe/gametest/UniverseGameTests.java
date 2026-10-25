@@ -566,6 +566,12 @@ public final class UniverseGameTests {
             MenuDupeGameTests::shipCargoViewersShare);
     private static final ResourceKey<Consumer<GameTestHelper>> OLD_SHIP_SUPERCHARGE_SETTLES = function("old_ship_supercharge_settles",
             MenuDupeGameTests::oldShipSuperchargeSettles);
+    private static final ResourceKey<Consumer<GameTestHelper>> SHIP_CARGO_IN_PLACE_EDITS_PERSIST = function("ship_cargo_in_place_edits_persist",
+            MenuDupeGameTests::shipCargoInPlaceEditsPersist);
+    private static final ResourceKey<Consumer<GameTestHelper>> BAIT_CONSUMED_WHILE_MENU_OPEN = function("bait_consumed_while_menu_open",
+            MenuDupeGameTests::baitConsumedWhileMenuOpen);
+    private static final ResourceKey<Consumer<GameTestHelper>> HULK_ALARM_LIGHTS_CATCH_UP = function("hulk_alarm_lights_catch_up",
+            MenuDupeGameTests::hulkAlarmLightsCatchUp);
     // 1.0 复查：界面刷物品和飞船面板的测试函数加在这行上面
     private static final ResourceKey<Consumer<GameTestHelper>> GEYSER_DORMANT_SYNCED = function("geyser_dormant_synced",
             ReleaseFixGameTests::geyserDormantSynced);
@@ -796,6 +802,9 @@ public final class UniverseGameTests {
         test(event, environment, TECH_MENU_SWAP_NO_DUPE, 20);
         test(event, environment, SHIP_CARGO_VIEWERS_SHARE, 20);
         test(event, environment, OLD_SHIP_SUPERCHARGE_SETTLES, 20);
+        test(event, environment, SHIP_CARGO_IN_PLACE_EDITS_PERSIST, 20);
+        test(event, environment, BAIT_CONSUMED_WHILE_MENU_OPEN, 20);
+        test(event, environment, HULK_ALARM_LIGHTS_CATCH_UP, 100);
         // 1.0 复查：界面刷物品和飞船面板的测试加在这行上面
         test(event, environment, GEYSER_DORMANT_SYNCED, 20);
         test(event, environment, PRODUCTION_SERIES_ROUND_TRIP, 20);

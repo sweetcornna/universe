@@ -122,6 +122,10 @@ public final class Fishing {
 
     /** 钓鱼模式下右键：没有浮标就甩竿，浮标在等鱼就收回，鱼咬钩了就钩住。两端都按住使用键，好接着收线。 */
     public static InteractionResult use(Level level, Player player, InteractionHand hand) {
+        // 饵格开着不甩竿、不钩鱼（原版客户端开着界面按不了右键，改过的客户端发得出来）
+        if (player.containerMenu instanceof BaitMenu) {
+            return InteractionResult.FAIL;
+        }
         if (player instanceof ServerPlayer serverPlayer) {
             FishingBobber bobber = bobber(serverPlayer);
             if (bobber == null) {
@@ -163,8 +167,12 @@ public final class Fishing {
         return bobber;
     }
 
-    /** 潜行右键：打开饵格。 */
+    /** 潜行右键：打开饵格。水里的浮标收回来：那一竿的饵在甩竿时就定了，换了饵再钩住，扣的就不是那一竿的饵。 */
     public static void openBait(ServerPlayer player) {
+        FishingBobber bobber = bobber(player);
+        if (bobber != null) {
+            bobber.discard();
+        }
         int slot = player.getInventory().getSelectedSlot();
         player.openMenu(new SimpleMenuProvider((id, inventory, p) -> BaitMenu.server(id, inventory, slot),
                 Component.translatable("gui.universe.bait.title")), buf -> buf.writeVarInt(slot));
@@ -204,11 +212,18 @@ public final class Fishing {
         return baitKind(stack) != Bait.NONE;
     }
 
-    /** 钩住一条：工具饵格里的饵用掉一个。 */
-    static void consumeBait(ServerPlayer player) {
+    /** 钩住一条：工具饵格里的饵用掉一个。这把工具的饵格正开着，就从界面那一格扣（界面写回工具），两边一直是同一份。 */
+    public static void consumeBait(ServerPlayer player) {
         ItemStack tool = player.getMainHandItem();
+        if (player.isCreative()) {
+            return;
+        }
+        if (player.containerMenu instanceof BaitMenu menu && menu.edits(tool)) {
+            menu.getSlot(0).remove(1);
+            return;
+        }
         ItemStack bait = bait(tool);
-        if (!bait.isEmpty() && !player.isCreative()) {
+        if (!bait.isEmpty()) {
             bait.shrink(1);
             setBait(tool, bait);
         }

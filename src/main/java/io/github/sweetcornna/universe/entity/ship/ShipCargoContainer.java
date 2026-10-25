@@ -232,6 +232,18 @@ public final class ShipCargoContainer implements Container {
         this.hold(slot).dirty = true;
     }
 
+    /**
+     * 第 {@code slot} 格的那一叠被就地改过，记下它所在的货柜，再写回船上。{@link #getItem} 给的就是货柜里的那一份，
+     * 原版界面 Shift 点击挪走一部分、收纳袋装取东西都直接改它，只调格子的 {@code setChanged}，不经过 {@link #setItem}。
+     */
+    public void changed(int slot) {
+        // 不先按船上现在的结构重读，重读会把这一格刚改的丢掉
+        if (slot >= 0 && slot < this.holdOf.length) {
+            this.hold(slot).dirty = true;
+        }
+        this.setChanged();
+    }
+
     /** 各货柜里最小的那个上限：箱子、木桶都是 99，有上限小的货柜（比如漏斗）就跟着它。 */
     @Override
     public int getMaxStackSize() {

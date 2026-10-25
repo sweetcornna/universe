@@ -3,6 +3,9 @@ package io.github.sweetcornna.universe.gametest;
 import java.util.List;
 
 import io.github.sweetcornna.universe.block.ship.HelmBlockEntity;
+import io.github.sweetcornna.universe.core.deepspace.Integrity;
+import io.github.sweetcornna.universe.core.deepspace.Layout;
+import io.github.sweetcornna.universe.core.deepspace.Part;
 import io.github.sweetcornna.universe.core.ship.ShipTech;
 import io.github.sweetcornna.universe.core.survival.MultitoolClass;
 import io.github.sweetcornna.universe.core.survival.MultitoolSpec;
@@ -10,6 +13,9 @@ import io.github.sweetcornna.universe.core.tech.Grade;
 import io.github.sweetcornna.universe.core.tech.ModuleType;
 import io.github.sweetcornna.universe.core.tech.TechGrid;
 import io.github.sweetcornna.universe.core.tech.TechModule;
+import io.github.sweetcornna.universe.deepspace.DerelictLightBlock;
+import io.github.sweetcornna.universe.deepspace.Hulks;
+import io.github.sweetcornna.universe.deepspace.Placement;
 import io.github.sweetcornna.universe.entity.ship.ShipAssembly;
 import io.github.sweetcornna.universe.entity.ship.ShipCargo;
 import io.github.sweetcornna.universe.entity.ship.ShipCargoContainer;
@@ -27,15 +33,20 @@ import io.github.sweetcornna.universe.survival.MultitoolItem;
 import io.github.sweetcornna.universe.tech.TechMenu;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.RegistryAccess;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.ProblemReporter;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.ContainerInput;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
+import net.minecraft.world.item.component.BundleContents;
 import net.minecraft.world.item.component.ItemContainerContents;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
@@ -46,7 +57,8 @@ import net.minecraft.world.level.storage.TagValueOutput;
 
 /**
  * 界面刷物品（1.0 发布前的复查）的游戏内测试：饵格、技术配置界面按数字键换不走锁住的工具，界面认准打开时的那一把；
- * 两个人同时开着一艘船的货舱看到的是同一份；0.14 组装、一直飞着的船打开面板时定下超频格。
+ * 两个人同时开着一艘船的货舱看到的是同一份，原版界面就地改了货舱里的东西也写回船上；饵格开着时扣饵两边一起扣；
+ * 0.14 组装、一直飞着的船打开面板时定下超频格；残骸报警时没换成的灯之后补上。
  * 由 {@link UniverseGameTests} 登记。
  */
 final class MenuDupeGameTests {
@@ -181,6 +193,123 @@ final class MenuDupeGameTests {
         helper.assertValueEqual(reopened.countItem(UniverseItems.TITANIUM_ALLOY.get()), 5, "船上的钛合金");
         helper.assertValueEqual(reopened.countItem(Items.IRON_INGOT), 4, "船上的铁锭");
         helper.succeed();
+    }
+
+    /**
+     * 原版界面直接改货舱里的那一叠（不经过 setItem，只调格子的 setChanged）也写回船上：背包只剩一叠没满的铁锭时
+     * Shift 点击货舱里的一组铁锭，只挪过去 4 个，关掉再开货舱里是剩下的 60 个；拿着金锭点货舱里的收纳袋装进去，
+     * 再开收纳袋里还是那 8 个。
+     */
+    static void shipCargoInPlaceEditsPersist(GameTestHelper helper) {
+        BlockPos helm = new BlockPos(3, 2, 3);
+        helper.setBlock(helm, UniverseBlocks.SHIP_HELM.get());
+        helper.setBlock(new BlockPos(2, 2, 3), UniverseBlocks.SHIP_THRUSTER.get());
+        helper.setBlock(new BlockPos(4, 2, 3), UniverseBlocks.FUEL_TANK.get());
+        BlockPos chest = new BlockPos(3, 2, 4);
+        helper.setBlock(chest, Blocks.CHEST);
+        ChestBlockEntity box = helper.getBlockEntity(chest, ChestBlockEntity.class);
+        box.setItem(0, new ItemStack(Items.IRON_INGOT, 64));
+        box.setItem(1, new ItemStack(Items.BUNDLE));
+        ShipEntity ship = ShipAssembly.assemble(helper.getLevel(), helper.absolutePos(helm), null, message -> {
+        });
+        helper.assertTrue(ship != null && ship.structure() != null, "没有组装出飞船");
+        RegistryAccess registries = helper.getLevel().registryAccess();
+        ServerPlayer player = (ServerPlayer) helper.makeMockServerPlayer(GameType.SURVIVAL);
+        Inventory inventory = player.getInventory();
+        for (int i = 0; i < 36; i++) {
+            inventory.setItem(i, new ItemStack(Items.STONE, 64));
+        }
+        inventory.setItem(8, new ItemStack(Items.IRON_INGOT, 60));
+        ShipCargoMenu menu = ShipPanel.cargoMenu(1, inventory, ship, ShipCargoContainer.of(ship, registries));
+        int iron = slotOf(menu, Items.IRON_INGOT);
+        int bundle = slotOf(menu, Items.BUNDLE);
+        helper.assertTrue(iron >= 0 && bundle >= 0, "货舱里找不到铁锭和收纳袋");
+
+        // 收纳袋装完东西会刷新玩家开着的界面：开着的是背包的话要往连接上发合成格，假玩家没有连接
+        player.containerMenu = menu;
+        menu.clicked(iron, 0, ContainerInput.QUICK_MOVE, player);
+        helper.assertValueEqual(inventory.getItem(8).getCount(), 64, "Shift 点击以后背包里的铁锭");
+        helper.assertValueEqual(menu.getSlot(iron).getItem().getCount(), 60, "Shift 点击以后货舱里的铁锭");
+        menu.setCarried(new ItemStack(Items.GOLD_INGOT, 8));
+        menu.clicked(bundle, 0, ContainerInput.PICKUP, player);
+        helper.assertTrue(menu.getCarried().isEmpty(), "金锭没装进收纳袋");
+        menu.removed(player);
+        player.containerMenu = player.inventoryMenu;
+
+        ShipCargoContainer reopened = ShipCargoContainer.of(ship, registries);
+        helper.assertValueEqual(reopened.countItem(Items.IRON_INGOT), 60, "关掉再开，货舱里的铁锭");
+        int packed = 0;
+        for (int i = 0; i < reopened.getContainerSize(); i++) {
+            ItemStack stack = reopened.getItem(i);
+            if (stack.is(Items.BUNDLE)) {
+                packed += stack.getOrDefault(DataComponents.BUNDLE_CONTENTS, BundleContents.EMPTY).itemCopies().mapToInt(ItemStack::getCount).sum();
+            }
+        }
+        helper.assertValueEqual(packed, 8, "关掉再开，收纳袋里的金锭");
+        helper.succeed();
+    }
+
+    /** 货舱界面上放着 {@code item} 的第一格；没有是 −1。 */
+    private static int slotOf(ShipCargoMenu menu, Item item) {
+        for (int i = 0; i < menu.gridSlots(); i++) {
+            if (menu.getSlot(i).getItem().is(item)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * 饵格开着的时候钩住了鱼（和平难度咬钩就钓上来）：饵格那一格和工具上一起少一个，取出来的是扣过的数量。
+     * 开着饵格右键（改过的客户端发得出来）不甩竿。
+     */
+    static void baitConsumedWhileMenuOpen(GameTestHelper helper) {
+        ServerPlayer player = (ServerPlayer) helper.makeMockServerPlayer(GameType.SURVIVAL);
+        Inventory inventory = player.getInventory();
+        ItemStack tool = new ItemStack(UniverseItems.MULTITOOL.get());
+        Fishing.setBait(tool, new ItemStack(Items.COOKED_COD, 16));
+        inventory.setItem(0, tool);
+        inventory.setSelectedSlot(0);
+        BaitMenu menu = BaitMenu.server(0, inventory, 0);
+        player.containerMenu = menu;
+
+        helper.assertTrue(Fishing.use(player.level(), player, InteractionHand.MAIN_HAND) == InteractionResult.FAIL, "饵格开着右键没被拦下");
+        helper.assertTrue(Fishing.bobber(player) == null, "饵格开着甩出了浮标");
+        Fishing.consumeBait(player);
+        helper.assertValueEqual(menu.bait().getCount(), 15, "扣饵以后饵格里的饵");
+        helper.assertValueEqual(Fishing.bait(tool).getCount(), 15, "扣饵以后工具上的饵");
+        menu.clicked(0, 0, ContainerInput.PICKUP, player);
+        helper.assertValueEqual(menu.getCarried().getCount(), 15, "取出来的饵");
+        helper.assertTrue(Fishing.bait(tool).isEmpty(), "取出饵以后工具上还留着一份");
+        player.containerMenu = player.inventoryMenu;
+        helper.succeed();
+    }
+
+    /**
+     * 残骸进了报警、那一刻灯没换成警报灯（远处那头的区块还没加载）：之后区块加载好了把灯换完。这里绕过拆方块直接扣完整度，
+     * 报警那一刻就没换过灯。
+     */
+    static void hulkAlarmLightsCatchUp(GameTestHelper helper) {
+        Layout.Builder b = new Layout.Builder();
+        for (int x = 0; x < 5; x++) {
+            for (int z = 0; z < 3; z++) {
+                b.set(x, 0, z, Part.PLATING);
+            }
+        }
+        b.set(0, 1, 1, Part.LIGHT);
+        b.set(4, 1, 1, Part.LIGHT);
+        Placement placement = new Placement(helper.absolutePos(new BlockPos(1, 1, 2)), 0);
+        Hulks.Wreck wreck = Hulks.place(helper.getLevel(), placement, b.build(), 2L, 0, null);
+        for (int i = 0; i < 9; i++) {
+            wreck.integrity().remove(Part.CONDUIT);
+        }
+        helper.assertTrue(wreck.integrity().phase() == Integrity.Phase.ALARM, "扣到 28 没进报警");
+        helper.assertFalse(helper.getBlockState(new BlockPos(1, 2, 3)).getValue(DerelictLightBlock.ALARM), "灯一放下就是警报灯");
+        helper.succeedWhen(() -> {
+            helper.assertTrue(helper.getBlockState(new BlockPos(1, 2, 3)).getValue(DerelictLightBlock.ALARM)
+                    && helper.getBlockState(new BlockPos(5, 2, 3)).getValue(DerelictLightBlock.ALARM), "报警以后灯没换成警报灯");
+            Hulks.forget(wreck);
+        });
     }
 
     /**

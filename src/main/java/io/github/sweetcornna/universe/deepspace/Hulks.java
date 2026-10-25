@@ -18,6 +18,7 @@ import io.github.sweetcornna.universe.registry.UniverseSounds;
 import io.github.sweetcornna.universe.registry.sound.DeepSpaceSounds;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.SectionPos;
 import net.minecraft.core.particles.ColorParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
@@ -226,7 +227,7 @@ public final class Hulks {
             notify(level, wreck, Component.translatable("message.universe.hulk.alarm").withStyle(ChatFormatting.GOLD), true);
         }
         if ((after == Phase.ALARM || after == Phase.MELTDOWN) && !wreck.alarmed) {
-            alarmLights(level, wreck);
+            wreck.alarmed = alarmLights(level, wreck);
         }
     }
 
@@ -236,20 +237,29 @@ public final class Hulks {
         }
     }
 
-    /** 灯全变成闪红光的警报灯。 */
-    private static void alarmLights(ServerLevel level, Wreck wreck) {
-        wreck.alarmed = true;
+    /**
+     * 灯全变成闪红光的警报灯。残骸有 60–120 格长，视距小的时候远处那头的区块没加载：那里的灯先不读（读了就是同步加载区块），
+     * 返回 false，由 {@link #tick} 挂上加载票、等区块加载好了再换完。全换完了返回 true。
+     */
+    private static boolean alarmLights(ServerLevel level, Wreck wreck) {
+        boolean done = true;
         BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos();
         for (Layout.Cell cell : wreck.layout.cells()) {
             if (cell.part() != Part.LIGHT) {
                 continue;
             }
             cursor.set(wreck.placement.world(cell));
+            // isLoaded 在区块挂上票、还没加载完的时候就是 true，这里要的是已经加载好了的
+            if (level.getChunkSource().getChunkNow(SectionPos.blockToSectionCoord(cursor.getX()), SectionPos.blockToSectionCoord(cursor.getZ())) == null) {
+                done = false;
+                continue;
+            }
             BlockState state = level.getBlockState(cursor);
             if (state.getBlock() instanceof DerelictLightBlock) {
                 level.setBlock(cursor, state.setValue(DerelictLightBlock.ALARM, true).setValue(DerelictLightBlock.LIT, true), Block.UPDATE_CLIENTS);
             }
         }
+        return done;
     }
 
     private static void notify(ServerLevel level, Wreck wreck, Component message, boolean chat) {
@@ -283,6 +293,10 @@ public final class Hulks {
                 continue;
             }
             long time = level.getGameTime();
+            // 报警的时候有的灯在没加载的区块里：挂着加载票等区块在后台加载好，再把灯换完
+            if (!wreck.alarmed && time % 20 == 0 && Structures.ready(level, wreck.box)) {
+                wreck.alarmed = alarmLights(level, wreck);
+            }
             if (time % wreck.integrity.sirenInterval() == 0) {
                 level.playSound(null, wreck.center.x, wreck.center.y, wreck.center.z, DeepSpaceSounds.SIREN.get(), SoundSource.BLOCKS, 1.6F,
                         phase == Phase.MELTDOWN ? 1.15F : 1.0F);

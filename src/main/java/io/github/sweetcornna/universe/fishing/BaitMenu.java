@@ -21,7 +21,8 @@ import net.minecraft.world.item.ItemStack;
  * 饵存在主手工具的数据组件上；那一格快捷栏锁住，免得把工具拿走。
  *
  * <p>服务端认准打开时的那一把工具：饵只写回它，那一格换成别的东西（哪怕是另一把工具）界面就失效，
- * 免得饵写到另一把上、原来那把还留着一份。
+ * 免得饵写到另一把上、原来那把还留着一份。界面那一格是打开时读出来的，开着的时候扣饵也从这一格扣
+ * （{@link Fishing#consumeBait}），不然下次点饵格会把没扣的那份写回工具。
  */
 public class BaitMenu extends AbstractContainerMenu {
     public static final int WIDTH = 176;
@@ -84,6 +85,11 @@ public class BaitMenu extends AbstractContainerMenu {
     /** 饵格里现在放着的东西。 */
     public ItemStack bait() {
         return this.slots.getFirst().getItem();
+    }
+
+    /** 服务端：这个界面读写的是不是 {@code tool} 的饵格。 */
+    public boolean edits(ItemStack tool) {
+        return this.tool != null && this.tool == tool;
     }
 
     @Override
