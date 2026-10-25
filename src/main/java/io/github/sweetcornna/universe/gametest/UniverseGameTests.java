@@ -844,8 +844,8 @@ public final class UniverseGameTests {
         test(event, environment, HOLO_BEACON_COALESCES_BROADCASTS, 20);
         test(event, environment, GRAVITY_REFUSES_OTHERS_FLEET_UNIT, 20);
         test(event, environment, GRAVITY_BEAM_REACHES_LATE_TRACKER, 40);
-        // 区块在后台按真实时间生成，测试服务端空闲时一秒能跑几百刻：刻数给足
-        test(event, environment, FAR_CHUNKS_LOAD_IN_BACKGROUND, 12000);
+        // 区块在后台按真实时间生成，测试服务端空闲时一秒能跑几千刻：测试里按真实时间限时（ReleaseFixGameTests.FAR_CHUNKS_SECONDS），刻数不设限
+        test(event, environment, FAR_CHUNKS_LOAD_IN_BACKGROUND, Integer.MAX_VALUE);
         // 1.0.0 发布前修复：危害、引力抓取器、深空、信标、统计的测试加在这行上面
     }
 
