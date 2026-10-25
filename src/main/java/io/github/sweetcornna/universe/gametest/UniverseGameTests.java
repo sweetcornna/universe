@@ -535,6 +535,10 @@ public final class UniverseGameTests {
             "settlement_raid_discarded_fighters_roll_defense", SettlementFixGameTests::raidDiscardedFightersRollDefense);
     private static final ResourceKey<Consumer<GameTestHelper>> SETTLEMENT_RAID_FROZEN_FIGHTER_ROLLS_DEFENSE = function(
             "settlement_raid_frozen_fighter_rolls_defense", SettlementFixGameTests::raidFrozenFighterRollsDefense);
+    private static final ResourceKey<Consumer<GameTestHelper>> SETTLEMENT_RAID_OWNER_LEAVES_BEFORE_END_ROLLS_DEFENSE = function(
+            "settlement_raid_owner_leaves_before_end_rolls_defense", SettlementFixGameTests::raidOwnerLeavesBeforeEndRollsDefense);
+    private static final ResourceKey<Consumer<GameTestHelper>> SETTLEMENT_RAID_LAST_KILL_ON_ABSENT_TICK_WINS = function(
+            "settlement_raid_last_kill_on_absent_tick_wins", SettlementFixGameTests::raidLastKillOnAbsentTickWins);
     private static final ResourceKey<Consumer<GameTestHelper>> SETTLEMENT_POND_WATER_CACHED = function("settlement_pond_water_cached",
             SettlementFixGameTests::pondWaterCached);
     private static final ResourceKey<Consumer<GameTestHelper>> SETTLEMENT_CLAIM_DROPS_CONTAINERS = function("settlement_claim_drops_containers",
@@ -799,6 +803,8 @@ public final class UniverseGameTests {
         test(event, environment, SETTLEMENT_RAID_RELEASED_CHUNKS_ROLL_DEFENSE, 400);
         test(event, environment, SETTLEMENT_RAID_DISCARDED_FIGHTERS_ROLL_DEFENSE, 200);
         test(event, environment, SETTLEMENT_RAID_FROZEN_FIGHTER_ROLLS_DEFENSE, 300);
+        test(event, environment, SETTLEMENT_RAID_OWNER_LEAVES_BEFORE_END_ROLLS_DEFENSE, 200);
+        test(event, environment, SETTLEMENT_RAID_LAST_KILL_ON_ABSENT_TICK_WINS, 300);
         spaced(event, environment, SETTLEMENT_POND_WATER_CACHED, 20);
         spaced(event, environment, SETTLEMENT_CLAIM_DROPS_CONTAINERS, 20);
         test(event, environment, DIG_SITE_COLLECTOR_NEEDS_CAMP, 20);

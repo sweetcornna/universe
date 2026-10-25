@@ -59,7 +59,7 @@ public final class SettlementRaids {
     private static final double TURRET_BOLT_SPEED = 4.0;
     private static final int TURRET_COLOR = 0x6EDCF5;
     /** 总督走开多久算不在场。 */
-    private static final int ABSENT_TICKS = 100;
+    public static final int ABSENT_TICKS = 100;
     /** 隔多久给战机换一个扫射的目标。 */
     private static final int RETARGET = 120;
 
@@ -219,9 +219,15 @@ public final class SettlementRaids {
 
     /** 同上；{@code owner} 不为空时它当总督，照它站在哪、聚落中心在不在更新算在不在场。 */
     public static List<PirateFighter> testRaid(ServerLevel level, SettlementData.Entry entry, int count, Vec3 from, @Nullable ServerPlayer owner) {
+        return testRaid(level, entry, count, from, owner, 0);
+    }
+
+    /** 同上；当作已经打了 {@code age} 刻。 */
+    public static List<PirateFighter> testRaid(ServerLevel level, SettlementData.Entry entry, int count, Vec3 from, @Nullable ServerPlayer owner,
+            long age) {
         Settlement s = entry.settlement();
         long now = Settlements.now(level.getServer());
-        Raid raid = new Raid(s.id(), s.owner().orElse(UUID.randomUUID()), count, now, Component.literal(s.id()));
+        Raid raid = new Raid(s.id(), s.owner().orElse(UUID.randomUUID()), count, now - age, Component.literal(s.id()));
         raid.test = owner == null;
         raid.standIn = owner;
         List<BlockPos> targets = targets(entry);
@@ -245,6 +251,12 @@ public final class SettlementRaids {
         }
         raid.standIn = owner;
         return List.copyOf(raid.fighters);
+    }
+
+    /** 给游戏内测试用：总督已经连着多少刻不在场；没在打返回 -1。 */
+    public static int testAbsent(String settlement) {
+        Raid raid = RAIDS.get(settlement);
+        return raid == null ? -1 : raid.absent;
     }
 
     /** 战机扫射的地方：开着的建筑，没有就打广场。 */
@@ -292,15 +304,16 @@ public final class SettlementRaids {
             raid.absent = present || raid.test ? 0 : raid.absent + 1;
             raid.bar.setProgress(raid.fighters.size() / (float) raid.total);
             boolean late = now - raid.start > SettlementRules.RAID_TICKS;
+            if (lost == 0 && raid.fighters.isEmpty()) {
+                // 全是打下来的：守住了，哪怕最后一架正好在总督走开满时间、刚到点的这一刻打下来
+                finish(server, level, entry, raid, true);
+                continue;
+            }
             if (lost > 0 || raid.absent > ABSENT_TICKS || late && raid.absent > 0) {
                 // 总督走了、战机停住了或者没了（到点时刚停住也算）：剩下的（连没了的）按防御值算
                 Rng rng = Rng.of(Seeds.derive(s.seed(), "raid/absent/" + now));
                 boolean won = SettlementRules.defended(s.defense(), SettlementRules.strength(raid.fighters.size() + lost, s.threat()), rng.nextDouble());
                 finish(server, level, entry, raid, won);
-                continue;
-            }
-            if (raid.fighters.isEmpty()) {
-                finish(server, level, entry, raid, true);
                 continue;
             }
             if (late) {
