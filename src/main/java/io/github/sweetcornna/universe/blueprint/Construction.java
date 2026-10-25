@@ -369,6 +369,16 @@ public final class Construction {
         return team != null && owner != null && owner.getTeam() == team;
     }
 
+    /**
+     * {@code builder} 的一架无人机建好工地里的第 {@code index} 格，和每刻派出去的无人机走同一个 {@link SitePlanner#build}：材料从
+     * {@code builder} 身上扣，主人记成工地的主人。GameTest 用（假玩家不在玩家列表里，每刻的调度轮不到他）。
+     */
+    public static boolean buildNow(ServerPlayer builder, BuildSite site, int index) {
+        BlockPos pos = site.pos(index);
+        return new SitePlanner(builder, new Crew(), BuildSites.get(builder.level().getServer()))
+                .build(new DroneFleet.Task(site.id(), index, pos.getX(), pos.getY(), pos.getZ()));
+    }
+
     private enum Check {
         OK, DONE, SKIP
     }
@@ -573,11 +583,8 @@ public final class Construction {
                 site.skipped.set(index);
                 return false;
             }
-            this.level.setBlock(pos, target, Block.UPDATE_ALL);
-            CompoundTag settings = site.settings(index);
-            if (settings != null && this.level.getBlockEntity(pos) instanceof BlueprintSettings receiver) {
-                receiver.applyBlueprintSettings(settings);
-            }
+            // 主人是放蓝图的人，不是帮忙建的队友
+            Blueprints.put(this.level, pos, target, site.settings(index), site.owner());
             this.level.sendParticles(ParticleTypes.END_ROD, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 3, 0.3, 0.3, 0.3, 0.01);
             this.level.playSound(null, pos, target.getSoundType().getPlaceSound(), SoundSource.BLOCKS, 0.4F, 1.2F);
             finish(this.level.getServer(), this.sites, site, index, true);

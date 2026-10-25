@@ -75,10 +75,13 @@ public final class ControlPanelPayloads {
         }
     }
 
-    /** 一座站。{@code kind} 是 {@code StationKind} 的序号，{@code body}、{@code system} 是它在星团里的位置。 */
+    /**
+     * 一座站。{@code kind} 是 {@code StationKind} 的序号，{@code body}、{@code system} 是它在星团里的位置；{@code editable} 是收快照的
+     * 玩家能不能远程改它（自己的、队友的、没主人的，或者他是管理员）。
+     */
     public record StationRow(UUID id, int kind, String dimension, BlockPos pos, String body, int system, String name, int number,
             int group, boolean isolated, int minLoad, List<UUID> partners, List<SlotRow> slots, int drones, int idleDrones, int vessels,
-            int idleVessels, int warpers, int range, long energy) {
+            int idleVessels, int warpers, int range, long energy, boolean editable) {
         static void write(FriendlyByteBuf buf, StationRow row) {
             buf.writeUUID(row.id);
             buf.writeVarInt(row.kind);
@@ -100,18 +103,21 @@ public final class ControlPanelPayloads {
             buf.writeVarInt(row.warpers);
             buf.writeVarInt(row.range);
             buf.writeVarLong(row.energy);
+            buf.writeBoolean(row.editable);
         }
 
         static StationRow read(FriendlyByteBuf buf) {
             return new StationRow(buf.readUUID(), buf.readVarInt(), buf.readUtf(MAX_TEXT), buf.readBlockPos(), buf.readUtf(MAX_TEXT),
                     buf.readVarInt(), buf.readUtf(Station.MAX_NAME * 4), buf.readVarInt(), buf.readVarInt(), buf.readBoolean(), buf.readVarInt(),
                     readList(buf, Station.MAX_PARTNERS, b -> b.readUUID()), readList(buf, 8, SlotRow::read), buf.readVarInt(),
-                    buf.readVarInt(), buf.readVarInt(), buf.readVarInt(), buf.readVarInt(), buf.readVarInt(), buf.readVarLong());
+                    buf.readVarInt(), buf.readVarInt(), buf.readVarInt(), buf.readVarInt(), buf.readVarInt(), buf.readVarLong(),
+                    buf.readBoolean());
         }
     }
 
     /** 登记表里的一台配送器；{@code icarus}、{@code peer} 是两种模式的序号，{@code pending} 是改了还没生效（没加载）。 */
-    public record DistributorRow(String dimension, BlockPos pos, String item, int icarus, int peer, int bots, boolean pending) {
+    public record DistributorRow(String dimension, BlockPos pos, String item, int icarus, int peer, int bots, boolean pending,
+            boolean editable) {
         static void write(FriendlyByteBuf buf, DistributorRow row) {
             buf.writeUtf(row.dimension, MAX_TEXT);
             buf.writeBlockPos(row.pos);
@@ -120,16 +126,17 @@ public final class ControlPanelPayloads {
             buf.writeVarInt(row.peer);
             buf.writeVarInt(row.bots);
             buf.writeBoolean(row.pending);
+            buf.writeBoolean(row.editable);
         }
 
         static DistributorRow read(FriendlyByteBuf buf) {
             return new DistributorRow(buf.readUtf(MAX_TEXT), buf.readBlockPos(), buf.readUtf(MAX_TEXT), buf.readVarInt(), buf.readVarInt(),
-                    buf.readVarInt(), buf.readBoolean());
+                    buf.readVarInt(), buf.readBoolean(), buf.readBoolean());
         }
     }
 
-    /** 一条物品路线和走着它的站。 */
-    public record RouteRow(UUID id, String item, boolean systems, String from, String to, List<UUID> stations) {
+    /** 一条物品路线和走着它的站；{@code editable} 是收快照的玩家能不能删它。 */
+    public record RouteRow(UUID id, String item, boolean systems, String from, String to, List<UUID> stations, boolean editable) {
         static void write(FriendlyByteBuf buf, RouteRow row) {
             buf.writeUUID(row.id);
             buf.writeUtf(row.item, MAX_TEXT);
@@ -137,11 +144,12 @@ public final class ControlPanelPayloads {
             buf.writeUtf(row.from, MAX_TEXT);
             buf.writeUtf(row.to, MAX_TEXT);
             writeList(buf, row.stations, MAX_STATIONS, (b, uuid) -> b.writeUUID(uuid));
+            buf.writeBoolean(row.editable);
         }
 
         static RouteRow read(FriendlyByteBuf buf) {
             return new RouteRow(buf.readUUID(), buf.readUtf(MAX_TEXT), buf.readBoolean(), buf.readUtf(MAX_TEXT), buf.readUtf(MAX_TEXT),
-                    readList(buf, MAX_STATIONS, b -> b.readUUID()));
+                    readList(buf, MAX_STATIONS, b -> b.readUUID()), buf.readBoolean());
         }
 
         public ItemRoute route() {

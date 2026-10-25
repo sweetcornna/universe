@@ -19,6 +19,7 @@ import io.github.sweetcornna.universe.factory.research.Research;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.MinecraftServer;
 
 /**
@@ -33,8 +34,8 @@ import net.minecraft.server.MinecraftServer;
  * </ul>
  */
 public final class DysonCommand {
-    private static final SimpleCommandExceptionType NO_STAR = new SimpleCommandExceptionType(Component.literal("这里没有恒星"));
-    private static final SimpleCommandExceptionType FAILED = new SimpleCommandExceptionType(Component.literal("没有改成：编号不存在或超出上限"));
+    private static final SimpleCommandExceptionType NO_STAR = new SimpleCommandExceptionType(Component.translatable("commands.universe.dyson.no_star"));
+    private static final SimpleCommandExceptionType FAILED = new SimpleCommandExceptionType(Component.translatable("commands.universe.dyson.failed"));
 
     private DysonCommand() {
     }
@@ -96,20 +97,19 @@ public final class DysonCommand {
         int system = system(context);
         DysonSphere sphere = Dyson.sphere(context.getSource().getServer(), system);
         double limit = Dyson.latitudeLimit(context.getSource().getServer());
-        StringBuilder text = new StringBuilder(String.format(Locale.ROOT,
-                "恒星系 %d：光照系数 %.2f，半径上限 %.3f AU，能建纬度 ±%.0f°，发电 %.1f 焦/刻（戴森云 %.1f，戴森壳 %.1f），接收站取走 %.1f，在飞火箭 %d",
-                system, sphere.lightFactor(), sphere.maxRadius(), limit, sphere.generation(), sphere.swarmPower(), sphere.shellPower(),
-                sphere.lastDrawn(), sphere.rockets().size()));
+        MutableComponent text = Component.translatable("commands.universe.dyson.info",
+                system, number(sphere.lightFactor(), 2), number(sphere.maxRadius(), 3), number(limit, 0), number(sphere.generation(), 1),
+                number(sphere.swarmPower(), 1), number(sphere.shellPower(), 1), number(sphere.lastDrawn(), 1), sphere.rockets().size());
         for (SwarmOrbit orbit : sphere.orbits()) {
-            text.append(String.format(Locale.ROOT, "\n  轨道 %d：半径 %.3f，倾角 %.0f°，升交点 %.0f°，%d 张帆", orbit.id(), orbit.radius(),
-                    orbit.inclination(), orbit.ascendingNode(), orbit.sails()));
+            text.append("\n  ").append(Component.translatable("commands.universe.dyson.info.orbit", orbit.id(), number(orbit.radius(), 3),
+                    number(orbit.inclination(), 0), number(orbit.ascendingNode(), 0), orbit.sails()));
         }
         for (DysonLayer layer : sphere.layers()) {
-            text.append(String.format(Locale.ROOT, "\n  第 %d 层：半径 %.3f，%s×%d，结构点 %d/%d，单元点 %d/%d", layer.id(), layer.radius(),
-                    layer.grid().template().name().toLowerCase(Locale.ROOT), layer.grid().density(), layer.structurePoints(),
+            text.append("\n  ").append(Component.translatable("commands.universe.dyson.info.layer", layer.id(), number(layer.radius(), 3),
+                    Component.translatable("gui.universe.dyson.template." + layer.grid().template().ordinal()), layer.grid().density(), layer.structurePoints(),
                     layer.structureCapacity(limit), layer.cellPoints(), layer.cellCapacity(limit)));
         }
-        context.getSource().sendSuccess(() -> Component.literal(text.toString()), false);
+        context.getSource().sendSuccess(() -> text, false);
         return 1;
     }
 
@@ -119,7 +119,7 @@ public final class DysonCommand {
             throw FAILED.create();
         }
         changed(context);
-        context.getSource().sendSuccess(() -> Component.literal("新建了戴森云轨道 " + id), true);
+        context.getSource().sendSuccess(() -> Component.translatable("commands.universe.dyson.orbit_added", id), true);
         return id;
     }
 
@@ -130,7 +130,7 @@ public final class DysonCommand {
             throw FAILED.create();
         }
         changed(context);
-        context.getSource().sendSuccess(() -> Component.literal("新建了戴森壳第 " + id + " 层"), true);
+        context.getSource().sendSuccess(() -> Component.translatable("commands.universe.dyson.layer_added", id), true);
         return id;
     }
 
@@ -140,7 +140,7 @@ public final class DysonCommand {
             throw FAILED.create();
         }
         changed(context);
-        context.getSource().sendSuccess(() -> Component.literal("第 " + layer + " 层能建的部分已经建满"), true);
+        context.getSource().sendSuccess(() -> Component.translatable("commands.universe.dyson.completed", layer), true);
         return 1;
     }
 
@@ -153,7 +153,7 @@ public final class DysonCommand {
             throw FAILED.create();
         }
         changed(context);
-        context.getSource().sendSuccess(() -> Component.literal("往轨道 " + orbit + " 加了 " + count + " 张帆"), true);
+        context.getSource().sendSuccess(() -> Component.translatable("commands.universe.dyson.sails", orbit, count), true);
         return count;
     }
 
@@ -162,7 +162,11 @@ public final class DysonCommand {
         sphere.orbits().stream().map(SwarmOrbit::id).toList().forEach(sphere::removeOrbit);
         sphere.layers().stream().map(DysonLayer::id).toList().forEach(sphere::removeLayer);
         changed(context);
-        context.getSource().sendSuccess(() -> Component.literal("戴森球已清空"), true);
+        context.getSource().sendSuccess(() -> Component.translatable("commands.universe.dyson.cleared"), true);
         return 1;
+    }
+
+    private static String number(double value, int digits) {
+        return String.format(Locale.ROOT, "%." + digits + "f", value);
     }
 }

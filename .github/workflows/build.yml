@@ -23,3 +23,24 @@ jobs:
 
       - name: Build with Gradle
         run: ./gradlew build
+
+      # 改了数据生成却忘了提交 src/generated 时在这里报出来
+      - name: Check generated resources
+        run: |
+          ./gradlew runData
+          git status --porcelain src/generated
+          test -z "$(git status --porcelain src/generated)"
+
+      # 全部游戏内测试，跑完自己退出，不需要 EULA
+      - name: Run GameTests
+        run: ./gradlew runGameTestServer
+
+      - name: Upload logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: run-logs
+          path: |
+            run/logs/
+            run/crash-reports/
+          if-no-files-found: ignore

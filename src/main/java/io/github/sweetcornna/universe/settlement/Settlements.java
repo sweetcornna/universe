@@ -683,8 +683,10 @@ public final class Settlements {
             for (int i = 0; i < s.plotCount(); i++) {
                 Plot plot = s.plot(i);
                 if (plot.active() && plot.type() == BuildingType.FISHING_POND) {
+                    BlockPos pond = SettlementBuilder.pond(entry, i);
+                    Fishing.Water water = SettlementBuilder.pondWater(level, entry, i);
                     for (int k = 0; k < SettlementRules.fishPerDay(plot.grade()); k++) {
-                        stock(entry, Fishing.pondCatch(level, SettlementBuilder.pond(entry, i), level.getRandom(), plot.grade()));
+                        stock(entry, Fishing.pondCatch(level, pond, water, level.getRandom(), plot.grade()));
                     }
                 }
             }
@@ -860,6 +862,11 @@ public final class Settlements {
     /** 给游戏内测试用：地基上方块的样子（第 {@code y} 层，地基的本地坐标）。 */
     public static BlockPos testPlotPos(SettlementData.Entry entry, int plot, int bx, int y, int bz) {
         return SettlementBuilder.frame(entry, plot).at(bx, y, bz);
+    }
+
+    /** 给游戏内测试用：这块鱼塘每天出鱼按的水。 */
+    public static Fishing.Water testPondWater(ServerLevel level, SettlementData.Entry entry, int plot) {
+        return SettlementBuilder.pondWater(level, entry, plot);
     }
 
     /** 给游戏内测试用：施工终端在哪。 */

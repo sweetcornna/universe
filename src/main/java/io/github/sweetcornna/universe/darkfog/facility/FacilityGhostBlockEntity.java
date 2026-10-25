@@ -1,9 +1,14 @@
 package io.github.sweetcornna.universe.darkfog.facility;
 
+import java.util.UUID;
+
+import org.jspecify.annotations.Nullable;
+
 import io.github.sweetcornna.universe.darkfog.FacilityData;
 import io.github.sweetcornna.universe.registry.UniverseBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.protocol.Packet;
@@ -26,6 +31,8 @@ public class FacilityGhostBlockEntity extends BlockEntity {
     private BlockState original = Blocks.AIR.defaultBlockState();
     /** 物品上带走的组件（物流站的账本、带着东西走的设备的格子）；没有就是空的。 */
     private DataComponentPatch contents = DataComponentPatch.EMPTY;
+    /** 物流站、采集器、配送器原来的主人（ADR-0033 §三）：谁重建的都还是他的。没有主人、旧档里的残影是空的。 */
+    private @Nullable UUID owner;
 
     public FacilityGhostBlockEntity(BlockPos pos, BlockState state) {
         super(UniverseBlockEntities.FACILITY_GHOST.get(), pos, state);
@@ -39,14 +46,19 @@ public class FacilityGhostBlockEntity extends BlockEntity {
         return this.contents;
     }
 
+    public @Nullable UUID owner() {
+        return this.owner;
+    }
+
     /** 两格高的设备：上半截也画、也挡着。 */
     public boolean tall() {
         return this.original.hasProperty(BlockStateProperties.DOUBLE_BLOCK_HALF);
     }
 
-    void set(BlockState original, DataComponentPatch contents) {
+    void set(BlockState original, DataComponentPatch contents, @Nullable UUID owner) {
         this.original = original;
         this.contents = contents;
+        this.owner = owner;
         this.setChanged();
         if (this.level != null) {
             this.level.sendBlockUpdated(this.worldPosition, this.getBlockState(), this.getBlockState(), Block.UPDATE_CLIENTS);
@@ -74,6 +86,7 @@ public class FacilityGhostBlockEntity extends BlockEntity {
         super.loadAdditional(input);
         this.original = input.read("Original", BlockState.CODEC).orElse(Blocks.AIR.defaultBlockState());
         this.contents = input.read("Contents", DataComponentPatch.CODEC).orElse(DataComponentPatch.EMPTY);
+        this.owner = input.read("Owner", UUIDUtil.CODEC).orElse(null);
     }
 
     @Override
@@ -82,6 +95,9 @@ public class FacilityGhostBlockEntity extends BlockEntity {
         output.store("Original", BlockState.CODEC, this.original);
         if (!this.contents.isEmpty()) {
             output.store("Contents", DataComponentPatch.CODEC, this.contents);
+        }
+        if (this.owner != null) {
+            output.store("Owner", UUIDUtil.CODEC, this.owner);
         }
     }
 

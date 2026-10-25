@@ -6,6 +6,8 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 
 import org.jspecify.annotations.Nullable;
 
@@ -15,6 +17,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.core.mecha.Distribution;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.UUIDUtil;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -32,9 +35,12 @@ public final class DistributorRegistry extends SavedData {
     public record Key(String dimension, BlockPos pos) {
     }
 
-    /** 表里的一行：物品（空串是没设）、两种模式、机器人数；{@code pending} 是远程改了还没生效。 */
+    /**
+     * 表里的一行：物品（空串是没设）、两种模式、机器人数；{@code pending} 是远程改了还没生效；{@code owner} 是放下它的玩家
+     * （没加载时控制面板靠它判断能不能改，0.14 的档里没有）。
+     */
     public record Entry(String dimension, BlockPos pos, String item, Distribution.Icarus icarus, Distribution.Peer peer, int bots,
-            boolean pending) {
+            boolean pending, Optional<UUID> owner) {
         static final Codec<Entry> CODEC = RecordCodecBuilder.create(i -> i.group(
                 Codec.STRING.fieldOf("dimension").forGetter(Entry::dimension),
                 BlockPos.CODEC.fieldOf("pos").forGetter(Entry::pos),
@@ -42,10 +48,11 @@ public final class DistributorRegistry extends SavedData {
                 Codec.STRING.optionalFieldOf("icarus", "NONE").forGetter(entry -> entry.icarus.name()),
                 Codec.STRING.optionalFieldOf("peer", "NONE").forGetter(entry -> entry.peer.name()),
                 Codec.INT.optionalFieldOf("bots", 0).forGetter(Entry::bots),
-                Codec.BOOL.optionalFieldOf("pending", false).forGetter(Entry::pending)
-        ).apply(i, (dimension, pos, item, icarus, peer, bots, pending) -> new Entry(dimension, pos, item,
+                Codec.BOOL.optionalFieldOf("pending", false).forGetter(Entry::pending),
+                UUIDUtil.CODEC.optionalFieldOf("owner").forGetter(Entry::owner)
+        ).apply(i, (dimension, pos, item, icarus, peer, bots, pending, owner) -> new Entry(dimension, pos, item,
                 enumOr(Distribution.Icarus.class, icarus, Distribution.Icarus.NONE), enumOr(Distribution.Peer.class, peer, Distribution.Peer.NONE),
-                bots, pending)));
+                bots, pending, owner)));
 
         public Key key() {
             return new Key(this.dimension, this.pos);
@@ -94,7 +101,8 @@ public final class DistributorRegistry extends SavedData {
     void record(ServerLevel level, DistributorBlockEntity distributor) {
         Key key = key(level, distributor.getBlockPos());
         String item = distributor.filter() == null ? "" : BuiltInRegistries.ITEM.getKey(distributor.filter()).toString();
-        Entry entry = new Entry(key.dimension(), key.pos(), item, distributor.icarus(), distributor.peer(), distributor.bots(), false);
+        Entry entry = new Entry(key.dimension(), key.pos(), item, distributor.icarus(), distributor.peer(), distributor.bots(), false,
+                distributor.owner());
         if (!entry.equals(this.entries.get(key))) {
             this.entries.put(key, entry);
             this.setDirty();
@@ -122,9 +130,9 @@ public final class DistributorRegistry extends SavedData {
         }
         Entry changed = switch (button) {
             case DistributorBlockEntity.CYCLE_ICARUS -> new Entry(entry.dimension, entry.pos, entry.item, next(entry.icarus), entry.peer,
-                    entry.bots, true);
+                    entry.bots, true, entry.owner);
             case DistributorBlockEntity.CYCLE_PEER -> new Entry(entry.dimension, entry.pos, entry.item, entry.icarus, next(entry.peer),
-                    entry.bots, true);
+                    entry.bots, true, entry.owner);
             default -> null;
         };
         if (changed == null) {

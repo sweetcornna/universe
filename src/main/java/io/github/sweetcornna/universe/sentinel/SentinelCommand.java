@@ -19,12 +19,14 @@ import io.github.sweetcornna.universe.core.galaxy.StarSystem;
 import io.github.sweetcornna.universe.core.sentinel.Offense;
 import io.github.sweetcornna.universe.core.sentinel.SentinelLevel;
 import io.github.sweetcornna.universe.core.sentinel.Wanted;
+import io.github.sweetcornna.universe.discovery.Discoveries;
 import io.github.sweetcornna.universe.registry.UniverseAttachments;
 import io.github.sweetcornna.universe.world.planet.Planets;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentUtils;
 import net.minecraft.server.level.ServerPlayer;
 
 /**
@@ -34,7 +36,7 @@ import net.minecraft.server.level.ServerPlayer;
  */
 public final class SentinelCommand {
     private static final DynamicCommandExceptionType UNKNOWN_OFFENSE =
-            new DynamicCommandExceptionType(name -> Component.literal("未知的违规行为：" + name));
+            new DynamicCommandExceptionType(name -> Component.translatable("commands.universe.sentinel.unknown_offense", String.valueOf(name)));
     private static final SuggestionProvider<CommandSourceStack> OFFENSES = (context, builder) ->
             SharedSuggestionProvider.suggest(Arrays.stream(Offense.values()).map(o -> o.name().toLowerCase(Locale.ROOT)), builder);
 
@@ -60,9 +62,9 @@ public final class SentinelCommand {
         ServerPlayer player = context.getSource().getPlayerOrException();
         SentinelLevel level = Sentinels.level(player.level());
         Wanted wanted = player.getData(UniverseAttachments.SENTINEL_ALERT).wanted();
-        context.getSource().sendSuccess(() -> Component.literal(String.format(Locale.ROOT,
-                "守卫强度：%s（巡逻 %d 架，警戒倍数 %.1f）；警戒值 %.1f，通缉 %d 级，脱离 %.0f%%",
-                level.nameZh(), level.patrols(), level.alertFactor(), wanted.alert(), wanted.level(), wanted.escapeProgress() * 100)), false);
+        context.getSource().sendSuccess(() -> Component.translatable("commands.universe.sentinel.status",
+                name(level), level.patrols(), number(level.alertFactor(), 1), number(wanted.alert(), 1), wanted.level(),
+                number(wanted.escapeProgress() * 100, 0)), false);
         return wanted.level();
     }
 
@@ -70,20 +72,29 @@ public final class SentinelCommand {
         ServerPlayer player = context.getSource().getPlayerOrException();
         int system = Planets.body(player.level()).map(planet -> planet.id().system()).orElse(GalaxyGenerator.HOME_SYSTEM);
         StarSystem star = Planets.galaxy(player.level().getServer()).systems().get(system);
-        List<String> lines = new ArrayList<>();
+        List<Component> lines = new ArrayList<>();
         for (Planet planet : star.planets()) {
             lines.add(line(planet));
             for (Planet moon : planet.moons()) {
-                lines.add("  " + line(moon));
+                lines.add(Component.literal("  ").append(line(moon)));
             }
         }
-        context.getSource().sendSuccess(() -> Component.literal(String.join("\n", lines)), false);
+        Component text = ComponentUtils.formatList(lines, Component.literal("\n"));
+        context.getSource().sendSuccess(() -> text, false);
         return lines.size();
     }
 
-    private static String line(Planet planet) {
-        return planet.id().path() + " " + planet.name().zh() + "（" + planet.type().nameZh() + "）守卫："
-                + SentinelLevel.of(planet).nameZh();
+    private static Component line(Planet planet) {
+        return Component.translatable("commands.universe.sentinel.planet", planet.id().path(), Discoveries.bilingual(planet.name()),
+                Component.translatable("universe.name", planet.type().nameZh(), planet.type().nameEn()), name(SentinelLevel.of(planet)));
+    }
+
+    private static Component name(SentinelLevel level) {
+        return Component.translatable("universe.name", level.nameZh(), level.nameEn());
+    }
+
+    private static String number(double value, int digits) {
+        return String.format(Locale.ROOT, "%." + digits + "f", value);
     }
 
     private static int offend(CommandContext<CommandSourceStack> context, int times) throws CommandSyntaxException {
@@ -104,9 +115,9 @@ public final class SentinelCommand {
     private static int spawn(CommandContext<CommandSourceStack> context, boolean heavy) throws CommandSyntaxException {
         ServerPlayer player = context.getSource().getPlayerOrException();
         Sentinel sentinel = Sentinels.spawn(player.level(), player, heavy, false);
-        context.getSource().sendSuccess(() -> Component.literal(sentinel == null ? "附近找不到地方放守卫机"
-                : String.format(Locale.ROOT, "在 %.0f %.0f %.0f 放了一架%s守卫机", sentinel.getX(), sentinel.getY(), sentinel.getZ(),
-                        heavy ? "重型" : "")), false);
+        context.getSource().sendSuccess(() -> sentinel == null ? Component.translatable("commands.universe.sentinel.spawn.failed")
+                : Component.translatable(heavy ? "commands.universe.sentinel.spawned_heavy" : "commands.universe.sentinel.spawned",
+                        number(sentinel.getX(), 0), number(sentinel.getY(), 0), number(sentinel.getZ(), 0)), false);
         return sentinel == null ? 0 : 1;
     }
 

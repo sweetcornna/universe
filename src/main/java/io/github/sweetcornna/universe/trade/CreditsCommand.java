@@ -37,7 +37,7 @@ public final class CreditsCommand {
 
     private static int show(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         long credits = Credits.get(context.getSource().getPlayerOrException());
-        context.getSource().sendSuccess(() -> Component.literal("信用点：" + Credits.format(credits)), false);
+        context.getSource().sendSuccess(() -> Component.translatable("commands.universe.credits", Credits.format(credits)), false);
         return (int) Math.min(Integer.MAX_VALUE, credits);
     }
 }

@@ -48,17 +48,19 @@ import net.minecraft.world.phys.Vec3;
  *   <li>客户端：咕嘟时冒泡、地面轻震；喷的时候画水汽柱；人在柱子里时往上抛（人的移动在客户端）。</li>
  * </ul>
  *
- * <p>调试命令和 GameTest 可以让它马上喷（{@link #erupt}），这一下同步给客户端。
+ * <p>调试命令和 GameTest 可以让它马上喷（{@link #erupt}），这一下同步给客户端。这一轮不喷（{@link #dormant()}）也同步给客户端，
+ * 客户端就不冒泡、不画柱子、不把人往上抛。
  */
 public class GeyserVentBlockEntity extends BlockEntity {
     private static final String FORCED = "Forced";
+    private static final String DORMANT = "Dormant";
     /** 多近的人觉得到地面在震、看得到提示。 */
     private static final double NEAR = 8;
 
     /** 强制喷发从哪一刻开始响；没有为 {@link Long#MIN_VALUE}。 */
     private long forced = Long.MIN_VALUE;
     private @Nullable GeyserCycle cycle;
-    /** 这一轮不喷（基地旁边、规则关了）：每轮开始响的时候查一次。 */
+    /** 这一轮不喷（基地旁边、规则关了）：每轮开始响的时候查一次，变了同步给客户端。 */
     private boolean dormant;
 
     public GeyserVentBlockEntity(BlockPos pos, BlockState state) {
@@ -76,20 +78,29 @@ public class GeyserVentBlockEntity extends BlockEntity {
         return this.cycle;
     }
 
-    public GeyserCycle.Phase phase(long time) {
+    /** 这一刻在不在强制喷发的那一轮里。 */
+    private boolean forced(long time) {
         long since = time - this.forced;
-        if (this.forced != Long.MIN_VALUE && since >= 0 && since < GeyserCycle.RUMBLE + GeyserCycle.ERUPT) {
-            return since < GeyserCycle.RUMBLE ? GeyserCycle.Phase.RUMBLE : GeyserCycle.Phase.ERUPT;
+        return this.forced != Long.MIN_VALUE && since >= 0 && since < GeyserCycle.RUMBLE + GeyserCycle.ERUPT;
+    }
+
+    public GeyserCycle.Phase phase(long time) {
+        if (this.forced(time)) {
+            return time - this.forced < GeyserCycle.RUMBLE ? GeyserCycle.Phase.RUMBLE : GeyserCycle.Phase.ERUPT;
         }
         return this.cycle().phase(time);
     }
 
     public int intoPhase(long time) {
-        long since = time - this.forced;
-        if (this.forced != Long.MIN_VALUE && since >= 0 && since < GeyserCycle.RUMBLE + GeyserCycle.ERUPT) {
+        if (this.forced(time)) {
+            long since = time - this.forced;
             return (int) (since < GeyserCycle.RUMBLE ? since : since - GeyserCycle.RUMBLE);
         }
         return this.cycle().intoPhase(time);
+    }
+
+    public boolean dormant() {
+        return this.dormant;
     }
 
     /** 这一刻水汽柱多高。 */
@@ -116,8 +127,7 @@ public class GeyserVentBlockEntity extends BlockEntity {
         }
         int into = vent.intoPhase(time);
         if (phase == GeyserCycle.Phase.RUMBLE && into == 0) {
-            boolean forced = time - vent.forced < GeyserCycle.RUMBLE + GeyserCycle.ERUPT;
-            vent.dormant = !forced && (!Hazards.enabled(server) || Hazards.exempt(server, pos));
+            vent.settle(server, time);
             if (!vent.dormant) {
                 server.playSound(null, pos, HazardSounds.GEYSER_RUMBLE.get(), SoundSource.BLOCKS, 1.0F, 0.9F + server.getRandom().nextFloat() * 0.2F);
                 for (ServerPlayer player : server.getPlayers(p -> p.position().distanceTo(Vec3.atCenterOf(pos)) < NEAR)) {
@@ -133,6 +143,17 @@ public class GeyserVentBlockEntity extends BlockEntity {
                 server.playSound(null, pos, HazardSounds.GEYSER_ERUPT.get(), SoundSource.BLOCKS, 2.0F, 0.9F + server.getRandom().nextFloat() * 0.2F);
             }
             vent.lift(server, time, vent.column(time));
+        }
+    }
+
+    /** 这一轮喷不喷：每轮开始响的时候查一次（强制喷的不查）；变了就存档、同步给客户端。服务端调。 */
+    public void settle(ServerLevel level, long time) {
+        // 不能直接拿 time - forced 比：没强制喷过时 forced 是 Long.MIN_VALUE，相减溢出成负数，就成了一直在强制喷
+        boolean dormant = !this.forced(time) && (!Hazards.enabled(level) || Hazards.exempt(level, this.worldPosition));
+        if (dormant != this.dormant) {
+            this.dormant = dormant;
+            this.setChanged();
+            level.sendBlockUpdated(this.worldPosition, this.getBlockState(), this.getBlockState(), 3);
         }
     }
 
@@ -183,7 +204,8 @@ public class GeyserVentBlockEntity extends BlockEntity {
     public static void clientTick(Level level, BlockPos pos, BlockState state, GeyserVentBlockEntity vent) {
         long time = level.getGameTime();
         GeyserCycle.Phase phase = vent.phase(time);
-        if (phase == GeyserCycle.Phase.QUIET) {
+        // 这一轮不喷：不冒泡、不震，也不把人往上抛
+        if (phase == GeyserCycle.Phase.QUIET || vent.dormant) {
             return;
         }
         RandomSource random = level.getRandom();
@@ -200,7 +222,7 @@ public class GeyserVentBlockEntity extends BlockEntity {
             }
             return;
         }
-        double column = GeyserCycle.columnAt(phase, vent.intoPhase(time));
+        double column = vent.column(time);
         if (column <= 0) {
             return;
         }
@@ -286,6 +308,7 @@ public class GeyserVentBlockEntity extends BlockEntity {
     protected void loadAdditional(ValueInput input) {
         super.loadAdditional(input);
         this.forced = input.getLongOr(FORCED, Long.MIN_VALUE);
+        this.dormant = input.getBooleanOr(DORMANT, false);
     }
 
     @Override
@@ -293,6 +316,9 @@ public class GeyserVentBlockEntity extends BlockEntity {
         super.saveAdditional(output);
         if (this.forced != Long.MIN_VALUE) {
             output.putLong(FORCED, this.forced);
+        }
+        if (this.dormant) {
+            output.putBoolean(DORMANT, true);
         }
     }
 

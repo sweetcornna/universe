@@ -3,6 +3,8 @@ package io.github.sweetcornna.universe.entity.ship;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jspecify.annotations.Nullable;
+
 import io.github.sweetcornna.universe.core.deepspace.ShipSides;
 import io.github.sweetcornna.universe.core.ship.ShipShape;
 import io.github.sweetcornna.universe.deepspace.ShipTractor;
@@ -21,35 +23,41 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 
 /**
  * 把一艘船上所有箱子、木桶的格子拼成一个容器（ADR-0030 §六）：飞着的时候方块存在实体里（{@link ShipStructure}），
- * 所以打开界面时一次把方块实体都读出来，玩家改完以后再整船写回去。
+ * 所以先把方块实体都读出来，改完以后再写回船的结构。
  *
  * <p>按 {@link ShipStructure#blocks()} 的顺序排格子，同一艘船每次打开的顺序一样。读出来的方块实体留在
- * {@link Loaded} 里，{@link #setChanged()} 把动过的那几个写回船的结构。
+ * {@link Loaded} 里，{@link #setChanged()} 只把动过的那几个货柜换进船上现在的结构，别的方块（驾驶台的技术）不动。
+ *
+ * <p>船的结构是唯一的那一份：几个人同时开着货舱共用一个容器（{@link #forShip}）；船上的结构被别处换过
+ * （另一个容器写回了、挖矿和战利品装了货、击毁丢了货、改了技术），下次读写前先按现在的结构重读，
+ * 不会拿旧的那份写回去，也不会有人看着已经被拿走的东西。
  */
 public final class ShipCargoContainer implements Container {
     private final ShipEntity ship;
     private final RegistryAccess registries;
-    private final List<ShipStructure.ShipBlock> blocks;
-    /** 每个货柜：读出来的容器和它在 {@link #blocks} 里的下标。 */
-    private final List<Loaded> holds;
-    /** 第 i 格在哪个货柜的哪一格：{@code slots[i]} 是货柜的下标，{@code inner[i]} 是货柜里的格号。 */
-    private final int[] holdOf;
-    private final int[] innerOf;
+    /** 读出货柜时船上的那份结构。 */
+    private @Nullable ShipStructure source;
+    /** 每个货柜：读出来的容器和它在结构的方块表里的下标。 */
+    private List<Loaded> holds = List.of();
+    /** 第 i 格在哪个货柜的哪一格：{@code holdOf[i]} 是货柜的下标，{@code innerOf[i]} 是货柜里的格号。 */
+    private int[] holdOf = new int[0];
+    private int[] innerOf = new int[0];
 
-    private ShipCargoContainer(ShipEntity ship, RegistryAccess registries, List<ShipStructure.ShipBlock> blocks, List<Loaded> holds,
-            int[] holdOf, int[] innerOf) {
+    private ShipCargoContainer(ShipEntity ship, RegistryAccess registries) {
         this.ship = ship;
         this.registries = registries;
-        this.blocks = blocks;
-        this.holds = holds;
-        this.holdOf = holdOf;
-        this.innerOf = innerOf;
+        this.load(ship.structure());
     }
 
     /** 读出这艘船的货舱；船没有结构时格数为 0。 */
     public static ShipCargoContainer of(ShipEntity ship, RegistryAccess registries) {
-        ShipStructure structure = ship.structure();
-        List<ShipStructure.ShipBlock> blocks = structure == null ? List.of() : new ArrayList<>(structure.blocks());
+        return new ShipCargoContainer(ship, registries);
+    }
+
+    /** 按 {@code structure} 读出所有货柜。 */
+    private void load(@Nullable ShipStructure structure) {
+        this.source = structure;
+        List<ShipStructure.ShipBlock> blocks = structure == null ? List.of() : structure.blocks();
         List<Loaded> holds = new ArrayList<>();
         List<int[]> slots = new ArrayList<>();
         for (int i = 0; i < blocks.size(); i++) {
@@ -58,7 +66,7 @@ public final class ShipCargoContainer implements Container {
                 continue;
             }
             BlockEntity entity = BlockEntity.loadStatic(new BlockPos(block.x(), block.y(), block.z()), block.state(), block.blockEntity(),
-                    registries);
+                    this.registries);
             if (!(entity instanceof Container container)) {
                 continue;
             }
@@ -74,12 +82,22 @@ public final class ShipCargoContainer implements Container {
             holdOf[i] = slots.get(i)[0];
             innerOf[i] = slots.get(i)[1];
         }
-        return new ShipCargoContainer(ship, registries, blocks, holds, holdOf, innerOf);
+        this.holds = holds;
+        this.holdOf = holdOf;
+        this.innerOf = innerOf;
+    }
+
+    /** 船上的结构被别处换过：先把这边还没写回去的改动写上去，再按现在的结构重读。 */
+    private void refresh() {
+        if (this.ship.structure() != this.source) {
+            this.setChanged();
+            this.load(this.ship.structure());
+        }
     }
 
     /**
-     * 往这艘船的货舱里装东西用的容器（ADR-0034 §四 牵引光束、碎片）：有人开着这艘船的货舱界面时用界面那一份，
-     * 不然两份各写各的，后写回去的会把先装进去的冲掉。
+     * 这艘船的货舱容器：有人开着这艘船的货舱界面时用界面那一份（再开货舱的人、牵引光束、碎片都用它，ADR-0034 §四），
+     * 没有就新读一份。
      */
     public static ShipCargoContainer forShip(ShipEntity ship, RegistryAccess registries) {
         if (ship.level() instanceof ServerLevel level) {
@@ -159,6 +177,7 @@ public final class ShipCargoContainer implements Container {
 
     @Override
     public int getContainerSize() {
+        this.refresh();
         return this.holdOf.length;
     }
 
@@ -213,9 +232,22 @@ public final class ShipCargoContainer implements Container {
         this.hold(slot).dirty = true;
     }
 
+    /**
+     * 第 {@code slot} 格的那一叠被就地改过，记下它所在的货柜，再写回船上。{@link #getItem} 给的就是货柜里的那一份，
+     * 原版界面 Shift 点击挪走一部分、收纳袋装取东西都直接改它，只调格子的 {@code setChanged}，不经过 {@link #setItem}。
+     */
+    public void changed(int slot) {
+        // 不先按船上现在的结构重读，重读会把这一格刚改的丢掉
+        if (slot >= 0 && slot < this.holdOf.length) {
+            this.hold(slot).dirty = true;
+        }
+        this.setChanged();
+    }
+
     /** 各货柜里最小的那个上限：箱子、木桶都是 99，有上限小的货柜（比如漏斗）就跟着它。 */
     @Override
     public int getMaxStackSize() {
+        this.refresh();
         int max = 99;
         for (Loaded hold : this.holds) {
             max = Math.min(max, hold.container.getMaxStackSize());
@@ -231,22 +263,37 @@ public final class ShipCargoContainer implements Container {
         return this.hold(slot).container.canPlaceItem(this.innerOf[slot], stack);
     }
 
-    /** 动过的货柜写回船的结构：船在飞还是停着都一样，结构是权威的那一份。 */
+    /**
+     * 动过的货柜写回船的结构：船在飞还是停着都一样，结构是权威的那一份。写在船上现在那份结构上，只换动过的货柜
+     * （飞着的船方块的位置和种类不变，下标对得上）。
+     */
     @Override
     public void setChanged() {
-        boolean changed = false;
+        ShipStructure current = this.ship.structure();
+        List<ShipStructure.ShipBlock> blocks = null;
         for (Loaded hold : this.holds) {
             if (!hold.dirty) {
                 continue;
             }
             hold.dirty = false;
-            ShipStructure.ShipBlock block = this.blocks.get(hold.index);
-            this.blocks.set(hold.index, new ShipStructure.ShipBlock(block.x(), block.y(), block.z(), block.state(),
+            // 船没了、或者结构换了样（数据被命令改过）就不写，免得写到别的方块上
+            if (current == null || hold.index >= current.blocks().size()) {
+                continue;
+            }
+            if (blocks == null) {
+                blocks = new ArrayList<>(current.blocks());
+            }
+            ShipStructure.ShipBlock block = blocks.get(hold.index);
+            blocks.set(hold.index, new ShipStructure.ShipBlock(block.x(), block.y(), block.z(), block.state(),
                     hold.entity.saveWithFullMetadata(this.registries)));
-            changed = true;
         }
-        if (changed) {
-            this.ship.replaceStructure(new ShipStructure(this.blocks));
+        if (blocks != null) {
+            ShipStructure written = new ShipStructure(blocks);
+            this.ship.replaceStructure(written);
+            // 只有这边写过：读出来的货柜和新结构一样，不用重读
+            if (current == this.source) {
+                this.source = written;
+            }
         }
     }
 

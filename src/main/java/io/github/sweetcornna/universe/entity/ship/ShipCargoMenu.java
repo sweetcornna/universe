@@ -216,7 +216,7 @@ public class ShipCargoMenu extends AbstractContainerMenu {
     @Override
     public void removed(Player player) {
         super.removed(player);
-        // 最后再写回一次：取走、放下时每次都写过了，这里管住拖拽之类不走 setChanged 的改动
+        // 最后再写回一次：取走、放下、就地改过的格子每次都写过了，这里兜住还没写回的
         this.cargo.setChanged();
     }
 
@@ -306,7 +306,12 @@ public class ShipCargoMenu extends AbstractContainerMenu {
 
         @Override
         public void setChanged() {
-            ShipCargoMenu.this.cargo.setChanged();
+            // 服务端：这一格的那一叠可能被就地改过（Shift 点击挪走一部分、收纳袋），记下这一格要写回
+            if (ShipCargoMenu.this.cargo instanceof ShipCargoContainer ship) {
+                ship.changed((ShipCargoMenu.this.scroll + this.row) * COLUMNS + this.column);
+            } else {
+                ShipCargoMenu.this.cargo.setChanged();
+            }
         }
     }
 }

@@ -17,10 +17,11 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.MinecraftServer;
 
 /**
- * 调试命令 {@code /universe research}，开发和测试用，提示文字不做翻译。
+ * 调试命令 {@code /universe research}，开发和测试用。
  *
  * <ul>
  * <li>{@code grant <科技>|all}：直接完成科技（{@code all} 完成全部）
@@ -32,7 +33,7 @@ import net.minecraft.server.MinecraftServer;
  */
 public final class ResearchCommand {
     private static final DynamicCommandExceptionType UNKNOWN_TECH =
-            new DynamicCommandExceptionType(id -> Component.literal("未知科技：" + id));
+            new DynamicCommandExceptionType(id -> Component.translatable("commands.universe.research.unknown", String.valueOf(id)));
     private static final SuggestionProvider<CommandSourceStack> TECHS = (context, builder) -> SharedSuggestionProvider.suggest(
             Research.TREE.techs().stream().map(Tech::id), builder);
     private static final SuggestionProvider<CommandSourceStack> UPGRADES = (context, builder) -> SharedSuggestionProvider.suggest(
@@ -71,7 +72,7 @@ public final class ResearchCommand {
 
     private static int grant(CommandContext<CommandSourceStack> context, String id) {
         Research.complete(context.getSource().getServer(), id);
-        context.getSource().sendSuccess(() -> Component.literal("已完成科技 " + id), true);
+        context.getSource().sendSuccess(() -> Component.translatable("commands.universe.research.granted", id), true);
         return 1;
     }
 
@@ -85,7 +86,7 @@ public final class ResearchCommand {
             }
         }
         int granted = count;
-        source.sendSuccess(() -> Component.literal("已完成 " + granted + " 个科技"), true);
+        source.sendSuccess(() -> Component.translatable("commands.universe.research.granted_all", granted), true);
         return granted;
     }
 
@@ -93,7 +94,7 @@ public final class ResearchCommand {
         MinecraftServer server = context.getSource().getServer();
         ResearchData.get(server).state().revoke(id);
         Research.changed(server);
-        context.getSource().sendSuccess(() -> Component.literal("已收回科技 " + id), true);
+        context.getSource().sendSuccess(() -> Component.translatable("commands.universe.research.revoked", id), true);
         return 1;
     }
 
@@ -101,7 +102,7 @@ public final class ResearchCommand {
         MinecraftServer server = source.getServer();
         ResearchData.get(server).state().clear();
         Research.changed(server);
-        source.sendSuccess(() -> Component.literal("已清空研究进度"), true);
+        source.sendSuccess(() -> Component.translatable("commands.universe.research.revoked_all"), true);
         return 1;
     }
 
@@ -112,7 +113,7 @@ public final class ResearchCommand {
         MinecraftServer server = context.getSource().getServer();
         ResearchData.get(server).state().setLevel(id, level);
         Research.changed(server);
-        context.getSource().sendSuccess(() -> Component.literal(id + " 设为 " + level + " 级"), true);
+        context.getSource().sendSuccess(() -> Component.translatable("commands.universe.research.level", id, level), true);
         return level;
     }
 
@@ -125,15 +126,16 @@ public final class ResearchCommand {
             added++;
         }
         int total = added;
-        context.getSource().sendSuccess(() -> Component.literal("加了 " + total + " 点"), true);
+        context.getSource().sendSuccess(() -> Component.translatable("commands.universe.research.points", total), true);
         return total;
     }
 
     private static int status(CommandSourceStack source) {
         ResearchState state = ResearchData.get(source.getServer()).state();
-        String done = state.done().isEmpty() ? "（无）" : String.join(", ", state.done());
-        String current = state.current() == null ? "（无）" : state.current() + " " + state.progress(state.current()) + "/"
-                + state.pointsNeeded(Research.TREE, state.current());
+        Component none = Component.translatable("commands.universe.none");
+        Component done = state.done().isEmpty() ? none : Component.literal(String.join(", ", state.done()));
+        Component current = state.current() == null ? none : Component.literal(state.current() + " " + state.progress(state.current()) + "/"
+                + state.pointsNeeded(Research.TREE, state.current()));
         String paused = state.progress().entrySet().stream()
                 .filter(entry -> !entry.getKey().equals(state.current()))
                 .map(entry -> entry.getKey() + " " + entry.getValue())
@@ -141,8 +143,15 @@ public final class ResearchCommand {
         String levels = state.levels().entrySet().stream()
                 .map(entry -> entry.getKey() + " " + entry.getValue())
                 .collect(Collectors.joining(", "));
-        source.sendSuccess(() -> Component.literal("已完成：" + done + "\n正在研究：" + current
-                + (paused.isEmpty() ? "" : "\n暂停的：" + paused) + (levels.isEmpty() ? "" : "\n升级：" + levels)), false);
+        MutableComponent text = Component.translatable("commands.universe.research.status.done", done)
+                .append("\n").append(Component.translatable("commands.universe.research.status.current", current));
+        if (!paused.isEmpty()) {
+            text.append("\n").append(Component.translatable("commands.universe.research.status.paused", paused));
+        }
+        if (!levels.isEmpty()) {
+            text.append("\n").append(Component.translatable("commands.universe.research.status.levels", levels));
+        }
+        source.sendSuccess(() -> text, false);
         return state.done().size();
     }
 }

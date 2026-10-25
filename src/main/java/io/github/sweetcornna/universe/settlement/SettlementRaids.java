@@ -40,7 +40,8 @@ import net.minecraft.world.phys.Vec3;
 /**
  * 聚落的海盗来袭（ADR-0034 §二）。到了时间：总督在 {@value SettlementRules#RAID_RANGE} 格内就真打——3–6 架海盗战机从远处飞来，
  * 一轮轮俯冲扫射建筑，炮台朝它们开火，2 分钟内全部打下来算守住；总督不在场（或者打到一半走了）就按防御值算输赢。
- * 结果落到数值上（{@link Settlement#finishRaid}）：守住了给信用点，没守住两座建筑受损、储备被抢。
+ * 聚落离玩家超过模拟距离时区块加载着也不更新实体，战机停在那里一动不动、打不下来，所以也算不在场；打到一半有战机飞出模拟距离停住，也一样。
+ * 只有打下来的才算数：战机不是打下来却没了（被指令清掉之类），剩下的连没了的也按防御值算。结果落到数值上（{@link Settlement#finishRaid}）：守住了给信用点，没守住两座建筑受损、储备被抢。
  *
  * <p>战机不存档；服务器重启时打到一半的来袭按没守住算，再排一次也不公平，所以这里按防御值补算。
  */
@@ -48,6 +49,9 @@ public final class SettlementRaids {
     /** 战机从多远的地方飞来，多高。 */
     private static final double SPAWN_DISTANCE = 140;
     private static final double SPAWN_HEIGHT = 50;
+    /** 出发的地方不在实体更新的范围里时，往总督那边分几步拉近，最多拉近四分之三（再近就是在头顶上冒出来）。 */
+    private static final int PULL_STEPS = 6;
+    private static final double MAX_PULL = 0.75;
     /** 炮台的射程、隔多少刻打一发、一发的伤害、弹速。 */
     private static final double TURRET_RANGE = 72;
     private static final int TURRET_INTERVAL = 16;
@@ -55,7 +59,7 @@ public final class SettlementRaids {
     private static final double TURRET_BOLT_SPEED = 4.0;
     private static final int TURRET_COLOR = 0x6EDCF5;
     /** 总督走开多久算不在场。 */
-    private static final int ABSENT_TICKS = 100;
+    public static final int ABSENT_TICKS = 100;
     /** 隔多久给战机换一个扫射的目标。 */
     private static final int RETARGET = 120;
 
@@ -71,6 +75,8 @@ public final class SettlementRaids {
         int absent;
         /** 游戏内测试放的：没有总督也一直打。 */
         boolean test;
+        /** 游戏内测试放的：当总督的假玩家（不在玩家表里，直接按它站在哪算在不在场）。 */
+        @Nullable ServerPlayer standIn;
 
         Raid(String settlement, UUID owner, int total, long start, Component name) {
             this.settlement = settlement;
@@ -129,47 +135,101 @@ public final class SettlementRaids {
 
     /** 来袭开始：总督在场就放战机，不在场按防御值算。 */
     static void begin(MinecraftServer server, @Nullable ServerLevel level, SettlementData.Entry entry, long now) {
+        begin(server, level, entry, now, Settlements.owner(server, entry.settlement()));
+    }
+
+    /**
+     * 总督在 {@value SettlementRules#RAID_RANGE} 格内、聚落中心和每架战机出发的地方都在实体更新的范围里，才放战机真打，返回这一场；
+     * 不然按防御值算，返回 null。
+     */
+    private static @Nullable Raid begin(MinecraftServer server, @Nullable ServerLevel level, SettlementData.Entry entry, long now,
+            @Nullable ServerPlayer owner) {
         Settlement s = entry.settlement();
-        ServerPlayer owner = Settlements.owner(server, s);
         Rng rng = Rng.of(Seeds.derive(s.seed(), "raid/" + now));
-        if (level == null || owner == null || owner.level() != level || s.distance(owner.getX(), owner.getZ()) > SettlementRules.RAID_RANGE) {
+        if (level == null || owner == null || owner.level() != level || s.distance(owner.getX(), owner.getZ()) > SettlementRules.RAID_RANGE
+                || !ticking(level, s)) {
             resolve(server, level, entry, s.resolveRaid(rng), false);
-            return;
+            return null;
         }
         int count = s.raidFighters();
-        Raid raid = new Raid(s.id(), owner.getUUID(), count, now, Component.translatable("bossbar.universe.settlement_raid", Settlements.displayName(entry)));
         double angle = rng.nextDouble() * Math.PI * 2;
+        List<Vec3> from = new ArrayList<>();
+        for (int slot = 0; slot < count; slot++) {
+            Vec3 at = spawnPoint(level, s, angle + (slot - count / 2.0) * 0.25, owner);
+            if (at == null) {
+                resolve(server, level, entry, s.resolveRaid(rng), false);
+                return null;
+            }
+            from.add(at);
+        }
+        Raid raid = new Raid(s.id(), owner.getUUID(), count, now, Component.translatable("bossbar.universe.settlement_raid", Settlements.displayName(entry)));
         List<BlockPos> targets = targets(entry);
         for (int slot = 0; slot < count; slot++) {
-            double a = angle + (slot - count / 2.0) * 0.25;
-            double x = s.x() + Math.cos(a) * SPAWN_DISTANCE;
-            double z = s.z() + Math.sin(a) * SPAWN_DISTANCE;
-            double y = Math.max(s.y(), level.getHeight(Heightmap.Types.MOTION_BLOCKING, (int) x, (int) z)) + SPAWN_HEIGHT;
             BlockPos target = targets.get(slot % targets.size());
-            PirateFighter fighter = PirateFighter.settlementRaider(level, owner.getUUID(), slot, count, new Vec3(x, y, z), Vec3.atCenterOf(target));
+            PirateFighter fighter = PirateFighter.settlementRaider(level, owner.getUUID(), slot, count, from.get(slot), Vec3.atCenterOf(target));
             if (level.addFreshEntity(fighter)) {
                 raid.fighters.add(fighter);
             }
         }
         if (raid.fighters.isEmpty()) {
             resolve(server, level, entry, s.resolveRaid(rng), false);
-            return;
+            return null;
         }
         RAIDS.put(s.id(), raid);
-        raid.bar.addPlayer(owner);
+        if (owner.connection != null) {
+            raid.bar.addPlayer(owner);
+        }
         level.playSound(null, s.x(), s.y() + 2, s.z(), SettlementSounds.RAID_ALARM.get(), SoundSource.HOSTILE, 2.0F, 1.0F);
         Settlements.chat(owner, Component.translatable("message.universe.settlement.raid_start", Settlements.displayName(entry), count,
                 SettlementRules.RAID_TICKS / 1200).withStyle(ChatFormatting.RED));
+        return raid;
+    }
+
+    /** 聚落中心在实体更新的范围里（离哪个玩家在模拟距离以内）：战机、炮弹在这里才会动。 */
+    private static boolean ticking(ServerLevel level, Settlement s) {
+        return level.isPositionEntityTicking(new BlockPos(s.x(), s.y(), s.z()));
+    }
+
+    /**
+     * 一架战机从哪里飞来：先放在 {@code angle} 方向 {@value #SPAWN_DISTANCE} 格外；那里不在实体更新的范围里（放过去也一动不动），
+     * 就一步步往总督那边拉近。拉到最近还不行返回 null。
+     */
+    private static @Nullable Vec3 spawnPoint(ServerLevel level, Settlement s, double angle, ServerPlayer owner) {
+        double farX = s.x() + Math.cos(angle) * SPAWN_DISTANCE;
+        double farZ = s.z() + Math.sin(angle) * SPAWN_DISTANCE;
+        for (int step = 0; step <= PULL_STEPS; step++) {
+            double pull = MAX_PULL * step / PULL_STEPS;
+            double x = farX + (owner.getX() - farX) * pull;
+            double z = farZ + (owner.getZ() - farZ) * pull;
+            BlockPos column = BlockPos.containing(x, s.y(), z);
+            if (level.isPositionEntityTicking(column)) {
+                double y = Math.max(s.y(), level.getHeight(Heightmap.Types.MOTION_BLOCKING, column.getX(), column.getZ())) + SPAWN_HEIGHT;
+                return new Vec3(x, y, z);
+            }
+        }
+        return null;
     }
 
     /**
      * 给游戏内测试用：不等总督，从 {@code from} 放 {@code count} 架扫射这个聚落（假玩家不在玩家表里，算不在场）。返回放出来的战机。
      */
     public static List<PirateFighter> testRaid(ServerLevel level, SettlementData.Entry entry, int count, Vec3 from) {
+        return testRaid(level, entry, count, from, null);
+    }
+
+    /** 同上；{@code owner} 不为空时它当总督，照它站在哪、聚落中心在不在更新算在不在场。 */
+    public static List<PirateFighter> testRaid(ServerLevel level, SettlementData.Entry entry, int count, Vec3 from, @Nullable ServerPlayer owner) {
+        return testRaid(level, entry, count, from, owner, 0);
+    }
+
+    /** 同上；当作已经打了 {@code age} 刻。 */
+    public static List<PirateFighter> testRaid(ServerLevel level, SettlementData.Entry entry, int count, Vec3 from, @Nullable ServerPlayer owner,
+            long age) {
         Settlement s = entry.settlement();
         long now = Settlements.now(level.getServer());
-        Raid raid = new Raid(s.id(), s.owner().orElse(UUID.randomUUID()), count, now, Component.literal(s.id()));
-        raid.test = true;
+        Raid raid = new Raid(s.id(), s.owner().orElse(UUID.randomUUID()), count, now - age, Component.literal(s.id()));
+        raid.test = owner == null;
+        raid.standIn = owner;
         List<BlockPos> targets = targets(entry);
         for (int slot = 0; slot < count; slot++) {
             PirateFighter fighter = PirateFighter.settlementRaider(level, raid.owner, slot, count, from.add(slot * 4, 0, 0),
@@ -180,6 +240,23 @@ public final class SettlementRaids {
         }
         RAIDS.put(s.id(), raid);
         return List.copyOf(raid.fighters);
+    }
+
+    /** 给游戏内测试用：到点开始来袭，{@code owner} 当总督。真打返回放出来的战机；按防御值算了返回空表。 */
+    public static List<PirateFighter> testBegin(ServerLevel level, SettlementData.Entry entry, ServerPlayer owner) {
+        MinecraftServer server = level.getServer();
+        Raid raid = begin(server, level, entry, Settlements.now(server), owner);
+        if (raid == null) {
+            return List.of();
+        }
+        raid.standIn = owner;
+        return List.copyOf(raid.fighters);
+    }
+
+    /** 给游戏内测试用：总督已经连着多少刻不在场；没在打返回 -1。 */
+    public static int testAbsent(String settlement) {
+        Raid raid = RAIDS.get(settlement);
+        return raid == null ? -1 : raid.absent;
     }
 
     /** 战机扫射的地方：开着的建筑，没有就打广场。 */
@@ -210,27 +287,36 @@ public final class SettlementRaids {
             }
             Settlement s = entry.settlement();
             ServerLevel level = Settlements.level(server, s);
+            // 打下来的已经由 onDestroyed 拿走了；还在表里却没了的是别的原因（被指令清掉之类），不算打下来。
+            // 区块卸下时不存档的实体不会被移除，只是停着不动，下面按不在场算
+            int before = raid.fighters.size();
             raid.fighters.removeIf(fighter -> fighter.isRemoved() || !fighter.isAlive());
+            int lost = before - raid.fighters.size();
             if (level == null) {
                 cancel(raid.settlement);
                 continue;
             }
-            ServerPlayer owner = server.getPlayerList().getPlayer(raid.owner);
-            boolean present = owner != null && owner.level() == level && s.distance(owner.getX(), owner.getZ()) <= SettlementRules.RAID_RANGE * 1.5;
+            ServerPlayer owner = raid.standIn != null ? raid.standIn : server.getPlayerList().getPlayer(raid.owner);
+            // 聚落中心不在实体更新的范围里，战机停在半空不动，人在附近也打不下来：和走开一样，过一会儿按防御值算。
+            // 战机飞出模拟距离（总督站得偏、模拟距离小）也一样停住，表空不了，所以每架都要在更新
+            boolean present = owner != null && owner.level() == level && s.distance(owner.getX(), owner.getZ()) <= SettlementRules.RAID_RANGE * 1.5
+                    && ticking(level, s) && raid.fighters.stream().allMatch(fighter -> level.isPositionEntityTicking(fighter.blockPosition()));
             raid.absent = present || raid.test ? 0 : raid.absent + 1;
             raid.bar.setProgress(raid.fighters.size() / (float) raid.total);
-            if (raid.fighters.isEmpty()) {
+            boolean late = now - raid.start > SettlementRules.RAID_TICKS;
+            if (lost == 0 && raid.fighters.isEmpty()) {
+                // 全是打下来的：守住了，哪怕最后一架正好在总督走开满时间、刚到点的这一刻打下来
                 finish(server, level, entry, raid, true);
                 continue;
             }
-            if (raid.absent > ABSENT_TICKS) {
-                // 总督走了：剩下的按防御值算
+            if (lost > 0 || raid.absent > ABSENT_TICKS || late && raid.absent > 0) {
+                // 总督走了、战机停住了或者没了（到点时刚停住也算）：剩下的（连没了的）按防御值算
                 Rng rng = Rng.of(Seeds.derive(s.seed(), "raid/absent/" + now));
-                boolean won = SettlementRules.defended(s.defense(), SettlementRules.strength(raid.fighters.size(), s.threat()), rng.nextDouble());
+                boolean won = SettlementRules.defended(s.defense(), SettlementRules.strength(raid.fighters.size() + lost, s.threat()), rng.nextDouble());
                 finish(server, level, entry, raid, won);
                 continue;
             }
-            if (now - raid.start > SettlementRules.RAID_TICKS) {
+            if (late) {
                 finish(server, level, entry, raid, false);
                 continue;
             }
@@ -255,6 +341,10 @@ public final class SettlementRaids {
                 continue;
             }
             BlockPos at = SettlementBuilder.turret(entry, i);
+            // 不在实体更新范围里的炮台不开火：炮弹不会动，也不为了看一眼炮台把区块加载起来
+            if (!level.isPositionEntityTicking(at)) {
+                continue;
+            }
             BlockState state = level.getBlockState(at);
             if (!state.is(UniverseBlocks.SETTLEMENT_TURRET.get())) {
                 continue;

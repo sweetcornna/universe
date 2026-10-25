@@ -46,7 +46,7 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
  * <p>布局：每排 {@link #ROW} 台一型制造台做齿轮，前面一排分拣器从一圈环形传送带上取铁锭；电力感应塔和人造恒星
  * 架在制造台顶上。设备排数够了以后，剩下的传送带搭成空转的环线，上面放着铜锭一直转。区块全部强制加载。每秒补一次
  * 环线上被取走的铁锭、清空制造台的产物，这部分单独记作 bench，看报告时扣掉。{@code /universe bench stop} 停止补给并取消
- * 强制加载，方块留着。
+ * 强制加载，方块留着。日志里的 {@code Bench:} 一行固定用中文，验收脚本靠它找结果。
  */
 public final class BenchCommand {
     /** 一排多长。 */
@@ -180,7 +180,8 @@ public final class BenchCommand {
         int beltCount = placedBelts;
         String message = String.format("参照基地：传送带 %d 格，制造台 %d 台，分拣器 %d 个，强制加载 %d 个区块", beltCount, placed, placed, chunks.size());
         Universe.LOGGER.info("Bench: {}", message);
-        source.sendSuccess(() -> Component.literal(message), true);
+        int machineCount = placed;
+        source.sendSuccess(() -> Component.translatable("commands.universe.bench.built", beltCount, machineCount, machineCount, chunks.size()), true);
         return placed;
     }
 
@@ -237,7 +238,9 @@ public final class BenchCommand {
             String message = String.format(Locale.ROOT, "参照基地：%d/%d 台在做，已做出 %d 个，每分钟 %.0f 个", working, bench.machines.size(),
                     bench.produced, bench.produced / minutes);
             Universe.LOGGER.info("Bench: {}", message);
-            source.sendSuccess(() -> Component.literal(message), false);
+            Component text = Component.translatable("commands.universe.bench.status", working, bench.machines.size(), bench.produced,
+                    String.format(Locale.ROOT, "%.0f", bench.produced / minutes));
+            source.sendSuccess(() -> text, false);
         }
         return BENCHES.size();
     }
@@ -250,7 +253,7 @@ public final class BenchCommand {
             }
         }
         BENCHES.clear();
-        source.sendSuccess(() -> Component.literal("停止了 " + count + " 座参照基地的补给"), true);
+        source.sendSuccess(() -> Component.translatable("commands.universe.bench.stopped", count), true);
         return count;
     }
 }

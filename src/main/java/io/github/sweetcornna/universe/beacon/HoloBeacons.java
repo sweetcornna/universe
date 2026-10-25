@@ -22,11 +22,13 @@ import net.minecraft.world.level.saveddata.SavedData;
 import net.minecraft.world.level.saveddata.SavedDataType;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.event.tick.ServerTickEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 /**
  * 世界里所有的全息信标（ADR-0033 §六），存在 {@code data/universe/holo_beacons.dat}：区块没加载的时候 HUD 和星图也要知道它们在哪。
- * 信标放下、改设置、拆掉时更新，变了就发给所有玩家（一个世界里通常几个到几十个，整张表一起发）。
+ * 信标放下、改设置、拆掉时更新，变了就发给所有玩家（一个世界里通常几个到几十个，整张表一起发）。一刻里改了好几回也只在这一刻末尾发一次，
+ * 免得有人连着发改设置的包，每个包都让服务端把整张表发给所有人。
  */
 public final class HoloBeacons extends SavedData {
     /** 一个信标：在哪、图标、颜色、字、能被看到的范围。 */
@@ -51,6 +53,8 @@ public final class HoloBeacons extends SavedData {
     public static final SavedDataType<HoloBeacons> TYPE = new SavedDataType<>(Universe.id("holo_beacons"), HoloBeacons::new, CODEC);
 
     private final Map<String, Beacon> beacons = new LinkedHashMap<>();
+    /** 变了还没发给大家。 */
+    private boolean unsent;
 
     private HoloBeacons() {
     }
@@ -69,6 +73,7 @@ public final class HoloBeacons extends SavedData {
                 PacketDistributor.sendToPlayer(player, get(player.level().getServer()).payload());
             }
         });
+        gameBus.addListener(ServerTickEvent.Post.class, event -> get(event.getServer()).flush(event.getServer()));
     }
 
     private static String key(ResourceKey<Level> dimension, BlockPos pos) {
@@ -83,23 +88,33 @@ public final class HoloBeacons extends SavedData {
         return java.util.Optional.ofNullable(this.beacons.get(key(dimension, pos)));
     }
 
-    /** 登记或更新一个信标；变了就发给所有人。 */
+    /** 登记或更新一个信标；变了就在这一刻末尾发给所有人。 */
     public void put(MinecraftServer server, Beacon beacon) {
         Beacon old = this.beacons.put(beacon.id(), beacon);
         if (!beacon.equals(old)) {
             this.setDirty();
-            this.broadcast(server);
+            this.unsent = true;
         }
     }
 
     public void remove(MinecraftServer server, ResourceKey<Level> dimension, BlockPos pos) {
         if (this.beacons.remove(key(dimension, pos)) != null) {
             this.setDirty();
-            this.broadcast(server);
+            this.unsent = true;
         }
     }
 
-    private void broadcast(MinecraftServer server) {
+    /** 还有没发出去的改动（游戏内测试看）。 */
+    public boolean unsent() {
+        return this.unsent;
+    }
+
+    /** 每刻末尾：这一刻变过就把整张表发给所有人，一刻最多一次。 */
+    void flush(MinecraftServer server) {
+        if (!this.unsent) {
+            return;
+        }
+        this.unsent = false;
         if (server.getPlayerList() != null && !server.getPlayerList().getPlayers().isEmpty()) {
             PacketDistributor.sendToAllPlayers(this.payload());
         }

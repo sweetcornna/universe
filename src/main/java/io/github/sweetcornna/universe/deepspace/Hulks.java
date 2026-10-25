@@ -18,6 +18,7 @@ import io.github.sweetcornna.universe.registry.UniverseSounds;
 import io.github.sweetcornna.universe.registry.sound.DeepSpaceSounds;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.SectionPos;
 import net.minecraft.core.particles.ColorParticleOption;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.chat.Component;
@@ -41,7 +42,8 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
 /**
  * 拆残骸（ADR-0034 §四）：记着放下了的残骸在哪，残骸方块被拆掉时按部件扣结构完整度；低于 30 报警（灯变红、拉警报），
- * 降到 0 或者反应堆芯被拆下来，20 秒后熔毁：剩下的部分炸掉，24 格内的人受重伤。
+ * 降到 0 或者反应堆芯被拆下来，20 秒后熔毁：剩下的部分炸掉，24 格内的人受重伤。倒计时期间残骸所在的区块一直挂着加载票，
+ * 人飞走了也照样炸，炸的时候不用同步加载区块。
  *
  * <p>完整度存在 {@link DeepSpaceData}（每个星系的残骸、开发命令放的残骸）；游戏内测试放的残骸只在内存里。
  */
@@ -225,7 +227,7 @@ public final class Hulks {
             notify(level, wreck, Component.translatable("message.universe.hulk.alarm").withStyle(ChatFormatting.GOLD), true);
         }
         if ((after == Phase.ALARM || after == Phase.MELTDOWN) && !wreck.alarmed) {
-            alarmLights(level, wreck);
+            wreck.alarmed = alarmLights(level, wreck);
         }
     }
 
@@ -235,20 +237,29 @@ public final class Hulks {
         }
     }
 
-    /** 灯全变成闪红光的警报灯。 */
-    private static void alarmLights(ServerLevel level, Wreck wreck) {
-        wreck.alarmed = true;
+    /**
+     * 灯全变成闪红光的警报灯。残骸有 60–120 格长，视距小的时候远处那头的区块没加载：那里的灯先不读（读了就是同步加载区块），
+     * 返回 false，由 {@link #tick} 挂上加载票、等区块加载好了再换完。全换完了返回 true。
+     */
+    private static boolean alarmLights(ServerLevel level, Wreck wreck) {
+        boolean done = true;
         BlockPos.MutableBlockPos cursor = new BlockPos.MutableBlockPos();
         for (Layout.Cell cell : wreck.layout.cells()) {
             if (cell.part() != Part.LIGHT) {
                 continue;
             }
             cursor.set(wreck.placement.world(cell));
+            // isLoaded 在区块挂上票、还没加载完的时候就是 true，这里要的是已经加载好了的
+            if (level.getChunkSource().getChunkNow(SectionPos.blockToSectionCoord(cursor.getX()), SectionPos.blockToSectionCoord(cursor.getZ())) == null) {
+                done = false;
+                continue;
+            }
             BlockState state = level.getBlockState(cursor);
             if (state.getBlock() instanceof DerelictLightBlock) {
                 level.setBlock(cursor, state.setValue(DerelictLightBlock.ALARM, true).setValue(DerelictLightBlock.LIT, true), Block.UPDATE_CLIENTS);
             }
         }
+        return done;
     }
 
     private static void notify(ServerLevel level, Wreck wreck, Component message, boolean chat) {
@@ -282,6 +293,10 @@ public final class Hulks {
                 continue;
             }
             long time = level.getGameTime();
+            // 报警的时候有的灯在没加载的区块里：挂着加载票等区块在后台加载好，再把灯换完
+            if (!wreck.alarmed && time % 20 == 0 && Structures.ready(level, wreck.box)) {
+                wreck.alarmed = alarmLights(level, wreck);
+            }
             if (time % wreck.integrity.sirenInterval() == 0) {
                 level.playSound(null, wreck.center.x, wreck.center.y, wreck.center.z, DeepSpaceSounds.SIREN.get(), SoundSource.BLOCKS, 1.6F,
                         phase == Phase.MELTDOWN ? 1.15F : 1.0F);
@@ -301,6 +316,13 @@ public final class Hulks {
             }
             if (level.getRandom().nextInt(left < 100 ? 10 : 40) == 0) {
                 level.playSound(null, wreck.center.x, wreck.center.y, wreck.center.z, DeepSpaceSounds.GROAN.get(), SoundSource.BLOCKS, 1.4F, 0.7F);
+            }
+            if (left % 20 == 0) {
+                Structures.keepLoaded(level, wreck.box);
+            }
+            // 最后一刻区块还没加载好（比如刚读档）就等一等，炸的时候要拆方块
+            if (left <= 1 && !Structures.ready(level, wreck.box)) {
+                continue;
             }
             if (wreck.integrity.tick()) {
                 explode(level, wreck);

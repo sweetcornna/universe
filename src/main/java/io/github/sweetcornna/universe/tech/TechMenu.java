@@ -3,6 +3,8 @@ package io.github.sweetcornna.universe.tech;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.jspecify.annotations.Nullable;
+
 import io.github.sweetcornna.universe.core.survival.MultitoolClass;
 import io.github.sweetcornna.universe.core.survival.MultitoolSpec;
 import io.github.sweetcornna.universe.core.tech.Grade;
@@ -39,7 +41,7 @@ import net.minecraft.world.item.component.ItemContainerContents;
  *
  * <p>格子的顺序：外骨骼技术槽 12 个、工具技术槽 8 个、货舱 54 格、背包 27 格、快捷栏 9 格。没解锁的格子、
  * 手上没有工具时的工具格都不生效（{@link Slot#isActive()} 为假，界面画成锁住）。主手那一格快捷栏锁住，
- * 免得把正在配置的工具拿走。
+ * 免得把正在配置的工具拿走。服务端认准打开时的那一把：模块只写回它，那一格换成别的东西界面就失效。
  *
  * <p>工具格按工具的档次有 4–8 个（ADR-0026），坏的格子放不进东西；拿着 {@value MultitoolSpec#REPAIR_SCRAP} 个守卫机残骸点一下
  * 坏格子修好一格（服务端判定，坏了几格用数据槽同步）。工具格还能装武器（{@link ToolWeaponItem}），同一种只能装一个。
@@ -74,6 +76,8 @@ public class TechMenu extends AbstractContainerMenu {
     private final int cargoSlots;
     /** 主手工具所在的快捷栏格；没有拿着工具时为 -1。 */
     private final int toolSlot;
+    /** 服务端：打开时主手的那一把工具；客户端、没有拿着工具时为 {@code null}。 */
+    private final @Nullable ItemStack tool;
     /** 主手工具的类型和档次（打开时定下）；坏了几格看 {@link #broken}。 */
     private final MultitoolSpec spec;
     /** 工具坏了几格：修好一格时服务端改，数据槽同步给客户端。 */
@@ -86,17 +90,18 @@ public class TechMenu extends AbstractContainerMenu {
     public TechMenu(int id, Inventory inventory, RegistryFriendlyByteBuf buf) {
         this(id, inventory, buf.readVarInt(), buf.readVarInt(), buf.readVarInt(),
                 new MultitoolSpec(MultitoolClass.values()[buf.readVarInt()], Grade.values()[buf.readVarInt()], buf.readVarInt()),
-                buf.readVarInt(), buf.readVarInt(),
+                buf.readVarInt(), buf.readVarInt(), null,
                 new SimpleContainer(SuitSlots.TECH_MAX), new SimpleContainer(SuitSlots.TOOL_SLOTS), new SimpleContainer(SuitSlots.CARGO_MAX));
     }
 
     private TechMenu(int id, Inventory inventory, int techSlots, int cargoSlots, int toolSlot, MultitoolSpec spec, int suitSupercharged,
-            int toolSupercharged, Container suit, Container tool, Container cargo) {
+            int toolSupercharged, @Nullable ItemStack toolStack, Container suit, Container tool, Container cargo) {
         super(UniverseMenus.TECH.get(), id);
         this.player = inventory.player;
         this.techSlots = techSlots;
         this.cargoSlots = cargoSlots;
         this.toolSlot = toolSlot;
+        this.tool = toolStack;
         this.spec = spec;
         this.broken = spec.broken();
         this.suitSupercharged = suitSupercharged;
@@ -142,22 +147,22 @@ public class TechMenu extends AbstractContainerMenu {
         Container cargo = new ListContainer(data.cargo(), () -> {
         });
         Container tool;
+        ItemStack held = toolSlot >= 0 ? inventory.getItem(toolSlot) : null;
         MultitoolSpec spec = MultitoolSpec.LEGACY;
         int toolSupercharged = 0;
-        if (toolSlot >= 0) {
+        if (held != null) {
             NonNullList<ItemStack> items = NonNullList.withSize(SuitSlots.TOOL_SLOTS, ItemStack.EMPTY);
-            ItemStack stack = inventory.getItem(toolSlot);
-            SuitTech.seedTool(stack, player.getRandom());
-            spec = MultitoolItem.spec(stack);
-            toolSupercharged = SuitTech.toolSupercharged(stack);
-            stack.getOrDefault(UniverseDataComponents.TOOL_MODULES.get(), ItemContainerContents.EMPTY).copyInto(items);
-            tool = new ListContainer(items, () -> inventory.getItem(toolSlot)
-                    .set(UniverseDataComponents.TOOL_MODULES.get(), ItemContainerContents.fromItems(items)));
+            SuitTech.seedTool(held, player.getRandom());
+            spec = MultitoolItem.spec(held);
+            toolSupercharged = SuitTech.toolSupercharged(held);
+            held.getOrDefault(UniverseDataComponents.TOOL_MODULES.get(), ItemContainerContents.EMPTY).copyInto(items);
+            // 写回打开时的那一把，不是那一格里现在放着的
+            tool = new ListContainer(items, () -> held.set(UniverseDataComponents.TOOL_MODULES.get(), ItemContainerContents.fromItems(items)));
         } else {
             tool = new SimpleContainer(SuitSlots.TOOL_SLOTS);
         }
         return new TechMenu(id, inventory, data.techSlots(), data.cargoSlots(), toolSlot, spec, SuitTech.suitSupercharged(player.getUUID()),
-                toolSupercharged, suit, tool, cargo);
+                toolSupercharged, held, suit, tool, cargo);
     }
 
     /** 打开界面时发给客户端的格数、工具的类型和两边的超频格。 */
@@ -209,11 +214,20 @@ public class TechMenu extends AbstractContainerMenu {
 
     @Override
     public boolean stillValid(Player player) {
-        return player.isAlive() && (this.toolSlot < 0 || player.getInventory().getItem(this.toolSlot).getItem() instanceof MultitoolItem);
+        if (this.toolSlot < 0) {
+            return player.isAlive();
+        }
+        ItemStack held = player.getInventory().getItem(this.toolSlot);
+        // 服务端要还是打开时那一把（扔掉以后原来那份数量是 0），客户端的物品会被同步换掉，只看是不是工具
+        return player.isAlive() && (this.tool != null ? held == this.tool && !held.isEmpty() : held.getItem() instanceof MultitoolItem);
     }
 
     @Override
     public void clicked(int slotIndex, int buttonNum, ContainerInput input, Player player) {
+        // 数字键换格直接读写快捷栏，不经过锁住的那一格：按主手那一格的数字键会把正在配置的工具换走
+        if (input == ContainerInput.SWAP && this.hasTool() && buttonNum == this.toolSlot) {
+            return;
+        }
         // 拿着守卫机残骸点坏格子：修好一格。客户端不预测，等服务端同步手上的东西和坏格数
         if (input == ContainerInput.PICKUP && slotIndex >= TOOL_START && slotIndex < CARGO_START && this.toolSlotBroken(slotIndex - TOOL_START)) {
             if (player instanceof ServerPlayer serverPlayer) {
@@ -232,11 +246,10 @@ public class TechMenu extends AbstractContainerMenu {
                     MultitoolSpec.REPAIR_SCRAP));
             return;
         }
-        ItemStack tool = player.getInventory().getItem(this.toolSlot);
         MultitoolSpec repaired = this.spec().repaired();
         carried.shrink(MultitoolSpec.REPAIR_SCRAP);
         this.setCarried(carried.isEmpty() ? ItemStack.EMPTY : carried);
-        tool.set(UniverseDataComponents.TOOL_SPEC.get(), repaired);
+        this.tool.set(UniverseDataComponents.TOOL_SPEC.get(), repaired);
         this.broken = repaired.broken();
         player.level().playSound(null, player.getX(), player.getY(), player.getZ(), WorldSounds.REPAIR, SoundSource.PLAYERS, 0.7F, 1.15F);
         this.broadcastChanges();

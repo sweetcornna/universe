@@ -32,6 +32,7 @@ import net.minecraft.world.entity.LinearInterpolationHandler;
 import net.minecraft.world.entity.MoverType;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.Projectile;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.FluidState;
 import net.minecraft.world.level.storage.ValueInput;
@@ -83,6 +84,8 @@ public class FishingBobber extends Projectile {
     private int timer;
     /** 等鱼的时间里最后几刻是鱼影游过来。 */
     private int approachPlanned;
+    /** 甩竿时主手的那一把工具：主手换成别的（哪怕是另一把钓鱼模式的工具）浮标就收回，饵也只从这一把扣。 */
+    private @Nullable ItemStack tool;
     private Bait bait = Bait.NONE;
     private boolean blessed;
     private @Nullable Catch pending;
@@ -101,9 +104,10 @@ public class FishingBobber extends Projectile {
     }
 
     /** 服务端甩竿：从眼睛前面朝视线方向抛出去，带一点往上的弧线。 */
-    FishingBobber(ServerLevel level, ServerPlayer owner, Bait bait, boolean blessed) {
+    FishingBobber(ServerLevel level, ServerPlayer owner, ItemStack tool, Bait bait, boolean blessed) {
         this(UniverseEntities.FISHING_BOBBER.get(), level);
         this.setOwner(owner);
+        this.tool = tool;
         this.bait = bait;
         this.blessed = blessed;
         this.rng = Rng.of(level.getRandom().nextLong());
@@ -297,9 +301,10 @@ public class FishingBobber extends Projectile {
         }
     }
 
-    /** 主人不拿着钓鱼模式的工具、走远了、换了维度，浮标就收回。 */
+    /** 主人不拿着甩竿的那一把钓鱼模式的工具、走远了、换了维度，浮标就收回。 */
     private boolean shouldStop(Player owner) {
-        return !owner.isAlive() || owner.level() != this.level() || !Fishing.fishing(owner.getMainHandItem())
+        ItemStack held = owner.getMainHandItem();
+        return !owner.isAlive() || owner.level() != this.level() || held != this.tool || !Fishing.fishing(held)
                 || this.distanceToSqr(owner) > Fishing.LINE_LENGTH * Fishing.LINE_LENGTH;
     }
 
@@ -458,7 +463,11 @@ public class FishingBobber extends Projectile {
             this.discard();
             return;
         }
-        Fishing.consumeBait(owner);
+        // 同一刻里先换到另一把工具再右键，浮标还没来得及收回：不扣换上来那一把的饵，这一竿作废
+        if (!Fishing.consumeBait(owner, this.tool)) {
+            this.discard();
+            return;
+        }
         this.playSound(FishingSounds.HOOK.get(), 0.8F, 1.0F);
         if (!caught.isFish()) {
             Fishing.land(owner, caught, this.position());

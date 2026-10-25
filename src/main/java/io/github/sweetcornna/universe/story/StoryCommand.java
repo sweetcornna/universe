@@ -20,7 +20,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
 
 /**
- * 调试命令 {@code /universe story}，开发和测试用，提示文字不做翻译。
+ * 调试命令 {@code /universe story}，开发和测试用。
  *
  * <ul>
  * <li>{@code status}：到过哪些剧情节点
@@ -31,7 +31,7 @@ import net.minecraft.server.MinecraftServer;
  */
 public final class StoryCommand {
     private static final DynamicCommandExceptionType UNKNOWN =
-            new DynamicCommandExceptionType(id -> Component.literal("未知节点：" + id));
+            new DynamicCommandExceptionType(id -> Component.translatable("commands.universe.story.unknown", String.valueOf(id)));
     private static final SuggestionProvider<CommandSourceStack> MILESTONES = (context, builder) -> SharedSuggestionProvider.suggest(
             Arrays.stream(Milestone.values()).map(Milestone::id), builder);
 
@@ -58,11 +58,11 @@ public final class StoryCommand {
 
     private static int status(CommandSourceStack source) {
         Map<String, Long> milestones = StoryData.get(source.getServer()).milestones();
-        String text = milestones.isEmpty() ? "（无）" : milestones.entrySet().stream()
+        Component text = milestones.isEmpty() ? Component.translatable("commands.universe.none") : Component.literal(milestones.entrySet().stream()
                 .sorted(Map.Entry.comparingByValue())
                 .map(entry -> entry.getKey() + " @" + entry.getValue())
-                .collect(Collectors.joining(", "));
-        source.sendSuccess(() -> Component.literal("剧情节点：" + text), false);
+                .collect(Collectors.joining(", ")));
+        source.sendSuccess(() -> Component.translatable("commands.universe.story.status", text), false);
         return milestones.size();
     }
 
@@ -70,7 +70,8 @@ public final class StoryCommand {
         MinecraftServer server = context.getSource().getServer();
         boolean already = Story.reached(server, milestone);
         Story.reach(server, milestone);
-        context.getSource().sendSuccess(() -> Component.literal(already ? milestone.id() + " 已经到过" : "到达 " + milestone.id()), true);
+        context.getSource().sendSuccess(() -> Component.translatable(already ? "commands.universe.story.already" : "commands.universe.story.reached",
+                milestone.id()), true);
         return already ? 0 : 1;
     }
 
@@ -78,14 +79,14 @@ public final class StoryCommand {
         MinecraftServer server = context.getSource().getServer();
         StoryData.get(server).forget(milestone);
         Story.changed(server);
-        context.getSource().sendSuccess(() -> Component.literal("忘掉了 " + milestone.id()), true);
+        context.getSource().sendSuccess(() -> Component.translatable("commands.universe.story.forgot", milestone.id()), true);
         return 1;
     }
 
     private static int forgetAll(CommandSourceStack source) {
         StoryData.get(source.getServer()).clear();
         Story.changed(source.getServer());
-        source.sendSuccess(() -> Component.literal("剧情进度已清空"), true);
+        source.sendSuccess(() -> Component.translatable("commands.universe.story.cleared"), true);
         return 1;
     }
 

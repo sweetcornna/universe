@@ -2,6 +2,8 @@ package io.github.sweetcornna.universe.core.logistics;
 
 import java.util.UUID;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * 星际物流的物品路线（ADR-0033 §三）：某种物品从一颗星球（或一个星系）运到另一颗星球（或星系）。全局的设置，
  * 目标星球上还没有站也能设，等那边建了需求这种物品的站就按路线走。
@@ -9,10 +11,16 @@ import java.util.UUID;
  * @param systems 星系路线；否则是星球路线
  * @param from    星球路线是天体路径（{@link Location#body()}，比如 {@code s0/p1}），星系路线是星系序号
  * @param to      同上
+ * @param creator 建这条路线的玩家，控制面板删路线时认它（{@link Ownership}）；0.14 的档里没有，谁都能删
  */
-public record ItemRoute(UUID id, String item, boolean systems, String from, String to) {
+public record ItemRoute(UUID id, String item, boolean systems, String from, String to, @Nullable UUID creator) {
     /** 一共最多设多少条。 */
     public static final int MAX = 256;
+
+    /** 没记建的人的路线。 */
+    public ItemRoute(UUID id, String item, boolean systems, String from, String to) {
+        this(id, item, systems, from, to, null);
+    }
 
     public static ItemRoute planets(String item, String fromBody, String toBody) {
         return new ItemRoute(UUID.randomUUID(), item, false, fromBody, toBody);

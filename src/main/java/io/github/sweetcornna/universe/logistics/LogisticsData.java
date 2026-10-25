@@ -99,8 +99,10 @@ public final class LogisticsData extends SavedData {
             Codec.STRING.fieldOf("item").forGetter(ItemRoute::item),
             Codec.BOOL.optionalFieldOf("systems", false).forGetter(ItemRoute::systems),
             Codec.STRING.fieldOf("from").forGetter(ItemRoute::from),
-            Codec.STRING.fieldOf("to").forGetter(ItemRoute::to)
-    ).apply(i, ItemRoute::new));
+            Codec.STRING.fieldOf("to").forGetter(ItemRoute::to),
+            // 建路线的玩家；0.14 的档里没有
+            UUIDUtil.CODEC.optionalFieldOf("creator").forGetter(route -> Optional.ofNullable(route.creator()))
+    ).apply(i, (id, item, systems, from, to, creator) -> new ItemRoute(id, item, systems, from, to, creator.orElse(null))));
 
     private static final Codec<Station> STATION_CODEC = RecordCodecBuilder.create(i -> i.group(
             UUIDUtil.CODEC.fieldOf("id").forGetter(Station::id),
@@ -115,7 +117,9 @@ public final class LogisticsData extends SavedData {
             Codec.INT.optionalFieldOf("range", Station.DEFAULT_RANGE).forGetter(Station::droneRange),
             Codec.DOUBLE.listOf().optionalFieldOf("production", List.of()).forGetter(station -> doubles(station, true)),
             Codec.DOUBLE.listOf().optionalFieldOf("accumulated", List.of()).forGetter(station -> doubles(station, false)),
-            Dispatch.CODEC.optionalFieldOf("dispatch", Dispatch.DEFAULT).forGetter(Dispatch::of)
+            Dispatch.CODEC.optionalFieldOf("dispatch", Dispatch.DEFAULT).forGetter(Dispatch::of),
+            // 放下它的玩家；0.14 的档里没有
+            UUIDUtil.CODEC.optionalFieldOf("owner").forGetter(Station::owner)
     ).apply(i, LogisticsData::station));
 
     private static List<Double> doubles(Station station, boolean production) {
@@ -127,7 +131,7 @@ public final class LogisticsData extends SavedData {
     }
 
     private static Station station(UUID id, StationKind kind, String dimension, BlockPos pos, Location location, List<StationSlot> slots,
-            Fleet fleet, long energy, int range, List<Double> production, List<Double> accumulated, Dispatch dispatch) {
+            Fleet fleet, long energy, int range, List<Double> production, List<Double> accumulated, Dispatch dispatch, Optional<UUID> owner) {
         Station station = new Station(id, kind, dimension, pos.getX(), pos.getY(), pos.getZ(), location);
         for (int k = 0; k < Math.min(slots.size(), kind.slots()); k++) {
             station.restoreSlot(k, slots.get(k));
@@ -143,6 +147,7 @@ public final class LogisticsData extends SavedData {
             station.setAccumulated(k, accumulated.get(k));
         }
         dispatch.applyTo(station);
+        station.setOwner(owner.orElse(null));
         return station;
     }
 

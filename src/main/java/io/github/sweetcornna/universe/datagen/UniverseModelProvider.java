@@ -224,11 +224,14 @@ final class UniverseModelProvider extends ModelProvider {
     /**
      * M17 收尾的模型：酸液（子代理 A，ADR-0030）。贴图见 {@code tools/m17_acid_textures.py}。
      *
-     * <p>液体方块和原版的水一样只出一份 blockstate，指到一个不存在的模型上，真正的样子由流体渲染器按
-     * {@code AcidClient} 注册的 FluidModel 画。桶分两层：桶壳不染色，里面的液面按当前星球的酸液色染。
+     * <p>液体方块和原版的水一样，方块模型只有一张粒子贴图（原版的 {@code block/water} 也是这样），真正的样子由
+     * 流体渲染器按 {@code AcidClient} 注册的 FluidModel 画。桶分两层：桶壳不染色，里面的液面按当前星球的酸液色染。
      */
     private static void wrapUpAcid(BlockModelGenerators blockModels, ItemModelGenerators itemModels) {
-        blockModels.createNonTemplateModelBlock(UniverseBlocks.ACID.get());
+        // 没有这份模型，客户端加载资源时报 Missing block model
+        blockModels.blockStateOutput.accept(BlockModelGenerators.createSimpleBlock(UniverseBlocks.ACID.get(),
+                BlockModelGenerators.plainVariant(ModelTemplates.PARTICLE_ONLY.create(UniverseBlocks.ACID.get(),
+                        TextureMapping.particle(texture("acid_still")), blockModels.modelOutput))));
         Item bucket = UniverseItems.ACID_BUCKET.get();
         Identifier model = ModelTemplates.TWO_LAYERED_ITEM.create(bucket,
                 TextureMapping.layered(TextureMapping.getItemTexture(bucket), TextureMapping.getItemTexture(bucket, "_fluid")),

@@ -4,7 +4,7 @@
 
 Modrinth 和 CurseForge 用同一份。上传时把"简介"填进 Summary，正文按平台分别贴英文或中英两段（Modrinth 支持 Markdown，CurseForge 选 Markdown 编辑器）。图片放在平台的图库里，正文不内嵌，免得图挂了。
 
-GitHub Release 的说明单独写，存在 `notes/` 里（已发：[0.14.0-alpha](notes/0.14.0-alpha.md)）。发布的步骤：改 `gradle.properties` 的 `mod_version`，`./gradlew build` 出 jar，等 CI 过，`gh release create v<版本> --target main --prerelease --notes-file docs/release/notes/<版本>.md <jar>`。
+GitHub Release 的说明单独写，存在 `notes/` 里（已发：[0.14.0-alpha](notes/0.14.0-alpha.md)；[1.0.0](notes/1.0.0.md) 等作者确认）。发布的步骤：改 `gradle.properties` 的 `mod_version`，`./gradlew build` 出 jar，等 CI 过，`gh release create v<版本> --target main --notes-file docs/release/notes/<版本>.md <jar>`。1.0.0 起是正式版，不加 `--prerelease`；带 alpha、beta 的版本号才加。
 
 ## 简介（Summary）
 
@@ -20,7 +20,7 @@ English (≤ 256 characters):
 
 **Universe** is a space exploration and factory mod for NeoForge. It takes the loop of *No Man's Sky* (land, scan, mine, fly on) and the loop of *Dyson Sphere Program* (belts, power, research, logistics, Dyson sphere) and puts both into survival Minecraft. Planets and space are drawn from NASA photos and real physics; the blocks you place still look like Minecraft.
 
-This is still a test version. The story text is a placeholder and will be rewritten. Worlds may not carry over to later versions.
+This is version 1.0. Worlds from 0.14.0-alpha open in it, and later 1.x versions will keep reading older worlds. The story text is still a placeholder and will be rewritten.
 
 ### Explore
 
@@ -30,6 +30,9 @@ This is still a test version. The story text is a placeholder and will be rewrit
 - Oceans with fish, eels, jellyfish and squid, kelp that gives oxygen, pearls, wrecks and ruins. A submarine, hover car, heavy rover and an exo-mech.
 - Sentinels with five wanted levels, quads and walkers, and a sentinel pillar on every planet. Landmarks: trading posts, manufacturing facilities, observatories.
 - Tame animals, ride the giant ones, and raise companions from eggs.
+- Fish with a multi-tool attachment. There are 96 fish across eight kinds of water, and each planet has its own mix. Bait, fish traps and seafood dishes; every catch goes into a catalogue.
+- Dig fossils out of planet soil, put the bones together on a skeleton display and sell the finished skeleton to a collector.
+- Geysers, eruptions, spore clouds and dust devils. A gravity coil lifts and throws things within 16 m.
 
 ### Fly
 
@@ -37,15 +40,19 @@ This is still a test version. The story text is a placeholder and will be rewrit
 - Space is to scale: the home planet is 1,200 blocks across in space, and a trip between neighbouring planets takes half a minute on the pulse engine. Black holes, three exotic drives, and a portal on every planet.
 - A freighter of your own with a deck you can build on, and up to twelve frigates to send on expeditions.
 - Every system has a space station: trading, missions, guilds, a multi-tool cabinet and a ship dealer.
+- Deep space has debris fields, abandoned outposts and derelict hulks you can strip piece by piece. Pull the reactor core and the hulk melts down. A tractor beam pulls loot into the hold, cargo can be jettisoned, and you can step out of any ship in space.
 
 ### Meet
 
 - Three alien races, each with its own language of 64 words. Learn words from conversations and knowledge stones, give gifts, and earn standing with the race and its three guilds. Settlements on planets with air.
+- Take over a settlement that has no governor and build it up plot by plot. The governor brings you one decision a day, and you help defend it when pirates raid.
 
 ### Build
 
 - Conveyor belts, sorters, splitters, piling and proliferators. A power grid with wind, thermal, solar, geothermal, fusion and artificial stars. Matrix labs, seven matrices and a tech tree with infinite upgrades.
-- Planetary and interstellar logistics with drones and vessels. Blueprints, construction drones and logistics bots.
+- Planetary and interstellar logistics with drones and vessels. Stations get names, groups, partners and item routes, including routes to planets with no factory yet. A control panel lists every station in the cluster, and you can change your own from anywhere. Blueprints, construction drones and logistics bots.
+- Statistics show each item's upstream and downstream recipes, imports and exports per planet and system, power by generator and the Dyson sphere by layer; pin charts to a dashboard on screen. A research queue, holo beacons and notes.
+- Tech slots on the exosuit, multi-tool and ship helm give adjacency bonuses, and some slots are supercharged.
 - Plan orbits and shells in the Dyson sphere editor, or place nodes, frames and shells yourself and colour them. Share a layer as a blueprint string. Launch solar sails and rockets, and draw the power back down with ray receivers.
 - A grid interface passes power to and from other mods (1 J = 1 FE). Storage tanks, water pumps and oil extractors connect to other mods' fluid pipes.
 
@@ -54,10 +61,15 @@ This is still a test version. The story text is a placeholder and will be rewrit
 - The Dark Fog builds bases on planets and hives in space. It grows when you hit it, raids your factories when its threat fills up, and sends relays and seeds to new places.
 - Gauss, laser, implosion, missile and plasma turrets, signal and jammer towers, planetary shields, and a battlefield analysis base that repairs and rebuilds. Dark Fog drops make the seventh matrix.
 - The Dark Fog, sentinel and resource settings are game rules you can set when creating the world.
+- The mecha brings its own fleet: a ground squadron of prototypes, precision drones and attack drones, and a space fleet of corvettes and destroyers. An energy shield, a shield burst, chest-mounted weapons and jamming capsules.
 
 ### Sound
 
 - All sounds for machines, ships, weapons, gear and enemies are original, made for this mod. Machines blend into one soundscape per factory. Sound is muffled in thin air and vacuum.
+
+### Art
+
+- Blocks, items, entities and screens are drawn from one shared palette. Blocks and items stay at 16×16 and sit well next to vanilla ones. You can tell what a machine does from its front, and running machines glow at night.
 
 ### Requirements
 
@@ -78,7 +90,7 @@ Inspired by *No Man's Sky* and *Dyson Sphere Program*. Not affiliated with Hello
 
 **寰宇（Universe）**是一个 NeoForge 上的太空探索加工厂模组。它把《无人深空》的循环（降落、扫描、采矿、再起飞）和《戴森球计划》的循环（传送带、电网、研究、物流、戴森球）一起搬进了生存模式。星球和太空照 NASA 的照片和真实的物理做，玩家放的方块还是我的世界的样子。
 
-现在还是测试版。剧情文字是占位稿，之后会重写。之后的版本不保证能读这一版的存档。
+这是 1.0 版。0.14.0-alpha 的存档能直接打开，以后的 1.x 版本也都能读之前的存档。剧情文字还是占位稿，之后会重写。
 
 ### 探索
 
@@ -88,6 +100,9 @@ Inspired by *No Man's Sky* and *Dyson Sphere Program*. Not affiliated with Hello
 - 海里有鱼、鳗、水母、乌贼，补氧气的海带，珍珠，沉船和遗迹。潜艇、悬浮车、重型车、机甲。
 - 守卫机五级通缉，有四足机和步行机，每颗星球一座守卫塔。地标：交易站、制造设施、观测站。
 - 驯服动物，骑巨兽，用卵孵出伙伴。
+- 多功能工具装上钓鱼器就能钓鱼：96 种鱼分 8 种水域，每颗星球各有一套，有鱼饵、捕鱼笼和海鲜菜，钓到的记进图鉴。
+- 从星球的土里挖出化石，在骨架展台上拼成一副骨架，卖给收藏家。
+- 间歇泉、火山喷发、孢子云、尘卷风。引力抓取器能抓起 16 格内的东西再扔出去。
 
 ### 飞行
 
@@ -95,15 +110,19 @@ Inspired by *No Man's Sky* and *Dyson Sphere Program*. Not affiliated with Hello
 - 太空是按比例的：母星在太空里直径 1200 格，开脉冲引擎到相邻的行星要半分钟。黑洞、三种特殊驱动，每颗星球一座传送门。
 - 自己的货船，甲板上随便建；最多 12 艘护卫舰，派出去远征。
 - 每个恒星系一座空间站：交易、任务、公会、多功能工具柜、飞船交易。
+- 深空里有碎片带、废弃的前哨站和太空残骸，能一块块拆下来，反应堆芯拆走以后残骸会熔毁。牵引光束把东西吸进货舱，货能抛掉，在太空里任何船都能下船。
 
 ### 外星文明
 
 - 三个外星种族，各有一种 64 个词的语言。在对话和知识石上学词，送礼，攒种族和三个公会的声望。有大气的星球上有外星人的聚落。
+- 没有总督的聚落能接管：一块地一块地盖起来，每天替总督拿主意，海盗来了一起守。
 
 ### 建设
 
 - 传送带、分拣器、分流器、集装、增产剂。风力、火力、太阳能、地热、聚变、人造恒星发电。矩阵研究站，七种矩阵，科技树和无限升级。
-- 行星内和星际物流，无人机和运输船。蓝图、建造无人机、配送机器人。
+- 行星内和星际物流，无人机和运输船。物流站有名字、分组、伙伴和物品路线，路线能指向还没有工厂的星球。控制面板列出全星团的物流站，在哪儿都能改自己的站。蓝图、建造无人机、配送机器人。
+- 统计能看一样东西的上下游配方、各星球和星系的进出口、各种发电设备的电、戴森球每一层，图表能钉在屏幕上。研究队列，全息信标和备忘。
+- 外骨骼、多功能工具、驾驶台的技术格有相邻加成，还有超频格。
 - 在戴森球编辑器里排轨道和球壳，也能自己摆节点、连框架、铺壳面、上色，一层能导出成蓝图串分享。发射太阳帆和火箭，用射线接收站把能量收回地面。
 - 电网接口和别的模组互通电力（1 J = 1 FE）；储液罐、抽水站、原油萃取站能接别的模组的流体管道。
 
@@ -112,10 +131,15 @@ Inspired by *No Man's Sky* and *Dyson Sphere Program*. Not affiliated with Hello
 - 黑雾在星球上建基地，在太空里建巢穴。挨打会升级，威胁满了来打你的工厂，还会派中继站和种子去别处扎根。
 - 高斯、激光、聚爆、导弹、等离子炮塔，信号塔、干扰塔，行星护盾，会修会重建的战场分析基地。黑雾的掉落做第七种矩阵。
 - 黑雾、守卫机、资源的设置都是游戏规则，建世界时就能调。
+- 机甲带着自己的舰队：地面编队有原型机、精准无人机和攻击无人机，太空舰队有炮艇和驱逐舰。能量护盾、护盾爆发、胸甲上的武器、干扰胶囊。
 
 ### 声音
 
 - 设备、飞船、武器、装备、敌人的声音都是为本模组原创的。一片工厂的设备混成一片环境声。稀薄的大气里和真空里声音发闷。
+
+### 美术
+
+- 方块、物品、实体、界面的贴图都按一套共用的调色板画。方块和物品还是 16×16，和原版的摆在一起不突兀。设备从正面就看得出是做什么的，运转中的设备夜里会发光。
 
 ### 需要
 
@@ -153,23 +177,27 @@ Inspired by *No Man's Sky* and *Dyson Sphere Program*. Not affiliated with Hello
 
 ## 版本说明（上传时的 Changelog 栏）
 
-中文用 `CHANGELOG.md` 里 0.7.0-alpha 那一节。英文：
+中文用 `CHANGELOG.md` 里 1.0.0 那一节。英文：
 
-> First public alpha. Requires Minecraft 26.3, NeoForge 26.3.0.95 or newer and Java 25.
+> First full release. Requires Minecraft 26.3, NeoForge 26.3.0.95 or newer and Java 25. Worlds from 0.14.0-alpha open in it, and every 1.x version will read worlds from the versions before it.
 >
-> **In this version**
+> **New since 0.14.0-alpha**
 >
-> - The full main line, from the crashed probe to the Dyson sphere and the last research.
-> - Built-in profiling (`/universe perf`) and a reference factory (`/universe bench`). With 5,000 belts and 500 machines plus factories on three planets, the mod uses 1.16 ms per tick.
-> - The Dyson sphere in the sky is rebuilt once per tick instead of every frame. New client setting for its detail: full, simple or off (Mods screen, Config button).
-> - JEI: a category for every machine recipe type, with the research each recipe needs. Click the progress arrow in a machine screen to open it.
-> - Jade: machine power, current recipe and what is missing; miner output and reserves; ray receiver efficiency; logistics station slots.
-> - Multiplayer: players who join late still get the story advancements the world has reached, without a chat announcement for each one.
+> - Fishing: a multi-tool attachment, 96 fish across eight kinds of water, line tension, a catalogue, bait, fish traps and seafood dishes.
+> - Settlements without a governor can be taken over and built up, with daily decisions and pirate raids.
+> - Fossils to dig up, assemble on a skeleton display and sell to collectors.
+> - Deep space: debris fields, abandoned outposts and derelict hulks to strip. A tractor beam, cargo jettison, and stepping out of any ship in space.
+> - Geysers, eruptions, spore clouds and dust devils. A gravity coil for the multi-tool.
+> - Tech slots with adjacency bonuses and supercharged slots.
+> - The mecha's fleet: a ground squadron, corvettes and destroyers, an energy shield, chest weapons and jamming capsules.
+> - Logistics dispatch: named stations, groups, partners, item routes and a control panel for the whole cluster.
+> - Statistics by recipe, planet, system, generator and Dyson layer, a pinned dashboard, a research queue, holo beacons and notes.
+> - 171 original sounds and more than 900 redrawn textures.
+> - Feedback from the `/universe` debug commands follows the client language.
+> - Multiplayer fixes for two item duplication bugs and for ship cargo shared between two players. Other players' logistics stations are view only in the control panel.
 >
 > **Known issues**
 >
 > - Story text is a placeholder and will be rewritten.
 > - Sodium needs 0.9.3-beta.1 or newer; 0.9.2 crashes on current NeoForge 26.3 builds by itself. Iris 1.11.7 works with it. With a shader pack, planets and space use the pack's Overworld sky.
-> - Worlds are not guaranteed to load in later versions before 1.0.
 > - Every stage was tested in game, but nobody has played the whole thing start to finish yet.
-> - Feedback from the `/universe` debug commands is Chinese only.

@@ -6,15 +6,20 @@ import io.github.sweetcornna.universe.core.deepspace.Part;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.SectionPos;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerChunkCache;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.TicketType;
 import net.minecraft.world.RandomizableContainer;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
 import net.minecraft.world.level.block.RotatedPillarBlock;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.storage.loot.LootTable;
 
 /** 把残骸、前哨站的样子（{@link Layout}）搭到世界里，熔毁时拆掉还剩下的部分。 */
@@ -61,6 +66,39 @@ public final class Structures {
             }
         }
         return removed;
+    }
+
+    /**
+     * 这片范围里的区块是不是都加载好了。没好就给每个区块挂一张限时的加载票（{@link TicketType#PORTAL}，15 秒），区块在后台加载、
+     * 生成，不在这一刻同步生成；隔一会儿再来问。搭、拆之前先问这个，免得一刻里同步生成十几二十个区块。
+     */
+    public static boolean ready(ServerLevel level, BoundingBox box) {
+        ServerChunkCache chunks = level.getChunkSource();
+        int x0 = SectionPos.blockToSectionCoord(box.minX());
+        int x1 = SectionPos.blockToSectionCoord(box.maxX());
+        int z0 = SectionPos.blockToSectionCoord(box.minZ());
+        int z1 = SectionPos.blockToSectionCoord(box.maxZ());
+        boolean ready = true;
+        for (int x = x0; x <= x1 && ready; x++) {
+            for (int z = z0; z <= z1 && ready; z++) {
+                ready = chunks.getChunkNow(x, z) != null;
+            }
+        }
+        if (!ready) {
+            // 已经加载了的也挂上，免得等别的区块的时候它又卸载了
+            keepLoaded(level, box);
+        }
+        return ready;
+    }
+
+    /** 给这片范围里的区块挂上（续上）加载票。 */
+    public static void keepLoaded(ServerLevel level, BoundingBox box) {
+        ServerChunkCache chunks = level.getChunkSource();
+        for (int x = SectionPos.blockToSectionCoord(box.minX()); x <= SectionPos.blockToSectionCoord(box.maxX()); x++) {
+            for (int z = SectionPos.blockToSectionCoord(box.minZ()); z <= SectionPos.blockToSectionCoord(box.maxZ()); z++) {
+                chunks.addTicketWithRadius(TicketType.PORTAL, new ChunkPos(x, z), 0);
+            }
+        }
     }
 
     /** 是残骸、前哨站的方块（熔毁时炸掉的就是这些）。 */

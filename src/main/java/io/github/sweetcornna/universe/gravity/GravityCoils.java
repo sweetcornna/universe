@@ -19,6 +19,7 @@ import io.github.sweetcornna.universe.darkfog.entity.DarkFogRaider;
 import io.github.sweetcornna.universe.deepspace.DebrisChunk;
 import io.github.sweetcornna.universe.entity.civ.AlienNpc;
 import io.github.sweetcornna.universe.entity.ship.ShipEntity;
+import io.github.sweetcornna.universe.mecha.fleet.FleetUnit;
 import io.github.sweetcornna.universe.registry.sound.DeepSpaceSounds;
 import io.github.sweetcornna.universe.sentinel.Sentinel;
 import io.github.sweetcornna.universe.survival.Multitool;
@@ -105,6 +106,11 @@ public final class GravityCoils {
                 PUSHED.remove(player.getUUID());
             }
         });
+        gameBus.addListener(PlayerEvent.StartTracking.class, event -> {
+            if (event.getEntity() instanceof ServerPlayer tracker) {
+                startTracking(tracker, event.getTarget());
+            }
+        });
         gameBus.addListener(ServerStoppedEvent.class, event -> {
             HOLDS.clear();
             NEED_RELEASE.clear();
@@ -167,7 +173,7 @@ public final class GravityCoils {
         end = eye.add(player.getLookAngle().scale(limit));
         Entity best = null;
         double bestDistance = Double.MAX_VALUE;
-        for (Entity entity : level.getEntities(player, new AABB(eye, end).inflate(1.0), e -> weight(e) != null && !held(e))) {
+        for (Entity entity : level.getEntities(player, new AABB(eye, end).inflate(1.0), e -> grabbable(player, e) && !held(e))) {
             // 掉落物、小碎片太小，判定框放宽一点，好瞄
             double grace = entity instanceof ItemEntity || entity instanceof ExperienceOrb ? 0.45 : 0.15;
             var hit = entity.getBoundingBox().inflate(grace).clip(eye, end);
@@ -180,6 +186,14 @@ public final class GravityCoils {
             }
         }
         return best;
+    }
+
+    /** {@code player} 抓不抓得动 {@code entity}：别人的舰队单位不让抓（ADR-0033：别的玩家拿不走你的单位）。 */
+    public static boolean grabbable(ServerPlayer player, Entity entity) {
+        if (entity instanceof FleetUnit unit && !player.getUUID().equals(unit.ownerId())) {
+            return false;
+        }
+        return weight(entity) != null;
     }
 
     /** 抓不抓得动、按哪档重量算；抓不动为空。 */
@@ -367,6 +381,21 @@ public final class GravityCoils {
         }
         player.push(look.scale(-RECOIL * mass));
         player.syncVelocity = true;
+    }
+
+    /**
+     * 有人新看见了抓着东西的人或者被抓着的东西：把引力束补发给他（抓的那一下只发给了当时看得见的人）。两头都补，
+     * 后看见的那一头补发时两个实体客户端都有了。
+     */
+    private static void startTracking(ServerPlayer tracker, Entity entity) {
+        if (tracker.connection == null) {
+            return;
+        }
+        for (Hold hold : HOLDS.values()) {
+            if (hold.player == entity || hold.target == entity) {
+                PacketDistributor.sendToPlayer(tracker, new GravityPayloads.Beam(hold.player.getId(), hold.target.getId()));
+            }
+        }
     }
 
     /** 发给看得见这名玩家的人和他自己（游戏内测试的假玩家没有连接，不发）。 */

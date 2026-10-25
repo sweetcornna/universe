@@ -1,5 +1,6 @@
 package io.github.sweetcornna.universe.logistics;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import org.jspecify.annotations.Nullable;
@@ -43,7 +44,7 @@ import net.minecraft.world.level.storage.ValueOutput;
  * <p>容器格子只是投放口：放进去的无人机、运输船、翘曲器每刻收进账本，界面上的按钮再把空闲的取出来。电池只用电网
  * 富余的电充（和蓄电器一样），不会跟设备抢电。
  */
-public class StationBlockEntity extends MachineBlockEntity implements MachineMenu.ButtonTarget, BeltReceiver, BlueprintSettings {
+public class StationBlockEntity extends MachineBlockEntity implements MachineMenu.ButtonTarget, BeltReceiver, BlueprintSettings, Owned {
     public static final int DRONE_SLOT = 0;
     public static final int VESSEL_SLOT = 1;
     public static final int WARPER_SLOT = 2;
@@ -96,6 +97,8 @@ public class StationBlockEntity extends MachineBlockEntity implements MachineMen
     private final StationHandler handler = new StationHandler(this);
     /** 拆掉、读档时只认投放口，免得把账本的映射格当成真东西掉出来或存进去。 */
     private boolean portsOnly;
+    /** 放下它的玩家：建账本记录时记成站的主人（控制面板远程改设置时认它）。 */
+    private @Nullable UUID owner;
 
     public StationBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state, StationKind kind) {
         super(type, pos, state, ports(kind));
@@ -165,12 +168,16 @@ public class StationBlockEntity extends MachineBlockEntity implements MachineMen
 
     // ---- 账本
 
-    /** 账本里的这座站（服务端）；还没建或已经拆了时是 {@code null}。 */
+    /**
+     * 账本里的这座站（服务端）；还没建、已经拆了时是 {@code null}。编号是复制来的（创造模式的选取、带方块实体数据的物品、伪造的数据），
+     * 账本里那条在别处时也是 {@code null}：下一刻 {@link #ensureStation} 换新编号之前，界面、拆除、掉落、漏斗、传送带都碰不到原来那座站。
+     */
     public @Nullable Station station() {
         if (this.id == null || !(this.level instanceof ServerLevel serverLevel)) {
             return null;
         }
-        return Logistics.network(serverLevel.getServer()).get(this.id);
+        Station station = Logistics.network(serverLevel.getServer()).get(this.id);
+        return station != null && this.isHere(station, serverLevel) ? station : null;
     }
 
     @Override
@@ -186,9 +193,7 @@ public class StationBlockEntity extends MachineBlockEntity implements MachineMen
     private void ensureStation(ServerLevel level) {
         LogisticsNetwork network = Logistics.network(level.getServer());
         Station existing = this.id == null ? null : network.get(this.id);
-        String dimension = level.dimension().identifier().toString();
-        if (existing != null && existing.dimension().equals(dimension) && existing.x() == this.worldPosition.getX()
-                && existing.y() == this.worldPosition.getY() && existing.z() == this.worldPosition.getZ()) {
+        if (existing != null && this.isHere(existing, level)) {
             return;
         }
         if (existing != null) {
@@ -203,8 +208,39 @@ public class StationBlockEntity extends MachineBlockEntity implements MachineMen
             this.pending.applyTo(station);
             this.pending = null;
         }
+        if (this.owner != null) {
+            station.setOwner(this.owner);
+        }
         this.setupNew(level, station);
         network.add(station);
+        this.setChanged();
+    }
+
+    /** 账本里的这条是不是这个方块的（维度和位置对得上）。复制出来的方块（创造模式的选取、带数据的物品）带着别的站的编号。 */
+    private boolean isHere(Station station, ServerLevel level) {
+        return station.dimension().equals(level.dimension().identifier().toString()) && station.x() == this.worldPosition.getX()
+                && station.y() == this.worldPosition.getY() && station.z() == this.worldPosition.getZ();
+    }
+
+    /** 账本里这座站的主人；账本里还没有（刚放下、编号是复制来的）时看方块实体上记的。 */
+    @Override
+    public Optional<UUID> owner() {
+        Station station = this.station();
+        return station != null ? station.owner() : Optional.ofNullable(this.owner);
+    }
+
+    /**
+     * 玩家放下了这座站（方块的 {@code setPlacedBy}）、贴蓝图建的、重建的：记成主人。账本里通常还没有这座站（{@link #onLoad} 在下一刻），
+     * 有就直接改。编号是复制来的时候只记在方块实体上，不碰原来那座站，{@link #ensureStation} 换了新编号再记进去。
+     */
+    @Override
+    public void setOwner(@Nullable UUID owner) {
+        this.owner = owner;
+        Station station = this.station();
+        if (station != null && this.level instanceof ServerLevel serverLevel) {
+            station.setOwner(owner);
+            LogisticsData.get(serverLevel.getServer()).setDirty();
+        }
         this.setChanged();
     }
 
@@ -622,13 +658,14 @@ public class StationBlockEntity extends MachineBlockEntity implements MachineMen
         }
     }
 
-    /** 不用玩家手上东西的那几个按钮：供需、上限、清掉。控制面板远程改设置也走这里（ADR-0033 §三）。 */
+    /** 不用玩家手上东西的那几个按钮：供需、上限、清掉。控制面板远程改设置也走这里（ADR-0033 §三）。返回真的改了没有。 */
     public static boolean applySetting(Station station, int row, int action) {
         if (row < 0 || row >= station.kind().slots() || station.kind() == StationKind.COLLECTOR) {
             return false;
         }
         StationSlot slot = station.slot(row);
         int capacity = station.kind().slotCapacity();
+        int max = slot.max();
         switch (action) {
             case CYCLE_LOCAL -> slot.setLocal(slot.local().next());
             case CYCLE_REMOTE -> {
@@ -648,7 +685,8 @@ public class StationBlockEntity extends MachineBlockEntity implements MachineMen
                 return false;
             }
         }
-        return true;
+        // 上限到头了再按不算改
+        return action == CYCLE_LOCAL || action == CYCLE_REMOTE || slot.max() != max;
     }
 
     // ---- 物品组件（拆了带着内容）
@@ -680,6 +718,15 @@ public class StationBlockEntity extends MachineBlockEntity implements MachineMen
             this.portsOnly = false;
         }
         this.id = input.read("Station", UUIDUtil.CODEC).orElse(null);
+        this.owner = input.read("Owner", UUIDUtil.CODEC).orElse(null);
+        // 已经在世界里的方块读进数据（带方块实体数据的物品、/data、结构方块）：编号不是这个位置的就不要，下一刻建新的。
+        // 读档时方块实体还没放进世界（level 是空的），不走这里
+        if (this.id != null && this.level instanceof ServerLevel serverLevel) {
+            Station station = Logistics.network(serverLevel.getServer()).get(this.id);
+            if (station == null || !this.isHere(station, serverLevel)) {
+                this.id = null;
+            }
+        }
     }
 
     @Override
@@ -687,6 +734,9 @@ public class StationBlockEntity extends MachineBlockEntity implements MachineMen
         super.saveAdditional(output);
         if (this.id != null) {
             output.store("Station", UUIDUtil.CODEC, this.id);
+        }
+        if (this.owner != null) {
+            output.store("Owner", UUIDUtil.CODEC, this.owner);
         }
     }
 }

@@ -464,6 +464,17 @@ public final class UniverseGameTests {
             LogisticsDispatchGameTests::isolatedStationKeepsItsGoods);
     private static final ResourceKey<Consumer<GameTestHelper>> REMOTE_EDIT_APPLIES = function("remote_edit_applies",
             LogisticsDispatchGameTests::remoteEditApplies);
+    // 1.0 复查：控制面板远程改设置的权限
+    private static final ResourceKey<Consumer<GameTestHelper>> OWNED_STATION_REFUSES_OTHERS = function("owned_station_refuses_others",
+            ControlPanelGameTests::ownedStationRefusesOthers);
+    private static final ResourceKey<Consumer<GameTestHelper>> LEGACY_STATION_ACCEPTS_EDITS = function("legacy_station_accepts_edits",
+            ControlPanelGameTests::legacyStationAcceptsEdits);
+    private static final ResourceKey<Consumer<GameTestHelper>> COPIED_STATION_KEEPS_ORIGINAL_OWNER = function(
+            "copied_station_keeps_original_owner", ControlPanelGameTests::copiedStationKeepsOriginalOwner);
+    private static final ResourceKey<Consumer<GameTestHelper>> BLUEPRINT_STATION_HAS_OWNER = function("blueprint_station_has_owner",
+            ControlPanelGameTests::blueprintStationHasOwner);
+    private static final ResourceKey<Consumer<GameTestHelper>> REBUILT_STATION_KEEPS_OWNER = function("rebuilt_station_keeps_owner",
+            ControlPanelGameTests::rebuiltStationKeepsOwner);
     // M18 物流调度（B）的测试函数加在这行上面
     private static final ResourceKey<Consumer<GameTestHelper>> RESEARCH_QUEUE_ADVANCES = function("research_queue_advances",
             StatsGameTests::researchQueueAdvances);
@@ -495,6 +506,12 @@ public final class UniverseGameTests {
             FishingGameTests::releaseBlessesNextCasts);
     private static final ResourceKey<Consumer<GameTestHelper>> FISH_TRAP_CATCHES_UNDER_WATER = function("fish_trap_catches_under_water",
             FishingGameTests::trapCatchesUnderWater);
+    private static final ResourceKey<Consumer<GameTestHelper>> FISHING_SWAPPED_TOOL_DROPS_BOBBER = function("fishing_swapped_tool_drops_bobber",
+            FishingFixGameTests::swappedToolDropsBobber);
+    private static final ResourceKey<Consumer<GameTestHelper>> FISHING_SWAP_THEN_HOOK_KEEPS_BAIT = function("fishing_swap_then_hook_keeps_bait",
+            FishingFixGameTests::swapThenHookKeepsBait);
+    private static final ResourceKey<Consumer<GameTestHelper>> FISHING_SAME_TOOL_SPENDS_BAIT = function("fishing_same_tool_spends_bait",
+            FishingFixGameTests::sameToolSpendsBait);
     // M19 钓鱼（A）的测试函数加在这行上面
     private static final ResourceKey<Consumer<GameTestHelper>> SETTLEMENT_CLAIM_NEEDS_STANDING_AND_MATERIALS = function(
             "settlement_claim_needs_standing_and_materials", SettlementGameTests::claimNeedsStandingAndMaterials);
@@ -506,6 +523,28 @@ public final class UniverseGameTests {
             SettlementGameTests::raidResolvesByDefense);
     private static final ResourceKey<Consumer<GameTestHelper>> SETTLEMENT_RAIDERS_STRAFE_ABOVE_GROUND = function(
             "settlement_raiders_strafe_above_ground", SettlementGameTests::raidersStrafeAboveGround);
+    private static final ResourceKey<Consumer<GameTestHelper>> SETTLEMENT_RAID_IDLE_CENTRE_ROLLS_DEFENSE = function(
+            "settlement_raid_idle_centre_rolls_defense", SettlementFixGameTests::raidIdleCentreRollsDefense);
+    private static final ResourceKey<Consumer<GameTestHelper>> SETTLEMENT_RAID_BEGIN_SKIPS_IDLE_CENTRE = function(
+            "settlement_raid_begin_skips_idle_centre", SettlementFixGameTests::raidBeginSkipsIdleCentre);
+    private static final ResourceKey<Consumer<GameTestHelper>> SETTLEMENT_RAID_SPAWN_PULLED_TOWARD_OWNER = function(
+            "settlement_raid_spawn_pulled_toward_owner", SettlementFixGameTests::raidSpawnPulledTowardOwner);
+    private static final ResourceKey<Consumer<GameTestHelper>> SETTLEMENT_RAID_RELEASED_CHUNKS_ROLL_DEFENSE = function(
+            "settlement_raid_released_chunks_roll_defense", SettlementFixGameTests::raidReleasedChunksRollDefense);
+    private static final ResourceKey<Consumer<GameTestHelper>> SETTLEMENT_RAID_DISCARDED_FIGHTERS_ROLL_DEFENSE = function(
+            "settlement_raid_discarded_fighters_roll_defense", SettlementFixGameTests::raidDiscardedFightersRollDefense);
+    private static final ResourceKey<Consumer<GameTestHelper>> SETTLEMENT_RAID_FROZEN_FIGHTER_ROLLS_DEFENSE = function(
+            "settlement_raid_frozen_fighter_rolls_defense", SettlementFixGameTests::raidFrozenFighterRollsDefense);
+    private static final ResourceKey<Consumer<GameTestHelper>> SETTLEMENT_RAID_OWNER_LEAVES_BEFORE_END_ROLLS_DEFENSE = function(
+            "settlement_raid_owner_leaves_before_end_rolls_defense", SettlementFixGameTests::raidOwnerLeavesBeforeEndRollsDefense);
+    private static final ResourceKey<Consumer<GameTestHelper>> SETTLEMENT_RAID_LAST_KILL_ON_ABSENT_TICK_WINS = function(
+            "settlement_raid_last_kill_on_absent_tick_wins", SettlementFixGameTests::raidLastKillOnAbsentTickWins);
+    private static final ResourceKey<Consumer<GameTestHelper>> SETTLEMENT_POND_WATER_CACHED = function("settlement_pond_water_cached",
+            SettlementFixGameTests::pondWaterCached);
+    private static final ResourceKey<Consumer<GameTestHelper>> SETTLEMENT_CLAIM_DROPS_CONTAINERS = function("settlement_claim_drops_containers",
+            SettlementFixGameTests::claimDropsContainers);
+    private static final ResourceKey<Consumer<GameTestHelper>> DIG_SITE_COLLECTOR_NEEDS_CAMP = function("dig_site_collector_needs_camp",
+            SettlementFixGameTests::digSiteNeedsCamp);
     // M19 聚落（B）的测试函数加在这行上面
     private static final ResourceKey<Consumer<GameTestHelper>> SKELETON_DISPLAY_PACKS_AND_RESTORES = function(
             "skeleton_display_packs_and_restores", FossilGameTests::displayCompletesPacksAndRestores);
@@ -536,6 +575,39 @@ public final class UniverseGameTests {
     private static final ResourceKey<Consumer<GameTestHelper>> HELM_SUPERCHARGE_TUNES_SHIP = function("helm_supercharge_tunes_ship",
             TechLayoutGameTests::helmSuperchargeTunesShip);
     // M19 科技布局和局部危害（E）的测试函数加在这行上面
+    // 跨恒星系的星际物流跑一整趟（ADR-0033 §三），测试写在 InterstellarTripGameTests
+    private static final ResourceKey<Consumer<GameTestHelper>> VESSEL_DELIVERS_ACROSS_SYSTEMS = function("vessel_delivers_across_systems",
+            InterstellarTripGameTests::vesselDeliversAcrossSystems);
+    private static final ResourceKey<Consumer<GameTestHelper>> VESSEL_FETCHES_ACROSS_SYSTEMS = function("vessel_fetches_across_systems",
+            InterstellarTripGameTests::vesselFetchesAcrossSystems);
+    private static final ResourceKey<Consumer<GameTestHelper>> BAIT_MENU_SWAP_NO_DUPE = function("bait_menu_swap_no_dupe",
+            MenuDupeGameTests::baitMenuSwapNoDupe);
+    private static final ResourceKey<Consumer<GameTestHelper>> TECH_MENU_SWAP_NO_DUPE = function("tech_menu_swap_no_dupe",
+            MenuDupeGameTests::techMenuSwapNoDupe);
+    private static final ResourceKey<Consumer<GameTestHelper>> SHIP_CARGO_VIEWERS_SHARE = function("ship_cargo_viewers_share",
+            MenuDupeGameTests::shipCargoViewersShare);
+    private static final ResourceKey<Consumer<GameTestHelper>> OLD_SHIP_SUPERCHARGE_SETTLES = function("old_ship_supercharge_settles",
+            MenuDupeGameTests::oldShipSuperchargeSettles);
+    private static final ResourceKey<Consumer<GameTestHelper>> SHIP_CARGO_IN_PLACE_EDITS_PERSIST = function("ship_cargo_in_place_edits_persist",
+            MenuDupeGameTests::shipCargoInPlaceEditsPersist);
+    private static final ResourceKey<Consumer<GameTestHelper>> BAIT_CONSUMED_WHILE_MENU_OPEN = function("bait_consumed_while_menu_open",
+            MenuDupeGameTests::baitConsumedWhileMenuOpen);
+    private static final ResourceKey<Consumer<GameTestHelper>> HULK_ALARM_LIGHTS_CATCH_UP = function("hulk_alarm_lights_catch_up",
+            MenuDupeGameTests::hulkAlarmLightsCatchUp);
+    // 1.0 复查：界面刷物品和飞船面板的测试函数加在这行上面
+    private static final ResourceKey<Consumer<GameTestHelper>> GEYSER_DORMANT_SYNCED = function("geyser_dormant_synced",
+            ReleaseFixGameTests::geyserDormantSynced);
+    private static final ResourceKey<Consumer<GameTestHelper>> PRODUCTION_SERIES_ROUND_TRIP = function("production_series_round_trip",
+            ReleaseFixGameTests::productionSeriesRoundTrip);
+    private static final ResourceKey<Consumer<GameTestHelper>> HOLO_BEACON_COALESCES_BROADCASTS = function("holo_beacon_coalesces_broadcasts",
+            ReleaseFixGameTests::holoBeaconCoalescesBroadcasts);
+    private static final ResourceKey<Consumer<GameTestHelper>> GRAVITY_REFUSES_OTHERS_FLEET_UNIT = function("gravity_refuses_others_fleet_unit",
+            ReleaseFixGameTests::gravityRefusesOthersFleetUnit);
+    private static final ResourceKey<Consumer<GameTestHelper>> GRAVITY_BEAM_REACHES_LATE_TRACKER = function("gravity_beam_reaches_late_tracker",
+            ReleaseFixGameTests::gravityBeamReachesLateTracker);
+    private static final ResourceKey<Consumer<GameTestHelper>> FAR_CHUNKS_LOAD_IN_BACKGROUND = function("far_chunks_load_in_background",
+            ReleaseFixGameTests::farChunksLoadInBackground);
+    // 1.0.0 发布前修复：危害、引力抓取器、深空、信标、统计的测试函数加在这行上面
 
     private UniverseGameTests() {
     }
@@ -694,6 +766,11 @@ public final class UniverseGameTests {
         test(event, environment, ROUTE_STARTS_ONCE_STATION_BUILT, 300);
         test(event, environment, ISOLATED_STATION_KEEPS_GOODS, 200);
         test(event, environment, REMOTE_EDIT_APPLIES, 40);
+        test(event, environment, OWNED_STATION_REFUSES_OTHERS, 40);
+        test(event, environment, LEGACY_STATION_ACCEPTS_EDITS, 40);
+        test(event, environment, COPIED_STATION_KEEPS_ORIGINAL_OWNER, 40);
+        test(event, environment, BLUEPRINT_STATION_HAS_OWNER, 40);
+        test(event, environment, REBUILT_STATION_KEEPS_OWNER, 40);
         // M18 物流调度（B）的测试加在这行上面
         test(event, environment, RESEARCH_QUEUE_ADVANCES, 20);
         test(event, environment, REFERENCE_COUNTS_RUNNING_MACHINES, 300);
@@ -711,12 +788,26 @@ public final class UniverseGameTests {
         test(event, environment, FISHING_BAIT_USED_ON_HOOK, 200);
         test(event, environment, FISHING_RELEASE_BLESSES_NEXT_CASTS, 200);
         test(event, environment, FISH_TRAP_CATCHES_UNDER_WATER, 100);
+        test(event, environment, FISHING_SWAPPED_TOOL_DROPS_BOBBER, 200);
+        test(event, environment, FISHING_SWAP_THEN_HOOK_KEEPS_BAIT, 200);
+        test(event, environment, FISHING_SAME_TOOL_SPENDS_BAIT, 200);
         // M19 钓鱼（A）的测试加在这行上面
         spaced(event, environment, SETTLEMENT_CLAIM_NEEDS_STANDING_AND_MATERIALS, 100);
         spaced(event, environment, SETTLEMENT_CONSTRUCTION_THREE_STAGES, 200);
         spaced(event, environment, SETTLEMENT_DECISION_APPLIES, 20);
         spaced(event, environment, SETTLEMENT_RAID_RESOLVES_BY_DEFENSE, 60);
         test(event, environment, SETTLEMENT_RAIDERS_STRAFE_ABOVE_GROUND, 600);
+        test(event, environment, SETTLEMENT_RAID_IDLE_CENTRE_ROLLS_DEFENSE, 300);
+        test(event, environment, SETTLEMENT_RAID_BEGIN_SKIPS_IDLE_CENTRE, 200);
+        test(event, environment, SETTLEMENT_RAID_SPAWN_PULLED_TOWARD_OWNER, 200);
+        test(event, environment, SETTLEMENT_RAID_RELEASED_CHUNKS_ROLL_DEFENSE, 400);
+        test(event, environment, SETTLEMENT_RAID_DISCARDED_FIGHTERS_ROLL_DEFENSE, 200);
+        test(event, environment, SETTLEMENT_RAID_FROZEN_FIGHTER_ROLLS_DEFENSE, 300);
+        test(event, environment, SETTLEMENT_RAID_OWNER_LEAVES_BEFORE_END_ROLLS_DEFENSE, 200);
+        test(event, environment, SETTLEMENT_RAID_LAST_KILL_ON_ABSENT_TICK_WINS, 300);
+        spaced(event, environment, SETTLEMENT_POND_WATER_CACHED, 20);
+        spaced(event, environment, SETTLEMENT_CLAIM_DROPS_CONTAINERS, 20);
+        test(event, environment, DIG_SITE_COLLECTOR_NEEDS_CAMP, 20);
         // M19 聚落（B）的测试加在这行上面
         test(event, environment, SKELETON_DISPLAY_PACKS_AND_RESTORES, 20);
         test(event, environment, FOSSIL_COLLECTOR_SWAPS, 20);
@@ -738,6 +829,24 @@ public final class UniverseGameTests {
         test(event, environment, MULTITOOL_LAYOUT_BOOSTS, 20);
         test(event, environment, HELM_SUPERCHARGE_TUNES_SHIP, 20);
         // M19 科技布局和局部危害（E）的测试加在这行上面
+        test(event, environment, VESSEL_DELIVERS_ACROSS_SYSTEMS, InterstellarTripGameTests.MAX_TICKS);
+        test(event, environment, VESSEL_FETCHES_ACROSS_SYSTEMS, InterstellarTripGameTests.MAX_TICKS);
+        test(event, environment, BAIT_MENU_SWAP_NO_DUPE, 20);
+        test(event, environment, TECH_MENU_SWAP_NO_DUPE, 20);
+        test(event, environment, SHIP_CARGO_VIEWERS_SHARE, 20);
+        test(event, environment, OLD_SHIP_SUPERCHARGE_SETTLES, 20);
+        test(event, environment, SHIP_CARGO_IN_PLACE_EDITS_PERSIST, 20);
+        test(event, environment, BAIT_CONSUMED_WHILE_MENU_OPEN, 20);
+        test(event, environment, HULK_ALARM_LIGHTS_CATCH_UP, 100);
+        // 1.0 复查：界面刷物品和飞船面板的测试加在这行上面
+        test(event, environment, GEYSER_DORMANT_SYNCED, 20);
+        test(event, environment, PRODUCTION_SERIES_ROUND_TRIP, 20);
+        test(event, environment, HOLO_BEACON_COALESCES_BROADCASTS, 20);
+        test(event, environment, GRAVITY_REFUSES_OTHERS_FLEET_UNIT, 20);
+        test(event, environment, GRAVITY_BEAM_REACHES_LATE_TRACKER, 40);
+        // 区块在后台按真实时间生成，测试服务端空闲时一秒能跑几千刻：测试里按真实时间限时（ReleaseFixGameTests.FAR_CHUNKS_SECONDS），刻数不设限
+        test(event, environment, FAR_CHUNKS_LOAD_IN_BACKGROUND, Integer.MAX_VALUE);
+        // 1.0.0 发布前修复：危害、引力抓取器、深空、信标、统计的测试加在这行上面
     }
 
     /**

@@ -43,15 +43,24 @@ public final class ProductionData extends SavedData {
             SERIES_CODEC.fieldOf("generation").forGetter(Ledger::generation),
             SERIES_CODEC.fieldOf("demand").forGetter(Ledger::demand),
             SERIES_CODEC.fieldOf("supplied").forGetter(Ledger::supplied),
-            SERIES_CODEC.optionalFieldOf("charged").forGetter(ledger -> Optional.of(ledger.charged()))
-    ).apply(i, (start, produced, consumed, generation, demand, supplied, charged) -> {
+            SERIES_CODEC.optionalFieldOf("charged").forGetter(ledger -> Optional.of(ledger.charged())),
+            // M18 加的：星际物流的进出口、各种设备的发电和用电（0.14.0-alpha 的存档里没有）
+            ITEMS_CODEC.optionalFieldOf("imports", Map.of()).forGetter(Ledger::imports),
+            ITEMS_CODEC.optionalFieldOf("exports", Map.of()).forGetter(Ledger::exports),
+            ITEMS_CODEC.optionalFieldOf("generators", Map.of()).forGetter(Ledger::generators),
+            ITEMS_CODEC.optionalFieldOf("consumers", Map.of()).forGetter(Ledger::consumers)
+    ).apply(i, (start, produced, consumed, generation, demand, supplied, charged, imports, exports, generators, consumers) -> {
         Ledger ledger = new Ledger(start, generation, demand, supplied, charged.orElseGet(Series::new));
         ledger.produced().putAll(produced);
         ledger.consumed().putAll(consumed);
+        ledger.imports().putAll(imports);
+        ledger.exports().putAll(exports);
+        ledger.generators().putAll(generators);
+        ledger.consumers().putAll(consumers);
         return ledger;
     }));
 
-    private static final Codec<ProductionData> CODEC = RecordCodecBuilder.create(i -> i.group(
+    public static final Codec<ProductionData> CODEC = RecordCodecBuilder.create(i -> i.group(
             Codec.INT.optionalFieldOf("format").forGetter(data -> Optional.of(FORMAT)),
             Codec.unboundedMap(Codec.STRING, LEDGER_CODEC).fieldOf("dimensions").forGetter(data -> new LinkedHashMap<>(data.stats.ledgers()))
     ).apply(i, (format, ledgers) -> {

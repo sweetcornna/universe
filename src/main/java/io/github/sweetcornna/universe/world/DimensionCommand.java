@@ -35,6 +35,7 @@ import net.minecraft.commands.Commands;
 import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.IdentifierArgument;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
@@ -47,7 +48,7 @@ import net.minecraft.world.level.portal.TeleportTransition;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * 调试命令 {@code /universe dim}（S1 原型），需要 2 级权限。只给开发和测试用，提示文字不做翻译。
+ * 调试命令 {@code /universe dim}（S1 原型），需要 2 级权限。只给开发和测试用。
  *
  * <ul>
  * <li>{@code create <名称> [数量]}：创建平坦测试维度 {@code universe:<名称>}；给了数量就创建
@@ -62,9 +63,9 @@ import net.minecraft.world.phys.Vec3;
  */
 public final class DimensionCommand {
     private static final DynamicCommandExceptionType UNKNOWN_DIMENSION =
-            new DynamicCommandExceptionType(id -> Component.literal("未知维度：" + id));
+            new DynamicCommandExceptionType(id -> Component.translatable("commands.universe.dim.unknown", String.valueOf(id)));
     private static final DynamicCommandExceptionType INVALID_NAME =
-            new DynamicCommandExceptionType(name -> Component.literal("维度名称只能包含小写字母、数字和 _-./：" + name));
+            new DynamicCommandExceptionType(name -> Component.translatable("commands.universe.dim.invalid_name", String.valueOf(name)));
 
     private static final SuggestionProvider<CommandSourceStack> ALL_DIMENSIONS = (context, builder) -> {
         Set<Identifier> ids = new LinkedHashSet<>();
@@ -158,8 +159,7 @@ public final class DimensionCommand {
         long millis = (System.nanoTime() - startNanos) / 1_000_000;
         int total = names.size();
         int newCount = created;
-        source.sendSuccess(() -> Component.literal("新建 " + newCount + " 个维度，已有或重新加载 " + (total - newCount)
-                + " 个，用时 " + millis + " ms"), true);
+        source.sendSuccess(() -> Component.translatable("commands.universe.dim.created", newCount, total - newCount, millis), true);
         return total;
     }
 
@@ -184,10 +184,10 @@ public final class DimensionCommand {
                     entity.getYRot(), entity.getXRot(), TeleportTransition.PLACE_PORTAL_TICKET);
         }
         if (entity.teleport(transition) == null) {
-            source.sendFailure(Component.literal("传送失败：" + id));
+            source.sendFailure(Component.translatable("commands.universe.dim.tp.failed", Component.translationArg(id)));
             return 0;
         }
-        source.sendSuccess(() -> Component.literal("已传送到 " + id), false);
+        source.sendSuccess(() -> Component.translatable("commands.universe.dim.tp", Component.translationArg(id)), false);
         return 1;
     }
 
@@ -199,7 +199,7 @@ public final class DimensionCommand {
             throw UNKNOWN_DIMENSION.create(id);
         }
         long millis = (System.nanoTime() - startNanos) / 1_000_000;
-        source.sendSuccess(() -> Component.literal("已加载 " + id + "，用时 " + millis + " ms"), true);
+        source.sendSuccess(() -> Component.translatable("commands.universe.dim.loaded", Component.translationArg(id), millis), true);
         return 1;
     }
 
@@ -207,10 +207,10 @@ public final class DimensionCommand {
         Identifier id = IdentifierArgument.getId(context, "dimension");
         CommandSourceStack source = context.getSource();
         if (!RuntimeDimensions.requestUnload(source.getServer(), RuntimeDimensions.key(id))) {
-            source.sendFailure(Component.literal("无法卸载 " + id + "：不是本模组创建的、没有加载、已在卸载，或者是世界出生点所在的维度"));
+            source.sendFailure(Component.translatable("commands.universe.dim.unload.failed", Component.translationArg(id)));
             return 0;
         }
-        source.sendSuccess(() -> Component.literal("开始卸载 " + id + "，区块卸完后关闭"), true);
+        source.sendSuccess(() -> Component.translatable("commands.universe.dim.unload", Component.translationArg(id)), true);
         return 1;
     }
 
@@ -224,7 +224,7 @@ public final class DimensionCommand {
             }
         }
         int count = requested;
-        source.sendSuccess(() -> Component.literal("开始卸载 " + count + " 个维度"), true);
+        source.sendSuccess(() -> Component.translatable("commands.universe.dim.unload.all", count), true);
         return requested;
     }
 
@@ -232,20 +232,18 @@ public final class DimensionCommand {
         CommandSourceStack source = context.getSource();
         MinecraftServer server = source.getServer();
         List<RuntimeDimensionsData.Entry> entries = List.copyOf(RuntimeDimensionsData.get(server).entries());
-        StringBuilder text = new StringBuilder("本模组创建的维度 " + entries.size() + " 个：");
+        MutableComponent text = Component.translatable("commands.universe.dim.list", entries.size());
         for (RuntimeDimensionsData.Entry entry : entries) {
             ResourceKey<Level> key = RuntimeDimensions.key(entry.id());
             ServerLevel level = server.getLevel(key);
-            text.append("\n  ").append(entry.id()).append("  ").append(entry.template()).append("  ");
-            if (level == null) {
-                text.append("未加载");
-            } else {
-                text.append(RuntimeDimensions.isUnloading(key) ? "卸载中" : "已加载")
-                        .append("，区块 ").append(level.getChunkSource().getLoadedChunksCount())
-                        .append("，玩家 ").append(level.players().size());
-            }
+            Component id = Component.translationArg(entry.id());
+            String template = String.valueOf(entry.template());
+            text.append("\n  ").append(level == null
+                    ? Component.translatable("commands.universe.dim.list.unloaded", id, template)
+                    : Component.translatable(RuntimeDimensions.isUnloading(key) ? "commands.universe.dim.list.unloading" : "commands.universe.dim.list.loaded",
+                            id, template, level.getChunkSource().getLoadedChunksCount(), level.players().size()));
         }
-        source.sendSuccess(() -> Component.literal(text.toString()), false);
+        source.sendSuccess(() -> text, false);
         return entries.size();
     }
 
@@ -269,10 +267,9 @@ public final class DimensionCommand {
                 runtimeLevels++;
             }
         }
-        String text = "堆内存已用 " + usedMb + " MB（已分配 " + committedMb + " MB，上限 " + maxMb + " MB）"
-                + (gc ? "，已请求 GC" : "")
-                + "；维度 " + levels + " 个，其中运行时维度 " + runtimeLevels + " 个；已加载区块 " + chunks + " 个";
-        source.sendSuccess(() -> Component.literal(text), false);
+        Component text = Component.translatable(gc ? "commands.universe.dim.stats.gc" : "commands.universe.dim.stats",
+                usedMb, committedMb, maxMb, levels, runtimeLevels, chunks);
+        source.sendSuccess(() -> text, false);
         return (int) usedMb;
     }
 }

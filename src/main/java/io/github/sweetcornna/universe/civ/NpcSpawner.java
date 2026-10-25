@@ -33,7 +33,10 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.EntitySpawnReason;
+import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.level.levelgen.Heightmap;
@@ -62,6 +65,8 @@ public final class NpcSpawner {
     static final int[] STATION_COLLECTOR = {-4, 13};
     /** 交易站的站位离交易终端这么近以内才算地标真的盖起来了（中心落在湖里的地标不放）。 */
     private static final int TERMINAL_REACH = 3;
+    /** 收藏家的站位离他的桌子、帐篷这么近以内才算发掘场真的盖起来了（桌子在两格外，工具桶、帐篷三格）。 */
+    private static final int CAMP_REACH = 3;
     /** 放着的 NPC，按维度、站位的键。 */
     private static final Map<ResourceKey<Level>, Map<String, AlienNpc>> LIVE = new HashMap<>();
 
@@ -206,7 +211,10 @@ public final class NpcSpawner {
         return spots;
     }
 
-    /** 发掘场收藏家帐篷门口的收藏家：发掘场真的盖起来了（中心不在水里）才放。 */
+    /**
+     * 发掘场收藏家帐篷门口的收藏家：发掘场真的盖起来了（中心不在水里、身边有他的桌子帐篷）才放。0.14 生成的区块里只有地标，
+     * 没有发掘场。
+     */
     private static Optional<Spot> digSiteCollector(ServerLevel level, Landmark landmark, Vec3 near, Optional<Race> dominant) {
         int[] column = DigSiteLayout.collectorSpot(landmark);
         double dx = column[0] + 0.5 - near.x;
@@ -229,7 +237,8 @@ public final class NpcSpawner {
             return Optional.empty();
         }
         OptionalInt y = standY(level, column[0], column[1]);
-        if (y.isEmpty() || !level.getFluidState(new BlockPos(column[0], y.getAsInt(), column[1])).isEmpty()) {
+        if (y.isEmpty() || !level.getFluidState(new BlockPos(column[0], y.getAsInt(), column[1])).isEmpty()
+                || !nearCamp(level, new BlockPos(column[0], y.getAsInt(), column[1]))) {
             return Optional.empty();
         }
         Vec3 pos = new Vec3(column[0] + 0.5, y.getAsInt(), column[1] + 0.5);
@@ -299,6 +308,26 @@ public final class NpcSpawner {
             }
         }
         return false;
+    }
+
+    /** 收藏家身边有发掘场盖的东西：桌子（云杉台阶、桌上的灯）、工具桶，或者他那顶橙色的帐篷。没加载的区块不看。 */
+    private static boolean nearCamp(ServerLevel level, BlockPos pos) {
+        Block canvas = Blocks.WOOL.pick(DyeColor.ORANGE);
+        for (BlockPos at : BlockPos.betweenClosed(pos.offset(-CAMP_REACH, -1, -CAMP_REACH), pos.offset(CAMP_REACH, 2, CAMP_REACH))) {
+            if (!level.isLoaded(at)) {
+                continue;
+            }
+            BlockState state = level.getBlockState(at);
+            if (state.is(Blocks.SPRUCE_SLAB) || state.is(Blocks.LANTERN) || state.is(Blocks.BARREL) || state.is(canvas)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** 给游戏内测试用：玩家站在 {@code near} 时，这处发掘场放不放收藏家。 */
+    public static boolean testDigSiteCollector(ServerLevel level, Landmark landmark, Vec3 near) {
+        return digSiteCollector(level, landmark, near, Optional.empty()).isPresent();
     }
 
     // ---- 放和收

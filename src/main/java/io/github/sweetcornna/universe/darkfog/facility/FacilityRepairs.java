@@ -15,6 +15,7 @@ import io.github.sweetcornna.universe.core.darkfog.RepairQueue;
 import io.github.sweetcornna.universe.core.mecha.DroneFleet;
 import io.github.sweetcornna.universe.darkfog.Facilities;
 import io.github.sweetcornna.universe.darkfog.FacilityData;
+import io.github.sweetcornna.universe.logistics.Owned;
 import io.github.sweetcornna.universe.network.FacilityPayloads;
 import io.github.sweetcornna.universe.perf.ServerPerf;
 import io.github.sweetcornna.universe.registry.UniverseBlockEntities;
@@ -87,11 +88,16 @@ public final class FacilityRepairs {
 
     // ---- 打掉、重建
 
-    /** 打掉一个设施：方块换成残影（不掉方块本身），里面的东西照拆方块的规矩掉出来；物品上带走的东西（物流站的账本）留在残影里。 */
+    /**
+     * 打掉一个设施：方块换成残影（不掉方块本身），里面的东西照拆方块的规矩掉出来；物品上带走的东西（物流站的账本）和主人
+     * 留在残影里。
+     */
     public static void destroy(ServerLevel level, BlockPos origin, BlockState state) {
         DataComponentPatch kept = DataComponentPatch.EMPTY;
         Item item = state.getBlock().asItem();
         BlockEntity blockEntity = level.getBlockEntity(origin);
+        // 换成残影时账本里的站就删了，主人先记下来
+        UUID owner = blockEntity instanceof Owned owned ? owned.owner().orElse(null) : null;
         if (blockEntity != null && item != Items.AIR) {
             for (ItemStack drop : Block.getDrops(state, level, origin, blockEntity)) {
                 if (drop.is(item) && !drop.getComponentsPatch().isEmpty()) {
@@ -105,14 +111,15 @@ public final class FacilityRepairs {
         level.sendParticles(ParticleTypes.LARGE_SMOKE, origin.getX() + 0.5, origin.getY() + 0.8, origin.getZ() + 0.5, 6, 0.3, 0.3, 0.3, 0.02);
         level.setBlock(origin, UniverseBlocks.FACILITY_GHOST.get().defaultBlockState(), Block.UPDATE_ALL);
         if (level.getBlockEntity(origin) instanceof FacilityGhostBlockEntity ghost) {
-            ghost.set(state, kept);
+            ghost.set(state, kept, owner);
             FacilityData.get(level).addGhost(origin.asLong());
         }
         healthChanged(level, origin, 1);
     }
 
     /**
-     * 按残影把设施放回去：朝向照原来的，存在残影里的东西还回去。
+     * 按残影把设施放回去：朝向照原来的，存在残影里的东西还回去。物流站、采集器、配送器的主人照原来的，谁重建的都一样
+     * （ADR-0033 §三）；原来没有主人的还是没有。
      *
      * @param player 放的人（手动放回、无人机的主人）；战场分析基地放的是空
      * @return 放回去了；残影上面被挡住、有人站在里面时放不了
@@ -127,6 +134,7 @@ public final class FacilityRepairs {
             return false;
         }
         DataComponentPatch contents = ghost.contents();
+        UUID owner = ghost.owner();
         if (ghost.tall() && !level.getBlockState(pos.above()).canBeReplaced()) {
             return false;
         }
@@ -142,6 +150,9 @@ public final class FacilityRepairs {
             blockEntity.setChanged();
         }
         state.getBlock().setPlacedBy(level, pos, state, player, stack);
+        if (blockEntity instanceof Owned owned) {
+            owned.setOwner(owner);
+        }
         FacilityData data = FacilityData.get(level);
         data.clearHealth(pos.asLong());
         data.removeGhost(pos.asLong());

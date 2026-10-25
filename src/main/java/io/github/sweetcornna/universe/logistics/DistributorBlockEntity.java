@@ -51,7 +51,7 @@ import net.neoforged.neoforge.transfer.transaction.Transaction;
  *
  * <p>机器人不是实体：每趟记着要去哪、带着什么、飞到了哪里，存进方块实体；客户端的画法见 {@code FlyersClient}。
  */
-public class DistributorBlockEntity extends MachineBlockEntity implements MachineMenu.ButtonTarget, BlueprintSettings {
+public class DistributorBlockEntity extends MachineBlockEntity implements MachineMenu.ButtonTarget, BlueprintSettings, Owned {
     public static final int BOT_SLOT = 0;
     public static final int MAX_BOTS = 10;
     /** 电池：最多 9 kW 从电网充，存 60 kJ。 */
@@ -135,6 +135,8 @@ public class DistributorBlockEntity extends MachineBlockEntity implements Machin
     private Distribution.Peer peer = Distribution.Peer.NONE;
     private long energy;
     private final List<Trip> trips = new ArrayList<>();
+    /** 放下它的玩家：控制面板远程改模式时认他（ADR-0033 §三）。0.14 的档里没有，谁都能改。 */
+    private @Nullable UUID owner;
 
     public DistributorBlockEntity(BlockPos pos, BlockState state) {
         super(UniverseBlockEntities.LOGISTICS_DISTRIBUTOR.get(), pos, state, 1);
@@ -152,6 +154,19 @@ public class DistributorBlockEntity extends MachineBlockEntity implements Machin
 
     public Distribution.Peer peer() {
         return this.peer;
+    }
+
+    @Override
+    public Optional<UUID> owner() {
+        return Optional.ofNullable(this.owner);
+    }
+
+    /** 玩家放下了这台配送器（{@link DistributorBlock#setPlacedBy}）、贴蓝图建的、重建的。 */
+    @Override
+    public void setOwner(@Nullable UUID owner) {
+        this.owner = owner;
+        this.setChanged();
+        this.register();
     }
 
     @Override
@@ -615,6 +630,7 @@ public class DistributorBlockEntity extends MachineBlockEntity implements Machin
         this.energy = input.getLongOr("energy", 0);
         this.trips.clear();
         input.read("trips", Trip.CODEC.listOf()).ifPresent(this.trips::addAll);
+        this.owner = input.read("owner", UUIDUtil.CODEC).orElse(null);
     }
 
     @Override
@@ -628,6 +644,9 @@ public class DistributorBlockEntity extends MachineBlockEntity implements Machin
         output.putLong("energy", this.energy);
         if (!this.trips.isEmpty()) {
             output.store("trips", Trip.CODEC.listOf(), this.trips);
+        }
+        if (this.owner != null) {
+            output.store("owner", UUIDUtil.CODEC, this.owner);
         }
     }
 

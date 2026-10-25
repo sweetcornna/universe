@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 
 import org.jspecify.annotations.Nullable;
 
@@ -14,6 +15,7 @@ import io.github.sweetcornna.universe.core.poi.SettlementLayout;
 import io.github.sweetcornna.universe.core.settlement.BuildingType;
 import io.github.sweetcornna.universe.core.settlement.Plot;
 import io.github.sweetcornna.universe.core.settlement.Settlement;
+import io.github.sweetcornna.universe.fishing.Fishing;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
 import io.github.sweetcornna.universe.world.planet.Planets;
 import it.unimi.dsi.fastutil.ints.IntList;
@@ -126,7 +128,7 @@ final class SettlementBuilder {
                     int y = d <= half ? target : (int) Math.round(target + (g - target) * (d - half) / 3.0);
                     column(level, w[0], w[1], g, y, d <= half ? HEIGHT + 2 : 6);
                     if (d == half) {
-                        put(level, new BlockPos(w[0], target, w[1]), p.border());
+                        reshape(level, new BlockPos(w[0], target, w[1]), p.border());
                     }
                 }
             }
@@ -179,12 +181,27 @@ final class SettlementBuilder {
             fill = surface.is(Blocks.GRASS_BLOCK) ? Blocks.DIRT.defaultBlockState() : surface;
         }
         for (int h = Math.max(ground + 1, y - MAX_FILL); h < y; h++) {
-            put(level, new BlockPos(x, h, z), fill);
+            reshape(level, new BlockPos(x, h, z), fill);
         }
-        put(level, new BlockPos(x, y, z), surface);
+        reshape(level, new BlockPos(x, y, z), surface);
         for (int h = y + 1; h <= Math.max(ground, y) + clear; h++) {
-            put(level, new BlockPos(x, h, z), Blocks.AIR.defaultBlockState());
+            reshape(level, new BlockPos(x, h, z), Blocks.AIR.defaultBlockState());
         }
+    }
+
+    /**
+     * 整平时放一个方块。原来那里的东西不是聚落自己的：打不坏的不动；有方块实体的（箱子、机器、告示牌）像挖掉一样连方块带里面的东西掉出来，
+     * 不会凭空没了。
+     */
+    private static void reshape(ServerLevel level, BlockPos pos, BlockState state) {
+        BlockState there = level.getBlockState(pos);
+        if (there == state || there.getDestroySpeed(level, pos) < 0) {
+            return;
+        }
+        if (there.hasBlockEntity()) {
+            level.destroyBlock(pos, true);
+        }
+        put(level, pos, state);
     }
 
     // ---- 每块地基的样子
@@ -374,6 +391,9 @@ final class SettlementBuilder {
             return false;
         }
         Plot plot = s.plot(index);
+        if (plot.type() == BuildingType.FISHING_POND && entry.ponds()[index] == null) {
+            notePond(level, entry, index);
+        }
         State current = State.of(plot);
         boolean waiting = plot.readyAt() > 0;
         State next = waiting ? current.next(plot) : current;
@@ -393,6 +413,9 @@ final class SettlementBuilder {
             view = blend(view, view(s, next), step / (double) STEPS);
         }
         apply(level, frame, view);
+        if (plot.type() == BuildingType.FISHING_POND) {
+            notePond(level, entry, index);
+        }
         APPLIED.put(id, key);
         if (!waiting) {
             entry.shown()[index] = key;
@@ -508,6 +531,33 @@ final class SettlementBuilder {
     /** 鱼塘的水底那一格（钓鱼按这里的水域挑鱼）。 */
     static BlockPos pond(SettlementData.Entry entry, int index) {
         return frame(entry, index).at(0, -1, 0);
+    }
+
+    /**
+     * 每天出鱼按的水：鱼塘的区块加载着就现读，顺手记下；没加载用记下的，免得每天结算时为了读水把区块同步加载起来；
+     * 从来没记过才现读。读不到水当是淡水的池塘。
+     */
+    static Fishing.Water pondWater(ServerLevel level, SettlementData.Entry entry, int index) {
+        BlockPos pos = pond(entry, index);
+        Fishing.Water cached = entry.ponds()[index];
+        if (cached != null && !level.isLoaded(pos)) {
+            return cached;
+        }
+        Optional<Fishing.Water> water = Fishing.water(level, pos);
+        water.ifPresent(w -> remember(level, entry, index, w));
+        return water.orElse(Fishing.POND_WATER);
+    }
+
+    /** 记下鱼塘现在的水（区块要加载着）；还没灌水就不动。 */
+    private static void notePond(ServerLevel level, SettlementData.Entry entry, int index) {
+        Fishing.water(level, pond(entry, index)).ifPresent(water -> remember(level, entry, index, water));
+    }
+
+    private static void remember(ServerLevel level, SettlementData.Entry entry, int index, Fishing.Water water) {
+        if (!water.equals(entry.ponds()[index])) {
+            entry.ponds()[index] = water;
+            SettlementData.get(level.getServer()).changed();
+        }
     }
 
     /** 施工终端在哪。 */

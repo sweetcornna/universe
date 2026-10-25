@@ -4,8 +4,11 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+
+import org.jspecify.annotations.Nullable;
 
 /**
  * 账本里的一座物流站（ADR-0015）。方块实体只存 {@link #id()}，读写都走这里，所以站所在的星球卸载了，账本还在，
@@ -42,6 +45,8 @@ public final class Station {
     private final Set<UUID> partners = new LinkedHashSet<>();
     private boolean isolated;
     private int minLoad;
+    /** 放下它的玩家：控制面板远程改设置时认它（{@link Ownership}）。0.14 的档里没有，谁都能改。 */
+    private @Nullable UUID owner;
 
     public Station(UUID id, StationKind kind, String dimension, int x, int y, int z, Location location) {
         this.id = id;
@@ -217,6 +222,14 @@ public final class Station {
             }
         }
         this.minLoad = 0;
+    }
+
+    public Optional<UUID> owner() {
+        return Optional.ofNullable(this.owner);
+    }
+
+    public void setOwner(@Nullable UUID owner) {
+        this.owner = owner;
     }
 
     /** 这座站派出的运输船至少装几个才走（{@code capacity} 是一艘的容量）。 */
