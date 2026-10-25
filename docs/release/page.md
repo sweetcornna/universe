@@ -4,7 +4,7 @@
 
 Modrinth 和 CurseForge 用同一份。上传时把"简介"填进 Summary，正文按平台分别贴英文或中英两段（Modrinth 支持 Markdown，CurseForge 选 Markdown 编辑器）。图片放在平台的图库里，正文不内嵌，免得图挂了。
 
-GitHub Release 的说明单独写，存在 `notes/` 里（已发：[0.14.0-alpha](notes/0.14.0-alpha.md)；[1.0.0](notes/1.0.0.md) 等作者确认）。发布的步骤：改 `gradle.properties` 的 `mod_version`，`./gradlew build` 出 jar，等 CI 过，`gh release create v<版本> --target main --notes-file docs/release/notes/<版本>.md <jar>`。1.0.0 起是正式版，不加 `--prerelease`；带 alpha、beta 的版本号才加。
+GitHub Release 的说明单独写，存在 `notes/` 里（已发：[0.14.0-alpha](notes/0.14.0-alpha.md)、[1.0.0](notes/1.0.0.md)）。发布的步骤：改 `gradle.properties` 的 `mod_version`，`./gradlew build` 出 jar，等 CI 过，`gh release create v<版本> --target main --notes-file docs/release/notes/<版本>.md <jar>`。1.0.0 起是正式版，不加 `--prerelease`；带 alpha、beta 的版本号才加。
 
 ## 简介（Summary）
 
