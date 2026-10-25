@@ -96,6 +96,11 @@ public class HelmBlockEntity extends BlockEntity {
         return data.read(TECH, SLOTS_CODEC).orElse(List.of());
     }
 
+    /** 方块实体数据里定下了超频格的种子没有（0.14 组装的船上的驾驶台没有）。 */
+    public static boolean hasSupercharge(@Nullable CompoundTag data) {
+        return data != null && data.contains(SUPERCHARGE);
+    }
+
     @Override
     protected void loadAdditional(ValueInput input) {
         super.loadAdditional(input);

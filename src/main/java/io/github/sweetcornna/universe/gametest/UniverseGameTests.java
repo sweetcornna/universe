@@ -541,6 +541,15 @@ public final class UniverseGameTests {
             InterstellarTripGameTests::vesselDeliversAcrossSystems);
     private static final ResourceKey<Consumer<GameTestHelper>> VESSEL_FETCHES_ACROSS_SYSTEMS = function("vessel_fetches_across_systems",
             InterstellarTripGameTests::vesselFetchesAcrossSystems);
+    private static final ResourceKey<Consumer<GameTestHelper>> BAIT_MENU_SWAP_NO_DUPE = function("bait_menu_swap_no_dupe",
+            MenuDupeGameTests::baitMenuSwapNoDupe);
+    private static final ResourceKey<Consumer<GameTestHelper>> TECH_MENU_SWAP_NO_DUPE = function("tech_menu_swap_no_dupe",
+            MenuDupeGameTests::techMenuSwapNoDupe);
+    private static final ResourceKey<Consumer<GameTestHelper>> SHIP_CARGO_VIEWERS_SHARE = function("ship_cargo_viewers_share",
+            MenuDupeGameTests::shipCargoViewersShare);
+    private static final ResourceKey<Consumer<GameTestHelper>> OLD_SHIP_SUPERCHARGE_SETTLES = function("old_ship_supercharge_settles",
+            MenuDupeGameTests::oldShipSuperchargeSettles);
+    // 1.0 复查：界面刷物品和飞船面板的测试函数加在这行上面
 
     private UniverseGameTests() {
     }
@@ -745,6 +754,11 @@ public final class UniverseGameTests {
         // M19 科技布局和局部危害（E）的测试加在这行上面
         test(event, environment, VESSEL_DELIVERS_ACROSS_SYSTEMS, InterstellarTripGameTests.MAX_TICKS);
         test(event, environment, VESSEL_FETCHES_ACROSS_SYSTEMS, InterstellarTripGameTests.MAX_TICKS);
+        test(event, environment, BAIT_MENU_SWAP_NO_DUPE, 20);
+        test(event, environment, TECH_MENU_SWAP_NO_DUPE, 20);
+        test(event, environment, SHIP_CARGO_VIEWERS_SHARE, 20);
+        test(event, environment, OLD_SHIP_SUPERCHARGE_SETTLES, 20);
+        // 1.0 复查：界面刷物品和飞船面板的测试加在这行上面
     }
 
     /**

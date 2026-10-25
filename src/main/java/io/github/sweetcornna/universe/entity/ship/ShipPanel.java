@@ -14,6 +14,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.SimpleMenuProvider;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.Vec3;
@@ -33,6 +34,7 @@ public final class ShipPanel {
 
     /** 驾驶员打开自己正开着的船的面板。 */
     public static void openFlying(ServerPlayer player, ShipEntity ship) {
+        seedSupercharge(ship);
         ShipStructure structure = ship.structure();
         if (structure == null || !structure.helm().state().is(UniverseBlocks.SHIP_HELM.get())) {
             return;
@@ -59,10 +61,15 @@ public final class ShipPanel {
         if (ship.isRemoved() || ship.structure() == null) {
             return;
         }
-        ShipCargoContainer cargo = ShipCargoContainer.of(ship, player.level().registryAccess());
-        player.openMenu(new SimpleMenuProvider((id, inventory, p) -> new ShipCargoMenu(id, inventory, cargo,
-                viewer -> !ship.isRemoved() && viewer.getVehicle() == ship), Component.translatable("gui.universe.ship_cargo.title")),
-                buf -> ShipCargoMenu.writeOpenData(cargo, buf));
+        // 别人开着这艘船的货舱时和他用同一个容器
+        ShipCargoContainer cargo = ShipCargoContainer.forShip(ship, player.level().registryAccess());
+        player.openMenu(new SimpleMenuProvider((id, inventory, p) -> cargoMenu(id, inventory, ship, cargo),
+                Component.translatable("gui.universe.ship_cargo.title")), buf -> ShipCargoMenu.writeOpenData(cargo, buf));
+    }
+
+    /** 服务端的货舱界面：坐在这艘船上才开着。 */
+    public static ShipCargoMenu cargoMenu(int id, Inventory inventory, ShipEntity ship, ShipCargoContainer cargo) {
+        return new ShipCargoMenu(id, inventory, cargo, viewer -> !ship.isRemoved() && viewer.getVehicle() == ship);
     }
 
     /** 潜行右键停着的船的驾驶台。 */
@@ -109,6 +116,20 @@ public final class ShipPanel {
             return loaded;
         }
         return new HelmBlockEntity(pos, block.state());
+    }
+
+    /**
+     * 0.14 组装、一直飞着的船：驾驶台的数据里还没有超频格的种子（ADR-0034 §五），摘要里也没有超频格。不定下来的话，
+     * 面板按驾驶台在船上的位置现定一个，飞行性能按旧摘要一个都没有，停船时又按落地的位置定一个。
+     * 这里按面板的那个定下来写回去，之后面板、性能、停船都跟着数据走。
+     */
+    public static void seedSupercharge(ShipEntity ship) {
+        ShipStructure structure = ship.structure();
+        if (structure == null || !structure.helm().state().is(UniverseBlocks.SHIP_HELM.get())
+                || HelmBlockEntity.hasSupercharge(structure.helm().blockEntity())) {
+            return;
+        }
+        writeBack(ship, helm(structure, ship.level().registryAccess()).items());
     }
 
     /** 飞着的船改了技术：写回驾驶台的数据。 */
