@@ -1,5 +1,6 @@
 package io.github.sweetcornna.universe.gametest;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.mojang.serialization.DynamicOps;
@@ -41,6 +42,7 @@ import net.minecraft.world.phys.Vec3;
 
 /**
  * 1.0 发布前查出来的聚落问题的游戏内测试：总督在附近但聚落中心不更新实体时来袭按防御值算、战机出发的地方往总督那边拉进更新范围、
+ * 打到一半区块不加载了、战机不是打下来却没了、有战机停在不更新实体的区块里都按防御值算，
  * 鱼塘的水记下来（区块没加载时不为了读水去加载）、接管整平时箱子连东西掉出来、没盖发掘场的地方不放收藏家。由 {@link UniverseGameTests} 登记。
  *
  * <p>"中心不更新实体"用一个离场地很远的区块：只靠东边隔一格的强制加载区块带着，加载到能读写方块，但和离玩家超过模拟距离的区块一样不更新实体。
@@ -179,6 +181,108 @@ final class SettlementFixGameTests {
                     Settlements.forget(level.getServer(), s.id());
                     fighters.forEach(Entity::discard);
                     chunks(level, far, false, SITE_RADIUS);
+                })
+                .thenSucceed();
+    }
+
+    /** 远处一片 {@code radius} 格强制加载的平地，返回中间的地面。用完 {@code chunks(level, site, false, radius)}。 */
+    private static BlockPos forcedSite(ServerLevel level, BlockPos far, int radius) {
+        chunks(level, far, true, radius);
+        return new BlockPos(far.getX(), level.getHeight(Heightmap.Types.MOTION_BLOCKING, far.getX(), far.getZ()) - 1, far.getZ());
+    }
+
+    /**
+     * 打到一半总督走远了，区块卸下：不存档的战机卸区块时不会被移除，只是停着不动，按不在场算防御值；
+     * 没防御的聚落没守住，不会算成全打下来给信用点。
+     */
+    static void raidReleasedChunksRollDefense(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos site = forcedSite(level, helper.absolutePos(CENTER).offset(4500, 0, -4500), SITE_RADIUS);
+        ServerPlayer player = (ServerPlayer) helper.makeMockServerPlayer(GameType.SURVIVAL);
+        Settlement s = claimed(helper, player, site, 17, false);
+        long treasury = s.treasury();
+        List<PirateFighter> fighters = new ArrayList<>();
+        helper.startSequence()
+                .thenWaitUntil(() -> helper.assertTrue(ticking(level, site, SITE_RADIUS), "强制加载的区块还没开始更新实体"))
+                .thenExecute(() -> {
+                    fighters.addAll(SettlementRaids.testRaid(level, entry(helper, s), 2, Vec3.atCenterOf(site).add(0, 30, 0), player));
+                    helper.assertValueEqual(fighters.size(), 2, "放出来的战机");
+                })
+                .thenIdle(5)
+                .thenExecute(() -> {
+                    helper.assertValueEqual(s.raidsWon() + s.raidsLost(), 0, "区块还加载着来袭就算完了");
+                    chunks(level, site, false, SITE_RADIUS);
+                })
+                .thenWaitUntil(() -> helper.assertTrue(s.raidsWon() + s.raidsLost() > 0, "来袭还没算"))
+                .thenExecute(() -> {
+                    helper.assertValueEqual(s.raidsWon(), 0, "没防御的守住次数");
+                    helper.assertValueEqual(s.raidsLost(), 1, "没防御的失守次数");
+                    helper.assertValueEqual(s.treasury(), treasury, "没守住也记了赏金");
+                    fighters.forEach(Entity::discard);
+                    Settlements.forget(level.getServer(), s.id());
+                })
+                .thenSucceed();
+    }
+
+    /** 打到一半战机没了，可不是打下来的（被指令清掉之类）：按防御值算，没防御的没守住，不算全打下来。 */
+    static void raidDiscardedFightersRollDefense(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos site = forcedSite(level, helper.absolutePos(CENTER).offset(4500, 0, 4500), SITE_RADIUS);
+        ServerPlayer player = (ServerPlayer) helper.makeMockServerPlayer(GameType.SURVIVAL);
+        Settlement s = claimed(helper, player, site, 18, false);
+        long treasury = s.treasury();
+        List<PirateFighter> fighters = new ArrayList<>();
+        helper.startSequence()
+                .thenWaitUntil(() -> helper.assertTrue(ticking(level, site, SITE_RADIUS), "强制加载的区块还没开始更新实体"))
+                .thenExecute(() -> {
+                    fighters.addAll(SettlementRaids.testRaid(level, entry(helper, s), 2, Vec3.atCenterOf(site).add(0, 30, 0), player));
+                    helper.assertValueEqual(fighters.size(), 2, "放出来的战机");
+                })
+                .thenIdle(5)
+                .thenExecute(() -> {
+                    helper.assertValueEqual(s.raidsWon() + s.raidsLost(), 0, "战机都在来袭就算完了");
+                    fighters.forEach(Entity::discard);
+                })
+                .thenWaitUntil(() -> helper.assertTrue(s.raidsWon() + s.raidsLost() > 0, "来袭还没算"))
+                .thenExecute(() -> {
+                    helper.assertValueEqual(s.raidsWon(), 0, "没防御的守住次数");
+                    helper.assertValueEqual(s.raidsLost(), 1, "没防御的失守次数");
+                    helper.assertValueEqual(s.treasury(), treasury, "没守住也记了赏金");
+                    Settlements.forget(level.getServer(), s.id());
+                    chunks(level, site, false, SITE_RADIUS);
+                })
+                .thenSucceed();
+    }
+
+    /**
+     * 总督站在聚落中心，中心在更新实体，可有一架战机停在模拟距离外的区块里（飞出去了）：这一架打不下来，以前算在场，
+     * 要等满 2 分钟按没守住算；现在和总督走开一样，过一会儿按防御值算，防御高的守住了。
+     */
+    static void raidFrozenFighterRollsDefense(GameTestHelper helper) {
+        ServerLevel level = helper.getLevel();
+        BlockPos site = forcedSite(level, helper.absolutePos(CENTER).offset(-4500, 0, -4500), SITE_RADIUS);
+        ServerPlayer player = (ServerPlayer) helper.makeMockServerPlayer(GameType.SURVIVAL);
+        Settlement s = claimed(helper, player, site, 19, true);
+        // 强制加载那一片东边紧挨着的区块：跟着加载，不更新实体
+        int edge = ((site.getX() + SITE_RADIUS) >> 4) + 1;
+        Vec3 out = new Vec3((edge << 4) + 8, site.getY() + 30, site.getZ() + 0.5);
+        List<PirateFighter> fighters = new ArrayList<>();
+        helper.startSequence()
+                .thenWaitUntil(() -> helper.assertTrue(ticking(level, site, SITE_RADIUS), "强制加载的区块还没开始更新实体"))
+                .thenExecute(() -> {
+                    BlockPos at = BlockPos.containing(out);
+                    helper.assertTrue(level.isLoaded(at), "战机停的区块没加载");
+                    helper.assertFalse(level.isPositionEntityTicking(at), "战机停的区块在更新实体");
+                    fighters.addAll(SettlementRaids.testRaid(level, entry(helper, s), 1, out, player));
+                    helper.assertValueEqual(fighters.size(), 1, "放出来的战机");
+                })
+                .thenWaitUntil(() -> helper.assertTrue(s.raidsWon() + s.raidsLost() > 0, "来袭还没算"))
+                .thenExecute(() -> {
+                    helper.assertValueEqual(s.raidsWon(), 1, "防御高的守住次数");
+                    helper.assertValueEqual(s.raidsLost(), 0, "防御高的失守次数");
+                    fighters.forEach(Entity::discard);
+                    Settlements.forget(level.getServer(), s.id());
+                    chunks(level, site, false, SITE_RADIUS);
                 })
                 .thenSucceed();
     }

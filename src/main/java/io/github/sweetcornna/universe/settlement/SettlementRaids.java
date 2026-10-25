@@ -40,8 +40,8 @@ import net.minecraft.world.phys.Vec3;
 /**
  * 聚落的海盗来袭（ADR-0034 §二）。到了时间：总督在 {@value SettlementRules#RAID_RANGE} 格内就真打——3–6 架海盗战机从远处飞来，
  * 一轮轮俯冲扫射建筑，炮台朝它们开火，2 分钟内全部打下来算守住；总督不在场（或者打到一半走了）就按防御值算输赢。
- * 聚落离玩家超过模拟距离时区块加载着也不更新实体，战机停在那里一动不动、打不下来，所以也算不在场。
- * 结果落到数值上（{@link Settlement#finishRaid}）：守住了给信用点，没守住两座建筑受损、储备被抢。
+ * 聚落离玩家超过模拟距离时区块加载着也不更新实体，战机停在那里一动不动、打不下来，所以也算不在场；打到一半有战机飞出模拟距离停住，也一样。
+ * 只有打下来的才算数：战机不是打下来却没了（被指令清掉之类），剩下的连没了的也按防御值算。结果落到数值上（{@link Settlement#finishRaid}）：守住了给信用点，没守住两座建筑受损、储备被抢。
  *
  * <p>战机不存档；服务器重启时打到一半的来袭按没守住算，再排一次也不公平，所以这里按防御值补算。
  */
@@ -275,29 +275,35 @@ public final class SettlementRaids {
             }
             Settlement s = entry.settlement();
             ServerLevel level = Settlements.level(server, s);
+            // 打下来的已经由 onDestroyed 拿走了；还在表里却没了的是别的原因（被指令清掉之类），不算打下来。
+            // 区块卸下时不存档的实体不会被移除，只是停着不动，下面按不在场算
+            int before = raid.fighters.size();
             raid.fighters.removeIf(fighter -> fighter.isRemoved() || !fighter.isAlive());
+            int lost = before - raid.fighters.size();
             if (level == null) {
                 cancel(raid.settlement);
                 continue;
             }
             ServerPlayer owner = raid.standIn != null ? raid.standIn : server.getPlayerList().getPlayer(raid.owner);
-            // 聚落中心不在实体更新的范围里，战机停在半空不动，人在附近也打不下来：和走开一样，过一会儿按防御值算
+            // 聚落中心不在实体更新的范围里，战机停在半空不动，人在附近也打不下来：和走开一样，过一会儿按防御值算。
+            // 战机飞出模拟距离（总督站得偏、模拟距离小）也一样停住，表空不了，所以每架都要在更新
             boolean present = owner != null && owner.level() == level && s.distance(owner.getX(), owner.getZ()) <= SettlementRules.RAID_RANGE * 1.5
-                    && ticking(level, s);
+                    && ticking(level, s) && raid.fighters.stream().allMatch(fighter -> level.isPositionEntityTicking(fighter.blockPosition()));
             raid.absent = present || raid.test ? 0 : raid.absent + 1;
             raid.bar.setProgress(raid.fighters.size() / (float) raid.total);
+            boolean late = now - raid.start > SettlementRules.RAID_TICKS;
+            if (lost > 0 || raid.absent > ABSENT_TICKS || late && raid.absent > 0) {
+                // 总督走了、战机停住了或者没了（到点时刚停住也算）：剩下的（连没了的）按防御值算
+                Rng rng = Rng.of(Seeds.derive(s.seed(), "raid/absent/" + now));
+                boolean won = SettlementRules.defended(s.defense(), SettlementRules.strength(raid.fighters.size() + lost, s.threat()), rng.nextDouble());
+                finish(server, level, entry, raid, won);
+                continue;
+            }
             if (raid.fighters.isEmpty()) {
                 finish(server, level, entry, raid, true);
                 continue;
             }
-            if (raid.absent > ABSENT_TICKS) {
-                // 总督走了：剩下的按防御值算
-                Rng rng = Rng.of(Seeds.derive(s.seed(), "raid/absent/" + now));
-                boolean won = SettlementRules.defended(s.defense(), SettlementRules.strength(raid.fighters.size(), s.threat()), rng.nextDouble());
-                finish(server, level, entry, raid, won);
-                continue;
-            }
-            if (now - raid.start > SettlementRules.RAID_TICKS) {
+            if (late) {
                 finish(server, level, entry, raid, false);
                 continue;
             }

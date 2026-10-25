@@ -530,12 +530,15 @@ final class SettlementLanguage {
                         + "守住：威胁清零，幸福 +10，给信用点\n"
                         + "没守住：两座建筑受损，幸福 −15，储备被抢走三成\n"
                         + "防御炮台自己朝战机开火\n"
-                        + "总督不在 256 格内：不真打，按防御值算输赢，炮台、瞭望塔、人口、幸福都算",
+                        + "总督不在 256 格内，或者聚落不在模拟距离内：不真打，按防御值算输赢，炮台、瞭望塔、人口、幸福都算\n"
+                        + "打到一半走开，或者有战机飞出模拟距离停住，剩下的也按防御值算",
                 "Past 40 threat, pirates may come any night; at 100 they always do. 3–6 fighters strafe the buildings. "
                         + "Shoot them all down within 2 min to hold.\n\n"
                         + "Held: threat to 0, happiness +10, a credit reward\n"
                         + "Lost: two buildings damaged, happiness −15, a third of the reserve stolen\n"
                         + "Defense turrets fire on their own\n"
-                        + "Governor more than 256 m away: no fight. The defense rating decides, from turrets, watchtowers, population and happiness");
+                        + "Governor more than 256 m away, or the settlement outside simulation distance: no fight. "
+                        + "The defense rating decides, from turrets, watchtowers, population and happiness\n"
+                        + "Walk off mid-raid, or a fighter strays past simulation distance and freezes: the defense rating settles the rest");
     }
 }

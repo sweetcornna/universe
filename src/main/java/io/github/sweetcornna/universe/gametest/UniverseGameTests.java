@@ -517,6 +517,12 @@ public final class UniverseGameTests {
             "settlement_raid_begin_skips_idle_centre", SettlementFixGameTests::raidBeginSkipsIdleCentre);
     private static final ResourceKey<Consumer<GameTestHelper>> SETTLEMENT_RAID_SPAWN_PULLED_TOWARD_OWNER = function(
             "settlement_raid_spawn_pulled_toward_owner", SettlementFixGameTests::raidSpawnPulledTowardOwner);
+    private static final ResourceKey<Consumer<GameTestHelper>> SETTLEMENT_RAID_RELEASED_CHUNKS_ROLL_DEFENSE = function(
+            "settlement_raid_released_chunks_roll_defense", SettlementFixGameTests::raidReleasedChunksRollDefense);
+    private static final ResourceKey<Consumer<GameTestHelper>> SETTLEMENT_RAID_DISCARDED_FIGHTERS_ROLL_DEFENSE = function(
+            "settlement_raid_discarded_fighters_roll_defense", SettlementFixGameTests::raidDiscardedFightersRollDefense);
+    private static final ResourceKey<Consumer<GameTestHelper>> SETTLEMENT_RAID_FROZEN_FIGHTER_ROLLS_DEFENSE = function(
+            "settlement_raid_frozen_fighter_rolls_defense", SettlementFixGameTests::raidFrozenFighterRollsDefense);
     private static final ResourceKey<Consumer<GameTestHelper>> SETTLEMENT_POND_WATER_CACHED = function("settlement_pond_water_cached",
             SettlementFixGameTests::pondWaterCached);
     private static final ResourceKey<Consumer<GameTestHelper>> SETTLEMENT_CLAIM_DROPS_CONTAINERS = function("settlement_claim_drops_containers",
@@ -772,6 +778,9 @@ public final class UniverseGameTests {
         test(event, environment, SETTLEMENT_RAID_IDLE_CENTRE_ROLLS_DEFENSE, 300);
         test(event, environment, SETTLEMENT_RAID_BEGIN_SKIPS_IDLE_CENTRE, 200);
         test(event, environment, SETTLEMENT_RAID_SPAWN_PULLED_TOWARD_OWNER, 200);
+        test(event, environment, SETTLEMENT_RAID_RELEASED_CHUNKS_ROLL_DEFENSE, 400);
+        test(event, environment, SETTLEMENT_RAID_DISCARDED_FIGHTERS_ROLL_DEFENSE, 200);
+        test(event, environment, SETTLEMENT_RAID_FROZEN_FIGHTER_ROLLS_DEFENSE, 300);
         spaced(event, environment, SETTLEMENT_POND_WATER_CACHED, 20);
         spaced(event, environment, SETTLEMENT_CLAIM_DROPS_CONTAINERS, 20);
         test(event, environment, DIG_SITE_COLLECTOR_NEEDS_CAMP, 20);
