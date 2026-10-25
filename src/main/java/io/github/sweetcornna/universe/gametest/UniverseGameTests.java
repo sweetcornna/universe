@@ -511,6 +511,18 @@ public final class UniverseGameTests {
             SettlementGameTests::raidResolvesByDefense);
     private static final ResourceKey<Consumer<GameTestHelper>> SETTLEMENT_RAIDERS_STRAFE_ABOVE_GROUND = function(
             "settlement_raiders_strafe_above_ground", SettlementGameTests::raidersStrafeAboveGround);
+    private static final ResourceKey<Consumer<GameTestHelper>> SETTLEMENT_RAID_IDLE_CENTRE_ROLLS_DEFENSE = function(
+            "settlement_raid_idle_centre_rolls_defense", SettlementFixGameTests::raidIdleCentreRollsDefense);
+    private static final ResourceKey<Consumer<GameTestHelper>> SETTLEMENT_RAID_BEGIN_SKIPS_IDLE_CENTRE = function(
+            "settlement_raid_begin_skips_idle_centre", SettlementFixGameTests::raidBeginSkipsIdleCentre);
+    private static final ResourceKey<Consumer<GameTestHelper>> SETTLEMENT_RAID_SPAWN_PULLED_TOWARD_OWNER = function(
+            "settlement_raid_spawn_pulled_toward_owner", SettlementFixGameTests::raidSpawnPulledTowardOwner);
+    private static final ResourceKey<Consumer<GameTestHelper>> SETTLEMENT_POND_WATER_CACHED = function("settlement_pond_water_cached",
+            SettlementFixGameTests::pondWaterCached);
+    private static final ResourceKey<Consumer<GameTestHelper>> SETTLEMENT_CLAIM_DROPS_CONTAINERS = function("settlement_claim_drops_containers",
+            SettlementFixGameTests::claimDropsContainers);
+    private static final ResourceKey<Consumer<GameTestHelper>> DIG_SITE_COLLECTOR_NEEDS_CAMP = function("dig_site_collector_needs_camp",
+            SettlementFixGameTests::digSiteNeedsCamp);
     // M19 聚落（B）的测试函数加在这行上面
     private static final ResourceKey<Consumer<GameTestHelper>> SKELETON_DISPLAY_PACKS_AND_RESTORES = function(
             "skeleton_display_packs_and_restores", FossilGameTests::displayCompletesPacksAndRestores);
@@ -751,6 +763,12 @@ public final class UniverseGameTests {
         spaced(event, environment, SETTLEMENT_DECISION_APPLIES, 20);
         spaced(event, environment, SETTLEMENT_RAID_RESOLVES_BY_DEFENSE, 60);
         test(event, environment, SETTLEMENT_RAIDERS_STRAFE_ABOVE_GROUND, 600);
+        test(event, environment, SETTLEMENT_RAID_IDLE_CENTRE_ROLLS_DEFENSE, 300);
+        test(event, environment, SETTLEMENT_RAID_BEGIN_SKIPS_IDLE_CENTRE, 200);
+        test(event, environment, SETTLEMENT_RAID_SPAWN_PULLED_TOWARD_OWNER, 200);
+        spaced(event, environment, SETTLEMENT_POND_WATER_CACHED, 20);
+        spaced(event, environment, SETTLEMENT_CLAIM_DROPS_CONTAINERS, 20);
+        test(event, environment, DIG_SITE_COLLECTOR_NEEDS_CAMP, 20);
         // M19 聚落（B）的测试加在这行上面
         test(event, environment, SKELETON_DISPLAY_PACKS_AND_RESTORES, 20);
         test(event, environment, FOSSIL_COLLECTOR_SWAPS, 20);

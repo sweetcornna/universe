@@ -101,6 +101,9 @@ public final class Fishing {
     public record Water(Habitat habitat, int depth, boolean acid) {
     }
 
+    /** 鱼塘里读不到水时当它是这样的：淡水的池塘。 */
+    public static final Water POND_WATER = new Water(Habitat.FRESH, 3, false);
+
     private Fishing() {
     }
 
@@ -445,7 +448,11 @@ public final class Fishing {
      * {@code grade} 是鱼塘的档次（0–3，C 到 S），越高杂物越少、越容易出好的。
      */
     public static ItemStack pondCatch(ServerLevel level, BlockPos pos, RandomSource random, int grade) {
-        Water water = water(level, pos).orElse(new Water(Habitat.FRESH, 3, false));
+        return pondCatch(level, pos, water(level, pos).orElse(POND_WATER), random, grade);
+    }
+
+    /** 同上，按给的 {@code water} 挑：聚落记下的鱼塘的水，区块没加载时不为了读水去加载区块。 */
+    public static ItemStack pondCatch(ServerLevel level, BlockPos pos, Water water, RandomSource random, int grade) {
         CatchRoll.Situation situation = situation(level, pos, water.depth());
         Catch caught = CatchRoll.roll(pool(level, water.habitat()), situation, Bait.NONE, false, CatchRoll.Odds.pond(grade),
                 Rng.of(random.nextLong()));

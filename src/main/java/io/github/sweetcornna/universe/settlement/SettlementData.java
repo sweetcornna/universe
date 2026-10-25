@@ -12,14 +12,17 @@ import java.util.UUID;
 import org.jspecify.annotations.Nullable;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.core.civ.Race;
+import io.github.sweetcornna.universe.core.fishing.Habitat;
 import io.github.sweetcornna.universe.core.settlement.BuildingType;
 import io.github.sweetcornna.universe.core.settlement.Plot;
 import io.github.sweetcornna.universe.core.settlement.Product;
 import io.github.sweetcornna.universe.core.settlement.Settlement;
+import io.github.sweetcornna.universe.fishing.Fishing;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.StringTag;
@@ -31,8 +34,8 @@ import net.minecraft.world.level.saveddata.SavedDataType;
 
 /**
  * 接管过的聚落（ADR-0034 §二），存在 {@code data/universe/settlements.dat}：每个聚落的数值（{@link Settlement}），
- * 鱼塘、瞭望塔攒下还没取的东西，以及每块地基在世界里现在盖成了什么样（{@link #shown}，区块没加载时施工也照走，
- * 下次加载再按数值补盖）。
+ * 鱼塘、瞭望塔攒下还没取的东西，每块地基在世界里现在盖成了什么样（{@link Entry#shown()}，区块没加载时施工也照走，
+ * 下次加载再按数值补盖），以及鱼塘上次读到的水（{@link Entry#ponds()}）。
  */
 public final class SettlementData extends SavedData {
     /** 存档格式版本。改格式时加一，并在读取时迁移旧格式（技术架构 §3.10）。 */
@@ -45,13 +48,15 @@ public final class SettlementData extends SavedData {
         private final int[] shown;
         private final int[] plotY;
         private final String name;
+        private final Fishing.@Nullable Water[] ponds;
 
-        Entry(Settlement settlement, List<ItemStack> stock, int[] shown, int[] plotY, String name) {
+        Entry(Settlement settlement, List<ItemStack> stock, int[] shown, int[] plotY, String name, Fishing.@Nullable Water[] ponds) {
             this.settlement = settlement;
             this.stock = new ArrayList<>(stock);
             this.shown = shown;
             this.plotY = plotY;
             this.name = name;
+            this.ponds = ponds;
         }
 
         public Settlement settlement() {
@@ -87,7 +92,27 @@ public final class SettlementData extends SavedData {
         public String name() {
             return this.name;
         }
+
+        /** 每块鱼塘地基上次加载着时读到的水（区块没加载时每天的鱼按它挑）；null 是还没记过。 */
+        public Fishing.@Nullable Water[] ponds() {
+            return this.ponds;
+        }
     }
+
+    /** 记下来的一块鱼塘的水。 */
+    private record Pond(int plot, Fishing.Water water) {
+    }
+
+    private static final MapCodec<Fishing.Water> WATER = RecordCodecBuilder.mapCodec(i -> i.group(
+            Codec.STRING.xmap(SettlementData::habitat, Habitat::key).fieldOf("habitat").forGetter(Fishing.Water::habitat),
+            Codec.INT.optionalFieldOf("depth", 1).forGetter(Fishing.Water::depth),
+            Codec.BOOL.optionalFieldOf("acid", false).forGetter(Fishing.Water::acid)
+    ).apply(i, Fishing.Water::new));
+
+    private static final Codec<Pond> POND = RecordCodecBuilder.create(i -> i.group(
+            Codec.INT.fieldOf("plot").forGetter(Pond::plot),
+            WATER.forGetter(Pond::water)
+    ).apply(i, Pond::new));
 
     private static final Codec<Settlement> SETTLEMENT = CompoundTag.CODEC.xmap(SettlementData::read, SettlementData::write);
 
@@ -96,9 +121,10 @@ public final class SettlementData extends SavedData {
             ItemStack.OPTIONAL_CODEC.listOf().optionalFieldOf("stock", List.of()).forGetter(Entry::stock),
             Codec.INT.listOf().optionalFieldOf("shown", List.of()).forGetter(e -> java.util.Arrays.stream(e.shown).boxed().toList()),
             Codec.INT.listOf().optionalFieldOf("plot_y", List.of()).forGetter(e -> java.util.Arrays.stream(e.plotY).boxed().toList()),
-            Codec.STRING.optionalFieldOf("name", "").forGetter(Entry::name)
-    ).apply(i, (settlement, stock, shown, plotY, name) -> new Entry(settlement, stock.stream().filter(s -> !s.isEmpty()).toList(),
-            ints(shown, settlement, -1), ints(plotY, settlement, Integer.MIN_VALUE), name)));
+            Codec.STRING.optionalFieldOf("name", "").forGetter(Entry::name),
+            POND.listOf().optionalFieldOf("ponds", List.of()).forGetter(SettlementData::pondList)
+    ).apply(i, (settlement, stock, shown, plotY, name, ponds) -> new Entry(settlement, stock.stream().filter(s -> !s.isEmpty()).toList(),
+            ints(shown, settlement, -1), ints(plotY, settlement, Integer.MIN_VALUE), name, ponds(ponds, settlement))));
 
     public static final Codec<SettlementData> CODEC = RecordCodecBuilder.create(i -> i.group(
             Codec.INT.optionalFieldOf("format", FORMAT).forGetter(d -> FORMAT),
@@ -132,6 +158,36 @@ public final class SettlementData extends SavedData {
             values[k] = list.get(k);
         }
         return values;
+    }
+
+    private static Fishing.@Nullable Water[] ponds(List<Pond> list, Settlement settlement) {
+        Fishing.@Nullable Water[] ponds = new Fishing.Water[settlement.plotCount()];
+        for (Pond pond : list) {
+            if (pond.plot() >= 0 && pond.plot() < ponds.length) {
+                ponds[pond.plot()] = pond.water();
+            }
+        }
+        return ponds;
+    }
+
+    private static List<Pond> pondList(Entry entry) {
+        List<Pond> list = new ArrayList<>();
+        for (int k = 0; k < entry.ponds.length; k++) {
+            if (entry.ponds[k] != null) {
+                list.add(new Pond(k, entry.ponds[k]));
+            }
+        }
+        return list;
+    }
+
+    /** 存档里的水域名；不认识的（以后删掉的）当淡水。 */
+    private static Habitat habitat(String key) {
+        for (Habitat habitat : Habitat.values()) {
+            if (habitat.key().equals(key)) {
+                return habitat;
+            }
+        }
+        return Habitat.FRESH;
     }
 
     private void reindex() {
@@ -170,7 +226,8 @@ public final class SettlementData extends SavedData {
         if (existing != null) {
             return existing;
         }
-        Entry entry = new Entry(settlement, List.of(), ints(List.of(), settlement, -1), ints(List.of(), settlement, Integer.MIN_VALUE), name);
+        Entry entry = new Entry(settlement, List.of(), ints(List.of(), settlement, -1), ints(List.of(), settlement, Integer.MIN_VALUE), name,
+                ponds(List.of(), settlement));
         this.entries.put(settlement.id(), entry);
         this.reindex();
         this.setDirty();
