@@ -201,6 +201,7 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         // M19 深空和重力枪（D）的语言加在这行上面
         HazardLanguage.add(this::both);
         // M19 科技布局和局部危害（E）的语言加在这行上面
+        CommandLanguage.add(this::both);
     }
 
     /** M18 的文字：全息信标和备忘、黑雾透镜、矿脉、蓝图（子代理 D，ADR-0033 §六–§九）。 */

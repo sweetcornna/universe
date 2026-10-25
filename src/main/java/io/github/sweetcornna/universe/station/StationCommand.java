@@ -26,8 +26,8 @@ import net.minecraft.world.phys.Vec3;
  * {@code /universe station info} 显示空间站的坐标。
  */
 public final class StationCommand {
-    private static final SimpleCommandExceptionType NO_STATION = new SimpleCommandExceptionType(Component.literal("这个恒星系没有空间站"));
-    private static final SimpleCommandExceptionType NO_SYSTEM = new SimpleCommandExceptionType(Component.literal("这里不属于任何恒星系"));
+    private static final SimpleCommandExceptionType NO_STATION = new SimpleCommandExceptionType(Component.translatable("commands.universe.station.none"));
+    private static final SimpleCommandExceptionType NO_SYSTEM = new SimpleCommandExceptionType(Component.translatable("commands.universe.station.no_system"));
 
     private StationCommand() {
     }
@@ -74,18 +74,18 @@ public final class StationCommand {
         TeleportTransition transition = new TeleportTransition(space, new Vec3(spot[0] + 0.5, spot[1], spot[2] + 0.5), Vec3.ZERO, yaw, 0,
                 TeleportTransition.PLACE_PORTAL_TICKET);
         if (entity.teleport(transition) == null) {
-            source.sendFailure(Component.literal("传送失败"));
+            source.sendFailure(Component.translatable("commands.universe.station.tp.failed"));
             return 0;
         }
-        source.sendSuccess(() -> Component.literal("已传送到恒星系 " + system + " 的空间站"), false);
+        source.sendSuccess(() -> Component.translatable("commands.universe.station.tp", system), false);
         return 1;
     }
 
     private static int info(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         int system = current(context);
         Site site = site(context.getSource().getServer(), system);
-        context.getSource().sendSuccess(() -> Component.literal("恒星系 " + system + " 的空间站：" + site.x() + ", " + site.y() + ", " + site.z()
-                + "，机库朝 " + site.hangar().name().toLowerCase(java.util.Locale.ROOT)), false);
+        context.getSource().sendSuccess(() -> Component.translatable("commands.universe.station.info", system, site.x(), site.y(), site.z(),
+                Component.translatable("direction.universe." + site.hangar().name().toLowerCase(java.util.Locale.ROOT))), false);
         return 1;
     }
 }

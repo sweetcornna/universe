@@ -14,6 +14,7 @@ import io.github.sweetcornna.universe.core.galaxy.Galaxy;
 import io.github.sweetcornna.universe.core.galaxy.StarSystem;
 import io.github.sweetcornna.universe.core.ship.ShipStats;
 import io.github.sweetcornna.universe.core.space.Warp;
+import io.github.sweetcornna.universe.discovery.Discoveries;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
 import io.github.sweetcornna.universe.world.planet.Planets;
 import io.github.sweetcornna.universe.world.space.SpaceDimensions;
@@ -30,9 +31,9 @@ import net.minecraft.world.phys.Vec3;
  * 调试飞船用的命令（{@code /universe ship ...}）：从驾驶台组装、强制停船、加满燃料、查看性能、直接跃迁。
  */
 public final class ShipCommand {
-    private static final SimpleCommandExceptionType NOT_A_HELM = new SimpleCommandExceptionType(Component.literal("那里不是驾驶台"));
-    private static final SimpleCommandExceptionType NOT_ON_SHIP = new SimpleCommandExceptionType(Component.literal("你不在飞船上"));
-    private static final SimpleCommandExceptionType NO_SYSTEM = new SimpleCommandExceptionType(Component.literal("没有这个编号的恒星系"));
+    private static final SimpleCommandExceptionType NOT_A_HELM = new SimpleCommandExceptionType(Component.translatable("commands.universe.ship.not_helm"));
+    private static final SimpleCommandExceptionType NOT_ON_SHIP = new SimpleCommandExceptionType(Component.translatable("commands.universe.ship.not_on_ship"));
+    private static final SimpleCommandExceptionType NO_SYSTEM = new SimpleCommandExceptionType(Component.translatable("commands.universe.ship.no_system"));
 
     private ShipCommand() {
     }
@@ -78,7 +79,7 @@ public final class ShipCommand {
 
     private static int park(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         boolean done = ShipAssembly.disassemble(ship(context));
-        context.getSource().sendSuccess(() -> Component.literal(done ? "已停船" : "这里放不下飞船"), false);
+        context.getSource().sendSuccess(() -> Component.translatable(done ? "commands.universe.ship.parked" : "commands.universe.ship.park_blocked"), false);
         return done ? 1 : 0;
     }
 
@@ -87,7 +88,7 @@ public final class ShipCommand {
         double capacity = ship.structure().stats().fuelCapacity();
         double amount = Math.min(capacity, DoubleArgumentType.getDouble(context, "amount"));
         ship.setFuelServer(amount);
-        context.getSource().sendSuccess(() -> Component.literal(String.format(Locale.ROOT, "燃料 %.0f / %.0f", amount, capacity)), false);
+        context.getSource().sendSuccess(() -> Component.translatable("commands.universe.ship.fuel", number(amount, 0), number(capacity, 0)), false);
         return 1;
     }
 
@@ -96,17 +97,17 @@ public final class ShipCommand {
         ShipEntity ship = ship(context);
         float amount = (float) DoubleArgumentType.getDouble(context, "amount");
         boolean hit = ship.damageShip(context.getSource().getLevel(), amount);
-        context.getSource().sendSuccess(() -> Component.literal(hit
-                ? String.format(Locale.ROOT, "船体 %.0f/%.0f，护盾 %.0f/%.0f", ship.missingHull() < 0 ? 0 : ship.maxHull() - ship.missingHull(),
-                        ship.maxHull(), ship.maxShield() - ship.missingShield(), ship.maxShield())
-                : "飞船没有受伤"), false);
+        context.getSource().sendSuccess(() -> hit
+                ? Component.translatable("commands.universe.ship.damaged", number(ship.missingHull() < 0 ? 0 : ship.maxHull() - ship.missingHull(), 0),
+                        number(ship.maxHull(), 0), number(ship.maxShield() - ship.missingShield(), 0), number(ship.maxShield(), 0))
+                : Component.translatable("commands.universe.ship.unharmed"), false);
         return hit ? 1 : 0;
     }
 
     private static int repair(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         ShipEntity ship = ship(context);
         ship.repair();
-        context.getSource().sendSuccess(() -> Component.literal("已修好飞船"), false);
+        context.getSource().sendSuccess(() -> Component.translatable("commands.universe.ship.repaired"), false);
         return 1;
     }
 
@@ -123,21 +124,28 @@ public final class ShipCommand {
         StarSystem from = galaxy.system(here).orElse(galaxy.home());
         double[] arrival = Warp.arrival(from, to, ShipTransit.layout(server, target));
         ShipTransit.warp(ship, target, new Vec3(arrival[0], arrival[1], arrival[2]), (float) arrival[3]);
-        context.getSource().sendSuccess(() -> Component.literal("跃迁到 " + to.name().zh() + "（" + to.star().starClass().nameZh() + "）"), false);
+        context.getSource().sendSuccess(() -> Component.translatable("commands.universe.ship.warped", Discoveries.bilingual(to.name()),
+                Component.translatable("universe.name", to.star().starClass().nameZh(), to.star().starClass().nameEn())), false);
         return 1;
     }
 
     private static int info(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         ShipEntity ship = ship(context);
         ShipStats s = ship.structure().stats();
-        String text = String.format(Locale.ROOT,
-                "%d 个方块，%.1f 吨，推进器 %d，燃料舱 %d，脉冲引擎 %d（%.0f 格/刻），跃迁引擎 %d（%.0f 光年），推重比(1g) %.2f，燃料 %.0f/%.0f，"
-                        + "船体 %.0f/%.0f，护盾 %.0f/%.0f，光子炮 %d，采矿光束 %d，位置 %.1f %.1f %.1f，偏航 %.1f，速度 %.3f，%s",
-                s.blocks(), s.mass(), s.thrusters(), s.fuelTanks(), s.impulse(), s.impulseSpeed(), s.warpDrives(), s.warpRange(),
-                s.thrustToWeight(1), ship.fuelServer(), s.fuelCapacity(),
-                ship.maxHull() - ship.missingHull(), ship.maxHull(), ship.maxShield() - ship.missingShield(), ship.maxShield(), s.cannons(), s.beams(),
-                ship.getX(), ship.getY(), ship.getZ(), ship.getYRot(), ship.flight().speed(), ship.isLanded() ? "着陆" : "飞行");
-        context.getSource().sendSuccess(() -> Component.literal(text), false);
+        Component text = Component.translatable("commands.universe.ship.info",
+                s.blocks(), number(s.mass(), 1), s.thrusters(), s.fuelTanks(), s.impulse(), number(s.impulseSpeed(), 0), s.warpDrives(),
+                number(s.warpRange(), 0), number(s.thrustToWeight(1), 2), number(ship.fuelServer(), 0), number(s.fuelCapacity(), 0))
+                .append("\n").append(Component.translatable("commands.universe.ship.info.combat",
+                        number(ship.maxHull() - ship.missingHull(), 0), number(ship.maxHull(), 0),
+                        number(ship.maxShield() - ship.missingShield(), 0), number(ship.maxShield(), 0), s.cannons(), s.beams()))
+                .append("\n").append(Component.translatable(ship.isLanded() ? "commands.universe.ship.info.landed" : "commands.universe.ship.info.flying",
+                        number(ship.getX(), 1), number(ship.getY(), 1), number(ship.getZ(), 1), number(ship.getYRot(), 1),
+                        number(ship.flight().speed(), 3)));
+        context.getSource().sendSuccess(() -> text, false);
         return 1;
+    }
+
+    private static String number(double value, int digits) {
+        return String.format(Locale.ROOT, "%." + digits + "f", value);
     }
 }

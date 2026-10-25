@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.Set;
 
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
@@ -14,10 +14,12 @@ import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 
 import io.github.sweetcornna.universe.Universe;
+import io.github.sweetcornna.universe.core.ecology.Biotope;
 import io.github.sweetcornna.universe.core.ecology.Husbandry;
 import io.github.sweetcornna.universe.core.galaxy.Galaxy;
 import io.github.sweetcornna.universe.core.galaxy.Hazard;
 import io.github.sweetcornna.universe.core.galaxy.Planet;
+import io.github.sweetcornna.universe.core.galaxy.Resource;
 import io.github.sweetcornna.universe.core.galaxy.StarSystem;
 import io.github.sweetcornna.universe.core.galaxy.TerrainProfile;
 import io.github.sweetcornna.universe.core.ecology.CreatureSpecies;
@@ -28,8 +30,10 @@ import io.github.sweetcornna.universe.core.ecology.TreeSpecies;
 import io.github.sweetcornna.universe.core.sky.SkyBody;
 import io.github.sweetcornna.universe.core.sky.SkyModel;
 import io.github.sweetcornna.universe.core.terrain.TerrainModel;
+import io.github.sweetcornna.universe.discovery.Discoveries;
 import io.github.sweetcornna.universe.entity.AlienCreature;
 import io.github.sweetcornna.universe.entity.AlienFlyer;
+import io.github.sweetcornna.universe.entity.CreatureHusbandry;
 import io.github.sweetcornna.universe.entity.FaunaSpawner;
 import io.github.sweetcornna.universe.world.DimensionTemplate;
 import io.github.sweetcornna.universe.world.RuntimeDimensions;
@@ -40,6 +44,8 @@ import net.minecraft.commands.SharedSuggestionProvider;
 import net.minecraft.commands.arguments.IdentifierArgument;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentUtils;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
@@ -52,7 +58,7 @@ import net.minecraft.world.level.portal.TeleportTransition;
 import net.minecraft.world.phys.Vec3;
 
 /**
- * 调试命令 {@code /universe planet}，开发和测试用，提示文字不做翻译。
+ * 调试命令 {@code /universe planet}，开发和测试用。
  *
  * <ul>
  * <li>{@code list [恒星系]}：列出星团里的恒星系，或某个恒星系里的天体
@@ -65,7 +71,7 @@ import net.minecraft.world.phys.Vec3;
  */
 public final class PlanetCommand {
     private static final DynamicCommandExceptionType NOT_A_PLANET =
-            new DynamicCommandExceptionType(id -> Component.literal("不是可着陆的星球：" + id));
+            new DynamicCommandExceptionType(id -> Component.translatable("commands.universe.planet.not_planet", String.valueOf(id)));
 
     private static final SuggestionProvider<CommandSourceStack> PLANETS = (context, builder) -> {
         Galaxy galaxy = Planets.galaxy(context.getSource().getServer());
@@ -132,14 +138,14 @@ public final class PlanetCommand {
 
     private static int listSystems(CommandSourceStack source) {
         Galaxy galaxy = Planets.galaxy(source.getServer());
-        StringBuilder text = new StringBuilder("星团共 " + galaxy.systems().size() + " 个恒星系、" + galaxy.bodyCount() + " 个天体：");
+        MutableComponent text = Component.translatable("commands.universe.planet.systems", galaxy.systems().size(), galaxy.bodyCount());
         for (StarSystem system : galaxy.systems()) {
             long landable = system.bodies().stream().filter(Planet::landable).count();
-            text.append(String.format(Locale.ROOT, "\n  %d %s（%s）%s，天体 %d 个，可着陆 %d 个",
-                    system.index(), system.name().zh(), system.name().en(), system.star().starClass().nameZh(),
-                    system.bodies().size(), landable));
+            text.append("\n  ").append(Component.translatable("commands.universe.planet.systems.entry",
+                    system.index(), system.name().zh(), system.name().en(),
+                    name(system.star().starClass().nameZh(), system.star().starClass().nameEn()), system.bodies().size(), landable));
         }
-        source.sendSuccess(() -> Component.literal(text.toString()), false);
+        source.sendSuccess(() -> text, false);
         return galaxy.systems().size();
     }
 
@@ -147,17 +153,17 @@ public final class PlanetCommand {
         Galaxy galaxy = Planets.galaxy(source.getServer());
         Optional<StarSystem> system = galaxy.system(index);
         if (system.isEmpty()) {
-            source.sendFailure(Component.literal("没有编号为 " + index + " 的恒星系"));
+            source.sendFailure(Component.translatable("commands.universe.planet.no_system", index));
             return 0;
         }
-        StringBuilder text = new StringBuilder(system.get().name().zh() + " 恒星系：");
+        MutableComponent text = Component.translatable("commands.universe.planet.bodies", Discoveries.bilingual(system.get().name()));
         for (Planet planet : system.get().bodies()) {
-            text.append(String.format(Locale.ROOT, "\n  %s %s（%s）%s，%.0f °C，重力 %.2f g%s",
-                    Planets.dimension(planet.id()).identifier(), planet.name().zh(), planet.name().en(),
-                    planet.type().nameZh(), planet.temperatureCelsius(), planet.gravity(),
-                    planet.landable() ? "" : "，不可着陆"));
+            text.append("\n  ").append(Component.translatable("commands.universe.planet.bodies.entry",
+                    Component.translationArg(Planets.dimension(planet.id()).identifier()), planet.name().zh(), planet.name().en(),
+                    name(planet.type().nameZh(), planet.type().nameEn()), number(planet.temperatureCelsius(), 0), number(planet.gravity(), 2),
+                    planet.landable() ? Component.empty() : Component.translatable("commands.universe.planet.bodies.not_landable")));
         }
-        source.sendSuccess(() -> Component.literal(text.toString()), false);
+        source.sendSuccess(() -> text, false);
         return system.get().bodies().size();
     }
 
@@ -176,7 +182,8 @@ public final class PlanetCommand {
         if (!PlanetWeather.force(level, active, storm, seconds * 20)) {
             throw NOT_A_PLANET.create(level.dimension().identifier());
         }
-        source.sendSuccess(() -> Component.literal("星球天气设为 " + name + "，持续 " + seconds + " 秒"), true);
+        source.sendSuccess(() -> Component.translatable("commands.universe.planet.weather",
+                Component.translatable("commands.universe.planet.weather." + name), seconds), true);
         return 1;
     }
 
@@ -185,20 +192,25 @@ public final class PlanetCommand {
         ServerLevel level = source.getLevel();
         Planet planet = Planets.planet(level).orElseThrow(() -> NOT_A_PLANET.create(level.dimension().identifier()));
         Flora flora = Flora.of(planet);
-        StringBuilder text = new StringBuilder(String.format(Locale.ROOT, "%s 的植物：地面植物 %d 种，树 %d 种",
-                planet.name().zh(), flora.plants().size(), flora.trees().size()));
+        MutableComponent text = Component.translatable("commands.universe.planet.flora",
+                Discoveries.bilingual(planet.name()), flora.plants().size(), flora.trees().size());
         for (PlantSpecies plant : flora.plants()) {
-            text.append(String.format(Locale.ROOT, "\n  %s（%s #%d）%s 生境 %s，多度 %.2f，颜色 %06X / %06X",
-                    plant.name().zh(), plant.form().nameZh(), plant.variant(), plant.glowing() ? "发光，" : "",
-                    plant.biotopes(), plant.abundance(), plant.body(), plant.detail()));
+            text.append("\n  ").append(Component.translatable("commands.universe.planet.flora.plant",
+                    Discoveries.bilingual(plant.name()), name(plant.form().nameZh(), plant.form().nameEn()), plant.variant(),
+                    plant.glowing() ? Component.translatable("commands.universe.planet.flora.glowing") : Component.empty(),
+                    biotopes(plant.biotopes()), number(plant.abundance(), 2),
+                    String.format(Locale.ROOT, "%06X", plant.body()), String.format(Locale.ROOT, "%06X", plant.detail())));
         }
         for (TreeSpecies tree : flora.trees()) {
-            text.append(String.format(Locale.ROOT, "\n  %s（%s #%d）高 %d–%d，冠 %d%s，生境 %s，%s",
-                    tree.name().zh(), tree.shape().nameZh(), tree.index(), tree.height(), tree.height() + tree.heightRange(),
-                    tree.canopy(), tree.thick() ? "，粗干" : "", tree.biotopes(),
-                    tree.bloomChance() > 0 ? (tree.bloomGlows() ? "开发光的花" : "开花") : "不开花"));
+            String bloom = tree.bloomChance() > 0 ? (tree.bloomGlows() ? "glowing" : "plain") : "none";
+            text.append("\n  ").append(Component.translatable("commands.universe.planet.flora.tree",
+                    Discoveries.bilingual(tree.name()),
+                    Component.translatable("discovery.universe.tree_shape." + tree.shape().name().toLowerCase(Locale.ROOT)), tree.index(),
+                    tree.height(), tree.height() + tree.heightRange(), tree.canopy(),
+                    tree.thick() ? Component.translatable("commands.universe.planet.flora.thick") : Component.empty(),
+                    biotopes(tree.biotopes()), Component.translatable("commands.universe.planet.flora.bloom." + bloom)));
         }
-        source.sendSuccess(() -> Component.literal(text.toString()), false);
+        source.sendSuccess(() -> text, false);
         return 1;
     }
 
@@ -209,23 +221,24 @@ public final class PlanetCommand {
         Fauna fauna = Fauna.of(planet);
         List<AlienCreature> around = FaunaSpawner.around(level, source.getPosition().x, source.getPosition().z);
         long flyers = around.stream().filter(c -> c instanceof AlienFlyer).count();
-        StringBuilder text = new StringBuilder(String.format(Locale.ROOT, "%s 的动物：%d 种；周围 64 格内 %d 只（飞兽 %d），上限 %d",
-                planet.name().zh(), fauna.species().size(), around.size(), flyers, FaunaSpawner.cap(planet)));
+        MutableComponent text = Component.translatable("commands.universe.planet.fauna",
+                Discoveries.bilingual(planet.name()), fauna.species().size(), around.size(), flyers, FaunaSpawner.cap(planet));
         for (CreatureSpecies s : fauna.species()) {
-            text.append(String.format(Locale.ROOT, "\n  #%d %s（%s，%s）大小 %.2f，生命 %.0f，速度 %.2f%s，%d–%d 只一群，生境 %s，花纹 %s%s%s",
-                    s.index(), s.name().zh(), s.plan().nameZh(), s.temperament().nameZh(), s.size(), s.health(), s.speed(),
-                    s.attack() > 0 ? String.format(Locale.ROOT, "，攻击 %.1f", s.attack()) : "", s.groupMin(), s.groupMax(),
-                    s.biotopes(), s.skin().patternType(), s.skin().glowingPattern() ? "（发光）" : "",
-                    s.skin().glowingEyes() ? "，眼睛发光" : ""));
+            text.append("\n  ").append(Component.translatable("commands.universe.planet.fauna.species",
+                    s.index(), Discoveries.bilingual(s.name()), name(s.plan().nameZh(), s.plan().nameEn()),
+                    Component.translatable("discovery.universe.temperament." + s.temperament().name().toLowerCase(Locale.ROOT)),
+                    number(s.size(), 2), number(s.health(), 0), number(s.speed(), 2),
+                    s.attack() > 0 ? Component.translatable("commands.universe.planet.fauna.attack", number(s.attack(), 1)) : Component.empty(),
+                    s.groupMin(), s.groupMax(), biotopes(s.biotopes()), enumName("commands.universe.planet.pattern.", s.skin().patternType()),
+                    s.skin().glowingPattern() ? Component.translatable("commands.universe.planet.fauna.glowing_pattern") : Component.empty(),
+                    s.skin().glowingEyes() ? Component.translatable("commands.universe.planet.fauna.glowing_eyes") : Component.empty()));
             // 喂养（ADR-0017）
-            text.append(String.format(Locale.ROOT, "；%s，产%s×%d%s", Husbandry.diet(s.temperament()) == Husbandry.Diet.HERBIVORE ? "草食" : "肉食",
-                    switch (Husbandry.product(s)) {
-                        case EGG -> "蛋";
-                        case FLUFF -> "绒毛";
-                        case GEL -> "胶质";
-                    }, Husbandry.productCount(s), Husbandry.rideable(s) ? "，驯服后能骑" : ""));
+            text.append(Component.translatable("commands.universe.planet.fauna.husbandry",
+                    CreatureHusbandry.dietName(Husbandry.diet(s.temperament())), CreatureHusbandry.product(s).getHoverName(),
+                    Husbandry.productCount(s),
+                    Husbandry.rideable(s) ? Component.translatable("commands.universe.planet.fauna.rideable") : Component.empty()));
         }
-        source.sendSuccess(() -> Component.literal(text.toString()), false);
+        source.sendSuccess(() -> text, false);
         return 1;
     }
 
@@ -234,7 +247,7 @@ public final class PlanetCommand {
         ServerLevel level = source.getLevel();
         Fauna fauna = Planets.fauna(level).orElse(Fauna.FALLBACK);
         if (index >= fauna.species().size()) {
-            source.sendFailure(Component.literal("这里只有 " + fauna.species().size() + " 种动物（编号 0–" + (fauna.species().size() - 1) + "）"));
+            source.sendFailure(Component.translatable("commands.universe.planet.fauna.no_species", fauna.species().size(), fauna.species().size() - 1));
             return 0;
         }
         CreatureSpecies species = fauna.get(index);
@@ -250,7 +263,7 @@ public final class PlanetCommand {
             }
         }
         int done = spawned;
-        source.sendSuccess(() -> Component.literal("刷出了 " + done + " 只 " + species.name().zh()), true);
+        source.sendSuccess(() -> Component.translatable("commands.universe.planet.fauna.spawned", done, Discoveries.bilingual(species.name())), true);
         return done;
     }
 
@@ -284,7 +297,7 @@ public final class PlanetCommand {
             }
         }
         int done = spawned;
-        source.sendSuccess(() -> Component.literal("排出了 " + done + "/" + fauna.species().size() + " 种动物"), true);
+        source.sendSuccess(() -> Component.translatable("commands.universe.planet.fauna.lineup", done, fauna.species().size()), true);
         return done;
     }
 
@@ -294,15 +307,16 @@ public final class PlanetCommand {
         PlanetEnvironment.Context context = PlanetEnvironment.context(level)
                 .orElseThrow(() -> NOT_A_PLANET.create(level.dimension().identifier()));
         double days = level.getGameTime() / 24000.0;
-        StringBuilder text = new StringBuilder(String.format(Locale.ROOT, "%s 的天空（第 %.2f 天）：",
-                context.planet().name().zh(), days));
+        MutableComponent text = Component.translatable("commands.universe.planet.sky", Discoveries.bilingual(context.planet().name()), number(days, 2));
         for (SkyBody body : SkyModel.bodies(context.system(), context.planet(), days)) {
-            String name = body.planet() == null ? context.system().star().starClass().nameZh() + "恒星" : body.planet().name().zh();
-            text.append(String.format(Locale.ROOT, "\n  %s %s：经度 %.0f°，纬度 %.1f°，视直径 %.1f°，亮面 %.0f%%",
-                    body.kind(), name, Math.toDegrees(body.longitude()), Math.toDegrees(body.latitude()),
-                    body.angularDiameter(), body.illumination() * 100));
+            Component name = body.planet() == null
+                    ? name(context.system().star().starClass().nameZh(), context.system().star().starClass().nameEn())
+                    : Discoveries.bilingual(body.planet().name());
+            text.append("\n  ").append(Component.translatable("commands.universe.planet.sky.body",
+                    enumName("commands.universe.planet.sky.kind.", body.kind()), name, number(Math.toDegrees(body.longitude()), 0), number(Math.toDegrees(body.latitude()), 1),
+                    number(body.angularDiameter(), 1), number(body.illumination() * 100, 0)));
         }
-        source.sendSuccess(() -> Component.literal(text.toString()), false);
+        source.sendSuccess(() -> text, false);
         return 1;
     }
 
@@ -311,29 +325,35 @@ public final class PlanetCommand {
         Planet planet = Planets.bodyId(dimension).flatMap(galaxy::body)
                 .orElseThrow(() -> NOT_A_PLANET.create(dimension.identifier()));
         TerrainProfile t = planet.terrain();
-        String hazards = planet.hazards().isEmpty() ? "无"
-                : planet.hazards().stream().map(Hazard::nameZh).collect(Collectors.joining("、"));
-        String resources = planet.resources().stream()
-                .map(d -> String.format(Locale.ROOT, "%s %.0f%%", d.resource().nameZh(), d.abundance() * 100))
-                .collect(Collectors.joining("、"));
-        String text = String.format(Locale.ROOT, """
-                %s（%s）  %s  %s
-                半径 %.2f 倍母星，重力 %.2f g，大气 %s %.2f atm，温度 %.0f °C（昼夜 ±%.0f），液体 %s
-                昼夜 %s，天气 %s（频率 %.2f，风 %.2f%s），危害 %s
-                地形：海平面 %d，基准 %d，大陆尺度 %.0f，起伏 %.0f，丘陵 %.0f，粗糙 %.2f，山脊 %.2f，台地 %.2f，陨坑 %.2f，洞穴 %.2f，悬垂 %.2f，尖塔 %.2f%s
-                生态：植被 %.2f，树木 %.2f，动物 %.2f，植物 %d 种，动物 %d 种
-                资源：%s""",
-                planet.name().zh(), planet.name().en(), dimension.identifier(), planet.type().nameZh(),
-                planet.radius(), planet.gravity(), planet.atmosphere().kind().nameZh(), planet.atmosphere().pressure(),
-                planet.temperatureCelsius(), planet.temperatureSwing(), planet.liquid().nameZh(),
-                planet.dayCycle().serializedName(), planet.weather().precipitation().nameZh(), planet.weather().frequency(),
-                planet.weather().wind(), planet.weather().lightning() ? "，有雷暴" : "", hazards,
-                t.seaLevel(), t.baseHeight(), t.continentScale(), t.heightVariation(), t.hilliness(), t.roughness(),
-                t.ridges(), t.terraces(), t.craters(), t.caves(), t.overhangs(), t.spikes(),
-                t.floatingIslands() ? "，有浮空岛" : "",
-                planet.ecology().flora(), planet.ecology().trees(), planet.ecology().fauna(),
-                planet.ecology().plantSpecies(), planet.ecology().animalSpecies(), resources);
-        source.sendSuccess(() -> Component.literal(text), false);
+        Component separator = Component.translatable("commands.universe.planet.info.separator");
+        Component hazards = planet.hazards().isEmpty() ? Component.translatable("commands.universe.planet.info.no_hazards")
+                : ComponentUtils.formatList(planet.hazards(), separator, (Hazard hazard) -> name(hazard.nameZh(), hazard.nameEn()));
+        Component resources = ComponentUtils.formatList(planet.resources(), separator,
+                (Resource.Deposit d) -> Component.translatable("commands.universe.planet.info.resource",
+                        name(d.resource().nameZh(), d.resource().nameEn()), number(d.abundance() * 100, 0)));
+        MutableComponent text = Component.translatable("commands.universe.planet.info.title",
+                planet.name().zh(), planet.name().en(), Component.translationArg(dimension.identifier()),
+                name(planet.type().nameZh(), planet.type().nameEn()));
+        text.append("\n").append(Component.translatable("commands.universe.planet.info.climate",
+                number(planet.radius(), 2), number(planet.gravity(), 2),
+                name(planet.atmosphere().kind().nameZh(), planet.atmosphere().kind().nameEn()), number(planet.atmosphere().pressure(), 2),
+                number(planet.temperatureCelsius(), 0), number(planet.temperatureSwing(), 0),
+                name(planet.liquid().nameZh(), planet.liquid().nameEn())));
+        text.append("\n").append(Component.translatable("commands.universe.planet.info.weather",
+                Component.translatable("commands.universe.planet.day_cycle." + planet.dayCycle().serializedName()),
+                name(planet.weather().precipitation().nameZh(), planet.weather().precipitation().nameEn()),
+                number(planet.weather().frequency(), 2), number(planet.weather().wind(), 2),
+                planet.weather().lightning() ? Component.translatable("commands.universe.planet.info.lightning") : Component.empty(), hazards));
+        text.append("\n").append(Component.translatable("commands.universe.planet.info.terrain",
+                t.seaLevel(), t.baseHeight(), number(t.continentScale(), 0), number(t.heightVariation(), 0), number(t.hilliness(), 0),
+                number(t.roughness(), 2), number(t.ridges(), 2), number(t.terraces(), 2), number(t.craters(), 2), number(t.caves(), 2),
+                number(t.overhangs(), 2), number(t.spikes(), 2),
+                t.floatingIslands() ? Component.translatable("commands.universe.planet.info.floating_islands") : Component.empty()));
+        text.append("\n").append(Component.translatable("commands.universe.planet.info.ecology",
+                number(planet.ecology().flora(), 2), number(planet.ecology().trees(), 2), number(planet.ecology().fauna(), 2),
+                planet.ecology().plantSpecies(), planet.ecology().animalSpecies()));
+        text.append("\n").append(Component.translatable("commands.universe.planet.info.resources", resources));
+        source.sendSuccess(() -> text, false);
         return 1;
     }
 
@@ -360,10 +380,10 @@ public final class PlanetCommand {
         TeleportTransition transition = new TeleportTransition(level, new Vec3(x + 0.5, y, z + 0.5), Vec3.ZERO,
                 entity.getYRot(), entity.getXRot(), TeleportTransition.PLACE_PORTAL_TICKET);
         if (entity.teleport(transition) == null) {
-            source.sendFailure(Component.literal("传送失败：" + id));
+            source.sendFailure(Component.translatable("commands.universe.planet.tp.failed", Component.translationArg(id)));
             return 0;
         }
-        source.sendSuccess(() -> Component.literal(String.format(Locale.ROOT, "已传送到 %s (%d, %d, %d)", id, x, y, z)), false);
+        source.sendSuccess(() -> Component.translatable("commands.universe.planet.tp", Component.translationArg(id), x, y, z), false);
         return 1;
     }
 
@@ -385,7 +405,7 @@ public final class PlanetCommand {
         ServerLevel level = RuntimeDimensions.getOrCreate(server, key, DimensionTemplate.PLANET);
         long millis = (System.nanoTime() - startNanos) / 1_000_000;
         if (millis > 50) {
-            source.sendSuccess(() -> Component.literal("创建维度 " + id + " 用时 " + millis + " ms"), false);
+            source.sendSuccess(() -> Component.translatable("commands.universe.planet.created", Component.translationArg(id), millis), false);
         }
         return level;
     }
@@ -408,9 +428,28 @@ public final class PlanetCommand {
         }
         double millis = (System.nanoTime() - start) / 1e6;
         int count = size * size;
-        source.sendSuccess(() -> Component.literal(String.format(Locale.ROOT, "%s：生成 %d 个区块用时 %.0f ms，平均 %.1f ms/区块（区块坐标 %d, %d 起）",
-                level.dimension().identifier(), count, millis, millis / count, originX, originZ)), false);
+        source.sendSuccess(() -> Component.translatable("commands.universe.planet.bench", Component.translationArg(level.dimension().identifier()),
+                count, number(millis, 0), number(millis / count, 1), originX, originZ), false);
         return count;
+    }
+
+    /** 中英文两个名字都传过去，客户端按语言挑一个。 */
+    private static Component name(String zh, String en) {
+        return Component.translatable("universe.name", zh, en);
+    }
+
+    /** 没有中英文名字的枚举，按"前缀 + 小写的常量名"找语言键。 */
+    private static Component enumName(String prefix, Enum<?> value) {
+        return Component.translatable(prefix + value.name().toLowerCase(Locale.ROOT));
+    }
+
+    private static Component biotopes(Set<Biotope> biotopes) {
+        return ComponentUtils.formatList(biotopes, Component.translatable("commands.universe.planet.info.separator"),
+                (Biotope biotope) -> enumName("commands.universe.planet.biotope.", biotope));
+    }
+
+    private static String number(double value, int digits) {
+        return String.format(Locale.ROOT, "%." + digits + "f", value);
     }
 
     /** 生成该列所在区块，返回地表上方第一格。 */

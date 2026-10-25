@@ -2,7 +2,6 @@ package io.github.sweetcornna.universe.poi;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
 import java.util.Optional;
 
 import com.mojang.brigadier.arguments.IntegerArgumentType;
@@ -36,9 +35,9 @@ import net.minecraft.world.phys.Vec3;
  */
 public final class PoiCommand {
     private static final SimpleCommandExceptionType NOT_A_PLANET =
-            new SimpleCommandExceptionType(Component.literal("这里不是能登陆的星球，没有兴趣点"));
+            new SimpleCommandExceptionType(Component.translatable("commands.universe.poi.not_planet"));
     private static final DynamicCommandExceptionType UNKNOWN_TYPE =
-            new DynamicCommandExceptionType(name -> Component.literal("未知的兴趣点种类：" + name));
+            new DynamicCommandExceptionType(name -> Component.translatable("commands.universe.poi.unknown_type", String.valueOf(name)));
     private static final SuggestionProvider<CommandSourceStack> TYPES = (context, builder) ->
             SharedSuggestionProvider.suggest(Arrays.stream(PoiType.values()).map(PoiType::serializedName), builder);
 
@@ -80,12 +79,12 @@ public final class PoiCommand {
         PoiLayout layout = layout(player.level());
         PoiProgress progress = player.getData(UniverseAttachments.POI_PROGRESS);
         List<Poi> found = layout.within(player.getX(), player.getZ(), radius);
-        context.getSource().sendSuccess(() -> Component.literal(radius + " 格内有 " + found.size() + " 个兴趣点："), false);
+        context.getSource().sendSuccess(() -> Component.translatable("commands.universe.poi.list", radius, found.size()), false);
         for (Poi poi : found) {
-            String line = String.format(Locale.ROOT, "  %s (%d, ~%d, %d) %d 格%s", poi.type().nameZh(), poi.x(),
-                    layout.estimatedY(poi), poi.z(), Math.round(poi.distance(player.getX(), player.getZ())),
-                    progress.visited(poi.key()) ? "，去过" : "");
-            context.getSource().sendSuccess(() -> Component.literal(line), false);
+            Component line = Component.literal("  ").append(Component.translatable(
+                    progress.visited(poi.key()) ? "commands.universe.poi.list.visited" : "commands.universe.poi.list.entry",
+                    Pois.name(poi.type()), poi.x(), layout.estimatedY(poi), poi.z(), Math.round(poi.distance(player.getX(), player.getZ()))));
+            context.getSource().sendSuccess(() -> line, false);
         }
         return found.size();
     }
@@ -97,7 +96,8 @@ public final class PoiCommand {
         long seed = player.getRandom().nextLong();
         Poi poi = new Poi(type, feet.getX(), feet.getZ(), 0, 0, seed, seed, Math.floorMod(Math.round(player.getYRot() / 90F), 4));
         boolean built = PoiStructures.build(player.level(), poi);
-        context.getSource().sendSuccess(() -> Component.literal(built ? "已在脚下放置" + type.nameZh() : "脚下是液体，没有放置"), false);
+        context.getSource().sendSuccess(() -> built ? Component.translatable("commands.universe.poi.built", Pois.name(type))
+                : Component.translatable("commands.universe.poi.build.failed"), false);
         return built ? 1 : 0;
     }
 
@@ -107,13 +107,14 @@ public final class PoiCommand {
         PoiLayout layout = layout(player.level());
         Optional<Poi> found = layout.nearest(player.getX(), player.getZ(), Pois.LOCATE_RADIUS, poi -> poi.type() == type);
         if (found.isEmpty()) {
-            context.getSource().sendFailure(Component.literal(Pois.LOCATE_RADIUS + " 格内没有" + type.nameZh()));
+            context.getSource().sendFailure(Component.translatable("commands.universe.poi.not_found", Pois.name(type), Pois.LOCATE_RADIUS));
             return 0;
         }
         Poi poi = found.get();
         BlockPos target = new BlockPos(poi.x(), Pois.groundY(player.level(), layout, poi), poi.z());
         player.setData(UniverseAttachments.WAYPOINT, new Waypoint(player.level().dimension(), target, type.serializedName()));
-        context.getSource().sendSuccess(() -> Component.literal("航点：" + type.nameZh() + " " + target.toShortString()), false);
+        context.getSource().sendSuccess(() -> Component.translatable("commands.universe.poi.waypoint", Pois.name(type),
+                target.getX(), target.getY(), target.getZ()), false);
         return 1;
     }
 
@@ -124,7 +125,7 @@ public final class PoiCommand {
         PoiLayout layout = layout(level);
         Optional<Poi> found = layout.nearest(player.getX(), player.getZ(), 6000, poi -> poi.type() == type);
         if (found.isEmpty()) {
-            context.getSource().sendFailure(Component.literal("6000 格内没有" + type.nameZh()));
+            context.getSource().sendFailure(Component.translatable("commands.universe.poi.not_found", Pois.name(type), 6000));
             return 0;
         }
         Poi poi = found.get();
@@ -139,7 +140,7 @@ public final class PoiCommand {
         float yaw = (float) Math.toDegrees(Math.atan2(-(poi.x() - x), poi.z() - z));
         player.teleport(new TeleportTransition(level, new Vec3(x + 0.5, y, z + 0.5), Vec3.ZERO, yaw, 10F,
                 TeleportTransition.PLACE_PORTAL_TICKET));
-        context.getSource().sendSuccess(() -> Component.literal("已传送到" + type.nameZh() + "前方 (" + x + ", " + y + ", " + z + ")"), false);
+        context.getSource().sendSuccess(() -> Component.translatable("commands.universe.poi.tp", Pois.name(type), x, y, z), false);
         return 1;
     }
 }

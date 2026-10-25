@@ -381,13 +381,15 @@ public final class CrashSite extends SavedData {
                     BlockPos feet = player.blockPosition();
                     BlockPos ground = new BlockPos(feet.getX(), groundY(player.level(), feet.getX(), feet.getZ()), feet.getZ());
                     build(player.level(), ground, RandomSource.create(ground.asLong()));
-                    context.getSource().sendSuccess(() -> Component.literal("已在 " + ground.toShortString() + " 放置坠毁点"), false);
+                    context.getSource().sendSuccess(() -> Component.translatable("commands.universe.crash_site.placed",
+                            ground.getX(), ground.getY(), ground.getZ()), false);
                     return 1;
                 })
                 .then(Commands.literal("locate").executes(context -> {
                     Optional<BlockPos> site = location(context.getSource().getServer().overworld());
-                    context.getSource().sendSuccess(() -> Component.literal(site.map(p -> "坠毁点在主世界 " + p.toShortString())
-                            .orElse("还没有放置坠毁点")), false);
+                    context.getSource().sendSuccess(() -> site
+                            .map(p -> Component.translatable("commands.universe.crash_site.located", p.getX(), p.getY(), p.getZ()))
+                            .orElse(Component.translatable("commands.universe.crash_site.none")), false);
                     return site.isPresent() ? 1 : 0;
                 }));
     }
