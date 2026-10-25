@@ -154,11 +154,12 @@ public final class Fishing {
         }
     }
 
-    /** 甩竿：浮标从右手边飞出去，最远 24 格。这一竿用的饵和放生的加成在这时定下。 */
+    /** 甩竿：浮标从右手边飞出去，最远 24 格。这一竿用的饵和放生的加成在这时定下，浮标认准甩竿的这一把工具。 */
     public static FishingBobber cast(ServerPlayer player) {
         ServerLevel level = player.level();
         FishingLog log = log(player);
-        FishingBobber bobber = new FishingBobber(level, player, baitKind(bait(player.getMainHandItem())), log.blessed());
+        ItemStack tool = player.getMainHandItem();
+        FishingBobber bobber = new FishingBobber(level, player, tool, baitKind(bait(tool)), log.blessed());
         player.setData(UniverseAttachments.FISHING_LOG, log.cast());
         level.addFreshEntity(bobber);
         BOBBERS.put(player.getUUID(), bobber);
@@ -212,21 +213,34 @@ public final class Fishing {
         return baitKind(stack) != Bait.NONE;
     }
 
-    /** 钩住一条：工具饵格里的饵用掉一个。这把工具的饵格正开着，就从界面那一格扣（界面写回工具），两边一直是同一份。 */
+    /** 主手那一把工具的饵用掉一个，见 {@link #consumeBait(ServerPlayer, ItemStack)}。 */
     public static void consumeBait(ServerPlayer player) {
-        ItemStack tool = player.getMainHandItem();
+        consumeBait(player, player.getMainHandItem());
+    }
+
+    /**
+     * 钩住一条：甩竿的那一把工具饵格里的饵用掉一个。这把工具的饵格正开着，就从界面那一格扣（界面写回工具），两边一直是同一份。
+     *
+     * @param tool 甩竿时主手的那一把
+     * @return 主手还是不是那一把；换成了别的（哪怕是另一把钓鱼模式的工具）就不扣饵，这一竿作废
+     */
+    public static boolean consumeBait(ServerPlayer player, @Nullable ItemStack tool) {
+        if (tool == null || tool.isEmpty() || player.getMainHandItem() != tool) {
+            return false;
+        }
         if (player.isCreative()) {
-            return;
+            return true;
         }
         if (player.containerMenu instanceof BaitMenu menu && menu.edits(tool)) {
             menu.getSlot(0).remove(1);
-            return;
+            return true;
         }
         ItemStack bait = bait(tool);
         if (!bait.isEmpty()) {
             bait.shrink(1);
             setBait(tool, bait);
         }
+        return true;
     }
 
     // ---- 水域

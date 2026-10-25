@@ -506,6 +506,12 @@ public final class UniverseGameTests {
             FishingGameTests::releaseBlessesNextCasts);
     private static final ResourceKey<Consumer<GameTestHelper>> FISH_TRAP_CATCHES_UNDER_WATER = function("fish_trap_catches_under_water",
             FishingGameTests::trapCatchesUnderWater);
+    private static final ResourceKey<Consumer<GameTestHelper>> FISHING_SWAPPED_TOOL_DROPS_BOBBER = function("fishing_swapped_tool_drops_bobber",
+            FishingFixGameTests::swappedToolDropsBobber);
+    private static final ResourceKey<Consumer<GameTestHelper>> FISHING_SWAP_THEN_HOOK_KEEPS_BAIT = function("fishing_swap_then_hook_keeps_bait",
+            FishingFixGameTests::swapThenHookKeepsBait);
+    private static final ResourceKey<Consumer<GameTestHelper>> FISHING_SAME_TOOL_SPENDS_BAIT = function("fishing_same_tool_spends_bait",
+            FishingFixGameTests::sameToolSpendsBait);
     // M19 钓鱼（A）的测试函数加在这行上面
     private static final ResourceKey<Consumer<GameTestHelper>> SETTLEMENT_CLAIM_NEEDS_STANDING_AND_MATERIALS = function(
             "settlement_claim_needs_standing_and_materials", SettlementGameTests::claimNeedsStandingAndMaterials);
@@ -778,6 +784,9 @@ public final class UniverseGameTests {
         test(event, environment, FISHING_BAIT_USED_ON_HOOK, 200);
         test(event, environment, FISHING_RELEASE_BLESSES_NEXT_CASTS, 200);
         test(event, environment, FISH_TRAP_CATCHES_UNDER_WATER, 100);
+        test(event, environment, FISHING_SWAPPED_TOOL_DROPS_BOBBER, 200);
+        test(event, environment, FISHING_SWAP_THEN_HOOK_KEEPS_BAIT, 200);
+        test(event, environment, FISHING_SAME_TOOL_SPENDS_BAIT, 200);
         // M19 钓鱼（A）的测试加在这行上面
         spaced(event, environment, SETTLEMENT_CLAIM_NEEDS_STANDING_AND_MATERIALS, 100);
         spaced(event, environment, SETTLEMENT_CONSTRUCTION_THREE_STAGES, 200);
