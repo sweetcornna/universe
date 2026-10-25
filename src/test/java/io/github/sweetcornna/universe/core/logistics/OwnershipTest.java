@@ -5,6 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
@@ -13,6 +15,7 @@ import org.junit.jupiter.api.Test;
 class OwnershipTest {
     private static final UUID ALICE = UUID.randomUUID();
     private static final UUID BOB = UUID.randomUUID();
+    private static final UUID CAROL = UUID.randomUUID();
 
     @Test
     void ownerAndLegacy() {
@@ -25,6 +28,18 @@ class OwnershipTest {
     void teammateAndOperator() {
         assertTrue(Ownership.mayEdit(ALICE, BOB, false, owner -> owner.equals(ALICE)), "队友");
         assertTrue(Ownership.mayEdit(ALICE, BOB, true, owner -> false), "管理员");
+    }
+
+    @Test
+    void routeDeletedByCreatorOrStationOwner() {
+        List<Optional<UUID>> aliceStation = List.of(Optional.empty(), Optional.of(ALICE));
+        assertTrue(Ownership.mayDeleteRoute(BOB, List.of(), BOB, false, owner -> false), "建的人");
+        assertTrue(Ownership.mayDeleteRoute(BOB, aliceStation, ALICE, false, owner -> false), "路线走了自己的站");
+        assertTrue(Ownership.mayDeleteRoute(BOB, aliceStation, CAROL, false, owner -> owner.equals(ALICE)), "站主人的队友");
+        assertFalse(Ownership.mayDeleteRoute(BOB, aliceStation, CAROL, false, owner -> false), "不相干的人");
+        assertFalse(Ownership.mayDeleteRoute(BOB, List.of(Optional.empty()), CAROL, false, owner -> false), "没主人的站不算");
+        assertTrue(Ownership.mayDeleteRoute(null, List.of(), CAROL, false, owner -> false), "旧档里没记建的人的路线");
+        assertTrue(Ownership.mayDeleteRoute(BOB, List.of(), CAROL, true, owner -> false), "管理员");
     }
 
     @Test

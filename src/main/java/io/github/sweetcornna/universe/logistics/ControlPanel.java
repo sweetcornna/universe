@@ -93,6 +93,12 @@ public final class ControlPanel {
         return viewer == null ? owner.isEmpty() : mayEdit(viewer, owner);
     }
 
+    /** 能不能删这条路线（{@link Ownership#mayDeleteRoute}）：建的人，或者 {@code on}（走这条路线的站）里有一座有主人的站是他能改的。 */
+    private static boolean mayDeleteRoute(ServerPlayer player, ItemRoute route, List<Station> on) {
+        return Ownership.mayDeleteRoute(route.creator(), on.stream().map(Station::owner).toList(), player.getUUID(),
+                player.permissions().hasPermission(Permissions.COMMANDS_GAMEMASTER), id -> teammates(player, id));
+    }
+
     // ---- 快照
 
     public static ControlPanelPayloads.Snapshot snapshot(MinecraftServer server) {
@@ -111,10 +117,11 @@ public final class ControlPanel {
         }
         List<ControlPanelPayloads.RouteRow> routes = new ArrayList<>();
         for (ItemRoute route : network.routes()) {
+            List<Station> stationsOn = network.stationsOn(route);
             List<UUID> on = new ArrayList<>();
-            network.stationsOn(route).forEach(station -> on.add(station.id()));
-            routes.add(new ControlPanelPayloads.RouteRow(route.id(), route.item(), route.systems(), route.from(), route.to(), on,
-                    editable(viewer, Optional.ofNullable(route.creator()))));
+            stationsOn.forEach(station -> on.add(station.id()));
+            boolean editable = viewer == null ? route.creator() == null : mayDeleteRoute(viewer, route, stationsOn);
+            routes.add(new ControlPanelPayloads.RouteRow(route.id(), route.item(), route.systems(), route.from(), route.to(), on, editable));
         }
         List<ControlPanelPayloads.VesselRow> vessels = new ArrayList<>();
         for (Trip trip : network.trips()) {
@@ -264,15 +271,16 @@ public final class ControlPanel {
         return entry == null ? Optional.empty() : entry.owner();
     }
 
-    /** 玩家新建路线（记下是他建的），或者删掉一条他能改的路线。 */
+    /** 玩家新建路线（记下是他建的），或者删掉一条他能删的路线（{@link #mayDeleteRoute}）。 */
     public static boolean editRoute(ServerPlayer player, ControlPanelPayloads.RouteEdit edit) {
         MinecraftServer server = player.level().getServer();
         if (player.isSpectator()) {
             return false;
         }
         if (!edit.add()) {
-            ItemRoute route = Logistics.network(server).route(edit.id());
-            if (route == null || !mayEdit(player, Optional.ofNullable(route.creator()))) {
+            LogisticsNetwork network = Logistics.network(server);
+            ItemRoute route = network.route(edit.id());
+            if (route == null || !mayDeleteRoute(player, route, network.stationsOn(route))) {
                 return false;
             }
         }

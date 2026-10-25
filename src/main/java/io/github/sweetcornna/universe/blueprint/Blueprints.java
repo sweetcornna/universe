@@ -16,6 +16,7 @@ import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.advancement.MilestoneTrigger;
 import io.github.sweetcornna.universe.core.blueprint.BlueprintGeometry;
 import io.github.sweetcornna.universe.core.blueprint.BlueprintMeta;
+import io.github.sweetcornna.universe.logistics.Owned;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.level.block.Block;
@@ -461,14 +462,26 @@ public final class Blueprints {
             job.missing.merge(placement.cost, 1, Integer::sum);
             return;
         }
-        level.setBlock(pos, placement.state, 3);
-        if (placement.settings != null && level.getBlockEntity(pos) instanceof BlueprintSettings target) {
-            target.applyBlueprintSettings(placement.settings);
-        }
+        put(level, pos, placement.state, placement.settings, player.getUUID());
         job.placed++;
         level.sendParticles(ParticleTypes.END_ROD, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 2, 0.3, 0.3, 0.3, 0.01);
         if (job.placed % 4 == 1) {
             level.playSound(null, pos, placement.state.getSoundType().getPlaceSound(), SoundSource.BLOCKS, 0.5F, 1.1F);
+        }
+    }
+
+    /**
+     * 放下蓝图里的一个方块（直接贴和建造无人机都走这里）：设置还回去；物流站、采集器、配送器记成 {@code owner} 的，就是放蓝图的人
+     * （ADR-0033 §三）。两格高的站只有下半截有方块实体，上半截不用管。
+     */
+    public static void put(ServerLevel level, BlockPos pos, BlockState state, @Nullable CompoundTag settings, UUID owner) {
+        level.setBlock(pos, state, Block.UPDATE_ALL);
+        BlockEntity blockEntity = level.getBlockEntity(pos);
+        if (settings != null && blockEntity instanceof BlueprintSettings target) {
+            target.applyBlueprintSettings(settings);
+        }
+        if (blockEntity instanceof Owned owned) {
+            owned.setOwner(owner);
         }
     }
 

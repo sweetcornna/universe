@@ -610,14 +610,15 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("guide.universe.logistics.control_panel",
                 "按 I 打开。星际、行星内、配送器三页列出全服的站和配送器，能按名字、星球、星系、物品筛，按名字、编号、物品排。\n\n"
                         + "选中一座站，名字、分组、伙伴、指定配对、起送量、航程，还有每格的物品、供需和上限，都能在这里改，和走到站前面改一样。"
-                        + "格子空了才能换物品。配送器远程只改两种模式。别的玩家放的站、配送器和建的路线只能看，自己和队友的才能改。\n\n"
+                        + "格子空了才能换物品。配送器远程只改两种模式。别的玩家放的站、配送器和建的路线只能看，自己和队友的才能改。别人建的路线走了你的站，你也能删。\n\n"
                         + "「路线」页新建物品路线：选物品，选星球还是星系，再选两头。那边还没有站也能设。\n"
                         + "「定位」在 HUD 上标出那个地方。星图上选中一个星系，画出从它出发的路线和正在飞的运输船。",
                 "Press I. The Interstellar, Planetary and Distributors tabs list every station and distributor on the server. "
                         + "Filter by name, planet, system or item; sort by name, number or item.\n\n"
                         + "Select a station to change its name, group, partners, paired-only switch, min load and range, plus each slot's item, "
                         + "logic and limit, same as at the station. A slot has to be empty before its item changes. Distributors only take "
-                        + "mode changes from here. Stations, distributors and routes from other players are view only unless they're on your team.\n\n"
+                        + "mode changes from here. Stations, distributors and routes from other players are view only unless they're on your team. "
+                        + "You can still delete a route that runs through one of your stations.\n\n"
                         + "The Routes tab makes item routes: pick an item, planets or systems, then both ends. The far end doesn't need a station yet.\n"
                         + "Locate marks the spot on your HUD. Select a system on the star map to see its routes and the vessels in flight.");
     }

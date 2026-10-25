@@ -1,6 +1,7 @@
 package io.github.sweetcornna.universe.gametest;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
@@ -9,9 +10,16 @@ import java.util.function.Supplier;
 import com.mojang.authlib.GameProfile;
 import com.mojang.serialization.Codec;
 
+import io.github.sweetcornna.universe.blueprint.BlueprintData;
+import io.github.sweetcornna.universe.blueprint.Blueprints;
+import io.github.sweetcornna.universe.core.blueprint.BlueprintGeometry;
 import io.github.sweetcornna.universe.core.logistics.ItemRoute;
+import io.github.sweetcornna.universe.core.logistics.Logic;
 import io.github.sweetcornna.universe.core.logistics.Station;
 import io.github.sweetcornna.universe.core.mecha.Distribution;
+import io.github.sweetcornna.universe.darkfog.Facilities;
+import io.github.sweetcornna.universe.darkfog.facility.FacilityGhostBlockEntity;
+import io.github.sweetcornna.universe.darkfog.facility.FacilityRepairs;
 import io.github.sweetcornna.universe.factory.TallMachineBlock;
 import io.github.sweetcornna.universe.logistics.ControlPanel;
 import io.github.sweetcornna.universe.logistics.DistributorBlockEntity;
@@ -23,21 +31,28 @@ import io.github.sweetcornna.universe.logistics.StationContents;
 import io.github.sweetcornna.universe.network.ControlPanelPayloads;
 import io.github.sweetcornna.universe.network.ControlPanelPayloads.StationEdit;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
+import io.github.sweetcornna.universe.registry.UniverseItems;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.gametest.framework.GameTestHelper;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.protocol.PacketFlow;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ClientInformation;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.ConfigurationTask;
 import net.minecraft.server.players.NameAndId;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.TypedEntityData;
 import net.minecraft.world.level.GameType;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.scores.PlayerTeam;
@@ -81,6 +96,13 @@ final class ControlPanelGameTests {
         ControlPanelPayloads.StationRow row = ControlPanel.snapshot(helper.getLevel().getServer(), viewer).stations().stream()
                 .filter(r -> r.id().equals(id)).findFirst().orElse(null);
         helper.assertTrue(row != null, "快照里没有这座站");
+        return row;
+    }
+
+    private static ControlPanelPayloads.RouteRow routeRow(GameTestHelper helper, ServerPlayer viewer, UUID id) {
+        ControlPanelPayloads.RouteRow row = ControlPanel.snapshot(helper.getLevel().getServer(), viewer).routes().stream()
+                .filter(r -> r.id().equals(id)).findFirst().orElse(null);
+        helper.assertTrue(row != null, "快照里没有这条路线");
         return row;
     }
 
@@ -139,7 +161,8 @@ final class ControlPanelGameTests {
 
     /**
      * 玩家放下的站记着主人：别的玩家远程改名、分组、换格子、拿它当伙伴都不行，主人和主人的队友（主人不在线也认）可以；快照里对
-     * 不同的人标着能不能改。配送器和路线一样。改名走包的入口：改了才排快照，同一刻改两次只排一份，下一刻发掉；改成原样的不排。
+     * 不同的人标着能不能改。配送器和路线一样；别的玩家建的路线走了主人的站，主人也能删。改名走包的入口：改了才排快照，同一刻改两次
+     * 只排一份，下一刻发掉；改成原样的不排。
      */
     static void ownedStationRefusesOthers(GameTestHelper helper) {
         BlockPos ownedPos = new BlockPos(1, 1, 1);
@@ -222,6 +245,18 @@ final class ControlPanelGameTests {
             ItemRoute saved = copy.network().route(route.id());
             helper.assertTrue(saved != null && owner.getUUID().equals(saved.creator()), "存档里路线没记建的人");
             helper.assertTrue(ControlPanel.editRoute(owner, delete), "主人删不了路线");
+            // 别的玩家建的路线拉走主人站上的货：主人删得掉，和这座站不相干的人删不掉
+            owned.assign(1, "minecraft:armadillo_scute");
+            owned.slot(1).setRemote(Logic.SUPPLY);
+            int home = owned.location().system();
+            helper.assertTrue(ControlPanel.editRoute(stranger, new ControlPanelPayloads.RouteEdit(true, StationEdit.NONE,
+                    "minecraft:armadillo_scute", true, Integer.toString(home), home == 0 ? "1" : "0")), "别的玩家建不了路线");
+            ItemRoute pulling = route(helper, "minecraft:armadillo_scute");
+            ControlPanelPayloads.RouteEdit deletePulling = new ControlPanelPayloads.RouteEdit(false, pulling.id(), "", false, "", "");
+            helper.assertTrue(routeRow(helper, owner, pulling.id()).editable(), "快照里主人删不了走他的站的路线");
+            helper.assertFalse(routeRow(helper, mate, pulling.id()).editable(), "快照里不相干的人能删路线");
+            helper.assertFalse(ControlPanel.editRoute(mate, deletePulling), "不相干的人删了路线");
+            helper.assertTrue(ControlPanel.editRoute(owner, deletePulling), "主人删不了拉走他的货的路线");
             // 拆下来的物品带着主人；什么都没设的站只有主人，不往物品里存
             StationContents contents = StationContents.CODEC.parse(NbtOps.INSTANCE,
                     StationContents.CODEC.encodeStart(NbtOps.INSTANCE, StationContents.of(owned)).getOrThrow()).getOrThrow();
@@ -275,6 +310,121 @@ final class ControlPanelGameTests {
             helper.assertTrue(ControlPanel.editRoute(anyone, new ControlPanelPayloads.RouteEdit(false, route.id(), "", false, "", "")),
                     "没记建的人的路线删不了");
             Logistics.network(server).remove(station.id());
+        }).thenSucceed();
+    }
+
+    /**
+     * 复制出来的站（创造模式选取、带方块实体数据的物品）带着原来那座站的编号和主人：别的玩家放下它，原来那座站的主人不变；
+     * 下一刻复制的站换了新编号，主人是放它的人。
+     */
+    static void copiedStationKeepsOriginalOwner(GameTestHelper helper) {
+        BlockPos originalPos = new BlockPos(1, 1, 1);
+        BlockPos copyPos = new BlockPos(5, 1, 5);
+        BlockState interstellar = UniverseBlocks.INTERSTELLAR_LOGISTICS_STATION.get().defaultBlockState();
+        tall(helper, originalPos, interstellar);
+        MinecraftServer server = helper.getLevel().getServer();
+        ServerPlayer owner = (ServerPlayer) helper.makeMockServerPlayer(GameType.CREATIVE);
+        ServerPlayer copier = (ServerPlayer) helper.makeMockServerPlayer(GameType.CREATIVE);
+        placedBy(helper, originalPos, owner);
+        Station[] stations = new Station[2];
+        helper.startSequence().thenExecuteAfter(1, () -> {
+            stations[0] = station(helper, originalPos);
+            helper.assertValueEqual(stations[0].owner(), Optional.of(owner.getUUID()), "原来那座站的主人");
+            // 和放下带 BLOCK_ENTITY_DATA 的物品一样：先放方块，再读进方块实体数据，最后 setPlacedBy
+            StationBlockEntity source = helper.getBlockEntity(originalPos, StationBlockEntity.class);
+            ItemStack stack = new ItemStack(UniverseItems.INTERSTELLAR_LOGISTICS_STATION.get());
+            stack.set(DataComponents.BLOCK_ENTITY_DATA, TypedEntityData.<BlockEntityType<?>>of(source.getType(),
+                    source.saveCustomOnly(helper.getLevel().registryAccess())));
+            tall(helper, copyPos, interstellar);
+            helper.assertTrue(BlockItem.updateCustomBlockEntityTag(helper.getLevel(), copier, helper.absolutePos(copyPos), stack),
+                    "方块实体数据没读进去");
+            helper.assertValueEqual(helper.getBlockEntity(copyPos, StationBlockEntity.class).station(), stations[0], "复制的站没带着原来的编号");
+            placedBy(helper, copyPos, copier);
+            helper.assertValueEqual(stations[0].owner(), Optional.of(owner.getUUID()), "放下复制的站改了原来那座站的主人");
+        }).thenExecuteAfter(1, () -> {
+            stations[1] = station(helper, copyPos);
+            helper.assertFalse(stations[1] == stations[0], "复制的站没换编号");
+            helper.assertValueEqual(stations[1].owner(), Optional.of(copier.getUUID()), "复制的站的主人");
+            helper.assertValueEqual(stations[0].owner(), Optional.of(owner.getUUID()), "原来那座站的主人");
+            Logistics.network(server).remove(stations[0].id());
+            Logistics.network(server).remove(stations[1].id());
+        }).thenSucceed();
+    }
+
+    /**
+     * 贴蓝图（直接贴和建造无人机都走 {@link Blueprints#put}）建的物流站、配送器记成放蓝图的人的；设置照样带过来。两格高的站只有下半截
+     * 有方块实体。
+     */
+    static void blueprintStationHasOwner(GameTestHelper helper) {
+        BlockState station = UniverseBlocks.INTERSTELLAR_LOGISTICS_STATION.get().defaultBlockState();
+        CompoundTag settings = (CompoundTag) StationContents.CODEC.encodeStart(NbtOps.INSTANCE, new StationContents(List.of(), 0, 0, 0, 0,
+                Station.DEFAULT_RANGE, new StationContents.Settings("", 3, false, 0, List.of()), Optional.empty())).getOrThrow();
+        // 一排三格宽、两格高：西头是站，东头是箱子上面的配送器
+        int[] positions = {BlueprintGeometry.pack(0, 0, 0), BlueprintGeometry.pack(0, 1, 0), BlueprintGeometry.pack(2, 0, 0),
+                BlueprintGeometry.pack(2, 1, 0)};
+        BlueprintData.Stored stored = new BlueprintData.Stored("owned", 3, 2, 1, List.of(station.setValue(TallMachineBlock.HALF,
+                DoubleBlockHalf.LOWER), station.setValue(TallMachineBlock.HALF, DoubleBlockHalf.UPPER), Blocks.CHEST.defaultBlockState(),
+                UniverseBlocks.LOGISTICS_DISTRIBUTOR.get().defaultBlockState()), positions, new int[] {0, 1, 2, 3}, Map.of(0, settings),
+                BlueprintData.Meta.NONE);
+        ServerLevel level = helper.getLevel();
+        ServerPlayer player = (ServerPlayer) helper.makeMockServerPlayer(GameType.SURVIVAL);
+        BlockPos stationPos = null;
+        BlockPos distributorPos = null;
+        for (Blueprints.Placement placement : Blueprints.placements(stored, helper.absolutePos(new BlockPos(3, 1, 3)), 0, false)) {
+            Blueprints.put(level, placement.pos(), placement.state(), placement.settings(), player.getUUID());
+            if (placement.state().is(UniverseBlocks.INTERSTELLAR_LOGISTICS_STATION.get())
+                    && placement.state().getValue(TallMachineBlock.HALF) == DoubleBlockHalf.LOWER) {
+                stationPos = helper.relativePos(placement.pos());
+            } else if (placement.state().is(UniverseBlocks.LOGISTICS_DISTRIBUTOR.get())) {
+                distributorPos = helper.relativePos(placement.pos());
+            }
+        }
+        helper.assertTrue(stationPos != null && distributorPos != null, "蓝图里没有站或配送器");
+        BlockPos stationAt = stationPos;
+        BlockPos distributorAt = distributorPos;
+        helper.startSequence().thenExecuteAfter(1, () -> {
+            Station built = station(helper, stationAt);
+            helper.assertValueEqual(built.owner(), Optional.of(player.getUUID()), "贴蓝图建的站没记主人");
+            helper.assertValueEqual(built.group(), 3, "蓝图里的分组");
+            helper.assertValueEqual(helper.getBlockEntity(distributorAt, DistributorBlockEntity.class).owner(), Optional.of(player.getUUID()),
+                    "贴蓝图建的配送器没记主人");
+            Logistics.network(level.getServer()).remove(built.id());
+        }).thenSucceed();
+    }
+
+    /**
+     * 黑雾打掉有主人的站和配送器：残影记着主人。别的玩家（他的无人机）重建站，战场分析基地（没有玩家）重建配送器，主人都还是原来的；
+     * 站什么都没设，物品里不带主人，只靠残影记着。
+     */
+    static void rebuiltStationKeepsOwner(GameTestHelper helper) {
+        BlockPos stationPos = new BlockPos(1, 1, 1);
+        BlockPos distributorPos = new BlockPos(3, 2, 1);
+        tall(helper, stationPos, UniverseBlocks.INTERSTELLAR_LOGISTICS_STATION.get().defaultBlockState());
+        helper.setBlock(distributorPos.below(), Blocks.CHEST);
+        helper.setBlock(distributorPos, UniverseBlocks.LOGISTICS_DISTRIBUTOR.get());
+        ServerLevel level = helper.getLevel();
+        MinecraftServer server = level.getServer();
+        ServerPlayer owner = (ServerPlayer) helper.makeMockServerPlayer(GameType.SURVIVAL);
+        ServerPlayer neighbour = (ServerPlayer) helper.makeMockServerPlayer(GameType.SURVIVAL);
+        placedBy(helper, stationPos, owner);
+        placedBy(helper, distributorPos, owner);
+        helper.startSequence().thenExecuteAfter(1, () -> {
+            Station before = station(helper, stationPos);
+            helper.assertValueEqual(before.owner(), Optional.of(owner.getUUID()), "放下的玩家没记成主人");
+            helper.assertTrue(Facilities.damage(level, helper.absolutePos(stationPos), 1_000_000, null), "站没打掉");
+            helper.assertTrue(Facilities.damage(level, helper.absolutePos(distributorPos), 1_000_000, null), "配送器没打掉");
+            helper.assertValueEqual(helper.getBlockEntity(stationPos, FacilityGhostBlockEntity.class).owner(), owner.getUUID(), "站的残影没记主人");
+            helper.assertValueEqual(helper.getBlockEntity(distributorPos, FacilityGhostBlockEntity.class).owner(), owner.getUUID(),
+                    "配送器的残影没记主人");
+            helper.assertTrue(Logistics.network(server).get(before.id()) == null, "打掉的站还在账本里");
+            helper.assertTrue(FacilityRepairs.rebuild(level, helper.absolutePos(stationPos), neighbour), "别的玩家重建不了站");
+            helper.assertTrue(FacilityRepairs.rebuild(level, helper.absolutePos(distributorPos), null), "战场分析基地重建不了配送器");
+            helper.assertValueEqual(helper.getBlockEntity(distributorPos, DistributorBlockEntity.class).owner(), Optional.of(owner.getUUID()),
+                    "重建的配送器换了主人");
+        }).thenExecuteAfter(1, () -> {
+            Station rebuilt = station(helper, stationPos);
+            helper.assertValueEqual(rebuilt.owner(), Optional.of(owner.getUUID()), "别的玩家重建的站换了主人");
+            Logistics.network(server).remove(rebuilt.id());
         }).thenSucceed();
     }
 }

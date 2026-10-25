@@ -1,5 +1,7 @@
 package io.github.sweetcornna.universe.core.logistics;
 
+import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Predicate;
 
@@ -21,5 +23,18 @@ public final class Ownership {
      */
     public static boolean mayEdit(@Nullable UUID owner, UUID player, boolean operator, Predicate<UUID> teammate) {
         return owner == null || owner.equals(player) || operator || teammate.test(owner);
+    }
+
+    /**
+     * 能不能删一条路线：建的人能删。路线压过别的配对，别人建的路线拉走了自己站上的货也得删得掉，所以走这条路线的站里有一座是他能改的，
+     * 他也能删。只算有主人的站：0.14 的站谁都能改，算上就谁都能删了。
+     *
+     * @param creator       建路线的人；{@code null} 是旧档里没记的
+     * @param stationOwners 走这条路线的站的主人
+     */
+    public static boolean mayDeleteRoute(@Nullable UUID creator, List<Optional<UUID>> stationOwners, UUID player, boolean operator,
+            Predicate<UUID> teammate) {
+        return mayEdit(creator, player, operator, teammate)
+                || stationOwners.stream().anyMatch(owner -> owner.isPresent() && mayEdit(owner.get(), player, operator, teammate));
     }
 }

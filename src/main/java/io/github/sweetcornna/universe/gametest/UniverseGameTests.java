@@ -469,6 +469,12 @@ public final class UniverseGameTests {
             ControlPanelGameTests::ownedStationRefusesOthers);
     private static final ResourceKey<Consumer<GameTestHelper>> LEGACY_STATION_ACCEPTS_EDITS = function("legacy_station_accepts_edits",
             ControlPanelGameTests::legacyStationAcceptsEdits);
+    private static final ResourceKey<Consumer<GameTestHelper>> COPIED_STATION_KEEPS_ORIGINAL_OWNER = function(
+            "copied_station_keeps_original_owner", ControlPanelGameTests::copiedStationKeepsOriginalOwner);
+    private static final ResourceKey<Consumer<GameTestHelper>> BLUEPRINT_STATION_HAS_OWNER = function("blueprint_station_has_owner",
+            ControlPanelGameTests::blueprintStationHasOwner);
+    private static final ResourceKey<Consumer<GameTestHelper>> REBUILT_STATION_KEEPS_OWNER = function("rebuilt_station_keeps_owner",
+            ControlPanelGameTests::rebuiltStationKeepsOwner);
     // M18 物流调度（B）的测试函数加在这行上面
     private static final ResourceKey<Consumer<GameTestHelper>> RESEARCH_QUEUE_ADVANCES = function("research_queue_advances",
             StatsGameTests::researchQueueAdvances);
@@ -752,6 +758,9 @@ public final class UniverseGameTests {
         test(event, environment, REMOTE_EDIT_APPLIES, 40);
         test(event, environment, OWNED_STATION_REFUSES_OTHERS, 40);
         test(event, environment, LEGACY_STATION_ACCEPTS_EDITS, 40);
+        test(event, environment, COPIED_STATION_KEEPS_ORIGINAL_OWNER, 40);
+        test(event, environment, BLUEPRINT_STATION_HAS_OWNER, 40);
+        test(event, environment, REBUILT_STATION_KEEPS_OWNER, 40);
         // M18 物流调度（B）的测试加在这行上面
         test(event, environment, RESEARCH_QUEUE_ADVANCES, 20);
         test(event, environment, REFERENCE_COUNTS_RUNNING_MACHINES, 300);

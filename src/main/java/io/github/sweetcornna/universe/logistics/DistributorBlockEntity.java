@@ -51,7 +51,7 @@ import net.neoforged.neoforge.transfer.transaction.Transaction;
  *
  * <p>机器人不是实体：每趟记着要去哪、带着什么、飞到了哪里，存进方块实体；客户端的画法见 {@code FlyersClient}。
  */
-public class DistributorBlockEntity extends MachineBlockEntity implements MachineMenu.ButtonTarget, BlueprintSettings {
+public class DistributorBlockEntity extends MachineBlockEntity implements MachineMenu.ButtonTarget, BlueprintSettings, Owned {
     public static final int BOT_SLOT = 0;
     public static final int MAX_BOTS = 10;
     /** 电池：最多 9 kW 从电网充，存 60 kJ。 */
@@ -156,12 +156,14 @@ public class DistributorBlockEntity extends MachineBlockEntity implements Machin
         return this.peer;
     }
 
+    @Override
     public Optional<UUID> owner() {
         return Optional.ofNullable(this.owner);
     }
 
-    /** 玩家放下了这台配送器（{@link DistributorBlock#setPlacedBy}）。 */
-    public void setOwner(UUID owner) {
+    /** 玩家放下了这台配送器（{@link DistributorBlock#setPlacedBy}）、贴蓝图建的、重建的。 */
+    @Override
+    public void setOwner(@Nullable UUID owner) {
         this.owner = owner;
         this.setChanged();
         this.register();

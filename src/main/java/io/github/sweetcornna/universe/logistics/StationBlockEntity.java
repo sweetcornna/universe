@@ -1,5 +1,6 @@
 package io.github.sweetcornna.universe.logistics;
 
+import java.util.Optional;
 import java.util.UUID;
 
 import org.jspecify.annotations.Nullable;
@@ -43,7 +44,7 @@ import net.minecraft.world.level.storage.ValueOutput;
  * <p>容器格子只是投放口：放进去的无人机、运输船、翘曲器每刻收进账本，界面上的按钮再把空闲的取出来。电池只用电网
  * 富余的电充（和蓄电器一样），不会跟设备抢电。
  */
-public class StationBlockEntity extends MachineBlockEntity implements MachineMenu.ButtonTarget, BeltReceiver, BlueprintSettings {
+public class StationBlockEntity extends MachineBlockEntity implements MachineMenu.ButtonTarget, BeltReceiver, BlueprintSettings, Owned {
     public static final int DRONE_SLOT = 0;
     public static final int VESSEL_SLOT = 1;
     public static final int WARPER_SLOT = 2;
@@ -188,9 +189,7 @@ public class StationBlockEntity extends MachineBlockEntity implements MachineMen
     private void ensureStation(ServerLevel level) {
         LogisticsNetwork network = Logistics.network(level.getServer());
         Station existing = this.id == null ? null : network.get(this.id);
-        String dimension = level.dimension().identifier().toString();
-        if (existing != null && existing.dimension().equals(dimension) && existing.x() == this.worldPosition.getX()
-                && existing.y() == this.worldPosition.getY() && existing.z() == this.worldPosition.getZ()) {
+        if (existing != null && this.isHere(existing, level)) {
             return;
         }
         if (existing != null) {
@@ -213,11 +212,31 @@ public class StationBlockEntity extends MachineBlockEntity implements MachineMen
         this.setChanged();
     }
 
-    /** 玩家放下了这座站（方块的 {@code setPlacedBy}）：记成主人。账本里通常还没有这座站（{@link #onLoad} 在下一刻），有就直接改。 */
-    public void setOwner(UUID owner) {
+    /** 账本里的这条是不是这个方块的（维度和位置对得上）。复制出来的方块（创造模式的选取、带数据的物品）带着别的站的编号。 */
+    private boolean isHere(Station station, ServerLevel level) {
+        return station.dimension().equals(level.dimension().identifier().toString()) && station.x() == this.worldPosition.getX()
+                && station.y() == this.worldPosition.getY() && station.z() == this.worldPosition.getZ();
+    }
+
+    /** 账本里这座站的主人；账本里还没有（刚放下、编号是复制来的）时看方块实体上记的。 */
+    @Override
+    public Optional<UUID> owner() {
+        Station station = this.station();
+        if (station != null && this.level instanceof ServerLevel serverLevel && this.isHere(station, serverLevel)) {
+            return station.owner();
+        }
+        return Optional.ofNullable(this.owner);
+    }
+
+    /**
+     * 玩家放下了这座站（方块的 {@code setPlacedBy}）、贴蓝图建的、重建的：记成主人。账本里通常还没有这座站（{@link #onLoad} 在下一刻），
+     * 有就直接改。编号是复制来的时候只记在方块实体上，不碰原来那座站，{@link #ensureStation} 换了新编号再记进去。
+     */
+    @Override
+    public void setOwner(@Nullable UUID owner) {
         this.owner = owner;
         Station station = this.station();
-        if (station != null && this.level instanceof ServerLevel serverLevel) {
+        if (station != null && this.level instanceof ServerLevel serverLevel && this.isHere(station, serverLevel)) {
             station.setOwner(owner);
             LogisticsData.get(serverLevel.getServer()).setDirty();
         }

@@ -573,11 +573,8 @@ public final class Construction {
                 site.skipped.set(index);
                 return false;
             }
-            this.level.setBlock(pos, target, Block.UPDATE_ALL);
-            CompoundTag settings = site.settings(index);
-            if (settings != null && this.level.getBlockEntity(pos) instanceof BlueprintSettings receiver) {
-                receiver.applyBlueprintSettings(settings);
-            }
+            // 主人是放蓝图的人，不是帮忙建的队友
+            Blueprints.put(this.level, pos, target, site.settings(index), site.owner());
             this.level.sendParticles(ParticleTypes.END_ROD, pos.getX() + 0.5, pos.getY() + 0.5, pos.getZ() + 0.5, 3, 0.3, 0.3, 0.3, 0.01);
             this.level.playSound(null, pos, target.getSoundType().getPlaceSound(), SoundSource.BLOCKS, 0.4F, 1.2F);
             finish(this.level.getServer(), this.sites, site, index, true);
