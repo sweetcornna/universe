@@ -34,3 +34,18 @@ config="${mod_id}.mixins.json"
     versionRange="${minecraft_version_range}"
     ordering="NONE"
     side="BOTH"
+
+# 可选：装了就要不低于测过的版本，太旧时 NeoForge 在加载时直接说明，而不是进游戏后崩在兼容代码里
+[[dependencies.${mod_id}]]
+    modId="jei"
+    type="optional"
+    versionRange="[31.16,)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.${mod_id}]]
+    modId="jade"
+    type="optional"
+    versionRange="[26.3,)"
+    ordering="NONE"
+    side="BOTH"
