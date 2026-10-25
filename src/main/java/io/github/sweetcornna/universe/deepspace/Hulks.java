@@ -41,7 +41,8 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
 /**
  * 拆残骸（ADR-0034 §四）：记着放下了的残骸在哪，残骸方块被拆掉时按部件扣结构完整度；低于 30 报警（灯变红、拉警报），
- * 降到 0 或者反应堆芯被拆下来，20 秒后熔毁：剩下的部分炸掉，24 格内的人受重伤。
+ * 降到 0 或者反应堆芯被拆下来，20 秒后熔毁：剩下的部分炸掉，24 格内的人受重伤。倒计时期间残骸所在的区块一直挂着加载票，
+ * 人飞走了也照样炸，炸的时候不用同步加载区块。
  *
  * <p>完整度存在 {@link DeepSpaceData}（每个星系的残骸、开发命令放的残骸）；游戏内测试放的残骸只在内存里。
  */
@@ -301,6 +302,13 @@ public final class Hulks {
             }
             if (level.getRandom().nextInt(left < 100 ? 10 : 40) == 0) {
                 level.playSound(null, wreck.center.x, wreck.center.y, wreck.center.z, DeepSpaceSounds.GROAN.get(), SoundSource.BLOCKS, 1.4F, 0.7F);
+            }
+            if (left % 20 == 0) {
+                Structures.keepLoaded(level, wreck.box);
+            }
+            // 最后一刻区块还没加载好（比如刚读档）就等一等，炸的时候要拆方块
+            if (left <= 1 && !Structures.ready(level, wreck.box)) {
+                continue;
             }
             if (wreck.integrity.tick()) {
                 explode(level, wreck);

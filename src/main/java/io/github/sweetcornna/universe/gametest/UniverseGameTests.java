@@ -555,6 +555,19 @@ public final class UniverseGameTests {
     private static final ResourceKey<Consumer<GameTestHelper>> OLD_SHIP_SUPERCHARGE_SETTLES = function("old_ship_supercharge_settles",
             MenuDupeGameTests::oldShipSuperchargeSettles);
     // 1.0 复查：界面刷物品和飞船面板的测试函数加在这行上面
+    private static final ResourceKey<Consumer<GameTestHelper>> GEYSER_DORMANT_SYNCED = function("geyser_dormant_synced",
+            ReleaseFixGameTests::geyserDormantSynced);
+    private static final ResourceKey<Consumer<GameTestHelper>> PRODUCTION_SERIES_ROUND_TRIP = function("production_series_round_trip",
+            ReleaseFixGameTests::productionSeriesRoundTrip);
+    private static final ResourceKey<Consumer<GameTestHelper>> HOLO_BEACON_COALESCES_BROADCASTS = function("holo_beacon_coalesces_broadcasts",
+            ReleaseFixGameTests::holoBeaconCoalescesBroadcasts);
+    private static final ResourceKey<Consumer<GameTestHelper>> GRAVITY_REFUSES_OTHERS_FLEET_UNIT = function("gravity_refuses_others_fleet_unit",
+            ReleaseFixGameTests::gravityRefusesOthersFleetUnit);
+    private static final ResourceKey<Consumer<GameTestHelper>> GRAVITY_BEAM_REACHES_LATE_TRACKER = function("gravity_beam_reaches_late_tracker",
+            ReleaseFixGameTests::gravityBeamReachesLateTracker);
+    private static final ResourceKey<Consumer<GameTestHelper>> FAR_CHUNKS_LOAD_IN_BACKGROUND = function("far_chunks_load_in_background",
+            ReleaseFixGameTests::farChunksLoadInBackground);
+    // 1.0.0 发布前修复：危害、引力抓取器、深空、信标、统计的测试函数加在这行上面
 
     private UniverseGameTests() {
     }
@@ -766,6 +779,14 @@ public final class UniverseGameTests {
         test(event, environment, SHIP_CARGO_VIEWERS_SHARE, 20);
         test(event, environment, OLD_SHIP_SUPERCHARGE_SETTLES, 20);
         // 1.0 复查：界面刷物品和飞船面板的测试加在这行上面
+        test(event, environment, GEYSER_DORMANT_SYNCED, 20);
+        test(event, environment, PRODUCTION_SERIES_ROUND_TRIP, 20);
+        test(event, environment, HOLO_BEACON_COALESCES_BROADCASTS, 20);
+        test(event, environment, GRAVITY_REFUSES_OTHERS_FLEET_UNIT, 20);
+        test(event, environment, GRAVITY_BEAM_REACHES_LATE_TRACKER, 40);
+        // 区块在后台按真实时间生成，测试服务端空闲时一秒能跑几百刻：刻数给足
+        test(event, environment, FAR_CHUNKS_LOAD_IN_BACKGROUND, 12000);
+        // 1.0.0 发布前修复：危害、引力抓取器、深空、信标、统计的测试加在这行上面
     }
 
     /**

@@ -26,6 +26,7 @@ import io.github.sweetcornna.universe.world.space.SpaceDimensions;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
@@ -36,8 +37,8 @@ import net.neoforged.neoforge.network.PacketDistributor;
 /**
  * 深空（ADR-0034 §四）：每个星系太空里按种子定下的碎片带、废弃前哨站、太空残骸。
  *
- * <p>位置一开始就定了（{@link DeepSpaceSites}），方块等玩家飞到 {@link #BUILD_RANGE} 格内才搭，搭过的记在
- * {@link DeepSpaceData}，不再搭第二次。每秒把玩家附近的兴趣点发给客户端在 HUD 上标出来。
+ * <p>位置一开始就定了（{@link DeepSpaceSites}），方块等玩家飞到 {@link #BUILD_RANGE} 格内才搭：先挂加载票让那几个区块在后台生成，
+ * 都好了再搭（{@link Structures#ready}）。搭过的记在 {@link DeepSpaceData}，不再搭第二次。每秒把玩家附近的兴趣点发给客户端在 HUD 上标出来。
  */
 public final class DeepSpace {
     /** 玩家离兴趣点的外沿这么近时把它搭起来（格）。 */
@@ -105,7 +106,9 @@ public final class DeepSpace {
                         || level.getNearestPlayer(site.x(), site.y(), site.z(), BUILD_RANGE + site.kind().extent(), false) == null) {
                     continue;
                 }
-                build(level, site, data.state(key, site.kind()));
+                if (Structures.ready(level, box(site))) {
+                    build(level, site, data.state(key, site.kind()));
+                }
             }
             for (ServerPlayer player : level.players()) {
                 PacketDistributor.sendToPlayer(player, new DeepSpacePayloads.Sites(markers(level, player.position(), system.getAsInt(), sites, data)));
@@ -113,10 +116,21 @@ public final class DeepSpace {
         }
     }
 
-    /** 搭一处按种子定下的残骸、前哨站；朝向也按种子定。 */
+    /** 一处残骸、前哨站搭起来以后占的方块范围（和 {@link #build} 的摆法一样）。 */
+    static BoundingBox box(Site site) {
+        Layout layout = site.kind() == Kind.HULK ? Hulks.layout(site.seed(), 0) : OutpostLayout.generate(site.seed());
+        return Placement.centered(layout, new Vec3(site.x(), site.y(), site.z()), rotation(site)).box(layout);
+    }
+
+    /** 朝向按种子定。 */
+    private static int rotation(Site site) {
+        return (int) (site.seed() >>> 62);
+    }
+
+    /** 搭一处按种子定下的残骸、前哨站。 */
     static void build(ServerLevel level, Site site, DeepSpaceData.State state) {
         Vec3 center = new Vec3(site.x(), site.y(), site.z());
-        int rotation = (int) (site.seed() >>> 62);
+        int rotation = rotation(site);
         if (site.kind() == Kind.HULK) {
             Layout layout = Hulks.layout(site.seed(), 0);
             Hulks.place(level, Placement.centered(layout, center, rotation), layout, site.seed(), 0, state);
