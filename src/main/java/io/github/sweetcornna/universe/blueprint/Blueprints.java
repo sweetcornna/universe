@@ -439,6 +439,16 @@ public final class Blueprints {
         }
     }
 
+    /**
+     * 创造模式直接贴，不排队、一次放完，每一格走的还是 {@link #placeOne}。GameTest 用（假玩家不在玩家列表里，每刻的队列轮不到他）。
+     */
+    public static void pasteNow(ServerPlayer player, List<Placement> placements) {
+        Job job = new Job(player.level().dimension(), placements);
+        for (Placement placement : placements) {
+            placeOne(player, player.level(), job, placement);
+        }
+    }
+
     private static void placeOne(ServerPlayer player, ServerLevel level, Job job, Placement placement) {
         BlockPos pos = placement.pos;
         if (!level.isLoaded(pos) || !level.isInWorldBounds(pos)) {

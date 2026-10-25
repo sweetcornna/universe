@@ -168,12 +168,16 @@ public class StationBlockEntity extends MachineBlockEntity implements MachineMen
 
     // ---- 账本
 
-    /** 账本里的这座站（服务端）；还没建或已经拆了时是 {@code null}。 */
+    /**
+     * 账本里的这座站（服务端）；还没建、已经拆了时是 {@code null}。编号是复制来的（创造模式的选取、带方块实体数据的物品、伪造的数据），
+     * 账本里那条在别处时也是 {@code null}：下一刻 {@link #ensureStation} 换新编号之前，界面、拆除、掉落、漏斗、传送带都碰不到原来那座站。
+     */
     public @Nullable Station station() {
         if (this.id == null || !(this.level instanceof ServerLevel serverLevel)) {
             return null;
         }
-        return Logistics.network(serverLevel.getServer()).get(this.id);
+        Station station = Logistics.network(serverLevel.getServer()).get(this.id);
+        return station != null && this.isHere(station, serverLevel) ? station : null;
     }
 
     @Override
@@ -222,10 +226,7 @@ public class StationBlockEntity extends MachineBlockEntity implements MachineMen
     @Override
     public Optional<UUID> owner() {
         Station station = this.station();
-        if (station != null && this.level instanceof ServerLevel serverLevel && this.isHere(station, serverLevel)) {
-            return station.owner();
-        }
-        return Optional.ofNullable(this.owner);
+        return station != null ? station.owner() : Optional.ofNullable(this.owner);
     }
 
     /**
@@ -236,7 +237,7 @@ public class StationBlockEntity extends MachineBlockEntity implements MachineMen
     public void setOwner(@Nullable UUID owner) {
         this.owner = owner;
         Station station = this.station();
-        if (station != null && this.level instanceof ServerLevel serverLevel && this.isHere(station, serverLevel)) {
+        if (station != null && this.level instanceof ServerLevel serverLevel) {
             station.setOwner(owner);
             LogisticsData.get(serverLevel.getServer()).setDirty();
         }
@@ -718,6 +719,14 @@ public class StationBlockEntity extends MachineBlockEntity implements MachineMen
         }
         this.id = input.read("Station", UUIDUtil.CODEC).orElse(null);
         this.owner = input.read("Owner", UUIDUtil.CODEC).orElse(null);
+        // 已经在世界里的方块读进数据（带方块实体数据的物品、/data、结构方块）：编号不是这个位置的就不要，下一刻建新的。
+        // 读档时方块实体还没放进世界（level 是空的），不走这里
+        if (this.id != null && this.level instanceof ServerLevel serverLevel) {
+            Station station = Logistics.network(serverLevel.getServer()).get(this.id);
+            if (station == null || !this.isHere(station, serverLevel)) {
+                this.id = null;
+            }
+        }
     }
 
     @Override
