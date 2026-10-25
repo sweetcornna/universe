@@ -361,7 +361,9 @@ public final class PlanetCommand {
         CommandSourceStack source = context.getSource();
         MinecraftServer server = source.getServer();
         Entity entity = source.getEntityOrException();
-        ResourceKey<Level> key = dimension(context);
+        // 母星的天体编号（universe:s0/p1 这种）也指主世界，不能另建一个同样的维度
+        ResourceKey<Level> typed = dimension(context);
+        ResourceKey<Level> key = Planets.bodyId(typed).map(Planets::dimension).orElse(typed);
         Identifier id = key.identifier();
         Galaxy galaxy = Planets.galaxy(server);
         ServerLevel level = level(source, key);
