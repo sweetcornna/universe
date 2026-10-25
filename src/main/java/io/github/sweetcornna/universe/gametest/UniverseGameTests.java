@@ -536,6 +536,11 @@ public final class UniverseGameTests {
     private static final ResourceKey<Consumer<GameTestHelper>> HELM_SUPERCHARGE_TUNES_SHIP = function("helm_supercharge_tunes_ship",
             TechLayoutGameTests::helmSuperchargeTunesShip);
     // M19 科技布局和局部危害（E）的测试函数加在这行上面
+    // 跨恒星系的星际物流跑一整趟（ADR-0033 §三），测试写在 InterstellarTripGameTests
+    private static final ResourceKey<Consumer<GameTestHelper>> VESSEL_DELIVERS_ACROSS_SYSTEMS = function("vessel_delivers_across_systems",
+            InterstellarTripGameTests::vesselDeliversAcrossSystems);
+    private static final ResourceKey<Consumer<GameTestHelper>> VESSEL_FETCHES_ACROSS_SYSTEMS = function("vessel_fetches_across_systems",
+            InterstellarTripGameTests::vesselFetchesAcrossSystems);
 
     private UniverseGameTests() {
     }
@@ -738,6 +743,8 @@ public final class UniverseGameTests {
         test(event, environment, MULTITOOL_LAYOUT_BOOSTS, 20);
         test(event, environment, HELM_SUPERCHARGE_TUNES_SHIP, 20);
         // M19 科技布局和局部危害（E）的测试加在这行上面
+        test(event, environment, VESSEL_DELIVERS_ACROSS_SYSTEMS, InterstellarTripGameTests.MAX_TICKS);
+        test(event, environment, VESSEL_FETCHES_ACROSS_SYSTEMS, InterstellarTripGameTests.MAX_TICKS);
     }
 
     /**

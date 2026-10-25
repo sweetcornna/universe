@@ -42,24 +42,25 @@ import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
  * 指定配对的站不被普通配对拿走、控制面板远程改设置生效。由 {@link UniverseGameTests} 登记。
  *
  * <p>账本是全服共用的，别的测试里也有物流站。每个测试用一种别处不用的物品，免得和它们配上；结束时把自己的站从账本里去掉。
+ * 搭站、设格子、找行程这几个小方法 {@link InterstellarTripGameTests} 也用。
  */
 final class LogisticsDispatchGameTests {
     private LogisticsDispatchGameTests() {
     }
 
-    private static void tall(GameTestHelper helper, BlockPos pos, BlockState state) {
+    static void tall(GameTestHelper helper, BlockPos pos, BlockState state) {
         helper.setBlock(pos, state.setValue(TallMachineBlock.HALF, DoubleBlockHalf.LOWER));
         helper.setBlock(pos.above(), state.setValue(TallMachineBlock.HALF, DoubleBlockHalf.UPPER));
     }
 
-    private static Station station(GameTestHelper helper, BlockPos pos) {
+    static Station station(GameTestHelper helper, BlockPos pos) {
         Station station = helper.getBlockEntity(pos, StationBlockEntity.class).station();
         helper.assertTrue(station != null, "账本里没有 " + pos + " 的站");
         station.setEnergy(station.kind().battery());
         return station;
     }
 
-    private static StationSlot slot(Station station, String item, int count, int max, Logic local, Logic remote) {
+    static StationSlot slot(Station station, String item, int count, int max, Logic local, Logic remote) {
         StationSlot slot = station.slot(0);
         slot.setItem(item);
         slot.setMax(max);
@@ -69,11 +70,11 @@ final class LogisticsDispatchGameTests {
         return slot;
     }
 
-    private static LogisticsNetwork network(GameTestHelper helper) {
+    static LogisticsNetwork network(GameTestHelper helper) {
         return Logistics.network(helper.getLevel().getServer());
     }
 
-    private static List<Trip> tripsFrom(GameTestHelper helper, Station home) {
+    static List<Trip> tripsFrom(GameTestHelper helper, Station home) {
         List<Trip> trips = new ArrayList<>();
         for (Trip trip : network(helper).trips()) {
             if (trip.home().equals(home.id())) {
@@ -83,7 +84,7 @@ final class LogisticsDispatchGameTests {
         return trips;
     }
 
-    private static void forget(GameTestHelper helper, Station... stations) {
+    static void forget(GameTestHelper helper, Station... stations) {
         for (Station station : stations) {
             network(helper).remove(station.id());
         }
@@ -124,7 +125,7 @@ final class LogisticsDispatchGameTests {
     // ---- 物品路线
 
     /** 星球在账本里的位置（卫星按它的行星算轨道），跟 {@code Logistics} 里一样算。 */
-    private static Location location(Galaxy galaxy, Planet body) {
+    static Location location(Galaxy galaxy, Planet body) {
         StarSystem system = galaxy.systems().get(body.id().system());
         double au = galaxy.body(body.id().parent()).map(parent -> parent.orbit().radius()).orElse(1.0);
         return new Location(system.index(), au, system.x(), system.y(), system.z(), body.id().path());
