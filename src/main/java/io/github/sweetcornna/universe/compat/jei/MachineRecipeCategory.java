@@ -3,8 +3,13 @@ package io.github.sweetcornna.universe.compat.jei;
 import java.util.List;
 import java.util.Locale;
 
+import io.github.sweetcornna.universe.bio.BioRecipes;
+import io.github.sweetcornna.universe.chem.reactor.ReactorRecipes;
+import io.github.sweetcornna.universe.core.chem.reaction.Reaction;
+import io.github.sweetcornna.universe.core.microbe.BioProcess;
 import io.github.sweetcornna.universe.factory.recipe.MachineRecipe;
 import io.github.sweetcornna.universe.factory.research.Research;
+import io.github.sweetcornna.universe.microbe.MicrobeText;
 import mezz.jei.api.gui.builder.IRecipeLayoutBuilder;
 import mezz.jei.api.gui.builder.ITooltipBuilder;
 import mezz.jei.api.gui.drawable.IDrawable;
@@ -28,11 +33,11 @@ import net.neoforged.neoforge.common.crafting.SizedIngredient;
 import org.jspecify.annotations.Nullable;
 
 /**
- * 一种设备配方的 JEI 分类（ADR-0019）：左边最多四种原料，箭头，右边最多两种产物；下面写速度 1 的设备做一次要几秒，
+ * 一种设备配方的 JEI 分类（ADR-0019）：左边最多四种原料，箭头，右边最多三种产物（电解槽，ADR-0036）；下面写速度 1 的设备做一次要几秒，
  * 要研究的配方写上科技名（还没研究的用红字）。
  */
 final class MachineRecipeCategory implements IRecipeCategory<RecipeHolder<MachineRecipe>> {
-    private static final int WIDTH = 160;
+    private static final int WIDTH = 164;
     private static final int HEIGHT = 46;
     private static final int SLOT = 18;
     private static final int ARROW_X = 4 * SLOT + 6;
@@ -43,11 +48,14 @@ final class MachineRecipeCategory implements IRecipeCategory<RecipeHolder<Machin
     private final IRecipeHolderType<MachineRecipe> type;
     private final Component title;
     private final IDrawable icon;
+    /** 生物反应器多一行，写菌要带的基因。 */
+    private final int height;
 
     MachineRecipeCategory(IRecipeHolderType<MachineRecipe> type, MachineRecipe.Kind kind, ItemLike icon, IGuiHelper gui) {
         this.type = type;
         this.title = Component.translatable("jei.universe." + kind.name().toLowerCase(Locale.ROOT));
         this.icon = gui.createDrawableItemLike(icon);
+        this.height = kind == MachineRecipe.Kind.BIOREACTOR ? HEIGHT + 11 : HEIGHT;
     }
 
     @Override
@@ -67,7 +75,7 @@ final class MachineRecipeCategory implements IRecipeCategory<RecipeHolder<Machin
 
     @Override
     public int getHeight() {
-        return HEIGHT;
+        return this.height;
     }
 
     @Override
@@ -101,13 +109,23 @@ final class MachineRecipeCategory implements IRecipeCategory<RecipeHolder<Machin
     public void draw(RecipeHolder<MachineRecipe> holder, IRecipeSlotsView slots, GuiGraphicsExtractor graphics, double mouseX, double mouseY) {
         MachineRecipe recipe = holder.value();
         Font font = Minecraft.getInstance().font;
-        graphics.text(font, Component.translatable("gui.universe.recipe_machine.time", String.format(Locale.ROOT, "%.1f", recipe.time() / 20.0)), 1,
+        // M20 反应釜（ADR-0036 §四）：配方按单程转化率 1 写，时间是上限，写教科书的工况
+        Reaction reaction = recipe.kind() == MachineRecipe.Kind.REACTOR ? ReactorRecipes.reaction(holder.id().identifier()) : null;
+        graphics.text(font, reaction != null ? ReactorRecipes.conditions(reaction)
+                : Component.translatable("gui.universe.recipe_machine.time", String.format(Locale.ROOT, "%.1f", recipe.time() / 20.0)), 1,
                 TEXT_Y, 0xFF808080, false);
         Component research = research(recipe);
         if (research != null) {
             Minecraft minecraft = Minecraft.getInstance();
             boolean unlocked = minecraft.level != null && Research.isUnlocked(minecraft.level, recipe.research());
             graphics.text(font, Language.getInstance().getVisualOrder(fit(font, research)), 1, TEXT_Y + 11, unlocked ? 0xFF808080 : 0xFFC04040, false);
+        }
+        // M20 生物反应器（ADR-0036 §五）：罐里的菌要带工艺的基因，藻类还要光
+        BioProcess process = recipe.kind() == MachineRecipe.Kind.BIOREACTOR ? BioRecipes.process(holder.id().identifier()) : null;
+        if (process != null) {
+            Component gene = Component.translatable(process.needsLight() ? "jei.universe.bioreactor.gene_light" : "jei.universe.bioreactor.gene",
+                    MicrobeText.gene(process.gene()));
+            graphics.text(font, Language.getInstance().getVisualOrder(fit(font, gene)), 1, TEXT_Y + 22, 0xFF808080, false);
         }
     }
 

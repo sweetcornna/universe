@@ -5,6 +5,22 @@
     "universe:refined_oil",
     "universe:hydrogen",
     "universe:deuterium",
-    "universe:sulfuric_acid"
+    "universe:sulfuric_acid",
+    "universe:nitrogen",
+    "universe:oxygen",
+    "universe:carbon_dioxide",
+    "universe:carbon_monoxide",
+    "universe:methane",
+    "universe:argon",
+    "universe:helium",
+    "universe:sulfur_dioxide",
+    "universe:ammonia",
+    "universe:chlorine",
+    "universe:hydrogen_cyanide",
+    "universe:sodium_hydroxide",
+    "universe:nitric_acid",
+    "universe:titanium_tetrachloride",
+    "universe:copper_leach_solution",
+    "universe:gold_leach_solution"
   ]
 }

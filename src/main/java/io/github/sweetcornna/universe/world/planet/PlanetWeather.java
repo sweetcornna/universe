@@ -10,6 +10,7 @@ import io.github.sweetcornna.universe.core.galaxy.Planet;
 import io.github.sweetcornna.universe.core.galaxy.WeatherProfile;
 import io.github.sweetcornna.universe.core.weather.WeatherCycle;
 import io.github.sweetcornna.universe.network.PlanetWeatherPayload;
+import io.github.sweetcornna.universe.terraform.Terraforming;
 import net.minecraft.network.protocol.game.ClientboundGameEventPacket;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -80,7 +81,7 @@ public final class PlanetWeather extends SavedData {
      * @return 这个世界是星球维度、已经处理过天气时返回 true，原版的就不再执行
      */
     public static boolean tick(ServerLevel level) {
-        Optional<Planet> planet = Planets.planet(level);
+        Optional<Planet> planet = Terraforming.planet(level);
         if (planet.isEmpty()) {
             return false;
         }
@@ -127,7 +128,7 @@ public final class PlanetWeather extends SavedData {
 
     /** 星球生存用：0 晴，1 雨雪或沙尘，2 风暴（雷暴、强沙尘暴）。不是星球维度时为 0。 */
     public static int severity(ServerLevel level) {
-        Optional<Planet> planet = Planets.planet(level);
+        Optional<Planet> planet = Terraforming.planet(level);
         if (planet.isEmpty()) {
             return 0;
         }
@@ -141,7 +142,7 @@ public final class PlanetWeather extends SavedData {
 
     /** 命令用：设成晴天、普通天气或风暴，持续 {@code ticks} 刻。不是星球维度时返回 false。 */
     public static boolean force(ServerLevel level, boolean active, boolean storm, int ticks) {
-        Optional<Planet> planet = Planets.planet(level);
+        Optional<Planet> planet = Terraforming.planet(level);
         if (planet.isEmpty()) {
             return false;
         }
@@ -153,7 +154,7 @@ public final class PlanetWeather extends SavedData {
 
     private static void sync(Player player) {
         if (player instanceof ServerPlayer serverPlayer && player.level() instanceof ServerLevel level) {
-            float intensity = Planets.planet(level).map(planet -> of(level, planet.weather()).intensity).orElse(0.0F);
+            float intensity = Terraforming.planet(level).map(planet -> of(level, planet.weather()).intensity).orElse(0.0F);
             PacketDistributor.sendToPlayer(serverPlayer, new PlanetWeatherPayload(intensity));
         }
     }

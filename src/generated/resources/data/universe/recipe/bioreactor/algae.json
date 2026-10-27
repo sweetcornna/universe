@@ -1,0 +1,24 @@
+{
+  "type": "universe:bioreactor",
+  "ingredients": [
+    {
+      "count": 2,
+      "ingredient": "universe:carbon_dioxide"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:water"
+    }
+  ],
+  "research": "bioengineering",
+  "results": [
+    {
+      "id": "universe:algal_biomass"
+    },
+    {
+      "count": 2,
+      "id": "universe:oxygen"
+    }
+  ],
+  "time": 200
+}

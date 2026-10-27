@@ -271,6 +271,16 @@ final class UniverseBlockTagsProvider extends BlockTagsProvider {
         // M19 深空和重力枪（D）的方块标签（调自己的方法）加在这行上面
         this.m19Hazards();
         // M19 科技布局和局部危害（E）的方块标签（调自己的方法）加在这行上面
+        ChemistryDatagen.blockTags(this::tag);
+        // M20 化学（A）的方块标签（调自己的方法）加在这行上面
+        ReactorDatagen.blockTags(this::tag);
+        // M20 反应釜（B）的方块标签（调自己的方法）加在这行上面
+        MicrobeDatagen.blockTags(this::tag);
+        // M20 微生物和基因（C）的方块标签（调自己的方法）加在这行上面
+        BioreactorDatagen.blockTags(this::tag);
+        // M20 生物反应器（D）的方块标签（调自己的方法）加在这行上面
+        TerraformDatagen.blockTags(this::tag);
+        // M20 星球改造（E）的方块标签（调自己的方法）加在这行上面
     }
 
     /** M19：间歇泉的喷口、结壳用镐挖（ADR-0034 §六，子代理 E）。 */

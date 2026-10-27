@@ -220,6 +220,10 @@ public final class Universe {
         // M19 深空和重力枪（D）的注册加在这行上面
         io.github.sweetcornna.universe.hazard.Hazards.registerEvents(gameBus);
         // M19 科技布局和局部危害（E）的注册加在这行上面
+        io.github.sweetcornna.universe.terraform.Terraforming.registerEvents(modBus, gameBus);
+        // M20 星球改造（E）的注册加在这行上面
+        io.github.sweetcornna.universe.microbe.Microbes.registerEvents(modBus, gameBus);
+        // M20 微生物和基因（C）的注册加在这行上面
     }
 
     private void commonSetup(FMLCommonSetupEvent event) {

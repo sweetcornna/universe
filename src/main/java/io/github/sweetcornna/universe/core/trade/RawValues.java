@@ -132,6 +132,14 @@ public final class RawValues {
         all.putAll(io.github.sweetcornna.universe.core.deepspace.DeepSpacePrices.VALUES);
         // M19 深空和重力枪（D）的价钱（all.putAll(...)）加在这行上面
         // M19 科技布局和局部危害（E）的价钱（all.putAll(...)）加在这行上面
+        all.putAll(io.github.sweetcornna.universe.core.chem.GasPrices.VALUES);
+        // M20 化学（A）的价钱（all.putAll(...)）加在这行上面
+        // M20 反应釜（B）的价钱（all.putAll(...)）加在这行上面
+        // 样本、菌种、改造种苗没有配方：采来的、培养出来的、编辑出来的（ADR-0036 §五）
+        all.putAll(Map.of("universe:sample", 2.0, "universe:strain_tube", 30.0, "universe:engineered_seedling", 60.0));
+        // M20 微生物和基因（C）的价钱（all.putAll(...)）加在这行上面
+        // M20 生物反应器（D）的价钱（all.putAll(...)）加在这行上面
+        // M20 星球改造（E）的价钱（all.putAll(...)）加在这行上面
         return Map.copyOf(all);
     }
 

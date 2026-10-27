@@ -136,6 +136,16 @@
     "universe:derelict_engine",
     "universe:outpost_solar",
     "universe:outpost_antenna",
-    "universe:outpost_device"
+    "universe:outpost_device",
+    "universe:atmospheric_extractor",
+    "universe:electrolyzer",
+    "universe:chemical_reactor",
+    "universe:incubator",
+    "universe:sequencer",
+    "universe:gene_editor",
+    "universe:bioreactor",
+    "universe:atmosphere_release_tower",
+    "universe:ecology_seeder",
+    "universe:orbital_mirror"
   ]
 }

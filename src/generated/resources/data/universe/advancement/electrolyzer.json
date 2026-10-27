@@ -1,0 +1,31 @@
+{
+  "parent": "universe:atmospheric_extractor",
+  "criteria": {
+    "placed": {
+      "conditions": {
+        "location": {
+          "type": "minecraft:match_block",
+          "blocks": "universe:electrolyzer"
+        }
+      },
+      "trigger": "minecraft:placed_block"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.universe.electrolyzer.description"
+    },
+    "icon": {
+      "id": "universe:electrolyzer"
+    },
+    "title": {
+      "translate": "advancements.universe.electrolyzer.title"
+    }
+  },
+  "requirements": [
+    [
+      "placed"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

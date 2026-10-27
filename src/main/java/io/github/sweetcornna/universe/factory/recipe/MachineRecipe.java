@@ -31,7 +31,8 @@ import net.neoforged.neoforge.common.crafting.SizedIngredient;
 public final class MachineRecipe implements Recipe<MachineRecipe.Input> {
     /** 原料、产物最多几种，和设备的格子数一致。 */
     public static final int MAX_INGREDIENTS = 4;
-    public static final int MAX_RESULTS = 2;
+    /** 电解槽有三个产物格（ADR-0036 §三）。 */
+    public static final int MAX_RESULTS = 3;
 
     private final Kind kind;
     private final List<SizedIngredient> ingredients;
@@ -133,6 +134,10 @@ public final class MachineRecipe implements Recipe<MachineRecipe.Input> {
             case PARTICLE -> UniverseRecipeTypes.PARTICLE_SERIALIZER.get();
             case NUTRIENT -> UniverseRecipeTypes.NUTRIENT_SERIALIZER.get();
             case PORTABLE_REFINING -> UniverseRecipeTypes.PORTABLE_REFINING_SERIALIZER.get();
+            case ELECTROLYSIS -> UniverseRecipeTypes.ELECTROLYSIS_SERIALIZER.get();
+            case REACTOR -> UniverseRecipeTypes.REACTOR_SERIALIZER.get();
+            case BIOREACTOR -> UniverseRecipeTypes.BIOREACTOR_SERIALIZER.get();
+            // M20 反应釜（B）、生物反应器（D）的序列化器加在这行上面
         };
     }
 
@@ -162,7 +167,14 @@ public final class MachineRecipe implements Recipe<MachineRecipe.Input> {
         /** 营养处理器（ADR-0026）。 */
         NUTRIENT,
         /** 便携精炼机（ADR-0026）。 */
-        PORTABLE_REFINING;
+        PORTABLE_REFINING,
+        /** 电解槽（ADR-0036 §三）。 */
+        ELECTROLYSIS,
+        /** 化学反应釜（ADR-0036 §四）。 */
+        REACTOR,
+        /** 生物反应器（ADR-0036 §五）。 */
+        BIOREACTOR;
+        // M20 往后加的种类接在 BIOREACTOR 后面（BIOREACTOR 后面的分号改成逗号）
 
         public RecipeType<MachineRecipe> type() {
             return switch (this) {
@@ -173,6 +185,10 @@ public final class MachineRecipe implements Recipe<MachineRecipe.Input> {
                 case PARTICLE -> UniverseRecipeTypes.PARTICLE.get();
                 case NUTRIENT -> UniverseRecipeTypes.NUTRIENT.get();
                 case PORTABLE_REFINING -> UniverseRecipeTypes.PORTABLE_REFINING.get();
+                case ELECTROLYSIS -> UniverseRecipeTypes.ELECTROLYSIS.get();
+                case REACTOR -> UniverseRecipeTypes.REACTOR.get();
+                case BIOREACTOR -> UniverseRecipeTypes.BIOREACTOR.get();
+                // M20 生物反应器（D）的配方类型加在这行上面
             };
         }
     }

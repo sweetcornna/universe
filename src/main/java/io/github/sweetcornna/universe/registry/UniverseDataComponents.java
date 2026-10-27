@@ -20,6 +20,7 @@ import io.github.sweetcornna.universe.entity.CreatureEggs;
 import io.github.sweetcornna.universe.exocraft.VehicleRefiner;
 import io.github.sweetcornna.universe.factory.belt.StorageTankBlockEntity;
 import io.github.sweetcornna.universe.logistics.StationContents;
+import io.github.sweetcornna.universe.microbe.MicrobeCodecs;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
@@ -124,6 +125,25 @@ public final class UniverseDataComponents {
     public static final Supplier<DataComponentType<Long>> TOOL_SUPERCHARGE = COMPONENTS.registerComponentType("tool_supercharge",
             builder -> builder.persistent(Codec.LONG).networkSynchronized(ByteBufCodecs.VAR_LONG));
     // M19 科技布局和局部危害（E）的数据组件加在这行上面
+
+    // ---- M20 化学与生物研究（ADR-0036 §五）：几条线共用的
+    /** 菌种管里的菌：原来的菌、编辑进去的基因、驯化的产率。生物反应器、生态播种站都读它。 */
+    public static final Supplier<DataComponentType<io.github.sweetcornna.universe.core.microbe.Organism>> ORGANISM =
+            COMPONENTS.registerComponentType("organism", builder -> builder.persistent(MicrobeCodecs.ORGANISM)
+                    .networkSynchronized(MicrobeCodecs.ORGANISM_STREAM).cacheEncoding());
+    /** 改造种苗：哪种资源植物、编辑进去的基因。 */
+    public static final Supplier<DataComponentType<io.github.sweetcornna.universe.core.microbe.EngineeredPlant>> ENGINEERED_PLANT =
+            COMPONENTS.registerComponentType("engineered_plant", builder -> builder.persistent(MicrobeCodecs.ENGINEERED_PLANT)
+                    .networkSynchronized(MicrobeCodecs.ENGINEERED_PLANT_STREAM).cacheEncoding());
+    // M20 化学（A）的数据组件加在这行上面
+    // M20 反应釜（B）的数据组件加在这行上面
+    /** 样本：在哪颗星球、从什么地方采的、采样处多少度；组织样本带着生物名和基因（ADR-0036 §五）。 */
+    public static final Supplier<DataComponentType<io.github.sweetcornna.universe.microbe.Sample>> SAMPLE = COMPONENTS.registerComponentType(
+            "sample", builder -> builder.persistent(io.github.sweetcornna.universe.microbe.Sample.CODEC)
+                    .networkSynchronized(io.github.sweetcornna.universe.microbe.Sample.STREAM_CODEC).cacheEncoding());
+    // M20 微生物和基因（C）的数据组件加在这行上面
+    // M20 生物反应器（D）的数据组件加在这行上面
+    // M20 星球改造（E）的数据组件加在这行上面
 
     private UniverseDataComponents() {
     }

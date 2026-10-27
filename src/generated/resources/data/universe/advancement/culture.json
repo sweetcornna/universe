@@ -1,0 +1,32 @@
+{
+  "parent": "universe:species",
+  "criteria": {
+    "has_item": {
+      "conditions": {
+        "items": [
+          {
+            "items": "universe:strain_tube"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.universe.culture.description"
+    },
+    "icon": {
+      "id": "universe:strain_tube"
+    },
+    "title": {
+      "translate": "advancements.universe.culture.title"
+    }
+  },
+  "requirements": [
+    [
+      "has_item"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

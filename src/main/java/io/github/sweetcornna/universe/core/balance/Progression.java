@@ -10,6 +10,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import io.github.sweetcornna.universe.core.chem.Extraction;
 import io.github.sweetcornna.universe.core.dyson.DysonGrid;
 import io.github.sweetcornna.universe.core.dyson.DysonLayer;
 import io.github.sweetcornna.universe.core.dyson.DysonSphere;
@@ -58,7 +59,24 @@ public final class Progression {
             Map.entry(NS + "matter_recombinator", 60.0),
             Map.entry(NS + "negentropy_singularity", 120.0),
             Map.entry(NS + "core_element", 200.0),
-            Map.entry(NS + "dark_fog_matrix", 60.0));
+            Map.entry(NS + "dark_fog_matrix", 60.0),
+            // 大气提取器取的气体（ADR-0036 §三）：按 1 atm 下这种气体常见的分数算一台提取器的产量
+            Map.entry(NS + "nitrogen", atmosphere(0.78)),
+            Map.entry(NS + "carbon_dioxide", atmosphere(0.95)),
+            Map.entry(NS + "sulfur_dioxide", atmosphere(0.02)),
+            Map.entry(NS + "methane", atmosphere(0.05)),
+            Map.entry(NS + "ammonia", atmosphere(0.005)),
+            Map.entry(NS + "argon", atmosphere(0.01)),
+            Map.entry(NS + "helium", atmosphere(0.1)),
+            // 盐是采矿机挖的；亨特法又把盐还回来，不写在这里会被当成配方的产物
+            Map.entry(NS + "salt", 1.0)
+            // M20 别的几条线（B–E）的原料（前面加逗号）加在这行上面
+            );
+
+    /** 大气提取器在 1 atm、这种气体占这么多时，一个折合几个矿（{@link Extraction#perMinute}）。 */
+    private static double atmosphere(double fraction) {
+        return MINER_ORE_PER_MINUTE / (Extraction.BASE_PER_MINUTE * Math.sqrt(fraction));
+    }
 
     private static final String BLUE = TechTree.MATRICES.get(0);
     private static final String RED = TechTree.MATRICES.get(1);

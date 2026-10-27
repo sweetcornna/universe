@@ -1,0 +1,64 @@
+{
+  "variants": {
+    "facing=east,shade=false,working=false": {
+      "model": "universe:block/orbital_mirror",
+      "y": 90
+    },
+    "facing=east,shade=false,working=true": {
+      "model": "universe:block/orbital_mirror",
+      "y": 90
+    },
+    "facing=east,shade=true,working=false": {
+      "model": "universe:block/orbital_mirror_shade",
+      "y": 90
+    },
+    "facing=east,shade=true,working=true": {
+      "model": "universe:block/orbital_mirror_shade",
+      "y": 90
+    },
+    "facing=north,shade=false,working=false": {
+      "model": "universe:block/orbital_mirror"
+    },
+    "facing=north,shade=false,working=true": {
+      "model": "universe:block/orbital_mirror"
+    },
+    "facing=north,shade=true,working=false": {
+      "model": "universe:block/orbital_mirror_shade"
+    },
+    "facing=north,shade=true,working=true": {
+      "model": "universe:block/orbital_mirror_shade"
+    },
+    "facing=south,shade=false,working=false": {
+      "model": "universe:block/orbital_mirror",
+      "y": 180
+    },
+    "facing=south,shade=false,working=true": {
+      "model": "universe:block/orbital_mirror",
+      "y": 180
+    },
+    "facing=south,shade=true,working=false": {
+      "model": "universe:block/orbital_mirror_shade",
+      "y": 180
+    },
+    "facing=south,shade=true,working=true": {
+      "model": "universe:block/orbital_mirror_shade",
+      "y": 180
+    },
+    "facing=west,shade=false,working=false": {
+      "model": "universe:block/orbital_mirror",
+      "y": 270
+    },
+    "facing=west,shade=false,working=true": {
+      "model": "universe:block/orbital_mirror",
+      "y": 270
+    },
+    "facing=west,shade=true,working=false": {
+      "model": "universe:block/orbital_mirror_shade",
+      "y": 270
+    },
+    "facing=west,shade=true,working=true": {
+      "model": "universe:block/orbital_mirror_shade",
+      "y": 270
+    }
+  }
+}

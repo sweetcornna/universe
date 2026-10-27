@@ -1,0 +1,24 @@
+{
+  "type": "universe:chemical",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:titanium_tetrachloride"
+    },
+    {
+      "count": 4,
+      "ingredient": "universe:sodium"
+    }
+  ],
+  "research": "electrochemistry",
+  "results": [
+    {
+      "id": "universe:titanium_ingot"
+    },
+    {
+      "count": 4,
+      "id": "universe:salt"
+    }
+  ],
+  "time": 960
+}

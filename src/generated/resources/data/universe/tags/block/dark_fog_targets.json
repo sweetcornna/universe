@@ -64,6 +64,8 @@
     "universe:plasma_turret",
     "universe:sr_plasma_turret",
     "universe:planetary_shield_generator",
-    "universe:grid_interface"
+    "universe:grid_interface",
+    "universe:chemical_reactor",
+    "universe:bioreactor"
   ]
 }

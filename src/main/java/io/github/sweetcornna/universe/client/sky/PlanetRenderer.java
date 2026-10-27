@@ -49,6 +49,7 @@ final class PlanetRenderer {
     private @Nullable GpuBuffer quad;
     private @Nullable GpuBuffer cube;
     private final Map<Long, PlanetAppearance> appearances = new HashMap<>();
+    private final Map<Long, Terraformed> terraformed = new HashMap<>();
 
     /** 一颗星球这一帧的参数（布局见着色器）。 */
     record Info(Matrix4f quad, Matrix4f body, Vector4f center, Vector4f sun, Vector4f sunColor, Vector4f style, Vector4f colorA,
@@ -90,8 +91,23 @@ final class PlanetRenderer {
         }
     }
 
+    /** 星球的样子；改造过的（ADR-0036 §六）按现用的大气、温度画，状态变了重算。 */
     PlanetAppearance appearance(Planet planet) {
+        Planet shown = io.github.sweetcornna.universe.client.ClientGalaxy.galaxy()
+                .map(galaxy -> io.github.sweetcornna.universe.terraform.Terraforming.clientEffective(galaxy, planet)).orElse(planet);
+        if (shown != planet) {
+            Terraformed cached = this.terraformed.get(planet.seed());
+            if (cached == null || cached.planet() != shown) {
+                cached = new Terraformed(shown, PlanetAppearance.of(shown));
+                this.terraformed.put(planet.seed(), cached);
+            }
+            return cached.appearance();
+        }
         return this.appearances.computeIfAbsent(planet.seed(), seed -> PlanetAppearance.of(planet));
+    }
+
+    /** 改造过的星球的样子和算它时的现用星球。 */
+    private record Terraformed(Planet planet, PlanetAppearance appearance) {
     }
 
     /** 画一颗星球（连同大气和环）。 */

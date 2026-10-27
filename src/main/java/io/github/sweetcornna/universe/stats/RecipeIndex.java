@@ -105,6 +105,14 @@ public final class RecipeIndex {
             case PARTICLE -> UniverseBlocks.MINIATURE_PARTICLE_COLLIDER.get();
             case NUTRIENT -> UniverseBlocks.NUTRIENT_PROCESSOR.get();
             case PORTABLE_REFINING -> UniverseBlocks.PORTABLE_REFINER.get();
+            case ELECTROLYSIS -> UniverseBlocks.ELECTROLYZER.get();
+            // M20 化学（A）的设备加在这行上面
+            case REACTOR -> UniverseBlocks.CHEMICAL_REACTOR.get();
+            // M20 反应釜（B）的设备加在这行上面
+            // M20 微生物和基因（C）的设备加在这行上面
+            case BIOREACTOR -> UniverseBlocks.BIOREACTOR.get();
+            // M20 生物反应器（D）的设备加在这行上面
+            // M20 星球改造（E）的设备加在这行上面
         };
     }
 

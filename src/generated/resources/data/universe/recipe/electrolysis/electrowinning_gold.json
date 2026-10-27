@@ -1,0 +1,17 @@
+{
+  "type": "universe:electrolysis",
+  "ingredients": [
+    {
+      "count": 2,
+      "ingredient": "universe:gold_leach_solution"
+    }
+  ],
+  "research": "electrochemistry",
+  "results": [
+    {
+      "count": 2,
+      "id": "minecraft:gold_ingot"
+    }
+  ],
+  "time": 40
+}

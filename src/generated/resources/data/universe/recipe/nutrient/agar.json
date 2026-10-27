@@ -1,0 +1,21 @@
+{
+  "type": "universe:nutrient",
+  "ingredients": [
+    {
+      "count": 4,
+      "ingredient": "minecraft:kelp"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:water"
+    }
+  ],
+  "research": "microbiology",
+  "results": [
+    {
+      "count": 2,
+      "id": "universe:agar"
+    }
+  ],
+  "time": 100
+}

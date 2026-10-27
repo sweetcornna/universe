@@ -70,6 +70,14 @@ public final class UniverseJeiPlugin implements IModPlugin {
             case NUTRIENT -> List.of(UniverseBlocks.NUTRIENT_PROCESSOR.get());
             // 重型车车尾背着一台便携精炼机（ADR-0026）
             case PORTABLE_REFINING -> List.of(UniverseBlocks.PORTABLE_REFINER.get(), UniverseItems.HEAVY_ROVER.get());
+            case ELECTROLYSIS -> List.of(UniverseBlocks.ELECTROLYZER.get());
+            // M20 化学（A）的设备加在这行上面
+            case REACTOR -> List.of(UniverseBlocks.CHEMICAL_REACTOR.get());
+            // M20 反应釜（B）的设备加在这行上面
+            // M20 微生物和基因（C）的设备加在这行上面
+            case BIOREACTOR -> List.of(UniverseBlocks.BIOREACTOR.get());
+            // M20 生物反应器（D）的设备加在这行上面
+            // M20 星球改造（E）的设备加在这行上面
         };
     }
 
@@ -118,6 +126,26 @@ public final class UniverseJeiPlugin implements IModPlugin {
         info(registration, UniverseItems.KNOWLEDGE_STONE.get(), "knowledge_stone");
         // 多功能工具的武器（ADR-0026 §六）：怎么装、怎么切换
         UniverseItems.WEAPONS.values().forEach(item -> info(registration, item.get(), "tool_weapon"));
+        // 大气里的气体（ADR-0036 §三）：大气提取器取。氯气只从电解来；一氧化碳、氰化氢在哪儿都不到千分之一，取不了
+        for (io.github.sweetcornna.universe.core.chem.Gas gas : io.github.sweetcornna.universe.core.chem.Gas.values()) {
+            if (gas != io.github.sweetcornna.universe.core.chem.Gas.CHLORINE && gas != io.github.sweetcornna.universe.core.chem.Gas.CARBON_MONOXIDE
+                    && gas != io.github.sweetcornna.universe.core.chem.Gas.HYDROGEN_CYANIDE) {
+                info(registration, io.github.sweetcornna.universe.chem.AtmosphericExtractorBlockEntity.item(gas), "atmosphere_gas");
+            }
+        }
+        // M20 化学（A）的说明加在这行上面
+        // M20 反应釜（B）的说明加在这行上面
+        // 微生物和基因（ADR-0036 §五）：怎么采样、温度怎么设、基因库、改造种苗
+        info(registration, UniverseItems.SAMPLE_TUBE.get(), "sample_tube");
+        info(registration, UniverseItems.INCUBATOR.get(), "incubator");
+        info(registration, UniverseItems.SEQUENCER.get(), "sequencer");
+        info(registration, UniverseItems.GENE_EDITOR.get(), "gene_editor");
+        info(registration, UniverseItems.ENGINEERED_SEEDLING.get(), "engineered_seedling");
+        // M20 微生物和基因（C）的说明加在这行上面
+        // 生物反应器（ADR-0036 §五）：配方的时间是满罐、最适温度时的，罐里的菌要带工艺的基因
+        info(registration, UniverseItems.BIOREACTOR.get(), "bioreactor");
+        // M20 生物反应器（D）的说明加在这行上面
+        // M20 星球改造（E）的说明加在这行上面
     }
 
     /** JEI 换行只认空格，中文会断在数字两边、词中间加连字符，所以先按本模组的规则断好行，一行一个组件。 */

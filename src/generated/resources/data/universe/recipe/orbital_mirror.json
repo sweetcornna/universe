@@ -1,0 +1,18 @@
+{
+  "type": "universe:research_shaped",
+  "category": "redstone",
+  "key": {
+    "F": "universe:frame_material",
+    "S": "universe:solar_sail",
+    "T": "universe:thruster"
+  },
+  "pattern": [
+    "SSS",
+    "FTF",
+    "SSS"
+  ],
+  "research": "terraforming",
+  "result": {
+    "id": "universe:orbital_mirror"
+  }
+}

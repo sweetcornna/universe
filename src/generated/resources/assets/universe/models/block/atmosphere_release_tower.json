@@ -1,0 +1,9 @@
+{
+  "parent": "minecraft:block/orientable_with_bottom",
+  "textures": {
+    "bottom": "universe:block/atmosphere_release_tower_bottom",
+    "front": "universe:block/atmosphere_release_tower_front",
+    "side": "universe:block/atmosphere_release_tower_side",
+    "top": "universe:block/atmosphere_release_tower_top"
+  }
+}

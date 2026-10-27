@@ -25,6 +25,17 @@ public final class UniverseRecipeTypes {
     public static final DeferredHolder<RecipeType<?>, RecipeType<MachineRecipe>> PARTICLE = type("particle");
     public static final DeferredHolder<RecipeType<?>, RecipeType<MachineRecipe>> NUTRIENT = type("nutrient");
     public static final DeferredHolder<RecipeType<?>, RecipeType<MachineRecipe>> PORTABLE_REFINING = type("portable_refining");
+    /** 电解槽（ADR-0036 §三）。 */
+    public static final DeferredHolder<RecipeType<?>, RecipeType<MachineRecipe>> ELECTROLYSIS = type("electrolysis");
+    // M20 化学（A）的配方类型加在这行上面
+    /** 化学反应釜（ADR-0036 §四）。 */
+    public static final DeferredHolder<RecipeType<?>, RecipeType<MachineRecipe>> REACTOR = type("reactor");
+    // M20 反应釜（B）的配方类型加在这行上面
+    // M20 微生物和基因（C）的配方类型加在这行上面
+    /** 生物反应器（ADR-0036 §五）。 */
+    public static final DeferredHolder<RecipeType<?>, RecipeType<MachineRecipe>> BIOREACTOR = type("bioreactor");
+    // M20 生物反应器（D）的配方类型加在这行上面
+    // M20 星球改造（E）的配方类型加在这行上面
 
     public static final DeferredHolder<RecipeSerializer<?>, RecipeSerializer<MachineRecipe>> SMELTING_SERIALIZER =
             SERIALIZERS.register("smelting", () -> MachineRecipe.serializer(MachineRecipe.Kind.SMELTING));
@@ -40,6 +51,17 @@ public final class UniverseRecipeTypes {
             SERIALIZERS.register("nutrient", () -> MachineRecipe.serializer(MachineRecipe.Kind.NUTRIENT));
     public static final DeferredHolder<RecipeSerializer<?>, RecipeSerializer<MachineRecipe>> PORTABLE_REFINING_SERIALIZER =
             SERIALIZERS.register("portable_refining", () -> MachineRecipe.serializer(MachineRecipe.Kind.PORTABLE_REFINING));
+    public static final DeferredHolder<RecipeSerializer<?>, RecipeSerializer<MachineRecipe>> ELECTROLYSIS_SERIALIZER =
+            SERIALIZERS.register("electrolysis", () -> MachineRecipe.serializer(MachineRecipe.Kind.ELECTROLYSIS));
+    // M20 化学（A）的配方序列化器加在这行上面
+    public static final DeferredHolder<RecipeSerializer<?>, RecipeSerializer<MachineRecipe>> REACTOR_SERIALIZER =
+            SERIALIZERS.register("reactor", () -> MachineRecipe.serializer(MachineRecipe.Kind.REACTOR));
+    // M20 反应釜（B）的配方序列化器加在这行上面
+    // M20 微生物和基因（C）的配方序列化器加在这行上面
+    public static final DeferredHolder<RecipeSerializer<?>, RecipeSerializer<MachineRecipe>> BIOREACTOR_SERIALIZER =
+            SERIALIZERS.register("bioreactor", () -> MachineRecipe.serializer(MachineRecipe.Kind.BIOREACTOR));
+    // M20 生物反应器（D）的配方序列化器加在这行上面
+    // M20 星球改造（E）的配方序列化器加在这行上面
     public static final DeferredHolder<RecipeSerializer<?>, RecipeSerializer<ResearchShapedRecipe>> RESEARCH_SHAPED =
             SERIALIZERS.register("research_shaped", () -> ResearchShapedRecipe.SERIALIZER);
 

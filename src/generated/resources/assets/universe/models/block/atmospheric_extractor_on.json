@@ -1,0 +1,11 @@
+{
+  "parent": "universe:block/machine_glow_top",
+  "textures": {
+    "bottom": "universe:block/machine_casing_top",
+    "front": "universe:block/atmospheric_extractor_front_on",
+    "glow": "universe:block/atmospheric_extractor_front_on_glow",
+    "glow_top": "universe:block/atmospheric_extractor_top_on_glow",
+    "side": "universe:block/atmospheric_extractor_side",
+    "top": "universe:block/atmospheric_extractor_top_on"
+  }
+}

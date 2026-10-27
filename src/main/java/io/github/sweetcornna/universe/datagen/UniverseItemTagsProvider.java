@@ -61,6 +61,12 @@ final class UniverseItemTagsProvider extends ItemTagsProvider {
         DeepSpaceDatagen.itemTags(this::tag);
         // M19 深空和重力枪（D）的物品标签（调自己的方法）加在这行上面
         // M19 科技布局和局部危害（E）的物品标签（调自己的方法）加在这行上面
+        ChemistryDatagen.itemTags(this::tag);
+        // M20 化学（A）的物品标签（调自己的方法）加在这行上面
+        // M20 反应釜（B）的物品标签（调自己的方法）加在这行上面
+        // M20 微生物和基因（C）的物品标签（调自己的方法）加在这行上面
+        // M20 生物反应器（D）的物品标签（调自己的方法）加在这行上面
+        // M20 星球改造（E）的物品标签（调自己的方法）加在这行上面
     }
 
     private static ResourceKey<Item> vanilla(Item item) {

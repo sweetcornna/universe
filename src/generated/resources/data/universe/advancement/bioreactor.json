@@ -1,0 +1,31 @@
+{
+  "parent": "universe:gene_editing",
+  "criteria": {
+    "placed": {
+      "conditions": {
+        "location": {
+          "type": "minecraft:match_block",
+          "blocks": "universe:bioreactor"
+        }
+      },
+      "trigger": "minecraft:placed_block"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.universe.bioreactor.description"
+    },
+    "icon": {
+      "id": "universe:bioreactor"
+    },
+    "title": {
+      "translate": "advancements.universe.bioreactor.title"
+    }
+  },
+  "requirements": [
+    [
+      "placed"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

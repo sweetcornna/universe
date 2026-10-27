@@ -1,0 +1,19 @@
+{
+  "type": "universe:research_shaped",
+  "category": "redstone",
+  "key": {
+    "C": "universe:chemical_plant",
+    "P": "universe:processor",
+    "S": "universe:steel",
+    "T": "universe:titanium_alloy"
+  },
+  "pattern": [
+    "TST",
+    "PCP",
+    "TST"
+  ],
+  "research": "catalysis",
+  "result": {
+    "id": "universe:chemical_reactor"
+  }
+}

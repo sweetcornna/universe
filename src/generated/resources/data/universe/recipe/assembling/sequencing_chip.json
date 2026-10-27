@@ -1,0 +1,25 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "minecraft:glass_pane"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:circuit_board"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:plastic"
+    }
+  ],
+  "research": "genomics",
+  "results": [
+    {
+      "count": 2,
+      "id": "universe:sequencing_chip"
+    }
+  ],
+  "time": 120
+}

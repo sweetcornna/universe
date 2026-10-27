@@ -1,0 +1,12 @@
+{
+  "values": [
+    "universe:planet_rock",
+    "universe:planet_cobblestone",
+    "universe:planet_strata",
+    "universe:planet_regolith",
+    "universe:planet_ash",
+    "minecraft:cobblestone",
+    "minecraft:gravel",
+    "#minecraft:base_stone_overworld"
+  ]
+}

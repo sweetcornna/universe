@@ -1,0 +1,19 @@
+{
+  "type": "universe:research_shaped",
+  "category": "redstone",
+  "key": {
+    "B": "universe:circuit_board",
+    "G": "minecraft:iron_bars",
+    "M": "universe:electric_motor",
+    "S": "universe:steel"
+  },
+  "pattern": [
+    "SGS",
+    "MBM",
+    "SSS"
+  ],
+  "research": "atmospheric_chemistry",
+  "result": {
+    "id": "universe:atmospheric_extractor"
+  }
+}

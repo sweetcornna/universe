@@ -158,7 +158,7 @@ public final class AnalysisVisor {
             return;
         }
         Target found = find(minecraft, player);
-        if (found == null || target == null || !found.payload().equals(target.payload())) {
+        if (found == null || target == null || !java.util.Objects.equals(found.payload(), target.payload())) {
             progress = 0;
         }
         target = found;
@@ -218,8 +218,33 @@ public final class AnalysisVisor {
             if (sky != null) {
                 return sky(sky, galaxy);
             }
+            // 对着天空、没有对准天体：写这里的大气（ADR-0036 §二）
+            if (look.y > 0.3 && body.isPresent()) {
+                return air(galaxy.body(body.get()).orElse(null));
+            }
         }
         return null;
+    }
+
+    /** 头顶的大气：不用分析，看一眼光谱就知道，没有发现日志的条目。没有大气为空。 */
+    private static @Nullable Target air(@Nullable Planet base) {
+        if (base == null) {
+            return null;
+        }
+        // 改造过的星球按现用的大气（ADR-0036 §六）
+        io.github.sweetcornna.universe.core.terraform.EffectiveEnvironment environment = ClientGalaxy.environment(base);
+        Planet planet = environment.planet();
+        if (!planet.atmosphere().present()) {
+            return null;
+        }
+        List<Component> lines = io.github.sweetcornna.universe.chem.PlanetAir.compactLines(environment);
+        if (lines.isEmpty()) {
+            return null;
+        }
+        Component detail = Component.translatable("hud.universe.visor.air",
+                GalaxyText.pick(planet.atmosphere().kind().nameZh(), planet.atmosphere().kind().nameEn()),
+                String.format(Locale.ROOT, "%.3g", io.github.sweetcornna.universe.chem.PlanetAir.pressure(environment)));
+        return new Target(null, null, Component.translatable("hud.universe.visor.air_title").getString(), detail, lines, 0);
     }
 
     /**
@@ -295,7 +320,9 @@ public final class AnalysisVisor {
         AnalyzePayload payload = AnalyzePayload.block(pos.immutable());
         if (state.is(ORES)) {
             DiscoveryKey key = DiscoveryKey.mineral(body.get(), BuiltInRegistries.BLOCK.getKey(state.getBlock()).toString());
-            return new Target(payload, key, DiscoveryText.name(key), Component.translatable("discovery.universe.kind.mineral"),
+            // 矿物的化学式（ADR-0036 §一）
+            List<Component> formula = io.github.sweetcornna.universe.client.chem.ChemistryClient.mineral(state).stream().toList();
+            return new Target(payload, key, DiscoveryText.name(key), Component.translatable("discovery.universe.kind.mineral"), formula,
                     Survey.reward(key, galaxy));
         }
         boolean plant = state.getBlock() instanceof PlanetPlantBlock;
@@ -359,6 +386,7 @@ public final class AnalysisVisor {
         return new Target(AnalyzePayload.body(planet.id().path()), key, GalaxyText.planet(planet),
                 Component.translatable("hud.universe.visor.body", GalaxyText.planetType(planet),
                         Math.round(planet.temperatureCelsius()), GalaxyText.number(planet.gravity(), 2)),
+                io.github.sweetcornna.universe.chem.PlanetAir.compactLines(ClientGalaxy.environment(planet)),
                 Survey.reward(key, galaxy));
     }
 
@@ -417,6 +445,10 @@ public final class AnalysisVisor {
         if (progress > 0) {
             status = Component.translatable("hud.universe.visor.analyzing");
             statusColor = COLOR;
+        } else if (shown.payload() == null) {
+            // 头顶的大气只是读数，没有要分析的
+            status = Component.translatable("hud.universe.visor.spectrum");
+            statusColor = DIM;
         } else if (shown.key() == null) {
             status = Component.translatable("hud.universe.visor.unidentified");
             statusColor = 0xFFFFC14D;

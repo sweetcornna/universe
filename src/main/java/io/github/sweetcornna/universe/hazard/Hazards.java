@@ -24,8 +24,8 @@ import io.github.sweetcornna.universe.entity.ship.ShipEntity;
 import io.github.sweetcornna.universe.perf.ServerPerf;
 import io.github.sweetcornna.universe.registry.UniverseGameRules;
 import io.github.sweetcornna.universe.teleport.BaseData;
+import io.github.sweetcornna.universe.terraform.Terraforming;
 import io.github.sweetcornna.universe.world.planet.PlanetWeather;
-import io.github.sweetcornna.universe.world.planet.Planets;
 import io.github.sweetcornna.universe.world.planet.gen.PlanetBiomes;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -214,7 +214,7 @@ public final class Hazards {
         if (last != null && time - last < HazardOdds.QUIET_AFTER) {
             return;
         }
-        Optional<Planet> planet = Planets.planet(level);
+        Optional<Planet> planet = Terraforming.planet(level);
         if (planet.isEmpty() || exempt(level, player.blockPosition())) {
             return;
         }
@@ -255,7 +255,7 @@ public final class Hazards {
      * @return 放成了
      */
     public static boolean start(ServerLevel level, HazardKind kind, ServerPlayer player, Rng rng) {
-        Planet planet = Planets.planet(level).orElse(null);
+        Planet planet = Terraforming.planet(level).orElse(null);
         long planetSeed = planet == null ? level.getSeed() : planet.seed();
         double wind = planet == null ? 0.5 : planet.weather().wind();
         return switch (kind) {

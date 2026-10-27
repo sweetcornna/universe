@@ -1,0 +1,31 @@
+{
+  "parent": "universe:red_matrix",
+  "criteria": {
+    "placed": {
+      "conditions": {
+        "location": {
+          "type": "minecraft:match_block",
+          "blocks": "universe:atmospheric_extractor"
+        }
+      },
+      "trigger": "minecraft:placed_block"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.universe.atmospheric_extractor.description"
+    },
+    "icon": {
+      "id": "universe:atmospheric_extractor"
+    },
+    "title": {
+      "translate": "advancements.universe.atmospheric_extractor.title"
+    }
+  },
+  "requirements": [
+    [
+      "placed"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

@@ -1,0 +1,28 @@
+{
+  "type": "universe:chemical",
+  "ingredients": [
+    {
+      "count": 2,
+      "ingredient": "universe:raw_titanium"
+    },
+    {
+      "count": 8,
+      "ingredient": "universe:chlorine"
+    },
+    {
+      "count": 4,
+      "ingredient": "minecraft:coal"
+    }
+  ],
+  "research": "electrochemistry",
+  "results": [
+    {
+      "count": 4,
+      "id": "universe:titanium_tetrachloride"
+    },
+    {
+      "id": "universe:vanadium_slag"
+    }
+  ],
+  "time": 160
+}

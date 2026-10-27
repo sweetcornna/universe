@@ -610,6 +610,74 @@ public final class UniverseItems {
     public static final Map<io.github.sweetcornna.universe.core.hazard.GeyserKind, DeferredItem<BlockItem>> GEYSER_CRUSTS =
             io.github.sweetcornna.universe.hazard.HazardBlocks.items(ITEMS, UniverseBlocks.GEYSER_CRUSTS);
     // M19 科技布局和局部危害（E）的物品加在这行上面
+    // ---- M20 化学与生物研究（ADR-0036）：几条线共用的物品。气体、溶液按物品处理（ADR-0011），一个物品按一摩尔配平
+    /** 气体（{@link io.github.sweetcornna.universe.core.chem.Gas}），氢和氧以前就有。甲烷能烧（802 kJ/mol，按氢的比例折算）。 */
+    public static final DeferredItem<Item> NITROGEN = ITEMS.registerSimpleItem("nitrogen");
+    public static final DeferredItem<Item> CARBON_DIOXIDE = ITEMS.registerSimpleItem("carbon_dioxide");
+    public static final DeferredItem<Item> CARBON_MONOXIDE = ITEMS.registerSimpleItem("carbon_monoxide");
+    public static final DeferredItem<Item> METHANE = ITEMS.registerSimpleItem("methane", properties -> fuel(properties, 15500));
+    public static final DeferredItem<Item> ARGON = ITEMS.registerSimpleItem("argon");
+    public static final DeferredItem<Item> HELIUM = ITEMS.registerSimpleItem("helium");
+    public static final DeferredItem<Item> SULFUR_DIOXIDE = ITEMS.registerSimpleItem("sulfur_dioxide");
+    public static final DeferredItem<Item> AMMONIA = ITEMS.registerSimpleItem("ammonia");
+    public static final DeferredItem<Item> CHLORINE = ITEMS.registerSimpleItem("chlorine");
+    /** 氰化氢：冰冻星球大气里的毒气，只在改造时用得到（大气释放塔、测成分）。 */
+    public static final DeferredItem<Item> HYDROGEN_CYANIDE = ITEMS.registerSimpleItem("hydrogen_cyanide");
+    /** 化工品。 */
+    public static final DeferredItem<Item> SODIUM_HYDROXIDE = ITEMS.registerSimpleItem("sodium_hydroxide");
+    public static final DeferredItem<Item> NITRIC_ACID = ITEMS.registerSimpleItem("nitric_acid");
+    /** 硝酸铵化肥：水培槽右键施肥。 */
+    public static final DeferredItem<Item> AMMONIUM_NITRATE = ITEMS.registerSimpleItem("ammonium_nitrate");
+    public static final DeferredItem<Item> TITANIUM_TETRACHLORIDE = ITEMS.registerSimpleItem("titanium_tetrachloride");
+    public static final DeferredItem<Item> VANADIUM_SLAG = ITEMS.registerSimpleItem("vanadium_slag");
+    public static final DeferredItem<Item> COPPER_LEACH_SOLUTION = ITEMS.registerSimpleItem("copper_leach_solution");
+    public static final DeferredItem<Item> GOLD_LEACH_SOLUTION = ITEMS.registerSimpleItem("gold_leach_solution");
+    public static final DeferredItem<Item> NICKEL_INGOT = ITEMS.registerSimpleItem("nickel_ingot");
+    /** 甲烷液氧燃料：飞船燃料（ADR-0036 §四）。 */
+    public static final DeferredItem<Item> METHALOX_FUEL = ITEMS.registerSimpleItem("methalox_fuel", properties -> properties.stacksTo(16));
+    /** 反应釜的催化剂：放在催化剂格里，做满一定批数用掉一个。 */
+    public static final DeferredItem<Item> IRON_CATALYST = ITEMS.registerSimpleItem("iron_catalyst");
+    public static final DeferredItem<Item> VANADIUM_CATALYST = ITEMS.registerSimpleItem("vanadium_catalyst");
+    public static final DeferredItem<Item> NICKEL_CATALYST = ITEMS.registerSimpleItem("nickel_catalyst");
+    /** 生物实验的耗材。 */
+    public static final DeferredItem<Item> AGAR = ITEMS.registerSimpleItem("agar");
+    public static final DeferredItem<Item> CULTURE_MEDIUM = ITEMS.registerSimpleItem("culture_medium");
+    public static final DeferredItem<Item> SEQUENCING_CHIP = ITEMS.registerSimpleItem("sequencing_chip");
+    public static final DeferredItem<Item> EDITING_KIT = ITEMS.registerSimpleItem("editing_kit");
+    public static final DeferredItem<Item> ALGAL_BIOMASS = ITEMS.registerSimpleItem("algal_biomass", properties -> fuel(properties, 1600));
+    /**
+     * 菌种管（带 {@link UniverseDataComponents#ORGANISM}）和改造种苗（带 {@link UniverseDataComponents#ENGINEERED_PLANT}）：
+     * 微生物（C）做出来，生物反应器（D）、生态播种站（E）用。这两行的物品类归 C，C 可以换成自己的类，注册名不改。
+     */
+    public static final DeferredItem<Item> STRAIN_TUBE = ITEMS.<Item>registerItem("strain_tube", io.github.sweetcornna.universe.microbe.StrainTubeItem::new,
+            properties -> properties.stacksTo(16));
+    public static final DeferredItem<Item> ENGINEERED_SEEDLING = ITEMS.<Item>registerItem("engineered_seedling",
+            io.github.sweetcornna.universe.microbe.EngineeredSeedlingItem::new);
+    /** 上面这些共用物品，按创造物品栏的顺序。 */
+    public static final List<DeferredItem<Item>> M20_SHARED = List.of(NITROGEN, CARBON_DIOXIDE, CARBON_MONOXIDE, METHANE, ARGON, HELIUM,
+            SULFUR_DIOXIDE, AMMONIA, CHLORINE, HYDROGEN_CYANIDE, SODIUM_HYDROXIDE, NITRIC_ACID, AMMONIUM_NITRATE, TITANIUM_TETRACHLORIDE, VANADIUM_SLAG,
+            COPPER_LEACH_SOLUTION, GOLD_LEACH_SOLUTION, NICKEL_INGOT, METHALOX_FUEL, IRON_CATALYST, VANADIUM_CATALYST, NICKEL_CATALYST,
+            AGAR, CULTURE_MEDIUM, SEQUENCING_CHIP, EDITING_KIT, ALGAL_BIOMASS, STRAIN_TUBE, ENGINEERED_SEEDLING);
+    public static final DeferredItem<BlockItem> ATMOSPHERIC_EXTRACTOR = ITEMS.registerSimpleBlockItem(UniverseBlocks.ATMOSPHERIC_EXTRACTOR);
+    public static final DeferredItem<BlockItem> ELECTROLYZER = ITEMS.registerSimpleBlockItem(UniverseBlocks.ELECTROLYZER);
+    // M20 化学（A）的物品加在这行上面
+    public static final DeferredItem<BlockItem> CHEMICAL_REACTOR = ITEMS.registerSimpleBlockItem(UniverseBlocks.CHEMICAL_REACTOR);
+    // M20 反应釜（B）的物品加在这行上面
+    /** 采样管：空的右键方块、液体、生物采样，装着样本的放进培养箱或测序仪（ADR-0036 §五）。 */
+    public static final DeferredItem<io.github.sweetcornna.universe.microbe.SampleTubeItem> SAMPLE_TUBE = ITEMS.registerItem("sample_tube", io.github.sweetcornna.universe.microbe.SampleTubeItem::new,
+            properties -> properties.stacksTo(16));
+    public static final DeferredItem<io.github.sweetcornna.universe.microbe.SampleItem> SAMPLE = ITEMS.registerItem("sample", io.github.sweetcornna.universe.microbe.SampleItem::new,
+            properties -> properties.stacksTo(16));
+    public static final DeferredItem<BlockItem> INCUBATOR = ITEMS.registerSimpleBlockItem(UniverseBlocks.INCUBATOR);
+    public static final DeferredItem<BlockItem> SEQUENCER = ITEMS.registerSimpleBlockItem(UniverseBlocks.SEQUENCER);
+    public static final DeferredItem<BlockItem> GENE_EDITOR = ITEMS.registerSimpleBlockItem(UniverseBlocks.GENE_EDITOR);
+    // M20 微生物和基因（C）的物品加在这行上面
+    public static final DeferredItem<BlockItem> BIOREACTOR = ITEMS.registerSimpleBlockItem(UniverseBlocks.BIOREACTOR);
+    // M20 生物反应器（D）的物品加在这行上面
+    public static final DeferredItem<BlockItem> ATMOSPHERE_RELEASE_TOWER = ITEMS.registerSimpleBlockItem(UniverseBlocks.ATMOSPHERE_RELEASE_TOWER);
+    public static final DeferredItem<BlockItem> ORBITAL_MIRROR = ITEMS.registerSimpleBlockItem(UniverseBlocks.ORBITAL_MIRROR);
+    public static final DeferredItem<BlockItem> ECOLOGY_SEEDER = ITEMS.registerSimpleBlockItem(UniverseBlocks.ECOLOGY_SEEDER);
+    // M20 星球改造（E）的物品加在这行上面
 
     /** 蓝图（ADR-0018）。 */
     public static final DeferredItem<BlueprintItem> BLUEPRINT = ITEMS.registerItem("blueprint", BlueprintItem::new);
@@ -744,6 +812,17 @@ public final class UniverseItems {
         order.addAll(GEYSER_CRUSTS.values());
         order.addAll(GEYSER_VENTS.values());
         // M19 科技布局和局部危害（E）的创造物品栏顺序加在这行上面
+        order.addAll(M20_SHARED);
+        order.addAll(List.of(ATMOSPHERIC_EXTRACTOR, ELECTROLYZER));
+        // M20 化学（A）的创造物品栏顺序加在这行上面
+        order.add(CHEMICAL_REACTOR);
+        // M20 反应釜（B）的创造物品栏顺序加在这行上面
+        order.addAll(List.of(SAMPLE_TUBE, SAMPLE, INCUBATOR, SEQUENCER, GENE_EDITOR));
+        // M20 微生物和基因（C）的创造物品栏顺序加在这行上面
+        order.addAll(List.of(BIOREACTOR));
+        // M20 生物反应器（D）的创造物品栏顺序加在这行上面
+        order.addAll(List.of(ATMOSPHERE_RELEASE_TOWER, ECOLOGY_SEEDER, ORBITAL_MIRROR));
+        // M20 星球改造（E）的创造物品栏顺序加在这行上面
         return List.copyOf(order);
     }
 

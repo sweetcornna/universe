@@ -2,6 +2,7 @@ package io.github.sweetcornna.universe.entity.ship;
 
 import io.github.sweetcornna.universe.core.galaxy.Planet;
 import io.github.sweetcornna.universe.core.ship.ShipFlight.Environment;
+import io.github.sweetcornna.universe.terraform.Terraforming;
 import io.github.sweetcornna.universe.world.planet.Planets;
 import io.github.sweetcornna.universe.world.space.SpaceDimensions;
 import net.minecraft.server.level.ServerLevel;
@@ -18,7 +19,7 @@ public final class ShipEnvironment {
         }
         Planet planet = level.dimension() == Level.OVERWORLD
                 ? Planets.galaxy(level.getServer()).homePlanet()
-                : Planets.planet(level).orElse(null);
+                : Terraforming.planet(level).orElse(null);
         if (planet == null) {
             // 下界、末地和别的模组的维度
             return Environment.HOMEWORLD;

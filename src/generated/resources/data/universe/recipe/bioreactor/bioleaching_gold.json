@@ -1,0 +1,25 @@
+{
+  "type": "universe:bioreactor",
+  "ingredients": [
+    {
+      "count": 2,
+      "ingredient": "minecraft:raw_gold"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:sulfuric_acid"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:water"
+    }
+  ],
+  "research": "bioengineering",
+  "results": [
+    {
+      "count": 3,
+      "id": "universe:gold_leach_solution"
+    }
+  ],
+  "time": 600
+}

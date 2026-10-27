@@ -72,6 +72,13 @@
     "universe:dark_fog_conduit",
     "universe:dark_fog_core_remnant",
     "universe:settlement_terminal",
-    "universe:settlement_turret"
+    "universe:settlement_turret",
+    "universe:atmospheric_extractor",
+    "universe:electrolyzer",
+    "universe:incubator",
+    "universe:sequencer",
+    "universe:gene_editor",
+    "universe:atmosphere_release_tower",
+    "universe:ecology_seeder"
   ]
 }

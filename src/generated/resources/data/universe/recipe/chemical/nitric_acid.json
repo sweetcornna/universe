@@ -1,0 +1,23 @@
+{
+  "type": "universe:chemical",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:ammonia"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:oxygen"
+    }
+  ],
+  "research": "catalysis",
+  "results": [
+    {
+      "id": "universe:nitric_acid"
+    },
+    {
+      "id": "universe:water"
+    }
+  ],
+  "time": 80
+}

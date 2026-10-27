@@ -1,0 +1,10 @@
+{
+  "parent": "universe:block/machine_glow",
+  "textures": {
+    "bottom": "universe:block/atmosphere_release_tower_bottom",
+    "front": "universe:block/atmosphere_release_tower_front_on",
+    "glow": "universe:block/atmosphere_release_tower_front_on_glow",
+    "side": "universe:block/atmosphere_release_tower_side",
+    "top": "universe:block/atmosphere_release_tower_top"
+  }
+}

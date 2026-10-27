@@ -1,0 +1,21 @@
+{
+  "type": "universe:research_shaped",
+  "category": "redstone",
+  "key": {
+    "C": "universe:culture_medium",
+    "G": "minecraft:glass",
+    "M": "universe:electric_motor",
+    "P": "universe:processor",
+    "S": "universe:steel",
+    "T": "universe:titanium_alloy"
+  },
+  "pattern": [
+    "GCG",
+    "TMT",
+    "SPS"
+  ],
+  "research": "terraforming",
+  "result": {
+    "id": "universe:ecology_seeder"
+  }
+}

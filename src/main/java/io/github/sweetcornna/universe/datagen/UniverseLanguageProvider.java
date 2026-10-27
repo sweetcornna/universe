@@ -201,6 +201,18 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         // M19 深空和重力枪（D）的语言加在这行上面
         HazardLanguage.add(this::both);
         // M19 科技布局和局部危害（E）的语言加在这行上面
+        ChemBioLanguage.shared(this::both);
+        ChemBioLanguage.guide(this::both);
+        ChemistryLanguage.add(this::both);
+        // M20 化学（A）的语言加在这行上面
+        ReactorLanguage.add(this::both);
+        // M20 反应釜（B）的语言加在这行上面
+        MicrobeLanguage.add(this::both);
+        // M20 微生物和基因（C）的语言加在这行上面
+        BioreactorLanguage.add(this::both);
+        // M20 生物反应器（D）的语言加在这行上面
+        TerraformLanguage.add(this::both);
+        // M20 星球改造（E）的语言加在这行上面
         CommandLanguage.add(this::both);
     }
 
@@ -3084,6 +3096,15 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         advancement("universe_matrix", "白", "做出宇宙矩阵", "White", "Make a universe matrix");
         advancement("artificial_star", "造一颗星", "放下人造恒星", "Star Maker", "Place an artificial star");
         advancement("mission_complete", "任务完成", "研究完最后一项科技", "Mission Complete", "Finish the final research");
+        advancement("atmospheric_extractor", "就地取材", "放下大气提取器", "Living off the Land", "Place an atmospheric extractor");
+        advancement("electrolyzer", "拆开水", "放下电解槽", "Splitting Water", "Place an electrolyzer");
+        advancement("chemical_reactor", "勒夏特列", "放下化学反应釜", "Le Chatelier", "Place a chemical reactor");
+        advancement("methalox", "猛禽的燃料", "做出甲烷液氧燃料", "Raptor Fuel", "Make methalox fuel");
+        advancement("culture", "长出来了", "培养出一管菌种", "It's Growing", "Grow a strain tube in an incubator");
+        advancement("gene_editing", "改写", "做出一株改造种苗", "Rewritten", "Make an engineered seedling");
+        advancement("bioreactor", "活的工厂", "放下生物反应器", "Living Factory", "Place a bioreactor");
+        advancement("ecology_seeder", "先锋", "放下生态播种站", "Pioneers", "Place an ecology seeder");
+        advancement("terraformed", "第二个地球", "把一颗星球改造到能直接呼吸", "A Second Earth", "Terraform a planet until its air is breathable");
         if (!written.equals(Set.of(UniverseAdvancements.NAMES))) {
             throw new IllegalStateException("进度的语言条目和 UniverseAdvancements.NAMES 对不上");
         }

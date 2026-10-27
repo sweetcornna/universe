@@ -1,0 +1,29 @@
+{
+  "type": "universe:bioreactor",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:nitrogen"
+    },
+    {
+      "count": 3,
+      "ingredient": "universe:algal_biomass"
+    },
+    {
+      "count": 4,
+      "ingredient": "universe:oxygen"
+    }
+  ],
+  "research": "bioengineering",
+  "results": [
+    {
+      "count": 2,
+      "id": "universe:ammonia"
+    },
+    {
+      "count": 6,
+      "id": "universe:carbon_dioxide"
+    }
+  ],
+  "time": 300
+}

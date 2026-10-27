@@ -66,5 +66,25 @@ final class MachineSoundTable {
         // 防御：护盾展开着、干扰塔在干扰时
         bind(UniverseBlocks.PLANETARY_SHIELD_GENERATOR.get(), MachineSounds.SHIELD, 0.6F, 1.0F);
         bind(UniverseBlocks.JAMMER_TOWER.get(), MachineSounds.JAMMER, 0.45F, 1.0F);
+        // M20 化学（ADR-0036 §三）：提取器是压缩机在转，电解槽是整流器的嗡声加冒泡
+        bind(UniverseBlocks.ATMOSPHERIC_EXTRACTOR.get(), MachineSounds.OIL_EXTRACTOR, 0.4F, 1.25F);
+        bind(UniverseBlocks.ELECTROLYZER.get(), MachineSounds.CHEMICAL, 0.45F, 1.15F);
+        // M20 化学（A）的声音加在这行上面
+        // M20 反应釜（ADR-0036 §四）：压缩机和加热炉一起转，比化工厂沉一点
+        bind(UniverseBlocks.CHEMICAL_REACTOR.get(), MachineSounds.CHEMICAL, 0.5F, 0.8F);
+        // M20 反应釜（B）的声音加在这行上面
+        // M20 微生物和基因（ADR-0036 §五）：培养箱是保温柜的风扇，测序仪、编辑台是泵和光学读头的细声
+        bind(UniverseBlocks.INCUBATOR.get(), MachineSounds.BIO, 0.3F, 1.2F);
+        bind(UniverseBlocks.SEQUENCER.get(), MachineSounds.BIO, 0.3F, 1.35F);
+        bind(UniverseBlocks.GENE_EDITOR.get(), MachineSounds.BIO, 0.3F, 1.25F);
+        // M20 微生物和基因（C）的声音加在这行上面
+        // M20 生物反应器（ADR-0036 §五）：搅拌电机慢慢转，罐里咕嘟咕嘟通气，比营养处理器低沉
+        bind(UniverseBlocks.BIOREACTOR.get(), MachineSounds.BIO, 0.4F, 0.8F);
+        // M20 生物反应器（D）的声音加在这行上面
+        // M20 星球改造（ADR-0036 §六）：释放塔是压缩机加放气的嘶声；轨道反射镜在真空里，没有声音
+        bind(UniverseBlocks.ATMOSPHERE_RELEASE_TOWER.get(), MachineSounds.FRACTIONATOR, 0.45F, 0.7F);
+        // 生态播种站：保温柜的风扇加喷头的水泵
+        bind(UniverseBlocks.ECOLOGY_SEEDER.get(), MachineSounds.BIO, 0.3F, 1.05F);
+        // M20 星球改造（E）的声音加在这行上面
     }
 }

@@ -7,7 +7,7 @@ import io.github.sweetcornna.universe.factory.MachineBlockEntity;
 import io.github.sweetcornna.universe.factory.MachineMenu;
 import io.github.sweetcornna.universe.registry.UniverseBlockEntities;
 import io.github.sweetcornna.universe.registry.UniverseMenus;
-import io.github.sweetcornna.universe.world.planet.Planets;
+import io.github.sweetcornna.universe.terraform.Terraforming;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -82,7 +82,7 @@ public class WindTurbineBlockEntity extends MachineBlockEntity {
 
     /** 这个位置的风力系数：星球的风力 × 大气压 × 海拔 × 天气。 */
     public static double windFactor(ServerLevel level, BlockPos pos) {
-        Optional<Planet> body = Planets.body(level);
+        Optional<Planet> body = Terraforming.body(level);
         double base;
         if (body.isPresent()) {
             Planet planet = body.get();

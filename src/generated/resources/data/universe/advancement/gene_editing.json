@@ -1,0 +1,32 @@
+{
+  "parent": "universe:culture",
+  "criteria": {
+    "has_item": {
+      "conditions": {
+        "items": [
+          {
+            "items": "universe:engineered_seedling"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.universe.gene_editing.description"
+    },
+    "icon": {
+      "id": "universe:engineered_seedling"
+    },
+    "title": {
+      "translate": "advancements.universe.gene_editing.title"
+    }
+  },
+  "requirements": [
+    [
+      "has_item"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

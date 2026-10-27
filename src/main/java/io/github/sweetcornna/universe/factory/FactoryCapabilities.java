@@ -38,7 +38,17 @@ public final class FactoryCapabilities {
                 UniverseBlockEntities.VERTICAL_LAUNCHING_SILO, UniverseBlockEntities.RAY_RECEIVER, UniverseBlockEntities.MINIATURE_PARTICLE_COLLIDER,
                 UniverseBlockEntities.MINI_FUSION_POWER_PLANT, UniverseBlockEntities.ARTIFICIAL_STAR, UniverseBlockEntities.ENERGY_EXCHANGER,
                 UniverseBlockEntities.NEGENTROPY_SMELTER, UniverseBlockEntities.RECOMPOSING_ASSEMBLER, UniverseBlockEntities.QUANTUM_CHEMICAL_PLANT,
-                UniverseBlockEntities.LOGISTICS_DISTRIBUTOR);
+                UniverseBlockEntities.LOGISTICS_DISTRIBUTOR,
+                // M20 化学（ADR-0036 §三）
+                UniverseBlockEntities.ATMOSPHERIC_EXTRACTOR, UniverseBlockEntities.ELECTROLYZER
+                // M20 反应釜（ADR-0036 §四）
+                , UniverseBlockEntities.CHEMICAL_REACTOR
+                // M20 生物反应器（ADR-0036 §五）
+                , UniverseBlockEntities.BIOREACTOR
+                // M20 微生物和基因（ADR-0036 §五）
+                , UniverseBlockEntities.INCUBATOR, UniverseBlockEntities.SEQUENCER, UniverseBlockEntities.GENE_EDITOR
+                // M20 反应釜（B）、微生物和基因（C）、生物反应器（D）、星球改造（E）的设备接在这一行前面，前面加逗号
+                );
     }
 
     private static void register(RegisterCapabilitiesEvent event) {

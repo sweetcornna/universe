@@ -10,6 +10,8 @@ import io.github.sweetcornna.universe.core.ecology.PlantSpecies;
 import io.github.sweetcornna.universe.core.ecology.TreeSpecies;
 import io.github.sweetcornna.universe.core.galaxy.Galaxy;
 import io.github.sweetcornna.universe.core.galaxy.Planet;
+import io.github.sweetcornna.universe.core.microbe.MicrobeStrain;
+import io.github.sweetcornna.universe.core.microbe.Microbiome;
 import io.github.sweetcornna.universe.core.procgen.NameGenerator.Name;
 
 /**
@@ -49,7 +51,14 @@ public final class Catalog {
             case PLANT -> plant(key, galaxy).map(PlantSpecies::name);
             case TREE -> tree(key, galaxy).map(TreeSpecies::name);
             case MINERAL -> Optional.empty();
+            case MICROBE -> microbe(key, galaxy).map(strain -> new Name(strain.nameEn(), strain.nameZh()));
         };
+    }
+
+    /** 微生物条目对应的菌（ADR-0036 §五）。 */
+    public static Optional<MicrobeStrain> microbe(DiscoveryKey key, Galaxy galaxy) {
+        return key.kind() != DiscoveryKey.Kind.MICROBE ? Optional.empty()
+                : planet(key, galaxy).flatMap(planet -> Microbiome.of(planet).byKey(key.strainKey()));
     }
 
     private static <T> Optional<T> pick(List<T> list, int index) {

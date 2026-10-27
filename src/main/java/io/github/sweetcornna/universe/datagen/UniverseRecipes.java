@@ -105,6 +105,16 @@ final class UniverseRecipes extends RecipeProvider {
         DeepSpaceDatagen.recipes(this.output);
         // M19 深空和重力枪（D）的配方加在这行上面
         // M19 科技布局和局部危害（E）的配方加在这行上面
+        ChemistryDatagen.recipes(this.output);
+        // M20 化学（A）的配方加在这行上面
+        ReactorDatagen.recipes(this.output);
+        // M20 反应釜（B）的配方加在这行上面
+        MicrobeDatagen.recipes(this.output);
+        // M20 微生物和基因（C）的配方加在这行上面
+        BioreactorDatagen.recipes(this.output);
+        // M20 生物反应器（D）的配方加在这行上面
+        TerraformDatagen.recipes(this.output);
+        // M20 星球改造（E）的配方加在这行上面
     }
 
     /**

@@ -286,6 +286,28 @@ public final class TechTree {
             Tech.lab("gravity_coil", List.of("tractor_beam", "electromagnetic_drive"), List.of(BLUE, RED), 80, items("gravity_coil")),
             // M19 深空和重力枪（D）的科技（每条末尾带逗号）加在这行上面
             // M19 科技布局和局部危害（E）的科技（每条末尾带逗号）加在这行上面
+            // M20 化学（ADR-0036 §三、§四）：大气提取器和电解槽接在基础化工后面；电化学、反应釜、合成燃料要紫矩阵
+            // （合成燃料的镍催化剂从生物浸出来，和生物工程同一档）。蓝红黄一档已经贴着研究时间的上限（BalanceTest）
+            Tech.lab("atmospheric_chemistry", List.of("basic_chemical"), List.of(BLUE, RED), 40, items("atmospheric_extractor", "electrolyzer")),
+            Tech.lab("electrochemistry", List.of("atmospheric_chemistry", "information_matrix"), List.of(BLUE, RED, YELLOW, PURPLE), 80,
+                    items("sodium_hydroxide", "chlorine", "titanium_tetrachloride", "nickel_ingot")),
+            Tech.lab("catalysis", List.of("electrochemistry"), List.of(BLUE, RED, YELLOW, PURPLE), 120,
+                    items("chemical_reactor", "iron_catalyst", "vanadium_catalyst", "ammonia", "nitric_acid", "ammonium_nitrate")),
+            Tech.lab("synthetic_fuels", List.of("catalysis"), List.of(BLUE, RED, YELLOW, PURPLE), 160,
+                    items("nickel_catalyst", "methane", "methalox_fuel")),
+            // M20 化学（A、B）的科技（每条末尾带逗号）加在这行上面
+            // M20 生物（ADR-0036 §五）：微生物学交样本，接在水培后面；合成生物学还要卵序列仪那条基因编辑，设计基因要紫矩阵
+            Tech.handIn("microbiology", List.of("hydroponics"), List.of(cost("sample", 6), cost("circuit_board", 4)),
+                    items("incubator", "agar", "culture_medium")),
+            Tech.lab("genomics", List.of("microbiology", "basic_chemical"), List.of(BLUE, RED), 70, items("sequencer", "sequencing_chip")),
+            Tech.lab("synthetic_biology", List.of("genomics", "gene_editing", "information_matrix"), List.of(BLUE, RED, YELLOW, PURPLE), 160,
+                    items("gene_editor", "editing_kit", "engineered_seedling")),
+            Tech.lab("bioengineering", List.of("synthetic_biology"), List.of(BLUE, RED, YELLOW, PURPLE), 160, items("bioreactor", "algal_biomass")),
+            // M20 生物（C、D）的科技（每条末尾带逗号）加在这行上面
+            // M20 星球改造（ADR-0036 §六）
+            Tech.lab("terraforming", List.of("synthetic_fuels", "bioengineering", "information_matrix"), List.of(BLUE, RED, YELLOW, PURPLE), 300,
+                    items("atmosphere_release_tower", "ecology_seeder", "orbital_mirror")),
+            // M20 星球改造（E）的科技（每条末尾带逗号）加在这行上面
             Tech.lab("gravity_missiles", List.of("supersonic_missiles", "gravity_matrix"), List.of(BLUE, RED, YELLOW, PURPLE, GREEN, DARK_FOG), 200,
                     items("gravity_missile_set"))),
             // 升级科技：前几级用低档矩阵，之后用白矩阵无限研究

@@ -1,0 +1,21 @@
+{
+  "type": "universe:reactor",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:nitrogen"
+    },
+    {
+      "count": 3,
+      "ingredient": "universe:hydrogen"
+    }
+  ],
+  "research": "catalysis",
+  "results": [
+    {
+      "count": 2,
+      "id": "universe:ammonia"
+    }
+  ],
+  "time": 40
+}

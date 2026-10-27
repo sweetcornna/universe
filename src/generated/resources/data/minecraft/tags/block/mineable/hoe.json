@@ -1,6 +1,8 @@
 {
   "values": [
     "universe:planet_leaves",
-    "universe:planet_bloom"
+    "universe:planet_bloom",
+    "universe:gray_lichen",
+    "universe:orange_lichen"
   ]
 }
