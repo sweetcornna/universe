@@ -95,12 +95,12 @@ final class HazardLanguage {
                         + "孢子云：毒雾星球的毒沼、菌林里，云里毒性防护掉得快 4 倍\n"
                         + "尘卷风：有风的荒漠、峡谷里，把东西卷起来甩出去，摔下来才伤人\n\n"
                         + "基地信标和接管的聚落附近不会有。世界设置里能调频率。",
-                "Some planets throw local hazards at you, with a warning on the HUD first.\n\n"
-                        + "Geysers: on frozen, toxic, scorched and exotic worlds. Quiet for a while, a 3 s gurgle, then 5 s of steam 15 m high. "
-                        + "It carries you up, and scalds, poisons or freezes. The crust around the vent can be mined\n"
-                        + "Eruptions: on scorched worlds. 3 s of shaking, then 20 s of lava bombs\n"
-                        + "Spore clouds: in toxic marshes and fungal forests. Toxic protection drains 4× as fast inside\n"
-                        + "Dust devils: in windy deserts and canyons. They pick things up and fling them; only the fall hurts\n\n"
-                        + "None near base beacons or claimed settlements. World settings control how often.");
+                "Some planets have local hazards, with a HUD warning first. None near base beacons or claimed settlements; "
+                        + "world settings set how often.\n"
+                        + "Geysers (frozen, toxic, scorched, exotic): a 3 s gurgle, then 5 s of steam 15 m high that lifts you and scalds, poisons "
+                        + "or freezes. The crust round the vent can be mined\n"
+                        + "Eruptions (scorched): 3 s of shaking, then 20 s of lava bombs\n"
+                        + "Spore clouds (toxic marshes, fungal forests): toxic protection drains 4× as fast\n"
+                        + "Dust devils (windy deserts, canyons): fling things up; only the fall hurts");
     }
 }

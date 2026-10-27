@@ -226,10 +226,10 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
                 "研究黑雾透镜（先要引力波折射和黑雾分析）以后，在装配机里用引力透镜、核心素和能量碎片做。\n\n"
                         + "放进射线接收站的透镜格：功率和光子产量和引力透镜一样翻倍，另外损耗减半，连续接收积累得快一倍。"
                         + "一个能用 15 分钟，引力透镜是 10 分钟。接收站界面写着正在用哪种透镜。",
-                "Research Dark Fog Lens (needs Gravitational Wave Refraction and Dark Fog Analysis), then make it in an assembler from a "
-                        + "graviton lens, a core element and energy shards.\n\n"
-                        + "In a ray receiver's lens slot it doubles power and photon output like a graviton lens, halves the loss on top of that "
-                        + "and builds continuity twice as fast. One lasts 15 min; a graviton lens lasts 10. The receiver shows which lens is in use.");
+                "Research Dark Fog Lens (after Gravitational Wave Refraction and Dark Fog Analysis), then assemble it from a graviton "
+                        + "lens, a core element and energy shards.\n\n"
+                        + "In a ray receiver's lens slot it doubles power and photons like a graviton lens, halves the loss and builds continuity "
+                        + "twice as fast. Lasts 15 min (graviton lens: 10). The receiver shows which lens is in use.");
         // 全息信标和备忘（§六）
         block(UniverseBlocks.HOLO_BEACON.get(), "全息信标", "Holo Beacon");
         tech("holo_beacon", "全息信标", "Holo Beacon");
@@ -255,14 +255,18 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("guide.universe.exploration.holo_beacon.title", "全息信标", "Holo Beacons");
         both("guide.universe.exploration.holo_beacon",
                 "放下以后右键设置：一行字、图标（点快捷栏里的物品）、颜色和范围。信标上方浮着图标和字，还有一道光柱。\n\n"
-                        + "同一颗星球上，HUD 标出所有信标和距离。范围选本星系，在这个星系里打开星图能看到它；选整个星团，在哪都能看到。"
-                        + "星图上信标是星系旁边的一个小点，选中星系后列在信息栏里。\n\n"
                         + "每个信标还有一页备忘，最多 8 行，每行能打勾。信标和备忘所有玩家共用。",
-                "Place it and right-click to set a label, an icon (click an item in your hotbar), a color and a range. The icon and label float "
-                        + "above it with a beam of light.\n\n"
-                        + "On the same planet the HUD marks every beacon with its distance. With range System it shows on the star map while you "
-                        + "are in that system; with Cluster it shows from anywhere, as a dot beside the system and a line in its info panel.\n\n"
+                "Place it and right-click to set a label, an icon (click an item in your hotbar), a color and a range. "
+                        + "The icon and label float above it with a beam of light.\n\n"
                         + "Each beacon also holds a page of notes: up to 8 lines you can tick off. Beacons and notes are shared by everyone.");
+        both("guide.universe.exploration.beacon_range.title", "信标的范围", "Beacon Range");
+        both("guide.universe.exploration.beacon_range",
+                "同一颗星球上，HUD 标出所有信标和距离。\n\n"
+                        + "范围选本星系，在这个星系里打开星图能看到它；选整个星团，在哪都能看到。"
+                        + "星图上信标是星系旁边的一个小点，选中星系后列在信息栏里。",
+                "On the same planet the HUD marks every beacon with its distance.\n\n"
+                        + "With range System a beacon shows on the star map while you are in that system; with Cluster it shows from anywhere. "
+                        + "On the map it is a dot beside the system and a line in its info panel.");
         both("guide.universe.exploration.memos.title", "星球备忘", "Planet Notes");
         both("guide.universe.exploration.memos",
                 "发现过的星球和星系都能写一页备忘。在发现日志里选中星球或星系，点右上角的“备忘”；星图里选中星系，信息栏里也有入口。\n\n"
@@ -325,13 +329,11 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
                         + "拿着画好的蓝图按 Shift + 旋转键（默认 R）切到只贴设备：只放设备、传送带、分拣器这些，地板、墙和装饰跳过，"
                         + "适合在铺好的地基上补一套产线。再按一次切回贴全部。\n\n"
                         + "预览时 HUD 右上角列出要花的材料：要多少、身上有多少，不够的标红。背包和外骨骼货舱都算。",
-                "You can add a description when saving a blueprint. It records who saved it, and saving again under the same name bumps the "
-                        + "version. All of this shows in the item tooltip.\n\n"
-                        + "Hold a drawn blueprint and press Shift + rotate (R by default) to switch to devices only: machines, belts, sorters "
-                        + "and the like are placed, floors, walls and decoration are skipped. Handy for adding a line onto foundations you already "
-                        + "laid. Press again for all blocks.\n\n"
-                        + "While previewing, the top right of the HUD lists the materials: how many you need, how many you carry, shortages in red. "
-                        + "Inventory and exosuit cargo both count.");
+                "Saving can add a description. The blueprint records who saved it; saving again under the same name bumps the version. "
+                        + "The tooltip shows it all.\n\n"
+                        + "Shift + rotate (R by default) toggles devices only: machines, belts and sorters, no floors, walls or decoration. "
+                        + "Handy for a new line on existing foundations.\n\n"
+                        + "While previewing, the HUD lists what you need and carry (inventory and cargo); shortages in red.");
     }
 
     /** 黑雾的掉落、弹药、投掷物（ADR-0028 §五、§六）：名字在这里，说明归各自的子代理。 */
@@ -373,34 +375,39 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
                         + "这些星球上下的是酸雨，淋着和吸毒气一起算，撑一会儿就得找地方躲。\n\n"
                         + "抽水站放在酸液源头上抽出的是硫酸，不用建化工线也有硫酸。拿桶能装一桶酸液带走。\n\n"
                         + "潜艇在酸液里照样开。海里不长水生植物，也没有鱼。",
-                "The seas of toxic planets are sulfuric acid. Standing in it drains your toxic protection fast and being indoors does not "
-                        + "help; once the protection is gone it burns you. Items dropped in it corrode away — glass, gold and plastic do not.\n\n"
-                        + "These planets get acid rain. It counts together with toxic air, so find cover before your protection runs out.\n\n"
-                        + "A water pump on an acid source pumps sulfuric acid, which gives you acid without a chemical line. A bucket takes "
-                        + "one acid with you.\n\n"
-                        + "Submarines work in acid. Nothing grows in these seas and there are no fish.");
+                "Toxic planets have seas of sulfuric acid. Wading in drains toxic protection fast, indoors or not, then burns. "
+                        + "Dropped items corrode, but not glass, gold or plastic.\n\n"
+                        + "Acid rain adds to the toxic air; get under cover before protection runs out.\n\n"
+                        + "Water pumps on acid sources pump sulfuric acid, no chemical line needed. Buckets work too.\n\n"
+                        + "Submarines work in acid. Nothing grows in it and there are no fish.");
     }
 
     /** M17 收尾的文字：奇异星球（子代理 B，ADR-0030）。 */
     private void wrapUpExotic() {
         both("guide.universe.exploration.exotic.title", "奇异星球的地貌", "Exotic Terrain");
         both("guide.universe.exploration.exotic",
-                "每颗奇异星球都长着一种整颗星球都看得到的地貌，六种里挑一种，都照着地球和火星上真有的地方做。\n\n"
+                "每颗奇异星球都长着一种整颗星球都看得到的地貌，六种里挑一种，都照着地球和火星上真有的地方做。"
+                        + "星图、发现日志和分析目镜里写着是哪一种。\n\n"
                         + "柱状玄武岩：六棱的石柱成片，石阶一直伸进浅海，偶尔一座孤零零的柱状岩塔\n"
                         + "石林：细高的岩柱挤在一起，每根顶上压着一块硬岩\n"
-                        + "巨晶：几十格长的晶柱斜插出地面，一簇好几根，水里也长\n"
-                        + "结核球：半埋在地里的圆石球，大的表面一道道白纹，地上撒着小黑球\n"
-                        + "多边形地面：平地上一张多边形的网，边上垒着矮脊——冷的是冰楔，干热的是盐壳，别的是碎石\n"
-                        + "石拱：砂岩的石鳍，有的中间穿了个洞，成一座石拱\n\n"
-                        + "星图、发现日志和分析目镜里写着是哪一种。地貌让开降落点、传送门、守卫塔、兴趣点和地标。",
-                "Every exotic world has one landform you can see all over it, one of six, each taken from a real place on Earth or Mars.\n\n"
+                        + "巨晶：几十格长的晶柱斜插出地面，一簇好几根，水里也长",
+                "Every exotic world has one landform you can see all over it, one of six, each taken from a real place on Earth or Mars. "
+                        + "The star map, discovery log and analysis visor name it.\n\n"
                         + "Columnar basalt: fields of six-sided columns stepping down into shallow water, with the odd lone tower\n"
                         + "Hoodoos: thin crowded rock spires, each under a hard caprock\n"
-                        + "Giant crystals: shafts tens of blocks long slanting out of the ground in clusters, in water too\n"
-                        + "Concretions: round boulders half buried in the ground, the big ones cracked with white veins, small dark spherules scattered around\n"
-                        + "Polygonal ground: a net of polygons on the flats with low ridges along the edges — ice wedges where it is cold, salt crust where it is hot and dry, sorted stones otherwise\n"
+                        + "Giant crystals: shafts tens of blocks long slanting out of the ground in clusters, in water too");
+        both("guide.universe.exploration.exotic_more.title", "更多奇异地貌", "More Exotic Terrain");
+        both("guide.universe.exploration.exotic_more",
+                "结核球：半埋在地里的圆石球，大的表面一道道白纹，地上撒着小黑球\n"
+                        + "多边形地面：平地上一张多边形的网，边上垒着矮脊——冷的是冰楔，干热的是盐壳，别的是碎石\n"
+                        + "石拱：砂岩的石鳍，有的中间穿了个洞，成一座石拱\n\n"
+                        + "地貌让开降落点、传送门、守卫塔、兴趣点和地标。",
+                "Concretions: round boulders half buried in the ground, the big ones cracked with white veins, small dark spherules "
+                        + "scattered around\n"
+                        + "Polygonal ground: a net of polygons on the flats with low ridges along the edges — ice wedges where it is cold, salt "
+                        + "crust where it is hot and dry, sorted stones otherwise\n"
                         + "Arches: sandstone fins, some pierced through into an arch\n\n"
-                        + "The star map, discovery log and analysis visor all name which one. The terrain keeps clear of landing sites, portals, sentinel pillars, points of interest and landmarks.");
+                        + "The terrain keeps clear of landing sites, portals, sentinel pillars, points of interest and landmarks.");
     }
 
     /** M17 收尾的文字：互通（子代理 C，ADR-0030）。 */
@@ -417,7 +424,12 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("guide.universe.power.interface.title", "和别的模组接电", "Power from Other Mods");
         both("guide.universe.power.interface",
                 "电网接口放在电塔覆盖范围里，六个面都能接别的模组的线缆和设备。1 J 算 1 FE。\n输入：收进来的电送进电网\n输出：从电网取电推给旁边的设备\n\n功率：最多 45 kW\n研究：电网接口\n\n储液罐、抽水站、原油萃取站也能接别的模组的管道，一个流体物品算 1000 mB。",
-                "Place it inside a tower's range. Every face takes cables and devices from other mods; 1 J counts as 1 FE.\nInput: feeds incoming power into the grid\nOutput: pushes grid power into adjacent devices\n\nRate: up to 45 kW\nResearch: Grid Interface\n\nStorage tanks, water pumps and oil extractors also take pipes from other mods. One fluid item is 1000 mB.");
+                "Place it in a tower's range. Every face links to cables and machines from other mods.\n"
+                        + "Input: feeds incoming power into the grid\n"
+                        + "Output: sends grid power to neighbours\n"
+                        + "Rate: up to 45 kW (1 J = 1 FE)\n"
+                        + "Research: Grid Interface\n\n"
+                        + "Storage tanks, water pumps and oil extractors take other mods' pipes too. One fluid item is 1000 mB.");
     }
 
     /** M17 收尾的文字：戴森球（子代理 D，ADR-0030）。 */
@@ -495,8 +507,28 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         // 手册
         both("guide.universe.dyson.design.title", "自己设计戴森壳", "Designing a Shell");
         both("guide.universe.dyson.design",
-                "一层选好模板以后，在编辑器里点「编辑」就能自己改：\n节点——点一下摆一个，吸附在经纬网上，按住 Shift 吸得细一些\n框架——点两个节点连起来，接着点就接着连\n球壳——点框架围成的圈里面，或者按「铺满」一次铺完\n擦——删掉点中的\n\n已经建了的节点和框架不能直接删，要先选中、再「拆掉」；拆下来的结构点不退。\n\n节点、框架、球壳都能上色：选好颜色，用上色工具点，或者选中一批再按「上色」。天上、太空里看到的就是这个颜色。\n\n「复制」把这一层导出成一串文字，存进蓝图库，也放进剪贴板，能贴到聊天里和网上。「导入」把别人的串贴进来，只能导到还没开始建的层。",
-                "Once a layer has a template, click Edit in the editor to change it yourself:\nNode — click to place one; it snaps to the lat/long grid, hold Shift for a finer snap\nFrame — click two nodes to connect them, and keep clicking to keep going\nShell — click inside a loop of frames, or press Fill to cover every loop at once\nErase — delete what you click\n\nNodes and frames that are already built cannot be deleted directly: select them and press Demolish first. Structure points are not refunded.\n\nNodes, frames and shells can be coloured: pick a colour and use the paint tool, or select a batch and press Paint. That is the colour you see in the sky and in space.\n\nCopy exports the layer as a string, saves it to your library and puts it on the clipboard, so you can paste it into chat or online. Import takes someone else's string, and only works on a layer with nothing built.");
+                "一层选好模板以后，在编辑器里点「编辑」就能自己改：\n"
+                        + "节点——点一下摆一个，吸附在经纬网上，按住 Shift 吸得细一些\n"
+                        + "框架——点两个节点连起来，接着点就接着连\n"
+                        + "球壳——点框架围成的圈里面，或者按「铺满」一次铺完\n"
+                        + "擦——删掉点中的\n\n"
+                        + "已经建了的节点和框架不能直接删，要先选中、再「拆掉」；拆下来的结构点不退。",
+                "Once a layer has a template, click Edit in the editor to change it yourself:\n"
+                        + "Node — click to place one; it snaps to the lat/long grid, hold Shift for a finer snap\n"
+                        + "Frame — click two nodes to connect them, and keep clicking to keep going\n"
+                        + "Shell — click inside a loop of frames, or press Fill to cover every loop at once\n"
+                        + "Erase — delete what you click\n\n"
+                        + "Nodes and frames that are already built cannot be deleted directly: select them and press Demolish first. "
+                        + "Structure points are not refunded.");
+        both("guide.universe.dyson.design_share.title", "上色和分享", "Colours and Sharing");
+        both("guide.universe.dyson.design_share",
+                "节点、框架、球壳都能上色：选好颜色，用上色工具点，或者选中一批再按「上色」。天上、太空里看到的就是这个颜色。\n\n"
+                        + "「复制」把这一层导出成一串文字，存进蓝图库，也放进剪贴板，能贴到聊天里和网上。"
+                        + "「导入」把别人的串贴进来，只能导到还没开始建的层。",
+                "Nodes, frames and shells can be coloured: pick a colour and use the paint tool, or select a batch and press Paint. "
+                        + "That is the colour you see in the sky and in space.\n\n"
+                        + "Copy exports the layer as a string, saves it to your library and puts it on the clipboard, so you can paste it into "
+                        + "chat or online. Import takes someone else's string, and only works on a layer with nothing built.");
     }
 
     /** M17 收尾的文字：工厂物流（子代理 E，ADR-0030）。 */
@@ -612,26 +644,35 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
                         + "高一层能配上就不往下找。那一层的站没货了或者满了，才轮到下一层；高一层有站等着的货，低一层的不来抢。\n\n"
                         + "开了「指定配对」的站只走前四层。物品路线只管运输船，伙伴和分组无人机也认。\n"
                         + "星际物流站能设运输船的起送量：一船的 10%、25%、50%、100%，默认 100 个。",
-                "Each slot looks for a match in five tiers:\n1. Point-to-point partners\n2. Planet routes\n3. System routes\n"
-                        + "4. Stations in the same group\n5. Everything else, nearest first\n\n"
-                        + "A higher tier wins whenever it can trade. Only when its stations are empty or full does the next tier get a turn, "
-                        + "and lower tiers keep off goods a higher tier is waiting for.\n\n"
-                        + "Paired-only stations use the first four tiers. Item routes are for vessels; partners and groups work for drones too.\n"
-                        + "Interstellar stations set a vessel min load: 10%, 25%, 50% or 100% of a vessel, 100 items by default.");
+                "Each slot looks for a match in five tiers:\n"
+                        + "1. Point-to-point partners\n"
+                        + "2. Planet routes\n"
+                        + "3. System routes\n"
+                        + "4. Stations in the same group\n"
+                        + "5. Everyone else, nearest first\n"
+                        + "Higher tiers go first; "
+                        + "the next only gets a turn when those stations are empty or full, and never takes goods a higher tier wants.\n"
+                        + "Paired-only stops at tier 4. Item routes are for vessels; partners and groups cover drones too.\n"
+                        + "Min load: 10, 25, 50 or 100% of a vessel (default 100 items)");
         both("guide.universe.logistics.control_panel.title", "物流控制面板", "Logistics Control Panel");
         both("guide.universe.logistics.control_panel",
                 "按 I 打开。星际、行星内、配送器三页列出全服的站和配送器，能按名字、星球、星系、物品筛，按名字、编号、物品排。\n\n"
                         + "选中一座站，名字、分组、伙伴、指定配对、起送量、航程，还有每格的物品、供需和上限，都能在这里改，和走到站前面改一样。"
-                        + "格子空了才能换物品。配送器远程只改两种模式。别的玩家放的站、配送器和建的路线只能看，自己和队友的才能改。别人建的路线走了你的站，你也能删。\n\n"
-                        + "「路线」页新建物品路线：选物品，选星球还是星系，再选两头。那边还没有站也能设。\n"
-                        + "「定位」在 HUD 上标出那个地方。星图上选中一个星系，画出从它出发的路线和正在飞的运输船。",
+                        + "格子空了才能换物品。配送器远程只改两种模式。",
                 "Press I. The Interstellar, Planetary and Distributors tabs list every station and distributor on the server. "
                         + "Filter by name, planet, system or item; sort by name, number or item.\n\n"
-                        + "Select a station to change its name, group, partners, paired-only switch, min load and range, plus each slot's item, "
-                        + "logic and limit, same as at the station. A slot has to be empty before its item changes. Distributors only take "
-                        + "mode changes from here. Stations, distributors and routes from other players are view only unless they're on your team. "
+                        + "Select a station to edit it as if you were standing at it: name, group, partners, paired-only, min load, range, and "
+                        + "each slot's item, logic and limit. A slot must be empty before its item can change. "
+                        + "Distributors only take mode changes from here.");
+        both("guide.universe.logistics.control_routes.title", "路线和权限", "Routes and Ownership");
+        both("guide.universe.logistics.control_routes",
+                "别的玩家放的站、配送器和建的路线只能看，自己和队友的才能改。别人建的路线走了你的站，你也能删。\n\n"
+                        + "「路线」页新建物品路线：选物品，选星球还是星系，再选两头。那边还没有站也能设。\n\n"
+                        + "「定位」在 HUD 上标出那个地方。星图上选中一个星系，画出从它出发的路线和正在飞的运输船。",
+                "Stations, distributors and routes placed by other players are view only, unless they're on your team. "
                         + "You can still delete a route that runs through one of your stations.\n\n"
-                        + "The Routes tab makes item routes: pick an item, planets or systems, then both ends. The far end doesn't need a station yet.\n"
+                        + "The Routes tab makes item routes: pick an item, planets or systems, then both ends. "
+                        + "The far end doesn't need a station yet.\n\n"
                         + "Locate marks the spot on your HUD. Select a system on the star map to see its routes and the vessels in flight.");
     }
 
@@ -2812,8 +2853,18 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
                 "Stations send and receive by each slot's settings. Drones serve one dimension; vessels travel between planets.\nSet each slot's item and limit, then storage, supply or demand for local and remote. Stations charge only from grid surplus.\n\nPlanetary: 4 slots x 5,000, drone range 1,000 by default\nInterstellar: 5 slots x 10,000 plus vessels; other systems cost 2 space warpers a trip");
         both("guide.universe.logistics.blueprint.title", "蓝图", "Blueprints");
         both("guide.universe.logistics.blueprint",
-                "蓝图把一片建筑存下来，在别处照着放。配方、过滤、分流器的优先出口和过滤、流速监测器的下限、研究站的增产模式、战场分析基地捡什么，都一起复制；转向时优先出口跟着转。库存不复制。\n\n空白：右键两个方块框选（每边最多 32），潜行右键保存\n画好的：右键放下，R 转 90°，潜行右键清空\n放置距离：64 格\n放下的是工地：蓝色的虚影由机甲的建造无人机一格格建起来，材料从背包和外骨骼货舱里扣。创造模式直接放好。",
-                "Blueprints copy builds with recipes and filters, splitter priority and filter, traffic monitor thresholds, matrix lab proliferator mode and battlefield base pickup. Priority outputs turn with the blueprint.\n\nBlank: mark two corners (32 max per side), sneak + right-click to save\nSaved: right-click to place, R rotates, sneak + right-click clears\nRange: 64 blocks\nSurvival: your drones build it\nCreative: placed at once");
+                "蓝图把一片建筑存下来，在别处照着放。"
+                        + "配方、过滤、分流器的优先出口和过滤、流速监测器的下限、研究站的增产模式、战场分析基地捡什么都一起复制，"
+                        + "转向时优先出口跟着转。库存不复制。\n"
+                        + "空白：右键两个方块框选（每边最多 32），潜行右键保存\n"
+                        + "画好的：右键放下，R 转 90°，潜行右键清空\n"
+                        + "放置距离：64 格\n"
+                        + "放下的是工地：机甲的建造无人机照着蓝色虚影一格格建，材料从背包和外骨骼货舱里扣。创造模式直接放好。",
+                "Copies a build with recipes, filters, splitter outputs, monitor thresholds, proliferator modes and base pickup lists. "
+                        + "Not inventories.\n"
+                        + "Blank: right-click two corners (32 max a side), sneak + right-click to save\n"
+                        + "Drawn: right-click places, R rotates, sneak + right-click clears\n"
+                        + "Range: 64 blocks. Drones build it in survival; creative is instant");
         both("guide.universe.ship.build.title", "造船", "Building a Ship");
         both("guide.universe.ship.build",
                 "飞船由方块拼成。右键驾驶台组装：和它连在一起的方块都算船上的，地形不算。\n\n必需：一个驾驶台（朝向是船头）、至少一个推进器\n可选：燃料舱、脉冲引擎、跃迁引擎、护盾、武器、座椅、船体板\n上限：4096 个方块\n起飞条件：推重比大于 1；一个推进器在 1 倍重力下推 12 吨",
@@ -4041,7 +4092,7 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("guide.universe.civilization.settlements.title", "聚落", "Settlements");
         both("guide.universe.civilization.settlements",
                 "有大气、不荒芜的星球上有聚落，扫描能标出来。几间小屋围着一片广场，样子随这个恒星系的主导种族：商旅族搭帐篷，学者族住白墙玻璃房，戍卫族住厚墙石堡。\n\n广场上立着一块知识石\n货摊里的交易终端和交易站的一样\n两个访客站在广场两边\n技术商在货摊旁边\n\n没有总督的聚落能接管，见「管理聚落」一章。",
-                "Found on planets with an atmosphere that aren't barren. Scans mark them. The huts follow the system's dominant race: tents for Traders, white glass houses for Scholars, stone forts for Wardens.\n\nA Knowledge Stone stands in the plaza\nThe stall's terminal works like a trading post's\nTwo visitors wait by the plaza\nA tech merchant stands at the stall\n\nA settlement with no governor can be claimed; see Running a Settlement.");
+                "Found on planets with an atmosphere that aren't barren. Scans mark them. The huts follow the system's dominant race: tents for Traders, white glass houses for Scholars, stone forts for Wardens.\n\nA Knowledge Stone stands in the plaza\nThe stall's terminal works like a trading post's\nTwo visitors wait by the plaza\nA tech merchant stands at the stall\n\nA settlement with no governor can be claimed; see Governorship.");
     }
 
     /** 外星 NPC 和对话（ADR-0027 §三、§四）：角色、头顶的名字、对话界面、送礼的反应、手册"外星文明"一章的对话页。 */

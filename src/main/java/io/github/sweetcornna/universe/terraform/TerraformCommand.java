@@ -156,8 +156,14 @@ public final class TerraformCommand {
                     Component.translatable(threshold.met() ? C + "info.met" : C + "info.unmet")));
         }
         EnumSet<Terraform.Stage> stages = Terraform.reached(env);
-        List<String> names = stages.stream().map(stage -> stage.name().toLowerCase(Locale.ROOT)).toList();
-        text.append("\n  ").append(Component.translatable(C + "info.stages", names.isEmpty() ? "-" : String.join(", ", names)));
+        MutableComponent names = Component.empty();
+        for (Terraform.Stage stage : stages) {
+            if (!names.getSiblings().isEmpty()) {
+                names.append(", ");
+            }
+            names.append(Component.translatable(C + "stage." + stage.name().toLowerCase(Locale.ROOT)));
+        }
+        text.append("\n  ").append(Component.translatable(C + "info.stages", stages.isEmpty() ? Component.literal("-") : names));
         source.sendSuccess(() -> text, false);
         return 1;
     }

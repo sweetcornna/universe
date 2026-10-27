@@ -158,22 +158,24 @@ final class FleetLanguage {
     private static void guide(Both both) {
         both.add("guide.universe.survival.fleet.title", "地面编队", "Ground Squadrons");
         both.add("guide.universe.survival.fleet",
-                "研究「地面编队」以后，机甲面板「舰队」页的编队格能放单位：一个编队 6 格，放原型机、精准无人机、攻击无人机。按 Z 出动或召回，"
-                        + "面板里也能一个个编队地出动。\n\n"
-                        + "跟在身后，打 24 格内的黑雾，你正在打的先打\n"
+                "研究「地面编队」以后，机甲面板「舰队」页的编队格能放单位：一个编队 6 格，放原型机、精准无人机、攻击无人机。"
+                        + "按 Z 出动或召回，面板里也能一个个编队地出动。\n\n"
+                        + "升级「编队扩充」最多 3 个编队。",
+                "With Ground Squadron researched, the Fleet page of the mecha panel takes units: 6 slots a squadron, for prototypes and "
+                        + "drones. Press Z to deploy or recall, or deploy each squadron from the panel.\n\n"
+                        + "Squadron Expansion: up to 3 squadrons.");
+        both.add("guide.universe.survival.fleet_field.title", "出动以后", "In the Field");
+        both.add("guide.universe.survival.fleet_field",
+                "跟在身后，打 24 格内的黑雾，你正在打的先打\n"
                         + "离你 48 格以外不追\n"
                         + "待命和开火都用核心的电，没电 10 秒自动召回\n"
                         + "被打掉就没了；开着自动补员时从背包和货舱里补同一种\n"
-                        + "停着时用核心的电修，每点生命 50 J\n"
-                        + "升级「编队扩充」最多 3 个编队",
-                "With Ground Squadron researched, the Fleet page of the mecha panel takes units: 6 slots a squadron, for prototypes and drones. "
-                        + "Press Z to deploy or recall, or deploy each squadron from the panel.\n\n"
-                        + "They follow you and attack Dark Fog within 24 blocks, your current target first\n"
+                        + "停着时用核心的电修，每点生命 50 J",
+                "They follow you and attack Dark Fog within 24 blocks, your current target first\n"
                         + "They give up past 48 blocks from you\n"
                         + "Idling and firing draw on the core; 10 s without energy recalls them\n"
                         + "Lost units are gone; auto-replenish refills from inventory and cargo\n"
-                        + "Docked units repair from the core, 50 J per health\n"
-                        + "Squadron Expansion: up to 3 squadrons");
+                        + "Docked units repair from the core, 50 J per health");
         both.add("guide.universe.survival.space_fleet.title", "太空舰队", "Space Fleet");
         both.add("guide.universe.survival.space_fleet",
                 "研究「太空舰队」以后能编炮艇和驱逐舰，一支舰队 3 格，只在太空出动。开着飞船时跟在船后面。\n\n"
@@ -182,10 +184,10 @@ final class FleetLanguage {
                         + "打 96 格内的黑雾，160 格以外不追\n"
                         + "打开「打建筑」去拆巢穴\n"
                         + "升级「舰队扩充」开第二支",
-                "Space Fleet lets you field corvettes and destroyers, 3 slots a fleet, in space only. They trail your ship while you fly it.\n\n"
+                "Space Fleet unlocks corvettes and destroyers: 3 slots a fleet, space only. They trail your ship while you fly it.\n\n"
                         + "Corvette: twin lasers, range 64\n"
-                        + "Destroyer: plasma main gun, range 96; point defense shoots Lancers\n"
-                        + "They attack Dark Fog within 96 blocks and give up past 160\n"
+                        + "Destroyer: plasma gun, range 96; point defense vs Lancers\n"
+                        + "Attack Dark Fog within 96, give up past 160\n"
                         + "Turn on Hit structures to take down hives\n"
                         + "Fleet Expansion: a second fleet");
         both.add("guide.universe.survival.mecha_weapons.title", "机甲武器", "Mecha Weapons");
@@ -211,13 +213,13 @@ final class FleetLanguage {
                         + "冷却 5 秒，不伤玩家和中立生物\n"
                         + "干扰胶囊右键扔，6 格内的黑雾慢 8 秒\n"
                         + "穿着胸甲潜行右键扔水瓶，灭掉 3 格内的火",
-                "When the shield is down, the mecha core tops it up: 200 J a point, up to 4 a second, after the usual 5 s delay. "
+                "The mecha core recharges a damaged shield: 200 J a point, up to 4 a second, after the usual 5 s delay. "
                         + "Energy Shield adds 20 a level.\n\n"
-                        + "Hold Left Alt to charge (2 s max), release to fire\n"
-                        + "Spends half the shield; Dark Fog and monsters within 6 blocks take twice that and are knocked back\n"
+                        + "Burst: hold Left Alt (up to 2 s), release\n"
+                        + "Uses half the shield; Dark Fog and monsters within 6 m take double and are knocked back\n"
                         + "In space: radius ×3, damage +50%\n"
-                        + "5 s cooldown; players and neutral mobs are safe\n"
-                        + "Right-click to throw a jamming capsule: Dark Fog within 6 blocks slows for 8 s\n"
-                        + "Sneak and right-click a water bottle (chestplate on) to throw it: puts out fire within 3 blocks");
+                        + "Cooldown 5 s; spares players, neutral mobs\n"
+                        + "Jamming capsule, right-click: slows Dark Fog within 6 m for 8 s\n"
+                        + "Water bottle, sneak + right-click with a chestplate on: puts out fire within 3 m");
     }
 }

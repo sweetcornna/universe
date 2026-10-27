@@ -1336,8 +1336,10 @@ public final class UniverseGameTests {
         helper.succeed();
     }
 
-    /** 雷击石（ADR-0026）：雷打中的沙子熔成雷击石。 */
+    /** 雷击石（ADR-0026）：雷打中的沙子熔成雷击石；草方块也算（26.x 的 #dirt 不含草方块）。 */
     private static void lightningFusesFulgurite(GameTestHelper helper) {
+        helper.assertTrue(Blocks.GRASS_BLOCK.defaultBlockState().is(Fulgurites.HOSTS), "雷打在草方块上不会熔");
+        helper.assertTrue(UniverseBlocks.PLANET_TURF.get().defaultBlockState().is(Fulgurites.HOSTS), "雷打在星球的草皮上不会熔");
         BlockPos pos = new BlockPos(3, 1, 3);
         helper.setBlock(pos, Blocks.SAND);
         int fused = Fulgurites.fuse(helper.getLevel(), helper.absolutePos(pos), Rng.of(7));

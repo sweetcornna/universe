@@ -161,12 +161,12 @@ final class FishingLanguage {
                         + "再右键收回来\n"
                         + "等 8–20 秒，快咬钩时水下有鱼影游过来\n"
                         + "浮标往下一沉就右键，慢了鱼会跑",
-                "Research Fishing (4 raw alien fish, 6 magnetic coils), then make a Fishing Rig in an assembler. "
-                        + "Fit it in a multitool slot and press G to switch to it.\n\n"
-                        + "Right-click to cast, up to 24 m. It has to land in water or acid\n"
-                        + "Right-click again to reel in\n"
-                        + "Wait 8–20 s. A shadow swims up just before a bite\n"
-                        + "When the bobber dips, right-click at once or it gets away");
+                "Research Fishing (4 raw alien fish, 6 magnetic coils) and make a Fishing Rig in an assembler. Fit it to the multitool; "
+                        + "G switches to it.\n\n"
+                        + "Right-click: cast up to 24 m into water or acid\n"
+                        + "Right-click again: reel in\n"
+                        + "A bite takes 8–20 s; a shadow swims up first\n"
+                        + "Bobber dips: right-click fast or it gets away");
         both.add(g + ".reeling.title", "收线", "Reeling In");
         both.add(g + ".reeling",
                 "钩住以后按住右键收线，松开放线。屏幕下方有张力条和进度条。\n\n"
@@ -211,8 +211,8 @@ final class FishingLanguage {
                         + "水越深，鱼越重\n"
                         + "发现日志的「钓鱼」页列出 96 种，没钓到的写着条件\n"
                         + "十条里有一条是杂物，偶尔钓上漂流瓶、密封补给舱，很少有技术模块",
-                "Each planet has its own mix: every common fish, only some of the rest. Missing one? Try another world of the same type.\n\n"
-                        + "Some fish bite only by day, at night or in storms\n"
+                "Each planet has every common fish and some of the rest. Missing one? Try another world of the same type.\n\n"
+                        + "Some bite only by day, at night or in storms\n"
                         + "Some want shallow water (4 m or less) or deep (8 m or more)\n"
                         + "Deeper water, heavier fish\n"
                         + "The Fishing page of the discovery log lists all 96, with conditions for the ones you haven't caught\n"
@@ -226,17 +226,15 @@ final class FishingLanguage {
                         + "深水坠饵：大鱼、巨鱼多一倍，也更重\n"
                         + "夜光饵：白天也钓得到夜里的鱼\n"
                         + "静电拟饵：不下风暴也钓得到风暴里的鱼\n"
-                        + "星核饵：传说的 ×4\n"
-                        + "饵在营养处理器里做",
-                "Sneak + right-click in fishing mode to open the bait slot. Each hooked catch uses one. No bait works too, just slower.\n\n"
+                        + "星核饵：传说的 ×4",
+                "Sneak + right-click in fishing mode for the bait slot. One per catch; no bait means longer waits.\n"
                         + "Any food: wait ×0.8; cooked dishes ×0.6\n"
                         + "Stink Bait: half the wait\n"
                         + "Spinner Lure: twice the uncommon and rare\n"
-                        + "Deep Sinker: twice the large and huge, and heavier\n"
+                        + "Deep Sinker: large and huge ×2, heavier\n"
                         + "Glow Bait: night fish bite by day\n"
                         + "Static Lure: storm fish bite in calm weather\n"
-                        + "Star Core Bait: legendary ×4\n"
-                        + "Made in the nutrient processor");
+                        + "Star Core Bait: legendary ×4");
         both.add(g + ".release_trap.title", "放生和捕鱼笼", "Release and Traps");
         both.add(g + ".release_trap",
                 "拿着鱼对着水右键放生。接下来 3 次甩竿，等鱼的时间减半，少见以上的多 15%。\n\n"
@@ -244,9 +242,10 @@ final class FishingLanguage {
                         + "有饵大约一分半一条，没饵三分钟一条\n"
                         + "9 格存货，满了就停\n"
                         + "漏斗、分拣器能取",
-                "Right-click water with a fish in hand to release it. Your next 3 casts wait half as long, with 15% better odds for uncommon and up.\n\n"
-                        + "A fish trap has to be fully under water. It catches what lives there, common and uncommon only:\n"
-                        + "Baited, about one every 90 s; unbaited, one every 3 min\n"
+                "Release a fish by right-clicking water with it. "
+                        + "Your next 3 casts wait half as long, with 15% better odds for uncommon and up.\n\n"
+                        + "A fish trap works fully submerged and catches local common and uncommon fish:\n"
+                        + "Baited: one per ~90 s; unbaited: one per 3 min\n"
                         + "9 slots. It stops when full\n"
                         + "Hoppers and sorters can empty it");
         both.add(g + ".seafood.title", "海鲜", "Seafood");
@@ -257,11 +256,11 @@ final class FishingLanguage {
                         + "冰鱼汤：保暖\n"
                         + "传说鱼宴：要一条传说的鱼，危害防护回满\n\n"
                         + "鱼在空间站按档次和个头卖钱，传说的巨鱼值几千信用点。",
-                "Raw fish is edible, and cooks in a furnace, smoker or campfire. The nutrient processor makes seven seafood dishes:\n\n"
+                "Eat fish raw or cook it. The nutrient processor makes seven dishes:\n"
                         + "Grilled Fillet, Fish Soup, Sashimi Platter, Smoked Fish: filling\n"
                         + "Deep Sea Stew: restores oxygen\n"
                         + "Ice Fish Soup: keeps you warm\n"
-                        + "Legendary Feast: takes a legendary fish, refills hazard protection\n\n"
+                        + "Legendary Feast: takes a legendary fish, refills hazard protection\n"
                         + "Stations pay by rarity and size. A huge legendary is worth thousands.");
     }
 }

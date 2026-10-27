@@ -125,6 +125,10 @@ final class TerraformLanguage {
         both.add(C + "info.met", "到了", "met");
         both.add(C + "info.unmet", "没到", "not met");
         both.add(C + "info.stages", "到了的阶段：%s", "Stages reached: %s");
+        both.add(C + "stage.temperate", "温和", "temperate");
+        both.add(C + "stage.clean_air", "无毒", "clean air");
+        both.add(C + "stage.shielded", "挡住宇宙线", "shielded");
+        both.add(C + "stage.breathable", "能呼吸", "breathable");
         both.add(C + "gas", "%1$s：%3$s %2$s 个，现在气压 %4$s atm，平均 %5$s K", "%1$s: %2$s %3$s, now %4$s atm, mean %5$s K");
         both.add(C + "biomass", "%s 的生物量设成了 %s", "Set biomass on %s to %s");
         both.add(C + "mirrors", "%s 上空的反射镜设成了 %s 面", "Set mirrors around %s to %s");

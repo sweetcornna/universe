@@ -40,8 +40,7 @@ public final class Guide {
                     page("geothermal", "universe:geothermal_power_station"),
                     page("exchanger", "", "universe:energy_exchanger", "universe:accumulator"),
                     // 和别的模组接电、接管道（ADR-0030 §三）
-                    page("interface", "universe:grid_interface", "universe:grid_interface", "universe:storage_tank", "universe:water_pump",
-                            "universe:oil_extractor")),
+                    page("interface", "universe:grid_interface")),
             chapter("gathering", "universe:mining_machine",
                     page("mining", "universe:mining_machine"),
                     page("veins", "", "universe:planet_iron_ore", "universe:titanium_ore", "universe:silicon_ore", "universe:fire_ice_ore",
@@ -78,6 +77,7 @@ public final class Guide {
                     // 五层配对、物品路线和控制面板（ADR-0033 §三）
                     page("dispatch", "", "universe:interstellar_logistics_station", "universe:planetary_logistics_station"),
                     page("control_panel", "", "universe:interstellar_logistics_station", "universe:logistics_distributor"),
+                    page("control_routes", ""),
                     page("distributor", "universe:logistics_distributor", "universe:logistics_distributor", "universe:logistics_bot"),
                     page("slots", ""),
                     page("blueprint", "universe:blueprint"),
@@ -125,6 +125,7 @@ public final class Guide {
                     page("flight", ""),
                     // M18 机甲的舰队和战斗（ADR-0033 §一、§二）
                     page("fleet", "universe:prototype", "universe:prototype", "universe:precision_drone", "universe:attack_drone"),
+                    page("fleet_field", ""),
                     page("space_fleet", "universe:corvette", "universe:corvette", "universe:destroyer"),
                     page("mecha_weapons", "", "universe:magnum_ammo_box", "universe:missile_set", "universe:plasma_capsule"),
                     page("shield_burst", "", "universe:jamming_capsule")),
@@ -136,11 +137,13 @@ public final class Guide {
                     page("bases", "", "universe:base_beacon", "universe:teleporter"),
                     // 全息信标和备忘（ADR-0033 §六）
                     page("holo_beacon", "universe:holo_beacon", "universe:holo_beacon"),
+                    page("beacon_range", ""),
                     page("memos", ""),
                     page("portals", "", "universe:portal_dial", "universe:portal_glyph"),
                     page("pillars", "", "universe:sentinel_pillar_terminal", "universe:sentinel_pillar_light"),
                     // 奇异星球的六种地貌（ADR-0030 §二）
                     page("exotic", "", "universe:planet_crystal", "universe:planet_strata", "universe:planet_rock"),
+                    page("exotic_more", ""),
                     // 巨型生物（ADR-0026 §九）
                     page("giants", "", "universe:herbivore_feed", "universe:carnivore_feed"),
                     // 水下（ADR-0026）
@@ -192,6 +195,7 @@ public final class Guide {
                     page("editor", ""),
                     // 自己设计戴森壳（M17，ADR-0030 §四）
                     page("design", ""),
+                    page("design_share", ""),
                     page("rockets", "universe:small_carrier_rocket", "universe:vertical_launching_silo", "universe:dyson_sphere_component"),
                     page("receiver", "universe:ray_receiver", "universe:critical_photon", "universe:graviton_lens", "universe:dark_fog_lens"),
                     // 黑雾透镜（ADR-0033 §七）
@@ -230,7 +234,7 @@ public final class Guide {
                     page("conditions", "", "universe:message_bottle", "universe:sealed_cache"),
                     page("bait", "universe:stink_bait", "universe:stink_bait", "universe:spinner_lure", "universe:deep_sinker", "universe:glow_bait",
                             "universe:static_lure", "universe:star_core_bait"),
-                    page("release_trap", "universe:fish_trap", "universe:fish_trap"),
+                    page("release_trap", "universe:fish_trap"),
                     page("seafood", "universe:deep_sea_stew", "universe:grilled_fillet", "universe:fish_soup", "universe:sashimi_platter",
                             "universe:deep_sea_stew", "universe:ice_fish_soup", "universe:legendary_feast")),
             // 管理聚落（ADR-0034 §二）
@@ -255,7 +259,7 @@ public final class Guide {
                     page("hulks", "", "universe:salvaged_reactor_core"),
                     page("tractor", "universe:module_tractor_beam", "universe:module_tractor_beam"),
                     page("eva", ""),
-                    page("gravity_coil", "universe:gravity_coil", "universe:gravity_coil")),
+                    page("gravity_coil", "universe:gravity_coil")),
             // 化学（ADR-0036 §一–§四）
             chapter("chemistry", "universe:electrolyzer",
                     page("substances", "", "universe:raw_titanium", "minecraft:raw_copper", "universe:salt"),

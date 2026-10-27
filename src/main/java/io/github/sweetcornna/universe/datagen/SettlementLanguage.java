@@ -427,7 +427,7 @@ final class SettlementLanguage {
     /** 手册的「管理聚落」一章。 */
     private static void guide(Both both) {
         String g = "guide.universe.settlement";
-        both.add(g, "管理聚落", "Running a Settlement");
+        both.add(g, "管理聚落", "Governorship");
         both.add(g + ".claim.title", "接管", "Claiming");
         both.add(g + ".claim",
                 "没有总督的聚落能接管。广场上交易终端右边是聚落终端，打开「接管」页：\n\n"
@@ -435,7 +435,8 @@ final class SettlementLanguage {
                         + "交建设物资：钢 30、碳纳米管 8、电路板 8\n"
                         + "一个人最多管 4 个聚落\n\n"
                         + "接管以后周围 8 块地基整平、修好路，头两天没有海盗。要在聚落 64 格内才能管；按键设置里给「我的聚落」绑个键，远处也能看。",
-                "A settlement with no governor can be claimed. The settlement terminal stands right of the trade terminal on the plaza. Open the Claim tab:\n\n"
+                "A settlement with no governor can be claimed from the Claim tab of its settlement terminal, right of the trade "
+                        + "terminal:\n\n"
                         + "Acquainted standing with its race\n"
                         + "Construction materials: 30 steel, 8 carbon nanotubes, 8 circuit boards\n"
                         + "Up to 4 settlements per player\n\n"
@@ -533,12 +534,12 @@ final class SettlementLanguage {
                         + "总督不在 256 格内，或者聚落不在模拟距离内：不真打，按防御值算输赢，炮台、瞭望塔、人口、幸福都算\n"
                         + "打到一半走开，或者有战机飞出模拟距离停住，剩下的也按防御值算",
                 "Past 40 threat, pirates may come any night; at 100 they always do. 3–6 fighters strafe the buildings. "
-                        + "Shoot them all down within 2 min to hold.\n\n"
-                        + "Held: threat to 0, happiness +10, a credit reward\n"
+                        + "Down them all within 2 min to hold.\n\n"
+                        + "Held: threat 0, happiness +10, credits\n"
                         + "Lost: two buildings damaged, happiness −15, a third of the reserve stolen\n"
                         + "Defense turrets fire on their own\n"
-                        + "Governor more than 256 m away, or the settlement outside simulation distance: no fight. "
-                        + "The defense rating decides, from turrets, watchtowers, population and happiness\n"
-                        + "Walk off mid-raid, or a fighter strays past simulation distance and freezes: the defense rating settles the rest");
+                        + "Governor beyond 256 m, or settlement outside simulation distance: no fight; "
+                        + "the defense rating decides (turrets, watchtowers, population, happiness)\n"
+                        + "Leave mid-raid, or a fighter strays out of simulation distance and freezes: the defense rating settles the rest");
     }
 }

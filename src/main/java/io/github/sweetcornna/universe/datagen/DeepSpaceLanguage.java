@@ -125,12 +125,13 @@ final class DeepSpaceLanguage {
                         + "废弃前哨站：没电的小站，有补给箱、数据终端和能拆的设备\n"
                         + "太空残骸：60–120 格长的废船\n\n"
                         + "废金属在电弧熔炉里炼成铁或钢，合金板炼成钛锭，电子元件在装配机里做成电路板。",
-                "Every system has a few sites out in space, marked on the HUD within 2500 m.\n\n"
-                        + "Debris fields: thirty to fifty drifting chunks. Break them with the ship's mining beam for scrap metal, "
-                        + "alloy plates and salvaged electronics, sometimes a tech module\n"
-                        + "Abandoned outposts: small dead stations with supply crates, a data terminal and equipment to strip\n"
+                "Every system has a few sites in space, marked on the HUD within 2500 m.\n\n"
+                        + "Debris fields: 30–50 drifting chunks. "
+                        + "Break them with the ship's mining beam for scrap metal, alloy plates, salvaged electronics, sometimes a tech module\n"
+                        + "Abandoned outposts: dead stations with crates, a data terminal and gear to strip\n"
                         + "Derelict hulks: wrecks 60–120 m long\n\n"
-                        + "An arc smelter turns scrap into iron or steel and alloy plates into titanium. Assemblers make circuit boards from salvaged electronics.");
+                        + "Arc smelters turn scrap into iron or steel, alloy plates into titanium. "
+                        + "Assemblers turn salvaged electronics into circuit boards.");
         both.add(g + ".hulks.title", "拆残骸", "Salvaging Hulks");
         both.add(g + ".hulks",
                 "靠近残骸时 HUD 上显示结构完整度，从 100% 开始往下掉：\n\n"
@@ -179,11 +180,11 @@ final class DeepSpaceLanguage {
                         + "左键扔出去，砸到生物会伤它\n"
                         + "潜行左键把前方 8 格内的东西推开\n"
                         + "往开着牵引光束的自家飞船扔，直接收进货舱",
-                "Research Gravity Coil and make it in an assembler. Fit it in the multitool and press G to switch to it.\n\n"
-                        + "Hold right-click to lift what you're aiming at within 16 m: drops, debris, small creatures, drones, Dark Fog raiders\n"
-                        + "It hangs in front of you. Let go to set it down\n"
-                        + "Left-click throws it, and it hurts whatever it hits\n"
-                        + "Sneak + left-click shoves everything in an 8 m cone ahead\n"
-                        + "Throw salvage at your own ship with the tractor beam on and it goes straight into the hold");
+                "Research Gravity Coil, assemble one and fit it to the multitool. G switches to it.\n\n"
+                        + "Hold right-click to lift what you aim at within 16 m: drops, debris, small creatures, drones, Dark Fog raiders\n"
+                        + "It floats in front of you until you let go\n"
+                        + "Left-click throws it, hurting whatever it hits\n"
+                        + "Sneak + left-click shoves everything in an 8 m cone\n"
+                        + "Throw salvage at your ship with the tractor beam on and it goes straight into the hold");
     }
 }
