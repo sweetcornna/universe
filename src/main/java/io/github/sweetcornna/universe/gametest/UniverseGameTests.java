@@ -849,13 +849,14 @@ public final class UniverseGameTests {
         spaced(event, environment, SETTLEMENT_RAID_RESOLVES_BY_DEFENSE, 60);
         test(event, environment, SETTLEMENT_RAIDERS_STRAFE_ABOVE_GROUND, 600);
         test(event, environment, SETTLEMENT_RAID_IDLE_CENTRE_ROLLS_DEFENSE, 300);
-        test(event, environment, SETTLEMENT_RAID_BEGIN_SKIPS_IDLE_CENTRE, 200);
-        test(event, environment, SETTLEMENT_RAID_SPAWN_PULLED_TOWARD_OWNER, 200);
-        test(event, environment, SETTLEMENT_RAID_RELEASED_CHUNKS_ROLL_DEFENSE, 400);
-        test(event, environment, SETTLEMENT_RAID_DISCARDED_FIGHTERS_ROLL_DEFENSE, 200);
-        test(event, environment, SETTLEMENT_RAID_FROZEN_FIGHTER_ROLLS_DEFENSE, 300);
-        test(event, environment, SETTLEMENT_RAID_OWNER_LEAVES_BEFORE_END_ROLLS_DEFENSE, 200);
-        test(event, environment, SETTLEMENT_RAID_LAST_KILL_ON_ABSENT_TICK_WINS, 300);
+        // 下面几个等远处强制加载的区块，按真实时间等（RealTime），最长刻数加上它
+        test(event, environment, SETTLEMENT_RAID_BEGIN_SKIPS_IDLE_CENTRE, RealTime.TICKS + 200);
+        test(event, environment, SETTLEMENT_RAID_SPAWN_PULLED_TOWARD_OWNER, RealTime.TICKS + 200);
+        test(event, environment, SETTLEMENT_RAID_RELEASED_CHUNKS_ROLL_DEFENSE, RealTime.TICKS + 400);
+        test(event, environment, SETTLEMENT_RAID_DISCARDED_FIGHTERS_ROLL_DEFENSE, RealTime.TICKS + 200);
+        test(event, environment, SETTLEMENT_RAID_FROZEN_FIGHTER_ROLLS_DEFENSE, RealTime.TICKS + 300);
+        test(event, environment, SETTLEMENT_RAID_OWNER_LEAVES_BEFORE_END_ROLLS_DEFENSE, RealTime.TICKS + 200);
+        test(event, environment, SETTLEMENT_RAID_LAST_KILL_ON_ABSENT_TICK_WINS, RealTime.TICKS + 300);
         spaced(event, environment, SETTLEMENT_POND_WATER_CACHED, 20);
         spaced(event, environment, SETTLEMENT_CLAIM_DROPS_CONTAINERS, 20);
         test(event, environment, DIG_SITE_COLLECTOR_NEEDS_CAMP, 20);
@@ -895,7 +896,7 @@ public final class UniverseGameTests {
         test(event, environment, HOLO_BEACON_COALESCES_BROADCASTS, 20);
         test(event, environment, GRAVITY_REFUSES_OTHERS_FLEET_UNIT, 20);
         test(event, environment, GRAVITY_BEAM_REACHES_LATE_TRACKER, 40);
-        // 区块在后台按真实时间生成，测试服务端空闲时一秒能跑几千刻：测试里按真实时间限时（ReleaseFixGameTests.FAR_CHUNKS_SECONDS），刻数不设限
+        // 区块在后台按真实时间生成，测试服务端空闲时一秒能跑几千刻：测试里按真实时间限时（RealTime），刻数不设限
         test(event, environment, FAR_CHUNKS_LOAD_IN_BACKGROUND, Integer.MAX_VALUE);
         // 1.0.0 发布前修复：危害、引力抓取器、深空、信标、统计的测试加在这行上面
         // 电解水 28 秒；提取器要看得到天，上面不封屏障
@@ -919,8 +920,8 @@ public final class UniverseGameTests {
         test(event, environment, BIOREACTOR_METHANOGEN_MAKES_METHANE, BioreactorGameTests.METHANE_TICKS);
         test(event, environment, BIOREACTOR_WRONG_STRAIN_STARVES, 60);
         test(event, environment, BIOREACTOR_DEAD_TANK_REINOCULATES, BioreactorGameTests.REINOCULATE_TICKS);
-        // 封顶的场地看不到天，藻类开补光灯
-        test(event, environment, BIOREACTOR_GROW_LIGHTS_COST_MORE_THAN_BIOMASS, BioreactorGameTests.ALGAE_TICKS);
+        // 反应器顶上压块石头看不到天，藻类开补光灯；先按真实时间等光照线程算到石头（RealTime）
+        test(event, environment, BIOREACTOR_GROW_LIGHTS_COST_MORE_THAN_BIOMASS, RealTime.TICKS + BioreactorGameTests.ALGAE_TICKS);
         // M20 生物反应器（D）的测试加在这行上面
         test(event, environment, RELEASE_TOWER_RELEASES_GAS, 200);
         test(event, environment, UNTOUCHED_PLANETS_UNCHANGED, 20);

@@ -21,6 +21,7 @@ import net.minecraft.gametest.framework.GameTestHelper;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CookingFuel;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.storage.loot.providers.number.ints.ResolvableInt;
@@ -98,7 +99,7 @@ final class BioreactorGameTests {
         });
     }
 
-    /** 封了顶看不到天，藻类开补光灯：电比别的工艺多，每批的电又比藻类生物质烧掉换回的多，还是做得出藻类和氧。 */
+    /** 顶上压了石头看不到天，藻类开补光灯：电比别的工艺多，每批的电又比藻类生物质烧掉换回的多，还是做得出藻类和氧。 */
     static void growLightsCostMoreThanBiomass(GameTestHelper helper) {
         CookingFuel fuel = new ItemStack(UniverseItems.ALGAL_BIOMASS.get()).get(DataComponents.COOKING_FUEL);
         helper.assertTrue(fuel != null && fuel.burnTime() instanceof ResolvableInt.Constant, "藻类生物质不是燃料");
@@ -112,14 +113,18 @@ final class BioreactorGameTests {
         reactor.setItem(0, new ItemStack(UniverseItems.CARBON_DIOXIDE.get(), 64));
         reactor.setItem(1, new ItemStack(UniverseItems.WATER.get(), 64));
         double lights = BioreactorBlockEntity.LIGHT_JOULES_PER_BATCH / 200;
-        helper.succeedWhen(() -> {
+        // 场地顶上的屏障透天光，有没有阳光就看测试跑到白天还是夜里。压一块石头，canSeeSky 看的是天光，
+        // 后台的光照线程按真实时间算到它；算到以后反应器下一次查天（每 100 刻）就开补光灯
+        helper.setBlock(pos.above(), Blocks.STONE);
+        BlockPos above = helper.absolutePos(pos.above());
+        RealTime.await(helper, () -> !helper.getLevel().canSeeSky(above), "光照还没算到反应器顶上的石头").thenWaitUntil(() -> {
             BioreactorBlockEntity current = helper.getBlockEntity(pos, BioreactorBlockEntity.class);
             int flags = current.data().get(BioreactorBlockEntity.FLAGS);
-            helper.assertValueEqual(flags & 1, 0, "封了顶还算有阳光");
+            helper.assertValueEqual(flags & 1, 0, "压了石头还算有阳光");
             helper.assertValueEqual(flags & 2, 2, "补光灯没开");
             helper.assertTrue(current.demand() > lights, "补光灯开着只要 " + current.demand() + " J/刻");
             helper.assertTrue(current.countItem(UniverseItems.ALGAL_BIOMASS.get()) >= 1, "没有做出藻类生物质");
-        });
+        }).thenSucceed();
     }
 
     /** 放一台生物反应器：研究做完，选好工艺的配方，接种一罐长满的野生菌。 */
