@@ -553,11 +553,12 @@ final class UniverseRecipes extends RecipeProvider {
                 out(organic, 1));
         this.machine(Kind.CHEMICAL, "graphene", 60, "high_strength_materials", in(acid, 3, graphite, 2), out(graphene, 2));
         this.machine(Kind.CHEMICAL, "carbon_nanotube", 80, "high_strength_materials", in(graphene, 3, titanium, 1), out(nanotube, 2));
-        // 星球上的资源：可燃冰直接做石墨烯（顺带出氢），硫磺加水做硫酸
+        // 星球上的资源：可燃冰直接做石墨烯，甲烷裂解 CH₄ → C + 2H₂，水合物里的水排掉（RecipeAtomBalanceTest 里写了）；
+        // 硫磺烧成二氧化硫、转化、吸收，总的是 2S + 3O₂ + 2H₂O → 2H₂SO₄（ADR-0037 §二）
         this.machine(Kind.CHEMICAL, "graphene_from_fire_ice", 40, "high_strength_materials", in(UniverseItems.oreDrop(OreKind.FIRE_ICE), 2),
-                List.of(new ItemStackTemplate(graphene, 2), new ItemStackTemplate(UniverseItems.HYDROGEN.get(), 1)));
-        this.machine(Kind.CHEMICAL, "sulfuric_acid_from_sulfur", 60, "basic_chemical", in(UniverseItems.oreDrop(OreKind.SULFUR), 2, water, 2),
-                out(acid, 2));
+                List.of(new ItemStackTemplate(graphene, 2), new ItemStackTemplate(UniverseItems.HYDROGEN.get(), 4)));
+        this.machine(Kind.CHEMICAL, "sulfuric_acid_from_sulfur", 60, "basic_chemical",
+                in(UniverseItems.oreDrop(OreKind.SULFUR), 2, resource("oxygen"), 3, water, 2), out(acid, 2));
 
         // ---- 制造台：组装件和矩阵
         this.machine(Kind.ASSEMBLING, "microcrystalline_component", 40, "semiconductor", in(silicon, 2, Items.COPPER_INGOT, 1), out(micro, 1));

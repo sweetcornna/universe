@@ -32,13 +32,10 @@ import io.github.sweetcornna.universe.core.trade.ValueGraph;
 class BalanceTest {
     private static final Path RECIPES = Path.of("src/generated/resources/data/universe/recipe");
     /**
-     * 参考工厂里自动化的只有设备配方，工作台的配方不算。生物反应器（紫矩阵那一档才有）不算：模型不管研究顺序，
-     * 只挑最便宜的配方，算进去早期的铜也会按生物浸出算。
+     * 参考工厂里自动化的只有设备配方，工作台的配方不算。反应釜、生物反应器（紫矩阵那一档才有）不算：模型不管研究顺序，
+     * 只挑最便宜的配方，算进去早期的铜也会按生物浸出算，黄矩阵的塑料会按甲醇制烯烃再聚合算（ADR-0037）。
      */
-    private static final List<String> MACHINE_DIRS = List.of("smelting", "assembling", "refining", "chemical", "particle", "electrolysis"
-            , "reactor"
-            // M20 反应釜（B）、生物反应器（D）的配方目录（前面加逗号）加在这行上面
-            );
+    private static final List<String> MACHINE_DIRS = List.of("smelting", "assembling", "refining", "chemical", "particle", "electrolysis");
     /** 相邻两档研究时间最多差几倍。 */
     private static final double MAX_STAGE_RATIO = 3;
     /** 相邻两档每个科技要的矿（中位数）最多差几倍。工厂也在变大，所以比研究时间宽。 */

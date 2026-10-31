@@ -6,6 +6,10 @@
       "ingredient": "universe:sulfur"
     },
     {
+      "count": 3,
+      "ingredient": "universe:oxygen"
+    },
+    {
       "count": 2,
       "ingredient": "universe:water"
     }

@@ -118,7 +118,8 @@ final class ReactorGameTests {
         reactor.setSettings(reaction.defaults());
         helper.succeedWhen(() -> {
             ChemicalReactorBlockEntity current = helper.getBlockEntity(pos, ChemicalReactorBlockEntity.class);
-            helper.assertValueEqual(current.active(), reaction, "认出的反应");
+            // 第一刻还没认，active() 是 null；assertValueEqual 拿它调 equals 会让测试服务器崩掉
+            helper.assertTrue(current.active() == reaction, "认出的反应：" + current.active());
             helper.assertTrue(current.countItem(UniverseItems.WATER.get()) >= 2, "还没做出水");
             helper.assertTrue(ReactionBooks.book(helper.getLevel().getServer()).discovered(reaction), "做成一批没记成发现了");
             helper.assertTrue(current.reaction() == null, "自由投料做成以后换成了选定配方");
@@ -145,7 +146,7 @@ final class ReactorGameTests {
             helper.assertValueEqual(none.data().get(ChemicalReactorBlockEntity.STATUS), ChemicalReactorBlockEntity.AMBIGUOUS, "没放催化剂的状态");
             helper.assertValueEqual(none.data().get(ChemicalReactorBlockEntity.CANDIDATES), 3, "对得上几条");
             helper.assertTrue(none.active() == null, "没放催化剂认出了反应");
-            helper.assertValueEqual(ni.active(), Reaction.CO_METHANATION, "放了镍认出的反应");
+            helper.assertTrue(ni.active() == Reaction.CO_METHANATION, "放了镍认出的反应：" + ni.active());
             helper.assertValueEqual(ni.data().get(ChemicalReactorBlockEntity.ACTIVE), Reaction.CO_METHANATION.ordinal() + 1, "界面数据里的反应");
             helper.assertValueEqual(ni.data().get(ChemicalReactorBlockEntity.STATUS), ChemicalReactorBlockEntity.RUNNING, "放了镍的状态");
             helper.succeed();
@@ -167,7 +168,7 @@ final class ReactorGameTests {
         reactor.setItem(ChemicalReactorBlockEntity.CATALYST_SLOT, new ItemStack(UniverseItems.COPPER_CHLORIDE_CATALYST.get()));
         helper.runAfterDelay(20, () -> {
             ChemicalReactorBlockEntity current = helper.getBlockEntity(pos, ChemicalReactorBlockEntity.class);
-            helper.assertValueEqual(current.reaction(), reaction, "蓝图选的反应");
+            helper.assertTrue(current.reaction() == reaction, "蓝图选的反应：" + current.reaction());
             helper.assertValueEqual(current.data().get(ChemicalReactorBlockEntity.STATUS), ChemicalReactorBlockEntity.LOCKED, "状态");
             helper.assertValueEqual(current.countItem(UniverseItems.CHLORINE.get()), 0, "没发现的反应做出了氯");
             helper.succeed();

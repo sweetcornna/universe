@@ -37,7 +37,11 @@ class RecipeAtomBalanceTest {
     private static final Set<String> CHECKED = Set.of("universe:chemical", "universe:electrolysis", "universe:reactor", "universe:refining",
             "universe:particle", "universe:bioreactor");
     /** 物质的化学式没错、配方是故意不守恒的，写清为什么。 */
-    private static final Map<String, String> EXEMPT = Map.of();
+    private static final Map<String, String> EXEMPT = Map.of(
+            "chemical/graphene", "照戴森球计划用掉硫酸。现实的 Hummers 法里硫酸是插层剂和氧化的介质，用完成了废酸，不回收",
+            "chemical/carbon_nanotube", "照戴森球计划用掉钛，这是紫矩阵前去别的星球的门槛。现实里钛不进纳米管，算作生长用的基底；"
+                    + "提纯时烧掉无定形碳，三份碳出两份管",
+            "chemical/graphene_from_fire_ice", "甲烷裂解出的碳和氢都对得上；水合物里的 5.75 份水在化工厂里排掉，产物格放不下第三种");
 
     @Test
     void pureRecipesConserveAtoms() throws IOException {
