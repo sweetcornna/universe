@@ -1,0 +1,25 @@
+{
+  "type": "universe:smelting",
+  "ingredients": [
+    {
+      "count": 4,
+      "ingredient": "#c:ingots/titanium"
+    },
+    {
+      "count": 4,
+      "ingredient": "#c:ingots/steel"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:argon"
+    }
+  ],
+  "research": "titanium_alloy",
+  "results": [
+    {
+      "count": 4,
+      "id": "universe:titanium_alloy"
+    }
+  ],
+  "time": 240
+}

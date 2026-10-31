@@ -3,7 +3,7 @@
   "ingredients": [
     {
       "count": 2,
-      "ingredient": "universe:silicon"
+      "ingredient": "#c:silicon"
     },
     {
       "count": 1,

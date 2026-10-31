@@ -69,7 +69,10 @@ public final class Progression {
             Map.entry(NS + "argon", atmosphere(0.01)),
             Map.entry(NS + "helium", atmosphere(0.1)),
             // 盐是采矿机挖的；亨特法又把盐还回来，不写在这里会被当成配方的产物
-            Map.entry(NS + "salt", 1.0)
+            Map.entry(NS + "salt", 1.0),
+            // 光学晶体只在奇异星球和白矮星的行星上有（ADR-0039），要开着船去另一个星系挖，按开采的四倍算：
+            // 光子合并器的捷径配方不让按母星系开采算的进度变快
+            Map.entry(NS + "optical_crystal", 4.0)
             // M20 别的几条线（B–E）的原料（前面加逗号）加在这行上面
             );
 

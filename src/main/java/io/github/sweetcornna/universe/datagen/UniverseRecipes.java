@@ -20,6 +20,7 @@ import io.github.sweetcornna.universe.factory.recipe.MachineRecipe.Kind;
 import io.github.sweetcornna.universe.factory.recipe.ResearchShapedRecipe;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
 import io.github.sweetcornna.universe.registry.UniverseDataComponents;
+import io.github.sweetcornna.universe.registry.UniverseItemTags;
 import io.github.sweetcornna.universe.registry.UniverseItems;
 import net.minecraft.core.component.DataComponentPatch;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -50,7 +51,8 @@ import net.neoforged.neoforge.common.crafting.SizedIngredient;
 /** 配方（26.3 里配方是数据包注册表的条目，走 {@code GatherDataRegistryEntriesEvent}）。 */
 final class UniverseRecipes extends RecipeProvider {
     UniverseRecipes(BootstrapContext<Recipe<?>> recipes, BootstrapContext<Advancement> advancements) {
-        super(recipes, advancements);
+        // 设备配方里本模组的材料换成通用标签（ADR-0039）
+        super(new CommonTagRecipes(recipes), advancements);
     }
 
     @Override
@@ -325,6 +327,9 @@ final class UniverseRecipes extends RecipeProvider {
 
         // ---- 组装件
         this.machine(Kind.ASSEMBLING, "photon_combiner", 60, "solar_sail_orbit", in(prism, 2, board, 1), out(combiner, 1));
+        // 光学晶体（冰洲石）本来就是做偏光棱镜的料，一块顶两块玻璃棱镜（戴森球计划的光栅石配方，ADR-0039）
+        this.machine(Kind.ASSEMBLING, "photon_combiner_from_optical_crystal", 60, "solar_sail_orbit",
+                in(UniverseItems.oreDrop(OreKind.OPTICAL_CRYSTAL), 1, board, 1), out(combiner, 1));
         this.machine(Kind.ASSEMBLING, "solar_sail", 80, "solar_sail_orbit", in(graphene, 1, combiner, 1), out(sail, 2));
         this.machine(Kind.ASSEMBLING, "frame_material", 120, "frame_material", in(nanotube, 4, alloy, 1, silicon, 1), out(frame, 1));
         this.machine(Kind.ASSEMBLING, "dyson_sphere_component", 160, "vertical_launching_silo", in(frame, 3, sail, 3, processor, 3),
@@ -540,6 +545,9 @@ final class UniverseRecipes extends RecipeProvider {
         // ---- 冶炼
         this.machine(Kind.SMELTING, "crystal_silicon", 40, "semiconductor", in(silicon, 1), out(crystalSilicon, 1));
         this.machine(Kind.SMELTING, "titanium_alloy", 240, "titanium_alloy", in(titanium, 4, steel, 4, acid, 8), out(alloy, 4));
+        // 现实里钛在氩气保护下熔炼，不和空气里的氧、氮反应：一份氩顶八份硫酸（ADR-0039）。氩主要在奇异星球的大气里
+        this.machine(Kind.SMELTING, "titanium_alloy_under_argon", 240, "titanium_alloy", in(titanium, 4, steel, 4, UniverseItems.ARGON.get(), 1),
+                out(alloy, 4));
         this.machine(Kind.SMELTING, "synthetic_diamond", 40, "structure_matrix", in(graphite, 1), out(diamond, 1));
 
         // ---- 化工
@@ -569,6 +577,9 @@ final class UniverseRecipes extends RecipeProvider {
         this.machine(Kind.ASSEMBLING, "reinforced_thruster", 120, "interstellar_logistics", in(alloy, 5, turbine, 5), out(reinforced, 1));
         this.machine(Kind.ASSEMBLING, "electromagnetic_turbine", 40, "magnetic_levitation", in(motor, 2, coil, 2), out(turbine, 1));
         this.machine(Kind.ASSEMBLING, "super_magnetic_ring", 60, "magnetic_levitation", in(turbine, 2, magnet, 3, graphite, 1), out(ring, 1));
+        // 液氦冷却的超导线圈：同样的场强少用一半线圈，三台涡轮出两个环（ADR-0039）。氦只在奇异星球的大气里取得到
+        this.machine(Kind.ASSEMBLING, "super_magnetic_ring_superconducting", 120, "magnetic_levitation",
+                in(turbine, 3, magnet, 3, graphite, 1, UniverseItems.HELIUM.get(), 2), out(ring, 2));
         this.machine(Kind.ASSEMBLING, "particle_container", 80, "planetary_logistics", in(turbine, 2, Items.COPPER_INGOT, 2, graphene, 2),
                 out(container, 1));
         this.machine(Kind.ASSEMBLING, "titanium_crystal", 80, "structure_matrix", in(organic, 1, titanium, 3), out(titaniumCrystal, 1));
@@ -782,6 +793,8 @@ final class UniverseRecipes extends RecipeProvider {
                 out(Items.GLASS, 1));
         this.machine(Kind.SMELTING, "energetic_graphite", 40, "", in(Items.COAL, 2), out(graphite, 1));
         this.machine(Kind.SMELTING, "silicon", 40, "", in(UniverseItems.oreDrop(OreKind.SILICON), 1), out(silicon, 1));
+        // 下界石英是前期的硅（玩法设计 §11，ADR-0039）：现实里工业硅就是石英和碳在电弧炉里还原出来的（SiO₂ + 2C → Si + 2CO）
+        this.machine(Kind.SMELTING, "silicon_from_quartz", 60, "", in(Items.QUARTZ, 2, Items.COAL, 1), out(silicon, 1));
         this.machine(Kind.SMELTING, "titanium_ingot", 40, "", in(UniverseItems.oreDrop(OreKind.TITANIUM), 1),
                 out(UniverseItems.ORE_SMELTED.get(OreKind.TITANIUM).get(), 1));
         this.machine(Kind.SMELTING, "uranium_ingot", 40, "", in(UniverseItems.oreDrop(OreKind.URANIUM), 1),
@@ -859,9 +872,10 @@ final class UniverseRecipes extends RecipeProvider {
                 in(UniverseItems.TITANIUM_ALLOY.get(), 4, UniverseItems.SUPER_MAGNETIC_RING.get(), 2, UniverseItems.PARTICLE_BROADBAND.get(), 2,
                         UniverseItems.ACCUMULATOR.get(), 1),
                 out(UniverseItems.SHIELD_GENERATOR.get(), 1));
-        // 技术模块（ADR-0014）：都要守卫机残骸和勘探数据，再加各自的材料；做出来是 C 级，第一次进背包时定下数值
+        // 技术模块（ADR-0014）：都要战斗残骸和勘探数据，再加各自的材料；做出来是 C 级，第一次进背包时定下数值。
+        // 战斗残骸是守卫机残骸或者海盗残骸（ADR-0039），打海盗也能凑模块
         Item survey = UniverseItems.SURVEY_DATA.get();
-        Item scrap = UniverseItems.SENTINEL_SCRAP.get();
+        Ingredient scrap = this.tag(UniverseItemTags.COMBAT_SALVAGE);
         Map<ModuleType, List<SizedIngredient>> modules = new LinkedHashMap<>();
         modules.put(ModuleType.LIFE_SUPPORT, in(scrap, 2, survey, 2, UniverseItems.OXYGEN_CAPSULE.get(), 2, board, 1));
         modules.put(ModuleType.COLD_LINING, in(scrap, 2, survey, 2, Items.WOOL.white(), 2, UniverseItems.HAZARD_CELL.get(), 1));
@@ -885,7 +899,7 @@ final class UniverseRecipes extends RecipeProvider {
         modules.put(ModuleType.FIRE_CONTROL, in(scrap, 3, survey, 2, board, 2, prism, 1));
         modules.forEach((type, ingredients) -> this.machine(Kind.ASSEMBLING, type.itemName(), 100, "tech_modules", ingredients,
                 out(UniverseItems.MODULES.get(type).get(), 1)));
-        // ---- M14：多功能工具的武器（ADR-0026 §六），和模块一样在制造台里做，都要守卫机残骸
+        // ---- M14：多功能工具的武器（ADR-0026 §六），和模块一样在制造台里做，都要战斗残骸
         Item steel = UniverseItems.STEEL.get();
         this.machine(Kind.ASSEMBLING, ToolWeapon.SCATTER_BLASTER.id(), 200, "plasma_weapons",
                 in(scrap, 4, coil, 4, board, 2, Items.COPPER_INGOT, 4), out(UniverseItems.WEAPONS.get(ToolWeapon.SCATTER_BLASTER).get(), 1));
@@ -974,11 +988,13 @@ final class UniverseRecipes extends RecipeProvider {
                 new MachineRecipe(kind, ingredients, results, time, research), null);
     }
 
-    /** 原料：物品、数量交替排列。 */
+    /** 原料：物品（或 {@link Ingredient}）、数量交替排列。 */
     private static List<SizedIngredient> in(Object... itemsAndCounts) {
         List<SizedIngredient> list = new ArrayList<>();
         for (int i = 0; i < itemsAndCounts.length; i += 2) {
-            list.add(SizedIngredient.of((ItemLike) itemsAndCounts[i], (Integer) itemsAndCounts[i + 1]));
+            int count = (Integer) itemsAndCounts[i + 1];
+            list.add(itemsAndCounts[i] instanceof Ingredient ingredient ? new SizedIngredient(ingredient, count)
+                    : SizedIngredient.of((ItemLike) itemsAndCounts[i], count));
         }
         return list;
     }

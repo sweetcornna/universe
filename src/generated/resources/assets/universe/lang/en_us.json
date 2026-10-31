@@ -3951,7 +3951,7 @@
   "message.universe.fleet.claimed_hive": "Strike back: won %s/%s, killed %s units and %s structures; %s credits, %s items; lost %s, damaged %s, promoted %s",
   "message.universe.fleet.dismissed": "%s dismissed",
   "message.universe.fleet.launched": "%s frigates launched. Back in %s minutes",
-  "message.universe.fleet.no_fuel": "Needs %s launch fuel",
+  "message.universe.fleet.no_fuel": "Needs %s launch fuel (a methalox canister counts as 2.5)",
   "message.universe.fleet.not_back": "Not back yet",
   "message.universe.fleet.problem.busy": "A frigate is still out",
   "message.universe.fleet.problem.damaged": "Repair the damaged frigates first",

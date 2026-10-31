@@ -3,7 +3,7 @@
   "ingredients": [
     {
       "count": 2,
-      "ingredient": "universe:sulfur"
+      "ingredient": "#c:dusts/sulfur"
     },
     {
       "count": 3,

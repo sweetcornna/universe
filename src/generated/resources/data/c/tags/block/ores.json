@@ -12,6 +12,19 @@
     "universe:uranium_ore",
     "universe:salt_ore",
     "universe:magnetic_ore",
-    "universe:strange_matter_ore"
+    "universe:strange_matter_ore",
+    "#c:ores/iron",
+    "#c:ores/copper",
+    "#c:ores/coal",
+    "#c:ores/titanium",
+    "#c:ores/silicon",
+    "#c:ores/sulfur",
+    "#c:ores/fire_ice",
+    "#c:ores/optical_crystal",
+    "#c:ores/organic_crystal",
+    "#c:ores/uranium",
+    "#c:ores/salt",
+    "#c:ores/magnetite",
+    "#c:ores/strange_matter"
   ]
 }

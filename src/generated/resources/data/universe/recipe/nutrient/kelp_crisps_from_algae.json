@@ -1,0 +1,16 @@
+{
+  "type": "universe:nutrient",
+  "ingredients": [
+    {
+      "count": 3,
+      "ingredient": "universe:algal_biomass"
+    }
+  ],
+  "research": "bioengineering",
+  "results": [
+    {
+      "id": "universe:kelp_crisps"
+    }
+  ],
+  "time": 50
+}

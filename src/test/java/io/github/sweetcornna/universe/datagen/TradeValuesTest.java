@@ -193,7 +193,8 @@ class TradeValuesTest {
         } else {
             choices.add(element.getAsString());
         }
-        return choices.stream().map(choice -> choice.startsWith("#c:dyes") ? TAGS.get("#c:dyes") : TAGS.getOrDefault(choice, choice)).toList();
+        return GeneratedTags.expandAll(choices).stream()
+                .map(choice -> choice.startsWith("#c:dyes") ? TAGS.get("#c:dyes") : TAGS.getOrDefault(choice, choice)).toList();
     }
 
     private static List<Path> jsonFiles(Path dir) throws IOException {

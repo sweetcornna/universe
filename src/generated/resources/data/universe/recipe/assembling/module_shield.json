@@ -3,7 +3,7 @@
   "ingredients": [
     {
       "count": 3,
-      "ingredient": "universe:sentinel_scrap"
+      "ingredient": "#universe:combat_salvage"
     },
     {
       "count": 3,

@@ -3345,7 +3345,7 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("gui.universe.fleet.none_ready", "没有能出发的护卫舰，受损的先修好", "No frigates ready. Repair the damaged ones first");
         both("gui.universe.fleet.segments", "%s 段遭遇，每段要 %s 点", "%s encounters, %s points each");
         both("gui.universe.fleet.chance", "%1$s %2$s（%3$s%%）", "%1$s %2$s (%3$s%%)");
-        both("gui.universe.fleet.fuel_cost", "发射燃料：要 %s 个，有 %s 个", "Launch fuel: %s needed, %s carried");
+        both("gui.universe.fleet.fuel_cost", "发射燃料：要 %s 份，有 %s 份", "Launch fuel: %s needed, %s carried");
         both("gui.universe.fleet.launch", "出发", "Launch");
         both("gui.universe.fleet.launch_confirm", "胜算很低，确定？", "Low odds. Sure?");
         both("gui.universe.fleet.expected", "平均每段的胜算 %s%%", "Average odds per leg: %s%%");
@@ -3373,7 +3373,7 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("message.universe.fleet.problem.damaged", "受损的护卫舰要先修好", "Repair the damaged frigates first");
         both("message.universe.fleet.problem.too_many_voyages", "同时最多 3 支远征", "Three missions at a time at most");
         both("message.universe.fleet.problem.taken", "这个任务已经接过了", "That mission's already taken");
-        both("message.universe.fleet.no_fuel", "要 %s 个发射燃料", "Needs %s launch fuel");
+        both("message.universe.fleet.no_fuel", "要 %s 份发射燃料（甲烷液氧一罐算 2.5 份）", "Needs %s launch fuel (a methalox canister counts as 2.5)");
         both("message.universe.fleet.launched", "%s 艘护卫舰出发了，%s 分钟后回来", "%s frigates launched. Back in %s minutes");
         both("message.universe.fleet.not_back", "还没回来", "Not back yet");
         both("message.universe.fleet.claimed", "成功 %1$s/%2$s 段，带回 %3$s 信用点和 %4$s 件东西。沉没 %5$s，受损 %6$s，升级 %7$s",

@@ -1,0 +1,21 @@
+{
+  "type": "universe:nutrient",
+  "ingredients": [
+    {
+      "count": 2,
+      "ingredient": "universe:algal_biomass"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:water"
+    }
+  ],
+  "research": "bioengineering",
+  "results": [
+    {
+      "count": 2,
+      "id": "universe:agar"
+    }
+  ],
+  "time": 100
+}

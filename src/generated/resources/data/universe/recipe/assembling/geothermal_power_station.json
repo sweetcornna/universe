@@ -3,7 +3,7 @@
   "ingredients": [
     {
       "count": 15,
-      "ingredient": "universe:steel"
+      "ingredient": "#c:ingots/steel"
     },
     {
       "count": 20,

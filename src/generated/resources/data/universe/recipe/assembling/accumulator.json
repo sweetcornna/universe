@@ -11,7 +11,7 @@
     },
     {
       "count": 2,
-      "ingredient": "universe:silicon"
+      "ingredient": "#c:silicon"
     }
   ],
   "research": "energy_storage",

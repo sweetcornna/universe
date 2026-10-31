@@ -11,7 +11,7 @@
     },
     {
       "count": 1,
-      "ingredient": "universe:steel"
+      "ingredient": "#c:ingots/steel"
     }
   ],
   "research": "missile_turret",

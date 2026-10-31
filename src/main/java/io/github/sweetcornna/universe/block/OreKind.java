@@ -74,6 +74,11 @@ public enum OreKind {
         return this.light;
     }
 
+    /** 通用标签里的矿名：{@code c:ores/<矿名>}（ADR-0039）。磁铁矿按矿物名叫 magnetite，别的就是枚举名。 */
+    public String commonName() {
+        return this == MAGNETIC ? "magnetite" : this.name().toLowerCase(java.util.Locale.ROOT);
+    }
+
     /** 掉落物：带 {@code minecraft:} 前缀的是原版物品，否则是本模组的物品名。 */
     public String drop() {
         return this.drop;

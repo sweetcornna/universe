@@ -121,7 +121,10 @@ public final class ItemValues {
         return grade == null ? id : id + "#" + grade.letter();
     }
 
-    /** 能不能卖：有价钱，而且除了耐久、修理费、模块数值以外没有别的数据。 */
+    /**
+     * 能不能卖：有价钱，而且除了耐久、修理费、模块数值，以及样本、菌种、改造种苗本来就带着的记录（ADR-0039）以外没有别的数据。
+     * 这几样的价钱不看记录里写的是什么，一样一个价。
+     */
     public static boolean sellable(MinecraftServer server, ItemStack stack) {
         if (stack.isEmpty() || value(server, stack.getItem()).isEmpty()) {
             return false;
@@ -129,7 +132,8 @@ public final class ItemValues {
         if (stack.isComponentsPatchEmpty()) {
             return true;
         }
-        Set<DataComponentType<?>> allowed = Set.of(DataComponents.DAMAGE, DataComponents.REPAIR_COST, UniverseDataComponents.TECH_MODULE.get());
+        Set<DataComponentType<?>> allowed = Set.of(DataComponents.DAMAGE, DataComponents.REPAIR_COST, UniverseDataComponents.TECH_MODULE.get(),
+                UniverseDataComponents.SAMPLE.get(), UniverseDataComponents.ORGANISM.get(), UniverseDataComponents.ENGINEERED_PLANT.get());
         for (DataComponentType<?> type : stack.getComponentsPatch().keySet()) {
             if (!allowed.contains(type)) {
                 return false;

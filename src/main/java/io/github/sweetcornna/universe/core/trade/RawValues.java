@@ -138,6 +138,8 @@ public final class RawValues {
         // 样本、菌种、改造种苗没有配方：采来的、培养出来的、编辑出来的（ADR-0036 §五）
         all.putAll(Map.of("universe:sample", 2.0, "universe:strain_tube", 30.0, "universe:engineered_seedling", 60.0));
         // M20 微生物和基因（C）的价钱（all.putAll(...)）加在这行上面
+        // 生物浸出顺带出的镍、铂没有配方（ADR-0039）：镍是常见的工业金属，铂一百批才出两三块
+        all.putAll(Map.of("universe:nickel_ingot", 12.0, "universe:platinum_ingot", 150.0));
         // M20 生物反应器（D）的价钱（all.putAll(...)）加在这行上面
         // M20 星球改造（E）的价钱（all.putAll(...)）加在这行上面
         return Map.copyOf(all);

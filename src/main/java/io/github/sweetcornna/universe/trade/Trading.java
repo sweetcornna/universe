@@ -82,7 +82,9 @@ public final class Trading {
             new Staple(UniverseItems.FUEL_TANK_MK2, Economy.Wealth.AVERAGE),
             new Staple(UniverseItems.IMPULSE_ENGINE_MK2, Economy.Wealth.WEALTHY),
             new Staple(UniverseItems.WARP_DRIVE_MK2, Economy.Wealth.WEALTHY),
-            new Staple(UniverseItems.ALLOY_HULL_PLATING, Economy.Wealth.WEALTHY));
+            new Staple(UniverseItems.ALLOY_HULL_PLATING, Economy.Wealth.WEALTHY),
+            // 镍做镍催化剂（合成燃料那条线），不走生物浸出的话中等财富的空间站有卖（ADR-0036 §四）
+            new Staple(UniverseItems.NICKEL_INGOT, Economy.Wealth.AVERAGE));
 
     /** 交易站总有的东西（ADR-0026）：燃料、氧气、防护电池、空间翘曲器。 */
     private static final List<Supplier<? extends Item>> ESSENTIALS = List.of(UniverseItems.LAUNCH_FUEL, UniverseItems.OXYGEN_CAPSULE,
