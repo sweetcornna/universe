@@ -91,7 +91,11 @@ public class BeltRenderer implements BlockEntityRenderer<BeltBlockEntity, BeltRe
             this.shownPartial = partialTicks;
             this.shown.clear();
         }
-        float[] shown = this.shown.computeIfAbsent(line, key -> shown(key, partialTicks));
+        float[] shown = this.shown.get(line);
+        if (shown == null) {
+            shown = shown(line, partialTicks);
+            this.shown.put(line, shown);
+        }
         int seed = (int) blockEntity.getBlockPos().asLong();
         // 物品由近到远排，画的位置逐个变小：跳过还没到这一段的，画到离开这一段为止
         for (int i = skipAhead(shown, to, last); i < shown.length && shown[i] >= from; i++) {
@@ -99,10 +103,9 @@ public class BeltRenderer implements BlockEntityRenderer<BeltBlockEntity, BeltRe
             Item entry = place(slope, curve, t);
             int cargo = line.item(i);
             entry.layers = Cargo.count(cargo);
-            // 画出来的样子只看物品和增产等级，叠了几个、点数零头不同的共用一份
-            int look = Cargo.uniform(Cargo.item(cargo), 1, Cargo.level(cargo));
-            ItemStack stack = this.stacks.computeIfAbsent(look, BeltNetwork::display);
-            entry.render = this.models.get(look, stack, this.itemModelResolver, level, seed + i);
+            // 画出来的样子只看物品和增产等级，叠了几个、点数零头不同的共用一份；同一个样子的物品堆是同一个对象，拿它作键
+            ItemStack stack = this.stacks.computeIfAbsent(Cargo.uniform(Cargo.item(cargo), 1, Cargo.level(cargo)), BeltNetwork::display);
+            entry.render = this.models.get(stack, stack, this.itemModelResolver, level, seed + i);
             state.items.add(entry);
         }
     }

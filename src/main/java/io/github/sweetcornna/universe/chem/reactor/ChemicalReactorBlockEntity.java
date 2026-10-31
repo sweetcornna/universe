@@ -132,7 +132,7 @@ public class ChemicalReactorBlockEntity extends MachineBlockEntity implements Ma
     private int candidates;
     /** 老存档里选着反应的釜，第一刻把它记成发现了。 */
     private boolean migrate;
-    /** 参照基地的反应釜（ADR-0038）：选定的反应不看全服发现了没有，免得测性能把反应记成已发现。不存档。 */
+    /** 参照基地的反应釜（ADR-0038）：选定的反应不看全服发现了没有，也不记产量图，免得测性能把反应记成已发现。不存档。 */
     private boolean benchmark;
     private ReactorSettings settings = new ReactorSettings(ReactorSettings.MIN_TEMPERATURE, ReactorSettings.MIN_PRESSURE);
     /** 这一批做了多少（0–1）。 */
@@ -210,7 +210,7 @@ public class ChemicalReactorBlockEntity extends MachineBlockEntity implements Ma
         return this.installed() == this.wearCatalyst ? this.wear : 0;
     }
 
-    /** 参照基地用：这台釜做选定的反应时不看全服发现了没有（不存档，重新载入后照常）。 */
+    /** 参照基地用：这台釜做选定的反应时不看全服发现了没有、不记产量图（不存档，重新载入后照常）。 */
     public void setBenchmark(boolean benchmark) {
         this.benchmark = benchmark;
     }
@@ -506,7 +506,10 @@ public class ChemicalReactorBlockEntity extends MachineBlockEntity implements Ma
         if (reaction.catalyst() != null && result.catalyzed()) {
             this.wearCatalyst();
         }
-        ReactorKnowledge.get(level.getServer()).mark(reaction, YieldGrid.cell(this.settings).index());
+        // 参照基地的不记产量图：老存档补记发现时，产量图上做成过的反应会算发现了
+        if (!this.benchmark) {
+            ReactorKnowledge.get(level.getServer()).mark(reaction, YieldGrid.cell(this.settings).index());
+        }
         if (this.reaction == null) {
             ReactionBooks.discover(level.getServer(), reaction, true);
         }
