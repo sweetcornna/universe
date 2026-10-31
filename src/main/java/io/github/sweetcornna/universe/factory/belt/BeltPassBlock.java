@@ -60,12 +60,7 @@ public abstract class BeltPassBlock extends BaseEntityBlock {
         if (level.isClientSide() || type != this.type.get()) {
             return null;
         }
-        String section = ServerPerf.name(type);
-        return (tickLevel, pos, tickState, blockEntity) -> {
-            long start = ServerPerf.begin();
-            ((BeltPassBlockEntity) blockEntity).serverTick();
-            ServerPerf.end(section, start);
-        };
+        return ServerPerf.timed(type, (tickLevel, pos, tickState, blockEntity) -> ((BeltPassBlockEntity) blockEntity).serverTick());
     }
 
     @Override

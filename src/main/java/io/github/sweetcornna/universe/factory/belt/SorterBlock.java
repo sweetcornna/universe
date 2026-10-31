@@ -71,11 +71,7 @@ public class SorterBlock extends BaseEntityBlock {
         if (level.isClientSide() || type != UniverseBlockEntities.SORTER.get()) {
             return null;
         }
-        return (tickLevel, pos, tickState, blockEntity) -> {
-            long start = ServerPerf.begin();
-            ((SorterBlockEntity) blockEntity).serverTick();
-            ServerPerf.end("block/sorter", start);
-        };
+        return ServerPerf.timed(type, (tickLevel, pos, tickState, blockEntity) -> ((SorterBlockEntity) blockEntity).serverTick());
     }
 
     @Override

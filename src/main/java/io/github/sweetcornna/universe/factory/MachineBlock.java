@@ -64,12 +64,7 @@ public class MachineBlock extends BaseEntityBlock {
         if (level.isClientSide() || type != this.type.get()) {
             return null;
         }
-        String section = ServerPerf.name(type);
-        return (tickLevel, pos, tickState, blockEntity) -> {
-            long start = ServerPerf.begin();
-            ((MachineBlockEntity) blockEntity).serverTick();
-            ServerPerf.end(section, start);
-        };
+        return ServerPerf.timed(type, (tickLevel, pos, tickState, blockEntity) -> ((MachineBlockEntity) blockEntity).serverTick());
     }
 
     /** 设备的方块实体所在的位置；高的设备从上半截转到下半截。 */

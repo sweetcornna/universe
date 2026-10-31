@@ -37,6 +37,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
@@ -84,6 +85,12 @@ public final class DeepSpaceClient {
                 event -> event.registerBelow(VanillaGuiLayers.CROSSHAIR, Universe.id("deep_space"), DeepSpaceClient::renderHud));
         gameBus.addListener(ClientTickEvent.Post.class, event -> tick());
         gameBus.addListener(SubmitCustomGeometryEvent.class, DeepSpaceClient::submitBeams);
+        // 退出世界时不再拿着上一个世界和里面的船
+        gameBus.addListener(ClientPlayerNetworkEvent.LoggingOut.class, event -> {
+            nearbyShips = List.of();
+            shipsLevel = null;
+            shipsTick = Long.MIN_VALUE;
+        });
         devVerbs();
     }
 

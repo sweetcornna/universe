@@ -79,7 +79,6 @@ public final class BlueprintClient {
     private record Preview(AABB frame, int frameColor, List<Ghost> ghosts) {
     }
 
-    /** 上一次放的蓝图：准星落在它的范围里时对齐过去，好原地补上缺的方块。 */
     /**
      * 蓝图摆在某处的样子：每格的位置、方块状态和被相邻实心方块挡住的面（ADR-0038）。蓝图、位置、转向、只贴设备都没变时
      * 一直用这一份，不用每帧把几千格重新转一遍、查一遍邻居。格子的顺序和原来逐帧现算时一样。
@@ -100,6 +99,7 @@ public final class BlueprintClient {
     private static long unobstructedTick = Long.MIN_VALUE;
     private static @Nullable Layout unobstructedLayout;
 
+    /** 上一次放的蓝图：准星落在它的范围里时对齐过去，好原地补上缺的方块。 */
     private record Paste(int id, int turns, BlockPos anchor, String dimension) {
     }
 
@@ -137,6 +137,9 @@ public final class BlueprintClient {
             REQUESTED.clear();
             MODELS.clear();
             lastPaste = null;
+            layout = null;
+            unobstructedLayout = null;
+            unobstructed = new byte[0];
             BlueprintCostHud.clear();
         });
     }

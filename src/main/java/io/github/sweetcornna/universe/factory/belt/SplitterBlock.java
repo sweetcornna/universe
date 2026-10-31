@@ -45,11 +45,7 @@ public class SplitterBlock extends BaseEntityBlock {
         if (level.isClientSide() || type != UniverseBlockEntities.SPLITTER.get()) {
             return null;
         }
-        return (tickLevel, pos, tickState, blockEntity) -> {
-            long start = ServerPerf.begin();
-            ((SplitterBlockEntity) blockEntity).serverTick();
-            ServerPerf.end("block/splitter", start);
-        };
+        return ServerPerf.timed(type, (tickLevel, pos, tickState, blockEntity) -> ((SplitterBlockEntity) blockEntity).serverTick());
     }
 
     @Override

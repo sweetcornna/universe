@@ -21,8 +21,10 @@ import net.neoforged.neoforge.event.tick.LevelTickEvent;
  * 每个维度里加载着的黑雾单位和建筑（ADR-0038）。炮塔没有目标时每 4 刻要在几十格的范围里找一遍黑雾，维度里一个黑雾都没加载时
  * 怎么找都是空的，直接跳过。
  *
- * <p>只用来判断"一个都没有"。不会记少：黑雾都是普通实体，进维度一定先发加入事件（只有玩家不发）。可能记多：加入事件被排在后面的
- * 别的模组取消了、UUID 重复没加进去，这时只是少省一次查找，每 {@link #PRUNE_INTERVAL} 刻清一次。
+ * <p>只用来判断"一个都没有"。不会记少：黑雾都是普通实体，进维度一定先发加入事件（只有玩家不发）；离开事件只在实体真的移除了
+ * （死了、卸载、换维度，{@link Entity#isRemoved()}）时才拿掉。区块暂时降到看不见的那一档也会发离开事件，可实体还在维度里，
+ * 区块回来时也不再发加入事件，所以这种不拿掉。可能记多：加入事件被排在后面的别的模组取消了、UUID 重复没加进去，这时只是少省
+ * 一次查找，每 {@link #PRUNE_INTERVAL} 刻清一次。
  */
 public final class LoadedEnemies {
     private static final int PRUNE_INTERVAL = 600;
@@ -38,7 +40,7 @@ public final class LoadedEnemies {
             }
         });
         gameBus.addListener(EntityLeaveLevelEvent.class, event -> {
-            if (event.getEntity() instanceof DarkFogEnemy && event.getLevel() instanceof ServerLevel level) {
+            if (event.getEntity() instanceof DarkFogEnemy && event.getEntity().isRemoved() && event.getLevel() instanceof ServerLevel level) {
                 Set<Entity> loaded = LOADED.get(level.dimension());
                 if (loaded != null) {
                     loaded.remove(event.getEntity());

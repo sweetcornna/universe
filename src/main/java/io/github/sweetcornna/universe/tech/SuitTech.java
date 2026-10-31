@@ -50,6 +50,8 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.event.entity.living.LivingDropsEvent;
 import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
 import net.neoforged.neoforge.event.entity.player.ItemEntityPickupEvent;
+import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import net.neoforged.neoforge.event.tick.PlayerTickEvent;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
@@ -68,6 +70,9 @@ public final class SuitTech {
     }
 
     public static void registerEvents(IEventBus gameBus) {
+        // 超频格的缓存只给在线的玩家留着
+        gameBus.addListener(PlayerEvent.PlayerLoggedOutEvent.class, event -> SUIT_SUPERCHARGED.remove(event.getEntity().getUUID()));
+        gameBus.addListener(ServerStoppedEvent.class, event -> SUIT_SUPERCHARGED.clear());
         gameBus.addListener(PlayerTickEvent.Post.class, event -> {
             if (event.getEntity() instanceof ServerPlayer player) {
                 long start = ServerPerf.begin();

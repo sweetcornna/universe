@@ -76,11 +76,6 @@ public class FacilityTerminalBlock extends BaseEntityBlock {
         if (level.isClientSide() || type != UniverseBlockEntities.FACILITY_TERMINAL.get()) {
             return null;
         }
-        String section = ServerPerf.name(type);
-        return (tickLevel, pos, tickState, blockEntity) -> {
-            long start = ServerPerf.begin();
-            ((FacilityTerminalBlockEntity) blockEntity).serverTick((ServerLevel) tickLevel);
-            ServerPerf.end(section, start);
-        };
+        return ServerPerf.timed(type, (tickLevel, pos, tickState, blockEntity) -> ((FacilityTerminalBlockEntity) blockEntity).serverTick((ServerLevel) tickLevel));
     }
 }

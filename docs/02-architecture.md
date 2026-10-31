@@ -409,7 +409,7 @@ io.github.sweetcornna.universe
 | `BlockEntity.setChanged()` 除了标记区块要存盘（`Level.blockEntityChanged(pos)`，只是 `markUnsaved`），还调 `Level.updateNeighbourForOutputSignal`：NeoForge 补丁后上下也通知，六个邻居各读一次方块状态、调 `onNeighborChange`，是导体还要再读一格。每刻都改的数（进度）只调 `blockEntityChanged`，物品栏变了再 `setChanged` | 已确认，`MachineBlockEntity.markUnsaved`（ADR-0038） |
 | 方块实体在不在更新：`ServerLevel.shouldTickBlocksAt(ChunkPos.pack())`；实体那一档是 `isPositionEntityTicking(BlockPos)` | 已确认，`PerfBench` |
 | `EntityJoinLevelEvent` 在实体真正加进维度之前发，UUID 重复时发了事件也加不进去；玩家先单独发一次事件，再走 `addNewEntityWithoutEvent`。实体离开维度（卸载、死亡、换维度）在 `ServerLevel` 的 `onTrackingEnd` 里发 `EntityLeaveLevelEvent` | 已确认，`LoadedEnemies` |
-| `ItemStackRenderState.isAnimated()`：模型带附魔光效、动画贴图时为真，这样的状态要每帧重新解析；别的同一种物品在同一帧里可以共用一份状态提交多次 | 已确认，传送带、无人机（ADR-0038） |
+| `ItemStackRenderState.isAnimated()`：模型带附魔光效、动画贴图时为真。按种子、时间、组件挑子模型的（`RangeSelectItemModel` 等，比如没有目标的指南针按种子乱转）不算动画，要看出来得用 `TrackingItemStackRenderState`，`getModelIdentity()` 是解析时用到的模型列表。只由固定模型（`CuboidItemModelWrapper`、`CompositeModel`）组成、又不带动画的状态，同一帧里同一种物品可以共用一份提交多次 | 已确认，`SharedItemModels`（ADR-0038） |
 | `ExtractLevelRenderStateEvent.getFrustum()` 拿得到这一帧的视锥，`Frustum.isVisible(AABB)` 剔除；`AABB.of(BoundingBox)` 把方块框换成包住整格的盒子 | 已确认，`GhostClient` |
 
 拿不准的 API 先查源码再写，核实后把结果补进这张表。源码在：

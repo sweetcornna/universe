@@ -29,13 +29,30 @@ public final class PerfBench {
             return value == null || value.isBlank() ? null : parse(value);
         }
 
+        /** 空着的一项按默认；数不对（不是整数、超出 {@code /universe bench} 的范围）直接报错，说清是哪一项。 */
         static Settings parse(String value) {
-            String[] parts = value.split(",");
+            String[] parts = value.split(",", -1);
             int[] numbers = {0, 0, 0, 1200};
-            for (int i = 0; i < Math.min(parts.length, numbers.length); i++) {
-                numbers[i] = Integer.parseInt(parts[i].trim());
+            int[] max = {50_000, 5_000, 5_000, 72_000};
+            if (parts.length > numbers.length) {
+                throw new IllegalArgumentException(PROPERTY + " 最多四项（传送带,设备,化工设备,刻数）：" + value);
             }
-            return new Settings(numbers[0], numbers[1], numbers[2], Math.max(1, numbers[3]));
+            for (int i = 0; i < parts.length; i++) {
+                String part = parts[i].trim();
+                if (part.isEmpty()) {
+                    continue;
+                }
+                try {
+                    numbers[i] = Integer.parseInt(part);
+                } catch (NumberFormatException e) {
+                    throw new IllegalArgumentException(PROPERTY + " 第 " + (i + 1) + " 项不是整数：" + value, e);
+                }
+                int min = i == 3 ? 1 : 0;
+                if (numbers[i] < min || numbers[i] > max[i]) {
+                    throw new IllegalArgumentException(PROPERTY + " 第 " + (i + 1) + " 项要在 " + min + "–" + max[i] + " 之间：" + value);
+                }
+            }
+            return new Settings(numbers[0], numbers[1], numbers[2], numbers[3]);
         }
     }
 

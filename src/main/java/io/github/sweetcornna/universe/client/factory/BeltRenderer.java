@@ -10,6 +10,8 @@ import org.jspecify.annotations.Nullable;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 
+import io.github.sweetcornna.universe.client.RenderFrames;
+import io.github.sweetcornna.universe.client.SharedItemModels;
 import io.github.sweetcornna.universe.core.factory.BeltLine;
 import io.github.sweetcornna.universe.core.factory.Cargo;
 import io.github.sweetcornna.universe.factory.belt.BeltBlock;
@@ -29,7 +31,6 @@ import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.Direction;
-import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -49,15 +50,11 @@ public class BeltRenderer implements BlockEntityRenderer<BeltBlockEntity, BeltRe
 
     private final ItemModelResolver itemModelResolver;
     private final Int2ObjectMap<ItemStack> stacks = new Int2ObjectOpenHashMap<>();
-    /**
-     * 这一帧算过的东西，同一帧里各段传送带共用（ADR-0038）。帧按（世界、游戏刻、插值）认，换一帧就清掉：
-     * 各条线路上每个物品画在哪，各种货物的模型（随时间变的模型不共用，照旧一个个解析）。
-     */
-    private @Nullable Level frameLevel;
-    private long frameTick = Long.MIN_VALUE;
-    private float framePartial = Float.NaN;
+    /** 这一帧各条线路上每个物品画在哪，同一帧里各段传送带共用（ADR-0038），换一帧（{@link RenderFrames}）就清掉。 */
     private final Map<BeltLine, float[]> shown = new IdentityHashMap<>();
-    private final Int2ObjectMap<ItemStackRenderState> renders = new Int2ObjectOpenHashMap<>();
+    private long shownFrame = -1;
+    /** 同一种货物这一帧共用一份模型。 */
+    private final SharedItemModels models = new SharedItemModels();
 
     public BeltRenderer(BlockEntityRendererProvider.Context context) {
         this.itemModelResolver = context.itemModelResolver();
@@ -87,7 +84,11 @@ public class BeltRenderer implements BlockEntityRenderer<BeltBlockEntity, BeltRe
         int from = segment.from();
         int to = from + BeltNetwork.UNITS;
         boolean last = segment.last();
-        this.startFrame(level, partialTicks);
+        long frame = RenderFrames.current();
+        if (frame != this.shownFrame) {
+            this.shownFrame = frame;
+            this.shown.clear();
+        }
         float[] shown = this.shown.computeIfAbsent(line, key -> shown(key, partialTicks));
         int seed = (int) blockEntity.getBlockPos().asLong();
         // 物品由近到远排，画的位置逐个变小：跳过还没到这一段的，画到离开这一段为止
@@ -96,20 +97,9 @@ public class BeltRenderer implements BlockEntityRenderer<BeltBlockEntity, BeltRe
             Item entry = place(slope, curve, t);
             int cargo = line.item(i);
             entry.layers = Cargo.count(cargo);
-            entry.render = this.render(cargo, level, seed + i);
+            ItemStack stack = this.stacks.computeIfAbsent(cargo, BeltNetwork::display);
+            entry.render = this.models.get(cargo, stack, this.itemModelResolver, level, seed + i);
             state.items.add(entry);
-        }
-    }
-
-    /** 换了一帧就清掉上一帧算的东西。 */
-    private void startFrame(Level level, float partialTicks) {
-        long tick = level.getGameTime();
-        if (level != this.frameLevel || tick != this.frameTick || Float.compare(partialTicks, this.framePartial) != 0) {
-            this.frameLevel = level;
-            this.frameTick = tick;
-            this.framePartial = partialTicks;
-            this.shown.clear();
-            this.renders.clear();
         }
     }
 
@@ -143,20 +133,6 @@ public class BeltRenderer implements BlockEntityRenderer<BeltBlockEntity, BeltRe
         return lo;
     }
 
-    /** 一种货物的模型：这一帧里同一种货物共用一份；随时间变的（附魔光效、动画贴图）每个单独解析。 */
-    private ItemStackRenderState render(int cargo, Level level, int seed) {
-        ItemStackRenderState shared = this.renders.get(cargo);
-        if (shared != null) {
-            return shared;
-        }
-        ItemStackRenderState render = new ItemStackRenderState();
-        ItemStack stack = this.stacks.computeIfAbsent(cargo, BeltNetwork::display);
-        this.itemModelResolver.updateForTopItem(render, stack, ItemDisplayContext.FIXED, level, null, seed);
-        if (!render.isAnimated()) {
-            this.renders.put(cargo, render);
-        }
-        return render;
-    }
 
     /** 朝北时这一段上 {@code t}（0 是后沿，1 是前沿）处的位置和朝向。 */
     private static Item place(BeltSlope slope, BeltCurve curve, float t) {
