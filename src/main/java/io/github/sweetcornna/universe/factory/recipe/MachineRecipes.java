@@ -40,7 +40,10 @@ public final class MachineRecipes {
         gameBus.addListener(OnDatapackSyncEvent.class, event -> event.sendRecipes(
                 UniverseRecipeTypes.SMELTING.get(), UniverseRecipeTypes.ASSEMBLING.get(), UniverseRecipeTypes.REFINING.get(),
                 UniverseRecipeTypes.CHEMICAL.get(), UniverseRecipeTypes.PARTICLE.get(), UniverseRecipeTypes.NUTRIENT.get(),
-                UniverseRecipeTypes.PORTABLE_REFINING.get(), RecipeType.CRAFTING));
+                UniverseRecipeTypes.PORTABLE_REFINING.get(), UniverseRecipeTypes.ELECTROLYSIS.get(),
+                UniverseRecipeTypes.REACTOR.get(), UniverseRecipeTypes.BIOREACTOR.get(),
+                // M20 反应釜（B）、生物反应器（D）的配方类型接在这一行
+                RecipeType.CRAFTING));
     }
 
     public static void setClientRecipes(Supplier<RecipeMap> recipes) {

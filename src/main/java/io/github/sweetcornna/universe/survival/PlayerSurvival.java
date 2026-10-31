@@ -18,6 +18,7 @@ import io.github.sweetcornna.universe.core.survival.GravityModel;
 import io.github.sweetcornna.universe.core.survival.LifeSupport;
 import io.github.sweetcornna.universe.core.survival.Suit;
 import io.github.sweetcornna.universe.core.tech.TechBonuses;
+import io.github.sweetcornna.universe.core.terraform.EffectiveEnvironment;
 import io.github.sweetcornna.universe.entity.ship.ShipEntity;
 import io.github.sweetcornna.universe.exocraft.ExoMech;
 import io.github.sweetcornna.universe.exocraft.Submarine;
@@ -29,6 +30,7 @@ import io.github.sweetcornna.universe.registry.UniverseAttachments;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
 import io.github.sweetcornna.universe.station.Stations;
 import io.github.sweetcornna.universe.tech.SuitTech;
+import io.github.sweetcornna.universe.terraform.Terraforming;
 import io.github.sweetcornna.universe.world.planet.PlanetWeather;
 import io.github.sweetcornna.universe.world.planet.Planets;
 import io.github.sweetcornna.universe.world.space.SpaceDimensions;
@@ -81,12 +83,16 @@ public final class PlayerSurvival {
 
     private static final Set<UUID> JETTING = ConcurrentHashMap.newKeySet();
     private static final Map<UUID, int[]> SOURCES = new ConcurrentHashMap<>();
-    private static final Map<Long, Map<Hazard, Double>> HAZARDS = new LinkedHashMap<>(8, 0.75F, true) {
+    /** 按星球种子缓存的危害强度；星球改造了（现用的星球换了一个对象）就重算。 */
+    private static final Map<Long, PlanetHazards> HAZARDS = new LinkedHashMap<>(8, 0.75F, true) {
         @Override
-        protected boolean removeEldestEntry(Map.Entry<Long, Map<Hazard, Double>> eldest) {
+        protected boolean removeEldestEntry(Map.Entry<Long, PlanetHazards> eldest) {
             return this.size() > 16;
         }
     };
+
+    private record PlanetHazards(Planet planet, Map<Hazard, Double> hazards) {
+    }
 
     private PlayerSurvival() {
     }
@@ -257,7 +263,9 @@ public final class PlayerSurvival {
         boolean pressure = underwater && !supplied && level.getSeaLevel() - player.getEyeY() >= LifeSupport.PRESSURE_DEPTH;
         // 泡在酸里（ADR-0030）：哪个维度都算，玩家自己倒的酸也是
         boolean acid = player.getFluidTypeHeight(AcidFluid.type()) > 0;
-        Optional<Planet> planet = Planets.planet(level);
+        // 改造过的星球按现用的大气、危害算（ADR-0036 §六）
+        Optional<EffectiveEnvironment> effective = Terraforming.planetEnvironment(level);
+        Optional<Planet> planet = effective.map(EffectiveEnvironment::planet);
         if (Stations.inside(level, player.position())) {
             // 空间站里有空气，不消耗生命维持（ADR-0017）
             return Environment.SAFE;
@@ -268,7 +276,7 @@ public final class PlayerSurvival {
                     : Environment.SAFE;
         }
         boolean breathable = planet.map(p -> p.atmosphere().breathable()).orElse(false) && !underwater;
-        Map<Hazard, Double> hazards = planet.map(PlayerSurvival::hazards).orElse(Map.of());
+        Map<Hazard, Double> hazards = effective.map(PlayerSurvival::hazards).orElse(Map.of());
         boolean sheltered = supplied || Shelters.sheltered(player, level);
         int[] sources = sources(player, level, hazards);
         // 酸雨（ADR-0030）：雨真淋到身上才算，和毒雾一起掉毒性防护
@@ -284,9 +292,15 @@ public final class PlayerSurvival {
         return player.isEyeInFluid(FluidTags.WATER) || player.isEyeInFluid(AcidFluid.type());
     }
 
-    private static Map<Hazard, Double> hazards(Planet planet) {
+    private static Map<Hazard, Double> hazards(EffectiveEnvironment environment) {
+        Planet planet = environment.planet();
         synchronized (HAZARDS) {
-            return HAZARDS.computeIfAbsent(planet.seed(), seed -> Environment.hazardsOf(planet));
+            PlanetHazards cached = HAZARDS.get(planet.seed());
+            if (cached == null || cached.planet() != planet) {
+                cached = new PlanetHazards(planet, Terraforming.hazards(environment));
+                HAZARDS.put(planet.seed(), cached);
+            }
+            return cached.hazards();
         }
     }
 

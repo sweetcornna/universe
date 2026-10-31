@@ -1,0 +1,20 @@
+{
+  "type": "universe:bioreactor",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:broken_canister"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:water"
+    }
+  ],
+  "research": "bioengineering",
+  "results": [
+    {
+      "id": "universe:plastic"
+    }
+  ],
+  "time": 400
+}

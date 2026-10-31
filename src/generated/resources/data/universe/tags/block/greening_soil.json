@@ -1,0 +1,11 @@
+{
+  "values": [
+    "universe:planet_soil",
+    "universe:planet_sand",
+    "minecraft:dirt",
+    "minecraft:coarse_dirt",
+    "minecraft:rooted_dirt",
+    "minecraft:sand",
+    "minecraft:red_sand"
+  ]
+}

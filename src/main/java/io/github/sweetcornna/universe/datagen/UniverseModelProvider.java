@@ -198,6 +198,28 @@ final class UniverseModelProvider extends ModelProvider {
         // M19 深空和重力枪（D）的模型加在这行上面
         HazardModels.add(blockModels);
         // M19 科技布局和局部危害（E）的模型加在这行上面
+        UniverseItems.M20_SHARED.forEach(item -> itemModels.generateFlatItem(item.get(), ModelTemplates.FLAT_ITEM));
+        UniverseItems.M20_REACTIONS.forEach(item -> itemModels.generateFlatItem(item.get(), ModelTemplates.FLAT_ITEM));
+        itemModels.generateFlatItem(UniverseItems.LAB_NOTES.get(), ModelTemplates.FLAT_ITEM);
+        // 大气提取器顶上是进气格栅，工作时亮；电解槽正面是电解池的观察窗
+        recipeMachine(blockModels, UniverseBlocks.ATMOSPHERIC_EXTRACTOR.get(), "atmospheric_extractor", true, "machine_casing_top");
+        recipeMachine(blockModels, UniverseBlocks.ELECTROLYZER.get(), "electrolyzer", false, "machine_casing_top");
+        // M20 化学（A）的模型加在这行上面
+        recipeMachine(blockModels, UniverseBlocks.CHEMICAL_REACTOR.get(), "chemical_reactor", false, "machine_casing_top");
+        // M20 反应釜（B）的模型加在这行上面
+        // 培养箱正面是玻璃门，工作时里面亮着；测序仪、编辑台正面是屏幕
+        recipeMachine(blockModels, UniverseBlocks.INCUBATOR.get(), "incubator", false, "machine_casing_top");
+        recipeMachine(blockModels, UniverseBlocks.SEQUENCER.get(), "sequencer", false, "machine_casing_top");
+        recipeMachine(blockModels, UniverseBlocks.GENE_EDITOR.get(), "gene_editor", false, "machine_casing_top");
+        itemModels.generateFlatItem(UniverseItems.SAMPLE_TUBE.get(), ModelTemplates.FLAT_ITEM);
+        itemModels.generateFlatItem(UniverseItems.SAMPLE.get(), ModelTemplates.FLAT_ITEM);
+        // M20 微生物和基因（C）的模型加在这行上面
+        recipeMachine(blockModels, UniverseBlocks.BIOREACTOR.get(), "bioreactor", true, "machine_casing_top");
+        // M20 生物反应器（D）的模型加在这行上面
+        recipeMachine(blockModels, UniverseBlocks.ATMOSPHERE_RELEASE_TOWER.get(), "atmosphere_release_tower", false, "atmosphere_release_tower_bottom");
+        recipeMachine(blockModels, UniverseBlocks.ECOLOGY_SEEDER.get(), "ecology_seeder", true, "ecology_seeder_bottom");
+        TerraformDatagen.models(blockModels);
+        // M20 星球改造（E）的模型加在这行上面
     }
 
     /** M18：黑雾透镜（平面物品）、全息信标（手写的投影台模型 models/block/holo_beacon.json，ADR-0033 §六、§七）。 */

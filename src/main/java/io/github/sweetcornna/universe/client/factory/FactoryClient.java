@@ -80,6 +80,20 @@ public final class FactoryClient {
         event.register(UniverseMenus.LOGISTICS_DISTRIBUTOR.menuType(), DistributorScreen::new);
         event.register(UniverseMenus.MATRIX_LAB.menuType(), MatrixLabScreen::new);
         event.register(UniverseMenus.TRAFFIC_MONITOR.menuType(), TrafficMonitorScreen::new);
+        // M20 化学（ADR-0036 §三）
+        recipeMachine(event, RecipeMachines.ELECTROLYZER);
+        event.register(UniverseMenus.ATMOSPHERIC_EXTRACTOR.menuType(), io.github.sweetcornna.universe.client.chem.AtmosphericExtractorScreen::new);
+        // M20 化学（A）的界面加在这行上面
+        event.register(UniverseMenus.CHEMICAL_REACTOR.menuType(), io.github.sweetcornna.universe.client.chem.reactor.ChemicalReactorScreen::new);
+        // M20 反应釜（B）的界面加在这行上面
+        event.register(UniverseMenus.INCUBATOR.menuType(), io.github.sweetcornna.universe.client.microbe.IncubatorScreen::new);
+        event.register(UniverseMenus.SEQUENCER.menuType(), io.github.sweetcornna.universe.client.microbe.SequencerScreen::new);
+        event.register(UniverseMenus.GENE_EDITOR.menuType(), io.github.sweetcornna.universe.client.microbe.GeneEditorScreen::new);
+        // M20 微生物和基因（C）的界面加在这行上面
+        event.<MachineMenu, RecipeMachineScreen>register(UniverseMenus.BIOREACTOR.menuType(),
+                io.github.sweetcornna.universe.client.bio.BioreactorScreen::new);
+        // M20 生物反应器（D）的界面加在这行上面
+        // M20 星球改造（E）的界面加在这行上面
     }
 
     private static void recipeMachine(RegisterMenuScreensEvent event, RecipeMachineBlockEntity.Spec spec) {

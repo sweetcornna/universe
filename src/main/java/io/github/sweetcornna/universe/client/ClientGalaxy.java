@@ -93,10 +93,26 @@ public final class ClientGalaxy {
         return SentinelStrength.present(sentinelStrength) ? SentinelLevel.of(planet) : SentinelLevel.NONE;
     }
 
-    /** 玩家当前所在的星球（本模组生成的星球维度）；在主世界、下界或者还不知道星团时为空。 */
+    /**
+     * 玩家当前所在的星球（本模组生成的星球维度），改造过的换成现用的样子（ADR-0036 §六）；在主世界、下界或者还不知道星团时为空。
+     * 配色、植物、动物按星球本来的算，不跟着改造变。
+     */
     public static Optional<Planet> currentPlanet() {
         refresh();
-        return Optional.ofNullable(currentPlanet);
+        Planet planet = currentPlanet;
+        Galaxy known = galaxy;
+        if (planet == null || known == null) {
+            return Optional.ofNullable(planet);
+        }
+        return Optional.of(io.github.sweetcornna.universe.terraform.Terraforming.clientEffective(known, planet));
+    }
+
+    /** 一颗星球现用的环境（客户端收到的改造状态）；还不知道星团时按星球本来的样子。 */
+    public static io.github.sweetcornna.universe.core.terraform.EffectiveEnvironment environment(Planet base) {
+        Galaxy known = galaxy;
+        return known != null ? io.github.sweetcornna.universe.terraform.Terraforming.clientEnvironment(known, base)
+                : io.github.sweetcornna.universe.core.terraform.Terraform.effective(base,
+                        io.github.sweetcornna.universe.core.terraform.TerraformState.EMPTY);
     }
 
     /** 玩家所在的恒星系：太空和星球维度按编号，主世界是母星系；下界、末地这些不在星团里的维度为空。 */

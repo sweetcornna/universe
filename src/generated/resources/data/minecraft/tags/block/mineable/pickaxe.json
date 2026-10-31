@@ -156,6 +156,16 @@
     "universe:hot_geyser_crust",
     "universe:toxic_geyser_crust",
     "universe:cold_geyser_crust",
-    "universe:strange_geyser_crust"
+    "universe:strange_geyser_crust",
+    "universe:atmospheric_extractor",
+    "universe:electrolyzer",
+    "universe:chemical_reactor",
+    "universe:incubator",
+    "universe:sequencer",
+    "universe:gene_editor",
+    "universe:bioreactor",
+    "universe:atmosphere_release_tower",
+    "universe:ecology_seeder",
+    "universe:orbital_mirror"
   ]
 }

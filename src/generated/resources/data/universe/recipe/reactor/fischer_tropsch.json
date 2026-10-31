@@ -1,0 +1,24 @@
+{
+  "type": "universe:reactor",
+  "ingredients": [
+    {
+      "count": 2,
+      "ingredient": "universe:carbon_monoxide"
+    },
+    {
+      "count": 4,
+      "ingredient": "universe:hydrogen"
+    }
+  ],
+  "research": "synthetic_fuels",
+  "results": [
+    {
+      "id": "universe:refined_oil"
+    },
+    {
+      "count": 2,
+      "id": "universe:water"
+    }
+  ],
+  "time": 60
+}

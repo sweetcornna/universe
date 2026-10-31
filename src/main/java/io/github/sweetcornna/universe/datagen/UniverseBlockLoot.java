@@ -223,6 +223,16 @@ final class UniverseBlockLoot extends BlockLootSubProvider {
                         .apply(SetItemCountFunction.setCount(ContextIntProviders.between(kind.crustMin(), kind.crustMax())))
                         .apply(ApplyBonusCount.addOreBonusCount(this.enchantments.getOrThrow(Enchantments.FORTUNE)))))));
         // M19 科技布局和局部危害（E）的战利品表加在这行上面
+        ChemistryDatagen.blockLoot(this::dropSelf);
+        // M20 化学（A）的战利品表加在这行上面
+        this.dropSelf(UniverseBlocks.CHEMICAL_REACTOR.get());
+        // M20 反应釜（B）的战利品表加在这行上面
+        MicrobeDatagen.blockLoot(this::dropSelf);
+        // M20 微生物和基因（C）的战利品表加在这行上面
+        this.dropSelf(UniverseBlocks.BIOREACTOR.get());
+        // M20 生物反应器（D）的战利品表加在这行上面
+        TerraformDatagen.blockLoot(this::dropSelf);
+        // M20 星球改造（E）的战利品表加在这行上面
     }
 
     /** 黑雾基地的方块（子代理 P）。 */

@@ -1,0 +1,10 @@
+{
+  "parent": "universe:block/machine_glow",
+  "textures": {
+    "bottom": "universe:block/machine_casing_top",
+    "front": "universe:block/gene_editor_front_on",
+    "glow": "universe:block/gene_editor_front_on_glow",
+    "side": "universe:block/gene_editor_side",
+    "top": "universe:block/gene_editor_top"
+  }
+}

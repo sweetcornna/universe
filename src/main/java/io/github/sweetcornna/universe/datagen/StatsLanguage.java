@@ -128,10 +128,11 @@ final class StatsLanguage {
                         + "星际运输船运进运出的单独记，标着箭头。\n\n"
                         + "电力：发电、用电、充电的环形图，按设备分开。\n"
                         + "戴森球：每一层的节点、框架、壳面和发电。",
-                "O opens Statistics. The arrows switch between everything, a star system and a single planet.\n\n"
+                "O opens Statistics. Arrows switch between everything, a system or a planet.\n\n"
                         + "Production: pick an item for its chart and recipes; click an item in a recipe to jump to it. "
-                        + "Ref is what the running machines on those recipes would make at full speed. If it is well above the real rate, "
-                        + "inputs or power are short. Interstellar imports and exports are counted separately and marked with an arrow.\n\n"
+                        + "Ref is the full-speed output of the running machines on those recipes. "
+                        + "Well above the real rate means inputs or power are short. "
+                        + "Interstellar trade is counted separately, marked with an arrow.\n\n"
                         + "Power: a ring of generation, use and charging, split by device.\n"
                         + "Dyson: nodes, frames, shells and output for each layer.");
         both.add("guide.universe.research.dashboard.title", "仪表盘", "Dashboard");

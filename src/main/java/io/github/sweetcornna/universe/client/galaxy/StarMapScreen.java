@@ -1004,6 +1004,10 @@ public class StarMapScreen extends Screen {
                     String.join(GalaxyText.pick("、", ", "), names));
             y = this.smallText(graphics, hazards, x + 9, y, width - 9, WARN);
         }
+        // 大气成分和氧分压（ADR-0036 §二）：光谱看得出来，去过的恒星系里都写
+        for (Component line : io.github.sweetcornna.universe.chem.PlanetAir.lines(ClientGalaxy.environment(planet), GalaxyText.pick("、", ", "))) {
+            y = this.smallText(graphics, line, x + 9, y, width - 9, 0xFFA8C4D0);
+        }
         if (this.showResources && !planet.resources().isEmpty()) {
             List<String> names = new ArrayList<>();
             planet.resources().stream().sorted(Comparator.comparingDouble(Resource.Deposit::abundance).reversed())

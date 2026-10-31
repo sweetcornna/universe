@@ -2,8 +2,6 @@ package io.github.sweetcornna.universe.gametest;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.LockSupport;
 
 import io.netty.channel.ChannelFutureListener;
 import org.jspecify.annotations.Nullable;
@@ -222,14 +220,11 @@ final class ReleaseFixGameTests {
         return sent;
     }
 
-    /** {@link #farChunksLoadInBackground} 等区块加载的真实时间（秒），过了还没加载好才算失败。 */
-    static final int FAR_CHUNKS_SECONDS = 60;
-
     /**
      * 远处没加载的区块：问一下不会当场生成，挂上加载票以后在后台加载好。
      *
      * <p>区块在后台线程上生成，花的是真实时间；测试服务端两刻之间不等（{@code GameTestServer.waitUntilNextTick} 只跑完排着的任务），
-     * 别的测试跑完以后一秒能跑几千刻，按刻数限时，机器一忙就不够（12000 刻不到两秒）。所以按真实时间限时，登记的最长刻数不设限。
+     * 别的测试跑完以后一秒能跑几千刻，按刻数限时，机器一忙就不够（12000 刻不到两秒）。所以按真实时间限时（{@link RealTime}），登记的最长刻数不设限。
      */
     static void farChunksLoadInBackground(GameTestHelper helper) {
         ServerLevel level = helper.getLevel();
@@ -241,16 +236,7 @@ final class ReleaseFixGameTests {
         helper.assertTrue(level.getChunkSource().getChunkNow(cx, cz) == null, "远处的区块本来就加载着，测不了");
         helper.assertFalse(Structures.ready(level, box), "没加载的区块当成加载好了");
         helper.assertTrue(level.getChunkSource().getChunkNow(cx, cz) == null, "问了一下就当场加载了区块");
-        long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(FAR_CHUNKS_SECONDS);
-        helper.startSequence()
-                .thenWaitUntil(() -> {
-                    if (!Structures.ready(level, box) && System.nanoTime() < deadline) {
-                        // 等的时候主线程每刻歇一毫秒：不空转抢后台生成区块的 CPU，等不到时也不会一秒刷出几千行进度条
-                        LockSupport.parkNanos(TimeUnit.MILLISECONDS.toNanos(1));
-                        helper.fail("区块还在加载");
-                    }
-                })
-                .thenExecute(() -> helper.assertTrue(Structures.ready(level, box), "挂了加载票，" + FAR_CHUNKS_SECONDS + " 秒了区块还没加载好"))
+        RealTime.await(helper, () -> Structures.ready(level, box), "挂了加载票，区块还没加载好")
                 .thenSucceed();
     }
 }

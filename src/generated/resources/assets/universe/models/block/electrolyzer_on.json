@@ -1,0 +1,10 @@
+{
+  "parent": "universe:block/machine_glow",
+  "textures": {
+    "bottom": "universe:block/machine_casing_top",
+    "front": "universe:block/electrolyzer_front_on",
+    "glow": "universe:block/electrolyzer_front_on_glow",
+    "side": "universe:block/electrolyzer_side",
+    "top": "universe:block/electrolyzer_top"
+  }
+}

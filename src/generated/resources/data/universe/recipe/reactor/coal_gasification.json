@@ -1,0 +1,23 @@
+{
+  "type": "universe:reactor",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "minecraft:coal"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:water"
+    }
+  ],
+  "research": "synthetic_fuels",
+  "results": [
+    {
+      "id": "universe:carbon_monoxide"
+    },
+    {
+      "id": "universe:hydrogen"
+    }
+  ],
+  "time": 60
+}

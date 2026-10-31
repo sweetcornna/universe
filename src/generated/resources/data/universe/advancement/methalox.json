@@ -1,0 +1,33 @@
+{
+  "parent": "universe:chemical_reactor",
+  "criteria": {
+    "has_item": {
+      "conditions": {
+        "items": [
+          {
+            "items": "universe:methalox_fuel"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.universe.methalox.description"
+    },
+    "frame": "goal",
+    "icon": {
+      "id": "universe:methalox_fuel"
+    },
+    "title": {
+      "translate": "advancements.universe.methalox.title"
+    }
+  },
+  "requirements": [
+    [
+      "has_item"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

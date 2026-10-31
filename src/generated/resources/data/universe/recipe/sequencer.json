@@ -1,0 +1,20 @@
+{
+  "type": "universe:research_shaped",
+  "category": "redstone",
+  "key": {
+    "B": "universe:circuit_board",
+    "G": "minecraft:glass",
+    "P": "universe:plastic",
+    "R": "universe:prism",
+    "S": "universe:steel"
+  },
+  "pattern": [
+    "PGP",
+    "BRB",
+    "SSS"
+  ],
+  "research": "genomics",
+  "result": {
+    "id": "universe:sequencer"
+  }
+}

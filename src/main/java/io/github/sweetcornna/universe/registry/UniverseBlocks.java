@@ -754,6 +754,55 @@ public final class UniverseBlocks {
     public static final Map<io.github.sweetcornna.universe.core.hazard.GeyserKind, DeferredBlock<io.github.sweetcornna.universe.hazard.GeyserCrustBlock>> GEYSER_CRUSTS =
             io.github.sweetcornna.universe.hazard.HazardBlocks.crusts(BLOCKS);
     // M19 科技布局和局部危害（E）的方块加在这行上面
+    // ---- M20 化学（ADR-0036 §三）
+    public static final DeferredBlock<io.github.sweetcornna.universe.chem.ChemistryBlocks.AtmosphericExtractor> ATMOSPHERIC_EXTRACTOR =
+            BLOCKS.registerBlock("atmospheric_extractor", io.github.sweetcornna.universe.chem.ChemistryBlocks.AtmosphericExtractor::new,
+                    p -> machine(p).lightLevel(state -> state.getValue(MachineBlock.WORKING) ? 5 : 0));
+    public static final DeferredBlock<io.github.sweetcornna.universe.chem.ChemistryBlocks.Electrolyzer> ELECTROLYZER =
+            BLOCKS.registerBlock("electrolyzer", io.github.sweetcornna.universe.chem.ChemistryBlocks.Electrolyzer::new,
+                    p -> machine(p).lightLevel(state -> state.getValue(MachineBlock.WORKING) ? 7 : 0));
+    // M20 化学（A）的方块加在这行上面
+    /** 化学反应釜（ADR-0036 §四）。 */
+    public static final DeferredBlock<io.github.sweetcornna.universe.chem.reactor.ChemicalReactorBlock> CHEMICAL_REACTOR =
+            BLOCKS.registerBlock("chemical_reactor", io.github.sweetcornna.universe.chem.reactor.ChemicalReactorBlock::new,
+                    p -> machine(p).lightLevel(state -> state.getValue(MachineBlock.WORKING) ? 6 : 0));
+    // M20 反应釜（B）的方块加在这行上面
+    // ---- M20 微生物和基因（ADR-0036 §五）：培养箱、测序仪、基因编辑台，接电网
+    public static final DeferredBlock<MachineBlock> INCUBATOR = BLOCKS.registerBlock("incubator",
+            p -> new MachineBlock(p, UniverseBlockEntities.INCUBATOR), p -> machine(p).lightLevel(state -> state.getValue(MachineBlock.WORKING) ? 6 : 0));
+    public static final DeferredBlock<MachineBlock> SEQUENCER = BLOCKS.registerBlock("sequencer",
+            p -> new MachineBlock(p, UniverseBlockEntities.SEQUENCER), p -> machine(p).lightLevel(state -> state.getValue(MachineBlock.WORKING) ? 7 : 0));
+    public static final DeferredBlock<MachineBlock> GENE_EDITOR = BLOCKS.registerBlock("gene_editor",
+            p -> new MachineBlock(p, UniverseBlockEntities.GENE_EDITOR), p -> machine(p).lightLevel(state -> state.getValue(MachineBlock.WORKING) ? 7 : 0));
+    // M20 微生物和基因（C）的方块加在这行上面
+    /** 生物反应器（ADR-0036 §五）。 */
+    public static final DeferredBlock<io.github.sweetcornna.universe.bio.BioreactorBlock> BIOREACTOR =
+            BLOCKS.registerBlock("bioreactor", io.github.sweetcornna.universe.bio.BioreactorBlock::new,
+                    p -> machine(p).lightLevel(state -> state.getValue(MachineBlock.WORKING) ? 6 : 0));
+    // M20 生物反应器（D）的方块加在这行上面
+    // ---- M20 星球改造（ADR-0036 §六）
+    public static final DeferredBlock<io.github.sweetcornna.universe.terraform.TerraformBlocks.ReleaseTower> ATMOSPHERE_RELEASE_TOWER =
+            BLOCKS.registerBlock("atmosphere_release_tower", io.github.sweetcornna.universe.terraform.TerraformBlocks.ReleaseTower::new,
+                    p -> machine(p).lightLevel(state -> state.getValue(MachineBlock.WORKING) ? 6 : 0));
+    /** 轨道反射镜：薄膜镜面，比设备轻；对着星球时镜面微微发亮。 */
+    public static final DeferredBlock<io.github.sweetcornna.universe.terraform.TerraformBlocks.OrbitalMirror> ORBITAL_MIRROR =
+            BLOCKS.registerBlock("orbital_mirror", io.github.sweetcornna.universe.terraform.TerraformBlocks.OrbitalMirror::new,
+                    p -> machine(p).strength(2.0F, 4.0F).lightLevel(state -> state.getValue(MachineBlock.WORKING) ? 4 : 0));
+    /** 生态播种站：浇水、播种时顶上的生长灯亮。 */
+    public static final DeferredBlock<io.github.sweetcornna.universe.terraform.TerraformBlocks.EcologySeeder> ECOLOGY_SEEDER =
+            BLOCKS.registerBlock("ecology_seeder", io.github.sweetcornna.universe.terraform.TerraformBlocks.EcologySeeder::new,
+                    p -> machine(p).lightLevel(state -> state.getValue(MachineBlock.WORKING) ? 7 : 0));
+    /** 播种站周围长出来的壳状地衣：灰绿的（茶渍衣、梅衣一类）和橙黄的（石黄衣、橙衣一类）。没有物品，挖了不掉东西。 */
+    public static final DeferredBlock<io.github.sweetcornna.universe.terraform.TerraformBlocks.Lichen> GRAY_LICHEN =
+            BLOCKS.registerBlock("gray_lichen", io.github.sweetcornna.universe.terraform.TerraformBlocks.Lichen::new, p -> lichen(p, MapColor.COLOR_LIGHT_GREEN));
+    public static final DeferredBlock<io.github.sweetcornna.universe.terraform.TerraformBlocks.Lichen> ORANGE_LICHEN =
+            BLOCKS.registerBlock("orange_lichen", io.github.sweetcornna.universe.terraform.TerraformBlocks.Lichen::new, p -> lichen(p, MapColor.COLOR_ORANGE));
+
+    private static BlockBehaviour.Properties lichen(BlockBehaviour.Properties p, MapColor color) {
+        return p.mapColor(color).strength(0.1F).sound(SoundType.MOSS_CARPET).noCollision().replaceable().noLootTable()
+                .pushReaction(PushReaction.POPPED).ignitedByLava();
+    }
+    // M20 星球改造（E）的方块加在这行上面
 
     /**
      * 按星球配色染色的方块。

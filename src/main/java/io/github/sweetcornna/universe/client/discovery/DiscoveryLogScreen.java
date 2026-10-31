@@ -597,6 +597,10 @@ public class DiscoveryLogScreen extends Screen {
             y = this.wrap(graphics, Component.translatable("gui.universe.star_map.hazards", String.join(GalaxyText.pick("、", ", "), names)),
                     x, y, width, WARN);
         }
+        // 大气成分和氧分压（ADR-0036 §二）
+        for (Component line : io.github.sweetcornna.universe.chem.PlanetAir.lines(ClientGalaxy.environment(planet), GalaxyText.pick("、", ", "))) {
+            y = this.wrap(graphics, line, x, y, width, DIM);
+        }
         if (planet.landable()) {
             SentinelLevel sentinels = ClientGalaxy.sentinels(planet);
             y = this.wrap(graphics, Component.translatable("gui.universe.star_map.sentinels", GalaxyText.pick(sentinels.nameZh(), sentinels.nameEn())),
@@ -697,10 +701,16 @@ public class DiscoveryLogScreen extends Screen {
         }
     }
 
+    /** 天体页末尾：发现过的矿物，和测序出来的微生物（ADR-0036 §五）。 */
     private int minerals(GuiGraphicsExtractor graphics, DiscoveryKey body, int x, int y, int width) {
+        y = this.childNames(graphics, body, DiscoveryKey.Kind.MINERAL, "gui.universe.discovery.minerals", x, y, width);
+        return this.childNames(graphics, body, DiscoveryKey.Kind.MICROBE, "gui.universe.discovery.microbes", x, y, width);
+    }
+
+    private int childNames(GuiGraphicsExtractor graphics, DiscoveryKey body, DiscoveryKey.Kind kind, String title, int x, int y, int width) {
         List<String> names = new ArrayList<>();
         for (DiscoveryLog.Entry entry : ClientDiscoveries.log().children(body)) {
-            if (entry.key().kind() == DiscoveryKey.Kind.MINERAL) {
+            if (entry.key().kind() == kind) {
                 names.add(DiscoveryText.name(entry.key()));
             }
         }
@@ -709,7 +719,7 @@ public class DiscoveryLogScreen extends Screen {
         }
         names.sort(null);
         y += 2;
-        graphics.text(this.font, Component.translatable("gui.universe.discovery.minerals", names.size()), x, y, TEXT, false);
+        graphics.text(this.font, Component.translatable(title, names.size()), x, y, TEXT, false);
         y += 11;
         return this.smallWrap(graphics, Component.literal(String.join(GalaxyText.pick("、", ", "), names)), x + 8, y, width - 8, DIM);
     }

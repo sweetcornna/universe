@@ -50,7 +50,12 @@ class SurvivalProgressionTest {
             "universe:chemical", NS + "chemical_plant",
             "universe:particle", NS + "miniature_particle_collider",
             "universe:nutrient", NS + "nutrient_processor",
-            "universe:portable_refining", NS + "portable_refiner");
+            "universe:portable_refining", NS + "portable_refiner",
+            "universe:electrolysis", NS + "electrolyzer"
+            , "universe:reactor", NS + "chemical_reactor"
+            , "universe:bioreactor", NS + "bioreactor"
+            // M20 反应釜（B）、生物反应器（D）的设备（前面加逗号）加在这行上面；Map.of 最多十对
+            );
     /**
      * 不靠配方、由设备从世界里抽出来的东西；勘探数据靠多功能工具的分析目镜发现新东西拿到；重氢由分馏塔从氢里分出来
      * （轨道采集器也能采，但它本身要更晚的科技）；临界光子由射线接收站在光子模式下产出（戴森云有帆就行）。
@@ -78,7 +83,25 @@ class SurvivalProgressionTest {
             Map.entry(NS + "matter_recombinator", NS + "multitool"),
             Map.entry(NS + "negentropy_singularity", NS + "multitool"),
             Map.entry(NS + "core_element", NS + "multitool"),
-            Map.entry(NS + "dark_fog_matrix", NS + "multitool")));
+            Map.entry(NS + "dark_fog_matrix", NS + "multitool"),
+            // 大气里的气体：大气提取器取（ADR-0036 §三）。一氧化碳、氰化氢在哪儿都不到千分之一，取不了
+            Map.entry(NS + "nitrogen", NS + "atmospheric_extractor"),
+            Map.entry(NS + "carbon_dioxide", NS + "atmospheric_extractor"),
+            Map.entry(NS + "methane", NS + "atmospheric_extractor"),
+            Map.entry(NS + "argon", NS + "atmospheric_extractor"),
+            Map.entry(NS + "helium", NS + "atmospheric_extractor"),
+            Map.entry(NS + "sulfur_dioxide", NS + "atmospheric_extractor"),
+            Map.entry(NS + "ammonia", NS + "atmospheric_extractor")
+            // 样本是采样管采来的，菌种管是培养箱分离的，改造种苗是基因编辑台编辑的（ADR-0036 §五）
+            , Map.entry(NS + "sample", NS + "sample_tube")
+            , Map.entry(NS + "strain_tube", NS + "incubator")
+            , Map.entry(NS + "engineered_seedling", NS + "gene_editor")
+            // 镍是生物反应器浸铜时偶尔多出的（BioreactorBlockEntity 里按概率出，不写在配方里，ADR-0036 §五）
+            , Map.entry(NS + "nickel_ingot", NS + "bioreactor")
+            // 铂也是，比镍少见（ADR-0037）
+            , Map.entry(NS + "platinum_ingot", NS + "bioreactor")
+            // M20 别的几条线（B–E）的（前面加逗号）加在这行上面
+            ));
     /** 生存里本来就拿不到的：挖不掉的涌泉、掉落舱和石碑、空间站的交易终端和建材，只在坠毁点箱子里的损坏工具，机甲的建造无人机。刷怪蛋另算。 */
     private static final Set<String> UNOBTAINABLE = Set.of(NS + "crude_oil_seep", NS + "damaged_multitool", NS + "drop_pod",
             NS + "monolith", NS + "trade_terminal",
@@ -107,7 +130,13 @@ class SurvivalProgressionTest {
             "universe:chemical", new int[] {3, 2},
             "universe:particle", new int[] {3, 2},
             "universe:nutrient", new int[] {3, 1},
-            "universe:portable_refining", new int[] {1, 1});
+            "universe:portable_refining", new int[] {1, 1},
+            "universe:electrolysis", new int[] {2, 3}
+            // 反应釜三个原料格、三个产物格；反应式最多两种产物（ADR-0037）
+            , "universe:reactor", new int[] {3, 2}
+            , "universe:bioreactor", new int[] {3, 2}
+            // M20 反应釜（B）、生物反应器（D）的格子数（前面加逗号）加在这行上面；Map.of 最多十对
+            );
     /** 兴趣点的建筑里天然放着的方块（ADR-0014），挖了按各自的战利品表掉落。 */
     private static final Set<String> STRUCTURE_BLOCKS = Set.of(NS + "data_terminal", NS + "supply_crate", NS + "tech_cache",
             NS + "smoldering_wreck", NS + "damaged_ship_helm", NS + "clam", NS + "sealed_crate",

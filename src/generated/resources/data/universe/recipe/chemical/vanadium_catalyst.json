@@ -1,0 +1,20 @@
+{
+  "type": "universe:chemical",
+  "ingredients": [
+    {
+      "count": 2,
+      "ingredient": "universe:vanadium_slag"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:sodium_hydroxide"
+    }
+  ],
+  "research": "catalysis",
+  "results": [
+    {
+      "id": "universe:vanadium_catalyst"
+    }
+  ],
+  "time": 120
+}

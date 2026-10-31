@@ -1,0 +1,21 @@
+{
+  "type": "universe:reactor",
+  "ingredients": [
+    {
+      "count": 2,
+      "ingredient": "universe:sulfur_dioxide"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:oxygen"
+    }
+  ],
+  "research": "catalysis",
+  "results": [
+    {
+      "count": 2,
+      "id": "universe:sulfur_trioxide"
+    }
+  ],
+  "time": 60
+}

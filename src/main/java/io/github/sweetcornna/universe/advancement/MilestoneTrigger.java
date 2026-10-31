@@ -32,6 +32,8 @@ public class MilestoneTrigger extends SimpleCriterionTrigger<MilestoneTrigger.Tr
     public static final String EXOCRAFT = "exocraft";
     public static final String TELEPORT = "teleport";
     public static final String BLUEPRINT = "blueprint";
+    /** 有一颗星球改造到能直接呼吸（ADR-0036 §六），全服的人都算。 */
+    public static final String TERRAFORMED = "terraformed";
 
     @Override
     public Codec<TriggerInstance> codec() {

@@ -1,0 +1,25 @@
+{
+  "type": "universe:nutrient",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:agar"
+    },
+    {
+      "count": 1,
+      "ingredient": "minecraft:sugar"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:salt"
+    }
+  ],
+  "research": "microbiology",
+  "results": [
+    {
+      "count": 4,
+      "id": "universe:culture_medium"
+    }
+  ],
+  "time": 60
+}

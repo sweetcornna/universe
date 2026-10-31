@@ -1,0 +1,23 @@
+{
+  "type": "universe:reactor",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:carbon_monoxide"
+    },
+    {
+      "count": 3,
+      "ingredient": "universe:hydrogen"
+    }
+  ],
+  "research": "synthetic_fuels",
+  "results": [
+    {
+      "id": "universe:methane"
+    },
+    {
+      "id": "universe:water"
+    }
+  ],
+  "time": 60
+}

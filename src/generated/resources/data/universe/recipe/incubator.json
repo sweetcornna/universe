@@ -1,0 +1,19 @@
+{
+  "type": "universe:research_shaped",
+  "category": "redstone",
+  "key": {
+    "B": "universe:circuit_board",
+    "C": "minecraft:copper_ingot",
+    "G": "minecraft:glass",
+    "I": "minecraft:iron_ingot"
+  },
+  "pattern": [
+    "IGI",
+    "IBI",
+    "ICI"
+  ],
+  "research": "microbiology",
+  "result": {
+    "id": "universe:incubator"
+  }
+}

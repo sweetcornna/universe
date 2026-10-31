@@ -5,6 +5,7 @@ import java.util.Optional;
 import io.github.sweetcornna.universe.core.ecology.ResourcePlant;
 import io.github.sweetcornna.universe.factory.MachineBlock;
 import io.github.sweetcornna.universe.registry.UniverseBlockEntities;
+import io.github.sweetcornna.universe.registry.UniverseItems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundEvents;
@@ -24,6 +25,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 
 /**
  * 水培槽（ADR-0026）：拿着产物右键种下，熟了空手右键收获，潜行空手右键拔掉，没熟时右键看长势。没有界面。
+ * 拿硝酸铵右键施肥（ADR-0036 §五）。
  */
 public class HydroponicTrayBlock extends MachineBlock {
     /** 槽子十格高，植物立在液面上。 */
@@ -41,6 +43,22 @@ public class HydroponicTrayBlock extends MachineBlock {
     @Override
     protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand,
             BlockHitResult hitResult) {
+        // 硝酸铵、尿素一袋都是两个氮（ADR-0037），施一次一样多
+        if (stack.is(UniverseItems.AMMONIUM_NITRATE.get()) || stack.is(UniverseItems.UREA.get())) {
+            if (!(level.getBlockEntity(pos) instanceof HydroponicTrayBlockEntity tray)) {
+                return InteractionResult.TRY_WITH_EMPTY_HAND;
+            }
+            if (!level.isClientSide()) {
+                if (tray.fertilize()) {
+                    stack.consume(1, player);
+                    level.playSound(null, pos, SoundEvents.BONE_MEAL_USE, SoundSource.BLOCKS, 1.0F, 1.0F);
+                    player.sendOverlayMessage(Component.translatable("message.universe.hydroponic_tray.fertilized", tray.fertilizer()));
+                } else {
+                    player.sendOverlayMessage(Component.translatable("message.universe.hydroponic_tray.fertilizer_full"));
+                }
+            }
+            return InteractionResult.SUCCESS;
+        }
         if (HydroponicTrayBlockEntity.farmable(stack).isEmpty()) {
             return InteractionResult.TRY_WITH_EMPTY_HAND;
         }
@@ -64,12 +82,14 @@ public class HydroponicTrayBlock extends MachineBlock {
             if (!seed.isEmpty()) {
                 give(player, seed);
                 give(player, tray.harvest());
+                give(player, tray.harvestSeedlings());
             }
             return InteractionResult.SUCCESS;
         }
         ItemStack crop = tray.harvest();
         if (!crop.isEmpty()) {
             give(player, crop);
+            give(player, tray.harvestSeedlings());
             level.playSound(null, pos, SoundEvents.SWEET_BERRY_BUSH_PICK_BERRIES, SoundSource.BLOCKS, 1.0F, 1.0F);
             return InteractionResult.SUCCESS;
         }

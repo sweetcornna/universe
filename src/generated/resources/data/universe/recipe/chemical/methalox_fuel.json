@@ -1,0 +1,20 @@
+{
+  "type": "universe:chemical",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:methane"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:oxygen"
+    }
+  ],
+  "research": "synthetic_fuels",
+  "results": [
+    {
+      "id": "universe:methalox_fuel"
+    }
+  ],
+  "time": 40
+}

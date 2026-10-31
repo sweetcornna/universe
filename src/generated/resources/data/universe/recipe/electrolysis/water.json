@@ -1,0 +1,20 @@
+{
+  "type": "universe:electrolysis",
+  "ingredients": [
+    {
+      "count": 2,
+      "ingredient": "universe:water"
+    }
+  ],
+  "research": "atmospheric_chemistry",
+  "results": [
+    {
+      "count": 2,
+      "id": "universe:hydrogen"
+    },
+    {
+      "id": "universe:oxygen"
+    }
+  ],
+  "time": 560
+}

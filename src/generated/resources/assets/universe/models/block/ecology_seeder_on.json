@@ -1,0 +1,11 @@
+{
+  "parent": "universe:block/machine_glow_top",
+  "textures": {
+    "bottom": "universe:block/ecology_seeder_bottom",
+    "front": "universe:block/ecology_seeder_front_on",
+    "glow": "universe:block/ecology_seeder_front_on_glow",
+    "glow_top": "universe:block/ecology_seeder_top_on_glow",
+    "side": "universe:block/ecology_seeder_side",
+    "top": "universe:block/ecology_seeder_top_on"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "type": "universe:reactor",
+  "ingredients": [
+    {
+      "count": 2,
+      "ingredient": "universe:carbon_monoxide"
+    }
+  ],
+  "research": "synthetic_fuels",
+  "results": [
+    {
+      "id": "universe:carbon_dioxide"
+    },
+    {
+      "id": "universe:energetic_graphite"
+    }
+  ],
+  "time": 60
+}

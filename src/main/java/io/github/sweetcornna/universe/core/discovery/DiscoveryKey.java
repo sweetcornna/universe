@@ -9,13 +9,13 @@ import io.github.sweetcornna.universe.core.galaxy.BodyId;
  * 发现日志里的一样东西（ADR-0012）：恒星系、天体，或者某个天体上的一种动物、植物、树、矿物。
  *
  * <p>{@link #id()} 的字符串形式存进存档、发给客户端，属于存档格式：{@code system:12}、{@code body:s12/p0/m1}、
- * {@code creature:s12/p0#3}、{@code mineral:s12/p0#universe:titanium_ore}。
+ * {@code creature:s12/p0#3}、{@code mineral:s12/p0#universe:titanium_ore}、{@code microbe:s12/p0#hot_spring/0}。
  *
  * @param kind    种类
  * @param system  恒星系序号
  * @param body    天体；恒星系为 null
  * @param index   物种序号；不是物种时为 -1
- * @param mineral 矿石方块的 ID；不是矿物时为空串
+ * @param mineral 矿石方块的 ID；微生物是菌的键在 # 后面的那段（{@code hot_spring/0}）；别的为空串
  */
 public record DiscoveryKey(Kind kind, int system, BodyId body, int index, String mineral) {
     public enum Kind {
@@ -24,7 +24,9 @@ public record DiscoveryKey(Kind kind, int system, BodyId body, int index, String
         CREATURE,
         PLANT,
         TREE,
-        MINERAL;
+        MINERAL,
+        /** 测序仪第一次测出的外星菌（ADR-0036 §五）。 */
+        MICROBE;
 
         String prefix() {
             return this.name().toLowerCase(Locale.ROOT);
@@ -70,6 +72,21 @@ public record DiscoveryKey(Kind kind, int system, BodyId body, int index, String
         return new DiscoveryKey(Kind.MINERAL, body.system(), body, -1, block);
     }
 
+    /** 一种外星菌：{@code strainKey} 是 {@code MicrobeStrain#key()}，形如 {@code s3/p1#hot_spring/0}，前半截是天体。 */
+    public static Optional<DiscoveryKey> microbe(String strainKey) {
+        int hash = strainKey.indexOf('#');
+        if (hash < 0 || hash == strainKey.length() - 1) {
+            return Optional.empty();
+        }
+        return BodyId.parse(strainKey.substring(0, hash))
+                .map(body -> new DiscoveryKey(Kind.MICROBE, body.system(), body, -1, strainKey.substring(hash + 1)));
+    }
+
+    /** 微生物条目对应的菌的键；别的种类为空串。 */
+    public String strainKey() {
+        return this.kind == Kind.MICROBE ? this.body.path() + "#" + this.mineral : "";
+    }
+
     /** 物种和矿物所在的天体、天体所在的恒星系。恒星系自己没有上一级。 */
     public Optional<DiscoveryKey> parent() {
         return switch (this.kind) {
@@ -84,7 +101,7 @@ public record DiscoveryKey(Kind kind, int system, BodyId body, int index, String
         return switch (this.kind) {
             case SYSTEM -> prefix + this.system;
             case BODY -> prefix + this.body.path();
-            case MINERAL -> prefix + this.body.path() + "#" + this.mineral;
+            case MINERAL, MICROBE -> prefix + this.body.path() + "#" + this.mineral;
             default -> prefix + this.body.path() + "#" + this.index;
         };
     }
@@ -120,6 +137,9 @@ public record DiscoveryKey(Kind kind, int system, BodyId body, int index, String
             }
             if (kind == Kind.MINERAL) {
                 return Optional.of(mineral(body.get(), tail));
+            }
+            if (kind == Kind.MICROBE) {
+                return Optional.of(new DiscoveryKey(Kind.MICROBE, body.get().system(), body.get(), -1, tail));
             }
             int index = Integer.parseInt(tail);
             return index < 0 ? Optional.empty() : Optional.of(new DiscoveryKey(kind, body.get().system(), body.get(), index, ""));

@@ -147,8 +147,7 @@ final class SettlementFixGameTests {
         ServerPlayer player = (ServerPlayer) helper.makeMockServerPlayer(GameType.SURVIVAL);
         Settlement s = claimed(helper, player, site, 12, true);
         player.setPos(stand.getX() + 0.5, site.getY() + 1, stand.getZ() + 0.5);
-        helper.startSequence()
-                .thenWaitUntil(() -> helper.assertTrue(ticking(level, stand, reach), "强制加载的区块还没开始更新实体"))
+        RealTime.await(helper, () -> ticking(level, stand, reach), "强制加载的区块还没开始更新实体")
                 .thenExecute(() -> {
                     helper.assertFalse(level.isPositionEntityTicking(site), "聚落中心在更新实体");
                     List<PirateFighter> fighters = SettlementRaids.testBegin(level, entry(helper, s), player);
@@ -168,9 +167,7 @@ final class SettlementFixGameTests {
         BlockPos site = new BlockPos(far.getX(), level.getHeight(Heightmap.Types.MOTION_BLOCKING, far.getX(), far.getZ()) - 1, far.getZ());
         ServerPlayer player = (ServerPlayer) helper.makeMockServerPlayer(GameType.SURVIVAL);
         Settlement s = claimed(helper, player, site, 13, false);
-        helper.startSequence()
-                // 强制加载的区块要过几刻才开始更新实体
-                .thenWaitUntil(() -> helper.assertTrue(ticking(level, site, SITE_RADIUS),"强制加载的区块还没开始更新实体"))
+        RealTime.await(helper, () -> ticking(level, site, SITE_RADIUS), "强制加载的区块还没开始更新实体")
                 .thenExecute(() -> {
                     List<PirateFighter> fighters = SettlementRaids.testBegin(level, entry(helper, s), player);
                     helper.assertTrue(!fighters.isEmpty(), "中心在更新实体却没放战机");
@@ -203,8 +200,7 @@ final class SettlementFixGameTests {
         Settlement s = claimed(helper, player, site, 17, false);
         long treasury = s.treasury();
         List<PirateFighter> fighters = new ArrayList<>();
-        helper.startSequence()
-                .thenWaitUntil(() -> helper.assertTrue(ticking(level, site, SITE_RADIUS), "强制加载的区块还没开始更新实体"))
+        RealTime.await(helper, () -> ticking(level, site, SITE_RADIUS), "强制加载的区块还没开始更新实体")
                 .thenExecute(() -> {
                     fighters.addAll(SettlementRaids.testRaid(level, entry(helper, s), 2, Vec3.atCenterOf(site).add(0, 30, 0), player));
                     helper.assertValueEqual(fighters.size(), 2, "放出来的战机");
@@ -233,8 +229,7 @@ final class SettlementFixGameTests {
         Settlement s = claimed(helper, player, site, 18, false);
         long treasury = s.treasury();
         List<PirateFighter> fighters = new ArrayList<>();
-        helper.startSequence()
-                .thenWaitUntil(() -> helper.assertTrue(ticking(level, site, SITE_RADIUS), "强制加载的区块还没开始更新实体"))
+        RealTime.await(helper, () -> ticking(level, site, SITE_RADIUS), "强制加载的区块还没开始更新实体")
                 .thenExecute(() -> {
                     fighters.addAll(SettlementRaids.testRaid(level, entry(helper, s), 2, Vec3.atCenterOf(site).add(0, 30, 0), player));
                     helper.assertValueEqual(fighters.size(), 2, "放出来的战机");
@@ -268,8 +263,7 @@ final class SettlementFixGameTests {
         int edge = ((site.getX() + SITE_RADIUS) >> 4) + 1;
         Vec3 out = new Vec3((edge << 4) + 8, site.getY() + 30, site.getZ() + 0.5);
         List<PirateFighter> fighters = new ArrayList<>();
-        helper.startSequence()
-                .thenWaitUntil(() -> helper.assertTrue(ticking(level, site, SITE_RADIUS), "强制加载的区块还没开始更新实体"))
+        RealTime.await(helper, () -> ticking(level, site, SITE_RADIUS), "强制加载的区块还没开始更新实体")
                 .thenExecute(() -> {
                     BlockPos at = BlockPos.containing(out);
                     helper.assertTrue(level.isLoaded(at), "战机停的区块没加载");
@@ -300,8 +294,7 @@ final class SettlementFixGameTests {
         Settlement s = claimed(helper, player, site, 20, true);
         List<PirateFighter> fighters = new ArrayList<>();
         long[] leftAt = new long[1];
-        helper.startSequence()
-                .thenWaitUntil(() -> helper.assertTrue(ticking(level, site, radius), "强制加载的区块还没开始更新实体"))
+        RealTime.await(helper, () -> ticking(level, site, radius), "强制加载的区块还没开始更新实体")
                 .thenExecute(() -> {
                     // 当作已经打了 2 分钟差 40 刻
                     fighters.addAll(SettlementRaids.testRaid(level, entry(helper, s), 2, Vec3.atCenterOf(site).add(0, 30, 0), player,
@@ -340,8 +333,7 @@ final class SettlementFixGameTests {
         helper.assertFalse(SettlementRules.defended(s.defense(), SettlementRules.strength(0, s.threat()), 1), "威胁拉满了防御低的按防御值也守得住");
         long treasury = s.treasury();
         List<PirateFighter> fighters = new ArrayList<>();
-        helper.startSequence()
-                .thenWaitUntil(() -> helper.assertTrue(ticking(level, site, SITE_RADIUS), "强制加载的区块还没开始更新实体"))
+        RealTime.await(helper, () -> ticking(level, site, SITE_RADIUS), "强制加载的区块还没开始更新实体")
                 .thenExecute(() -> {
                     fighters.addAll(SettlementRaids.testRaid(level, entry(helper, s), 1, Vec3.atCenterOf(site).add(0, 30, 0), player));
                     helper.assertValueEqual(fighters.size(), 1, "放出来的战机");

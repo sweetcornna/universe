@@ -208,6 +208,44 @@ public final class UniverseMenus {
     // M19 化石（C）的界面加在这行上面
     // M19 深空和重力枪（D）的界面加在这行上面
     // M19 科技布局和局部危害（E）的界面加在这行上面
+    // ---- M20 化学（ADR-0036 §三）：提取器和抽水站一样左边读数、一个产物格，下面一排气体按钮；电解槽两进三出
+    public static final MachineMenu.Type ATMOSPHERIC_EXTRACTOR = machine("atmospheric_extractor", new MachineMenu.Type(
+            io.github.sweetcornna.universe.chem.AtmosphericExtractorBlockEntity.DATA_COUNT, RESOURCE_WIDTH, 200, output(172, 40)));
+    public static final MachineMenu.Type ELECTROLYZER = machine("electrolyzer", new MachineMenu.Type(RecipeMachineBlockEntity.DATA_COUNT,
+            RECIPE_WIDTH, RECIPE_HEIGHT, input(118, 45), input(136, 45), output(190, 27), output(190, 45), output(190, 63)));
+    // M20 化学（A）的界面加在这行上面
+    /** 化学反应釜（ADR-0036 §四）：左边选反应，中间三个原料格、催化剂格、三个产物格，右边产量图，下面两条滑块和读数。 */
+    public static final MachineMenu.Type CHEMICAL_REACTOR = machine("chemical_reactor", new MachineMenu.Type(
+            io.github.sweetcornna.universe.chem.reactor.ChemicalReactorBlockEntity.DATA_COUNT, 256, 250,
+            input(100, 20), input(118, 20), input(136, 20), output(100, 64), output(118, 64), output(136, 64), input(100, 42)));
+    // M20 反应釜（B）的界面加在这行上面
+    // ---- M20 微生物和基因（ADR-0036 §五）：左边原料格、耗材格，右边产物格；培养箱中间是温度条，编辑台下面一排基因按钮
+    public static final MachineMenu.Type INCUBATOR = machine("incubator", new MachineMenu.Type(
+            io.github.sweetcornna.universe.microbe.IncubatorBlockEntity.DATA_COUNT, 210, 200, input(8, 26), input(8, 50), output(186, 38)));
+    public static final MachineMenu.Type SEQUENCER = machine("sequencer", new MachineMenu.Type(
+            io.github.sweetcornna.universe.microbe.SequencerBlockEntity.DATA_COUNT, 210, 180, input(8, 26), input(8, 50), output(186, 38)));
+    public static final MachineMenu.Type GENE_EDITOR = machine("gene_editor", new MachineMenu.Type(
+            io.github.sweetcornna.universe.microbe.GeneEditorBlockEntity.DATA_COUNT, 256, 244, input(8, 26), input(8, 50), output(232, 38)));
+    // M20 微生物和基因（C）的界面加在这行上面
+    /**
+     * 生物反应器（ADR-0036 §五）：上半截和配方设备一样（三个原料格、两个产物格），下面多一块培养物的读数：
+     * 左上角的菌种格（按燃料格的样子放，配方设备的界面不把它当原料格画虚影）、菌名和密度曲线、温度按钮。
+     */
+    public static final int BIOREACTOR_HEIGHT = 270;
+    public static final MachineMenu.Type BIOREACTOR = machine("bioreactor", new MachineMenu.Type(
+            io.github.sweetcornna.universe.bio.BioreactorBlockEntity.DATA_COUNT, RECIPE_WIDTH, BIOREACTOR_HEIGHT,
+            input(118, 36), input(136, 36), input(118, 54), output(190, 36), output(190, 54), new SlotSpec(8, 116, Role.FUEL)));
+    // M20 生物反应器（D）的界面加在这行上面
+    // ---- M20 星球改造（ADR-0036 §六）：释放塔左边是读数和门槛，右边一列四个原料格；反射镜没有格子，只有读数和切换按钮
+    public static final MachineMenu.Type ATMOSPHERE_RELEASE_TOWER = machine("atmosphere_release_tower", new MachineMenu.Type(
+            io.github.sweetcornna.universe.terraform.ReleaseTowerBlockEntity.DATA_COUNT, 236, 236, input(212, 26), input(212, 44), input(212, 62),
+            input(212, 80)));
+    public static final MachineMenu.Type ORBITAL_MIRROR = machine("orbital_mirror", new MachineMenu.Type(
+            io.github.sweetcornna.universe.terraform.OrbitalMirrorBlockEntity.DATA_COUNT, 220, 104));
+    /** 生态播种站：左边是读数和先锋生物要面对的条件，右边上面一格放菌种管或种苗，下面一格放水。 */
+    public static final MachineMenu.Type ECOLOGY_SEEDER = machine("ecology_seeder", new MachineMenu.Type(
+            io.github.sweetcornna.universe.terraform.EcologySeederBlockEntity.DATA_COUNT, 236, 236, input(212, 34), input(212, 76)));
+    // M20 星球改造（E）的界面加在这行上面
 
     private UniverseMenus() {
     }

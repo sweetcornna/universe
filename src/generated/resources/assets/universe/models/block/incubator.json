@@ -1,0 +1,9 @@
+{
+  "parent": "minecraft:block/orientable_with_bottom",
+  "textures": {
+    "bottom": "universe:block/machine_casing_top",
+    "front": "universe:block/incubator_front",
+    "side": "universe:block/incubator_side",
+    "top": "universe:block/incubator_top"
+  }
+}

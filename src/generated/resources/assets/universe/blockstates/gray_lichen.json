@@ -1,0 +1,21 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "universe:block/gray_lichen"
+      },
+      {
+        "model": "universe:block/gray_lichen",
+        "y": 90
+      },
+      {
+        "model": "universe:block/gray_lichen",
+        "y": 180
+      },
+      {
+        "model": "universe:block/gray_lichen",
+        "y": 270
+      }
+    ]
+  }
+}

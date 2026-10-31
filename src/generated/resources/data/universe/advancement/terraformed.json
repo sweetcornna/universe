@@ -1,0 +1,29 @@
+{
+  "parent": "universe:ecology_seeder",
+  "criteria": {
+    "milestone": {
+      "conditions": {
+        "milestone": "terraformed"
+      },
+      "trigger": "universe:milestone"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.universe.terraformed.description"
+    },
+    "frame": "challenge",
+    "icon": {
+      "id": "universe:atmosphere_release_tower"
+    },
+    "title": {
+      "translate": "advancements.universe.terraformed.title"
+    }
+  },
+  "requirements": [
+    [
+      "milestone"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

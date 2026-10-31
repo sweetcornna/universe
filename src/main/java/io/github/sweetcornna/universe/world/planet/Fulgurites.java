@@ -9,6 +9,7 @@ import io.github.sweetcornna.universe.core.poi.Fulgurite;
 import io.github.sweetcornna.universe.core.procgen.Rng;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
 import io.github.sweetcornna.universe.teleport.BaseData;
+import io.github.sweetcornna.universe.terraform.Terraforming;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.core.registries.Registries;
@@ -125,7 +126,7 @@ public final class Fulgurites {
 
     /** 火山灰的风暴打雷时，每个玩家附近隔一阵落一道雷（雷本身照原版，会点火、会打人）。 */
     private static void volcanicStorm(ServerLevel level) {
-        Optional<Planet> planet = Planets.planet(level);
+        Optional<Planet> planet = Terraforming.planet(level);
         if (planet.isEmpty() || level.thunderLevel < 0.9F) {
             return;
         }

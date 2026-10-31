@@ -1,0 +1,19 @@
+{
+  "type": "universe:research_shaped",
+  "category": "redstone",
+  "key": {
+    "G": "minecraft:glass",
+    "M": "universe:electric_motor",
+    "P": "universe:processor",
+    "S": "universe:steel"
+  },
+  "pattern": [
+    "SGS",
+    "MPM",
+    "SGS"
+  ],
+  "research": "bioengineering",
+  "result": {
+    "id": "universe:bioreactor"
+  }
+}

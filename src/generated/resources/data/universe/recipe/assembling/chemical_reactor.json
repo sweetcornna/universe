@@ -1,0 +1,28 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:chemical_plant"
+    },
+    {
+      "count": 8,
+      "ingredient": "universe:steel"
+    },
+    {
+      "count": 4,
+      "ingredient": "universe:titanium_alloy"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:processor"
+    }
+  ],
+  "research": "catalysis",
+  "results": [
+    {
+      "id": "universe:chemical_reactor"
+    }
+  ],
+  "time": 120
+}

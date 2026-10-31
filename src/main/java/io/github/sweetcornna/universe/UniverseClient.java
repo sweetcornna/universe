@@ -170,6 +170,14 @@ public final class UniverseClient {
         // M19 深空和重力枪（D）的注册加在这行上面
         io.github.sweetcornna.universe.client.hazard.HazardClient.registerEvents(modBus, NeoForge.EVENT_BUS);
         // M19 科技布局和局部危害（E）的注册加在这行上面
+        io.github.sweetcornna.universe.client.chem.ChemistryClient.registerEvents(modBus, NeoForge.EVENT_BUS);
+        // M20 化学（A）的注册加在这行上面
+        // M20 反应釜（B）的注册加在这行上面
+        io.github.sweetcornna.universe.client.microbe.MicrobeClient.registerEvents(modBus, NeoForge.EVENT_BUS);
+        // M20 微生物和基因（C）的注册加在这行上面
+        // M20 生物反应器（D）的注册加在这行上面
+        io.github.sweetcornna.universe.client.terraform.TerraformClient.registerEvents(modBus, NeoForge.EVENT_BUS);
+        // M20 星球改造（E）的注册加在这行上面
         // 开发用：带了 -Duniverse.devScript 才启用
         DevScript.registerEvents(NeoForge.EVENT_BUS);
         // 客户端世界建立环境属性时，从客户端的星团里查星球

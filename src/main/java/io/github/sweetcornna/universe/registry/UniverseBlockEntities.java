@@ -233,6 +233,42 @@ public final class UniverseBlockEntities {
             () -> new BlockEntityType<>(io.github.sweetcornna.universe.hazard.GeyserVentBlockEntity::new, UniverseBlocks.GEYSER_VENTS.values().stream()
                     .map(block -> (net.minecraft.world.level.block.Block) block.get()).collect(java.util.stream.Collectors.toSet())));
     // M19 科技布局和局部危害（E）的方块实体加在这行上面
+    // ---- M20 化学（ADR-0036 §三）
+    public static final Supplier<BlockEntityType<io.github.sweetcornna.universe.chem.AtmosphericExtractorBlockEntity>> ATMOSPHERIC_EXTRACTOR =
+            BLOCK_ENTITIES.register("atmospheric_extractor", () -> new BlockEntityType<>(
+                    io.github.sweetcornna.universe.chem.AtmosphericExtractorBlockEntity::new, UniverseBlocks.ATMOSPHERIC_EXTRACTOR.get()));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<RecipeMachineBlockEntity>> ELECTROLYZER = recipeMachine(
+            "electrolyzer", UniverseBlocks.ELECTROLYZER, RecipeMachines.ELECTROLYZER);
+    // M20 化学（A）的方块实体加在这行上面
+    /** 化学反应釜（ADR-0036 §四）。 */
+    public static final Supplier<BlockEntityType<io.github.sweetcornna.universe.chem.reactor.ChemicalReactorBlockEntity>> CHEMICAL_REACTOR =
+            BLOCK_ENTITIES.register("chemical_reactor", () -> new BlockEntityType<>(
+                    io.github.sweetcornna.universe.chem.reactor.ChemicalReactorBlockEntity::new, UniverseBlocks.CHEMICAL_REACTOR.get()));
+    // M20 反应釜（B）的方块实体加在这行上面
+    // ---- M20 微生物和基因（ADR-0036 §五）
+    public static final Supplier<BlockEntityType<io.github.sweetcornna.universe.microbe.IncubatorBlockEntity>> INCUBATOR = BLOCK_ENTITIES.register("incubator",
+            () -> new BlockEntityType<>(io.github.sweetcornna.universe.microbe.IncubatorBlockEntity::new, UniverseBlocks.INCUBATOR.get()));
+    public static final Supplier<BlockEntityType<io.github.sweetcornna.universe.microbe.SequencerBlockEntity>> SEQUENCER = BLOCK_ENTITIES.register("sequencer",
+            () -> new BlockEntityType<>(io.github.sweetcornna.universe.microbe.SequencerBlockEntity::new, UniverseBlocks.SEQUENCER.get()));
+    public static final Supplier<BlockEntityType<io.github.sweetcornna.universe.microbe.GeneEditorBlockEntity>> GENE_EDITOR = BLOCK_ENTITIES.register("gene_editor",
+            () -> new BlockEntityType<>(io.github.sweetcornna.universe.microbe.GeneEditorBlockEntity::new, UniverseBlocks.GENE_EDITOR.get()));
+    // M20 微生物和基因（C）的方块实体加在这行上面
+    /** 生物反应器（ADR-0036 §五）。 */
+    public static final Supplier<BlockEntityType<io.github.sweetcornna.universe.bio.BioreactorBlockEntity>> BIOREACTOR =
+            BLOCK_ENTITIES.register("bioreactor", () -> new BlockEntityType<>(
+                    io.github.sweetcornna.universe.bio.BioreactorBlockEntity::new, UniverseBlocks.BIOREACTOR.get()));
+    // M20 生物反应器（D）的方块实体加在这行上面
+    // ---- M20 星球改造（ADR-0036 §六）
+    public static final Supplier<BlockEntityType<io.github.sweetcornna.universe.terraform.ReleaseTowerBlockEntity>> ATMOSPHERE_RELEASE_TOWER =
+            BLOCK_ENTITIES.register("atmosphere_release_tower", () -> new BlockEntityType<>(
+                    io.github.sweetcornna.universe.terraform.ReleaseTowerBlockEntity::new, UniverseBlocks.ATMOSPHERE_RELEASE_TOWER.get()));
+    public static final Supplier<BlockEntityType<io.github.sweetcornna.universe.terraform.OrbitalMirrorBlockEntity>> ORBITAL_MIRROR =
+            BLOCK_ENTITIES.register("orbital_mirror", () -> new BlockEntityType<>(
+                    io.github.sweetcornna.universe.terraform.OrbitalMirrorBlockEntity::new, UniverseBlocks.ORBITAL_MIRROR.get()));
+    public static final Supplier<BlockEntityType<io.github.sweetcornna.universe.terraform.EcologySeederBlockEntity>> ECOLOGY_SEEDER =
+            BLOCK_ENTITIES.register("ecology_seeder", () -> new BlockEntityType<>(
+                    io.github.sweetcornna.universe.terraform.EcologySeederBlockEntity::new, UniverseBlocks.ECOLOGY_SEEDER.get()));
+    // M20 星球改造（E）的方块实体加在这行上面
 
     private UniverseBlockEntities() {
     }

@@ -1,0 +1,31 @@
+{
+  "parent": "universe:electrolyzer",
+  "criteria": {
+    "placed": {
+      "conditions": {
+        "location": {
+          "type": "minecraft:match_block",
+          "blocks": "universe:chemical_reactor"
+        }
+      },
+      "trigger": "minecraft:placed_block"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.universe.chemical_reactor.description"
+    },
+    "icon": {
+      "id": "universe:chemical_reactor"
+    },
+    "title": {
+      "translate": "advancements.universe.chemical_reactor.title"
+    }
+  },
+  "requirements": [
+    [
+      "placed"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

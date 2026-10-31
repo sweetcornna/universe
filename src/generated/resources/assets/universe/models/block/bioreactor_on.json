@@ -1,0 +1,11 @@
+{
+  "parent": "universe:block/machine_glow_top",
+  "textures": {
+    "bottom": "universe:block/machine_casing_top",
+    "front": "universe:block/bioreactor_front_on",
+    "glow": "universe:block/bioreactor_front_on_glow",
+    "glow_top": "universe:block/bioreactor_top_on_glow",
+    "side": "universe:block/bioreactor_side",
+    "top": "universe:block/bioreactor_top_on"
+  }
+}

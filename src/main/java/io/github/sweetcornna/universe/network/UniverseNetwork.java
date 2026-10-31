@@ -40,7 +40,7 @@ import net.neoforged.neoforge.server.ServerLifecycleHooks;
  */
 public final class UniverseNetwork {
     /** 协议版本：任何包的格式改动都要加一，版本不同的客户端和服务端会拒绝连接。 */
-    private static final String PROTOCOL_VERSION = "34";
+    private static final String PROTOCOL_VERSION = "35";
 
     private UniverseNetwork() {
     }
@@ -230,6 +230,14 @@ public final class UniverseNetwork {
                 // M19 深空和重力枪（D）的包加在这行上面
                 .playToClient(io.github.sweetcornna.universe.hazard.HazardPayloads.Shake.TYPE, io.github.sweetcornna.universe.hazard.HazardPayloads.Shake.STREAM_CODEC)
                 // M19 科技布局和局部危害（E）的包加在这行上面
+                .playToClient(io.github.sweetcornna.universe.terraform.TerraformPayloads.Sync.TYPE,
+                        io.github.sweetcornna.universe.terraform.TerraformPayloads.Sync.STREAM_CODEC)
+                // M20 星球改造（E）的包加在这行上面
+                .playToClient(io.github.sweetcornna.universe.microbe.MicrobePayloads.Library.TYPE,
+                        io.github.sweetcornna.universe.microbe.MicrobePayloads.Library.STREAM_CODEC)
+                // M20 微生物和基因（C）的包加在这行上面
+                .playToClient(io.github.sweetcornna.universe.chem.reactor.ReactionBookPayload.TYPE,
+                        io.github.sweetcornna.universe.chem.reactor.ReactionBookPayload.STREAM_CODEC)
                 ;
     }
 }

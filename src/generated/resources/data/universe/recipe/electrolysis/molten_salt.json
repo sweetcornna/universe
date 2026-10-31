@@ -1,0 +1,20 @@
+{
+  "type": "universe:electrolysis",
+  "ingredients": [
+    {
+      "count": 2,
+      "ingredient": "universe:salt"
+    }
+  ],
+  "research": "electrochemistry",
+  "results": [
+    {
+      "count": 2,
+      "id": "universe:sodium"
+    },
+    {
+      "id": "universe:chlorine"
+    }
+  ],
+  "time": 1120
+}

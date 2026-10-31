@@ -30,6 +30,8 @@ public final class Survey {
             // 巨型物种一颗星球最多一种，又少见，多给一些
             case CREATURE -> key.index() >= Fauna.GIANT_INDEX ? 5 : 2;
             case PLANT, TREE, MINERAL -> 1;
+            // 外星菌要采样、培养、测序才认得出来，比路过看见的物种多给一些
+            case MICROBE -> 3;
         };
     }
 

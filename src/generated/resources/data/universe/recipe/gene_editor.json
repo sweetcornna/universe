@@ -1,0 +1,20 @@
+{
+  "type": "universe:research_shaped",
+  "category": "redstone",
+  "key": {
+    "G": "minecraft:glass",
+    "M": "universe:electric_motor",
+    "P": "universe:plastic",
+    "S": "universe:steel",
+    "X": "universe:processor"
+  },
+  "pattern": [
+    "PGP",
+    "MXM",
+    "SSS"
+  ],
+  "research": "synthetic_biology",
+  "result": {
+    "id": "universe:gene_editor"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 4,
+      "ingredient": "universe:steel"
+    },
+    {
+      "count": 2,
+      "ingredient": "minecraft:glass"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:electric_motor"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:processor"
+    }
+  ],
+  "research": "bioengineering",
+  "results": [
+    {
+      "id": "universe:bioreactor"
+    }
+  ],
+  "time": 120
+}

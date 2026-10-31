@@ -1,0 +1,9 @@
+{
+  "parent": "minecraft:block/orientable_with_bottom",
+  "textures": {
+    "bottom": "universe:block/machine_casing_top",
+    "front": "universe:block/atmospheric_extractor_front",
+    "side": "universe:block/atmospheric_extractor_side",
+    "top": "universe:block/atmospheric_extractor_top"
+  }
+}

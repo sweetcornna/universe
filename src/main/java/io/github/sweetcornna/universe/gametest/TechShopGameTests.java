@@ -8,11 +8,13 @@ import io.github.sweetcornna.universe.civ.TechShop;
 import io.github.sweetcornna.universe.core.civ.NpcRole;
 import io.github.sweetcornna.universe.core.civ.Race;
 import io.github.sweetcornna.universe.core.civ.Standing;
+import io.github.sweetcornna.universe.core.civ.TechMerchant;
 import io.github.sweetcornna.universe.core.procgen.NameGenerator;
 import io.github.sweetcornna.universe.core.tech.TechModule;
 import io.github.sweetcornna.universe.entity.civ.AlienNpc;
 import io.github.sweetcornna.universe.registry.UniverseDataComponents;
 import io.github.sweetcornna.universe.registry.UniverseEntities;
+import io.github.sweetcornna.universe.registry.UniverseItems;
 import io.github.sweetcornna.universe.trade.Credits;
 import io.github.sweetcornna.universe.trade.Trading;
 import net.minecraft.core.BlockPos;
@@ -41,7 +43,10 @@ final class TechShopGameTests {
         Race race = Race.SCHOLAR;
         AlienNpc npc = spawn(helper, race, 424242L, "test:shop");
         List<TechShop.Offer> offers = TechShop.offers(player, npc);
-        helper.assertTrue(offers.size() == 3, "货不是 3 样：" + offers.size());
+        // 学者族另卖一张实验记录（ADR-0037 §五）
+        helper.assertTrue(offers.size() == TechMerchant.OFFERS + 1, "货不是 3 样模块加一张实验记录：" + offers.size());
+        helper.assertTrue(offers.getLast().stack().is(UniverseItems.LAB_NOTES.get())
+                && offers.getLast().stack().has(UniverseDataComponents.REACTION.get()), "学者族最后一样不是写着反应的实验记录");
         helper.assertTrue(same(offers, TechShop.offers(player, npc), true), "同一天同一档货变了");
 
         // 买第一样
@@ -76,7 +81,7 @@ final class TechShopGameTests {
         Civ.changeStanding(player, race, Standing.MAX - Civ.state(player).standing(race));
         List<TechShop.Offer> kindred = TechShop.offers(player, npc);
         helper.assertTrue(same(offers, kindred, false), "升了档货的种类变了");
-        for (TechShop.Offer offer : kindred) {
+        for (TechShop.Offer offer : kindred.subList(0, TechMerchant.OFFERS)) {
             double station = Trading.modulePrice(server, 0, offer.stack()).orElseThrow();
             long expected = (long) Math.ceil(station * Standing.priceFactor(Standing.Tier.KINDRED) - 1e-9);
             helper.assertTrue(offer.price() == expected && offer.price() < station, "至交的价钱不对：" + offer.price() + "，空间站 " + station);
@@ -91,6 +96,14 @@ final class TechShopGameTests {
             return false;
         }
         for (int i = 0; i < a.size(); i++) {
+            if (a.get(i).stack().has(UniverseDataComponents.REACTION.get())) {
+                // 实验记录：写的反应一样
+                if (!Objects.equals(a.get(i).stack().get(UniverseDataComponents.REACTION.get()), b.get(i).stack().get(UniverseDataComponents.REACTION.get()))
+                        || exact && a.get(i).price() != b.get(i).price()) {
+                    return false;
+                }
+                continue;
+            }
             TechModule x = a.get(i).stack().get(UniverseDataComponents.TECH_MODULE.get());
             TechModule y = b.get(i).stack().get(UniverseDataComponents.TECH_MODULE.get());
             if (x == null || y == null || x.type() != y.type()) {

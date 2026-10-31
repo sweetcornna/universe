@@ -162,12 +162,12 @@ final class FossilLanguage {
                         + "巨蠕、甲壳兽稀有\n"
                         + "奇异种极少见，只在奇异星球\n"
                         + "研究「古生物学」（交 4 块螺壳化石、2 块节肢动物化石）解锁底座和展台",
-                "Bones come from 8 families, each with 5 parts: skull, neck, ribcage, limbs, tail (a wyrm has segment rings for limbs).\n\n"
-                        + "Fossil dirt on planets has a 40% chance to give a bone as well. The planet decides which families turn up\n"
+                "Bones come from 8 families, 5 parts each: skull, neck, ribcage, limbs, tail (a wyrm has segment rings for limbs).\n\n"
+                        + "Planet fossil dirt gives a bone 40% of the time; the planet sets the families\n"
                         + "Titans, predators and longnecks are common\n"
                         + "Flyers and leviathans are uncommon\n"
                         + "Wyrms and arthropods are rare\n"
-                        + "Aberrations are very rare, and only on exotic worlds\n"
+                        + "Aberrations: very rare, exotic worlds only\n"
                         + "Research Paleontology (4 coiled shell fossils, 2 arthropod fossils) for the pedestal and display");
         both.add(g + ".displays.title", "展台", "Displays");
         both.add(g + ".displays",
@@ -176,11 +176,11 @@ final class FossilLanguage {
                         + "五格放满就拼出一副骨架，顶上显示名字\n"
                         + "界面里点「封装」收成一件化石展品，能叠\n"
                         + "拿着展品对着空展台右键，原样摆回去",
-                "A fossil pedestal holds one bone of any part. A skeleton display has five slots, one per part, and families can mix.\n\n"
-                        + "Right-click with a bone to slot it, empty-handed to open\n"
-                        + "Fill all five and the skeleton assembles, its name shown above\n"
-                        + "Pack turns it into a fossil exhibit, which stacks\n"
-                        + "Right-click an empty display with an exhibit to set it back up");
+                "A fossil pedestal holds one bone. A skeleton display has five slots, one per part; families can mix.\n"
+                        + "Bone + right-click: slot it. Empty hand: open\n"
+                        + "All five filled: it assembles, name above\n"
+                        + "Pack: makes a stackable fossil exhibit\n"
+                        + "Exhibit + right-click an empty display: rebuild");
         both.add(g + ".collectors.title", "化石收藏家", "Fossil Collectors");
         both.add(g + ".collectors",
                 "空间站和古生物发掘场里有化石收藏家，右键和对方交易。\n\n"

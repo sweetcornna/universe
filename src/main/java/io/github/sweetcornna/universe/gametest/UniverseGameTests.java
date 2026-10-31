@@ -608,6 +608,63 @@ public final class UniverseGameTests {
     private static final ResourceKey<Consumer<GameTestHelper>> FAR_CHUNKS_LOAD_IN_BACKGROUND = function("far_chunks_load_in_background",
             ReleaseFixGameTests::farChunksLoadInBackground);
     // 1.0.0 发布前修复：危害、引力抓取器、深空、信标、统计的测试函数加在这行上面
+    private static final ResourceKey<Consumer<GameTestHelper>> ELECTROLYZER_SPLITS_WATER = function("electrolyzer_splits_water",
+            ChemistryGameTests::electrolyzerSplitsWater);
+    private static final ResourceKey<Consumer<GameTestHelper>> EXTRACTOR_COLLECTS_NITROGEN = function("extractor_collects_nitrogen",
+            ChemistryGameTests::extractorCollectsNitrogen);
+    private static final ResourceKey<Consumer<GameTestHelper>> METHALOX_FUELS_TANK = function("methalox_fuels_tank", ChemistryGameTests::methaloxFuelsTank);
+    // M20 化学（A）的测试函数加在这行上面
+    private static final ResourceKey<Consumer<GameTestHelper>> REACTOR_HABER_MAKES_AMMONIA = function("reactor_haber_makes_ammonia",
+            ReactorGameTests::haberMakesAmmonia);
+    private static final ResourceKey<Consumer<GameTestHelper>> REACTOR_UNCATALYZED_IS_SLOW = function("reactor_uncatalyzed_is_slow",
+            ReactorGameTests::uncatalyzedIsSlow);
+    private static final ResourceKey<Consumer<GameTestHelper>> REACTOR_REFORMING_DRAWS_MORE_POWER = function("reactor_reforming_draws_more_power",
+            ReactorGameTests::reformingDrawsMorePower);
+    private static final ResourceKey<Consumer<GameTestHelper>> REACTOR_CATALYST_WEARS_OUT = function("reactor_catalyst_wears_out",
+            ReactorGameTests::catalystWearsOut);
+    private static final ResourceKey<Consumer<GameTestHelper>> REACTOR_FREE_MODE_DISCOVERS = function("reactor_free_mode_discovers",
+            ReactorGameTests::freeModeDiscoversReaction);
+    private static final ResourceKey<Consumer<GameTestHelper>> REACTOR_CATALYST_PICKS_REACTION = function("reactor_catalyst_picks_reaction",
+            ReactorGameTests::catalystPicksReaction);
+    private static final ResourceKey<Consumer<GameTestHelper>> REACTOR_UNDISCOVERED_IS_LOCKED = function("reactor_undiscovered_is_locked",
+            ReactorGameTests::undiscoveredReactionIsLocked);
+    // M20 反应釜（B）的测试函数加在这行上面
+    private static final ResourceKey<Consumer<GameTestHelper>> INCUBATOR_ISOLATES_STRAIN = function("microbe_incubator_isolates_strain",
+            MicrobeGameTests::incubatorIsolatesStrain);
+    private static final ResourceKey<Consumer<GameTestHelper>> INCUBATOR_EXPANDS_STRAIN = function("microbe_incubator_expands_strain",
+            MicrobeGameTests::incubatorExpandsStrain);
+    private static final ResourceKey<Consumer<GameTestHelper>> SEQUENCER_FILLS_LIBRARY = function("microbe_sequencer_fills_library",
+            MicrobeGameTests::sequencerFillsLibrary);
+    private static final ResourceKey<Consumer<GameTestHelper>> GENE_EDITOR_MAKES_SEEDLING = function("microbe_gene_editor_makes_seedling",
+            MicrobeGameTests::geneEditorMakesSeedling);
+    private static final ResourceKey<Consumer<GameTestHelper>> TRAY_SEEDLING_WITH_FERTILIZER = function("microbe_tray_seedling_with_fertilizer",
+            MicrobeGameTests::traySeedlingWithFertilizer);
+    private static final ResourceKey<Consumer<GameTestHelper>> SAMPLE_TUBE_READS_GRASS = function("microbe_sample_tube_reads_grass",
+            MicrobeGameTests::sampleTubeReadsGrass);
+    // M20 微生物和基因（C）的测试函数加在这行上面
+    private static final ResourceKey<Consumer<GameTestHelper>> BIOREACTOR_METHANOGEN_MAKES_METHANE = function(
+            "bioreactor_methanogen_makes_methane", BioreactorGameTests::methanogenMakesMethane);
+    private static final ResourceKey<Consumer<GameTestHelper>> BIOREACTOR_WRONG_STRAIN_STARVES = function("bioreactor_wrong_strain_starves",
+            BioreactorGameTests::wrongStrainStarves);
+    private static final ResourceKey<Consumer<GameTestHelper>> BIOREACTOR_DEAD_TANK_REINOCULATES = function("bioreactor_dead_tank_reinoculates",
+            BioreactorGameTests::deadTankReinoculates);
+    private static final ResourceKey<Consumer<GameTestHelper>> BIOREACTOR_GROW_LIGHTS_COST_MORE_THAN_BIOMASS = function(
+            "bioreactor_grow_lights_cost_more_than_biomass", BioreactorGameTests::growLightsCostMoreThanBiomass);
+    // M20 生物反应器（D）的测试函数加在这行上面
+    // 星球改造（ADR-0036 §六），测试写在 TerraformGameTests
+    private static final ResourceKey<Consumer<GameTestHelper>> RELEASE_TOWER_RELEASES_GAS = function("release_tower_releases_gas",
+            TerraformGameTests::releaseTowerReleasesGas);
+    private static final ResourceKey<Consumer<GameTestHelper>> UNTOUCHED_PLANETS_UNCHANGED = function("untouched_planets_unchanged",
+            TerraformGameTests::untouchedPlanetsUnchanged);
+    private static final ResourceKey<Consumer<GameTestHelper>> MIRROR_REGISTRY_COUNTS = function("mirror_registry_counts",
+            TerraformGameTests::mirrorRegistryCounts);
+    private static final ResourceKey<Consumer<GameTestHelper>> SEEDER_PLANTS_HARDY_STRAIN = function("seeder_plants_hardy_strain",
+            TerraformGameTests::seederPlantsHardyStrain);
+    private static final ResourceKey<Consumer<GameTestHelper>> SEEDER_REJECTS_UNFIT_STRAIN = function("seeder_rejects_unfit_strain",
+            TerraformGameTests::seederRejectsUnfitStrain);
+    private static final ResourceKey<Consumer<GameTestHelper>> GREENING_COVERS_ROCK_AND_SOIL = function("greening_covers_rock_and_soil",
+            TerraformGameTests::greeningCoversRockAndSoil);
+    // M20 星球改造（E）的测试函数加在这行上面
 
     private UniverseGameTests() {
     }
@@ -798,13 +855,14 @@ public final class UniverseGameTests {
         spaced(event, environment, SETTLEMENT_RAID_RESOLVES_BY_DEFENSE, 60);
         test(event, environment, SETTLEMENT_RAIDERS_STRAFE_ABOVE_GROUND, 600);
         test(event, environment, SETTLEMENT_RAID_IDLE_CENTRE_ROLLS_DEFENSE, 300);
-        test(event, environment, SETTLEMENT_RAID_BEGIN_SKIPS_IDLE_CENTRE, 200);
-        test(event, environment, SETTLEMENT_RAID_SPAWN_PULLED_TOWARD_OWNER, 200);
-        test(event, environment, SETTLEMENT_RAID_RELEASED_CHUNKS_ROLL_DEFENSE, 400);
-        test(event, environment, SETTLEMENT_RAID_DISCARDED_FIGHTERS_ROLL_DEFENSE, 200);
-        test(event, environment, SETTLEMENT_RAID_FROZEN_FIGHTER_ROLLS_DEFENSE, 300);
-        test(event, environment, SETTLEMENT_RAID_OWNER_LEAVES_BEFORE_END_ROLLS_DEFENSE, 200);
-        test(event, environment, SETTLEMENT_RAID_LAST_KILL_ON_ABSENT_TICK_WINS, 300);
+        // 下面几个等远处强制加载的区块，按真实时间等（RealTime），最长刻数加上它
+        test(event, environment, SETTLEMENT_RAID_BEGIN_SKIPS_IDLE_CENTRE, RealTime.TICKS + 200);
+        test(event, environment, SETTLEMENT_RAID_SPAWN_PULLED_TOWARD_OWNER, RealTime.TICKS + 200);
+        test(event, environment, SETTLEMENT_RAID_RELEASED_CHUNKS_ROLL_DEFENSE, RealTime.TICKS + 400);
+        test(event, environment, SETTLEMENT_RAID_DISCARDED_FIGHTERS_ROLL_DEFENSE, RealTime.TICKS + 200);
+        test(event, environment, SETTLEMENT_RAID_FROZEN_FIGHTER_ROLLS_DEFENSE, RealTime.TICKS + 300);
+        test(event, environment, SETTLEMENT_RAID_OWNER_LEAVES_BEFORE_END_ROLLS_DEFENSE, RealTime.TICKS + 200);
+        test(event, environment, SETTLEMENT_RAID_LAST_KILL_ON_ABSENT_TICK_WINS, RealTime.TICKS + 300);
         spaced(event, environment, SETTLEMENT_POND_WATER_CACHED, 20);
         spaced(event, environment, SETTLEMENT_CLAIM_DROPS_CONTAINERS, 20);
         test(event, environment, DIG_SITE_COLLECTOR_NEEDS_CAMP, 20);
@@ -844,9 +902,43 @@ public final class UniverseGameTests {
         test(event, environment, HOLO_BEACON_COALESCES_BROADCASTS, 20);
         test(event, environment, GRAVITY_REFUSES_OTHERS_FLEET_UNIT, 20);
         test(event, environment, GRAVITY_BEAM_REACHES_LATE_TRACKER, 40);
-        // 区块在后台按真实时间生成，测试服务端空闲时一秒能跑几千刻：测试里按真实时间限时（ReleaseFixGameTests.FAR_CHUNKS_SECONDS），刻数不设限
+        // 区块在后台按真实时间生成，测试服务端空闲时一秒能跑几千刻：测试里按真实时间限时（RealTime），刻数不设限
         test(event, environment, FAR_CHUNKS_LOAD_IN_BACKGROUND, Integer.MAX_VALUE);
         // 1.0.0 发布前修复：危害、引力抓取器、深空、信标、统计的测试加在这行上面
+        // 电解水 28 秒；提取器要看得到天，上面不封屏障
+        test(event, environment, ELECTROLYZER_SPLITS_WATER, 800);
+        spaced(event, environment, EXTRACTOR_COLLECTS_NITROGEN, PLATFORM, 400, true);
+        test(event, environment, METHALOX_FUELS_TANK, 20);
+        // M20 化学（A）的测试加在这行上面
+        test(event, environment, REACTOR_HABER_MAKES_AMMONIA, ReactorGameTests.HABER_TICKS);
+        test(event, environment, REACTOR_UNCATALYZED_IS_SLOW, ReactorGameTests.COMPARE_TICKS + 20);
+        test(event, environment, REACTOR_REFORMING_DRAWS_MORE_POWER, 60);
+        test(event, environment, REACTOR_CATALYST_WEARS_OUT, ReactorGameTests.HABER_TICKS);
+        test(event, environment, REACTOR_FREE_MODE_DISCOVERS, ReactorGameTests.FREE_TICKS);
+        test(event, environment, REACTOR_CATALYST_PICKS_REACTION, 60);
+        test(event, environment, REACTOR_UNDISCOVERED_IS_LOCKED, 60);
+        // M20 反应釜（B）的测试加在这行上面
+        // 培养、测序、编辑按真实的小时压缩，一次两到三分钟游戏时间
+        test(event, environment, INCUBATOR_ISOLATES_STRAIN, io.github.sweetcornna.universe.core.microbe.Isolation.ISOLATION_TICKS + 100);
+        test(event, environment, INCUBATOR_EXPANDS_STRAIN, io.github.sweetcornna.universe.core.microbe.Isolation.EXPAND_TICKS + 100);
+        test(event, environment, SEQUENCER_FILLS_LIBRARY, io.github.sweetcornna.universe.microbe.SequencerBlockEntity.SEQUENCE_TICKS + 100);
+        test(event, environment, GENE_EDITOR_MAKES_SEEDLING, io.github.sweetcornna.universe.microbe.GeneEditorBlockEntity.EDIT_TICKS + 100);
+        test(event, environment, TRAY_SEEDLING_WITH_FERTILIZER, 200);
+        test(event, environment, SAMPLE_TUBE_READS_GRASS, 20);
+        // M20 微生物和基因（C）的测试加在这行上面
+        test(event, environment, BIOREACTOR_METHANOGEN_MAKES_METHANE, BioreactorGameTests.METHANE_TICKS);
+        test(event, environment, BIOREACTOR_WRONG_STRAIN_STARVES, 60);
+        test(event, environment, BIOREACTOR_DEAD_TANK_REINOCULATES, BioreactorGameTests.REINOCULATE_TICKS);
+        // 反应器顶上压块石头看不到天，藻类开补光灯；先按真实时间等光照线程算到石头（RealTime）
+        test(event, environment, BIOREACTOR_GROW_LIGHTS_COST_MORE_THAN_BIOMASS, RealTime.TICKS + BioreactorGameTests.ALGAE_TICKS);
+        // M20 生物反应器（D）的测试加在这行上面
+        test(event, environment, RELEASE_TOWER_RELEASES_GAS, 200);
+        test(event, environment, UNTOUCHED_PLANETS_UNCHANGED, 20);
+        test(event, environment, MIRROR_REGISTRY_COUNTS, 20);
+        test(event, environment, SEEDER_PLANTS_HARDY_STRAIN, 500);
+        test(event, environment, SEEDER_REJECTS_UNFIT_STRAIN, 300);
+        test(event, environment, GREENING_COVERS_ROCK_AND_SOIL, 20);
+        // M20 星球改造（E）的测试加在这行上面
     }
 
     /**
@@ -1253,8 +1345,10 @@ public final class UniverseGameTests {
         helper.succeed();
     }
 
-    /** 雷击石（ADR-0026）：雷打中的沙子熔成雷击石。 */
+    /** 雷击石（ADR-0026）：雷打中的沙子熔成雷击石；草方块也算（26.x 的 #dirt 不含草方块）。 */
     private static void lightningFusesFulgurite(GameTestHelper helper) {
+        helper.assertTrue(Blocks.GRASS_BLOCK.defaultBlockState().is(Fulgurites.HOSTS), "雷打在草方块上不会熔");
+        helper.assertTrue(UniverseBlocks.PLANET_TURF.get().defaultBlockState().is(Fulgurites.HOSTS), "雷打在星球的草皮上不会熔");
         BlockPos pos = new BlockPos(3, 1, 3);
         helper.setBlock(pos, Blocks.SAND);
         int fused = Fulgurites.fuse(helper.getLevel(), helper.absolutePos(pos), Rng.of(7));

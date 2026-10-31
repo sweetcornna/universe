@@ -1,0 +1,21 @@
+{
+  "type": "universe:chemical",
+  "ingredients": [
+    {
+      "count": 2,
+      "ingredient": "universe:culture_medium"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:plastic"
+    }
+  ],
+  "research": "synthetic_biology",
+  "results": [
+    {
+      "count": 2,
+      "id": "universe:editing_kit"
+    }
+  ],
+  "time": 160
+}

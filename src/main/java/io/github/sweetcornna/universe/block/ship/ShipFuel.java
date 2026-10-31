@@ -29,6 +29,8 @@ public final class ShipFuel {
         if (values == null) {
             values = Map.of(
                     UniverseItems.LAUNCH_FUEL.get(), 1000.0,
+                    // 甲烷液氧（ADR-0036 §四）：星舰的猛禽发动机烧的就是它
+                    UniverseItems.METHALOX_FUEL.get(), 2500.0,
                     Items.COAL, 200.0,
                     Items.CHARCOAL, 200.0,
                     Items.COAL_BLOCK, 1800.0,

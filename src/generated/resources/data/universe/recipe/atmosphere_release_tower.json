@@ -1,0 +1,20 @@
+{
+  "type": "universe:research_shaped",
+  "category": "redstone",
+  "key": {
+    "G": "minecraft:iron_bars",
+    "M": "universe:electric_motor",
+    "P": "universe:processor",
+    "S": "universe:steel",
+    "T": "universe:titanium_alloy"
+  },
+  "pattern": [
+    "TGT",
+    "MPM",
+    "TST"
+  ],
+  "research": "terraforming",
+  "result": {
+    "id": "universe:atmosphere_release_tower"
+  }
+}

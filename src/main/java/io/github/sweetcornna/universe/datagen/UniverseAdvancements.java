@@ -31,7 +31,9 @@ final class UniverseAdvancements extends AdvancementSubProvider {
     static final String[] NAMES = {"root", "repair_multitool", "first_power", "tesla", "mining", "smelting", "assembling", "sorting",
             "blue_matrix", "red_matrix", "yellow_matrix", "purple_matrix", "green_matrix", "logistics", "interstellar", "blueprint",
             "species", "survey", "monolith", "tame", "exocraft", "teleport", "ship", "space", "warp", "trade", "mission", "pirates",
-            "ejector", "silo", "first_shell", "ray", "antimatter", "universe_matrix", "artificial_star", "mission_complete"};
+            "ejector", "silo", "first_shell", "ray", "antimatter", "universe_matrix", "artificial_star", "mission_complete",
+            "atmospheric_extractor", "electrolyzer", "chemical_reactor", "methalox", "culture", "gene_editing", "bioreactor", "ecology_seeder",
+            "terraformed"};
 
     private final HolderGetter<Block> blocks;
 
@@ -105,6 +107,18 @@ final class UniverseAdvancements extends AdvancementSubProvider {
         AdvancementHolder white = this.itemTask(antimatter, "universe_matrix", UniverseItems.UNIVERSE_MATRIX.get(), AdvancementType.GOAL);
         this.milestone(white, "mission_complete", UniverseItems.COMPOSITE_MATRIX.get(), AdvancementType.CHALLENGE,
                 MilestoneTrigger.story(Milestone.MISSION_COMPLETE));
+
+        // ---- 科学（ADR-0036）：化学接在红矩阵后面，生物接在发现物种后面，最后改造一颗星球
+        AdvancementHolder extractor = this.placedTask(red, "atmospheric_extractor", UniverseBlocks.ATMOSPHERIC_EXTRACTOR.get());
+        AdvancementHolder electrolyzer = this.placedTask(extractor, "electrolyzer", UniverseBlocks.ELECTROLYZER.get());
+        AdvancementHolder reactor = this.placedTask(electrolyzer, "chemical_reactor", UniverseBlocks.CHEMICAL_REACTOR.get());
+        this.itemTask(reactor, "methalox", UniverseItems.METHALOX_FUEL.get(), AdvancementType.GOAL);
+        AdvancementHolder culture = this.itemTask(species, "culture", UniverseItems.STRAIN_TUBE.get(), AdvancementType.TASK);
+        AdvancementHolder editing = this.itemTask(culture, "gene_editing", UniverseItems.ENGINEERED_SEEDLING.get(), AdvancementType.TASK);
+        this.placedTask(editing, "bioreactor", UniverseBlocks.BIOREACTOR.get());
+        AdvancementHolder seeder = this.placedTask(editing, "ecology_seeder", UniverseBlocks.ECOLOGY_SEEDER.get());
+        this.milestone(seeder, "terraformed", UniverseBlocks.ATMOSPHERE_RELEASE_TOWER.get().asItem(), AdvancementType.CHALLENGE,
+                MilestoneTrigger.TERRAFORMED);
     }
 
     private AdvancementHolder task(AdvancementHolder parent, String name, Item icon, AdvancementType type, String criterion, Criterion<?> trigger) {

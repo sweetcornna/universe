@@ -35,6 +35,20 @@ public final class RecipeMachines {
     /** 便携精炼机：烧燃料，一种原料。 */
     public static final Spec PORTABLE_REFINER = new Spec(Kind.PORTABLE_REFINING, 1, 1, 0, 1.0, UniverseMenus.PORTABLE_REFINER);
 
+    /** 电解槽（ADR-0036 §三）：10 MW，两种原料、三种产物。电解水、氯碱、熔盐、MOXIE、电积五条配方。 */
+    public static final Spec ELECTROLYZER = new Spec(Kind.ELECTROLYSIS, 2, 3, io.github.sweetcornna.universe.core.chem.Electrolysis.POWER, 1.0,
+            UniverseMenus.ELECTROLYZER);
+    // M20 化学（A）的规格加在这行上面
+    // M20 反应釜（B）的规格加在这行上面
+    // M20 微生物和基因（C）的规格加在这行上面
+    /**
+     * 生物反应器（ADR-0036 §五）：工艺的电 240 kW，速度 1，三种原料、两种产物；另有控温、搅拌和补光灯的电，
+     * 见 {@link io.github.sweetcornna.universe.bio.BioreactorBlockEntity}。
+     */
+    public static final Spec BIOREACTOR = new Spec(Kind.BIOREACTOR, 3, 2, 12, 1.0, UniverseMenus.BIOREACTOR);
+    // M20 生物反应器（D）的规格加在这行上面
+    // M20 星球改造（E）的规格加在这行上面
+
     private RecipeMachines() {
     }
 }

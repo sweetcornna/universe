@@ -1,0 +1,31 @@
+{
+  "parent": "universe:gene_editing",
+  "criteria": {
+    "placed": {
+      "conditions": {
+        "location": {
+          "type": "minecraft:match_block",
+          "blocks": "universe:ecology_seeder"
+        }
+      },
+      "trigger": "minecraft:placed_block"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.universe.ecology_seeder.description"
+    },
+    "icon": {
+      "id": "universe:ecology_seeder"
+    },
+    "title": {
+      "translate": "advancements.universe.ecology_seeder.title"
+    }
+  },
+  "requirements": [
+    [
+      "placed"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

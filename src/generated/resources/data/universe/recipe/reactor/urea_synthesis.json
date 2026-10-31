@@ -1,0 +1,23 @@
+{
+  "type": "universe:reactor",
+  "ingredients": [
+    {
+      "count": 2,
+      "ingredient": "universe:ammonia"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:carbon_dioxide"
+    }
+  ],
+  "research": "catalysis",
+  "results": [
+    {
+      "id": "universe:urea"
+    },
+    {
+      "id": "universe:water"
+    }
+  ],
+  "time": 60
+}

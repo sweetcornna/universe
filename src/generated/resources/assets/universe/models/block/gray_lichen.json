@@ -1,0 +1,6 @@
+{
+  "parent": "universe:block/lichen_cover",
+  "textures": {
+    "texture": "universe:block/gray_lichen"
+  }
+}

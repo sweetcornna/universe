@@ -1,0 +1,16 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 2,
+      "ingredient": "universe:platinum_ingot"
+    }
+  ],
+  "research": "catalysis",
+  "results": [
+    {
+      "id": "universe:platinum_rhodium_gauze"
+    }
+  ],
+  "time": 120
+}

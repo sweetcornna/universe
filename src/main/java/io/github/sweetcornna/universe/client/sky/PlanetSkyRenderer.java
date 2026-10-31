@@ -109,6 +109,7 @@ public final class PlanetSkyRenderer implements CustomSkyboxRenderer {
     private long starSystemSeed;
     private @Nullable ResourceKey<Level> cachedDimension;
     private PlanetEnvironment.@Nullable Context cachedContext;
+    private int cachedRevision;
 
     /** 一帧要画的东西，在提取渲染状态时算好。 */
     private record SkyFrame(PlanetEnvironment.Context context, List<SkyBody> bodies, double days) {
@@ -191,7 +192,7 @@ public final class PlanetSkyRenderer implements CustomSkyboxRenderer {
             return;
         }
         state.setRenderData(SPACE_FRAME, null);
-        PlanetEnvironment.Context context = this.context(event.getLevel().dimension());
+        PlanetEnvironment.Context context = this.context(event.getLevel());
         if (context == null) {
             state.setRenderData(FRAME, null);
             return;
@@ -200,12 +201,13 @@ public final class PlanetSkyRenderer implements CustomSkyboxRenderer {
         state.setRenderData(FRAME, new SkyFrame(context, bodies, days));
     }
 
-    private PlanetEnvironment.@Nullable Context context(ResourceKey<Level> dimension) {
-        if (dimension != this.cachedDimension || this.cachedContext == null) {
-            this.cachedDimension = dimension;
-            this.cachedContext = ClientGalaxy.galaxy()
-                    .flatMap(galaxy -> PlanetEnvironment.context(galaxy, dimension))
-                    .orElse(null);
+    private PlanetEnvironment.@Nullable Context context(Level level) {
+        // 星球改造（ADR-0036 §六）的状态变了也重取一次：天空按现用的星球画
+        int revision = io.github.sweetcornna.universe.terraform.Terraforming.revision(true);
+        if (level.dimension() != this.cachedDimension || this.cachedContext == null || revision != this.cachedRevision) {
+            this.cachedDimension = level.dimension();
+            this.cachedRevision = revision;
+            this.cachedContext = PlanetEnvironment.context(level).orElse(null);
         }
         return this.cachedContext;
     }
