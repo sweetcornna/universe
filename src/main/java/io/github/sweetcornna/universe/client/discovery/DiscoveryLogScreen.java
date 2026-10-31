@@ -654,10 +654,16 @@ public class DiscoveryLogScreen extends Screen {
         Component heading = stages.isEmpty() ? Component.translatable("gui.universe.discovery.terraform_none")
                 : Component.translatable("gui.universe.discovery.terraform", String.join(GalaxyText.pick("、", ", "), stages));
         y = this.wrap(graphics, heading, x, y + 4, width, stages.isEmpty() ? DIM : GREEN);
-        List<io.github.sweetcornna.universe.core.terraform.Terraform.Threshold> thresholds =
-                io.github.sweetcornna.universe.core.terraform.Terraform.thresholds(environment);
-        io.github.sweetcornna.universe.client.terraform.ThresholdRows.draw(graphics, this.font, x, y, width, thresholds);
-        return y + thresholds.size() * io.github.sweetcornna.universe.client.terraform.ThresholdRows.ROW_HEIGHT;
+        // 这一栏窄，三列的门槛表挤在一起；一项一行"温度 233 K（要 253–313 K）"，到了的绿色、没到的红色，太长自己换行
+        for (io.github.sweetcornna.universe.core.terraform.Terraform.Threshold threshold
+                : io.github.sweetcornna.universe.core.terraform.Terraform.thresholds(environment)) {
+            Component line = Component.translatable("gui.universe.discovery.threshold",
+                    Component.translatable(io.github.sweetcornna.universe.terraform.ThresholdText.labelKey(threshold.kind())),
+                    io.github.sweetcornna.universe.terraform.ThresholdText.value(threshold),
+                    io.github.sweetcornna.universe.terraform.ThresholdText.range(threshold));
+            y = this.wrap(graphics, line, x, y, width, threshold.met() ? GREEN : io.github.sweetcornna.universe.client.factory.MachineScreen.BAD);
+        }
+        return y;
     }
 
     /** 一类物种：标题"动物 3 / 5"，下面列出发现了的。 */

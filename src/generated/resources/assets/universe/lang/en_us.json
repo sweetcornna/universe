@@ -1533,6 +1533,7 @@
   "gui.universe.discovery.tab.log": "Log",
   "gui.universe.discovery.terraform": "Terraformed: %s",
   "gui.universe.discovery.terraform_none": "Terraforming: no stage reached yet",
+  "gui.universe.discovery.threshold": "%1$s %2$s (need %3$s)",
   "gui.universe.discovery.title": "Discovery Log",
   "gui.universe.discovery.totals": "Systems %1$s · Bodies %2$s · Species %3$s · Minerals %4$s",
   "gui.universe.discovery.trees": "Trees %1$s / %2$s",

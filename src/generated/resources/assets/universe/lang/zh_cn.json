@@ -1533,6 +1533,7 @@
   "gui.universe.discovery.tab.log": "日志",
   "gui.universe.discovery.terraform": "改造：%s",
   "gui.universe.discovery.terraform_none": "改造：哪一档都还没到",
+  "gui.universe.discovery.threshold": "%1$s %2$s（要 %3$s）",
   "gui.universe.discovery.title": "发现日志",
   "gui.universe.discovery.totals": "恒星系 %1$s · 天体 %2$s · 物种 %3$s · 矿物 %4$s",
   "gui.universe.discovery.trees": "树木 %1$s / %2$s",
