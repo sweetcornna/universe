@@ -114,6 +114,10 @@ public class DiscoveryLogScreen extends Screen {
         this.refresh();
         if (current.isPresent() && ClientDiscoveries.known(DiscoveryKey.system(current.getAsInt()))) {
             this.selectSystem(current.getAsInt());
+            // 站在星球上打开时直接翻到这颗星球（ADR-0039）：要看的多半是脚下这颗
+            ClientGalaxy.currentPlanet().ifPresent(here -> this.bodies.stream().map(BodyRow::planet)
+                    .filter(planet -> planet != null && planet.id().equals(here.id()) && ClientDiscoveries.known(DiscoveryKey.body(planet.id())))
+                    .findFirst().ifPresent(this::selectBody));
         } else if (!this.systems.isEmpty()) {
             this.selectSystem(this.systems.getFirst().index());
         }
