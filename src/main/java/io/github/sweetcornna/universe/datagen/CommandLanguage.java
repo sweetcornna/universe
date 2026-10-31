@@ -185,6 +185,16 @@ final class CommandLanguage {
         both.add(C + "story.status", "剧情节点：%s", "Story milestones: %s");
         both.add(C + "story.unknown", "未知节点：%s", "Unknown milestone: %s");
         both.add(C + "story.already", "%s 已经到过", "Already reached %s");
+        // 节奏记录（ADR-0039）
+        both.add(C + "pacing.header", "节奏记录（这个世界玩了 %s 小时）", "Pacing (this world has been played for %s h)");
+        both.add(C + "pacing.row", "%1$s：第 %2$s 小时", "%1$s: hour %2$s");
+        both.add(C + "pacing.segment", "%1$s：第 %2$s 小时，这一段 %3$s 小时（模型 %4$s 小时，×%5$s）",
+                "%1$s: hour %2$s, this stage %3$s h (model %4$s h, ×%5$s)");
+        both.add(C + "pacing.missing", "%s：还没到", "%s: not yet");
+        both.add(C + "pacing.missing_target", "%1$s：还没到（模型第 %2$s 小时）", "%1$s: not yet (model: hour %2$s)");
+        for (io.github.sweetcornna.universe.core.stats.Pacing.Checkpoint checkpoint : io.github.sweetcornna.universe.core.stats.Pacing.CHECKPOINTS) {
+            both.add(io.github.sweetcornna.universe.stats.PacingData.nameKey(checkpoint), checkpoint.nameZh(), checkpoint.nameEn());
+        }
         both.add(C + "story.reached", "到达 %s", "Reached %s");
         both.add(C + "mission.active", "手上：%s %s，进度 %s；今天做完 %s 个", "Current mission: %s %s, progress %s; %s completed today");
         both.add(C + "mission.advance", "进度 %s", "Progress: %s");

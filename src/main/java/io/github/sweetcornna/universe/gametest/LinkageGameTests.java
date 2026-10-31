@@ -133,6 +133,22 @@ final class LinkageGameTests {
         helper.succeed();
     }
 
+    /** 节奏记录：第一次研究完记下主世界的游戏刻，再记一次不改；剧情节点从剧情进度里一起读出来。 */
+    static void pacingRecordsFirstTime(GameTestHelper helper) {
+        var server = helper.getLevel().getServer();
+        long now = server.overworld().getGameTime();
+        io.github.sweetcornna.universe.stats.PacingData.researched(server, "pacing_probe");
+        helper.runAfterDelay(5, () -> {
+            io.github.sweetcornna.universe.stats.PacingData.researched(server, "pacing_probe");
+            var reached = io.github.sweetcornna.universe.stats.PacingData.reached(server);
+            helper.assertTrue(reached.get("tech/pacing_probe") != null && reached.get("tech/pacing_probe") == now,
+                    "记下的时间：" + reached.get("tech/pacing_probe") + "，应是 " + now);
+            io.github.sweetcornna.universe.story.StoryData.get(server).milestones().keySet()
+                    .forEach(id -> helper.assertTrue(reached.containsKey("story/" + id), "剧情节点 " + id + " 没读进来"));
+            helper.succeed();
+        });
+    }
+
     /** 西北角一座电力感应塔，东北角一座烧反物质燃料棒的人造恒星，和 {@link UniverseGameTests} 的电站一样。 */
     private static void power(GameTestHelper helper) {
         tall(helper, new BlockPos(1, 1, 1), UniverseBlocks.TESLA_TOWER.get().defaultBlockState());

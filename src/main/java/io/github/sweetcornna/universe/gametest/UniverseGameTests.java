@@ -680,6 +680,8 @@ public final class UniverseGameTests {
     private static final ResourceKey<Consumer<GameTestHelper>> M20_EXIT_FUEL = function("m20_exit_fuel", M20ExitGameTests::fuel);
     private static final ResourceKey<Consumer<GameTestHelper>> M20_EXIT_BIOLOGY = function("m20_exit_biology", M20ExitGameTests::biology);
     private static final ResourceKey<Consumer<GameTestHelper>> M20_EXIT_TERRAFORM = function("m20_exit_terraform", M20ExitGameTests::terraform);
+    private static final ResourceKey<Consumer<GameTestHelper>> PACING_RECORDS_FIRST_TIME = function("pacing_records_first_time",
+            LinkageGameTests::pacingRecordsFirstTime);
     // M22 的测试函数加在这行上面
     /** 参照基地的性能测量，只在设了 {@link PerfBench#PROPERTY} 时登记（ADR-0038）。 */
     private static final ResourceKey<Consumer<GameTestHelper>> PERF_BENCH = function("perf_bench", PerfBenchGameTests::measure);
@@ -971,6 +973,7 @@ public final class UniverseGameTests {
         test(event, environment, M20_EXIT_FUEL, 3000);
         test(event, environment, M20_EXIT_BIOLOGY, M20ExitGameTests.BIOLOGY_TICKS);
         test(event, environment, M20_EXIT_TERRAFORM, 20);
+        test(event, environment, PACING_RECORDS_FIRST_TIME, 40);
         // M22 的测试加在这行上面
     }
 

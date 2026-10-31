@@ -142,6 +142,8 @@ public final class Research {
     }
 
     private static void announce(MinecraftServer server, String tech) {
+        // 节奏记录（ADR-0039）：第一次研究完的时候
+        io.github.sweetcornna.universe.stats.PacingData.researched(server, tech);
         MutableComponent name = TREE.upgrade(tech).isPresent() ? name(tech, ResearchData.get(server).state().level(tech)) : name(tech);
         server.getPlayerList().broadcastSystemMessage(
                 Component.translatable("research.universe.completed", name.withStyle(ChatFormatting.AQUA)), false);
