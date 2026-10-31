@@ -8,11 +8,15 @@ import java.util.OptionalInt;
 
 import org.jspecify.annotations.Nullable;
 
+import io.github.sweetcornna.universe.chem.reactor.ReactionBooks;
+import io.github.sweetcornna.universe.core.chem.reaction.Reaction;
+import io.github.sweetcornna.universe.core.chem.reaction.ReactionBook;
 import io.github.sweetcornna.universe.core.civ.NpcRole;
 import io.github.sweetcornna.universe.core.civ.Race;
 import io.github.sweetcornna.universe.core.civ.Standing;
 import io.github.sweetcornna.universe.core.civ.TechMerchant;
 import io.github.sweetcornna.universe.core.galaxy.StarSystem;
+import io.github.sweetcornna.universe.core.procgen.Rng;
 import io.github.sweetcornna.universe.core.procgen.Seeds;
 import io.github.sweetcornna.universe.core.tech.ModuleLoot;
 import io.github.sweetcornna.universe.core.tech.TechModule;
@@ -37,12 +41,15 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 /**
  * 技术商的货（ADR-0027 §六）：对话里按"看货"打开。货从 {@link TechMerchant} 来：种类按 NPC 和日期定，品级看玩家的声望档；
  * 价钱照这个恒星系空间站卖模块的价，再按声望打折。每样每人每天只能买一次。
+ * 学者族的技术商另卖一张实验记录（ADR-0037 §五），写的反应按 NPC 和日期抽，先从全服还没发现的里抽。
  */
 public final class TechShop {
     /** 离技术商这么远以内才能买。 */
     private static final double REACH = 8;
     /** 恒星系里没有行情时的基准价（不会发生，保底）。 */
     private static final double FALLBACK_PRICE = 400;
+    /** 实验记录的基准价：比一份勘探数据贵得多，省下自己试一条反应的工夫。 */
+    static final double LAB_NOTES_PRICE = 300;
 
     /** 一样货：模块和打完折的价钱。 */
     public record Offer(ItemStack stack, long price) {
@@ -73,7 +80,24 @@ public final class TechShop {
             OptionalDouble price = system.isEmpty() ? OptionalDouble.empty() : Trading.modulePrice(server, system.getAsInt(), stack);
             offers.add(new Offer(stack, (long) Math.ceil(price.orElse(FALLBACK_PRICE) * factor - 1e-9)));
         }
+        if (race == Race.SCHOLAR) {
+            ItemStack notes = new ItemStack(UniverseItems.LAB_NOTES.get());
+            notes.set(UniverseDataComponents.REACTION.get(), labNotesReaction(server, Seeds.derive(seed, "lab_notes")).name());
+            offers.add(new Offer(notes, (long) Math.ceil(LAB_NOTES_PRICE * factor - 1e-9)));
+        }
         return offers;
+    }
+
+    /** 实验记录上写哪条：全服还没发现的里抽一条，都发现了就从全部里抽。 */
+    private static Reaction labNotesReaction(MinecraftServer server, long seed) {
+        ReactionBook book = ReactionBooks.book(server);
+        List<Reaction> unknown = new ArrayList<>();
+        for (Reaction reaction : Reaction.values()) {
+            if (!book.discovered(reaction)) {
+                unknown.add(reaction);
+            }
+        }
+        return Rng.of(seed).pick(unknown.isEmpty() ? List.of(Reaction.values()) : unknown);
     }
 
     private static String key(AlienNpc npc, int index) {

@@ -236,6 +236,8 @@ public final class UniverseNetwork {
                 .playToClient(io.github.sweetcornna.universe.microbe.MicrobePayloads.Library.TYPE,
                         io.github.sweetcornna.universe.microbe.MicrobePayloads.Library.STREAM_CODEC)
                 // M20 微生物和基因（C）的包加在这行上面
+                .playToClient(io.github.sweetcornna.universe.chem.reactor.ReactionBookPayload.TYPE,
+                        io.github.sweetcornna.universe.chem.reactor.ReactionBookPayload.STREAM_CODEC)
                 ;
     }
 }

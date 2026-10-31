@@ -1,11 +1,12 @@
 package io.github.sweetcornna.universe.core.chem.reaction;
 
 /**
- * 反应釜界面上那张"温度 × 压强"的产量图（ADR-0036 §四）：温度按 90 K 一格分 10 格，压强按对数分 8 格。
+ * 反应釜界面上那张"温度 × 压强"的产量图（ADR-0036 §四）：温度按 90 K 一格分 14 格，压强按对数分 8 格。
  * 在哪个工况跑过一批，那一格就填上颜色；格子的编号是存档格式的一部分（反应釜按编号记跑过的格子）。
+ * 温度上限提到 1560 K 时（ADR-0037）每格还是 90 K，往后加了 4 列，原来的编号不变。
  */
 public final class YieldGrid {
-    public static final int TEMPERATURE_CELLS = 10;
+    public static final int TEMPERATURE_CELLS = 14;
     public static final int PRESSURE_CELLS = 8;
     public static final int CELLS = TEMPERATURE_CELLS * PRESSURE_CELLS;
     private static final double SPAN_T = ReactorSettings.MAX_TEMPERATURE - ReactorSettings.MIN_TEMPERATURE;

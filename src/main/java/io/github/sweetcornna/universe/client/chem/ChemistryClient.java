@@ -4,6 +4,9 @@ import java.util.List;
 import java.util.Optional;
 
 import io.github.sweetcornna.universe.block.OreKind;
+import io.github.sweetcornna.universe.chem.reactor.ReactionBookPayload;
+import io.github.sweetcornna.universe.chem.reactor.ReactionBooks;
+import io.github.sweetcornna.universe.client.chem.book.ChemistryHandbookScreen;
 import io.github.sweetcornna.universe.client.galaxy.GalaxyText;
 import io.github.sweetcornna.universe.core.chem.Substance;
 import io.github.sweetcornna.universe.core.chem.Substances;
@@ -16,6 +19,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
+import net.neoforged.neoforge.client.network.event.RegisterClientPayloadHandlersEvent;
 import net.neoforged.neoforge.event.entity.player.ItemTooltipEvent;
 
 /**
@@ -27,6 +32,10 @@ public final class ChemistryClient {
 
     public static void registerEvents(IEventBus modBus, IEventBus gameBus) {
         gameBus.addListener(ItemTooltipEvent.class, ChemistryClient::onTooltip);
+        modBus.addListener(RegisterClientPayloadHandlersEvent.class, event -> event.register(ReactionBookPayload.TYPE,
+                (payload, context) -> context.enqueueWork(() -> ReactionBooks.receive(payload))));
+        gameBus.addListener(ClientPlayerNetworkEvent.LoggingOut.class, event -> ReactionBooks.clearClient());
+        io.github.sweetcornna.universe.chem.book.ChemistryHandbookItem.opener = ChemistryHandbookScreen::open;
     }
 
     private static void onTooltip(ItemTooltipEvent event) {

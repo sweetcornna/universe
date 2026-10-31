@@ -1,0 +1,24 @@
+{
+  "type": "universe:chemical",
+  "ingredients": [
+    {
+      "count": 2,
+      "ingredient": "universe:raw_silicon"
+    },
+    {
+      "count": 1,
+      "ingredient": "minecraft:clay_ball"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:sodium_hydroxide"
+    }
+  ],
+  "research": "synthetic_fuels",
+  "results": [
+    {
+      "id": "universe:zeolite_catalyst"
+    }
+  ],
+  "time": 160
+}

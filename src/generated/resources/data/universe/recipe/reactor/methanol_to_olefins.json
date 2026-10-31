@@ -1,0 +1,20 @@
+{
+  "type": "universe:reactor",
+  "ingredients": [
+    {
+      "count": 2,
+      "ingredient": "universe:methanol"
+    }
+  ],
+  "research": "synthetic_fuels",
+  "results": [
+    {
+      "id": "universe:ethylene"
+    },
+    {
+      "count": 2,
+      "id": "universe:water"
+    }
+  ],
+  "time": 60
+}

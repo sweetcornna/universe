@@ -48,7 +48,8 @@ public final class Substances {
         b.pure("minecraft:raw_copper", "黄铜矿", "Chalcopyrite", "CuFeS₂");
         b.pure("universe:raw_titanium", "钛铁矿", "Ilmenite", "FeTiO₃");
         b.pure("universe:raw_silicon", "石英", "Quartz", "SiO₂");
-        b.pure("universe:sulfur", "自然硫", "Native Sulfur", "S₈");
+        // 固体硫是 S₈ 环，反应式里按原子写 S（ADR-0037）
+        b.pure("universe:sulfur", "自然硫", "Native Sulfur", "S");
         b.pure("universe:fire_ice", "甲烷水合物", "Methane Hydrate", "CH₄·5.75H₂O");
         b.pure("universe:optical_crystal", "冰洲石", "Iceland Spar", "CaCO₃");
         b.pure("universe:organic_crystal", "卡帕奇石", "Karpatite", "C₂₄H₁₂");
@@ -127,6 +128,23 @@ public final class Substances {
         b.mixture("universe:iron_catalyst", "熔铁催化剂", "Fused Iron Catalyst", "Fe + K₂O + Al₂O₃");
         b.mixture("universe:vanadium_catalyst", "钒催化剂", "Vanadium Catalyst", "V₂O₅ + K₂SO₄");
         b.mixture("universe:nickel_catalyst", "镍催化剂", "Nickel Catalyst", "Ni + Al₂O₃");
+
+        // ADR-0037 反应釜的产物和中间体
+        b.pure("universe:sulfur_trioxide", "三氧化硫", "Sulfur Trioxide", "SO₃");
+        b.pure("universe:nitric_oxide", "一氧化氮", "Nitric Oxide", "NO");
+        b.pure("universe:nitrogen_dioxide", "二氧化氮", "Nitrogen Dioxide", "NO₂");
+        b.pure("universe:hydrogen_chloride", "氯化氢", "Hydrogen Chloride", "HCl");
+        b.pure("universe:methanol", "甲醇", "Methanol", "CH₃OH");
+        b.pure("universe:ethylene", "乙烯", "Ethylene", "C₂H₄");
+        b.pure("universe:urea", "尿素", "Urea", "CO(NH₂)₂");
+        b.pure("universe:platinum_ingot", "铂", "Platinum", "Pt");
+        // 新催化剂：甲醇的铜锌载在氧化铝上；氨氧化的铂网含一成铑；ZSM-5 是含钠的硅铝分子筛；齐格勒–纳塔是三氯化钛加三乙基铝；
+        // 迪肯法的氯化铜浸在浮石上，按氯化铜算
+        b.mixture("universe:copper_zinc_catalyst", "铜锌催化剂", "Copper-Zinc Catalyst", "Cu + ZnO + Al₂O₃");
+        b.mixture("universe:platinum_rhodium_gauze", "铂铑合金", "Platinum-Rhodium Alloy", "Pt + Rh");
+        b.mixture("universe:zeolite_catalyst", "ZSM-5 沸石", "ZSM-5 Zeolite", "Naₙ(AlₙSi₉₆₋ₙO₁₉₂)");
+        b.mixture("universe:ziegler_natta_catalyst", "齐格勒–纳塔催化剂", "Ziegler–Natta Catalyst", "TiCl₃ + Al(C₂H₅)₃");
+        b.pure("universe:copper_chloride_catalyst", "氯化铜", "Copper(II) Chloride", "CuCl₂");
 
         // M20 的生物耗材（ADR-0036 §五）
         b.mixture("universe:agar", "琼脂", "Agar", "(C₁₂H₁₈O₉)ₙ");

@@ -223,6 +223,7 @@ public final class Universe {
         io.github.sweetcornna.universe.terraform.Terraforming.registerEvents(modBus, gameBus);
         // M20 星球改造（E）的注册加在这行上面
         io.github.sweetcornna.universe.microbe.Microbes.registerEvents(modBus, gameBus);
+        io.github.sweetcornna.universe.chem.reactor.ReactionBooks.registerEvents(gameBus);
         // M20 微生物和基因（C）的注册加在这行上面
     }
 

@@ -1,8 +1,10 @@
-"""M20 化学的贴图（ADR-0031、ADR-0036）：气体、溶液、催化剂、镍锭、钒渣、甲烷液氧，大气提取器和电解槽。
+"""M20 化学的贴图（ADR-0031、ADR-0036、ADR-0037）：气体、溶液、催化剂、镍锭、铂锭、钒渣、甲烷液氧、尿素，
+化学手册和实验记录，大气提取器和电解槽。
 
 气体和溶液接着用中间产品那套流体罐（items.canister）：液体有液面，气体充满整只罐。气体罐中间那道环涂成
-工业气瓶的识别色（EN 1089-3）：氮黑、二氧化碳灰、氩深绿、氦棕，可燃的红，有毒、腐蚀的黄，一氧化碳又毒又可燃，
-半红半黄。罐里的颜色是为了一眼分得开，现实里这些气体大多无色，只有氯气是黄绿的。
+工业气瓶的识别色（EN 1089-3）：氮黑、二氧化碳灰、氩深绿、氦棕，可燃的红，有毒、腐蚀的黄，氧化性的浅蓝；
+一氧化碳又毒又可燃，半红半黄，一氧化氮、二氧化氮又毒又助燃，半黄半蓝。罐里的颜色是为了一眼分得开，现实里
+这些气体大多无色，只有氯气是黄绿的、二氧化氮是红棕的。
 """
 from __future__ import annotations
 
@@ -12,8 +14,8 @@ from canvas import Canvas
 from color import ramp
 from items import canister, flecks, ingot, lump, tidy
 from machines import screen
-from palette import (AMBER, BASALT, BLUE, COPPER, CREAM, CYAN_GLOW, GLASS, GOLD_FOIL, GRAPHITE, GREEN, HAZARD, ICE,
-                     MOSS, ORANGE, PINK, RED, RUST, STEEL, TITANIUM, VIOLET, WHITE, WHITE_GLOW, WOOD, register)
+from palette import (AMBER, BASALT, BLUE, COPPER, CREAM, CRIMSON, CYAN_GLOW, GLASS, GOLD_FOIL, GRAPHITE, GREEN, HAZARD, ICE,
+                     MOSS, ORANGE, PINK, RED, RUST, STEEL, TEAL, TITANIUM, VIOLET, WHITE, WHITE_GLOW, WOOD, BONE, register)
 from parts import casing, fan, status_lights
 from recipe import texture
 
@@ -27,6 +29,14 @@ NITRIC = register(ramp("chem_nitric", 92, 0.070, n=6, lo=0.52, hi=0.95, shift=8)
 CUPRIC = register(ramp("chem_cupric", 228, 0.125, n=6, lo=0.30, hi=0.86, shift=10))         # 硫酸铜溶液的蓝
 CYANIDE = register(ramp("chem_cyanide", 240, 0.055, n=6, lo=0.50, hi=0.93, shift=8))      # 氰化氢：淡的普鲁士蓝
 NICKEL = register(ramp("chem_nickel", 92, 0.018, n=7, lo=0.30, hi=0.93, shift=16))          # 镍：比钢暖一点的银白
+# ADR-0037 的反应产物和催化剂
+NITRIC_OXIDE = register(ramp("chem_no", 205, 0.030, n=6, lo=0.50, hi=0.93, shift=8))       # 一氧化氮：无色，罐里画成淡青灰
+NITROGEN_DIOXIDE = register(ramp("chem_no2", 42, 0.125, n=6, lo=0.30, hi=0.80, shift=10))  # 二氧化氮：真的红棕色
+HYDROGEN_CHLORIDE = register(ramp("chem_hcl", 150, 0.022, n=6, lo=0.52, hi=0.95, shift=8)) # 氯化氢：无色，淡得发青
+ETHYLENE = register(ramp("chem_ethylene", 330, 0.030, n=6, lo=0.52, hi=0.94, shift=8))     # 乙烯：无色，淡紫灰
+METHANOL = register(ramp("chem_methanol", 255, 0.025, n=6, lo=0.55, hi=0.96, shift=8))     # 甲醇：清水一样，偏一点蓝
+PLATINUM = register(ramp("chem_platinum", 255, 0.008, n=7, lo=0.34, hi=0.97, shift=14))    # 铂：比钢白、比镍冷的灰白
+CUZN = register(ramp("chem_cuzn", 45, 0.035, n=7, lo=0.18, hi=0.62, shift=12))             # 铜锌催化剂：氧化铜的棕黑
 
 
 # ---------------------------------------------------------------- 气体
@@ -92,6 +102,35 @@ def chlorine(rng):
     return gas(CHLORINE, 3, HAZARD, 3)
 
 
+@texture("item/sulfur_trioxide")
+def sulfur_trioxide(rng):
+    # 三氧化硫碰到潮气就冒浓白的硫酸雾：罐里白茫茫的，多几团更白的
+    c = gas(WHITE, 4, HAZARD, 3)
+    for x, y in ((8, 5), (9, 5), (5, 10), (10, 11)):
+        c.shift(x, y, 1)
+    return c
+
+
+@texture("item/nitric_oxide")
+def nitric_oxide(rng):
+    return gas(NITRIC_OXIDE, 3, HAZARD, 3, band2=BLUE)
+
+
+@texture("item/nitrogen_dioxide")
+def nitrogen_dioxide(rng):
+    return gas(NITROGEN_DIOXIDE, 3, HAZARD, 3, band2=BLUE)
+
+
+@texture("item/hydrogen_chloride")
+def hydrogen_chloride(rng):
+    return gas(HYDROGEN_CHLORIDE, 3, HAZARD, 3)
+
+
+@texture("item/ethylene")
+def ethylene(rng):
+    return gas(ETHYLENE, 3, RED, 3)
+
+
 # ---------------------------------------------------------------- 溶液
 
 @texture("item/sodium_hydroxide", refs=("item/milk_bucket",))
@@ -130,6 +169,75 @@ def gold_leach_solution(rng):
     return c
 
 
+@texture("item/methanol")
+def methanol(rng):
+    # 清得像水，罐顶的阀门涂红：能烧
+    c = canister(METHANOL, 3, 6)
+    for x in range(3, 13):
+        for y in (2, 3):
+            c.recolor(x, y, RED)
+    return c
+
+
+# ---------------------------------------------------------------- 化学手册、实验记录
+
+@texture("item/chemistry_handbook", refs=("item/book", "item/writable_book"))
+def chemistry_handbook(rng):
+    """化学手册：暗红封面的厚书（照 CRC 化学物理手册那本"红宝书"），封面中间烫金一只锥形瓶，右边和下边露出纸页。"""
+    c = Canvas()
+    c.rect(3, 1, 12, 13, CRIMSON, 2)
+    c.vline(3, 1, 13, CRIMSON, 1)
+    c.vline(4, 1, 13, CRIMSON, 4)
+    c.hline(5, 12, 1, CRIMSON, 3)
+    c.vline(13, 2, 14, CREAM, 3)
+    c.hline(5, 13, 14, CREAM, 2)
+    # 锥形瓶：瓶口、瓶颈，往下张开的瓶身，瓶底一道
+    c.draw([
+        "..454..",
+        "...4...",
+        "...4...",
+        "..4.3..",
+        ".4...3.",
+        ".4aba3.",
+        "4aaaaa3",
+        "4333332",
+    ], {"012345": GOLD_FOIL, "wxyzab": AMBER}, 4, 3)
+    c.set(7, 8, AMBER, 5, glint=True)
+    c.outline()
+    c.set(5, 2, CRIMSON, 5, glint=True)
+    return c
+
+
+@texture("item/lab_notes", refs=("item/paper", "item/map"))
+def lab_notes(rng):
+    """实验记录：一张泛黄的纸，左上角一枚回形针，铅笔写的几行字，中间画着一个箭头（反应式），右下角折了一角。"""
+    c = Canvas()
+    c.rect(3, 2, 13, 14, CREAM, 4)
+    c.vline(3, 2, 14, CREAM, 5)
+    c.hline(4, 13, 14, CREAM, 2)
+    c.vline(13, 3, 13, CREAM, 3)
+    # 几行字：长短不一，铅笔的灰
+    for y, x0, x1 in ((5, 5, 11), (7, 5, 9), (11, 5, 10), (13, 5, 8)):
+        c.hline(x0, x1, y, GRAPHITE, 4)
+    # 反应式：两团字中间一个箭头
+    c.hline(5, 6, 9, GRAPHITE, 4)
+    c.hline(8, 10, 9, BLUE, 3)
+    c.set(10, 8, BLUE, 3)
+    c.set(10, 10, BLUE, 3)
+    c.hline(12, 12, 9, GRAPHITE, 4)
+    # 右下折角
+    c.clear(13, 14)
+    c.clear(12, 14)
+    c.clear(13, 13)
+    c.set(12, 13, CREAM, 6, glint=True)
+    c.outline()
+    # 回形针压在左上角
+    c.vline(5, 1, 4, STEEL, 5)
+    c.vline(6, 1, 3, STEEL, 3)
+    c.set(5, 0, STEEL, 6, glint=True)
+    return c
+
+
 # ---------------------------------------------------------------- 固体
 
 @texture("item/nickel_ingot", refs=("item/iron_ingot", "item/netherite_ingot"))
@@ -145,9 +253,8 @@ def vanadium_slag(rng):
     return c
 
 
-@texture("item/ammonium_nitrate")
-def ammonium_nitrate(rng):
-    # 一袋化肥：扎口的编织袋，中间一道绿色的标签，标签上三颗白色的颗粒
+def fertilizer_bag(label) -> Canvas:
+    """一袋化肥：扎口的编织袋，中间一道标签，标签上三颗白色的颗粒。"""
     c = Canvas()
     c.cylinder(3, 5, 12, 14, CREAM, 3)
     c.cylinder(4, 4, 11, 4, CREAM, 3)
@@ -157,13 +264,25 @@ def ammonium_nitrate(rng):
     c.set(6, 2, WOOD, 3)
     for x in (5, 6, 9, 10):
         c.set(x, 1, CREAM, 4 if x < 8 else 2)
-    c.cylinder(3, 8, 12, 10, GREEN, 3)
+    c.cylinder(3, 8, 12, 10, label, 3)
     for x, y in ((6, 9), (8, 9), (10, 9)):
         c.set(x, y, WHITE, 5, glint=True)
     for x, y in ((3, 14), (12, 14)):
         c.clear(x, y)
     c.outline()
     return c
+
+
+@texture("item/ammonium_nitrate")
+def ammonium_nitrate(rng):
+    # 绿标签
+    return fertilizer_bag(GREEN)
+
+
+@texture("item/urea", refs=("item/bone_meal",))
+def urea(rng):
+    # 尿素：同样的袋子，蓝标签（含氮 46%，比硝酸铵的 35% 高）
+    return fertilizer_bag(BLUE)
 
 
 @texture("item/methalox_fuel", refs=("item/fire_charge",))
@@ -281,6 +400,69 @@ def vanadium_catalyst(rng):
 @texture("item/nickel_catalyst")
 def nickel_catalyst(rng):
     return three(TABLET, MOSS, 4, ((5, 3), (1, 8), (8, 10)))
+
+
+@texture("item/copper_zinc_catalyst")
+def copper_zinc_catalyst(rng):
+    # 甲醇塔的铜锌催化剂：压成圆片的氧化铜、氧化锌，棕黑色，高光带一点铜色
+    c = three(TABLET, CUZN, 4, ((1, 3), (8, 5), (3, 10)))
+    for x, y in list(c.glints):
+        px = c.get(x, y)
+        if px and px[0] is CUZN and px[1] >= 6:
+            c.set(x, y, COPPER, 5, glint=True)
+    return c
+
+
+@texture("item/zeolite_catalyst")
+def zeolite_catalyst(rng):
+    # ZSM-5 沸石挤成的白色短条，四根横躺着
+    return three(TABLET, WHITE, 4, ((1, 2), (8, 3), (1, 9), (8, 10)))
+
+
+@texture("item/copper_chloride_catalyst")
+def copper_chloride_catalyst(rng):
+    # 迪肯法的氯化铜浸在浮石上：灰白的浮石块，表面一块块蓝绿色（二水氯化铜的颜色）
+    c = lump(2, BONE, 3)
+    flecks(c, rng, TEAL, 4, 8)
+    return c
+
+
+@texture("item/ziegler_natta_catalyst")
+def ziegler_natta_catalyst(rng):
+    # 三氯化钛是紫色的粉，碰到空气会着，泡在己烷里装罐：上面清的溶剂，下面一层紫色的沉淀
+    c = canister(VIOLET, 3, 8)
+    for y in (11, 12):
+        for x in range(5, 11):
+            c.shift(x, y, -1)
+    for x, y in ((6, 10), (9, 11), (7, 12)):
+        c.set(x, y, VIOLET, 5, glint=True)
+    return c
+
+
+@texture("item/platinum_rhodium_gauze", refs=("item/iron_bars",))
+def platinum_rhodium_gauze(rng):
+    """铂铑网：铂铑丝织成的圆网，几张叠在一起装进氨氧化炉。网眼暗，丝亮，整体左上受光；外面一圈压边。"""
+    c = Canvas()
+    cx, cy, rad = 7.5, 7.5, 6.6
+    for x, y in c.disc_cells(cx, cy, rad):
+        nx, ny = (x + 0.5 - cx) / rad, (y + 0.5 - cy) / rad
+        light = 1 if nx + ny < -0.5 else (-1 if nx + ny > 0.5 else 0)
+        hole = x % 2 == 1 and y % 2 == 1
+        # 网眼是故意一格一格的，检查时不算零碎像素
+        c.set(x, y, PLATINUM, (1 if hole else 4) + light, glint=hole)
+    c.ring(cx, cy, rad, PLATINUM, 4, width=1.2)
+    for x, y in c.disc_cells(cx, cy, rad):
+        if (x + 0.5 - cx) ** 2 + (y + 0.5 - cy) ** 2 > (rad - 1.4) ** 2:
+            nx, ny = (x + 0.5 - cx) / rad, (y + 0.5 - cy) / rad
+            c.set(x, y, PLATINUM, 5 if nx + ny < -0.3 else (2 if nx + ny > 0.3 else 4))
+    c.set(4, 3, PLATINUM, 6, glint=True)
+    c.outline()
+    return c
+
+
+@texture("item/platinum_ingot", refs=("item/iron_ingot", "item/netherite_ingot"))
+def platinum_ingot(rng):
+    return ingot(PLATINUM)
 
 
 # ---------------------------------------------------------------- 大气提取器：压缩机加冷箱

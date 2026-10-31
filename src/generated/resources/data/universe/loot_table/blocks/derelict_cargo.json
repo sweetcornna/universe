@@ -117,6 +117,22 @@
         }
       ],
       "rolls": 1
+    },
+    {
+      "condition": {
+        "type": "minecraft:random_chance",
+        "chance": 0.1
+      },
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "modifier": {
+            "type": "universe:random_reaction"
+          },
+          "name": "universe:lab_notes"
+        }
+      ],
+      "rolls": 1
     }
   ],
   "random_sequence": "universe:blocks/derelict_cargo"

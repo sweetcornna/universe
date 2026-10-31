@@ -199,6 +199,8 @@ final class UniverseModelProvider extends ModelProvider {
         HazardModels.add(blockModels);
         // M19 科技布局和局部危害（E）的模型加在这行上面
         UniverseItems.M20_SHARED.forEach(item -> itemModels.generateFlatItem(item.get(), ModelTemplates.FLAT_ITEM));
+        UniverseItems.M20_REACTIONS.forEach(item -> itemModels.generateFlatItem(item.get(), ModelTemplates.FLAT_ITEM));
+        itemModels.generateFlatItem(UniverseItems.LAB_NOTES.get(), ModelTemplates.FLAT_ITEM);
         // 大气提取器顶上是进气格栅，工作时亮；电解槽正面是电解池的观察窗
         recipeMachine(blockModels, UniverseBlocks.ATMOSPHERIC_EXTRACTOR.get(), "atmospheric_extractor", true, "machine_casing_top");
         recipeMachine(blockModels, UniverseBlocks.ELECTROLYZER.get(), "electrolyzer", false, "machine_casing_top");

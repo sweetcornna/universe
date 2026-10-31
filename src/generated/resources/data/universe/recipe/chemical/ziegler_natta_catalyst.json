@@ -1,0 +1,25 @@
+{
+  "type": "universe:chemical",
+  "ingredients": [
+    {
+      "count": 2,
+      "ingredient": "universe:titanium_tetrachloride"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:hydrogen"
+    }
+  ],
+  "research": "synthetic_fuels",
+  "results": [
+    {
+      "count": 2,
+      "id": "universe:ziegler_natta_catalyst"
+    },
+    {
+      "count": 2,
+      "id": "universe:hydrogen_chloride"
+    }
+  ],
+  "time": 120
+}

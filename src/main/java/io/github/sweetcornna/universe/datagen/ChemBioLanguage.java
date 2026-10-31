@@ -16,57 +16,84 @@ final class ChemBioLanguage {
         both.add("tech.universe." + id, zh, en);
     }
 
-    /** M20 的手册：化学一章后面的反应釜五页，生物、星球改造两章（ADR-0036 §七）。 */
+    /** M20 的手册：化学一章后面的反应釜几页（ADR-0036、ADR-0037），生物、星球改造两章（ADR-0036 §七）。 */
     static void guide(Both both) {
         String c = "guide.universe.chemistry";
         both.add(c + ".reactor.title", "反应釜", "Chemical Reactor");
         both.add(c + ".reactor",
-                "反应釜做受化学平衡限制的气相反应。界面里选一条反应，拉温度（300–1200 K）和压强（1–300 bar）两条滑块。"
-                        + "刚选上的反应在教科书的工况上，从那里调起。",
-                "The reactor runs gas-phase reactions that equilibrium holds back. Pick a reaction, then set temperature (300–1200 K) and "
-                        + "pressure (1–300 bar). A reaction starts at its textbook conditions; tune from there.");
-        both.add(c + ".reactions.title", "五条反应", "Five Reactions");
-        both.add(c + ".reactions",
-                "合成氨 N₂ + 3H₂ ⇄ 2NH₃\n铁，450 °C、200 bar\n\n"
-                        + "接触法 2SO₂ + O₂ ⇄ 2SO₃\n五氧化二钒，430 °C、1.5 bar\n\n"
-                        + "萨巴蒂尔 CO₂ + 4H₂ → CH₄ + 2H₂O\n镍，350 °C、5 bar\n\n"
-                        + "蒸汽重整 CH₄ + H₂O ⇄ CO + 3H₂\n镍，850 °C、25 bar\n\n"
-                        + "费托合成 CO + 2H₂ → 油 + H₂O\n铁，275 °C、25 bar",
-                "Haber–Bosch N₂ + 3H₂ ⇄ 2NH₃\nIron, 450 °C, 200 bar\n\n"
-                        + "Contact 2SO₂ + O₂ ⇄ 2SO₃\nVanadium pentoxide, 430 °C, 1.5 bar\n\n"
-                        + "Sabatier CO₂ + 4H₂ → CH₄ + 2H₂O\nNickel, 350 °C, 5 bar\n\n"
-                        + "Steam reforming CH₄ + H₂O ⇄ CO + 3H₂\nNickel, 850 °C, 25 bar\n\n"
-                        + "Fischer–Tropsch CO + 2H₂ → oil + H₂O\nIron, 275 °C, 25 bar");
+                "自由投料：反应物放进原料格，哪格都行，催化剂放进下面那格，再调温度（300–1560 K）和压强（1–300 bar）。"
+                        + "釜认出是哪条反应就开始做，做成一批就记下这条反应。\n\n"
+                        + "选定配方：左边列表里选一条记下了的反应，工况回到教科书的数。每格只收一种反应物，漏斗和分拣器能往里送料。",
+                "Free feed: put reactants in any input slot and a catalyst below, then set temperature (300–1560 K) and pressure "
+                        + "(1–300 bar). The reactor finds the reaction and starts. One finished batch records it.\n\n"
+                        + "Selected: pick a recorded reaction from the list. It starts at textbook conditions, each slot takes one reactant, "
+                        + "and hoppers can feed it.");
+        both.add(c + ".recognition.title", "认反应", "Recognition");
+        both.add(c + ".recognition",
+                "釜只看原料格里有哪几种东西、催化剂格里放的是什么，不看数量。\n\n"
+                        + "只有一条反应对得上时，不放催化剂也做，只是慢几十倍。燃烧、吸收、中和本来就不用催化剂。\n\n"
+                        + "对得上几条时靠催化剂分：一氧化碳加氢，铁上是费托合成，镍上是甲烷化，铜锌上是甲醇。没放或放错了就不反应。\n\n"
+                        + "一批用掉的物品数是反应式左边的系数，做出的是右边的系数。",
+                "Only the kinds of items in the inputs and the catalyst count, not the amounts.\n\n"
+                        + "If one reaction fits, it runs without a catalyst too, dozens of times slower. Burning and absorption "
+                        + "need none.\n\n"
+                        + "If several fit, the catalyst picks: CO and hydrogen make FT fuel on iron, methane on nickel, methanol on "
+                        + "copper-zinc. No catalyst or the wrong one: nothing happens.\n\n"
+                        + "Item counts per batch are the equation's coefficients.");
         both.add(c + ".equilibrium.title", "平衡和速率", "Equilibrium and Rate");
         both.add(c + ".equilibrium",
-                "平衡照真实的热力学算（NIST 的热容数据）。低温平衡好但慢，高温快但平衡差，中间有一个产量最高的温度。\n\n"
-                        + "气体分子变少的反应（合成氨、接触法、萨巴蒂尔）加压有利，重整反过来。费托合成不受平衡限制，温度越高副产的甲烷越多。",
-                "Equilibrium follows real thermodynamics (NIST heat-capacity data). Cold favours the equilibrium but runs slowly; heat runs fast "
-                        + "but shifts the equilibrium back, so there is a best temperature in between.\n\n"
-                        + "Reactions that lose gas molecules (Haber–Bosch, contact, Sabatier) like pressure; reforming is the reverse. "
-                        + "Fischer–Tropsch has no equilibrium limit, but more of it turns into methane as it gets hotter.");
+                "平衡照真实的热力学算（NIST 的热容数据）。可逆的反应低温平衡好但慢，高温快但平衡差，中间有一个产量最高的温度。\n\n"
+                        + "气体分子变少的反应（合成氨、接触法、甲醇）加压有利，重整反过来。\n\n"
+                        + "不可逆的反应越热越快，直到催化剂烧结、产物分解或者积碳。费托合成过了 350 °C 就不行了。",
+                "Equilibrium follows real thermodynamics (NIST data). Cold favours the products of a reversible reaction but runs "
+                        + "slowly; heat is fast but pushes the equilibrium back, so there is a best temperature in between.\n\n"
+                        + "Reactions that lose gas molecules (Haber–Bosch, contact, methanol) like pressure; reforming is the reverse.\n\n"
+                        + "Irreversible reactions speed up with heat until the catalyst sinters, the product breaks down or carbon builds up. "
+                        + "Fischer–Tropsch fails above 350 °C.");
         both.add(c + ".conditions.title", "工况图和用电", "Condition Map and Power");
         both.add(c + ".conditions",
-                "界面里的“温度 × 压强”图：跑过一批的工况那一格填上颜色，越亮产量越高，没跑过的是灰的。点一格就换到那个工况。\n\n"
-                        + "用电随压强的对数涨，保温和星球气温差得越多越费电，吸热的重整还要加上反应热。",
-                "The temperature × pressure map fills in a cell for every condition you have run a batch at, brighter for more output; "
+                "界面里的“温度 × 压强”图：全服跑过一批的工况那一格填上颜色，越亮产量越高，没跑过的是灰的。点一格就换到那个工况。\n\n"
+                        + "用电随压强的对数涨，保温和星球气温差得越多越费电，吸热的反应（重整、BMA 法）还要加上反应热。",
+                "The temperature × pressure map fills in a cell for every condition anyone has run a batch at, brighter for more output; "
                         + "the rest stay grey. Click a cell to jump to it.\n\n"
                         + "Power grows with the log of pressure, with how far the set temperature is from the planet's air, and with the heat that "
-                        + "endothermic reforming soaks up.");
+                        + "endothermic reactions (reforming, BMA) soak up.");
         both.add(c + ".catalysts.title", "催化剂", "Catalysts");
         both.add(c + ".catalysts",
-                "催化剂放在自己的格子里，一个做 256 批，做满了用掉。没放或放错，反应慢十几倍。\n\n"
-                        + "三种都在化工厂里做：\n"
-                        + "铁催化剂：1 磁铁矿 + 4 氢\n"
-                        + "五氧化二钒：2 钒渣 + 1 氢氧化钠\n"
-                        + "镍催化剂：1 镍锭 + 2 硝酸 + 1 氢\n\n"
-                        + "镍锭从生物反应器的生物浸出里来。",
-                "The catalyst has its own slot. Each one lasts 256 batches. With none, or the wrong one, the reaction runs more than ten times slower.\n\n"
-                        + "All three come from the chemical plant:\n"
-                        + "Iron: 1 magnetite + 4 hydrogen\n"
-                        + "Vanadium pentoxide: 2 vanadium slag + 1 NaOH\n"
-                        + "Nickel: 1 nickel ingot + 2 nitric acid + 1 hydrogen\n\n"
-                        + "Nickel ingots come out of bioleaching in the bioreactor.");
+                "催化剂放在自己的格子里，一个做 256 批（铂铑网 512 批），做满了用掉。太热会烧结，活性往下掉。\n\n"
+                        + "铁：合成氨、费托合成、变换、布杜阿尔\n"
+                        + "镍：萨巴蒂尔、甲烷化、重整、氨分解\n"
+                        + "五氧化二钒：接触法\n"
+                        + "铜锌：甲醇\n"
+                        + "铂铑网：氨氧化、安德卢梭法、BMA 法\n"
+                        + "沸石：甲醇制烯烃\n"
+                        + "齐格勒–纳塔：乙烯聚合\n"
+                        + "氯化铜：迪肯法",
+                "The catalyst has its own slot. Each lasts 256 batches (gauze 512), then it is used up. Too hot and it sinters.\n\n"
+                        + "Iron: Haber–Bosch, FT, shift, Boudouard\n"
+                        + "Nickel: Sabatier, methanation, reforming\n"
+                        + "V₂O₅: contact\n"
+                        + "Copper-zinc: methanol\n"
+                        + "Pt-Rh gauze: NH₃ oxidation, HCN\n"
+                        + "Zeolite: methanol to olefins\n"
+                        + "Ziegler–Natta: polyethylene\n"
+                        + "Copper chloride: Deacon");
+        both.add(c + ".handbook.title", "化学手册", "Chemistry Handbook");
+        both.add(c + ".handbook",
+                "研究了大气化学，就能用一本书和一个空瓶合成化学手册。右键打开。\n\n"
+                        + "手册按类列出反应：反应式、催化剂、教科书工况、反应热。研究了对应科技的才列出来，没列出的写着“？？？”和怎么拿到。"
+                        + "全服做成过的打着绿点。",
+                "After Atmospheric Chemistry, craft it from a book and a glass bottle. Use it to open.\n\n"
+                        + "It lists reactions by group with equation, catalyst, textbook conditions and heat. Researching a reaction's tech "
+                        + "lists it; the rest read \"???\" with a hint. A green dot marks the ones already run on this server.");
+        both.add(c + ".lab_notes.title", "实验记录", "Lab Notes");
+        both.add(c + ".lab_notes",
+                "实验记录是一张写着一条反应的纸。废弃前哨站、废弃货船、太空残骸的箱子里有，学者族的商人也卖。\n\n"
+                        + "右键读了，上面的反应就记下了，和亲手做成一批一样，全服都算。已经记下的读了不会用掉。",
+                "Lab notes are a page with one reaction written on it. Look in chests at abandoned outposts, derelict freighters "
+                        + "and derelict hulks, or buy them from Scholar traders.\n\n"
+                        + "Use one to record its reaction for the whole server, same as finishing a batch. "
+                        + "Notes for a reaction you already know are not used up.");
 
         String b = "guide.universe.biology";
         both.add(b, "微生物和基因", "Biology");

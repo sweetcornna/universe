@@ -5,7 +5,8 @@ package io.github.sweetcornna.universe.core.chem.reaction;
  *
  * <ul>
  *   <li>单程转化率 = 平衡转化率 × (1 − e^(−Da))，Da 见 {@link Reaction}。低温平衡好但慢，高温快但平衡差，
- *       于是放热反应有一个产量最高的温度；吸热的重整没有这个取舍，靠镍催化剂烧结压住上限。</li>
+ *       于是放热反应有一个产量最高的温度；吸热的重整没有这个取舍，靠镍催化剂烧结压住上限。
+ *       不用催化剂的反应活性按 1，高温失活见 {@link Reaction#limitTemperature()}。</li>
  *   <li>每分钟做的批数 = 单程转化率 × {@link Reaction#baseBatches()}。</li>
  *   <li>用电（J/刻）= 底数 + 压缩（和 ln 压强成正比，等温压缩功就是这样）+ 保温（和设定温度与星球气温的差成正比）
  *       + 吸热反应的反应热。放热反应的热不变成电。</li>
@@ -34,9 +35,10 @@ public final class ReactorModel {
 
     /** 达姆科勒数：反应在釜里待的这段时间里能走多远。 */
     public static double damkohler(Reaction reaction, double temperature, double pressure, boolean catalyzed) {
-        double activity = catalyzed ? reaction.catalyst().activity(temperature) : Catalyst.UNCATALYZED;
+        Catalyst catalyst = reaction.catalyst();
+        double activity = catalyst == null ? 1 : catalyzed ? catalyst.activity(temperature) : Catalyst.UNCATALYZED;
         return reaction.prefactor() * Math.exp(-reaction.activation() / (Thermo.R * temperature)) * activity
-                * pressure / (pressure + reaction.pressureHalf());
+                * reaction.limitFactor(temperature) * pressure / (pressure + reaction.pressureHalf());
     }
 
     /** 单程转化率，0–1。 */
@@ -48,20 +50,18 @@ public final class ReactorModel {
     /**
      * 这个工况下跑出来的数。
      *
-     * @param catalyzed 催化剂格里放了对的催化剂
+     * @param catalyzed 催化剂格里放了对的催化剂；不用催化剂的反应不看它
      * @param ambient   星球的平均气温（K）
      */
     public static ReactorResult evaluate(Reaction reaction, ReactorSettings settings, boolean catalyzed, double ambient) {
         double t = settings.temperature();
         double p = settings.pressure();
+        boolean full = catalyzed || reaction.catalyst() == null;
         double equilibrium = Thermo.equilibriumConversion(reaction, t, p);
-        double singlePass = equilibrium * -Math.expm1(-damkohler(reaction, t, p, catalyzed));
-        double selectivity = reaction.methaneSelectivity(t);
+        double singlePass = equilibrium * -Math.expm1(-damkohler(reaction, t, p, full));
         double batches = singlePass * reaction.baseBatches();
-        double product = batches * reaction.mainProduct().count() * (1 - selectivity);
-        double byproduct = reaction.byproduct() == null ? 0 : batches * reaction.byproduct().count() * selectivity;
-        return new ReactorResult(equilibrium, singlePass, selectivity, batches, product, byproduct,
-                power(reaction, settings, batches, ambient), catalyzed);
+        double product = batches * reaction.mainProduct().count();
+        return new ReactorResult(equilibrium, singlePass, batches, product, power(reaction, settings, batches, ambient), full);
     }
 
     /**
@@ -91,7 +91,7 @@ public final class ReactorModel {
         double best = ReactorSettings.MIN_TEMPERATURE;
         double bestRate = -1;
         for (double t = ReactorSettings.MIN_TEMPERATURE; t <= ReactorSettings.MAX_TEMPERATURE; t += SEARCH_STEP) {
-            double rate = singlePass(reaction, t, pressure, true) * (1 - reaction.methaneSelectivity(t));
+            double rate = singlePass(reaction, t, pressure, true);
             if (rate > bestRate) {
                 bestRate = rate;
                 best = t;

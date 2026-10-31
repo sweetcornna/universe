@@ -60,6 +60,7 @@ public final class UniverseWorldgen {
         FEATURE_TYPES.register("planet_exotic", () -> PlanetExoticFeature.CODEC);
         FEATURE_TYPES.register("planet_geyser", () -> io.github.sweetcornna.universe.world.planet.gen.PlanetGeyserFeature.CODEC);
         LOOT_FUNCTION_TYPES.register("random_module", () -> RandomModuleFunction.MAP_CODEC);
+        LOOT_FUNCTION_TYPES.register("random_reaction", () -> io.github.sweetcornna.universe.poi.RandomReactionFunction.MAP_CODEC);
         CHUNK_GENERATORS.register("space", () -> SpaceChunkGenerator.CODEC);
         CHUNK_GENERATORS.register("freighter", () -> FreighterChunkGenerator.CODEC);
     }

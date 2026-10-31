@@ -40,7 +40,7 @@ import net.neoforged.neoforge.common.crafting.SizedIngredient;
 
 /**
  * M20 化学的数据生成（子代理 A，ADR-0036 §三、§四）：大气提取器和电解槽的掉落、标签、配方，电解槽的五条配方，
- * 化工厂里按真实反应式的几条配方。两台设备的模型在 {@code UniverseModelProvider} 里（用那边的 {@code recipeMachine}）。
+ * 化工厂里按真实反应式的几条配方；ADR-0037 新催化剂的配方和化学手册。两台设备的模型在 {@code UniverseModelProvider} 里（用那边的 {@code recipeMachine}）。
  */
 final class ChemistryDatagen {
     /**
@@ -82,7 +82,10 @@ final class ChemistryDatagen {
             }
         }
         for (Item item : List.of(UniverseItems.SODIUM_HYDROXIDE.get(), UniverseItems.NITRIC_ACID.get(), UniverseItems.TITANIUM_TETRACHLORIDE.get(),
-                UniverseItems.COPPER_LEACH_SOLUTION.get(), UniverseItems.GOLD_LEACH_SOLUTION.get())) {
+                UniverseItems.COPPER_LEACH_SOLUTION.get(), UniverseItems.GOLD_LEACH_SOLUTION.get(),
+                // ADR-0037 反应釜的气体和甲醇
+                UniverseItems.SULFUR_TRIOXIDE.get(), UniverseItems.NITRIC_OXIDE.get(), UniverseItems.NITROGEN_DIOXIDE.get(),
+                UniverseItems.HYDROGEN_CHLORIDE.get(), UniverseItems.METHANOL.get(), UniverseItems.ETHYLENE.get())) {
             fluids.add(key(item));
         }
     }
@@ -139,6 +142,21 @@ final class ChemistryDatagen {
         machine(output, Kind.CHEMICAL, "nickel_catalyst", 120, "synthetic_fuels", in(UniverseItems.NICKEL_INGOT.get(), 1, nitric, 2, hydrogen, 1),
                 out(UniverseItems.NICKEL_CATALYST.get(), 1));
 
+        // ADR-0037 的催化剂。铜锌：粗铜矿（黄铜矿常和闪锌矿共生）溶进硝酸，和高岭土里的铝一起共沉淀成氧化物，
+        // 装进甲醇塔以后用合成气就地还原。铂铑网：铂铑合金拉成细丝织成网（铂锭里带着一成铑）。
+        // ZSM-5：石英砂、高岭土和碱液在釜里水热结晶。齐格勒–纳塔：四氯化钛用氢还原成紫色的三氯化钛（2TiCl₄ + H₂ → 2TiCl₃ + 2HCl）。
+        // 氯化铜：铜在氯气里烧（Cu + Cl₂ → CuCl₂），浸到浮石上
+        machine(output, Kind.CHEMICAL, "copper_zinc_catalyst", 120, "synthetic_fuels", in(Items.RAW_COPPER, 2, nitric, 2, Items.CLAY_BALL, 1),
+                out(UniverseItems.COPPER_ZINC_CATALYST.get(), 1));
+        machine(output, Kind.ASSEMBLING, "platinum_rhodium_gauze", 120, "catalysis", in(UniverseItems.PLATINUM_INGOT.get(), 2),
+                out(UniverseItems.PLATINUM_RHODIUM_GAUZE.get(), 1));
+        machine(output, Kind.CHEMICAL, "zeolite_catalyst", 160, "synthetic_fuels",
+                in(UniverseItems.oreDrop(OreKind.SILICON), 2, Items.CLAY_BALL, 1, caustic, 1), out(UniverseItems.ZEOLITE_CATALYST.get(), 1));
+        machine(output, Kind.CHEMICAL, "ziegler_natta_catalyst", 120, "synthetic_fuels", in(tetrachloride, 2, hydrogen, 1),
+                out(UniverseItems.ZIEGLER_NATTA_CATALYST.get(), 2, UniverseItems.HYDROGEN_CHLORIDE.get(), 2));
+        machine(output, Kind.CHEMICAL, "copper_chloride_catalyst", 80, "electrochemistry", in(Items.COPPER_INGOT, 1, chlorine, 1),
+                out(UniverseItems.COPPER_CHLORIDE_CATALYST.get(), 1));
+
         // 甲烷液氧：1 甲烷 + 2 氧灌成一罐（CH₄ + 2O₂ 正好烧完）
         machine(output, Kind.CHEMICAL, "methalox_fuel", 40, "synthetic_fuels", in(UniverseItems.METHANE.get(), 1, oxygen, 2),
                 out(UniverseItems.METHALOX_FUEL.get(), 1));
@@ -150,6 +168,9 @@ final class ChemistryDatagen {
                 Map.of('S', steel, 'G', Items.IRON_BARS, 'M', UniverseItems.ELECTRIC_MOTOR.get(), 'B', board));
         shaped(output, "atmospheric_chemistry", UniverseItems.ELECTROLYZER.get(), List.of("CGC", "SBS", "CGC"),
                 Map.of('C', Items.COPPER_INGOT, 'G', Items.GLASS, 'S', steel, 'B', board));
+        // 化学手册（ADR-0037 §四）：一本书加一个空瓶
+        shaped(output, "atmospheric_chemistry", UniverseItems.CHEMISTRY_HANDBOOK.get(), List.of("BG"),
+                Map.of('B', Items.BOOK, 'G', Items.GLASS_BOTTLE));
     }
 
     private static void electrolysis(RecipeOutput output, Electrolysis.Recipe recipe, String research, List<SizedIngredient> ingredients,

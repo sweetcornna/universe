@@ -622,6 +622,12 @@ public final class UniverseGameTests {
             ReactorGameTests::reformingDrawsMorePower);
     private static final ResourceKey<Consumer<GameTestHelper>> REACTOR_CATALYST_WEARS_OUT = function("reactor_catalyst_wears_out",
             ReactorGameTests::catalystWearsOut);
+    private static final ResourceKey<Consumer<GameTestHelper>> REACTOR_FREE_MODE_DISCOVERS = function("reactor_free_mode_discovers",
+            ReactorGameTests::freeModeDiscoversReaction);
+    private static final ResourceKey<Consumer<GameTestHelper>> REACTOR_CATALYST_PICKS_REACTION = function("reactor_catalyst_picks_reaction",
+            ReactorGameTests::catalystPicksReaction);
+    private static final ResourceKey<Consumer<GameTestHelper>> REACTOR_UNDISCOVERED_IS_LOCKED = function("reactor_undiscovered_is_locked",
+            ReactorGameTests::undiscoveredReactionIsLocked);
     // M20 反应釜（B）的测试函数加在这行上面
     private static final ResourceKey<Consumer<GameTestHelper>> INCUBATOR_ISOLATES_STRAIN = function("microbe_incubator_isolates_strain",
             MicrobeGameTests::incubatorIsolatesStrain);
@@ -908,6 +914,9 @@ public final class UniverseGameTests {
         test(event, environment, REACTOR_UNCATALYZED_IS_SLOW, ReactorGameTests.COMPARE_TICKS + 20);
         test(event, environment, REACTOR_REFORMING_DRAWS_MORE_POWER, 60);
         test(event, environment, REACTOR_CATALYST_WEARS_OUT, ReactorGameTests.HABER_TICKS);
+        test(event, environment, REACTOR_FREE_MODE_DISCOVERS, ReactorGameTests.FREE_TICKS);
+        test(event, environment, REACTOR_CATALYST_PICKS_REACTION, 60);
+        test(event, environment, REACTOR_UNDISCOVERED_IS_LOCKED, 60);
         // M20 反应釜（B）的测试加在这行上面
         // 培养、测序、编辑按真实的小时压缩，一次两到三分钟游戏时间
         test(event, environment, INCUBATOR_ISOLATES_STRAIN, io.github.sweetcornna.universe.core.microbe.Isolation.ISOLATION_TICKS + 100);

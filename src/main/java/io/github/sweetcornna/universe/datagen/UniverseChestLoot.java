@@ -9,6 +9,7 @@ import io.github.sweetcornna.universe.poi.LandmarkStructures;
 import io.github.sweetcornna.universe.poi.OutpostStructures;
 import io.github.sweetcornna.universe.poi.PoiStructures;
 import io.github.sweetcornna.universe.poi.RandomModuleFunction;
+import io.github.sweetcornna.universe.poi.RandomReactionFunction;
 import io.github.sweetcornna.universe.poi.WildStructures;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
 import io.github.sweetcornna.universe.registry.UniverseItems;
@@ -28,7 +29,7 @@ import net.minecraft.world.level.storage.loot.providers.number.ints.ContextIntPr
 /**
  * 兴趣点补给箱的战利品（ADR-0014）：坠毁飞船里多是飞船的物资，据点里多是生存物资；都有机会出导航数据和模块，
  * 坠毁飞船的模块品级高一档。太空里废弃货船的货箱和保险箱（ADR-0024）、海底的沉船和遗迹（ADR-0026）、
- * 伙伴挖出来的东西（ADR-0026 §九）也在这里。
+ * 伙伴挖出来的东西（ADR-0026 §九）也在这里。废弃货船、深空前哨站、残骸货舱里有机会出实验记录（ADR-0037 §五）。
  */
 final class UniverseChestLoot implements LootTableSubProvider {
     private final LootTableSubProvider.Context context;
@@ -77,7 +78,8 @@ final class UniverseChestLoot implements LootTableSubProvider {
                         .add(item(UniverseItems.ALLOY_HULL_PLATING.get(), 2, 6, 3))
                         .add(item(UniverseItems.CREDIT_CHIP.get(), 1, 3, 6))
                         .add(item(UniverseItems.PIRATE_SCRAP.get(), 1, 2, 2)))
-                .withPool(chance(item(UniverseItems.NAVIGATION_DATA.get(), 1, 2, 1), 0.3F)));
+                .withPool(chance(item(UniverseItems.NAVIGATION_DATA.get(), 1, 2, 1), 0.3F))
+                .withPool(labNotes(0.15F)));
         this.context.accept(SpaceEncounters.DERELICT_SAFE, LootTable.lootTable()
                 .withPool(LootPool.lootPool().setRolls(ContextIntProviders.exactly(1)).add(item(UniverseItems.CREDIT_CHIP.get(), 4, 10, 1)))
                 .withPool(LootPool.lootPool().setRolls(ContextIntProviders.exactly(1)).add(item(UniverseItems.NAVIGATION_DATA.get(), 1, 3, 1)))
@@ -89,7 +91,8 @@ final class UniverseChestLoot implements LootTableSubProvider {
                         .add(item(UniverseItems.FUEL_TANK_MK2.get(), 1, 1, 4))
                         .add(item(UniverseItems.IMPULSE_ENGINE_MK2.get(), 1, 1, 2))
                         .add(item(UniverseItems.WARP_DRIVE_MK2.get(), 1, 1, 1)))
-                .withPool(chance(item(UniverseItems.EMERGENCY_RECEIVER.get(), 1, 1, 1), 0.25F)));
+                .withPool(chance(item(UniverseItems.EMERGENCY_RECEIVER.get(), 1, 1, 1), 0.25F))
+                .withPool(labNotes(0.3F)));
         // 沉船（ADR-0026）：泡了很久的飞船，货舱里多是金属和飞船的物资，有信用点芯片；偶尔有一颗活珍珠、一个飞船模块、一件 Mk.II 部件
         this.context.accept(LandmarkStructures.SHIPWRECK_LOOT, LootTable.lootTable()
                 .withPool(LootPool.lootPool().setRolls(ContextIntProviders.between(3, 5))
@@ -225,6 +228,11 @@ final class UniverseChestLoot implements LootTableSubProvider {
     private static UniformContainerBase.Builder<?> item(ItemLike item, int min, int max, int weight) {
         return LootItem.lootTableItem(item).setWeight(weight)
                 .apply(SetItemCountFunction.setCount(ContextIntProviders.between(min, max)));
+    }
+
+    /** 一张写着随机一条反应的实验记录（ADR-0037 §五），按机会出。 */
+    static LootPool.Builder labNotes(float probability) {
+        return chance(LootItem.lootTableItem(UniverseItems.LAB_NOTES.get()).apply(RandomReactionFunction.randomReaction()), probability);
     }
 
     private static LootPool.Builder chance(UniformContainerBase.Builder<?> entry, float probability) {

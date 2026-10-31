@@ -21,6 +21,12 @@
     "universe:nitric_acid",
     "universe:titanium_tetrachloride",
     "universe:copper_leach_solution",
-    "universe:gold_leach_solution"
+    "universe:gold_leach_solution",
+    "universe:sulfur_trioxide",
+    "universe:nitric_oxide",
+    "universe:nitrogen_dioxide",
+    "universe:hydrogen_chloride",
+    "universe:methanol",
+    "universe:ethylene"
   ]
 }

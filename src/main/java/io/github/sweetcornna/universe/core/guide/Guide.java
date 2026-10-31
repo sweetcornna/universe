@@ -260,7 +260,7 @@ public final class Guide {
                     page("tractor", "universe:module_tractor_beam", "universe:module_tractor_beam"),
                     page("eva", ""),
                     page("gravity_coil", "universe:gravity_coil")),
-            // 化学（ADR-0036 §一–§四）
+            // 化学（ADR-0036 §一–§四，反应釜几页按 ADR-0037 改过）
             chapter("chemistry", "universe:electrolyzer",
                     page("substances", "", "universe:raw_titanium", "minecraft:raw_copper", "universe:salt"),
                     page("atmosphere", "", "universe:nitrogen", "universe:oxygen", "universe:carbon_dioxide", "universe:argon", "universe:ammonia"),
@@ -275,11 +275,15 @@ public final class Guide {
                             "universe:hydrogen_cyanide"),
                     page("methalox", "universe:chemical/methalox_fuel", "universe:methane", "universe:methalox_fuel"),
                     page("reactor", "universe:reactor/haber", "universe:chemical_reactor", "universe:ammonia", "universe:methane"),
-                    page("reactions", "", "universe:ammonia", "universe:sulfuric_acid", "universe:methane", "universe:carbon_monoxide",
-                            "universe:refined_oil"),
+                    page("recognition", "", "universe:carbon_monoxide", "universe:hydrogen", "universe:iron_catalyst", "universe:nickel_catalyst",
+                            "universe:copper_zinc_catalyst"),
                     page("equilibrium", "", "universe:chemical_reactor"),
                     page("conditions", ""),
-                    page("catalysts", "", "universe:iron_catalyst", "universe:vanadium_catalyst", "universe:nickel_catalyst")),
+                    page("catalysts", "", "universe:iron_catalyst", "universe:nickel_catalyst", "universe:vanadium_catalyst",
+                            "universe:copper_zinc_catalyst", "universe:platinum_rhodium_gauze", "universe:zeolite_catalyst",
+                            "universe:ziegler_natta_catalyst", "universe:copper_chloride_catalyst"),
+                    page("handbook", "universe:chemistry_handbook"),
+                    page("lab_notes", "", "universe:lab_notes")),
             // 微生物和基因、生物反应器（ADR-0036 §五）
             chapter("biology", "universe:sequencer",
                     page("sampling", "", "universe:sample_tube", "universe:sample"),

@@ -1,5 +1,6 @@
 package io.github.sweetcornna.universe.chem.reactor;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.jspecify.annotations.Nullable;
@@ -8,19 +9,21 @@ import io.github.sweetcornna.universe.blueprint.BlueprintSettings;
 import io.github.sweetcornna.universe.core.chem.reaction.Catalyst;
 import io.github.sweetcornna.universe.core.chem.reaction.ItemCount;
 import io.github.sweetcornna.universe.core.chem.reaction.Reaction;
+import io.github.sweetcornna.universe.core.chem.reaction.ReactionMatcher;
 import io.github.sweetcornna.universe.core.chem.reaction.ReactorModel;
 import io.github.sweetcornna.universe.core.chem.reaction.ReactorResult;
 import io.github.sweetcornna.universe.core.chem.reaction.ReactorSettings;
+import io.github.sweetcornna.universe.core.chem.reaction.Species;
 import io.github.sweetcornna.universe.core.chem.reaction.YieldGrid;
 import io.github.sweetcornna.universe.factory.MachineBlockEntity;
 import io.github.sweetcornna.universe.factory.MachineMenu;
 import io.github.sweetcornna.universe.factory.recipe.MachineRecipe;
-import io.github.sweetcornna.universe.factory.research.Research;
 import io.github.sweetcornna.universe.registry.UniverseBlockEntities;
 import io.github.sweetcornna.universe.registry.UniverseMenus;
 import io.github.sweetcornna.universe.stats.ProductionLog;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -34,12 +37,19 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 
 /**
- * 化学反应釜（ADR-0036 §四）：一台做一条反应。玩家在界面上选反应、调温度和压强，核心层的 {@link ReactorModel}
- * 按工况、催化剂和星球气温算出每分钟做几批、用多少电；电不够时按满足率放慢。攒满一批、原料够、产物放得下时扣一批原料、
- * 出一批产物。没反应的原料留在釜里接着反应，所以转化率只管快慢。费托合成的油和甲烷按选择性分，零头攒到下一批。
+ * 化学反应釜（ADR-0036 §四、ADR-0037）。两种用法：
  *
- * <p>格子：0–2 是原料（第 i 格放反应的第 i 种原料），3–5 是产物（第 3 + i 格放第 i 种产物，副产物排在最后），6 是催化剂。
- * 催化剂每做一批磨损一点，做满 {@link Catalyst#batches()} 批用掉一个；没放或放错了按 {@link Catalyst#UNCATALYZED} 算，慢几十倍。
+ * <ul>
+ *   <li><b>自由投料</b>（没选反应）：原料格放反应物，随便哪格，釜按原料的种类和催化剂认反应（{@link ReactionMatcher}），
+ *       认出来就照玩家调的工况做。第一次做成一批，这条反应就发现了（{@link ReactionBooks}）。自动化不往里塞也不往外抽原料。</li>
+ *   <li><b>选定配方</b>：选一条发现了的反应，工况回到教科书的数，第 i 格只收第 i 种反应物，漏斗、分拣器能往里送。</li>
+ * </ul>
+ *
+ * <p>核心层的 {@link ReactorModel} 按工况、催化剂和星球气温算出每分钟做几批、用多少电；电不够时按满足率放慢。攒满一批、
+ * 原料够、产物放得下时扣一批原料、出一批产物，物品数就是反应式的系数。没反应的原料留在釜里接着反应，所以转化率只管快慢。
+ *
+ * <p>格子：0–2 是原料，3–5 是产物（第 3 + i 格放第 i 种产物），6 是催化剂。催化剂每做一批磨损一点，做满
+ * {@link Catalyst#batches()} 批用掉一个；没放或放错了按 {@link Catalyst#UNCATALYZED} 算，慢几十倍。不用催化剂的反应不看催化剂格。
  *
  * <p>做成一批的工况记进全服共用的 {@link ReactorKnowledge}，界面上的产量图读它。工况在服务端拉回范围、取整到 1 K 和 0.01 bar，
  * 和界面数据传的精度一样，界面上算的读数和服务端对得上。
@@ -50,7 +60,7 @@ public class ChemicalReactorBlockEntity extends MachineBlockEntity implements Ma
     public static final int CATALYST_SLOT = INPUTS + OUTPUTS;
     public static final int SLOTS = CATALYST_SLOT + 1;
 
-    /** 选的反应：序号 + 1，没选是 0。 */
+    /** 选的反应：序号 + 1，自由投料是 0。 */
     public static final int REACTION = BASE_DATA;
     /** 设定温度（K）。 */
     public static final int TEMPERATURE = BASE_DATA + 1;
@@ -61,15 +71,21 @@ public class ChemicalReactorBlockEntity extends MachineBlockEntity implements Ma
     public static final int PROGRESS = BASE_DATA + 4;
     /** 星球气温（K）。 */
     public static final int AMBIENT = BASE_DATA + 5;
-    /** 第 0 位：放了对的催化剂；第 1 位：放了催化剂但不对这条反应。 */
+    /** 催化剂格：{@link #CATALYST_EMPTY} 等。 */
     public static final int CATALYST = BASE_DATA + 6;
     /** 现在这个催化剂还能做几批。 */
     public static final int WEAR = BASE_DATA + 7;
-    /** 从这里起 {@link ReactorKnowledge#WORDS} 格：选的反应在产量图上跑过的格子。 */
-    public static final int MEASURED = BASE_DATA + 8;
+    /** 正在做的反应：选定的，或者自由投料认出来的；序号 + 1，没有是 0。 */
+    public static final int ACTIVE = BASE_DATA + 8;
+    /** 自由投料时反应物种类对得上的有几条。 */
+    public static final int CANDIDATES = BASE_DATA + 9;
+    /** 从这里起 {@link ReactorKnowledge#WORDS} 格：正在做的反应在产量图上跑过的格子。 */
+    public static final int MEASURED = BASE_DATA + 10;
     public static final int DATA_COUNT = MEASURED + ReactorKnowledge.WORDS;
 
     /** 界面按钮：0 起是选反应（反应的序号），其余见下。 */
+    public static final int FREE_BUTTON = 98;
+    /** 正在做的反应回到教科书工况。 */
     public static final int DEFAULTS_BUTTON = 99;
     /** 设温度：加上开尔文数。 */
     public static final int TEMPERATURE_BUTTON = 1000;
@@ -78,11 +94,30 @@ public class ChemicalReactorBlockEntity extends MachineBlockEntity implements Ma
     public static final int PRESSURE_SCALE = 100;
 
     public static final int RUNNING = 0;
+    /** 数据包里没有这条反应的配方。 */
     public static final int NO_REACTION = 1;
     public static final int NO_INPUT = 2;
     public static final int OUTPUT_FULL = 3;
     public static final int NO_POWER = 4;
+    /** 选的反应还没发现（蓝图带过来的）。 */
     public static final int LOCKED = 5;
+    /** 自由投料：认不出这组原料。 */
+    public static final int UNKNOWN = 6;
+    /** 自由投料：对得上好几条，催化剂挑不出来。 */
+    public static final int AMBIGUOUS = 7;
+    /** 自由投料：原料格是空的。 */
+    public static final int EMPTY = 8;
+
+    public static final int CATALYST_EMPTY = 0;
+    public static final int CATALYST_RIGHT = 1;
+    public static final int CATALYST_WRONG = 2;
+    /** 这条反应不用催化剂。 */
+    public static final int CATALYST_UNNEEDED = 3;
+    /** 自由投料还没认出反应。 */
+    public static final int CATALYST_IDLE = 4;
+
+    /** 存档格式：2 起分自由投料和选定配方（ADR-0037）。 */
+    private static final int FORMAT = 2;
 
     /** 自动化最多往原料格里塞几批的量，催化剂最多塞几个。 */
     private static final int INPUT_BUFFER = 4;
@@ -90,13 +125,16 @@ public class ChemicalReactorBlockEntity extends MachineBlockEntity implements Ma
     /** 隔多久重新读一次星球气温（刻），星球改造了能跟上。 */
     private static final int CLIMATE_INTERVAL = 200;
 
+    /** 选的反应；自由投料为 {@code null}。 */
     private @Nullable Reaction reaction;
+    /** 自由投料认出来的反应，每刻重新认。 */
+    private @Nullable Reaction matched;
+    private int candidates;
+    /** 老存档里选着反应的釜，第一刻把它记成发现了。 */
+    private boolean migrate;
     private ReactorSettings settings = new ReactorSettings(ReactorSettings.MIN_TEMPERATURE, ReactorSettings.MIN_PRESSURE);
     /** 这一批做了多少（0–1）。 */
     private double batches;
-    /** 费托合成的油和甲烷没出满一个的零头。 */
-    private double productFraction;
-    private double byproductFraction;
     /** 催化剂格里那种催化剂已经做了几批。 */
     private int wear;
     private @Nullable Catalyst wearCatalyst;
@@ -112,21 +150,31 @@ public class ChemicalReactorBlockEntity extends MachineBlockEntity implements Ma
 
     // ---- 反应和工况
 
+    /** 选的反应；自由投料为 {@code null}。 */
     public @Nullable Reaction reaction() {
         return this.reaction;
+    }
+
+    /** 正在做的反应：选定的，或者自由投料认出来的。 */
+    public @Nullable Reaction active() {
+        return this.reaction != null ? this.reaction : this.matched;
+    }
+
+    public boolean freeMode() {
+        return this.reaction == null;
     }
 
     public ReactorSettings settings() {
         return this.settings;
     }
 
-    /** 选一条反应：工况回到教科书的数，做到一半的批数清零。 */
+    /** 选一条反应（{@code null} 是自由投料）：工况回到教科书的数，做到一半的批数清零。 */
     public void setReaction(@Nullable Reaction reaction) {
         this.reaction = reaction;
+        this.matched = null;
+        this.candidates = 0;
         this.settings = reaction == null ? this.settings : reaction.defaults();
         this.batches = 0;
-        this.productFraction = 0;
-        this.byproductFraction = 0;
         this.active = false;
         this.setChanged();
     }
@@ -147,10 +195,10 @@ public class ChemicalReactorBlockEntity extends MachineBlockEntity implements Ma
         return ReactorRecipes.catalyst(this.getItem(CATALYST_SLOT));
     }
 
-    /** 放了对这条反应的催化剂。 */
+    /** 正在做的反应放了对的催化剂，或者它不用催化剂。 */
     public boolean catalyzed() {
-        Catalyst catalyst = this.installed();
-        return this.reaction != null && catalyst != null && catalyst.accepts(this.reaction);
+        Reaction active = this.active();
+        return active != null && ReactionMatcher.catalyzed(active, this.installed());
     }
 
     /** 现在的催化剂已经做了几批。 */
@@ -165,9 +213,10 @@ public class ChemicalReactorBlockEntity extends MachineBlockEntity implements Ma
         this.setChanged();
     }
 
-    /** 当前工况下的读数；没选反应为 {@code null}。 */
+    /** 当前工况下的读数；没有正在做的反应为 {@code null}。 */
     public @Nullable ReactorResult result() {
-        return this.reaction == null ? null : ReactorModel.evaluate(this.reaction, this.settings, this.catalyzed(), this.ambient());
+        Reaction active = this.active();
+        return active == null ? null : ReactorModel.evaluate(active, this.settings, this.catalyzed(), this.ambient());
     }
 
     private double ambient() {
@@ -188,11 +237,6 @@ public class ChemicalReactorBlockEntity extends MachineBlockEntity implements Ma
         return null;
     }
 
-    private static boolean unlocked(ServerLevel level, Reaction reaction) {
-        RecipeHolder<MachineRecipe> recipe = recipe(level, reaction);
-        return recipe != null && Research.isUnlocked(level, recipe.value().research());
-    }
-
     @Override
     public boolean clickButton(ServerPlayer player, int button) {
         if (!(this.level instanceof ServerLevel serverLevel)) {
@@ -201,7 +245,7 @@ public class ChemicalReactorBlockEntity extends MachineBlockEntity implements Ma
         Reaction[] reactions = Reaction.values();
         if (button >= 0 && button < reactions.length) {
             Reaction picked = reactions[button];
-            if (picked == this.reaction || !unlocked(serverLevel, picked)) {
+            if (picked == this.reaction || !ReactionBooks.book(serverLevel.getServer()).discovered(picked)) {
                 return false;
             }
             // 换反应时把原料格里的东西还给玩家
@@ -214,11 +258,20 @@ public class ChemicalReactorBlockEntity extends MachineBlockEntity implements Ma
             this.setReaction(picked);
             return true;
         }
-        if (this.reaction == null) {
-            return false;
+        if (button == FREE_BUTTON) {
+            // 原料留着：自由投料什么都收
+            if (this.reaction == null) {
+                return false;
+            }
+            this.setReaction(null);
+            return true;
         }
         if (button == DEFAULTS_BUTTON) {
-            this.setSettings(this.reaction.defaults());
+            Reaction active = this.active();
+            if (active == null) {
+                return false;
+            }
+            this.setSettings(active.defaults());
         } else if (button >= PRESSURE_BUTTON) {
             this.setSettings(this.settings.withPressure((double) (button - PRESSURE_BUTTON) / PRESSURE_SCALE));
         } else if (button >= TEMPERATURE_BUTTON) {
@@ -231,24 +284,22 @@ public class ChemicalReactorBlockEntity extends MachineBlockEntity implements Ma
 
     @Override
     public @Nullable CompoundTag blueprintSettings() {
-        if (this.reaction == null) {
-            return null;
-        }
         CompoundTag tag = new CompoundTag();
-        tag.putString("Reaction", this.reaction.name());
+        if (this.reaction != null) {
+            tag.putString("Reaction", this.reaction.name());
+        }
         tag.putDouble("Temperature", this.settings.temperature());
         tag.putDouble("Pressure", this.settings.pressure());
         return tag;
     }
 
+    /** 蓝图带过来的反应在这个世界还没发现时照样选上，界面上写未发现，不做。 */
     @Override
     public void applyBlueprintSettings(CompoundTag settings) {
         Reaction reaction = Reaction.byName(settings.getStringOr("Reaction", ""));
         this.setReaction(reaction);
-        if (reaction != null) {
-            this.setSettings(new ReactorSettings(settings.getDoubleOr("Temperature", reaction.defaults().temperature()),
-                    settings.getDoubleOr("Pressure", reaction.defaults().pressure())));
-        }
+        this.setSettings(new ReactorSettings(settings.getDoubleOr("Temperature", this.settings.temperature()),
+                settings.getDoubleOr("Pressure", this.settings.pressure())));
     }
 
     // ---- 电
@@ -276,13 +327,24 @@ public class ChemicalReactorBlockEntity extends MachineBlockEntity implements Ma
         if (serverLevel.getGameTime() % CLIMATE_INTERVAL == 0) {
             this.ambient = Double.NaN;
         }
-        Reaction reaction = this.reaction;
-        RecipeHolder<MachineRecipe> recipe = reaction == null ? null : recipe(serverLevel, reaction);
-        if (reaction == null || recipe == null) {
-            return this.idle(NO_REACTION);
+        if (this.migrate) {
+            this.migrate = false;
+            if (this.reaction != null) {
+                ReactionBooks.discover(serverLevel.getServer(), this.reaction, false);
+            }
         }
-        if (!Research.isUnlocked(serverLevel, recipe.value().research())) {
+        Reaction reaction = this.reaction;
+        if (reaction == null) {
+            reaction = this.match();
+            if (reaction == null) {
+                return this.idle(this.candidates > 1 ? AMBIGUOUS : this.inputKinds().isEmpty() ? EMPTY : UNKNOWN);
+            }
+        } else if (!ReactionBooks.book(serverLevel.getServer()).discovered(reaction)) {
             return this.idle(LOCKED);
+        }
+        RecipeHolder<MachineRecipe> recipe = recipe(serverLevel, reaction);
+        if (recipe == null) {
+            return this.idle(NO_REACTION);
         }
         if (!this.hasInputs(reaction)) {
             return this.idle(NO_INPUT);
@@ -316,18 +378,62 @@ public class ChemicalReactorBlockEntity extends MachineBlockEntity implements Ma
         return false;
     }
 
+    /** 自由投料：按原料和催化剂认反应。认出的反应变了，做到一半的批数清零。 */
+    private @Nullable Reaction match() {
+        ReactionMatcher.Match match = ReactionMatcher.match(this.inputKinds(), this.installed());
+        if (match.reaction() != this.matched) {
+            this.matched = match.reaction();
+            this.batches = 0;
+            this.setChanged();
+        }
+        this.candidates = match.candidates();
+        return this.matched;
+    }
+
+    /** 原料格里有哪几种物品（注册名）。 */
+    private List<String> inputKinds() {
+        List<String> kinds = new ArrayList<>(INPUTS);
+        for (int i = 0; i < INPUTS; i++) {
+            ItemStack stack = this.getItem(i);
+            if (!stack.isEmpty()) {
+                kinds.add(BuiltInRegistries.ITEM.getKey(stack.getItem()).toString());
+            }
+        }
+        return kinds;
+    }
+
+    /** 选定配方时第 i 格放第 i 种反应物；自由投料时同一种可以分在几格里，加起来够就行。 */
     private boolean hasInputs(Reaction reaction) {
         List<ItemCount> inputs = reaction.inputs();
         for (int i = 0; i < inputs.size(); i++) {
+            ItemCount input = inputs.get(i);
+            if (this.reaction == null) {
+                if (this.count(ReactorRecipes.item(input)) < input.count()) {
+                    return false;
+                }
+                continue;
+            }
             ItemStack stack = this.getItem(i);
-            if (!stack.is(ReactorRecipes.item(inputs.get(i))) || stack.getCount() < inputs.get(i).count()) {
+            if (!stack.is(ReactorRecipes.item(input)) || stack.getCount() < input.count()) {
                 return false;
             }
         }
         return true;
     }
 
-    /** 每样产物按一批的整数量留出地方；油和甲烷的零头不会让一批多出整数量。 */
+    /** 原料格里这种物品一共几个。 */
+    private int count(Item item) {
+        int count = 0;
+        for (int i = 0; i < INPUTS; i++) {
+            ItemStack stack = this.getItem(i);
+            if (stack.is(item)) {
+                count += stack.getCount();
+            }
+        }
+        return count;
+    }
+
+    /** 每样产物按一批的量留出地方。 */
     private boolean outputsFit(Reaction reaction) {
         List<ItemCount> outputs = reaction.outputs();
         for (int i = 0; i < outputs.size(); i++) {
@@ -335,7 +441,7 @@ public class ChemicalReactorBlockEntity extends MachineBlockEntity implements Ma
                 return false;
             }
         }
-        return reaction.byproduct() == null || this.room(INPUTS + outputs.size(), reaction.byproduct());
+        return true;
     }
 
     private boolean room(int slot, ItemCount output) {
@@ -346,33 +452,30 @@ public class ChemicalReactorBlockEntity extends MachineBlockEntity implements Ma
     }
 
     private void react(ServerLevel level, Reaction reaction, ReactorResult result) {
-        List<ItemCount> inputs = reaction.inputs();
-        for (int i = 0; i < inputs.size(); i++) {
-            int count = inputs.get(i).count();
-            ProductionLog.consumed(level, this.getItem(i).getItem(), count);
-            this.consumeInput(i, count);
+        for (ItemCount input : reaction.inputs()) {
+            Item item = ReactorRecipes.item(input);
+            ProductionLog.consumed(level, item, input.count());
+            int left = input.count();
+            for (int i = 0; i < INPUTS && left > 0; i++) {
+                ItemStack stack = this.getItem(i);
+                if (stack.is(item)) {
+                    int n = Math.min(left, stack.getCount());
+                    this.consumeInput(i, n);
+                    left -= n;
+                }
+            }
         }
         List<ItemCount> outputs = reaction.outputs();
-        ItemCount byproduct = reaction.byproduct();
         for (int i = 0; i < outputs.size(); i++) {
-            int count = outputs.get(i).count();
-            if (i == 0 && byproduct != null) {
-                this.productFraction += count * (1 - result.methaneSelectivity());
-                count = (int) this.productFraction;
-                this.productFraction -= count;
-            }
-            this.produce(level, INPUTS + i, ReactorRecipes.item(outputs.get(i)), count);
+            this.produce(level, INPUTS + i, ReactorRecipes.item(outputs.get(i)), outputs.get(i).count());
         }
-        if (byproduct != null) {
-            this.byproductFraction += byproduct.count() * result.methaneSelectivity();
-            int count = (int) this.byproductFraction;
-            this.byproductFraction -= count;
-            this.produce(level, INPUTS + outputs.size(), ReactorRecipes.item(byproduct), count);
-        }
-        if (result.catalyzed()) {
+        if (reaction.catalyst() != null && result.catalyzed()) {
             this.wearCatalyst();
         }
         ReactorKnowledge.get(level.getServer()).mark(reaction, YieldGrid.cell(this.settings).index());
+        if (this.reaction == null) {
+            ReactionBooks.discover(level.getServer(), reaction, true);
+        }
     }
 
     private void produce(ServerLevel level, int slot, Item item, int count) {
@@ -388,6 +491,7 @@ public class ChemicalReactorBlockEntity extends MachineBlockEntity implements Ma
         }
     }
 
+    /** 做一批磨损一点，做满用掉一个。 */
     private void wearCatalyst() {
         Catalyst catalyst = this.installed();
         if (catalyst == null) {
@@ -423,38 +527,52 @@ public class ChemicalReactorBlockEntity extends MachineBlockEntity implements Ma
         return this.reaction.inputs().get(slot);
     }
 
-    /** 原料格只收这条反应对应的那种原料；催化剂格收哪种催化剂都行（放错了界面上会说）。 */
+    /**
+     * 选定配方时原料格只收这条反应对应的那种原料；自由投料时收哪种反应物都行（{@link Species} 里有的）。
+     * 催化剂格收哪种催化剂都行（放错了界面上会说）。
+     */
     @Override
     public boolean canPlaceItem(int slot, ItemStack stack) {
         if (slot == CATALYST_SLOT) {
             return ReactorRecipes.catalyst(stack) != null;
         }
+        if (slot >= INPUTS) {
+            return false;
+        }
+        if (this.reaction == null) {
+            return Species.byItem(BuiltInRegistries.ITEM.getKey(stack.getItem()).toString()) != null;
+        }
         ItemCount input = this.input(slot);
         return input != null && stack.is(ReactorRecipes.item(input));
     }
 
-    /** 自动化只塞到几批的量，催化剂只塞对的那种。 */
+    /** 自动化只在选定配方时往里送：原料只塞到几批的量，催化剂只塞对的那种。 */
     @Override
     public boolean canPlaceItemThroughFace(int slot, ItemStack stack, @Nullable Direction side) {
+        if (this.reaction == null) {
+            return false;
+        }
         if (slot == CATALYST_SLOT) {
             Catalyst catalyst = ReactorRecipes.catalyst(stack);
-            return catalyst != null && this.reaction != null && catalyst.accepts(this.reaction)
-                    && this.getItem(slot).getCount() < CATALYST_BUFFER;
+            return catalyst != null && catalyst.accepts(this.reaction) && this.getItem(slot).getCount() < CATALYST_BUFFER;
         }
         ItemCount input = this.input(slot);
         return input != null && stack.is(ReactorRecipes.item(input))
                 && this.getItem(slot).getCount() < Math.min(stack.getMaxStackSize(), input.count() * INPUT_BUFFER);
     }
 
-    /** 产物能抽走；换反应后原料格里剩下的、催化剂格里放错的也能抽走。 */
+    /** 产物能抽走；选定配方时，换反应后原料格里剩下的、催化剂格里放错的也能抽走。自由投料时原料和催化剂不往外抽。 */
     @Override
     public boolean canTakeItemThroughFace(int slot, ItemStack stack, Direction side) {
         if (this.isOutput(slot)) {
             return true;
         }
+        if (this.reaction == null) {
+            return false;
+        }
         if (slot == CATALYST_SLOT) {
             Catalyst catalyst = ReactorRecipes.catalyst(stack);
-            return catalyst == null || this.reaction == null || !catalyst.accepts(this.reaction);
+            return catalyst == null || !catalyst.accepts(this.reaction);
         }
         ItemCount input = this.input(slot);
         return input == null || !stack.is(ReactorRecipes.item(input));
@@ -475,10 +593,11 @@ public class ChemicalReactorBlockEntity extends MachineBlockEntity implements Ma
     @Override
     protected int dataValue(int index) {
         if (index >= MEASURED && index < MEASURED + ReactorKnowledge.WORDS) {
-            if (this.reaction == null || !(this.level instanceof ServerLevel serverLevel)) {
+            Reaction active = this.active();
+            if (active == null || !(this.level instanceof ServerLevel serverLevel)) {
                 return 0;
             }
-            return ReactorKnowledge.get(serverLevel.getServer()).word(this.reaction, index - MEASURED);
+            return ReactorKnowledge.get(serverLevel.getServer()).word(active, index - MEASURED);
         }
         return switch (index) {
             case REACTION -> this.reaction == null ? 0 : this.reaction.ordinal() + 1;
@@ -489,12 +608,16 @@ public class ChemicalReactorBlockEntity extends MachineBlockEntity implements Ma
             case AMBIENT -> (int) Math.round(this.ambient());
             case CATALYST -> {
                 Catalyst catalyst = this.installed();
-                yield catalyst == null ? 0 : this.catalyzed() ? 1 : 2;
+                Reaction active = this.active();
+                yield catalyst == null ? CATALYST_EMPTY : active == null ? CATALYST_IDLE : active.catalyst() == null ? CATALYST_UNNEEDED
+                        : catalyst.accepts(active) ? CATALYST_RIGHT : CATALYST_WRONG;
             }
             case WEAR -> {
                 Catalyst catalyst = this.installed();
                 yield catalyst == null ? 0 : catalyst.batches() - this.wear();
             }
+            case ACTIVE -> this.active() == null ? 0 : this.active().ordinal() + 1;
+            case CANDIDATES -> this.candidates;
             default -> super.dataValue(index);
         };
     }
@@ -509,8 +632,7 @@ public class ChemicalReactorBlockEntity extends MachineBlockEntity implements Ma
         this.settings = quantize(new ReactorSettings(input.getDoubleOr("Temperature", defaults.temperature()),
                 input.getDoubleOr("Pressure", defaults.pressure())));
         this.batches = input.getDoubleOr("Batches", 0);
-        this.productFraction = input.getDoubleOr("ProductFraction", 0);
-        this.byproductFraction = input.getDoubleOr("ByproductFraction", 0);
+        this.migrate = input.getIntOr("Format", 1) < FORMAT;
         this.wear = input.getIntOr("Wear", 0);
         String worn = input.getStringOr("WearCatalyst", "");
         this.wearCatalyst = null;
@@ -530,8 +652,7 @@ public class ChemicalReactorBlockEntity extends MachineBlockEntity implements Ma
         output.putDouble("Temperature", this.settings.temperature());
         output.putDouble("Pressure", this.settings.pressure());
         output.putDouble("Batches", this.batches);
-        output.putDouble("ProductFraction", this.productFraction);
-        output.putDouble("ByproductFraction", this.byproductFraction);
+        output.putInt("Format", FORMAT);
         output.putInt("Wear", this.wear);
         if (this.wearCatalyst != null) {
             output.putString("WearCatalyst", this.wearCatalyst.name());

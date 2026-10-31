@@ -1,0 +1,24 @@
+{
+  "type": "universe:reactor",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:methane"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:ammonia"
+    }
+  ],
+  "research": "catalysis",
+  "results": [
+    {
+      "id": "universe:hydrogen_cyanide"
+    },
+    {
+      "count": 3,
+      "id": "universe:hydrogen"
+    }
+  ],
+  "time": 60
+}

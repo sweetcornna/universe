@@ -1,0 +1,20 @@
+{
+  "type": "universe:chemical",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "minecraft:copper_ingot"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:chlorine"
+    }
+  ],
+  "research": "electrochemistry",
+  "results": [
+    {
+      "id": "universe:copper_chloride_catalyst"
+    }
+  ],
+  "time": 80
+}

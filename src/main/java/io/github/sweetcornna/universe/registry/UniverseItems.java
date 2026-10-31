@@ -662,6 +662,32 @@ public final class UniverseItems {
     public static final DeferredItem<BlockItem> ELECTROLYZER = ITEMS.registerSimpleBlockItem(UniverseBlocks.ELECTROLYZER);
     // M20 化学（A）的物品加在这行上面
     public static final DeferredItem<BlockItem> CHEMICAL_REACTOR = ITEMS.registerSimpleBlockItem(UniverseBlocks.CHEMICAL_REACTOR);
+    /** 反应釜的产物和中间体（ADR-0037 §三）。 */
+    public static final DeferredItem<Item> SULFUR_TRIOXIDE = ITEMS.registerSimpleItem("sulfur_trioxide");
+    public static final DeferredItem<Item> NITRIC_OXIDE = ITEMS.registerSimpleItem("nitric_oxide");
+    public static final DeferredItem<Item> NITROGEN_DIOXIDE = ITEMS.registerSimpleItem("nitrogen_dioxide");
+    public static final DeferredItem<Item> HYDROGEN_CHLORIDE = ITEMS.registerSimpleItem("hydrogen_chloride");
+    /** 甲醇：能烧。低热值 638 kJ/mol，照氢 242 kJ/mol 烧 4700 刻折算。 */
+    public static final DeferredItem<Item> METHANOL = ITEMS.registerSimpleItem("methanol", properties -> fuel(properties, 12400));
+    public static final DeferredItem<Item> ETHYLENE = ITEMS.registerSimpleItem("ethylene");
+    /** 尿素：和硝酸铵一样能给水培槽施肥。 */
+    public static final DeferredItem<Item> UREA = ITEMS.registerSimpleItem("urea");
+    /** 铂：生物浸出铜偶尔多出一个，做铂铑网。 */
+    public static final DeferredItem<Item> PLATINUM_INGOT = ITEMS.registerSimpleItem("platinum_ingot");
+    public static final DeferredItem<Item> COPPER_ZINC_CATALYST = ITEMS.registerSimpleItem("copper_zinc_catalyst");
+    public static final DeferredItem<Item> PLATINUM_RHODIUM_GAUZE = ITEMS.registerSimpleItem("platinum_rhodium_gauze");
+    public static final DeferredItem<Item> ZEOLITE_CATALYST = ITEMS.registerSimpleItem("zeolite_catalyst");
+    public static final DeferredItem<Item> ZIEGLER_NATTA_CATALYST = ITEMS.registerSimpleItem("ziegler_natta_catalyst");
+    public static final DeferredItem<Item> COPPER_CHLORIDE_CATALYST = ITEMS.registerSimpleItem("copper_chloride_catalyst");
+    /** 化学手册和实验记录（ADR-0037 §四、§五）。 */
+    public static final DeferredItem<Item> CHEMISTRY_HANDBOOK = ITEMS.<Item>registerItem("chemistry_handbook",
+            io.github.sweetcornna.universe.chem.book.ChemistryHandbookItem::new, properties -> properties.stacksTo(1));
+    public static final DeferredItem<Item> LAB_NOTES = ITEMS.<Item>registerItem("lab_notes",
+            io.github.sweetcornna.universe.chem.book.LabNotesItem::new, properties -> properties.stacksTo(16));
+    /** 上面这些平面物品，按创造物品栏的顺序。实验记录不进创造物品栏（不带反应的读不了）。 */
+    public static final List<DeferredItem<Item>> M20_REACTIONS = List.of(SULFUR_TRIOXIDE, NITRIC_OXIDE, NITROGEN_DIOXIDE, HYDROGEN_CHLORIDE,
+            METHANOL, ETHYLENE, UREA, PLATINUM_INGOT, COPPER_ZINC_CATALYST, PLATINUM_RHODIUM_GAUZE, ZEOLITE_CATALYST, ZIEGLER_NATTA_CATALYST,
+            COPPER_CHLORIDE_CATALYST, CHEMISTRY_HANDBOOK);
     // M20 反应釜（B）的物品加在这行上面
     /** 采样管：空的右键方块、液体、生物采样，装着样本的放进培养箱或测序仪（ADR-0036 §五）。 */
     public static final DeferredItem<io.github.sweetcornna.universe.microbe.SampleTubeItem> SAMPLE_TUBE = ITEMS.registerItem("sample_tube", io.github.sweetcornna.universe.microbe.SampleTubeItem::new,
@@ -816,6 +842,7 @@ public final class UniverseItems {
         order.addAll(List.of(ATMOSPHERIC_EXTRACTOR, ELECTROLYZER));
         // M20 化学（A）的创造物品栏顺序加在这行上面
         order.add(CHEMICAL_REACTOR);
+        order.addAll(M20_REACTIONS);
         // M20 反应釜（B）的创造物品栏顺序加在这行上面
         order.addAll(List.of(SAMPLE_TUBE, SAMPLE, INCUBATOR, SEQUENCER, GENE_EDITOR));
         // M20 微生物和基因（C）的创造物品栏顺序加在这行上面

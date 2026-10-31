@@ -35,7 +35,7 @@ import net.minecraft.world.level.block.Block;
 import net.neoforged.neoforge.common.crafting.SizedIngredient;
 
 /**
- * 化学反应釜（ADR-0036 §四）的数据生成：五条反应的设备配方、反应釜本身的配方和方块标签。模型在 {@code UniverseModelProvider}
+ * 化学反应釜（ADR-0036 §四、ADR-0037）的数据生成：每条反应的设备配方、反应釜本身的配方和方块标签。模型在 {@code UniverseModelProvider}
  * 里按配方设备的做法生成，战利品表是掉自己。
  */
 final class ReactorDatagen {
@@ -43,7 +43,7 @@ final class ReactorDatagen {
     }
 
     static void recipes(RecipeOutput output) {
-        // 每条反应一个配方，按单程转化率 1 写：数量按摩尔比，时间是一批最快要多久。费托合成的甲烷是副产物，不进配方
+        // 每条反应一个配方，按单程转化率 1 写：数量就是反应式的系数，时间是一批最快要多久
         for (Reaction reaction : Reaction.values()) {
             List<SizedIngredient> ingredients = new ArrayList<>();
             for (ItemCount input : reaction.inputs()) {
@@ -54,7 +54,7 @@ final class ReactorDatagen {
                 results.add(new ItemStackTemplate(ReactorRecipes.item(result), result.count()));
             }
             output.accept(ReactorRecipes.key(reaction), new MachineRecipe(Kind.REACTOR, ingredients, results, ReactorRecipes.time(reaction),
-                    ReactorRecipes.research(reaction)), null);
+                    reaction.research()), null);
         }
         // 反应釜：钢的压力容器，钛合金内衬耐腐蚀，处理器管温度和压强，里面是一台化工厂的管路
         Item steel = UniverseItems.STEEL.get();

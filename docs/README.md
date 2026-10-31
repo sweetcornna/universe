@@ -49,7 +49,8 @@
 | [0033](adr/0033-fleets-and-logistics-dispatch.md) | 机甲舰队、机甲战斗、物流调度和配套的面板 | 已采纳（M18） |
 | [0034](adr/0034-fishing-settlements-deep-space.md) | 钓鱼、聚落和深空 | 已采纳（M19） |
 | [0035](adr/0035-release-1-0.md) | 1.0：发布前的检查、存档的承诺和版本号 | 已采纳（1.0.0 已发布） |
-| [0036](adr/0036-chemistry-and-biology.md) | 化学与生物研究（M20）：就地取材、反应釜、微生物和基因、星球改造 | 已采纳 |
+| [0036](adr/0036-chemistry-and-biology.md) | 化学与生物研究（M20）：就地取材、反应釜、微生物和基因、星球改造 | 已采纳，反应釜部分被 0037 取代 |
+| [0037](adr/0037-reaction-discovery.md) | 化学反应：按投料认反应、29 条反应、化学手册和实验记录（M20） | 已采纳 |
 
 模板：
 

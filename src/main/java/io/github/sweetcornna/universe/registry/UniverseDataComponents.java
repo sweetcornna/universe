@@ -136,6 +136,9 @@ public final class UniverseDataComponents {
             COMPONENTS.registerComponentType("engineered_plant", builder -> builder.persistent(MicrobeCodecs.ENGINEERED_PLANT)
                     .networkSynchronized(MicrobeCodecs.ENGINEERED_PLANT_STREAM).cacheEncoding());
     // M20 化学（A）的数据组件加在这行上面
+    /** 实验记录上写的反应（{@link io.github.sweetcornna.universe.core.chem.reaction.Reaction} 的名字）。 */
+    public static final Supplier<DataComponentType<String>> REACTION = COMPONENTS.registerComponentType("reaction",
+            builder -> builder.persistent(Codec.STRING).networkSynchronized(ByteBufCodecs.STRING_UTF8));
     // M20 反应釜（B）的数据组件加在这行上面
     /** 样本：在哪颗星球、从什么地方采的、采样处多少度；组织样本带着生物名和基因（ADR-0036 §五）。 */
     public static final Supplier<DataComponentType<io.github.sweetcornna.universe.microbe.Sample>> SAMPLE = COMPONENTS.registerComponentType(

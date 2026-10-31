@@ -43,7 +43,8 @@ public class HydroponicTrayBlock extends MachineBlock {
     @Override
     protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand,
             BlockHitResult hitResult) {
-        if (stack.is(UniverseItems.AMMONIUM_NITRATE.get())) {
+        // 硝酸铵、尿素一袋都是两个氮（ADR-0037），施一次一样多
+        if (stack.is(UniverseItems.AMMONIUM_NITRATE.get()) || stack.is(UniverseItems.UREA.get())) {
             if (!(level.getBlockEntity(pos) instanceof HydroponicTrayBlockEntity tray)) {
                 return InteractionResult.TRY_WITH_EMPTY_HAND;
             }

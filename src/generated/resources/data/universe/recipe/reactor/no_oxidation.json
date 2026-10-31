@@ -1,0 +1,21 @@
+{
+  "type": "universe:reactor",
+  "ingredients": [
+    {
+      "count": 2,
+      "ingredient": "universe:nitric_oxide"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:oxygen"
+    }
+  ],
+  "research": "catalysis",
+  "results": [
+    {
+      "count": 2,
+      "id": "universe:nitrogen_dioxide"
+    }
+  ],
+  "time": 40
+}

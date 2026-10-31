@@ -103,6 +103,8 @@ public class BioreactorBlockEntity extends RecipeMachineBlockEntity {
     public static final double LIGHT_JOULES_PER_BATCH = 36_000;
     /** 生物浸出铜时每做一批出一个镍锭的机会：铜镍硫化矿里伴生的镍（现实的塔尔维瓦拉矿就是生物堆浸出镍）。 */
     public static final double NICKEL_CHANCE = 0.1;
+    /** 浸出一批铜多出一个铂锭的机会：比镍少见四倍。 */
+    public static final double PLATINUM_CHANCE = 0.025;
     /** 默认的设定温度（K），37 °C。 */
     public static final double DEFAULT_SETPOINT = 310;
     /** 太阳高过这个系数算白天（约 12°）。 */
@@ -406,18 +408,31 @@ public class BioreactorBlockEntity extends RecipeMachineBlockEntity {
         return super.consumeInput(slot, n);
     }
 
-    /** 生物浸出铜偶尔多出一个镍锭，放第二个产物格，放不下就掉在上面。 */
+    /**
+     * 生物浸出铜偶尔多出一个镍锭，更少见地多出一个铂锭（ADR-0037：诺里尔斯克、萨德伯里的铜镍硫化矿顺带产铂族金属），
+     * 放第二个产物格，放不下就掉在上面。
+     */
     private void byproducts(ServerLevel level) {
         RecipeHolder<MachineRecipe> recipe = this.recipe();
         if (recipe == null || BioRecipes.process(recipe.id().identifier()) != BioProcess.BIOLEACHING
-                || !recipe.value().results().getFirst().create().is(UniverseItems.COPPER_LEACH_SOLUTION.get())
-                || level.getRandom().nextDouble() >= NICKEL_CHANCE) {
+                || !recipe.value().results().getFirst().create().is(UniverseItems.COPPER_LEACH_SOLUTION.get())) {
             return;
         }
-        ItemStack nickel = new ItemStack(UniverseItems.NICKEL_INGOT.get());
-        ProductionLog.produced(level, nickel);
-        if (this.addOutput(INPUTS + recipe.value().results().size(), nickel) > 0) {
-            Containers.dropItemStack(level, this.worldPosition.getX(), this.worldPosition.getY() + 1, this.worldPosition.getZ(), nickel);
+        int slot = INPUTS + recipe.value().results().size();
+        if (level.getRandom().nextDouble() < NICKEL_CHANCE) {
+            this.byproduct(level, slot, new ItemStack(UniverseItems.NICKEL_INGOT.get()));
+        }
+        if (level.getRandom().nextDouble() < PLATINUM_CHANCE) {
+            this.byproduct(level, slot, new ItemStack(UniverseItems.PLATINUM_INGOT.get()));
+        }
+    }
+
+    private void byproduct(ServerLevel level, int slot, ItemStack stack) {
+        ProductionLog.produced(level, stack);
+        int left = this.addOutput(slot, stack);
+        if (left > 0) {
+            Containers.dropItemStack(level, this.worldPosition.getX(), this.worldPosition.getY() + 1, this.worldPosition.getZ(),
+                    stack.copyWithCount(left));
         }
     }
 

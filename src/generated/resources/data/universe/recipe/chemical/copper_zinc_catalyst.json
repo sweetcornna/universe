@@ -1,0 +1,24 @@
+{
+  "type": "universe:chemical",
+  "ingredients": [
+    {
+      "count": 2,
+      "ingredient": "minecraft:raw_copper"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:nitric_acid"
+    },
+    {
+      "count": 1,
+      "ingredient": "minecraft:clay_ball"
+    }
+  ],
+  "research": "synthetic_fuels",
+  "results": [
+    {
+      "id": "universe:copper_zinc_catalyst"
+    }
+  ],
+  "time": 120
+}

@@ -98,6 +98,8 @@ class SurvivalProgressionTest {
             , Map.entry(NS + "engineered_seedling", NS + "gene_editor")
             // 镍是生物反应器浸铜时偶尔多出的（BioreactorBlockEntity 里按概率出，不写在配方里，ADR-0036 §五）
             , Map.entry(NS + "nickel_ingot", NS + "bioreactor")
+            // 铂也是，比镍少见（ADR-0037）
+            , Map.entry(NS + "platinum_ingot", NS + "bioreactor")
             // M20 别的几条线（B–E）的（前面加逗号）加在这行上面
             ));
     /** 生存里本来就拿不到的：挖不掉的涌泉、掉落舱和石碑、空间站的交易终端和建材，只在坠毁点箱子里的损坏工具，机甲的建造无人机。刷怪蛋另算。 */
@@ -130,7 +132,7 @@ class SurvivalProgressionTest {
             "universe:nutrient", new int[] {3, 1},
             "universe:portable_refining", new int[] {1, 1},
             "universe:electrolysis", new int[] {2, 3}
-            // 反应釜三个原料格；配方只写两种产物，费托合成的甲烷是副产物，占第三个产物格
+            // 反应釜三个原料格、三个产物格；反应式最多两种产物（ADR-0037）
             , "universe:reactor", new int[] {3, 2}
             , "universe:bioreactor", new int[] {3, 2}
             // M20 反应釜（B）、生物反应器（D）的格子数（前面加逗号）加在这行上面；Map.of 最多十对

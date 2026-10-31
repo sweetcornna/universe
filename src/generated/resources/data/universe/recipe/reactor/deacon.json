@@ -1,0 +1,25 @@
+{
+  "type": "universe:reactor",
+  "ingredients": [
+    {
+      "count": 4,
+      "ingredient": "universe:hydrogen_chloride"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:oxygen"
+    }
+  ],
+  "research": "electrochemistry",
+  "results": [
+    {
+      "count": 2,
+      "id": "universe:chlorine"
+    },
+    {
+      "count": 2,
+      "id": "universe:water"
+    }
+  ],
+  "time": 60
+}

@@ -1,0 +1,20 @@
+{
+  "type": "universe:reactor",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:sulfur_trioxide"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:water"
+    }
+  ],
+  "research": "catalysis",
+  "results": [
+    {
+      "id": "universe:sulfuric_acid"
+    }
+  ],
+  "time": 40
+}

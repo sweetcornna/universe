@@ -188,7 +188,9 @@ final class DeepSpaceDatagen {
                 .withPool(chance(item(UniverseItems.NAVIGATION_DATA.get(), 1, 2, 1), 0.6F))
                 .withPool(chance(item(UniverseItems.SURVEY_DATA.get(), 1, 2, 1), 0.4F))
                 .withPool(chance(LootItem.lootTableItem(UniverseItems.MODULES.get(ModuleType.LIFE_SUPPORT).get())
-                        .apply(RandomModuleFunction.randomModule(0)), 0.2F)));
+                        .apply(RandomModuleFunction.randomModule(0)), 0.2F))
+                // 留守的人做过的实验（ADR-0037 §五）
+                .withPool(UniverseChestLoot.labNotes(0.35F)));
     }
 
     /** 残骸货舱：货船的货，多是材料，有打捞物，偶尔有一块飞船模块。 */
@@ -203,7 +205,8 @@ final class DeepSpaceDatagen {
                         .add(item(UniverseItems.LAUNCH_FUEL.get(), 1, 3, 4))
                         .add(item(UniverseItems.CREDIT_CHIP.get(), 1, 2, 3)))
                 .withPool(chance(LootItem.lootTableItem(UniverseItems.MODULES.get(ModuleType.HULL_REINFORCEMENT).get())
-                        .apply(RandomModuleFunction.randomShipModule(0)), 0.1F));
+                        .apply(RandomModuleFunction.randomShipModule(0)), 0.1F))
+                .withPool(UniverseChestLoot.labNotes(0.1F));
     }
 
     /**

@@ -206,6 +206,8 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         ChemistryLanguage.add(this::both);
         // M20 化学（A）的语言加在这行上面
         ReactorLanguage.add(this::both);
+        ReactionItemsLanguage.add(this::both);
+        HandbookLanguage.add(this::both);
         // M20 反应釜（B）的语言加在这行上面
         MicrobeLanguage.add(this::both);
         // M20 微生物和基因（C）的语言加在这行上面

@@ -4,7 +4,9 @@ import java.util.List;
 import java.util.Locale;
 
 import io.github.sweetcornna.universe.bio.BioRecipes;
+import io.github.sweetcornna.universe.chem.reactor.ReactionBooks;
 import io.github.sweetcornna.universe.chem.reactor.ReactorRecipes;
+import io.github.sweetcornna.universe.core.chem.reaction.Catalyst;
 import io.github.sweetcornna.universe.core.chem.reaction.Reaction;
 import io.github.sweetcornna.universe.core.microbe.BioProcess;
 import io.github.sweetcornna.universe.factory.recipe.MachineRecipe;
@@ -17,8 +19,10 @@ import mezz.jei.api.gui.ingredient.IRecipeSlotsView;
 import mezz.jei.api.gui.widgets.IRecipeExtrasBuilder;
 import mezz.jei.api.helpers.IGuiHelper;
 import mezz.jei.api.recipe.IFocusGroup;
+import mezz.jei.api.recipe.RecipeIngredientRole;
 import mezz.jei.api.recipe.category.IRecipeCategory;
 import mezz.jei.api.recipe.types.IRecipeHolderType;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -35,6 +39,9 @@ import org.jspecify.annotations.Nullable;
 /**
  * 一种设备配方的 JEI 分类（ADR-0019）：左边最多四种原料，箭头，右边最多三种产物（电解槽，ADR-0036）；下面写速度 1 的设备做一次要几秒，
  * 要研究的配方写上科技名（还没研究的用红字）。
+ *
+ * <p>反应釜（ADR-0037）：第四格放催化剂（不消耗），下面三行是反应式、教科书工况、发现了没有。配方里的科技只是把反应列进化学手册，
+ * 能不能在反应釜里选看全服发现了没有。
  */
 final class MachineRecipeCategory implements IRecipeCategory<RecipeHolder<MachineRecipe>> {
     private static final int WIDTH = 164;
@@ -55,7 +62,7 @@ final class MachineRecipeCategory implements IRecipeCategory<RecipeHolder<Machin
         this.type = type;
         this.title = Component.translatable("jei.universe." + kind.name().toLowerCase(Locale.ROOT));
         this.icon = gui.createDrawableItemLike(icon);
-        this.height = kind == MachineRecipe.Kind.BIOREACTOR ? HEIGHT + 11 : HEIGHT;
+        this.height = kind == MachineRecipe.Kind.BIOREACTOR || kind == MachineRecipe.Kind.REACTOR ? HEIGHT + 11 : HEIGHT;
     }
 
     @Override
@@ -94,6 +101,14 @@ final class MachineRecipeCategory implements IRecipeCategory<RecipeHolder<Machin
         for (int i = 0; i < results.size(); i++) {
             builder.addOutputSlot(OUTPUT_X + i * SLOT, 1).setOutputSlotBackground().add(results.get(i));
         }
+        // 反应釜的催化剂放在第四格，查催化剂的用途时能找到这条反应
+        Reaction reaction = recipe.kind() == MachineRecipe.Kind.REACTOR ? ReactorRecipes.reaction(holder.id().identifier()) : null;
+        Catalyst catalyst = reaction == null ? null : reaction.catalyst();
+        if (catalyst != null) {
+            builder.addSlot(RecipeIngredientRole.INPUT, 1 + 3 * SLOT, 1).setStandardSlotBackground().add(ReactorRecipes.item(catalyst.item()))
+                    .addRichTooltipCallback((view, tooltip) -> tooltip.add(
+                            Component.translatable("jei.universe.reactor.catalyst", catalyst.batches()).withStyle(ChatFormatting.GRAY)));
+        }
     }
 
     private static List<ItemStack> stacks(SizedIngredient ingredient) {
@@ -109,10 +124,13 @@ final class MachineRecipeCategory implements IRecipeCategory<RecipeHolder<Machin
     public void draw(RecipeHolder<MachineRecipe> holder, IRecipeSlotsView slots, GuiGraphicsExtractor graphics, double mouseX, double mouseY) {
         MachineRecipe recipe = holder.value();
         Font font = Minecraft.getInstance().font;
-        // M20 反应釜（ADR-0036 §四）：配方按单程转化率 1 写，时间是上限，写教科书的工况
+        // M20 反应釜（ADR-0036 §四、ADR-0037）：配方按单程转化率 1 写，时间是上限；写反应式、教科书的工况、发现了没有
         Reaction reaction = recipe.kind() == MachineRecipe.Kind.REACTOR ? ReactorRecipes.reaction(holder.id().identifier()) : null;
-        graphics.text(font, reaction != null ? ReactorRecipes.conditions(reaction)
-                : Component.translatable("gui.universe.recipe_machine.time", String.format(Locale.ROOT, "%.1f", recipe.time() / 20.0)), 1,
+        if (reaction != null) {
+            reactor(graphics, font, reaction);
+            return;
+        }
+        graphics.text(font, Component.translatable("gui.universe.recipe_machine.time", String.format(Locale.ROOT, "%.1f", recipe.time() / 20.0)), 1,
                 TEXT_Y, 0xFF808080, false);
         Component research = research(recipe);
         if (research != null) {
@@ -129,6 +147,25 @@ final class MachineRecipeCategory implements IRecipeCategory<RecipeHolder<Machin
         }
     }
 
+    /** 反应釜配方下面三行：反应式，教科书工况，发现了没有（没发现的写怎么拿到）。 */
+    private static void reactor(GuiGraphicsExtractor graphics, Font font, Reaction reaction) {
+        graphics.text(font, Language.getInstance().getVisualOrder(fit(font, Component.literal(reaction.equation()))), 1, TEXT_Y, 0xFF808080, false);
+        graphics.text(font, ReactorRecipes.conditions(reaction), 1, TEXT_Y + 11, 0xFF808080, false);
+        boolean discovered = ReactionBooks.client().discovered(reaction);
+        graphics.text(font, Language.getInstance().getVisualOrder(fit(font, reactorState(reaction))), 1, TEXT_Y + 22,
+                discovered ? 0xFF808080 : 0xFFC04040, false);
+    }
+
+    private static Component reactorState(Reaction reaction) {
+        Minecraft minecraft = Minecraft.getInstance();
+        if (ReactionBooks.client().discovered(reaction)) {
+            return Component.translatable("jei.universe.reactor.discovered");
+        }
+        boolean listed = minecraft.level != null && ReactionBooks.listed(minecraft.level, reaction);
+        return listed ? Component.translatable("jei.universe.reactor.listed")
+                : Component.translatable("jei.universe.reactor.unlisted", Research.name(reaction.research()));
+    }
+
     /** 放不下时（英文的长科技名）截掉，末尾加省略号；鼠标指着那一行时提示里有全文。 */
     private static FormattedText fit(Font font, Component text) {
         if (font.width(text) <= WIDTH - 2) {
@@ -143,6 +180,19 @@ final class MachineRecipeCategory implements IRecipeCategory<RecipeHolder<Machin
 
     @Override
     public void getTooltip(ITooltipBuilder tooltip, RecipeHolder<MachineRecipe> holder, IRecipeSlotsView slots, double mouseX, double mouseY) {
+        Reaction reaction = holder.value().kind() == MachineRecipe.Kind.REACTOR ? ReactorRecipes.reaction(holder.id().identifier()) : null;
+        if (reaction != null) {
+            Font font = Minecraft.getInstance().font;
+            Component equation = Component.literal(reaction.equation());
+            if (mouseY >= TEXT_Y - 1 && mouseY < TEXT_Y + 9 && font.width(equation) > WIDTH - 2) {
+                tooltip.add(equation);
+            }
+            Component state = reactorState(reaction);
+            if (mouseY >= TEXT_Y + 21 && mouseY < TEXT_Y + 31 && font.width(state) > WIDTH - 2) {
+                tooltip.add(state);
+            }
+            return;
+        }
         Component research = research(holder.value());
         if (research != null && mouseY >= TEXT_Y + 10 && mouseY < TEXT_Y + 20 && Minecraft.getInstance().font.width(research) > WIDTH - 2) {
             tooltip.add(research);
