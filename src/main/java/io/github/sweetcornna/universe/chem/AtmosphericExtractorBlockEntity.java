@@ -74,15 +74,20 @@ public class AtmosphericExtractorBlockEntity extends MachineBlockEntity implemen
 
     /** 选的气体；还没选、或者选的这里取不到时，取分数最大的那种。 */
     public Optional<Gas> gas() {
-        if (this.collectableMix != this.mix) {
-            this.collectableMix = this.mix;
-            this.collectable = Extraction.collectable(this.mix);
-        }
-        List<Gas> collectable = this.collectable;
+        List<Gas> collectable = this.collectable();
         if (this.selected != null && collectable.contains(this.selected)) {
             return Optional.of(this.selected);
         }
         return collectable.isEmpty() ? Optional.empty() : Optional.of(collectable.getFirst());
+    }
+
+    /** 这里的大气里能取的气体，按分数排好；大气换了才重新排。 */
+    private List<Gas> collectable() {
+        if (this.collectableMix != this.mix) {
+            this.collectableMix = this.mix;
+            this.collectable = Extraction.collectable(this.mix);
+        }
+        return this.collectable;
     }
 
     @Override
@@ -153,7 +158,7 @@ public class AtmosphericExtractorBlockEntity extends MachineBlockEntity implemen
     @Override
     public boolean clickButton(ServerPlayer player, int button) {
         Gas[] gases = Gas.values();
-        if (button < 0 || button >= gases.length || !Extraction.collectable(this.mix).contains(gases[button])) {
+        if (button < 0 || button >= gases.length || !this.collectable().contains(gases[button])) {
             return false;
         }
         if (gases[button] != this.selected) {
@@ -208,7 +213,7 @@ public class AtmosphericExtractorBlockEntity extends MachineBlockEntity implemen
         }
         if (index == COLLECTABLE) {
             int bits = 0;
-            for (Gas gas : Extraction.collectable(this.mix)) {
+            for (Gas gas : this.collectable()) {
                 bits |= 1 << gas.ordinal();
             }
             return bits;

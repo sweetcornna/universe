@@ -43,7 +43,10 @@ public final class GhostClient {
     /** 工地的虚影比拿着蓝图时的预览淡一点。 */
     private static final int SITE = 0x70A8E8FF;
 
-    /** 一个工地：每格的位置、方块，和被相邻实心虚影挡住的面；{@code box}、{@code bounds} 罩住全部格子，整个看不见时一格都不用查。 */
+    /**
+     * 一个工地：每格的位置、方块，和被相邻实心虚影挡住的面。{@code box}、{@code bounds} 罩住全部格子再往外放一格（方块模型最多伸出
+     * 本格一格），整个看不见时一格都不用查。
+     */
     private static final class Site {
         final BlockPos[] positions;
         final BlockState[] states;
@@ -55,7 +58,7 @@ public final class GhostClient {
         Site(BlockPos[] positions, BlockState[] states, BitSet remaining) {
             this.positions = positions;
             this.states = states;
-            this.box = BoundingBox.encapsulatingPositions(Arrays.asList(positions)).orElse(null);
+            this.box = BoundingBox.encapsulatingPositions(Arrays.asList(positions)).map(box -> box.inflatedBy(1)).orElse(null);
             this.bounds = this.box == null ? null : AABB.of(this.box);
             this.setRemaining(remaining);
         }
@@ -164,7 +167,8 @@ public final class GhostClient {
                 double dy = pos.getY() + 0.5 - camera.y;
                 double dz = pos.getZ() + 0.5 - camera.z;
                 // 方块模型最多伸出本格一格，按放大一格的盒子剔除，免得伸出来的部分还在画面里整格就不见了
-                if (dx * dx + dy * dy + dz * dz > view || !inside && !frustum.isVisible(new AABB(pos).inflate(1))) {
+                if (dx * dx + dy * dy + dz * dz > view || !inside && !frustum.isVisible(new AABB(pos.getX() - 1, pos.getY() - 1, pos.getZ() - 1,
+                        pos.getX() + 2, pos.getY() + 2, pos.getZ() + 2))) {
                     continue;
                 }
                 BlockState target = site.states[i];

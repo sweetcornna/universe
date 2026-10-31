@@ -132,6 +132,8 @@ public class ChemicalReactorBlockEntity extends MachineBlockEntity implements Ma
     private int candidates;
     /** 老存档里选着反应的釜，第一刻把它记成发现了。 */
     private boolean migrate;
+    /** 参照基地的反应釜（ADR-0038）：选定的反应不看全服发现了没有，免得测性能把反应记成已发现。不存档。 */
+    private boolean benchmark;
     private ReactorSettings settings = new ReactorSettings(ReactorSettings.MIN_TEMPERATURE, ReactorSettings.MIN_PRESSURE);
     /** 这一批做了多少（0–1）。 */
     private double batches;
@@ -206,6 +208,11 @@ public class ChemicalReactorBlockEntity extends MachineBlockEntity implements Ma
     /** 现在的催化剂已经做了几批。 */
     public int wear() {
         return this.installed() == this.wearCatalyst ? this.wear : 0;
+    }
+
+    /** 参照基地用：这台釜做选定的反应时不看全服发现了没有（不存档，重新载入后照常）。 */
+    public void setBenchmark(boolean benchmark) {
+        this.benchmark = benchmark;
     }
 
     /** 测试用：直接设现在这个催化剂做过的批数。 */
@@ -364,7 +371,7 @@ public class ChemicalReactorBlockEntity extends MachineBlockEntity implements Ma
             if (reaction == null) {
                 return this.idle(this.candidates > 1 ? AMBIGUOUS : this.inputKinds().isEmpty() ? EMPTY : UNKNOWN);
             }
-        } else if (!ReactionBooks.book(serverLevel.getServer()).discovered(reaction)) {
+        } else if (!this.benchmark && !ReactionBooks.book(serverLevel.getServer()).discovered(reaction)) {
             return this.idle(LOCKED);
         }
         RecipeHolder<MachineRecipe> recipe = recipe(serverLevel, reaction);

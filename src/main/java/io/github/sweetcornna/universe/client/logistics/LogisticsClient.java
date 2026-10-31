@@ -24,7 +24,6 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.util.Mth;
 import net.minecraft.util.context.ContextKey;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.IEventBus;
@@ -275,8 +274,6 @@ public final class LogisticsClient {
         double now = state.gameTime + state.worldPartialTicks;
         List<Craft> crafts = new ArrayList<>();
         Minecraft minecraft = Minecraft.getInstance();
-        ItemStack drone = new ItemStack(UniverseItems.LOGISTICS_DRONE.get());
-        ItemStack vessel = new ItemStack(UniverseItems.LOGISTICS_VESSEL.get());
         int seed = 0;
         int far = 0;
         for (LogisticsFlightsPayload.Flight flight : flights) {
@@ -318,8 +315,8 @@ public final class LogisticsClient {
                 light = LightCoordsUtil.pack(Math.max(9, level.getBrightness(LightLayer.BLOCK, at)), level.getBrightness(LightLayer.SKY, at));
             }
             // 无人机、运输船这一帧各解析一次，所有架次共用（ADR-0038）
-            ItemStack stack = flight.vessel() ? vessel : drone;
-            ItemStackRenderState model = MODELS.get(stack.getItem(), stack, minecraft.getItemModelResolver(), level, seed++);
+            ItemStackRenderState model = MODELS.get(flight.vessel() ? UniverseItems.LOGISTICS_VESSEL.get() : UniverseItems.LOGISTICS_DRONE.get(),
+                    minecraft.getItemModelResolver(), level, seed++);
             float stretch = p.length > 5 ? (float) p[5] : 1.0F;
             crafts.add(new Craft(dx, dy, dz, (float) p[3], (float) p[4], scale, stretch, light, model));
         }

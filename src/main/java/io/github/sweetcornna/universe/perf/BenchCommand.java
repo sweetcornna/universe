@@ -14,7 +14,6 @@ import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.bio.BioRecipes;
 import io.github.sweetcornna.universe.bio.BioreactorBlockEntity;
 import io.github.sweetcornna.universe.chem.reactor.ChemicalReactorBlockEntity;
-import io.github.sweetcornna.universe.chem.reactor.ReactionBooks;
 import io.github.sweetcornna.universe.chem.reactor.ReactorRecipes;
 import io.github.sweetcornna.universe.core.chem.reaction.ItemCount;
 import io.github.sweetcornna.universe.core.chem.reaction.Reaction;
@@ -58,7 +57,8 @@ import net.neoforged.neoforge.event.tick.ServerTickEvent;
  * 强制加载，方块留着。日志里的 {@code Bench:} 一行固定用中文，验收脚本靠它找结果。
  *
  * <p>{@code chemistry} 是化工设备的台数（ADR-0038）：化学反应釜（合成氨、铁催化剂）和生物反应器（产甲烷菌做甲烷）一台隔一台
- * 排在环线后面，每排前面一行人造恒星和感应塔。每秒把原料补满、产物清空。反应釜要做合成氨，搭的时候把它记成全服已发现。
+ * 排在环线后面，每排前面一行人造恒星和感应塔。每秒把原料补满、产物清空。反应釜标成参照基地用的，合成氨没发现也照做，
+ * 不往存档里记发现。
  */
 public final class BenchCommand {
     /** 一排多长。 */
@@ -196,9 +196,6 @@ public final class BenchCommand {
         }
         // 化工：每排前面一行人造恒星和感应塔（隔七格一座恒星，中间一座塔），后面一行设备
         List<BlockPos> chemistryPositions = new ArrayList<>();
-        if (chemistry > 0) {
-            ReactionBooks.discover(level.getServer(), Reaction.HABER, false);
-        }
         int chemistryZ = z0 + rows * 4 + 1 + loops * 3;
         for (int row = 0; row < chemistryRows; row++) {
             int z = chemistryZ + row * 3;
@@ -213,6 +210,7 @@ public final class BenchCommand {
                 if (chemistryPositions.size() % 2 == 0) {
                     level.setBlock(pos, UniverseBlocks.CHEMICAL_REACTOR.get().defaultBlockState(), Block.UPDATE_CLIENTS);
                     if (level.getBlockEntity(pos) instanceof ChemicalReactorBlockEntity reactor) {
+                        reactor.setBenchmark(true);
                         reactor.setReaction(Reaction.HABER);
                         reactor.setItem(ChemicalReactorBlockEntity.CATALYST_SLOT,
                                 new ItemStack(ReactorRecipes.item(Reaction.HABER.catalyst().item()), 64));

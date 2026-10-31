@@ -41,7 +41,6 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -262,7 +261,7 @@ public final class MechaCombat {
             // 附近的实体这一刻只查一次（按最远的射程），每门武器再按自己的射程挑
             if (nearby == null) {
                 nearby = player.level().getEntitiesOfClass(LivingEntity.class, player.getBoundingBox().inflate(MAX_RANGE),
-                        entity -> entity instanceof DarkFogEnemy || entity instanceof Enemy);
+                        entity -> Strikes.hostile(entity, player));
             }
             LivingEntity target = mode == WeaponMode.AUTO ? autoTarget(player, weapon, nearby) : aimedTarget(player, weapon, nearby);
             if (target != null) {

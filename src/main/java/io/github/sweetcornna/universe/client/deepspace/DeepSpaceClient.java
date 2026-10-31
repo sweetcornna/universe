@@ -267,7 +267,10 @@ public final class DeepSpaceClient {
 
     /** 摄像机周围多远的船要画牵引光束。 */
     private static final double BEAM_VIEW = 160;
-    /** 附近的船每刻查一次（多查这么远），同一刻里各帧共用；摄像机挪出这么远、来了新船就重查。 */
+    /**
+     * 附近的船每刻查一次（多查这么远），同一刻里各帧共用；摄像机挪出这么远、来了新船就重查。刻按本地玩家的刻数认：
+     * 冻结时间时世界的时间停了，有人开着的船还在动。
+     */
     private static final double BEAM_MARGIN = 16;
     private static List<ShipEntity> nearbyShips = List.of();
     private static @Nullable Level shipsLevel;
@@ -276,9 +279,11 @@ public final class DeepSpaceClient {
 
     /** 摄像机附近的船。船的碰撞箱每刻才动一次，按刻查、多查一圈；每帧再按摄像机的位置筛（ADR-0038）。 */
     private static List<ShipEntity> nearbyShips(Level level, Vec3 camera) {
-        if (level != shipsLevel || level.getGameTime() != shipsTick || camera.distanceToSqr(shipsCamera) > BEAM_MARGIN * BEAM_MARGIN) {
+        LocalPlayer player = Minecraft.getInstance().player;
+        long tick = player != null ? player.tickCount : level.getGameTime();
+        if (level != shipsLevel || tick != shipsTick || camera.distanceToSqr(shipsCamera) > BEAM_MARGIN * BEAM_MARGIN) {
             shipsLevel = level;
-            shipsTick = level.getGameTime();
+            shipsTick = tick;
             shipsCamera = camera;
             nearbyShips = level.getEntitiesOfClass(ShipEntity.class, new AABB(camera, camera).inflate(BEAM_VIEW + BEAM_MARGIN));
         }

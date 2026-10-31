@@ -49,7 +49,8 @@ public final class LoadedEnemies {
             }
         });
         gameBus.addListener(LevelTickEvent.Post.class, event -> {
-            if (event.getLevel() instanceof ServerLevel level && level.getGameTime() % PRUNE_INTERVAL == 0) {
+            // 按服务器的刻数，冻结时间（/tick freeze）时游戏时间不走也照样清
+            if (event.getLevel() instanceof ServerLevel level && level.getServer().getTickCount() % PRUNE_INTERVAL == 0) {
                 Set<Entity> loaded = LOADED.get(level.dimension());
                 if (loaded != null) {
                     loaded.removeIf(entity -> entity.isRemoved() || entity.level() != level
