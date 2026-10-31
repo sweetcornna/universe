@@ -1,12 +1,11 @@
 package io.github.sweetcornna.universe.chem;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.jspecify.annotations.Nullable;
 
+import io.github.sweetcornna.universe.chem.reactor.ReactorRecipes;
 import io.github.sweetcornna.universe.core.chem.AtmosphereMix;
 import io.github.sweetcornna.universe.core.chem.Extraction;
 import io.github.sweetcornna.universe.core.chem.Gas;
@@ -20,8 +19,6 @@ import io.github.sweetcornna.universe.registry.UniverseMenus;
 import io.github.sweetcornna.universe.stats.ProductionLog;
 import io.github.sweetcornna.universe.terraform.Terraforming;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.Item;
@@ -150,11 +147,8 @@ public class AtmosphericExtractorBlockEntity extends MachineBlockEntity implemen
 
     /** 气体对应的物品。 */
     public static Item item(Gas gas) {
-        return ITEMS.computeIfAbsent(gas, key -> BuiltInRegistries.ITEM.getValue(Identifier.parse(Substances.item(key))));
+        return ReactorRecipes.item(Substances.item(gas));
     }
-
-    /** 气体对应的物品，按名字查一次记下（服务端和客户端的线程都会读）。 */
-    private static final Map<Gas, Item> ITEMS = new ConcurrentHashMap<>();
 
     @Override
     public boolean clickButton(ServerPlayer player, int button) {

@@ -99,8 +99,10 @@ public class BeltRenderer implements BlockEntityRenderer<BeltBlockEntity, BeltRe
             Item entry = place(slope, curve, t);
             int cargo = line.item(i);
             entry.layers = Cargo.count(cargo);
-            ItemStack stack = this.stacks.computeIfAbsent(cargo, BeltNetwork::display);
-            entry.render = this.models.get(cargo, stack, this.itemModelResolver, level, seed + i);
+            // 画出来的样子只看物品和增产等级，叠了几个、点数零头不同的共用一份
+            int look = Cargo.uniform(Cargo.item(cargo), 1, Cargo.level(cargo));
+            ItemStack stack = this.stacks.computeIfAbsent(look, BeltNetwork::display);
+            entry.render = this.models.get(look, stack, this.itemModelResolver, level, seed + i);
             state.items.add(entry);
         }
     }

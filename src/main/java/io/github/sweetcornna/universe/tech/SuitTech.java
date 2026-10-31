@@ -72,7 +72,7 @@ public final class SuitTech {
     public static void registerEvents(IEventBus gameBus) {
         // 超频格的缓存只给在线的玩家留着
         gameBus.addListener(PlayerEvent.PlayerLoggedOutEvent.class, event -> SUIT_SUPERCHARGED.remove(event.getEntity().getUUID()));
-        gameBus.addListener(ServerStoppedEvent.class, event -> SUIT_SUPERCHARGED.clear());
+        gameBus.addListener(ServerStoppedEvent.class, event -> forgetSupercharged());
         gameBus.addListener(PlayerTickEvent.Post.class, event -> {
             if (event.getEntity() instanceof ServerPlayer player) {
                 long start = ServerPerf.begin();
@@ -115,12 +115,12 @@ public final class SuitTech {
     }
 
     /**
-     * 各玩家外骨骼的超频格：只看 UUID，每人每刻要问好几次，算一次记下（服务端和客户端的线程都会读）。服务端在玩家下线、服务器
-     * 停下时清，客户端退出世界时清（{@link #forgetSupercharged()}）。
+     * 各玩家外骨骼的超频格：只看 UUID，每人每刻要问好几次，算一次记下（服务端和客户端的线程都会读）。玩家下线时拿掉这个人的，
+     * 服务器停下、客户端退出世界时全清（{@link #forgetSupercharged()}）。
      */
     private static final Map<UUID, Integer> SUIT_SUPERCHARGED = new ConcurrentHashMap<>();
 
-    /** 客户端退出世界时调用：清掉记下的超频格。 */
+    /** 清掉记下的超频格：服务器停下、客户端退出世界时调用。 */
     public static void forgetSupercharged() {
         SUIT_SUPERCHARGED.clear();
     }

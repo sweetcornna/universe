@@ -22,6 +22,7 @@ import io.github.sweetcornna.universe.core.blueprint.BlueprintGeometry;
 import io.github.sweetcornna.universe.network.BlueprintPayloads;
 import io.github.sweetcornna.universe.registry.UniverseDataComponents;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.block.BlockStateModelSet;
 import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
@@ -92,8 +93,8 @@ public final class BlueprintClient {
 
     private static @Nullable Layout layout;
     /**
-     * 各格有没有实体挡着（1 是没有，2 是有，0 是这一刻还没查）。实体的碰撞箱每刻才动一次，一刻里查一遍就够了，
-     * 换了一刻或者换了摆法就重新查。
+     * 各格有没有实体挡着（1 是没有，2 是有，0 是这一刻还没查）。实体的碰撞箱每个客户端刻才动一次，一刻里查一遍就够了，
+     * 换了一刻或者换了摆法就重新查。刻按本地玩家的刻数认：冻结时间（{@code /tick freeze}）时世界的时间停了，人还在走。
      */
     private static byte[] unobstructed = new byte[0];
     private static long unobstructedTick = Long.MIN_VALUE;
@@ -286,7 +287,8 @@ public final class BlueprintClient {
             layout = layout(content, origin, turns, devicesOnly);
             BlueprintClient.layout = layout;
         }
-        long tick = level.getGameTime();
+        LocalPlayer player = Minecraft.getInstance().player;
+        long tick = player != null ? player.tickCount : level.getGameTime();
         if (tick != unobstructedTick || layout != unobstructedLayout) {
             unobstructedTick = tick;
             unobstructedLayout = layout;

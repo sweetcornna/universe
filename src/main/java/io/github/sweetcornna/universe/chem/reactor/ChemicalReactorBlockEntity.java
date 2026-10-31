@@ -143,12 +143,8 @@ public class ChemicalReactorBlockEntity extends MachineBlockEntity implements Ma
     private long power;
     private int status = NO_REACTION;
     private double ambient = Double.NaN;
-    /** 上一次 {@link #evaluate} 的结果和它的条件：工况不动时每刻的结果都一样，不用每刻重新解平衡。 */
-    private @Nullable ReactorResult evaluated;
-    private @Nullable Reaction evaluatedReaction;
-    private @Nullable ReactorSettings evaluatedSettings;
-    private boolean evaluatedCatalyzed;
-    private double evaluatedAmbient = Double.NaN;
+    /** 上一次 {@link #evaluate} 的条件和结果：工况不动时每刻的结果都一样，不用每刻重新解平衡。 */
+    private @Nullable Evaluation evaluated;
 
     public ChemicalReactorBlockEntity(BlockPos pos, BlockState state) {
         super(UniverseBlockEntities.CHEMICAL_REACTOR.get(), pos, state, SLOTS);
@@ -231,17 +227,21 @@ public class ChemicalReactorBlockEntity extends MachineBlockEntity implements Ma
      */
     private ReactorResult evaluate(Reaction reaction, boolean catalyzed) {
         double ambient = this.ambient();
-        ReactorResult result = this.evaluated;
-        if (result == null || reaction != this.evaluatedReaction || catalyzed != this.evaluatedCatalyzed
-                || Double.compare(ambient, this.evaluatedAmbient) != 0 || !this.settings.equals(this.evaluatedSettings)) {
-            result = ReactorModel.evaluate(reaction, this.settings, catalyzed, ambient);
-            this.evaluated = result;
-            this.evaluatedReaction = reaction;
-            this.evaluatedSettings = this.settings;
-            this.evaluatedCatalyzed = catalyzed;
-            this.evaluatedAmbient = ambient;
+        Evaluation last = this.evaluated;
+        if (last != null && last.matches(reaction, this.settings, catalyzed, ambient)) {
+            return last.result();
         }
+        ReactorResult result = ReactorModel.evaluate(reaction, this.settings, catalyzed, ambient);
+        this.evaluated = new Evaluation(reaction, this.settings, catalyzed, ambient, result);
         return result;
+    }
+
+    /** {@link ReactorModel#evaluate} 的条件和结果。 */
+    private record Evaluation(Reaction reaction, ReactorSettings settings, boolean catalyzed, double ambient, ReactorResult result) {
+        boolean matches(Reaction reaction, ReactorSettings settings, boolean catalyzed, double ambient) {
+            return this.reaction == reaction && this.catalyzed == catalyzed && Double.compare(this.ambient, ambient) == 0
+                    && this.settings.equals(settings);
+        }
     }
 
     private double ambient() {

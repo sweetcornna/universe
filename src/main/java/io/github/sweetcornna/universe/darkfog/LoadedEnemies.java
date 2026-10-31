@@ -23,12 +23,12 @@ import net.neoforged.neoforge.event.tick.LevelTickEvent;
  *
  * <p>只用来判断"一个都没有"。不会记少：黑雾都是普通实体，进维度一定先发加入事件（只有玩家不发）；离开事件只在实体真的移除了
  * （死了、卸载、换维度，{@link Entity#isRemoved()}）时才拿掉。区块暂时降到看不见的那一档也会发离开事件，可实体还在维度里，
- * 区块回来时也不再发加入事件，所以这种不拿掉。可能记多：加入事件被排在后面的别的模组取消了、UUID 重复没加进去，这时只是少省
+ * 区块回来时也不再发加入事件，所以这种不拿掉；这样的区块后来卸载时实体已经不追踪了，不再发事件，靠定时清理拿掉。可能记多：加入事件被排在后面的别的模组取消了、UUID 重复没加进去，这时只是少省
  * 几次查找。每 {@link #PRUNE_INTERVAL} 刻清一次：移除了的、换了维度的，还有所在区块正在更新实体、维度里却找不到它的
  * （没加进去的）；区块看不见时分不清，等区块回来再清。
  */
 public final class LoadedEnemies {
-    private static final int PRUNE_INTERVAL = 600;
+    private static final int PRUNE_INTERVAL = 20;
     private static final Map<ResourceKey<Level>, Set<Entity>> LOADED = new HashMap<>();
 
     private LoadedEnemies() {

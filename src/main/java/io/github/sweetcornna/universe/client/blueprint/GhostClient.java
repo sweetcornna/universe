@@ -163,7 +163,8 @@ public final class GhostClient {
                 double dx = pos.getX() + 0.5 - camera.x;
                 double dy = pos.getY() + 0.5 - camera.y;
                 double dz = pos.getZ() + 0.5 - camera.z;
-                if (dx * dx + dy * dy + dz * dz > view || !inside && !frustum.isVisible(new AABB(pos))) {
+                // 方块模型最多伸出本格一格，按放大一格的盒子剔除，免得伸出来的部分还在画面里整格就不见了
+                if (dx * dx + dy * dy + dz * dz > view || !inside && !frustum.isVisible(new AABB(pos).inflate(1))) {
                     continue;
                 }
                 BlockState target = site.states[i];
