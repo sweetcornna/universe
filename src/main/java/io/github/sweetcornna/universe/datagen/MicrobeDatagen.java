@@ -76,6 +76,9 @@ final class MicrobeDatagen {
 
         // 琼脂是红藻、海带熬出来的胶；培养基是琼脂加糖（碳源）和盐，营养处理器里熬
         machine(output, Kind.NUTRIENT, "agar", 100, "microbiology", in(Items.KELP, 4, water, 1), out(agar, 2));
+        // 养出来的藻也熬得出琼脂（现实里琼脂就是从红藻里提的，ADR-0039）
+        machine(output, Kind.NUTRIENT, "agar_from_algae", 100, "bioengineering", in(UniverseItems.ALGAL_BIOMASS.get(), 2, water, 1),
+                out(agar, 2));
         machine(output, Kind.NUTRIENT, "culture_medium", 60, "microbiology", in(agar, 1, Items.SUGAR, 1, UniverseItems.oreDrop(OreKind.SALT), 1),
                 out(medium, 4));
         // 测序芯片：玻璃的流动槽贴在读出电路上，封进塑料壳

@@ -1,0 +1,28 @@
+{
+  "parent": "universe:species",
+  "criteria": {
+    "milestone": {
+      "conditions": {
+        "milestone": "fish"
+      },
+      "trigger": "universe:milestone"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.universe.fish.description"
+    },
+    "icon": {
+      "id": "universe:fishing_rig"
+    },
+    "title": {
+      "translate": "advancements.universe.fish.title"
+    }
+  },
+  "requirements": [
+    [
+      "milestone"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

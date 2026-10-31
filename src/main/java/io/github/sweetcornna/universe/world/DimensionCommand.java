@@ -102,6 +102,7 @@ public final class DimensionCommand {
                 .then(PirateCommand.build())
                 .then(AsteroidCommand.build())
                 .then(StoryCommand.build())
+                .then(io.github.sweetcornna.universe.stats.PacingData.command())
                 .then(Commands.literal("dim")
                         .then(Commands.literal("create")
                                 .then(Commands.argument("name", StringArgumentType.word())

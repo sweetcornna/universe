@@ -12,6 +12,7 @@ import io.github.sweetcornna.universe.bio.BioRecipes;
 import io.github.sweetcornna.universe.core.chem.Gas;
 import io.github.sweetcornna.universe.core.chem.Substances;
 import io.github.sweetcornna.universe.core.fishing.Junk;
+import io.github.sweetcornna.universe.core.survival.Dish;
 import io.github.sweetcornna.universe.darkfog.Facilities;
 import io.github.sweetcornna.universe.entity.ship.ShipParts;
 import io.github.sweetcornna.universe.factory.recipe.MachineRecipe;
@@ -78,6 +79,16 @@ final class BioreactorDatagen {
                 out(UniverseItems.AMMONIA.get(), 2, carbonDioxide, 6));
         bio(output, "plastic_recycling", 400, in(UniverseItems.JUNK.get(Junk.BROKEN_CANISTER).get(), 1, water, 1),
                 out(UniverseItems.PLASTIC.get(), 1));
+
+        // 藻类生物质的去处（ADR-0036 §五、ADR-0039）：化工厂里提出藻酸盐的胶，就是生物胶质；营养处理器压成藻饼，
+        // 按海带脆片算（现实里螺旋藻干粉就是这么吃的）
+        output.accept(ResourceKey.create(Registries.RECIPE, Universe.id("chemical/bio_gel_from_algae")),
+                new MachineRecipe(Kind.CHEMICAL, in(biomass, 2, water, 1), List.of(new ItemStackTemplate(UniverseItems.BIO_GEL.get(), 1)),
+                        120, BioRecipes.RESEARCH), null);
+        output.accept(ResourceKey.create(Registries.RECIPE, Universe.id("nutrient/kelp_crisps_from_algae")),
+                new MachineRecipe(Kind.NUTRIENT, in(biomass, 3), List.of(new ItemStackTemplate(
+                        UniverseItems.DISHES.get(Dish.KELP_CRISPS).get(), 1)), 50, BioRecipes.RESEARCH),
+                null);
 
         // 反应器：不锈钢的罐，两扇视镜，搅拌桨的电机，处理器管温度和溶氧
         Item steel = UniverseItems.STEEL.get();

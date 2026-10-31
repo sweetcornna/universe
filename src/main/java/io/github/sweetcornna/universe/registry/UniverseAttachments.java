@@ -162,6 +162,13 @@ public final class UniverseAttachments {
     // M19 化石（C）的附加数据加在这行上面
     // M19 深空和重力枪（D）的附加数据加在这行上面
     // M19 科技布局和局部危害（E）的附加数据加在这行上面
+    /** 区块里种在地上的改造种苗（ADR-0039）：打包坐标 → 种下去的那株，拆下来时掉回同样的种苗。野生的不记。 */
+    public static final Supplier<AttachmentType<Map<Long, io.github.sweetcornna.universe.core.microbe.EngineeredPlant>>> ENGINEERED_PLANTS =
+            ATTACHMENT_TYPES.register("engineered_plants", () -> AttachmentType
+                    .<Map<Long, io.github.sweetcornna.universe.core.microbe.EngineeredPlant>>builder(() -> new HashMap<>())
+                    .serialize(Codec.unboundedMap(PACKED_POS, io.github.sweetcornna.universe.microbe.MicrobeCodecs.ENGINEERED_PLANT)
+                            .<Map<Long, io.github.sweetcornna.universe.core.microbe.EngineeredPlant>>xmap(HashMap::new, map -> map).fieldOf("plants"))
+                    .build());
 
     private UniverseAttachments() {
     }

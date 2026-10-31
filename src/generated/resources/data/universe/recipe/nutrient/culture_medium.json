@@ -11,7 +11,7 @@
     },
     {
       "count": 1,
-      "ingredient": "universe:salt"
+      "ingredient": "#c:dusts/salt"
     }
   ],
   "research": "microbiology",

@@ -666,6 +666,23 @@ public final class UniverseGameTests {
     private static final ResourceKey<Consumer<GameTestHelper>> GREENING_COVERS_ROCK_AND_SOIL = function("greening_covers_rock_and_soil",
             TerraformGameTests::greeningCoversRockAndSoil);
     // M20 星球改造（E）的测试函数加在这行上面
+    // M22 收尾和打通（ADR-0039），测试写在 LinkageGameTests
+    private static final ResourceKey<Consumer<GameTestHelper>> PIRATE_SCRAP_MAKES_MODULE = function("pirate_scrap_makes_module",
+            LinkageGameTests::pirateScrapMakesModule);
+    private static final ResourceKey<Consumer<GameTestHelper>> ARGON_SHIELDS_TITANIUM_ALLOY = function("argon_shields_titanium_alloy",
+            LinkageGameTests::argonShieldsTitaniumAlloy);
+    private static final ResourceKey<Consumer<GameTestHelper>> PLANTED_SEEDLING_KEEPS_GENES = function("planted_seedling_keeps_genes",
+            LinkageGameTests::plantedSeedlingKeepsGenes);
+    private static final ResourceKey<Consumer<GameTestHelper>> FLEET_TERMINAL_BURNS_METHALOX = function("fleet_terminal_burns_methalox",
+            LinkageGameTests::fleetTerminalBurnsMethalox);
+    private static final ResourceKey<Consumer<GameTestHelper>> RECORDS_AND_METALS_SELL = function("records_and_metals_sell",
+            LinkageGameTests::recordsAndMetalsSell);
+    private static final ResourceKey<Consumer<GameTestHelper>> M20_EXIT_FUEL = function("m20_exit_fuel", M20ExitGameTests::fuel);
+    private static final ResourceKey<Consumer<GameTestHelper>> M20_EXIT_BIOLOGY = function("m20_exit_biology", M20ExitGameTests::biology);
+    private static final ResourceKey<Consumer<GameTestHelper>> M20_EXIT_TERRAFORM = function("m20_exit_terraform", M20ExitGameTests::terraform);
+    private static final ResourceKey<Consumer<GameTestHelper>> PACING_RECORDS_FIRST_TIME = function("pacing_records_first_time",
+            LinkageGameTests::pacingRecordsFirstTime);
+    // M22 的测试函数加在这行上面
     /** 参照基地的性能测量，只在设了 {@link PerfBench#PROPERTY} 时登记（ADR-0038）。 */
     private static final ResourceKey<Consumer<GameTestHelper>> PERF_BENCH = function("perf_bench", PerfBenchGameTests::measure);
 
@@ -948,6 +965,16 @@ public final class UniverseGameTests {
         test(event, environment, SEEDER_REJECTS_UNFIT_STRAIN, 300);
         test(event, environment, GREENING_COVERS_ROCK_AND_SOIL, 20);
         // M20 星球改造（E）的测试加在这行上面
+        test(event, environment, PIRATE_SCRAP_MAKES_MODULE, 300);
+        test(event, environment, ARGON_SHIELDS_TITANIUM_ALLOY, 600);
+        test(event, environment, PLANTED_SEEDLING_KEEPS_GENES, 40);
+        test(event, environment, FLEET_TERMINAL_BURNS_METHALOX, 20);
+        test(event, environment, RECORDS_AND_METALS_SELL, 20);
+        test(event, environment, M20_EXIT_FUEL, 3000);
+        test(event, environment, M20_EXIT_BIOLOGY, M20ExitGameTests.BIOLOGY_TICKS);
+        test(event, environment, M20_EXIT_TERRAFORM, 20);
+        test(event, environment, PACING_RECORDS_FIRST_TIME, 40);
+        // M22 的测试加在这行上面
     }
 
     /**

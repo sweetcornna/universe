@@ -1,0 +1,29 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 3,
+      "ingredient": "universe:electromagnetic_turbine"
+    },
+    {
+      "count": 3,
+      "ingredient": "universe:magnet"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:energetic_graphite"
+    },
+    {
+      "count": 2,
+      "ingredient": "universe:helium"
+    }
+  ],
+  "research": "magnetic_levitation",
+  "results": [
+    {
+      "count": 2,
+      "id": "universe:super_magnetic_ring"
+    }
+  ],
+  "time": 120
+}

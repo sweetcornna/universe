@@ -3,7 +3,7 @@
   "ingredients": [
     {
       "count": 2,
-      "ingredient": "universe:raw_titanium"
+      "ingredient": "#c:raw_materials/titanium"
     },
     {
       "count": 8,

@@ -9,6 +9,7 @@ import java.util.UUID;
 
 import org.jspecify.annotations.Nullable;
 
+import io.github.sweetcornna.universe.advancement.MilestoneTrigger;
 import io.github.sweetcornna.universe.civ.Civ;
 import io.github.sweetcornna.universe.core.civ.Race;
 import io.github.sweetcornna.universe.core.civ.Standing;
@@ -413,6 +414,7 @@ public final class Settlements {
         data.changed();
         level.playSound(null, s.x(), s.y() + 1, s.z(), SettlementSounds.CLAIM.get(), SoundSource.NEUTRAL, 1.0F, 1.0F);
         chat(player, Component.translatable("message.universe.settlement.claimed", displayName(entry)).withStyle(ChatFormatting.GOLD));
+        MilestoneTrigger.reach(player, MilestoneTrigger.SETTLEMENT);
         return null;
     }
 

@@ -1,0 +1,20 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 1,
+      "ingredient": "universe:optical_crystal"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:circuit_board"
+    }
+  ],
+  "research": "solar_sail_orbit",
+  "results": [
+    {
+      "id": "universe:photon_combiner"
+    }
+  ],
+  "time": 60
+}

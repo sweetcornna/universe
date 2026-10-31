@@ -3,7 +3,7 @@
   "ingredients": [
     {
       "count": 1,
-      "ingredient": "universe:titanium_ingot"
+      "ingredient": "#c:ingots/titanium"
     },
     {
       "count": 10,

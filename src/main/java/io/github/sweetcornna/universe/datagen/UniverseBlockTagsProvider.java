@@ -11,9 +11,13 @@ import io.github.sweetcornna.universe.darkfog.Facilities;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
 import io.github.sweetcornna.universe.world.planet.Fulgurites;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.data.PackOutput;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.BlockItemTags;
 import net.minecraft.tags.BlockTags;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.common.data.BlockTagsProvider;
@@ -211,6 +215,12 @@ final class UniverseBlockTagsProvider extends BlockTagsProvider {
                 default -> {
                 }
             }
+        });
+        // 按矿种的通用标签 c:ores/<矿>（ADR-0039），别的模组的矿物处理认得出
+        UniverseBlocks.ORES.forEach((kind, block) -> {
+            TagKey<Block> ore = TagKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath("c", "ores/" + kind.commonName()));
+            this.tag(ore).add(block.key());
+            this.tag(Tags.BlockItems.ORES.block()).addTag(ore);
         });
         this.tag(BlockTags.IRON_ORES).add(UniverseBlocks.ORES.get(OreKind.IRON).key());
         this.tag(BlockTags.COPPER_ORES).add(UniverseBlocks.ORES.get(OreKind.COPPER).key());

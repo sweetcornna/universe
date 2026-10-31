@@ -1,0 +1,29 @@
+{
+  "parent": "universe:species",
+  "criteria": {
+    "milestone": {
+      "conditions": {
+        "milestone": "skeleton"
+      },
+      "trigger": "universe:milestone"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.universe.skeleton.description"
+    },
+    "frame": "goal",
+    "icon": {
+      "id": "universe:skeleton_display"
+    },
+    "title": {
+      "translate": "advancements.universe.skeleton.title"
+    }
+  },
+  "requirements": [
+    [
+      "milestone"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

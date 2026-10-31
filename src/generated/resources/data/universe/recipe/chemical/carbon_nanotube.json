@@ -7,7 +7,7 @@
     },
     {
       "count": 1,
-      "ingredient": "universe:titanium_ingot"
+      "ingredient": "#c:ingots/titanium"
     }
   ],
   "research": "high_strength_materials",

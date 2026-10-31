@@ -3,7 +3,7 @@
   "ingredients": [
     {
       "count": 1,
-      "ingredient": "universe:raw_uranium"
+      "ingredient": "#c:raw_materials/uranium"
     }
   ],
   "results": [

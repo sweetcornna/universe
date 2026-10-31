@@ -1,0 +1,28 @@
+{
+  "parent": "universe:trade",
+  "criteria": {
+    "milestone": {
+      "conditions": {
+        "milestone": "guild"
+      },
+      "trigger": "universe:milestone"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.universe.guild.description"
+    },
+    "icon": {
+      "id": "universe:navigation_data"
+    },
+    "title": {
+      "translate": "advancements.universe.guild.title"
+    }
+  },
+  "requirements": [
+    [
+      "milestone"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

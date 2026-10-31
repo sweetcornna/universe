@@ -126,7 +126,7 @@ class BalanceTest {
             } else {
                 choices.add(ingredient.getAsString());
             }
-            inputs.add(new ValueGraph.Input(choices, entry.has("count") ? entry.get("count").getAsInt() : 1));
+            inputs.add(new ValueGraph.Input(GeneratedTags.expandAll(choices), entry.has("count") ? entry.get("count").getAsInt() : 1));
         }
         List<ValueGraph.Output> outputs = new ArrayList<>();
         for (JsonElement element : json.getAsJsonArray("results")) {

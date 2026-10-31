@@ -3158,6 +3158,15 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         advancement("bioreactor", "活的工厂", "放下生物反应器", "Living Factory", "Place a bioreactor");
         advancement("ecology_seeder", "先锋", "放下生态播种站", "Pioneers", "Place an ecology seeder");
         advancement("terraformed", "第二个地球", "把一颗星球改造到能直接呼吸", "A Second Earth", "Terraform a planet until its air is breathable");
+        advancement("fish", "异星垂钓", "在星球上钓上第一条鱼", "Alien Angling", "Catch your first fish on a planet");
+        advancement("angler", "图鉴渐满", "钓鱼图鉴里记下 " + io.github.sweetcornna.universe.advancement.MilestoneTrigger.ANGLER_SPECIES + " 种鱼",
+                "Filling the Book", "Record " + io.github.sweetcornna.universe.advancement.MilestoneTrigger.ANGLER_SPECIES
+                        + " species in the fishing log");
+        advancement("settlement", "总督", "接管一个外星人的聚落", "Governor", "Take over an alien settlement");
+        advancement("settlement_defended", "守城", "亲手守住一次聚落的海盗来袭", "Holding the Line", "Defend your settlement from a pirate raid yourself");
+        advancement("skeleton", "复原", "在骨架展台上拼齐一副骨架", "Reconstruction", "Complete a skeleton on a skeleton display");
+        advancement("salvage", "拆船匠", "从残骸里切下反应堆芯带走", "Shipbreaker", "Cut the reactor core out of a derelict hulk");
+        advancement("guild", "会员", "在一个公会升到会员，领到礼物", "Card-Carrying Member", "Reach member rank in a guild and claim the gift");
         if (!written.equals(Set.of(UniverseAdvancements.NAMES))) {
             throw new IllegalStateException("进度的语言条目和 UniverseAdvancements.NAMES 对不上");
         }
@@ -3345,7 +3354,7 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("gui.universe.fleet.none_ready", "没有能出发的护卫舰，受损的先修好", "No frigates ready. Repair the damaged ones first");
         both("gui.universe.fleet.segments", "%s 段遭遇，每段要 %s 点", "%s encounters, %s points each");
         both("gui.universe.fleet.chance", "%1$s %2$s（%3$s%%）", "%1$s %2$s (%3$s%%)");
-        both("gui.universe.fleet.fuel_cost", "发射燃料：要 %s 个，有 %s 个", "Launch fuel: %s needed, %s carried");
+        both("gui.universe.fleet.fuel_cost", "发射燃料：要 %s 份，有 %s 份", "Launch fuel: %s needed, %s carried");
         both("gui.universe.fleet.launch", "出发", "Launch");
         both("gui.universe.fleet.launch_confirm", "胜算很低，确定？", "Low odds. Sure?");
         both("gui.universe.fleet.expected", "平均每段的胜算 %s%%", "Average odds per leg: %s%%");
@@ -3373,7 +3382,7 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("message.universe.fleet.problem.damaged", "受损的护卫舰要先修好", "Repair the damaged frigates first");
         both("message.universe.fleet.problem.too_many_voyages", "同时最多 3 支远征", "Three missions at a time at most");
         both("message.universe.fleet.problem.taken", "这个任务已经接过了", "That mission's already taken");
-        both("message.universe.fleet.no_fuel", "要 %s 个发射燃料", "Needs %s launch fuel");
+        both("message.universe.fleet.no_fuel", "要 %s 份发射燃料（甲烷液氧一罐算 2.5 份）", "Needs %s launch fuel (a methalox canister counts as 2.5)");
         both("message.universe.fleet.launched", "%s 艘护卫舰出发了，%s 分钟后回来", "%s frigates launched. Back in %s minutes");
         both("message.universe.fleet.not_back", "还没回来", "Not back yet");
         both("message.universe.fleet.claimed", "成功 %1$s/%2$s 段，带回 %3$s 信用点和 %4$s 件东西。沉没 %5$s，受损 %6$s，升级 %7$s",

@@ -3,7 +3,7 @@
   "ingredients": [
     {
       "count": 1,
-      "ingredient": "universe:nickel_ingot"
+      "ingredient": "#c:ingots/nickel"
     },
     {
       "count": 2,

@@ -10,6 +10,7 @@ import java.util.UUID;
 
 import org.jspecify.annotations.Nullable;
 
+import io.github.sweetcornna.universe.block.ship.ShipFuel;
 import io.github.sweetcornna.universe.core.discovery.DiscoveryKey;
 import io.github.sweetcornna.universe.core.fleet.Expedition;
 import io.github.sweetcornna.universe.core.fleet.Fleet;
@@ -374,24 +375,45 @@ public final class FleetTerminal {
         player.getInventory().placeItemBackInInventory(stack, Prediction.SERVER_ONLY);
     }
 
-    private static int fuel(Inventory inventory) {
-        int count = 0;
+    /**
+     * 背包里的燃料折成几份发射燃料：甲烷液氧按它和发射燃料的热值比算（一罐 2.5 份，ADR-0039），零头不算。
+     */
+    public static int fuel(Inventory inventory) {
+        double count = 0;
         for (int i = 0; i < inventory.getContainerSize(); i++) {
             ItemStack stack = inventory.getItem(i);
             if (stack.is(UniverseItems.LAUNCH_FUEL.get())) {
                 count += stack.getCount();
+            } else if (stack.is(UniverseItems.METHALOX_FUEL.get())) {
+                count += stack.getCount() * methaloxShare();
             }
         }
-        return count;
+        return (int) Math.floor(count + 1e-9);
     }
 
-    private static void takeFuel(Inventory inventory, int amount) {
-        for (int i = 0; i < inventory.getContainerSize() && amount > 0; i++) {
+    /** 一罐甲烷液氧顶几份发射燃料。 */
+    private static double methaloxShare() {
+        return ShipFuel.value(new ItemStack(UniverseItems.METHALOX_FUEL.get())) / ShipFuel.value(new ItemStack(UniverseItems.LAUNCH_FUEL.get()));
+    }
+
+    /** 先扣发射燃料，不够的用甲烷液氧补，一罐顶不满的按一罐扣。 */
+    public static void takeFuel(Inventory inventory, int amount) {
+        double remaining = amount;
+        for (int i = 0; i < inventory.getContainerSize() && remaining > 0; i++) {
             ItemStack stack = inventory.getItem(i);
             if (stack.is(UniverseItems.LAUNCH_FUEL.get())) {
-                int taken = Math.min(amount, stack.getCount());
+                int taken = (int) Math.min(remaining, stack.getCount());
                 stack.shrink(taken);
-                amount -= taken;
+                remaining -= taken;
+            }
+        }
+        double share = methaloxShare();
+        for (int i = 0; i < inventory.getContainerSize() && remaining > 0; i++) {
+            ItemStack stack = inventory.getItem(i);
+            if (stack.is(UniverseItems.METHALOX_FUEL.get())) {
+                int taken = (int) Math.min(Math.ceil(remaining / share - 1e-9), stack.getCount());
+                stack.shrink(taken);
+                remaining -= taken * share;
             }
         }
         inventory.setChanged();

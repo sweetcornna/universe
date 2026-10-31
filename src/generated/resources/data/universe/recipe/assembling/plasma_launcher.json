@@ -3,11 +3,11 @@
   "ingredients": [
     {
       "count": 6,
-      "ingredient": "universe:sentinel_scrap"
+      "ingredient": "#universe:combat_salvage"
     },
     {
       "count": 4,
-      "ingredient": "universe:steel"
+      "ingredient": "#c:ingots/steel"
     },
     {
       "count": 4,

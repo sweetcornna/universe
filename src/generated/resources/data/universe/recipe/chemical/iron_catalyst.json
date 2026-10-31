@@ -3,7 +3,7 @@
   "ingredients": [
     {
       "count": 1,
-      "ingredient": "universe:raw_magnetite"
+      "ingredient": "#c:raw_materials/magnetite"
     },
     {
       "count": 4,

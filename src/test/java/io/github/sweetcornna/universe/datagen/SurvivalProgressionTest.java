@@ -326,15 +326,15 @@ class SurvivalProgressionTest {
         return producers;
     }
 
-    /** 一个原料：一个物品、一个标签或几个可选的物品。 */
+    /** 一个原料：一个物品、一个标签或几个可选的物品。本模组写出来的标签展开成里面的物品（ADR-0039）。 */
     private static List<String> choices(JsonElement element) {
         if (element.isJsonArray()) {
             JsonArray array = element.getAsJsonArray();
             List<String> choices = new ArrayList<>();
             array.forEach(child -> choices.add(child.getAsString()));
-            return choices;
+            return GeneratedTags.expandAll(choices);
         }
-        return List.of(element.getAsString());
+        return GeneratedTags.expand(element.getAsString());
     }
 
     private static List<Path> jsonFiles(Path dir) throws IOException {

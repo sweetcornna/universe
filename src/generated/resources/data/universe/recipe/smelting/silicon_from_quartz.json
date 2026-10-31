@@ -1,0 +1,19 @@
+{
+  "type": "universe:smelting",
+  "ingredients": [
+    {
+      "count": 2,
+      "ingredient": "minecraft:quartz"
+    },
+    {
+      "count": 1,
+      "ingredient": "minecraft:coal"
+    }
+  ],
+  "results": [
+    {
+      "id": "universe:silicon"
+    }
+  ],
+  "time": 60
+}

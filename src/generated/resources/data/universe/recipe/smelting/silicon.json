@@ -3,7 +3,7 @@
   "ingredients": [
     {
       "count": 1,
-      "ingredient": "universe:raw_silicon"
+      "ingredient": "#c:raw_materials/silicon"
     }
   ],
   "results": [

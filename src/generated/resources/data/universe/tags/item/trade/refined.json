@@ -18,6 +18,8 @@
     "universe:graphene",
     "universe:titanium_crystal",
     "universe:titanium_glass",
+    "universe:nickel_ingot",
+    "universe:platinum_ingot",
     "universe:alloy_plate"
   ]
 }

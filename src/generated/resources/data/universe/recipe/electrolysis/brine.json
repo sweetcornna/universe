@@ -3,7 +3,7 @@
   "ingredients": [
     {
       "count": 2,
-      "ingredient": "universe:salt"
+      "ingredient": "#c:dusts/salt"
     },
     {
       "count": 2,

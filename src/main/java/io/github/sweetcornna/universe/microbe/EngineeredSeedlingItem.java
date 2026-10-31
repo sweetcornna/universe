@@ -119,8 +119,11 @@ public class EngineeredSeedlingItem extends Item {
             }
             return InteractionResult.FAIL;
         }
-        BlockState state = UniverseBlocks.RESOURCE_PLANTS.get(plant.plant()).get().defaultBlockState().setValue(ResourcePlantBlock.RIPE, false);
+        BlockState state = PlantedSeedlings.planted(
+                UniverseBlocks.RESOURCE_PLANTS.get(plant.plant()).get().defaultBlockState().setValue(ResourcePlantBlock.RIPE, false), plant);
         level.setBlock(pos, state, Block.UPDATE_ALL);
+        // 基因记在区块上，拆下来掉回同样的种苗（ADR-0039）
+        PlantedSeedlings.record(server, pos, plant);
         level.gameEvent(GameEvent.BLOCK_PLACE, pos, GameEvent.Context.of(player, state));
         level.playSound(null, pos, SoundEvents.CROP_PLANTED, SoundSource.BLOCKS, 1.0F, 1.0F);
         context.getItemInHand().consume(1, player);

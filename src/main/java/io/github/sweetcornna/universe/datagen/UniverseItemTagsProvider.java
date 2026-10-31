@@ -1,5 +1,6 @@
 package io.github.sweetcornna.universe.datagen;
 
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 import io.github.sweetcornna.universe.Universe;
@@ -8,13 +9,18 @@ import io.github.sweetcornna.universe.core.trade.TradeCategory;
 import io.github.sweetcornna.universe.entity.CreatureHusbandry;
 import io.github.sweetcornna.universe.factory.FluidItems;
 import io.github.sweetcornna.universe.fluid.AcidEffects;
+import io.github.sweetcornna.universe.registry.UniverseBlocks;
+import io.github.sweetcornna.universe.registry.UniverseItemTags;
 import io.github.sweetcornna.universe.registry.UniverseItems;
 import io.github.sweetcornna.universe.trade.ItemValues;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.data.PackOutput;
+import net.minecraft.resources.Identifier;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.ItemTags;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.neoforged.neoforge.common.Tags;
@@ -93,6 +99,27 @@ final class UniverseItemTagsProvider extends ItemTagsProvider {
 
     /** M17 收尾的物品标签：互通（子代理 C，ADR-0030）。 */
     private void wrapUpInterop() {
+        // 战斗残骸（ADR-0039）：守卫机和海盗的残骸都能做技术模块和多功能工具的武器
+        this.tag(UniverseItemTags.COMBAT_SALVAGE).add(UniverseItems.SENTINEL_SCRAP.key(), UniverseItems.PIRATE_SCRAP.key());
+        // 通用标签（ADR-0039）：本模组的材料登记进去，别的模组认得出；设备配方的原料也用这些标签
+        UniverseItemTags.COMMON.forEach((id, tag) -> this.tag(tag).add(ResourceKey.create(Registries.ITEM, Identifier.parse(id))));
+        for (Map.Entry<String, TagKey<Item>> entry : UniverseItemTags.COMMON.entrySet()) {
+            String path = entry.getValue().location().getPath();
+            int slash = path.indexOf('/');
+            if (slash > 0) {
+                // 父标签（c:ingots、c:raw_materials、c:dusts）收进子标签
+                this.tag(UniverseItemTags.common(path.substring(0, slash))).addTag(entry.getValue());
+            }
+        }
+        // 星球矿石的方块物品：c:ores 和按矿种的 c:ores/<矿>
+        UniverseBlocks.ORES.forEach((kind, block) -> {
+            TagKey<Item> ore = UniverseItemTags.common("ores/" + kind.commonName());
+            ResourceKey<Item> item = ResourceKey.create(Registries.ITEM, block.getId());
+            this.tag(ore).add(item);
+            this.tag(Tags.BlockItems.ORES.item()).addTag(ore);
+        });
+        // 镍、铂空间站也收也卖（ADR-0036 §四）
+        this.tag(ItemValues.tag(TradeCategory.REFINED)).add(UniverseItems.NICKEL_INGOT.key(), UniverseItems.PLATINUM_INGOT.key());
     }
 
     /**

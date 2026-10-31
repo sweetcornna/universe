@@ -11,7 +11,7 @@
     },
     {
       "count": 1,
-      "ingredient": "universe:silicon"
+      "ingredient": "#c:silicon"
     }
   ],
   "research": "frame_material",

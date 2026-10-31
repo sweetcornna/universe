@@ -8,6 +8,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.jspecify.annotations.Nullable;
 
+import io.github.sweetcornna.universe.advancement.MilestoneTrigger;
 import io.github.sweetcornna.universe.core.fishing.Bait;
 import io.github.sweetcornna.universe.core.fishing.Catch;
 import io.github.sweetcornna.universe.core.fishing.CatchRoll;
@@ -364,7 +365,12 @@ public final class Fishing {
             boolean first = !log.caught(species);
             boolean record = log.record(species, caught.weight());
             Name planet = planetName(level);
-            player.setData(UniverseAttachments.FISHING_LOG, log.record(species, caught.weight(), planet.zh(), planet.en()));
+            FishingLog updated = log.record(species, caught.weight(), planet.zh(), planet.en());
+            player.setData(UniverseAttachments.FISHING_LOG, updated);
+            MilestoneTrigger.reach(player, MilestoneTrigger.FISH);
+            if (updated.species() >= MilestoneTrigger.ANGLER_SPECIES) {
+                MilestoneTrigger.reach(player, MilestoneTrigger.ANGLER);
+            }
             player.awardStat(Stats.FISH_CAUGHT);
             if (player.connection != null) {
                 PacketDistributor.sendToPlayer(player, new FishCaughtPayload(species.index(), item, (float) caught.weight(), record && !first, first));

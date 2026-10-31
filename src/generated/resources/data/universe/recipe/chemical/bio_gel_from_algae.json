@@ -1,0 +1,20 @@
+{
+  "type": "universe:chemical",
+  "ingredients": [
+    {
+      "count": 2,
+      "ingredient": "universe:algal_biomass"
+    },
+    {
+      "count": 1,
+      "ingredient": "universe:water"
+    }
+  ],
+  "research": "bioengineering",
+  "results": [
+    {
+      "id": "universe:bio_gel"
+    }
+  ],
+  "time": 120
+}

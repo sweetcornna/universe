@@ -79,12 +79,23 @@ class RecipeAtomBalanceTest {
         assertTrue(checked.contains("chemical/sulfuric_acid_from_sulfur") && checked.contains("electrolysis/water"), "该查的没查到：" + checked);
     }
 
-    /** 一样物品的原子数加进去；不是一样确定的纯物质（标签、几选一、混合物、虚构、零件）返回 false。 */
+    /**
+     * 一样物品的原子数加进去；不是一样确定的纯物质（别人的标签、几选一、混合物、虚构、零件）返回 false。
+     * 本模组材料的通用标签（ADR-0039）按本模组的那样物品算：别的模组的同种材料是同一种物质。
+     */
     private static boolean add(Map<String, Double> atoms, JsonElement item, int count) {
-        if (!item.isJsonPrimitive() || item.getAsString().startsWith("#")) {
+        if (!item.isJsonPrimitive()) {
             return false;
         }
-        Optional<Substance> substance = Substances.of(item.getAsString());
+        String id = item.getAsString();
+        if (id.startsWith("#")) {
+            List<String> members = GeneratedTags.expand(id);
+            if (!GeneratedTags.generated(id) || members.size() != 1) {
+                return false;
+            }
+            id = members.get(0);
+        }
+        Optional<Substance> substance = Substances.of(id);
         if (substance.isEmpty() || substance.get().kind() != Substance.Kind.PURE) {
             return false;
         }

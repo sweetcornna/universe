@@ -34,6 +34,19 @@ public class MilestoneTrigger extends SimpleCriterionTrigger<MilestoneTrigger.Tr
     public static final String BLUEPRINT = "blueprint";
     /** 有一颗星球改造到能直接呼吸（ADR-0036 §六），全服的人都算。 */
     public static final String TERRAFORMED = "terraformed";
+    /** 钓上第一条鱼（ADR-0034 §一、ADR-0039）。 */
+    public static final String FISH = "fish";
+    /** 图鉴里记下 {@link #ANGLER_SPECIES} 种鱼。 */
+    public static final String ANGLER = "angler";
+    public static final int ANGLER_SPECIES = 12;
+    /** 接管一个聚落（ADR-0034 §二）。 */
+    public static final String SETTLEMENT = "settlement";
+    /** 亲手守住一次聚落的海盗来袭。 */
+    public static final String SETTLEMENT_DEFENDED = "settlement_defended";
+    /** 在展台上拼齐一副骨架（ADR-0034 §三）。 */
+    public static final String SKELETON = "skeleton";
+    /** 在一个公会升到会员，领到第一份礼物（ADR-0027）。 */
+    public static final String GUILD = "guild";
 
     @Override
     public Codec<TriggerInstance> codec() {
