@@ -1,5 +1,9 @@
 package io.github.sweetcornna.universe.bio;
 
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.jspecify.annotations.Nullable;
 
 import io.github.sweetcornna.universe.Universe;
@@ -15,12 +19,18 @@ public final class BioRecipes {
     public static final String DIR = "bioreactor";
     /** 都在"生物工程"这个科技里解锁。 */
     public static final String RESEARCH = "bioengineering";
+    /** 认过的配方 ID：生物反应器每刻要问好几次，结果只看 ID。 */
+    private static final Map<Identifier, Optional<BioProcess>> PROCESSES = new ConcurrentHashMap<>();
 
     private BioRecipes() {
     }
 
     /** 配方 ID 对应的工艺；不是生物反应器的配方为 {@code null}。 */
     public static @Nullable BioProcess process(Identifier id) {
+        return PROCESSES.computeIfAbsent(id, key -> Optional.ofNullable(parse(key))).orElse(null);
+    }
+
+    private static @Nullable BioProcess parse(Identifier id) {
         String prefix = DIR + "/";
         if (!id.getNamespace().equals(Universe.MOD_ID) || !id.getPath().startsWith(prefix)) {
             return null;

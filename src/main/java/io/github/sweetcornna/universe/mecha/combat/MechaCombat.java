@@ -1,6 +1,7 @@
 package io.github.sweetcornna.universe.mecha.combat;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
@@ -40,6 +41,7 @@ import net.minecraft.sounds.SoundSource;
 import net.minecraft.stats.Stats;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.monster.Enemy;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -71,6 +73,8 @@ public final class MechaCombat {
     private static final double SHOULDER_RIGHT = 0.45;
     private static final double SHOULDER_DOWN = 0.35;
     private static final int TRACER = 0xFFD98A;
+    /** 三门武器里最远的射程：每刻按它查一次附近的实体。 */
+    private static final double MAX_RANGE = java.util.Arrays.stream(MechaWeapon.values()).mapToDouble(MechaWeapon::range).max().orElse(0);
     /** 扔出去的干扰胶囊：这么多格内的黑雾按干扰塔的胶囊减速这么多刻。 */
     public static final double JAM_RADIUS = 6;
     public static final int JAM_TICKS = 160;
@@ -245,6 +249,7 @@ public final class MechaCombat {
             return;
         }
         MechaSettings settings = player.getData(UniverseAttachments.MECHA_SETTINGS);
+        List<LivingEntity> nearby = null;
         for (MechaWeapon weapon : MechaWeapon.values()) {
             WeaponMode mode = settings.mode(weapon);
             if (mode == WeaponMode.OFF || state != null && state.cooldown[weapon.ordinal()] > 0) {
@@ -254,7 +259,12 @@ public final class MechaCombat {
             if (!hasAmmo(player, weapon, state)) {
                 continue;
             }
-            LivingEntity target = mode == WeaponMode.AUTO ? autoTarget(player, weapon) : aimedTarget(player, weapon);
+            // 附近的实体这一刻只查一次（按最远的射程），每门武器再按自己的射程挑
+            if (nearby == null) {
+                nearby = player.level().getEntitiesOfClass(LivingEntity.class, player.getBoundingBox().inflate(MAX_RANGE),
+                        entity -> entity instanceof DarkFogEnemy || entity instanceof Enemy);
+            }
+            LivingEntity target = mode == WeaponMode.AUTO ? autoTarget(player, weapon, nearby) : aimedTarget(player, weapon, nearby);
             if (target != null) {
                 fire(player, weapon, target);
             }
@@ -304,7 +314,7 @@ public final class MechaCombat {
     }
 
     /** 自动：射程里最近的敌人，最近 5 秒打过自己的优先；要看得见，等离子炮在星球上要机甲飞着或者打高空的。 */
-    private static @Nullable LivingEntity autoTarget(ServerPlayer player, MechaWeapon weapon) {
+    private static @Nullable LivingEntity autoTarget(ServerPlayer player, MechaWeapon weapon, List<LivingEntity> nearby) {
         ServerLevel level = player.level();
         boolean space = SpaceDimensions.isSpace(level.dimension());
         Vec3 eye = player.getEyePosition();
@@ -315,8 +325,11 @@ public final class MechaCombat {
         }
         LivingEntity best = null;
         double bestDistance = weapon.range();
-        for (LivingEntity entity : level.getEntitiesOfClass(LivingEntity.class, player.getBoundingBox().inflate(weapon.range()),
-                entity -> Strikes.hostile(entity, player) && !Strikes.building(entity))) {
+        AABB reach = player.getBoundingBox().inflate(weapon.range());
+        for (LivingEntity entity : nearby) {
+            if (!entity.getBoundingBox().intersects(reach) || !Strikes.hostile(entity, player) || Strikes.building(entity)) {
+                continue;
+            }
             double distance = Math.sqrt(entity.getBoundingBox().distanceToSqr(eye));
             if (distance < bestDistance && usable(player, weapon, entity, space, eye)) {
                 bestDistance = distance;
@@ -327,7 +340,7 @@ public final class MechaCombat {
     }
 
     /** 瞄准：准星 6° 以内、离准星最近的敌人（黑雾的建筑也算；大个子按碰撞箱的半径放宽）。 */
-    private static @Nullable LivingEntity aimedTarget(ServerPlayer player, MechaWeapon weapon) {
+    private static @Nullable LivingEntity aimedTarget(ServerPlayer player, MechaWeapon weapon, List<LivingEntity> nearby) {
         ServerLevel level = player.level();
         boolean space = SpaceDimensions.isSpace(level.dimension());
         Vec3 eye = player.getEyePosition();
@@ -335,8 +348,11 @@ public final class MechaCombat {
         double cone = Math.toRadians(MechaWeapon.AIM_CONE);
         LivingEntity best = null;
         double bestAngle = Double.MAX_VALUE;
-        for (LivingEntity entity : level.getEntitiesOfClass(LivingEntity.class, player.getBoundingBox().inflate(weapon.range()),
-                entity -> Strikes.hostile(entity, player))) {
+        AABB reach = player.getBoundingBox().inflate(weapon.range());
+        for (LivingEntity entity : nearby) {
+            if (!entity.getBoundingBox().intersects(reach) || !Strikes.hostile(entity, player)) {
+                continue;
+            }
             Vec3 to = Strikes.aimPoint(entity).subtract(eye);
             double length = to.length();
             if (length < 1e-3) {

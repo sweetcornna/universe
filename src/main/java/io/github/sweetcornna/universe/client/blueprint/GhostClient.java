@@ -1,21 +1,27 @@
 package io.github.sweetcornna.universe.client.blueprint;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.jspecify.annotations.Nullable;
+
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.core.blueprint.BlueprintGeometry;
 import io.github.sweetcornna.universe.network.GhostsPayload;
 import net.minecraft.client.multiplayer.ClientLevel;
+import net.minecraft.client.renderer.culling.Frustum;
 import net.minecraft.client.renderer.state.level.LevelRenderState;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.levelgen.structure.BoundingBox;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
@@ -36,16 +42,18 @@ public final class GhostClient {
     /** 工地的虚影比拿着蓝图时的预览淡一点。 */
     private static final int SITE = 0x70A8E8FF;
 
-    /** 一个工地：每格的位置、方块，和被相邻实心虚影挡住的面。 */
+    /** 一个工地：每格的位置、方块，和被相邻实心虚影挡住的面；{@code bounds} 罩住全部格子，整个看不见时一格都不用查。 */
     private static final class Site {
         final BlockPos[] positions;
         final BlockState[] states;
+        final @Nullable AABB bounds;
         BitSet remaining;
         int[] hidden;
 
         Site(BlockPos[] positions, BlockState[] states, BitSet remaining) {
             this.positions = positions;
             this.states = states;
+            this.bounds = positions.length == 0 ? null : BoundingBox.encapsulatingPositions(Arrays.asList(positions)).map(AABB::of).orElse(null);
             this.setRemaining(remaining);
         }
 
@@ -134,15 +142,20 @@ public final class GhostClient {
             return;
         }
         Vec3 camera = event.getCamera().position();
+        Frustum frustum = event.getFrustum();
         List<BlueprintClient.Ghost> ghosts = new ArrayList<>();
         double view = VIEW_DISTANCE * VIEW_DISTANCE;
         for (Site site : SITES.values()) {
+            // 整个工地都在视野外或者太远时跳过（ADR-0038）
+            if (site.bounds == null || !frustum.isVisible(site.bounds) || site.bounds.distanceToSqr(camera) > view) {
+                continue;
+            }
             for (int i = site.remaining.nextSetBit(0); i >= 0 && ghosts.size() < MAX_GHOSTS; i = site.remaining.nextSetBit(i + 1)) {
                 BlockPos pos = site.positions[i];
                 double dx = pos.getX() + 0.5 - camera.x;
                 double dy = pos.getY() + 0.5 - camera.y;
                 double dz = pos.getZ() + 0.5 - camera.z;
-                if (dx * dx + dy * dy + dz * dz > view) {
+                if (dx * dx + dy * dy + dz * dz > view || !frustum.isVisible(new AABB(pos))) {
                     continue;
                 }
                 BlockState target = site.states[i];

@@ -82,10 +82,13 @@ public abstract class BioMachineBlockEntity extends MachineBlockEntity implement
             return false;
         }
         this.progress += rate;
-        this.setChanged();
         if (this.progress >= this.total()) {
             this.progress = 0;
+            this.setChanged();
             return true;
+        }
+        if (rate > 0) {
+            this.markUnsaved();
         }
         return false;
     }

@@ -14,6 +14,7 @@ import io.github.sweetcornna.universe.core.darkfog.TurretKind;
 import io.github.sweetcornna.universe.core.darkfog.TurretTargeting;
 import io.github.sweetcornna.universe.core.power.PowerSystem;
 import io.github.sweetcornna.universe.darkfog.DarkFogEnemy;
+import io.github.sweetcornna.universe.darkfog.LoadedEnemies;
 import io.github.sweetcornna.universe.darkfog.Taunts;
 import io.github.sweetcornna.universe.factory.MachineBlockEntity;
 import io.github.sweetcornna.universe.factory.MachineMenu;
@@ -86,6 +87,9 @@ public class TurretBlockEntity extends MachineBlockEntity {
     private double charge;
     private int searchCooldown;
     private int targetId = -1;
+    /** 这一刻算过的同电网信号塔：找目标时每个候选都要问一次，同一刻里电网不会变。 */
+    private List<BlockPos> towers = List.of();
+    private long towersTick = Long.MIN_VALUE;
     private int status = SEARCHING;
     // ---- 客户端
     private int clientTarget = -1;
@@ -244,8 +248,17 @@ public class TurretBlockEntity extends MachineBlockEntity {
         return -1;
     }
 
-    /** 同一个电网里通电的信号塔（导弹炮塔借它们的范围）。 */
+    /** 同一个电网里通电的信号塔（导弹炮塔借它们的范围），一刻只算一次。 */
     private List<BlockPos> signalTowers(ServerLevel level) {
+        long now = level.getGameTime();
+        if (now != this.towersTick) {
+            this.towersTick = now;
+            this.towers = this.findSignalTowers(level);
+        }
+        return this.towers;
+    }
+
+    private List<BlockPos> findSignalTowers(ServerLevel level) {
         List<BlockPos> towers = Taunts.signalTowers(level);
         LevelPower power = LevelPower.existing(level);
         if (towers.isEmpty() || power == null) {
@@ -282,6 +295,9 @@ public class TurretBlockEntity extends MachineBlockEntity {
 
     /** 在射程里找一个目标。 */
     private @Nullable Mob search(ServerLevel level, @Nullable Mob current) {
+        if (!LoadedEnemies.any(level)) {
+            return null;
+        }
         Vec3 pivot = this.pivot();
         Set<Mob> found = new LinkedHashSet<>(enemies(level, new AABB(pivot, pivot).inflate(this.kind.maxReach())));
         if (this.kind == TurretKind.MISSILE) {

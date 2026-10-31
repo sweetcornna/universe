@@ -1,7 +1,9 @@
 package io.github.sweetcornna.universe.client.factory;
 
 import java.util.ArrayList;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.jspecify.annotations.Nullable;
 
@@ -47,6 +49,15 @@ public class BeltRenderer implements BlockEntityRenderer<BeltBlockEntity, BeltRe
 
     private final ItemModelResolver itemModelResolver;
     private final Int2ObjectMap<ItemStack> stacks = new Int2ObjectOpenHashMap<>();
+    /**
+     * 这一帧算过的东西，同一帧里各段传送带共用（ADR-0038）。帧按（世界、游戏刻、插值）认，换一帧就清掉：
+     * 各条线路上每个物品画在哪，各种货物的模型（随时间变的模型不共用，照旧一个个解析）。
+     */
+    private @Nullable Level frameLevel;
+    private long frameTick = Long.MIN_VALUE;
+    private float framePartial = Float.NaN;
+    private final Map<BeltLine, float[]> shown = new IdentityHashMap<>();
+    private final Int2ObjectMap<ItemStackRenderState> renders = new Int2ObjectOpenHashMap<>();
 
     public BeltRenderer(BlockEntityRendererProvider.Context context) {
         this.itemModelResolver = context.itemModelResolver();
@@ -75,28 +86,76 @@ public class BeltRenderer implements BlockEntityRenderer<BeltBlockEntity, BeltRe
         BeltCurve curve = blockState.getValue(BeltBlock.CURVE);
         int from = segment.from();
         int to = from + BeltNetwork.UNITS;
-        float step = line.speed() * partialTicks;
-        float limit = line.length();
+        boolean last = segment.last();
+        this.startFrame(level, partialTicks);
+        float[] shown = this.shown.computeIfAbsent(line, key -> shown(key, partialTicks));
         int seed = (int) blockEntity.getBlockPos().asLong();
-        for (int i = 0; i < line.count(); i++) {
-            int p = line.position(i);
-            float shown = Math.min(p + step, limit);
-            limit = shown - BeltLine.SPACING;
-            if (shown < from) {
-                break;
-            }
-            if (shown > to || shown == to && !segment.last()) {
-                continue;
-            }
-            float t = (shown - from) / BeltNetwork.UNITS;
+        // 物品由近到远排，画的位置逐个变小：跳过还没到这一段的，画到离开这一段为止
+        for (int i = skipAhead(shown, to, last); i < shown.length && shown[i] >= from; i++) {
+            float t = (shown[i] - from) / BeltNetwork.UNITS;
             Item entry = place(slope, curve, t);
-            entry.render = new ItemStackRenderState();
             int cargo = line.item(i);
-            ItemStack stack = this.stacks.computeIfAbsent(cargo, BeltNetwork::display);
             entry.layers = Cargo.count(cargo);
-            this.itemModelResolver.updateForTopItem(entry.render, stack, ItemDisplayContext.FIXED, level, null, seed + i);
+            entry.render = this.render(cargo, level, seed + i);
             state.items.add(entry);
         }
+    }
+
+    /** 换了一帧就清掉上一帧算的东西。 */
+    private void startFrame(Level level, float partialTicks) {
+        long tick = level.getGameTime();
+        if (level != this.frameLevel || tick != this.frameTick || Float.compare(partialTicks, this.framePartial) != 0) {
+            this.frameLevel = level;
+            this.frameTick = tick;
+            this.framePartial = partialTicks;
+            this.shown.clear();
+            this.renders.clear();
+        }
+    }
+
+    /**
+     * 线路上每个物品这一帧画在离起点多远：位置按速度往前插，不越过线路尽头，和前一个至少隔 {@link BeltLine#SPACING}。
+     * 结果逐个变小。
+     */
+    private static float[] shown(BeltLine line, float partialTicks) {
+        float[] shown = new float[line.count()];
+        float step = line.speed() * partialTicks;
+        float limit = line.length();
+        for (int i = 0; i < shown.length; i++) {
+            shown[i] = Math.min(line.position(i) + step, limit);
+            limit = shown[i] - BeltLine.SPACING;
+        }
+        return shown;
+    }
+
+    /** 第一个不在这一段前面的物品：画在 {@code to} 以前，正好在 {@code to} 上的只有线路的最后一段画。 */
+    private static int skipAhead(float[] shown, int to, boolean last) {
+        int lo = 0;
+        int hi = shown.length;
+        while (lo < hi) {
+            int mid = (lo + hi) >>> 1;
+            if (shown[mid] > to || shown[mid] == to && !last) {
+                lo = mid + 1;
+            } else {
+                hi = mid;
+            }
+        }
+        return lo;
+    }
+
+    /** 一种货物的模型：这一帧里同一种货物共用一份；随时间变的（附魔光效、动画贴图）每个单独解析。 */
+    private ItemStackRenderState render(int cargo, Level level, int seed) {
+        ItemStackRenderState shared = this.renders.get(cargo);
+        if (shared != null) {
+            return shared;
+        }
+        ItemStackRenderState render = new ItemStackRenderState();
+        ItemStack stack = this.stacks.computeIfAbsent(cargo, BeltNetwork::display);
+        this.itemModelResolver.updateForTopItem(render, stack, ItemDisplayContext.FIXED, level, null, seed);
+        if (!render.isAnimated()) {
+            this.renders.put(cargo, render);
+        }
+        return render;
     }
 
     /** 朝北时这一段上 {@code t}（0 是后沿，1 是前沿）处的位置和朝向。 */

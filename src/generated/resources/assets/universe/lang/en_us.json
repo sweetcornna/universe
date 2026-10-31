@@ -506,6 +506,7 @@
   "commands.universe.asteroids.reset": "Removed %s asteroids and cleared regrowth timers",
   "commands.universe.asteroids.spawned": "Spawned a %s",
   "commands.universe.bench.built": "Benchmark base: %s belts, %s assemblers, %s sorters, %s chunks force-loaded",
+  "commands.universe.bench.built_chemistry": "Benchmark base: %s belts, %s assemblers, %s sorters, %s chemical plants, %s chunks force-loaded",
   "commands.universe.bench.status": "Benchmark base: %s/%s machines working, %s made, %s per minute",
   "commands.universe.bench.stopped": "Stopped resupplying %s benchmark bases",
   "commands.universe.blackhole.here": "Black hole at %1$s, horizon radius %2$s, %3$s blocks to the horizon",

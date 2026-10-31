@@ -11,6 +11,7 @@ import io.github.sweetcornna.universe.core.mecha.fleet.FleetUnitKind;
 import io.github.sweetcornna.universe.core.mecha.fleet.Squadrons;
 import io.github.sweetcornna.universe.core.ship.ShipCombat;
 import io.github.sweetcornna.universe.darkfog.DarkFogEnemy;
+import io.github.sweetcornna.universe.darkfog.LoadedEnemies;
 import io.github.sweetcornna.universe.darkfog.entity.DarkFogDamage;
 import io.github.sweetcornna.universe.darkfog.space.DarkFogLancer;
 import io.github.sweetcornna.universe.mecha.combat.PlasmaShot;
@@ -345,7 +346,8 @@ public class FleetUnit extends Mob {
 
     /** 想一下打谁：机甲附近的黑雾，机甲正在打的优先，建筑看编队的开关。 */
     private void think(ServerLevel level, Player owner) {
-        if (this.starving) {
+        // 维度里一个黑雾都没加载时找也是空的
+        if (this.starving || !LoadedEnemies.any(level)) {
             this.target = null;
             return;
         }

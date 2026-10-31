@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.WeakHashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.core.ecology.Fauna;
@@ -33,6 +34,8 @@ public final class Planets {
     private static final Map<ServerLevel, Optional<Fauna>> FAUNA = new WeakHashMap<>();
     /** 按天体路径查的动物（驯服的动物按出生的星球算物种），键是星团种子加天体路径。 */
     private static final Map<String, Fauna> HOME_FAUNA = new HashMap<>();
+    /** 维度对应的天体：设备每刻、客户端每帧都要问，维度键是驻留的，解析一次记下（服务端和客户端的线程都会读）。 */
+    private static final Map<ResourceKey<Level>, Optional<BodyId>> BODIES = new ConcurrentHashMap<>();
 
     private Planets() {
     }
@@ -102,6 +105,10 @@ public final class Planets {
 
     /** 维度对应的天体；主世界是母星，其他不是星球的维度返回空。 */
     public static Optional<BodyId> bodyId(ResourceKey<Level> dimension) {
+        return BODIES.computeIfAbsent(dimension, Planets::parseBodyId);
+    }
+
+    private static Optional<BodyId> parseBodyId(ResourceKey<Level> dimension) {
         if (dimension == Level.OVERWORLD) {
             return Optional.of(GalaxyGenerator.HOME_PLANET_ID);
         }

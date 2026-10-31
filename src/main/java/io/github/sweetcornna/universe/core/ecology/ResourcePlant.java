@@ -1,5 +1,7 @@
 package io.github.sweetcornna.universe.core.ecology;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 import io.github.sweetcornna.universe.core.procgen.Rng;
@@ -130,11 +132,17 @@ public enum ResourcePlant {
 
     /** 产物能种回去的植物（钠种出来是盐角草）；不能种的为空。 */
     public static Optional<ResourcePlant> fromProduct(String product) {
+        return Optional.ofNullable(BY_PRODUCT.get(product));
+    }
+
+    /** 产物对应的植物，水培槽每刻都要查；同一种产物有几种时取排在前面的。 */
+    private static final Map<String, ResourcePlant> BY_PRODUCT = new HashMap<>();
+
+    static {
         for (ResourcePlant plant : values()) {
-            if (plant.product.equals(product) && plant.habitat != Habitat.ROCK) {
-                return Optional.of(plant);
+            if (plant.habitat != Habitat.ROCK) {
+                BY_PRODUCT.putIfAbsent(plant.product, plant);
             }
         }
-        return Optional.empty();
     }
 }

@@ -2,6 +2,7 @@ package io.github.sweetcornna.universe.fishing;
 
 import org.jspecify.annotations.Nullable;
 
+import io.github.sweetcornna.universe.perf.ServerPerf;
 import io.github.sweetcornna.universe.registry.UniverseBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -80,7 +81,7 @@ public class FishTrapBlock extends BaseEntityBlock implements SimpleWaterloggedB
 
     @Override
     public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return level.isClientSide() ? null : createTickerHelper(type, UniverseBlockEntities.FISH_TRAP.get(), FishTrapBlockEntity::serverTick);
+        return level.isClientSide() ? null : ServerPerf.timed(type, createTickerHelper(type, UniverseBlockEntities.FISH_TRAP.get(), FishTrapBlockEntity::serverTick));
     }
 
     @Override

@@ -1,6 +1,8 @@
 package io.github.sweetcornna.universe.world.freighter;
 
+import java.util.Map;
 import java.util.OptionalInt;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -22,6 +24,8 @@ public final class FreighterDimensions {
     /** 船舱的维度类型：照太空的来（没有昼夜，天空由太空渲染器画），只是床能设重生点。数据生成里做好。 */
     public static final ResourceKey<DimensionType> TYPE = ResourceKey.create(Registries.DIMENSION_TYPE, Universe.id("freighter"));
     private static final Pattern PATH = Pattern.compile("freighter/(\\d+)");
+    /** 解析过的维度：每个玩家每刻都要问，维度键是驻留的，结果不会变（服务端和客户端的线程都会读）。 */
+    private static final Map<ResourceKey<Level>, OptionalInt> IDS = new ConcurrentHashMap<>();
 
     private FreighterDimensions() {
     }
@@ -32,6 +36,10 @@ public final class FreighterDimensions {
 
     /** 维度是哪艘货船的船舱。 */
     public static OptionalInt id(ResourceKey<Level> dimension) {
+        return IDS.computeIfAbsent(dimension, FreighterDimensions::parseId);
+    }
+
+    private static OptionalInt parseId(ResourceKey<Level> dimension) {
         if (!dimension.identifier().getNamespace().equals(Universe.MOD_ID)) {
             return OptionalInt.empty();
         }

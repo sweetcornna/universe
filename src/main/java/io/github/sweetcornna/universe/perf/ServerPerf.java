@@ -12,6 +12,8 @@ import net.minecraft.resources.Identifier;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.neoforged.bus.api.EventPriority;
 import net.neoforged.bus.api.IEventBus;
@@ -91,6 +93,19 @@ public final class ServerPerf {
         long start = begin();
         task.run();
         end(section, start);
+    }
+
+    /** 给方块实体的 ticker 包一层计时，分项名按类型（{@link #name(BlockEntityType)}）；{@code ticker} 是 null 时也返回 null。 */
+    public static <T extends BlockEntity> @Nullable BlockEntityTicker<T> timed(BlockEntityType<?> type, @Nullable BlockEntityTicker<T> ticker) {
+        if (ticker == null) {
+            return null;
+        }
+        String section = name(type);
+        return (level, pos, state, entity) -> {
+            long start = begin();
+            ticker.tick(level, pos, state, entity);
+            end(section, start);
+        };
     }
 
     /** 方块实体的分项名，比如 block/assembler。 */

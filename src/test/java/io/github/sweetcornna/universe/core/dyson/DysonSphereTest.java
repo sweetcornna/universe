@@ -228,4 +228,48 @@ class DysonSphereTest {
         sphere.advance(DysonSphere.SAIL_LIFETIME + 1);
         assertEquals(0, sphere.orbit(orbit).sails());
     }
+
+    /** 发射井每刻都问下一个目标，结果记下了（M21）：预定、建成、读档、拆掉、换纬度限制以后都要重新找。 */
+    @Test
+    void nextTargetFollowsEveryChange() {
+        DysonLayer layer = new DysonLayer(1, 0.1, 0, 0, Template.GEODESIC, 1);
+        DysonLayer.Target first = layer.nextTarget(LIMIT);
+        assertNotNull(first);
+        assertTrue(first.node());
+        // 预定满了就轮到下一个
+        layer.reserve(first, DysonLayer.NODE_SP);
+        DysonLayer.Target second = layer.nextTarget(LIMIT);
+        assertNotNull(second);
+        assertFalse(second.equals(first));
+        // 退掉预定又回到第一个
+        layer.reserve(first, -DysonLayer.NODE_SP);
+        assertEquals(first, layer.nextTarget(LIMIT));
+        // 一枚一枚建满第一个节点
+        for (int i = 0; i < DysonLayer.NODE_SP; i++) {
+            layer.reserve(first, 1);
+            layer.build(first);
+        }
+        assertTrue(layer.nodeBuilt(first.index()));
+        assertEquals(second, layer.nextTarget(LIMIT));
+        // 读档读成全部建完：没有可建的
+        int[] nodes = new int[layer.grid().nodeCount()];
+        java.util.Arrays.fill(nodes, DysonLayer.NODE_SP);
+        int[] frames = new int[layer.grid().frameCount()];
+        for (int f = 0; f < frames.length; f++) {
+            frames[f] = layer.frameCost(f);
+        }
+        layer.restore(nodes, frames, new int[layer.grid().shellCount()]);
+        assertNull(layer.nextTarget(LIMIT));
+        assertNull(layer.nextTarget(LIMIT));
+        // 拆掉一个节点：它又成了目标
+        int node = second.index();
+        layer.demolish(DysonLayer.Element.NODE, node, new java.util.HashSet<>(), new java.util.HashSet<>());
+        assertEquals(new DysonLayer.Target(true, node), layer.nextTarget(LIMIT));
+        // 纬度限制收到 0：只剩赤道上的节点能建
+        DysonLayer.Target equator = layer.nextTarget(0);
+        if (equator != null) {
+            assertTrue(layer.grid().nodeWithin(equator.index(), 0));
+        }
+        assertEquals(new DysonLayer.Target(true, node), layer.nextTarget(LIMIT));
+    }
 }

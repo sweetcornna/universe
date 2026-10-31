@@ -143,6 +143,12 @@ public class ChemicalReactorBlockEntity extends MachineBlockEntity implements Ma
     private long power;
     private int status = NO_REACTION;
     private double ambient = Double.NaN;
+    /** 上一次 {@link #evaluate} 的结果和它的条件：工况不动时每刻的结果都一样，不用每刻重新解平衡。 */
+    private @Nullable ReactorResult evaluated;
+    private @Nullable Reaction evaluatedReaction;
+    private @Nullable ReactorSettings evaluatedSettings;
+    private boolean evaluatedCatalyzed;
+    private double evaluatedAmbient = Double.NaN;
 
     public ChemicalReactorBlockEntity(BlockPos pos, BlockState state) {
         super(UniverseBlockEntities.CHEMICAL_REACTOR.get(), pos, state, SLOTS);
@@ -216,7 +222,26 @@ public class ChemicalReactorBlockEntity extends MachineBlockEntity implements Ma
     /** 当前工况下的读数；没有正在做的反应为 {@code null}。 */
     public @Nullable ReactorResult result() {
         Reaction active = this.active();
-        return active == null ? null : ReactorModel.evaluate(active, this.settings, this.catalyzed(), this.ambient());
+        return active == null ? null : this.evaluate(active, this.catalyzed());
+    }
+
+    /**
+     * {@link ReactorModel#evaluate} 的结果。反应、工况、催化剂对不对、气温都和上次一样时直接用上次的：
+     * 解平衡转化率要二分一百次，一台釜每刻重算要好几微秒。
+     */
+    private ReactorResult evaluate(Reaction reaction, boolean catalyzed) {
+        double ambient = this.ambient();
+        ReactorResult result = this.evaluated;
+        if (result == null || reaction != this.evaluatedReaction || catalyzed != this.evaluatedCatalyzed
+                || Double.compare(ambient, this.evaluatedAmbient) != 0 || !this.settings.equals(this.evaluatedSettings)) {
+            result = ReactorModel.evaluate(reaction, this.settings, catalyzed, ambient);
+            this.evaluated = result;
+            this.evaluatedReaction = reaction;
+            this.evaluatedSettings = this.settings;
+            this.evaluatedCatalyzed = catalyzed;
+            this.evaluatedAmbient = ambient;
+        }
+        return result;
     }
 
     private double ambient() {
@@ -352,7 +377,7 @@ public class ChemicalReactorBlockEntity extends MachineBlockEntity implements Ma
         if (!this.outputsFit(reaction)) {
             return this.idle(OUTPUT_FULL);
         }
-        ReactorResult result = ReactorModel.evaluate(reaction, this.settings, this.catalyzed(), this.ambient());
+        ReactorResult result = this.evaluate(reaction, this.catalyzed());
         this.power = Math.max(1, Math.round(result.power()));
         this.active = true;
         if (supplied <= 0) {
@@ -366,8 +391,10 @@ public class ChemicalReactorBlockEntity extends MachineBlockEntity implements Ma
         if (this.batches >= 1) {
             this.batches -= 1;
             this.react(serverLevel, reaction, result);
+            this.setChanged();
+        } else {
+            this.markUnsaved();
         }
-        this.setChanged();
         return true;
     }
 

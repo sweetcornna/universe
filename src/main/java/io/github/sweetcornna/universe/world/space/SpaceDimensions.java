@@ -1,6 +1,8 @@
 package io.github.sweetcornna.universe.world.space;
 
+import java.util.Map;
 import java.util.OptionalInt;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -22,6 +24,8 @@ public final class SpaceDimensions {
     /** 太空的维度类型：没有昼夜，天空换成太空渲染器，上下各 256 格（数据生成里做好）。 */
     public static final ResourceKey<DimensionType> TYPE = ResourceKey.create(Registries.DIMENSION_TYPE, Universe.id("space"));
     private static final Pattern PATH = Pattern.compile("s(\\d+)/space");
+    /** 解析过的维度：设备每刻、客户端每帧都要问，维度键是驻留的，结果不会变（服务端和客户端的线程都会读）。 */
+    private static final Map<ResourceKey<Level>, OptionalInt> SYSTEMS = new ConcurrentHashMap<>();
 
     private SpaceDimensions() {
     }
@@ -36,6 +40,10 @@ public final class SpaceDimensions {
 
     /** 太空维度属于哪个恒星系。 */
     public static OptionalInt system(ResourceKey<Level> dimension) {
+        return SYSTEMS.computeIfAbsent(dimension, SpaceDimensions::parseSystem);
+    }
+
+    private static OptionalInt parseSystem(ResourceKey<Level> dimension) {
         if (!dimension.identifier().getNamespace().equals(Universe.MOD_ID)) {
             return OptionalInt.empty();
         }

@@ -76,7 +76,8 @@ public class CreatureEggBlockEntity extends BlockEntity {
         }
         if (!Incubation.hatched(entity.ticks)) {
             entity.ticks++;
-            entity.setChanged();
+            // 只是孵化的刻数，物品栏、比较器都不相干，标记存盘就够了
+            level.blockEntityChanged(pos);
             int stage = Incubation.stage(entity.ticks);
             if (state.getValue(CreatureEggBlock.HATCH) != stage) {
                 level.setBlock(pos, state.setValue(CreatureEggBlock.HATCH, stage), Block.UPDATE_CLIENTS);

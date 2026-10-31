@@ -36,6 +36,7 @@ import io.github.sweetcornna.universe.darkfog.hive.DarkFogHives;
 import io.github.sweetcornna.universe.darkfog.shield.Shields;
 import io.github.sweetcornna.universe.factory.power.LevelPower;
 import io.github.sweetcornna.universe.network.DarkFogPayloads;
+import io.github.sweetcornna.universe.perf.ServerPerf;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
 import io.github.sweetcornna.universe.registry.UniverseSounds;
 import io.github.sweetcornna.universe.rules.UniverseRules;
@@ -155,7 +156,7 @@ public final class DarkFogBases {
                 }
             }
         });
-        gameBus.addListener(ServerTickEvent.Post.class, event -> tick(event.getServer()));
+        gameBus.addListener(ServerTickEvent.Post.class, event -> ServerPerf.time("darkfog/bases", () -> tick(event.getServer())));
         gameBus.addListener(ServerStoppedEvent.class, event -> {
             LIVE.clear();
             WAITING.clear();

@@ -251,6 +251,26 @@ public final class DeepSpaceClient {
 
     // ---- 牵引光束
 
+    /** 摄像机周围多远的船要画牵引光束。 */
+    private static final double BEAM_VIEW = 160;
+    /** 附近的船每刻查一次（多查这么远），同一刻里各帧共用；摄像机挪出这么远就重查。 */
+    private static final double BEAM_MARGIN = 16;
+    private static List<ShipEntity> nearbyShips = List.of();
+    private static @Nullable Level shipsLevel;
+    private static long shipsTick = Long.MIN_VALUE;
+    private static Vec3 shipsCamera = Vec3.ZERO;
+
+    /** 摄像机附近的船。船的碰撞箱每刻才动一次，按刻查、多查一圈；每帧再按摄像机的位置筛（ADR-0038）。 */
+    private static List<ShipEntity> nearbyShips(Level level, Vec3 camera) {
+        if (level != shipsLevel || level.getGameTime() != shipsTick || camera.distanceToSqr(shipsCamera) > BEAM_MARGIN * BEAM_MARGIN) {
+            shipsLevel = level;
+            shipsTick = level.getGameTime();
+            shipsCamera = camera;
+            nearbyShips = level.getEntitiesOfClass(ShipEntity.class, new AABB(camera, camera).inflate(BEAM_VIEW + BEAM_MARGIN));
+        }
+        return nearbyShips;
+    }
+
     /** 开着牵引光束的船：朝每样正往里拉的东西画一股淡青的束。 */
     private static void submitBeams(SubmitCustomGeometryEvent event) {
         Minecraft minecraft = Minecraft.getInstance();
@@ -261,8 +281,9 @@ public final class DeepSpaceClient {
         float partial = minecraft.getDeltaTracker().getGameTimeDeltaPartialTick(false);
         double time = minecraft.level.getGameTime() + partial;
         List<Vec3[]> beams = new ArrayList<>();
-        for (ShipEntity ship : minecraft.level.getEntitiesOfClass(ShipEntity.class, new AABB(camera, camera).inflate(160), ShipEntity::tractorOn)) {
-            if (ship.structure() == null) {
+        AABB view = new AABB(camera, camera).inflate(BEAM_VIEW);
+        for (ShipEntity ship : nearbyShips(minecraft.level, camera)) {
+            if (ship.isRemoved() || !ship.tractorOn() || !ship.getBoundingBox().intersects(view) || ship.structure() == null) {
                 continue;
             }
             ShipShape shape = ship.structure().shape();

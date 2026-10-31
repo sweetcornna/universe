@@ -11,6 +11,7 @@ import io.github.sweetcornna.universe.blueprint.Construction;
 import io.github.sweetcornna.universe.civ.CivCommand;
 import io.github.sweetcornna.universe.civ.NpcSpawner;
 import io.github.sweetcornna.universe.darkfog.DarkFogBases;
+import io.github.sweetcornna.universe.darkfog.LoadedEnemies;
 import io.github.sweetcornna.universe.darkfog.DarkFogCommand;
 import io.github.sweetcornna.universe.logistics.Distributors;
 import io.github.sweetcornna.universe.mecha.Flyers;
@@ -170,6 +171,7 @@ public final class Universe {
         gameBus.addListener(RegisterCommandsEvent.class, event -> EncounterCommand.register(event.getDispatcher()));
         gameBus.addListener(RegisterCommandsEvent.class, event -> CivCommand.register(event.getDispatcher()));
         DarkFogBases.registerEvents(gameBus);
+        LoadedEnemies.registerEvents(gameBus);
         gameBus.addListener(RegisterCommandsEvent.class, event -> DarkFogCommand.register(event.getDispatcher()));
         io.github.sweetcornna.universe.darkfog.facility.FacilityRepairs.registerEvents(modBus, gameBus);
         Turrets.registerEvents(modBus);

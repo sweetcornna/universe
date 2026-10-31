@@ -2,6 +2,8 @@ package io.github.sweetcornna.universe.core.dyson;
 
 import java.util.Arrays;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * 戴森球的一层（ADR-0016）：半径、朝向、网格，以及每个节点、框架已建的结构点和每片球壳已铺的单元点。
  *
@@ -49,6 +51,14 @@ public final class DysonLayer {
     private int[] shellColors;
     /** 网格每换一次加一（元素的下标变了），编辑器发来的改动按它判断是不是过时了。不存档。 */
     private int revision;
+    /**
+     * 节点、框架的结构点、预定或网格每变一次加一。{@link #nextTarget} 按它和纬度限制记下上一次的结果：发射井每刻都问，
+     * 球建满了以后每问一次都要把全部节点和框架扫一遍。不存档。
+     */
+    private int targets;
+    private int cachedTargets = -1;
+    private double cachedLimit = Double.NaN;
+    private @Nullable Target cachedTarget;
     /** 吸帆的零头（帆），和下一片轮到的球壳。 */
     private double absorbCredit;
     private int absorbCursor;
@@ -102,6 +112,7 @@ public final class DysonLayer {
         this.shellColors = new int[this.grid.shellCount()];
         this.absorbCredit = 0;
         this.absorbCursor = 0;
+        this.targets++;
     }
 
     // ---- 自由编辑（ADR-0030 §四）
@@ -162,6 +173,7 @@ public final class DysonLayer {
      * nodes、frames（在路上的火箭跟着作废）。
      */
     void demolish(Element kind, int index, java.util.Set<Integer> nodes, java.util.Set<Integer> frames) {
+        this.targets++;
         switch (kind) {
             case NODE -> {
                 this.nodeSp[index] = 0;
@@ -381,7 +393,18 @@ public final class DysonLayer {
      *
      * @return 没有可建的时为 null
      */
-    public Target nextTarget(double limit) {
+    public @Nullable Target nextTarget(double limit) {
+        if (this.cachedTargets == this.targets && Double.compare(this.cachedLimit, limit) == 0) {
+            return this.cachedTarget;
+        }
+        Target target = this.findTarget(limit);
+        this.cachedTargets = this.targets;
+        this.cachedLimit = limit;
+        this.cachedTarget = target;
+        return target;
+    }
+
+    private @Nullable Target findTarget(double limit) {
         for (int i = 0; i < this.nodeSp.length; i++) {
             if (this.nodeSp[i] + this.nodeReserved[i] < NODE_SP && this.grid.nodeWithin(i, limit)) {
                 return new Target(true, i);
@@ -398,6 +421,7 @@ public final class DysonLayer {
     }
 
     void reserve(Target target, int delta) {
+        this.targets++;
         if (target.node()) {
             this.nodeReserved[target.index()] = Math.max(0, this.nodeReserved[target.index()] + delta);
         } else {
@@ -480,6 +504,7 @@ public final class DysonLayer {
 
     /** 读档、同步：恢复进度，长度不对（模板改过）的部分忽略，超出上限的截掉。 */
     public void restore(int[] nodes, int[] frames, int[] shellCells) {
+        this.targets++;
         for (int i = 0; i < Math.min(nodes.length, this.nodeSp.length); i++) {
             this.nodeSp[i] = Math.max(0, Math.min(NODE_SP, nodes[i]));
         }

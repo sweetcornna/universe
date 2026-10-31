@@ -14,6 +14,7 @@ import io.github.sweetcornna.universe.core.deepspace.Integrity;
 import io.github.sweetcornna.universe.core.deepspace.Integrity.Phase;
 import io.github.sweetcornna.universe.core.deepspace.Layout;
 import io.github.sweetcornna.universe.core.deepspace.Part;
+import io.github.sweetcornna.universe.perf.ServerPerf;
 import io.github.sweetcornna.universe.registry.UniverseSounds;
 import io.github.sweetcornna.universe.registry.sound.DeepSpaceSounds;
 import net.minecraft.ChatFormatting;
@@ -113,7 +114,7 @@ public final class Hulks {
     }
 
     public static void registerEvents(IEventBus gameBus) {
-        gameBus.addListener(ServerTickEvent.Post.class, event -> tick(event.getServer()));
+        gameBus.addListener(ServerTickEvent.Post.class, event -> ServerPerf.time("deep_space/hulks", () -> tick(event.getServer())));
         gameBus.addListener(ServerStoppedEvent.class, event -> {
             WRECKS.clear();
             LOADED.clear();

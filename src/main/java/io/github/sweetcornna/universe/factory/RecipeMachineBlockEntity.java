@@ -5,7 +5,6 @@ import java.util.Objects;
 
 import org.jspecify.annotations.Nullable;
 
-import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.blueprint.BlueprintSettings;
 import io.github.sweetcornna.universe.core.factory.Proliferation;
 import io.github.sweetcornna.universe.factory.recipe.MachineRecipe;
@@ -14,7 +13,6 @@ import io.github.sweetcornna.universe.factory.research.Research;
 import io.github.sweetcornna.universe.stats.ProductionLog;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.Identifier;
@@ -23,7 +21,6 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.util.Prediction;
 import net.minecraft.world.Containers;
-import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.crafting.Recipe;
@@ -225,8 +222,10 @@ public class RecipeMachineBlockEntity extends MachineBlockEntity implements Mach
         if (this.progress >= recipe.time()) {
             this.progress = 0;
             this.craft(recipe, mode);
+            this.setChanged();
+        } else {
+            this.markUnsaved();
         }
-        this.setChanged();
         return true;
     }
 
@@ -267,13 +266,7 @@ public class RecipeMachineBlockEntity extends MachineBlockEntity implements Mach
 
     /** 配方能不能额外产出：产物是本模组的方块（建筑、设备）时不能，和戴森球计划一样。 */
     public static boolean productive(MachineRecipe recipe) {
-        for (ItemStackTemplate result : recipe.results()) {
-            ItemStack stack = result.create();
-            if (stack.getItem() instanceof BlockItem && BuiltInRegistries.ITEM.getKey(stack.getItem()).getNamespace().equals(Universe.MOD_ID)) {
-                return false;
-            }
-        }
-        return true;
+        return recipe.productive();
     }
 
     public Proliferation.Mode mode() {
@@ -301,7 +294,7 @@ public class RecipeMachineBlockEntity extends MachineBlockEntity implements Mach
         }
         for (int i = 0; i < results.size(); i++) {
             ItemStack current = this.getItem(this.spec.inputs() + i);
-            ItemStack result = results.get(i).create();
+            ItemStack result = recipe.prototype(i);
             int count = result.getCount() * (mayDouble ? 2 : 1);
             if (!current.isEmpty() && (!ItemStack.isSameItemSameComponents(current, result)
                     || current.getCount() + count > current.getMaxStackSize())) {

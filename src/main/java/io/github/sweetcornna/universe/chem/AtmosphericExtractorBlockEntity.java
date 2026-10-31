@@ -1,7 +1,11 @@
 package io.github.sweetcornna.universe.chem;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+
+import org.jspecify.annotations.Nullable;
 
 import io.github.sweetcornna.universe.core.chem.AtmosphereMix;
 import io.github.sweetcornna.universe.core.chem.Extraction;
@@ -63,6 +67,9 @@ public class AtmosphericExtractorBlockEntity extends MachineBlockEntity implemen
     private double progress;
     private boolean active;
     private double supplied;
+    /** {@link #mix} 里能取的气体（按分数排好），大气换了才重新排：设备每刻都要挑气体。 */
+    private List<Gas> collectable = List.of();
+    private @Nullable AtmosphereMix collectableMix;
 
     public AtmosphericExtractorBlockEntity(BlockPos pos, BlockState state) {
         super(UniverseBlockEntities.ATMOSPHERIC_EXTRACTOR.get(), pos, state, 1);
@@ -70,7 +77,11 @@ public class AtmosphericExtractorBlockEntity extends MachineBlockEntity implemen
 
     /** 选的气体；还没选、或者选的这里取不到时，取分数最大的那种。 */
     public Optional<Gas> gas() {
-        List<Gas> collectable = Extraction.collectable(this.mix);
+        if (this.collectableMix != this.mix) {
+            this.collectableMix = this.mix;
+            this.collectable = Extraction.collectable(this.mix);
+        }
+        List<Gas> collectable = this.collectable;
         if (this.selected != null && collectable.contains(this.selected)) {
             return Optional.of(this.selected);
         }
@@ -108,8 +119,10 @@ public class AtmosphericExtractorBlockEntity extends MachineBlockEntity implemen
         if (this.progress >= ticks) {
             this.progress -= ticks;
             this.extract(gas.get(), product);
+            this.setChanged();
+        } else {
+            this.markUnsaved();
         }
-        this.setChanged();
         return true;
     }
 
@@ -137,8 +150,11 @@ public class AtmosphericExtractorBlockEntity extends MachineBlockEntity implemen
 
     /** 气体对应的物品。 */
     public static Item item(Gas gas) {
-        return BuiltInRegistries.ITEM.getValue(Identifier.parse(Substances.item(gas)));
+        return ITEMS.computeIfAbsent(gas, key -> BuiltInRegistries.ITEM.getValue(Identifier.parse(Substances.item(key))));
     }
+
+    /** 气体对应的物品，按名字查一次记下（服务端和客户端的线程都会读）。 */
+    private static final Map<Gas, Item> ITEMS = new ConcurrentHashMap<>();
 
     @Override
     public boolean clickButton(ServerPlayer player, int button) {

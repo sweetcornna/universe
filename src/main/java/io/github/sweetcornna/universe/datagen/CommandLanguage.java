@@ -226,6 +226,8 @@ final class CommandLanguage {
         both.add(C + "perf.summary", "%s 刻，服务器每刻 %s ms，本模组合计 %s ms（%s%%）", "%s ticks, server %s ms per tick, this mod %s ms (%s%%)");
         both.add(C + "bench.built", "参照基地：传送带 %s 格，制造台 %s 台，分拣器 %s 个，强制加载 %s 个区块",
                 "Benchmark base: %s belts, %s assemblers, %s sorters, %s chunks force-loaded");
+        both.add(C + "bench.built_chemistry", "参照基地：传送带 %s 格，制造台 %s 台，分拣器 %s 个，化工设备 %s 台，强制加载 %s 个区块",
+                "Benchmark base: %s belts, %s assemblers, %s sorters, %s chemical plants, %s chunks force-loaded");
         both.add(C + "bench.status", "参照基地：%s/%s 台在做，已做出 %s 个，每分钟 %s 个", "Benchmark base: %s/%s machines working, %s made, %s per minute");
         both.add(C + "bench.stopped", "停止了 %s 座参照基地的补给", "Stopped resupplying %s benchmark bases");
     }

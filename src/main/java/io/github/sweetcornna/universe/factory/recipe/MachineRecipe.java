@@ -6,11 +6,17 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
+import org.jspecify.annotations.Nullable;
+
+import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.registry.UniverseRecipeTypes;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.util.ExtraCodecs;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemStackTemplate;
 import net.minecraft.world.item.crafting.PlacementInfo;
@@ -39,6 +45,10 @@ public final class MachineRecipe implements Recipe<MachineRecipe.Input> {
     private final List<ItemStackTemplate> results;
     private final int time;
     private final String research;
+    /** 产物的样子，设备每刻检查产物格放不放得下时拿来比较，第一次用时做出来。只读，不能交出去或者改。 */
+    private volatile @Nullable List<ItemStack> prototypes;
+    /** 能不能额外产出：0 还没算，1 能，2 不能。设备每刻都问，算一次记下。 */
+    private byte productive;
 
     public MachineRecipe(Kind kind, List<SizedIngredient> ingredients, List<ItemStackTemplate> results, int time, String research) {
         this.kind = kind;
@@ -74,6 +84,32 @@ public final class MachineRecipe implements Recipe<MachineRecipe.Input> {
 
     public List<ItemStackTemplate> results() {
         return this.results;
+    }
+
+    /** 第 {@code i} 种产物的样子，只用来比较（{@link ItemStack#isSameItemSameComponents}、数量、堆叠上限），不能改、不能放进格子。 */
+    public ItemStack prototype(int i) {
+        List<ItemStack> prototypes = this.prototypes;
+        if (prototypes == null) {
+            prototypes = this.results.stream().map(ItemStackTemplate::create).toList();
+            this.prototypes = prototypes;
+        }
+        return prototypes.get(i);
+    }
+
+    /** 能不能额外产出（增产剂的额外产出模式）：产物是本模组的方块（建筑、设备）时不能，和戴森球计划一样。 */
+    public boolean productive() {
+        if (this.productive == 0) {
+            boolean productive = true;
+            for (ItemStackTemplate result : this.results) {
+                Item item = result.item().value();
+                if (item instanceof BlockItem && BuiltInRegistries.ITEM.getKey(item).getNamespace().equals(Universe.MOD_ID)) {
+                    productive = false;
+                    break;
+                }
+            }
+            this.productive = productive ? (byte) 1 : (byte) 2;
+        }
+        return this.productive == 1;
     }
 
     /** 标准时间（刻）。 */

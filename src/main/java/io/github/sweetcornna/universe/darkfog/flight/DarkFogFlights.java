@@ -35,6 +35,7 @@ import io.github.sweetcornna.universe.entity.ship.ShipCargo;
 import io.github.sweetcornna.universe.entity.ship.ShipEntity;
 import io.github.sweetcornna.universe.factory.power.LevelPower;
 import io.github.sweetcornna.universe.network.DarkFogMapPayload;
+import io.github.sweetcornna.universe.perf.ServerPerf;
 import io.github.sweetcornna.universe.pirate.Pirates;
 import io.github.sweetcornna.universe.registry.UniverseEntities;
 import io.github.sweetcornna.universe.rules.UniverseRules;
@@ -120,7 +121,7 @@ public final class DarkFogFlights {
     }
 
     public static void registerEvents(IEventBus gameBus) {
-        gameBus.addListener(ServerTickEvent.Post.class, event -> tick(event.getServer()));
+        gameBus.addListener(ServerTickEvent.Post.class, event -> ServerPerf.time("darkfog/flights", () -> tick(event.getServer())));
         gameBus.addListener(PlayerEvent.PlayerLoggedInEvent.class, event -> {
             if (event.getEntity() instanceof ServerPlayer player) {
                 PacketDistributor.sendToPlayer(player, map(player.level().getServer()));

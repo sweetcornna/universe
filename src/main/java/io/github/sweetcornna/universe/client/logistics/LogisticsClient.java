@@ -276,6 +276,9 @@ public final class LogisticsClient {
         Minecraft minecraft = Minecraft.getInstance();
         ItemStack drone = new ItemStack(UniverseItems.LOGISTICS_DRONE.get());
         ItemStack vessel = new ItemStack(UniverseItems.LOGISTICS_VESSEL.get());
+        // 两种模型这一帧各解析一次，所有架次共用；随时间变的模型（动画贴图）才一架架解析
+        ItemStackRenderState droneModel = null;
+        ItemStackRenderState vesselModel = null;
         int seed = 0;
         int far = 0;
         for (LogisticsFlightsPayload.Flight flight : flights) {
@@ -316,9 +319,19 @@ public final class LogisticsClient {
                 BlockPos at = BlockPos.containing(p[0], p[1], p[2]);
                 light = LightCoordsUtil.pack(Math.max(9, level.getBrightness(LightLayer.BLOCK, at)), level.getBrightness(LightLayer.SKY, at));
             }
-            ItemStackRenderState model = new ItemStackRenderState();
-            minecraft.getItemModelResolver().updateForTopItem(model, flight.vessel() ? vessel : drone, ItemDisplayContext.FIXED, level, null,
-                    seed++);
+            ItemStackRenderState model = flight.vessel() ? vesselModel : droneModel;
+            if (model == null) {
+                model = new ItemStackRenderState();
+                minecraft.getItemModelResolver().updateForTopItem(model, flight.vessel() ? vessel : drone, ItemDisplayContext.FIXED, level, null, seed);
+                if (!model.isAnimated()) {
+                    if (flight.vessel()) {
+                        vesselModel = model;
+                    } else {
+                        droneModel = model;
+                    }
+                }
+            }
+            seed++;
             float stretch = p.length > 5 ? (float) p[5] : 1.0F;
             crafts.add(new Craft(dx, dy, dz, (float) p[3], (float) p[4], scale, stretch, light, model));
         }

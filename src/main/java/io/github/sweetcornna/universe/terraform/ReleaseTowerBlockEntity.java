@@ -121,8 +121,10 @@ public class ReleaseTowerBlockEntity extends MachineBlockEntity {
         if (this.progress >= TICKS_PER_ITEM) {
             this.progress -= TICKS_PER_ITEM;
             this.release(slot);
+            this.setChanged();
+        } else {
+            this.markUnsaved();
         }
-        this.setChanged();
         return true;
     }
 

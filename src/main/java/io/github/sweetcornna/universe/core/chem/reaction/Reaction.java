@@ -158,6 +158,8 @@ public enum Reaction {
     private final Category category;
     private final String research;
     private final List<Term> reactants;
+    /** 反应物的物品（注册名），自由投料的反应釜每刻都拿它认反应，构造时算好。 */
+    private final Set<String> reactantItems;
     private final List<Term> products;
     private final boolean reversible;
     private final double activation;
@@ -176,6 +178,11 @@ public enum Reaction {
         this.category = def.category;
         this.research = def.research;
         this.reactants = List.copyOf(def.reactants);
+        Set<String> items = new HashSet<>();
+        for (Term term : this.reactants) {
+            items.add(term.species().item());
+        }
+        this.reactantItems = Set.copyOf(items);
         this.products = List.copyOf(def.products);
         this.reversible = def.reversible;
         this.activation = def.activation;
@@ -347,11 +354,7 @@ public enum Reaction {
 
     /** 反应物的物品，认反应用（{@link ReactionMatcher}）。 */
     public Set<String> reactantItems() {
-        Set<String> set = new HashSet<>();
-        for (Term term : this.reactants) {
-            set.add(term.species().item());
-        }
-        return Set.copyOf(set);
+        return this.reactantItems;
     }
 
     /** 反应物里有没有这种物质。 */

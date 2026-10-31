@@ -7,6 +7,7 @@ import io.github.sweetcornna.universe.core.galaxy.Planet;
 import io.github.sweetcornna.universe.core.galaxy.WeatherProfile;
 import io.github.sweetcornna.universe.core.poi.Fulgurite;
 import io.github.sweetcornna.universe.core.procgen.Rng;
+import io.github.sweetcornna.universe.perf.ServerPerf;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
 import io.github.sweetcornna.universe.teleport.BaseData;
 import io.github.sweetcornna.universe.terraform.Terraforming;
@@ -61,7 +62,7 @@ public final class Fulgurites {
         });
         gameBus.addListener(LevelTickEvent.Post.class, event -> {
             if (event.getLevel() instanceof ServerLevel level && level.getGameTime() % 20 == 7) {
-                volcanicStorm(level);
+                ServerPerf.time("fulgurites", () -> volcanicStorm(level));
             }
         });
     }

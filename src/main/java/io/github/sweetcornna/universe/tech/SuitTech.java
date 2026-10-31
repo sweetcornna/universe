@@ -3,7 +3,9 @@ package io.github.sweetcornna.universe.tech;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.core.procgen.Seeds;
@@ -101,9 +103,14 @@ public final class SuitTech {
 
     /** 外骨骼的超频格，按位记：跟着玩家走，换了胸甲也不变。 */
     public static int suitSupercharged(UUID player) {
-        long seed = Seeds.derive(player.getMostSignificantBits() ^ Long.rotateLeft(player.getLeastSignificantBits(), 17), "exosuit");
-        return TechGrid.EXOSUIT.superchargedSlots(seed, TechGrid.EXOSUIT.size());
+        return SUIT_SUPERCHARGED.computeIfAbsent(player, uuid -> {
+            long seed = Seeds.derive(uuid.getMostSignificantBits() ^ Long.rotateLeft(uuid.getLeastSignificantBits(), 17), "exosuit");
+            return TechGrid.EXOSUIT.superchargedSlots(seed, TechGrid.EXOSUIT.size());
+        });
     }
+
+    /** 各玩家外骨骼的超频格：只看 UUID，每人每刻要问好几次，算一次记下（服务端和客户端的线程都会读）。 */
+    private static final Map<UUID, Integer> SUIT_SUPERCHARGED = new ConcurrentHashMap<>();
 
     /** 多功能工具的超频格，按位记；还没定下种子的旧工具没有超频格。只落在工具这一档有的格子上。 */
     public static int toolSupercharged(ItemStack tool) {
@@ -149,10 +156,10 @@ public final class SuitTech {
     }
 
     private static void tick(ServerPlayer player) {
-        TechBonuses bonuses = suit(player);
         // 护盾：模块那部分自己回充，机甲核心再用电补（ADR-0033 §二）
         MechaCombat.tickShield(player);
         if (player.tickCount % 10 == 0) {
+            TechBonuses bonuses = suit(player);
             AttributeInstance speed = player.getAttribute(Attributes.MOVEMENT_SPEED);
             double amount = bonuses.get(Stat.SPEED);
             if (speed != null) {

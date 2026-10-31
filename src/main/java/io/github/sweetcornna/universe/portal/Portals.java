@@ -20,6 +20,7 @@ import io.github.sweetcornna.universe.core.discovery.DiscoveryKey;
 import io.github.sweetcornna.universe.core.procgen.NameGenerator.Name;
 import io.github.sweetcornna.universe.block.portal.PortalGlyphBlock;
 import io.github.sweetcornna.universe.network.PortalPayloads;
+import io.github.sweetcornna.universe.perf.ServerPerf;
 import io.github.sweetcornna.universe.poi.PoiProgress;
 import io.github.sweetcornna.universe.registry.UniverseAttachments;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
@@ -97,7 +98,7 @@ public final class Portals {
     }
 
     public static void registerEvents(IEventBus gameBus) {
-        gameBus.addListener(ServerTickEvent.Post.class, event -> tick(event.getServer()));
+        gameBus.addListener(ServerTickEvent.Post.class, event -> ServerPerf.time("portals", () -> tick(event.getServer())));
         gameBus.addListener(ServerStoppedEvent.class, event -> {
             PLANNED.clear();
             OPEN.clear();
