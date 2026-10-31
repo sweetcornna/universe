@@ -363,7 +363,7 @@ public class BioreactorBlockEntity extends RecipeMachineBlockEntity {
         // 补光灯：要光的工艺在没有阳光时开，每批的电固定，所以按每刻做多少批算
         if (process.needsLight() && !this.daylight && recipe != null) {
             int level = this.batchLevel(recipe.value());
-            Proliferation.Mode mode = productive(recipe.value()) ? this.mode() : Proliferation.Mode.SPEEDUP;
+            Proliferation.Mode mode = recipe.value().productive() ? this.mode() : Proliferation.Mode.SPEEDUP;
             this.lit = true;
             this.lightRate = rate * Proliferation.speedFactor(mode, level) * Proliferation.powerFactor(level);
         }

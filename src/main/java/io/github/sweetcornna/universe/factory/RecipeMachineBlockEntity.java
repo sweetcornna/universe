@@ -261,12 +261,7 @@ public class RecipeMachineBlockEntity extends MachineBlockEntity implements Mach
 
     /** 能额外产出的配方按界面上选的；建筑和设备只能加速。 */
     private Proliferation.Mode effectiveMode(MachineRecipe recipe) {
-        return productive(recipe) ? this.mode : Proliferation.Mode.SPEEDUP;
-    }
-
-    /** 配方能不能额外产出：产物是本模组的方块（建筑、设备）时不能，和戴森球计划一样。 */
-    public static boolean productive(MachineRecipe recipe) {
-        return recipe.productive();
+        return recipe.productive() ? this.mode : Proliferation.Mode.SPEEDUP;
     }
 
     public Proliferation.Mode mode() {
@@ -421,7 +416,7 @@ public class RecipeMachineBlockEntity extends MachineBlockEntity implements Mach
             case STATUS -> this.status;
             case PROLIFERATION -> {
                 RecipeHolder<MachineRecipe> holder = this.recipe();
-                boolean productive = holder != null && productive(holder.value());
+                boolean productive = holder != null && holder.value().productive();
                 yield (this.mode == Proliferation.Mode.SPEEDUP ? 1 : 0) | this.batchLevel << 1 | (productive ? 16 : 0);
             }
             default -> super.dataValue(index);

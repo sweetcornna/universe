@@ -45,6 +45,7 @@ import net.neoforged.neoforge.client.event.SubmitCustomGeometryEvent;
 import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import net.neoforged.neoforge.client.network.event.RegisterClientPayloadHandlersEvent;
+import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 
 /**
  * 深空的客户端部分（ADR-0034 §四）：HUD 上标出附近的碎片带、前哨站、残骸；靠近残骸时顶上显示结构完整度，
@@ -85,6 +86,12 @@ public final class DeepSpaceClient {
                 event -> event.registerBelow(VanillaGuiLayers.CROSSHAIR, Universe.id("deep_space"), DeepSpaceClient::renderHud));
         gameBus.addListener(ClientTickEvent.Post.class, event -> tick());
         gameBus.addListener(SubmitCustomGeometryEvent.class, DeepSpaceClient::submitBeams);
+        // 新来了一艘船就重查，不等下一刻
+        gameBus.addListener(EntityJoinLevelEvent.class, event -> {
+            if (event.getEntity() instanceof ShipEntity && event.getLevel().isClientSide()) {
+                shipsTick = Long.MIN_VALUE;
+            }
+        });
         // 退出世界时不再拿着上一个世界和里面的船
         gameBus.addListener(ClientPlayerNetworkEvent.LoggingOut.class, event -> {
             nearbyShips = List.of();
@@ -260,7 +267,7 @@ public final class DeepSpaceClient {
 
     /** 摄像机周围多远的船要画牵引光束。 */
     private static final double BEAM_VIEW = 160;
-    /** 附近的船每刻查一次（多查这么远），同一刻里各帧共用；摄像机挪出这么远就重查。 */
+    /** 附近的船每刻查一次（多查这么远），同一刻里各帧共用；摄像机挪出这么远、来了新船就重查。 */
     private static final double BEAM_MARGIN = 16;
     private static List<ShipEntity> nearbyShips = List.of();
     private static @Nullable Level shipsLevel;

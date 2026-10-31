@@ -16,6 +16,7 @@ import net.minecraft.client.renderer.item.ItemModelResolver;
 import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.item.MissingItemModel;
 import net.minecraft.client.renderer.item.TrackingItemStackRenderState;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -33,18 +34,30 @@ public final class SharedItemModels {
     private final Set<Object> unique = new HashSet<>();
     private long frame = -1;
 
+    /** 一个物品的默认堆（没有组件）的模型，{@code seed} 是这一个自己的种子。物品堆只在要解析时才做。 */
+    public ItemStackRenderState get(Item item, ItemModelResolver resolver, @Nullable Level level, int seed) {
+        ItemStackRenderState cached = this.cached(item);
+        return cached != null ? cached : this.resolve(item, new ItemStack(item), resolver, level, seed);
+    }
+
     /** {@code key} 相同的物品堆画出来一样（调用方保证），{@code seed} 是这一个自己的种子。 */
     public ItemStackRenderState get(Object key, ItemStack stack, ItemModelResolver resolver, @Nullable Level level, int seed) {
+        ItemStackRenderState cached = this.cached(key);
+        return cached != null ? cached : this.resolve(key, stack, resolver, level, seed);
+    }
+
+    /** 这一帧共用的那份；换了一帧先清空。 */
+    private @Nullable ItemStackRenderState cached(Object key) {
         long now = RenderFrames.current();
         if (now != this.frame) {
             this.frame = now;
             this.shared.clear();
             this.unique.clear();
         }
-        ItemStackRenderState cached = this.shared.get(key);
-        if (cached != null) {
-            return cached;
-        }
+        return this.shared.get(key);
+    }
+
+    private ItemStackRenderState resolve(Object key, ItemStack stack, ItemModelResolver resolver, @Nullable Level level, int seed) {
         if (this.unique.contains(key)) {
             ItemStackRenderState state = new ItemStackRenderState();
             resolver.updateForTopItem(state, stack, ItemDisplayContext.FIXED, level, null, seed);

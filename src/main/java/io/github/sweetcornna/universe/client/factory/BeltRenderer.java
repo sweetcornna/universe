@@ -50,9 +50,10 @@ public class BeltRenderer implements BlockEntityRenderer<BeltBlockEntity, BeltRe
 
     private final ItemModelResolver itemModelResolver;
     private final Int2ObjectMap<ItemStack> stacks = new Int2ObjectOpenHashMap<>();
-    /** 这一帧各条线路上每个物品画在哪，同一帧里各段传送带共用（ADR-0038），换一帧（{@link RenderFrames}）就清掉。 */
+    /** 这一帧各条线路上每个物品画在哪，同一帧里各段传送带共用（ADR-0038），换一帧（{@link RenderFrames}）或者换了插值就清掉。 */
     private final Map<BeltLine, float[]> shown = new IdentityHashMap<>();
     private long shownFrame = -1;
+    private float shownPartial = Float.NaN;
     /** 同一种货物这一帧共用一份模型。 */
     private final SharedItemModels models = new SharedItemModels();
 
@@ -85,8 +86,9 @@ public class BeltRenderer implements BlockEntityRenderer<BeltBlockEntity, BeltRe
         int to = from + BeltNetwork.UNITS;
         boolean last = segment.last();
         long frame = RenderFrames.current();
-        if (frame != this.shownFrame) {
+        if (frame != this.shownFrame || Float.compare(partialTicks, this.shownPartial) != 0) {
             this.shownFrame = frame;
+            this.shownPartial = partialTicks;
             this.shown.clear();
         }
         float[] shown = this.shown.computeIfAbsent(line, key -> shown(key, partialTicks));

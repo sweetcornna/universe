@@ -131,7 +131,7 @@ public final class FlyersClient {
 
     /** 一种物品的模型：无人机、机器人、货物这一帧里同一种共用一份（ADR-0038）。 */
     private static ItemStackRenderState model(Item item, ClientLevel level, int seed) {
-        return MODELS.get(item, new ItemStack(item), Minecraft.getInstance().getItemModelResolver(), level, seed);
+        return MODELS.get(item, Minecraft.getInstance().getItemModelResolver(), level, seed);
     }
 
     private static void submit(SubmitCustomGeometryEvent event) {
