@@ -1,6 +1,9 @@
 package io.github.sweetcornna.universe.registry;
 
+import java.util.Collections;
 import java.util.Map;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import io.github.sweetcornna.universe.Universe;
 import net.minecraft.core.registries.Registries;
@@ -16,8 +19,9 @@ public final class UniverseItemTags {
     /**
      * 本模组的材料和对应的通用标签（NeoForge 的 {@code c:} 命名）。本模组的物品登记进这些标签，别的模组认得出；
      * 设备配方的原料换成这些标签，别的模组的同种材料也能放进来。原版的铁、铜、金各模组本来就共用原版物品，不换。
+     * 按物品 ID 排好序，数据生成每次写出来的文件一样。
      */
-    public static final Map<String, TagKey<Item>> COMMON = Map.ofEntries(
+    public static final SortedMap<String, TagKey<Item>> COMMON = Collections.unmodifiableSortedMap(new TreeMap<>(Map.ofEntries(
             Map.entry("universe:raw_titanium", common("raw_materials/titanium")),
             Map.entry("universe:raw_silicon", common("raw_materials/silicon")),
             Map.entry("universe:raw_uranium", common("raw_materials/uranium")),
@@ -29,7 +33,7 @@ public final class UniverseItemTags {
             Map.entry("universe:platinum_ingot", common("ingots/platinum")),
             Map.entry("universe:silicon", common("silicon")),
             Map.entry("universe:sulfur", common("dusts/sulfur")),
-            Map.entry("universe:salt", common("dusts/salt")));
+            Map.entry("universe:salt", common("dusts/salt")))));
 
     private UniverseItemTags() {
     }

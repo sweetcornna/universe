@@ -103,6 +103,7 @@ import net.minecraft.world.level.block.DropExperienceBlock;
 import net.minecraft.world.level.block.SandBlock;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.NoteBlockInstrument;
 import net.minecraft.world.level.material.MapColor;
 import net.minecraft.world.level.material.PushReaction;
@@ -579,15 +580,29 @@ public final class UniverseBlocks {
 
     private static BlockBehaviour.Properties resourcePlantProperties(BlockBehaviour.Properties p, ResourcePlant plant) {
         p.noCollision().instabreak().offsetType(BlockBehaviour.OffsetType.XZ).pushReaction(PushReaction.POPPED).randomTicks();
+        // 自己会亮的几种按自己的亮度，种下的改造种苗带荧光素酶时至少亮到 GLOW_LIGHT（ADR-0039）
+        p.lightLevel(state -> Math.max(resourcePlantLight(plant, state), state.getValue(ResourcePlantBlock.GLOWING) ? ResourcePlantBlock.GLOW_LIGHT : 0));
         return switch (plant) {
             case SALT_CRYSTAL -> p.mapColor(MapColor.QUARTZ).sound(SoundType.AMETHYST_CLUSTER);
-            case GRAVITINO_HOST -> p.mapColor(MapColor.COLOR_PURPLE).sound(SoundType.GRASS).lightLevel(state -> 8);
-            case CAVE_MARROW -> p.mapColor(MapColor.TERRACOTTA_WHITE).sound(SoundType.FUNGUS).lightLevel(state -> state.getValue(ResourcePlantBlock.RIPE) ? 6 : 2);
+            case GRAVITINO_HOST -> p.mapColor(MapColor.COLOR_PURPLE).sound(SoundType.GRASS);
+            case CAVE_MARROW -> p.mapColor(MapColor.TERRACOTTA_WHITE).sound(SoundType.FUNGUS);
             case FUNGAL_CLUSTER -> p.mapColor(MapColor.COLOR_LIGHT_GREEN).sound(SoundType.FUNGUS);
             case FROSTWORT -> p.mapColor(MapColor.ICE).sound(SoundType.GRASS);
-            case SOLAR_VINE -> p.mapColor(MapColor.COLOR_ORANGE).sound(SoundType.GRASS).lightLevel(state -> state.getValue(ResourcePlantBlock.RIPE) ? 5 : 0);
-            case CANDLE_KELP -> p.mapColor(MapColor.WATER).sound(SoundType.WET_GRASS).lightLevel(state -> state.getValue(ResourcePlantBlock.RIPE) ? 11 : 5);
+            case SOLAR_VINE -> p.mapColor(MapColor.COLOR_ORANGE).sound(SoundType.GRASS);
+            case CANDLE_KELP -> p.mapColor(MapColor.WATER).sound(SoundType.WET_GRASS);
             default -> p.mapColor(MapColor.PLANT).sound(SoundType.GRASS);
+        };
+    }
+
+    /** 资源植物自己的亮度：引力果、髓球、日焰藤、烛光海带会亮。 */
+    private static int resourcePlantLight(ResourcePlant plant, BlockState state) {
+        boolean ripe = state.getValue(ResourcePlantBlock.RIPE);
+        return switch (plant) {
+            case GRAVITINO_HOST -> 8;
+            case CAVE_MARROW -> ripe ? 6 : 2;
+            case SOLAR_VINE -> ripe ? 5 : 0;
+            case CANDLE_KELP -> ripe ? 11 : 5;
+            default -> 0;
         };
     }
 

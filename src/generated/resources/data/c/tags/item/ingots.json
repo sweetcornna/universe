@@ -1,9 +1,9 @@
 {
   "values": [
-    "#c:ingots/titanium",
-    "#c:ingots/steel",
+    "#c:ingots/nickel",
     "#c:ingots/platinum",
-    "#c:ingots/uranium",
-    "#c:ingots/nickel"
+    "#c:ingots/steel",
+    "#c:ingots/titanium",
+    "#c:ingots/uranium"
   ]
 }

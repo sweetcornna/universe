@@ -3,8 +3,11 @@ package io.github.sweetcornna.universe.block;
 import org.jspecify.annotations.Nullable;
 
 import io.github.sweetcornna.universe.core.ecology.ResourcePlant;
+import io.github.sweetcornna.universe.core.microbe.EngineeredPlant;
 import io.github.sweetcornna.universe.core.procgen.Rng;
 import io.github.sweetcornna.universe.core.sentinel.Offense;
+import io.github.sweetcornna.universe.microbe.EngineeredSeedlingItem;
+import io.github.sweetcornna.universe.microbe.PlantedSeedlings;
 import io.github.sweetcornna.universe.registry.UniverseItems;
 import io.github.sweetcornna.universe.sentinel.Sentinels;
 import net.minecraft.core.BlockPos;
@@ -34,9 +37,15 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 /**
  * 资源植物（ADR-0026）：长熟时右键收获，收过的过一会儿（平均 15 分钟）重新长出来。打掉长熟的也能得到产物，
  * 植物本身拿不走，要种就拿产物去种。
+ *
+ * <p>种下的改造种苗（ADR-0039）也是这个方块，基因记在区块上（{@link PlantedSeedlings}），拆下来掉回同样的种苗。
  */
 public class ResourcePlantBlock extends VegetationBlock {
     public static final BooleanProperty RIPE = BooleanProperty.create("ripe");
+    /** 编辑进了荧光素酶的改造种苗：自己发光（ADR-0039）。野生的都不亮这一项。 */
+    public static final BooleanProperty GLOWING = BooleanProperty.create("glowing");
+    /** 带荧光素酶的亮度：和萤石差不多，晚上照得亮一小片地。 */
+    public static final int GLOW_LIGHT = 12;
     private static final VoxelShape SHAPE = Block.column(12.0, 0.0, 13.0);
     private static final VoxelShape LOW = Block.column(12.0, 0.0, 8.0);
 
@@ -45,7 +54,7 @@ public class ResourcePlantBlock extends VegetationBlock {
     public ResourcePlantBlock(ResourcePlant plant, Properties properties) {
         super(properties);
         this.plant = plant;
-        this.registerDefaultState(this.stateDefinition.any().setValue(RIPE, true));
+        this.registerDefaultState(this.stateDefinition.any().setValue(RIPE, true).setValue(GLOWING, false));
     }
 
     public ResourcePlant plant() {
@@ -54,7 +63,7 @@ public class ResourcePlantBlock extends VegetationBlock {
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(RIPE);
+        builder.add(RIPE, GLOWING);
     }
 
     @Override
@@ -118,6 +127,16 @@ public class ResourcePlantBlock extends VegetationBlock {
     /** 守卫机看着人采资源：引力果直接三级通缉，别的只加一点警戒值。 */
     public static void offend(ServerPlayer player, ResourcePlant plant) {
         Sentinels.offend(player, plant == ResourcePlant.GRAVITINO_HOST ? Offense.GRAVITINO : Offense.HARVEST);
+    }
+
+    @Override
+    protected void affectNeighborsAfterRemoval(BlockState state, ServerLevel level, BlockPos pos, boolean movedByPiston) {
+        super.affectNeighborsAfterRemoval(state, level, pos, movedByPiston);
+        // 种下的改造种苗：拆掉、炸掉、被活塞顶掉都掉回同样的种苗（ADR-0039）
+        EngineeredPlant planted = PlantedSeedlings.remove(level, pos);
+        if (planted != null && planted.plant() == this.plant) {
+            Block.popResource(level, pos, EngineeredSeedlingItem.stack(planted, 1));
+        }
     }
 
     @Override

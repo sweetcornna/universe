@@ -378,7 +378,7 @@ public final class FleetTerminal {
     /**
      * 背包里的燃料折成几份发射燃料：甲烷液氧按它和发射燃料的热值比算（一罐 2.5 份，ADR-0039），零头不算。
      */
-    private static int fuel(Inventory inventory) {
+    public static int fuel(Inventory inventory) {
         double count = 0;
         for (int i = 0; i < inventory.getContainerSize(); i++) {
             ItemStack stack = inventory.getItem(i);
@@ -397,7 +397,7 @@ public final class FleetTerminal {
     }
 
     /** 先扣发射燃料，不够的用甲烷液氧补，一罐顶不满的按一罐扣。 */
-    private static void takeFuel(Inventory inventory, int amount) {
+    public static void takeFuel(Inventory inventory, int amount) {
         double remaining = amount;
         for (int i = 0; i < inventory.getContainerSize() && remaining > 0; i++) {
             ItemStack stack = inventory.getItem(i);
