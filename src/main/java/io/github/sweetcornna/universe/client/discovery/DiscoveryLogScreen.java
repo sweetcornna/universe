@@ -354,7 +354,11 @@ public class DiscoveryLogScreen extends Screen {
         int species = log.count(DiscoveryKey.Kind.CREATURE) + log.count(DiscoveryKey.Kind.PLANT) + log.count(DiscoveryKey.Kind.TREE);
         Component totals = Component.translatable("gui.universe.discovery.totals", log.count(DiscoveryKey.Kind.SYSTEM),
                 log.count(DiscoveryKey.Kind.BODY), species, log.count(DiscoveryKey.Kind.MINERAL));
-        graphics.text(this.font, totals, this.width - this.font.width(totals) - 6, 5, DIM, false);
+        // 窄窗口（854×480）里放不下就不写，免得压在页签上；恒星系、天体的数目两栏的标题里也有
+        int x = this.width - this.font.width(totals) - 6;
+        if (x >= this.tabSpan(TABS - 1)[1] + 8) {
+            graphics.text(this.font, totals, x, 5, DIM, false);
+        }
     }
 
     private Component tabName(int tab) {
