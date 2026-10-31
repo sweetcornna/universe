@@ -1,0 +1,28 @@
+{
+  "parent": "universe:trade",
+  "criteria": {
+    "milestone": {
+      "conditions": {
+        "milestone": "settlement"
+      },
+      "trigger": "universe:milestone"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.universe.settlement.description"
+    },
+    "icon": {
+      "id": "minecraft:bell"
+    },
+    "title": {
+      "translate": "advancements.universe.settlement.title"
+    }
+  },
+  "requirements": [
+    [
+      "milestone"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

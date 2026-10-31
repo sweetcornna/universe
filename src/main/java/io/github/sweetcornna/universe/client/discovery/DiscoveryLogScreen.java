@@ -583,24 +583,28 @@ public class DiscoveryLogScreen extends Screen {
         y = this.title(graphics, GalaxyText.planet(planet), x, y);
         graphics.text(this.font, GalaxyText.planetType(planet), x, y, planet.landable() ? TEXT : WARN, false);
         y += 12;
+        // 温度、大气、危害按改造后的样子写（ADR-0039）
+        io.github.sweetcornna.universe.core.terraform.EffectiveEnvironment environment = ClientGalaxy.environment(planet);
+        Planet now = environment.planet();
         Component details = planet.type() == PlanetType.GAS_GIANT
                 ? Component.translatable("gui.universe.star_map.gas_giant", GalaxyText.number(planet.radius(), 1))
-                : Component.translatable("gui.universe.star_map.details", Math.round(planet.temperatureCelsius()),
-                        GalaxyText.number(planet.gravity(), 2),
-                        GalaxyText.pick(planet.atmosphere().kind().nameZh(), planet.atmosphere().kind().nameEn()));
+                : Component.translatable("gui.universe.star_map.details", Math.round(now.temperatureCelsius()),
+                        GalaxyText.number(now.gravity(), 2),
+                        GalaxyText.pick(now.atmosphere().kind().nameZh(), now.atmosphere().kind().nameEn()));
         y = this.wrap(graphics, details, x, y, width, DIM);
-        if (!planet.hazards().isEmpty()) {
+        if (!now.hazards().isEmpty()) {
             List<String> names = new ArrayList<>();
-            for (Hazard hazard : planet.hazards()) {
+            for (Hazard hazard : now.hazards()) {
                 names.add(GalaxyText.pick(hazard.nameZh(), hazard.nameEn()));
             }
             y = this.wrap(graphics, Component.translatable("gui.universe.star_map.hazards", String.join(GalaxyText.pick("、", ", "), names)),
                     x, y, width, WARN);
         }
         // 大气成分和氧分压（ADR-0036 §二）
-        for (Component line : io.github.sweetcornna.universe.chem.PlanetAir.lines(ClientGalaxy.environment(planet), GalaxyText.pick("、", ", "))) {
+        for (Component line : io.github.sweetcornna.universe.chem.PlanetAir.lines(environment, GalaxyText.pick("、", ", "))) {
             y = this.wrap(graphics, line, x, y, width, DIM);
         }
+        y = this.terraformSection(graphics, planet, environment, x, y, width);
         if (planet.landable()) {
             SentinelLevel sentinels = ClientGalaxy.sentinels(planet);
             y = this.wrap(graphics, Component.translatable("gui.universe.star_map.sentinels", GalaxyText.pick(sentinels.nameZh(), sentinels.nameEn())),
@@ -627,6 +631,29 @@ public class DiscoveryLogScreen extends Screen {
         y = this.speciesSection(graphics, body, DiscoveryKey.Kind.PLANT, census, planet, x, y, width);
         y = this.speciesSection(graphics, body, DiscoveryKey.Kind.TREE, census, planet, x, y, width);
         return this.minerals(graphics, body, x, y, width);
+    }
+
+    /**
+     * 动过手的星球（放过气、播过种、挂过反射镜）列出改造到了哪几档，和大气释放塔界面一样的六道门槛（ADR-0039）。
+     * 没改造过的不列，免得每颗星球都多出一大块。
+     */
+    private int terraformSection(GuiGraphicsExtractor graphics, Planet planet, io.github.sweetcornna.universe.core.terraform.EffectiveEnvironment environment,
+            int x, int y, int width) {
+        if (!planet.landable() || io.github.sweetcornna.universe.terraform.Terraforming.clientState(planet.id()).isEmpty()) {
+            return y;
+        }
+        List<String> stages = new ArrayList<>();
+        for (io.github.sweetcornna.universe.core.terraform.Terraform.Stage stage
+                : io.github.sweetcornna.universe.core.terraform.Terraform.reached(environment)) {
+            stages.add(Component.translatable("commands.universe.terraform.stage." + stage.name().toLowerCase(java.util.Locale.ROOT)).getString());
+        }
+        Component heading = stages.isEmpty() ? Component.translatable("gui.universe.discovery.terraform_none")
+                : Component.translatable("gui.universe.discovery.terraform", String.join(GalaxyText.pick("、", ", "), stages));
+        y = this.wrap(graphics, heading, x, y + 4, width, stages.isEmpty() ? DIM : GREEN);
+        List<io.github.sweetcornna.universe.core.terraform.Terraform.Threshold> thresholds =
+                io.github.sweetcornna.universe.core.terraform.Terraform.thresholds(environment);
+        io.github.sweetcornna.universe.client.terraform.ThresholdRows.draw(graphics, this.font, x, y, width, thresholds);
+        return y + thresholds.size() * io.github.sweetcornna.universe.client.terraform.ThresholdRows.ROW_HEIGHT;
     }
 
     /** 一类物种：标题"动物 3 / 5"，下面列出发现了的。 */

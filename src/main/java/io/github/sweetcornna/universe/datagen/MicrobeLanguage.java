@@ -178,6 +178,9 @@ final class MicrobeLanguage {
         both.add("microbe.universe.unidentified", "未鉴定的菌株", "Unidentified Strain");
         both.add("discovery.universe.kind.microbe", "微生物", "Microbe");
         both.add("gui.universe.discovery.microbes", "微生物 %s", "Microbes %s");
+        // 发现日志的星球页：改造到了哪几档（ADR-0039）
+        both.add("gui.universe.discovery.terraform", "改造：%s", "Terraformed: %s");
+        both.add("gui.universe.discovery.terraform_none", "改造：哪一档都还没到", "Terraforming: no stage reached yet");
     }
 
     private static void jei(Both both) {

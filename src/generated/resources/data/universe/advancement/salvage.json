@@ -1,0 +1,33 @@
+{
+  "parent": "universe:space",
+  "criteria": {
+    "has_item": {
+      "conditions": {
+        "items": [
+          {
+            "items": "universe:salvaged_reactor_core"
+          }
+        ]
+      },
+      "trigger": "minecraft:inventory_changed"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.universe.salvage.description"
+    },
+    "frame": "goal",
+    "icon": {
+      "id": "universe:salvaged_reactor_core"
+    },
+    "title": {
+      "translate": "advancements.universe.salvage.title"
+    }
+  },
+  "requirements": [
+    [
+      "has_item"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

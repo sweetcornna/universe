@@ -1,0 +1,29 @@
+{
+  "parent": "universe:fish",
+  "criteria": {
+    "milestone": {
+      "conditions": {
+        "milestone": "angler"
+      },
+      "trigger": "universe:milestone"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.universe.angler.description"
+    },
+    "frame": "goal",
+    "icon": {
+      "id": "universe:alien_fish"
+    },
+    "title": {
+      "translate": "advancements.universe.angler.title"
+    }
+  },
+  "requirements": [
+    [
+      "milestone"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

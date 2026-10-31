@@ -383,10 +383,12 @@ public final class AnalysisVisor {
         }
         Planet planet = sky.planet();
         DiscoveryKey key = DiscoveryKey.body(planet.id());
+        // 改造过的按现在的温度（ADR-0039）
+        io.github.sweetcornna.universe.core.terraform.EffectiveEnvironment environment = ClientGalaxy.environment(planet);
         return new Target(AnalyzePayload.body(planet.id().path()), key, GalaxyText.planet(planet),
                 Component.translatable("hud.universe.visor.body", GalaxyText.planetType(planet),
-                        Math.round(planet.temperatureCelsius()), GalaxyText.number(planet.gravity(), 2)),
-                io.github.sweetcornna.universe.chem.PlanetAir.compactLines(ClientGalaxy.environment(planet)),
+                        Math.round(environment.planet().temperatureCelsius()), GalaxyText.number(planet.gravity(), 2)),
+                io.github.sweetcornna.universe.chem.PlanetAir.compactLines(environment),
                 Survey.reward(key, galaxy));
     }
 

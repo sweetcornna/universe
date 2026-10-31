@@ -8,6 +8,7 @@ import java.util.UUID;
 
 import org.jspecify.annotations.Nullable;
 
+import io.github.sweetcornna.universe.advancement.MilestoneTrigger;
 import io.github.sweetcornna.universe.core.procgen.Rng;
 import io.github.sweetcornna.universe.core.procgen.Seeds;
 import io.github.sweetcornna.universe.core.settlement.BuildingType;
@@ -399,6 +400,7 @@ public final class SettlementRaids {
         if (outcome.won()) {
             if (owner != null && fought) {
                 Credits.add(owner, outcome.reward());
+                MilestoneTrigger.reach(owner, MilestoneTrigger.SETTLEMENT_DEFENDED);
             } else {
                 s.addTreasury(outcome.reward());
             }

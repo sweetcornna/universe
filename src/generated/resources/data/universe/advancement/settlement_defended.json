@@ -1,0 +1,29 @@
+{
+  "parent": "universe:settlement",
+  "criteria": {
+    "milestone": {
+      "conditions": {
+        "milestone": "settlement_defended"
+      },
+      "trigger": "universe:milestone"
+    }
+  },
+  "display": {
+    "description": {
+      "translate": "advancements.universe.settlement_defended.description"
+    },
+    "frame": "goal",
+    "icon": {
+      "id": "universe:pirate_scrap"
+    },
+    "title": {
+      "translate": "advancements.universe.settlement_defended.title"
+    }
+  },
+  "requirements": [
+    [
+      "milestone"
+    ]
+  ],
+  "sends_telemetry_event": true
+}

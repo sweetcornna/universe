@@ -677,6 +677,9 @@ public final class UniverseGameTests {
             LinkageGameTests::fleetTerminalBurnsMethalox);
     private static final ResourceKey<Consumer<GameTestHelper>> RECORDS_AND_METALS_SELL = function("records_and_metals_sell",
             LinkageGameTests::recordsAndMetalsSell);
+    private static final ResourceKey<Consumer<GameTestHelper>> M20_EXIT_FUEL = function("m20_exit_fuel", M20ExitGameTests::fuel);
+    private static final ResourceKey<Consumer<GameTestHelper>> M20_EXIT_BIOLOGY = function("m20_exit_biology", M20ExitGameTests::biology);
+    private static final ResourceKey<Consumer<GameTestHelper>> M20_EXIT_TERRAFORM = function("m20_exit_terraform", M20ExitGameTests::terraform);
     // M22 的测试函数加在这行上面
     /** 参照基地的性能测量，只在设了 {@link PerfBench#PROPERTY} 时登记（ADR-0038）。 */
     private static final ResourceKey<Consumer<GameTestHelper>> PERF_BENCH = function("perf_bench", PerfBenchGameTests::measure);
@@ -965,6 +968,9 @@ public final class UniverseGameTests {
         test(event, environment, PLANTED_SEEDLING_KEEPS_GENES, 40);
         test(event, environment, FLEET_TERMINAL_BURNS_METHALOX, 20);
         test(event, environment, RECORDS_AND_METALS_SELL, 20);
+        test(event, environment, M20_EXIT_FUEL, 3000);
+        test(event, environment, M20_EXIT_BIOLOGY, M20ExitGameTests.BIOLOGY_TICKS);
+        test(event, environment, M20_EXIT_TERRAFORM, 20);
         // M22 的测试加在这行上面
     }
 

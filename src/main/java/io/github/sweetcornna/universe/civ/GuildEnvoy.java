@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.OptionalInt;
 
+import io.github.sweetcornna.universe.advancement.MilestoneTrigger;
 import io.github.sweetcornna.universe.core.civ.CivState;
 import io.github.sweetcornna.universe.core.civ.Guild;
 import io.github.sweetcornna.universe.core.civ.GuildMissions;
@@ -109,6 +110,7 @@ public final class GuildEnvoy {
             return false;
         }
         Civ.sync(player);
+        MilestoneTrigger.reach(player, MilestoneTrigger.GUILD);
         Optional<GuildMissions.Gift> gift = GuildMissions.gift(guild, tier.get());
         if (gift.isEmpty()) {
             return true;

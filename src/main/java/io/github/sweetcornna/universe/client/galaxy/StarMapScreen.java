@@ -989,15 +989,18 @@ public class StarMapScreen extends Screen {
         graphics.text(this.font, shown, x + 9, y, moon ? 0xFFC8D0D6 : TEXT, false);
         graphics.text(this.font, type, x + width - typeWidth, y, planet.landable() ? DIM : WARN, false);
         y += 10;
+        // 温度、大气、危害按改造后的样子写（ADR-0039）
+        io.github.sweetcornna.universe.core.terraform.EffectiveEnvironment environment = ClientGalaxy.environment(planet);
+        Planet now = environment.planet();
         Component details = planet.type() == PlanetType.GAS_GIANT
                 ? Component.translatable("gui.universe.star_map.gas_giant", GalaxyText.number(planet.radius(), 1))
-                : Component.translatable("gui.universe.star_map.details", Math.round(planet.temperatureCelsius()),
-                        GalaxyText.number(planet.gravity(), 2),
-                        GalaxyText.pick(planet.atmosphere().kind().nameZh(), planet.atmosphere().kind().nameEn()));
+                : Component.translatable("gui.universe.star_map.details", Math.round(now.temperatureCelsius()),
+                        GalaxyText.number(now.gravity(), 2),
+                        GalaxyText.pick(now.atmosphere().kind().nameZh(), now.atmosphere().kind().nameEn()));
         y = this.smallText(graphics, details, x + 9, y, width - 9, DIM);
-        if (!planet.hazards().isEmpty()) {
+        if (!now.hazards().isEmpty()) {
             List<String> names = new ArrayList<>();
-            for (Hazard hazard : planet.hazards()) {
+            for (Hazard hazard : now.hazards()) {
                 names.add(GalaxyText.pick(hazard.nameZh(), hazard.nameEn()));
             }
             Component hazards = Component.translatable("gui.universe.star_map.hazards",
@@ -1005,7 +1008,7 @@ public class StarMapScreen extends Screen {
             y = this.smallText(graphics, hazards, x + 9, y, width - 9, WARN);
         }
         // 大气成分和氧分压（ADR-0036 §二）：光谱看得出来，去过的恒星系里都写
-        for (Component line : io.github.sweetcornna.universe.chem.PlanetAir.lines(ClientGalaxy.environment(planet), GalaxyText.pick("、", ", "))) {
+        for (Component line : io.github.sweetcornna.universe.chem.PlanetAir.lines(environment, GalaxyText.pick("、", ", "))) {
             y = this.smallText(graphics, line, x + 9, y, width - 9, 0xFFA8C4D0);
         }
         if (this.showResources && !planet.resources().isEmpty()) {

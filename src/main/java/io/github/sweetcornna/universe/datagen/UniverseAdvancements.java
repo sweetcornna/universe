@@ -3,6 +3,7 @@ package io.github.sweetcornna.universe.datagen;
 import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.advancement.MilestoneTrigger;
 import io.github.sweetcornna.universe.core.story.Milestone;
+import io.github.sweetcornna.universe.core.survival.ToolWeapon;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
 import io.github.sweetcornna.universe.registry.UniverseItems;
 import net.minecraft.advancements.Advancement;
@@ -33,7 +34,7 @@ final class UniverseAdvancements extends AdvancementSubProvider {
             "species", "survey", "monolith", "tame", "exocraft", "teleport", "ship", "space", "warp", "trade", "mission", "pirates",
             "ejector", "silo", "first_shell", "ray", "antimatter", "universe_matrix", "artificial_star", "mission_complete",
             "atmospheric_extractor", "electrolyzer", "chemical_reactor", "methalox", "culture", "gene_editing", "bioreactor", "ecology_seeder",
-            "terraformed"};
+            "terraformed", "fish", "angler", "settlement", "settlement_defended", "skeleton", "salvage", "guild"};
 
     private final HolderGetter<Block> blocks;
 
@@ -119,6 +120,17 @@ final class UniverseAdvancements extends AdvancementSubProvider {
         AdvancementHolder seeder = this.placedTask(editing, "ecology_seeder", UniverseBlocks.ECOLOGY_SEEDER.get());
         this.milestone(seeder, "terraformed", UniverseBlocks.ATMOSPHERE_RELEASE_TOWER.get().asItem(), AdvancementType.CHALLENGE,
                 MilestoneTrigger.TERRAFORMED);
+
+        // ---- 钓鱼、聚落、化石、深空、公会（ADR-0034、ADR-0039）：钓鱼和化石接在发现物种后面，聚落和公会接在交易后面，残骸接在太空后面
+        AdvancementHolder fish = this.milestone(species, "fish", UniverseItems.WEAPONS.get(ToolWeapon.FISHING_RIG).get(), AdvancementType.TASK,
+                MilestoneTrigger.FISH);
+        this.milestone(fish, "angler", UniverseItems.ALIEN_FISH.get(), AdvancementType.GOAL, MilestoneTrigger.ANGLER);
+        this.milestone(species, "skeleton", UniverseItems.SKELETON_DISPLAY.get(), AdvancementType.GOAL, MilestoneTrigger.SKELETON);
+        AdvancementHolder settlement = this.milestone(trade, "settlement", Items.BELL, AdvancementType.TASK,
+                MilestoneTrigger.SETTLEMENT);
+        this.milestone(settlement, "settlement_defended", UniverseItems.PIRATE_SCRAP.get(), AdvancementType.GOAL, MilestoneTrigger.SETTLEMENT_DEFENDED);
+        this.milestone(trade, "guild", UniverseItems.NAVIGATION_DATA.get(), AdvancementType.TASK, MilestoneTrigger.GUILD);
+        this.itemTask(space, "salvage", UniverseItems.SALVAGED_REACTOR_CORE.get(), AdvancementType.GOAL);
     }
 
     private AdvancementHolder task(AdvancementHolder parent, String name, Item icon, AdvancementType type, String criterion, Criterion<?> trigger) {

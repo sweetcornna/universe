@@ -2,6 +2,7 @@ package io.github.sweetcornna.universe.fossil;
 
 import org.jspecify.annotations.Nullable;
 
+import io.github.sweetcornna.universe.advancement.MilestoneTrigger;
 import io.github.sweetcornna.universe.core.fossil.Bone;
 import io.github.sweetcornna.universe.core.fossil.Skeleton;
 import io.github.sweetcornna.universe.registry.sound.FossilSounds;
@@ -114,6 +115,9 @@ public class SkeletonDisplayBlock extends BaseEntityBlock {
         }
         if (!level.isClientSide()) {
             display.insert(bone);
+            if (display.skeleton().complete() && player instanceof ServerPlayer serverPlayer) {
+                MilestoneTrigger.reach(serverPlayer, MilestoneTrigger.SKELETON);
+            }
             stack.consume(1, player);
             level.playSound(null, pos, FossilSounds.BONE_PLACE.get(), SoundSource.BLOCKS, 0.9F, 0.95F + level.getRandom().nextFloat() * 0.1F);
         }

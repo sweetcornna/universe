@@ -3158,6 +3158,15 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         advancement("bioreactor", "活的工厂", "放下生物反应器", "Living Factory", "Place a bioreactor");
         advancement("ecology_seeder", "先锋", "放下生态播种站", "Pioneers", "Place an ecology seeder");
         advancement("terraformed", "第二个地球", "把一颗星球改造到能直接呼吸", "A Second Earth", "Terraform a planet until its air is breathable");
+        advancement("fish", "异星垂钓", "在星球上钓上第一条鱼", "Alien Angling", "Catch your first fish on a planet");
+        advancement("angler", "图鉴渐满", "钓鱼图鉴里记下 " + io.github.sweetcornna.universe.advancement.MilestoneTrigger.ANGLER_SPECIES + " 种鱼",
+                "Filling the Book", "Record " + io.github.sweetcornna.universe.advancement.MilestoneTrigger.ANGLER_SPECIES
+                        + " species in the fishing log");
+        advancement("settlement", "总督", "接管一个外星人的聚落", "Governor", "Take over an alien settlement");
+        advancement("settlement_defended", "守城", "亲手守住一次聚落的海盗来袭", "Holding the Line", "Defend your settlement from a pirate raid yourself");
+        advancement("skeleton", "复原", "在骨架展台上拼齐一副骨架", "Reconstruction", "Complete a skeleton on a skeleton display");
+        advancement("salvage", "拆船匠", "从残骸里切下反应堆芯带走", "Shipbreaker", "Cut the reactor core out of a derelict hulk");
+        advancement("guild", "会员", "在一个公会升到会员，领到礼物", "Card-Carrying Member", "Reach member rank in a guild and claim the gift");
         if (!written.equals(Set.of(UniverseAdvancements.NAMES))) {
             throw new IllegalStateException("进度的语言条目和 UniverseAdvancements.NAMES 对不上");
         }
