@@ -21,6 +21,7 @@ import io.github.sweetcornna.universe.core.logistics.StationSlot;
 import io.github.sweetcornna.universe.core.logistics.Trip;
 import io.github.sweetcornna.universe.core.logistics.Vehicle;
 import io.github.sweetcornna.universe.network.ControlPanelPayloads;
+import io.github.sweetcornna.universe.perf.ServerPerf;
 import io.github.sweetcornna.universe.world.planet.Planets;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -61,7 +62,7 @@ public final class ControlPanel {
     }
 
     public static void registerEvents(IEventBus gameBus) {
-        gameBus.addListener(ServerTickEvent.Post.class, event -> flush(event.getServer()));
+        gameBus.addListener(ServerTickEvent.Post.class, event -> ServerPerf.time("control_panel", () -> flush(event.getServer())));
         gameBus.addListener(ServerStoppedEvent.class, event -> PENDING.clear());
     }
 

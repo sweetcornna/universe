@@ -14,6 +14,7 @@ import io.github.sweetcornna.universe.block.CreatureEggBlockEntity;
 import io.github.sweetcornna.universe.block.EggSequencerBlockEntity;
 import io.github.sweetcornna.universe.block.HydroponicTrayBlockEntity;
 import io.github.sweetcornna.universe.Universe;
+import io.github.sweetcornna.universe.perf.PerfBench;
 import io.github.sweetcornna.universe.block.portal.PortalGlyphBlock;
 import io.github.sweetcornna.universe.block.ship.HelmBlockEntity;
 import io.github.sweetcornna.universe.block.ship.LandingPadBlockEntity;
@@ -665,6 +666,8 @@ public final class UniverseGameTests {
     private static final ResourceKey<Consumer<GameTestHelper>> GREENING_COVERS_ROCK_AND_SOIL = function("greening_covers_rock_and_soil",
             TerraformGameTests::greeningCoversRockAndSoil);
     // M20 星球改造（E）的测试函数加在这行上面
+    /** 参照基地的性能测量，只在设了 {@link PerfBench#PROPERTY} 时登记（ADR-0038）。 */
+    private static final ResourceKey<Consumer<GameTestHelper>> PERF_BENCH = function("perf_bench", PerfBenchGameTests::measure);
 
     private UniverseGameTests() {
     }
@@ -684,6 +687,12 @@ public final class UniverseGameTests {
 
     private static void registerTests(RegisterGameTestsEvent event) {
         Holder<TestEnvironmentDefinition<?>> environment = event.registerEnvironment(Universe.id("default"));
+        PerfBench.Settings perf = PerfBench.Settings.fromSystem();
+        if (perf != null) {
+            // 量性能时只跑这一项，别的测试的设备和单位不算进去
+            test(event, environment, PERF_BENCH, PerfBenchGameTests.maxTicks(perf));
+            return;
+        }
         // 关停守卫机对整个维度生效，单独一批跑，免得别的测试里的守卫机跟着撤走
         Holder<TestEnvironmentDefinition<?>> alone = event.registerEnvironment(Universe.id("sentinels_off"));
         test(event, environment, ASSEMBLER_MAKES_GEARS, 200);

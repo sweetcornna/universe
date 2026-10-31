@@ -13,6 +13,7 @@ import org.jspecify.annotations.Nullable;
 import io.github.sweetcornna.universe.core.vehicle.VehicleKind;
 import io.github.sweetcornna.universe.fluid.AcidFluid;
 import io.github.sweetcornna.universe.network.VehiclePayloads;
+import io.github.sweetcornna.universe.perf.ServerPerf;
 import io.github.sweetcornna.universe.registry.UniverseBlocks;
 import io.github.sweetcornna.universe.registry.sound.ShipSounds;
 import net.minecraft.core.BlockPos;
@@ -83,7 +84,7 @@ public final class VehicleSummoning {
     }
 
     public static void registerEvents(IEventBus gameBus) {
-        gameBus.addListener(ServerTickEvent.Post.class, event -> tick(event.getServer()));
+        gameBus.addListener(ServerTickEvent.Post.class, event -> ServerPerf.time("vehicle_summoning", () -> tick(event.getServer())));
     }
 
     // ---- 列表

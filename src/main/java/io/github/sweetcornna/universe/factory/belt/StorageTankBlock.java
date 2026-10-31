@@ -43,11 +43,7 @@ public class StorageTankBlock extends BaseEntityBlock {
         if (level.isClientSide() || type != UniverseBlockEntities.STORAGE_TANK.get()) {
             return null;
         }
-        return (tickLevel, pos, tickState, blockEntity) -> {
-            long start = ServerPerf.begin();
-            ((StorageTankBlockEntity) blockEntity).serverTick();
-            ServerPerf.end("block/storage_tank", start);
-        };
+        return ServerPerf.timed(type, (tickLevel, pos, tickState, blockEntity) -> ((StorageTankBlockEntity) blockEntity).serverTick());
     }
 
     @Override

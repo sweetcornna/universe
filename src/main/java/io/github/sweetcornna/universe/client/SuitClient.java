@@ -16,6 +16,7 @@ import io.github.sweetcornna.universe.network.JetpackPayload;
 import io.github.sweetcornna.universe.registry.UniverseAttachments;
 import io.github.sweetcornna.universe.registry.UniverseItems;
 import io.github.sweetcornna.universe.survival.SuitHud;
+import io.github.sweetcornna.universe.tech.SuitTech;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
@@ -30,6 +31,7 @@ import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
 import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 import net.neoforged.neoforge.client.network.ClientPacketDistributor;
@@ -66,6 +68,7 @@ public final class SuitClient {
                 jetpack((LocalPlayer) event.getEntity());
             }
         });
+        gameBus.addListener(ClientPlayerNetworkEvent.LoggingOut.class, event -> SuitTech.forgetSupercharged());
     }
 
     // ---- 喷气背包

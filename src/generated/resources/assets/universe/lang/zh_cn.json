@@ -506,6 +506,7 @@
   "commands.universe.asteroids.reset": "删掉了 %s 颗小行星，冷却清空",
   "commands.universe.asteroids.spawned": "放了一颗%s",
   "commands.universe.bench.built": "参照基地：传送带 %s 格，制造台 %s 台，分拣器 %s 个，强制加载 %s 个区块",
+  "commands.universe.bench.built_chemistry": "参照基地：传送带 %s 格，制造台 %s 台，分拣器 %s 个，化工设备 %s 台，强制加载 %s 个区块",
   "commands.universe.bench.status": "参照基地：%s/%s 台在做，已做出 %s 个，每分钟 %s 个",
   "commands.universe.bench.stopped": "停止了 %s 座参照基地的补给",
   "commands.universe.blackhole.here": "黑洞在 %1$s，视界半径 %2$s 格，离视界还有 %3$s 格",

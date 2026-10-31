@@ -406,6 +406,11 @@ io.github.sweetcornna.universe
 | `RenderTypes.entityTranslucent` 的管线不剔除背面（`withCull(false)`），半透明混合；`RenderTypes.eyes` 是半透明混合、测深度但不写深度，能当自发光的一层叠在模型上 | 已确认 |
 | 实体的移动分边算：`Entity.getMoveSimulationType()` 默认 `AUTHORITATIVE_SIDE`，客户端上没人骑的实体调 `move(MoverType.SELF, …)`，开发环境里直接抛 "Attempted to move entity on a logical side not permitted to simulate movement"（正式包不抛，但也不该在客户端算）。两边都推的自由漂移物照原版掉落物、下落方块覆盖成 `SERVER_AND_CLIENT`；`Projectile` 已经是 | 已确认，深空的残骸碎片 |
 | 服务端在等客户端确认传送（`awaitingPositionFromClient` 不为 null）时，`handleUseItemOn` 整次丢掉，只回一条"建筑高度上限"的提示；开发脚本传送以后要等几刻再右键 | 已确认 |
+| `BlockEntity.setChanged()` 除了标记区块要存盘（`Level.blockEntityChanged(pos)`，只是 `markUnsaved`），还调 `Level.updateNeighbourForOutputSignal`：NeoForge 补丁后上下也通知，六个邻居各读一次方块状态、调 `onNeighborChange`，是导体还要再读一格。每刻都改的数（进度）只调 `blockEntityChanged`，物品栏变了再 `setChanged` | 已确认，`MachineBlockEntity.markUnsaved`（ADR-0038） |
+| 方块实体在不在更新：`ServerLevel.shouldTickBlocksAt(ChunkPos.pack())`；实体那一档是 `isPositionEntityTicking(BlockPos)` | 已确认，`PerfBench` |
+| `EntityJoinLevelEvent` 在实体真正加进维度之前发，UUID 重复时发了事件也加不进去；玩家先单独发一次事件，再走 `addNewEntityWithoutEvent`。实体离开维度（卸载、死亡、换维度）在 `ServerLevel` 的 `onTrackingEnd` 里发 `EntityLeaveLevelEvent` | 已确认，`LoadedEnemies` |
+| `ItemStackRenderState.isAnimated()`：模型带附魔光效、动画贴图时为真。按种子、时间、组件挑子模型的（`RangeSelectItemModel` 等，比如没有目标的指南针按种子乱转）不算动画，要看出来得用 `TrackingItemStackRenderState`，`getModelIdentity()` 是解析时用到的模型列表。只由固定模型（`CuboidItemModelWrapper`、`CompositeModel`）组成、又不带动画的状态，同一帧里同一种物品可以共用一份提交多次 | 已确认，`SharedItemModels`（ADR-0038） |
+| `ExtractLevelRenderStateEvent.getFrustum()` 拿得到这一帧的视锥，`Frustum.isVisible(AABB)` 剔除；`AABB.of(BoundingBox)` 把方块框换成包住整格的盒子 | 已确认，`GhostClient` |
 
 拿不准的 API 先查源码再写，核实后把结果补进这张表。源码在：
 
@@ -417,6 +422,8 @@ io.github.sweetcornna.universe
 - 服务端：中等规模的基地（5,000 段传送带、500 台设备、同时加载 3 颗星球）保持 20 TPS，本模组每 tick 耗时低于 10 ms。
 - 客户端：完整显示戴森球时，中端显卡在 1080p 下帧率下降不超过 10%。
 - 首次前往一颗星球（含创建维度）的等待时间低于 5 秒。
+
+M21 实测（2026-10-31，云端容器 4 核，ADR-0038）：游戏内测量 5,000 段传送带、500 台制造台和分拣器、100 台化工设备，本模组每刻 0.79 ms（优化前 1.29 ms），服务器每刻 1.18 ms。和 M9 的数不是同一台机器，不能直接比。
 
 M9 实测（2026-10-20，本机，ADR-0019）：主世界 5,000 段传送带、500 台设备，另有三颗星球各 1,000 段、100 台，本模组每刻 1.16 ms（服务器每刻 6.25 ms）；戴森球天空在 1600×900 下折算到 60 fps，常见的四层球壳完整画质约多 2.5%，十层壳加十八条轨道的上限约多 10%（简化画质约 4%）；第一次去一颗星球，建维度 4 ms，命令到落地约 2 秒。
 
@@ -430,7 +437,8 @@ M9 实测（2026-10-20，本机，ADR-0019）：主世界 5,000 段传送带、5
   - `push`、`buttons` 只认原版的 `AbstractButton`。戴森球编辑器自己画可点的区域（`DysonEditorScreen.Hit`），用 `hits` 列出这一帧的文字、`hit <文字>` 点一个（色块的文字是 `color:RRGGBB`）。要选中三维视图里的东西（上色、拆掉要先选）还是得靠鼠标，脚本够不着，那条路由 `DysonEditGameTests` 在服务端验。
   - 菜单里的格子和按钮不用算坐标：`quickmove <格子序号>` 是 Shift 点一格，`menubutton <编号>` 按菜单的按钮（编号见各菜单的 `clickMenuButton`，比如机甲面板 51 是舰队页、70 是出动第一个地面编队）。M18 加的还有 `pin <种类> [目标]`（往仪表盘上钉图）、`stats <物品>`（打开统计并选中）、`queue <科技>`（排研究队列）、`press controlpanel|fleet`、`key burst on|off`（按住、松开护盾爆发）。
   - M19 的动词由各个玩法的客户端类登记（`DevScript.EXTRA_VERBS`）：钓鱼 `fishcast`（按一下右键）、`fishauto [off]`（咬钩自动钩住、看张力收放线）、`fishreel [off]`、`fishlog`；聚落 `settleclaim`、`settleopen`、`settletab <页> [地基]`、`settlebuild <地基> <建筑>`、`settleskip`、`settlefinish`、`settleday [天数]`、`settleraid`、`settlelist`；化石 `fossilput <类群> <部位>`、`fossilfill`、`fossilopen`、`fossilpack`、`fossilwant`、`fossilsell`、`fossilswap`；深空 `dshulk [长度]`、`dsoutpost`、`dsdebris`、`dsgoto hulk|outpost|debris`、`dsstatus`、`dsdetonate`、`dsclear`、`eva`、`board`、`tractor [off]`；重力枪 `grab`、`drop`、`throw`、`shove`（潜行左键的推开；内置的 `push` 是按界面按钮，扩展动词不能和内置的重名）；局部危害 `hazard <种类>`、`hazardlog`，`techscreen` 打开科技布局。找地方用命令：`/universe settlement goto`、`/universe fossil goto` 传送到最近的聚落、发掘场边上。
-- 性能：core 层做基准测试（M1 定方案）。游戏内 `/universe perf` 按子系统计时，`/universe bench <传送带> <设备>` 搭参照基地；要看方法栈时再装 Spark。
+- 性能：core 层做基准测试（M1 定方案）。游戏内 `/universe perf` 按子系统计时，`/universe bench <传送带> <设备> [化工设备]` 搭参照基地；要看方法栈时再装 Spark。不开客户端也能量：`./gradlew runGameTestServer -PperfBench=<传送带>,<设备>,<化工设备>,<刻数>` 只跑参照基地这一项，分项报告写进 `run/logs/latest.log`（`Perf:` 开头，ADR-0038）。
+- 别在游戏内测试或开发客户端运行的时候另开一个 Gradle 编译：类文件被换掉，正在跑的游戏会 `ClassNotFoundException`；单元测试同时跑也一样。
 - 多人：`runClient2`（游戏目录 `run2`，用户名 Dev2）。两个客户端都带开发脚本无头启动：主机用 `lan <端口>` 开放（只监听回环地址），`waitplayers <人数>` 等客人连上、退出；客人用 `-PjoinServer=localhost:<端口>` 直接连。
 - 回归：保留几个固定种子的测试世界，每次升级 MC 版本后手动走一遍。
 

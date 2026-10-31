@@ -156,8 +156,10 @@ public class HydroponicTrayBlockEntity extends MachineBlockEntity {
                 this.addOutput(SEEDLING, seedling);
             }
             this.sync();
+            this.setChanged();
+        } else {
+            this.markUnsaved();
         }
-        this.setChanged();
         return true;
     }
 

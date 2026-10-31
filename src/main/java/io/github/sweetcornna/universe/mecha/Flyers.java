@@ -8,6 +8,7 @@ import java.util.Map;
 
 import io.github.sweetcornna.universe.network.FlyersPayload;
 import io.github.sweetcornna.universe.network.FlyersPayload.Flyer;
+import io.github.sweetcornna.universe.perf.ServerPerf;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -33,7 +34,7 @@ public final class Flyers {
     }
 
     public static void registerEvents(IEventBus gameBus) {
-        gameBus.addListener(ServerTickEvent.Post.class, event -> flush(event.getServer()));
+        gameBus.addListener(ServerTickEvent.Post.class, event -> ServerPerf.time("flyers", () -> flush(event.getServer())));
         gameBus.addListener(PlayerEvent.PlayerLoggedInEvent.class, event -> snapshot(event.getEntity()));
         gameBus.addListener(PlayerEvent.PlayerChangedDimensionEvent.class, event -> snapshot(event.getEntity()));
         gameBus.addListener(PlayerEvent.PlayerRespawnEvent.class, event -> snapshot(event.getEntity()));

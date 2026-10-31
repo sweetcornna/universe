@@ -74,8 +74,10 @@ public class OilExtractorBlockEntity extends MachineBlockEntity {
             }
             ProductionLog.produced(level, oil.getItem(), 1);
             this.addOutput(OUTPUT, oil);
+            this.setChanged();
+        } else {
+            this.markUnsaved();
         }
-        this.setChanged();
         return true;
     }
 

@@ -95,6 +95,11 @@ neoForge {
         gameTestServer {
             type = 'gameTestServer'
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+            // 量性能（ADR-0038）：./gradlew runGameTestServer -PperfBench=<传送带>,<设备>,<化工设备>,<刻数>
+            // 只跑参照基地这一项，分项计时的报告写进 run/logs/latest.log（Perf: 开头）
+            if (project.hasProperty('perfBench')) {
+                systemProperty 'universe.perfBench', project.property('perfBench').toString()
+            }
         }
 
         // 数据生成：输出到 src/generated/resources

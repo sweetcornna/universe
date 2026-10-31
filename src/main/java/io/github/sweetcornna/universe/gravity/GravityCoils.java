@@ -20,6 +20,7 @@ import io.github.sweetcornna.universe.deepspace.DebrisChunk;
 import io.github.sweetcornna.universe.entity.civ.AlienNpc;
 import io.github.sweetcornna.universe.entity.ship.ShipEntity;
 import io.github.sweetcornna.universe.mecha.fleet.FleetUnit;
+import io.github.sweetcornna.universe.perf.ServerPerf;
 import io.github.sweetcornna.universe.registry.sound.DeepSpaceSounds;
 import io.github.sweetcornna.universe.sentinel.Sentinel;
 import io.github.sweetcornna.universe.survival.Multitool;
@@ -98,7 +99,7 @@ public final class GravityCoils {
     }
 
     public static void registerEvents(IEventBus gameBus) {
-        gameBus.addListener(ServerTickEvent.Post.class, event -> tick(event.getServer()));
+        gameBus.addListener(ServerTickEvent.Post.class, event -> ServerPerf.time("gravity_coils", () -> tick(event.getServer())));
         gameBus.addListener(PlayerEvent.PlayerLoggedOutEvent.class, event -> {
             if (event.getEntity() instanceof ServerPlayer player) {
                 release(player, false);

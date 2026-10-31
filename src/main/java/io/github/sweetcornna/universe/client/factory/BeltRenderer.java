@@ -1,13 +1,17 @@
 package io.github.sweetcornna.universe.client.factory;
 
 import java.util.ArrayList;
+import java.util.IdentityHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.jspecify.annotations.Nullable;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 
+import io.github.sweetcornna.universe.client.RenderFrames;
+import io.github.sweetcornna.universe.client.SharedItemModels;
 import io.github.sweetcornna.universe.core.factory.BeltLine;
 import io.github.sweetcornna.universe.core.factory.Cargo;
 import io.github.sweetcornna.universe.factory.belt.BeltBlock;
@@ -27,7 +31,6 @@ import net.minecraft.client.renderer.item.ItemStackRenderState;
 import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.core.Direction;
-import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
@@ -47,6 +50,12 @@ public class BeltRenderer implements BlockEntityRenderer<BeltBlockEntity, BeltRe
 
     private final ItemModelResolver itemModelResolver;
     private final Int2ObjectMap<ItemStack> stacks = new Int2ObjectOpenHashMap<>();
+    /** 这一帧各条线路上每个物品画在哪，同一帧里各段传送带共用（ADR-0038），换一帧（{@link RenderFrames}）或者换了插值就清掉。 */
+    private final Map<BeltLine, float[]> shown = new IdentityHashMap<>();
+    private long shownFrame = -1;
+    private float shownPartial = Float.NaN;
+    /** 同一种货物这一帧共用一份模型。 */
+    private final SharedItemModels models = new SharedItemModels();
 
     public BeltRenderer(BlockEntityRendererProvider.Context context) {
         this.itemModelResolver = context.itemModelResolver();
@@ -75,29 +84,62 @@ public class BeltRenderer implements BlockEntityRenderer<BeltBlockEntity, BeltRe
         BeltCurve curve = blockState.getValue(BeltBlock.CURVE);
         int from = segment.from();
         int to = from + BeltNetwork.UNITS;
-        float step = line.speed() * partialTicks;
-        float limit = line.length();
+        boolean last = segment.last();
+        long frame = RenderFrames.current();
+        if (frame != this.shownFrame || Float.compare(partialTicks, this.shownPartial) != 0) {
+            this.shownFrame = frame;
+            this.shownPartial = partialTicks;
+            this.shown.clear();
+        }
+        float[] shown = this.shown.get(line);
+        if (shown == null) {
+            shown = shown(line, partialTicks);
+            this.shown.put(line, shown);
+        }
         int seed = (int) blockEntity.getBlockPos().asLong();
-        for (int i = 0; i < line.count(); i++) {
-            int p = line.position(i);
-            float shown = Math.min(p + step, limit);
-            limit = shown - BeltLine.SPACING;
-            if (shown < from) {
-                break;
-            }
-            if (shown > to || shown == to && !segment.last()) {
-                continue;
-            }
-            float t = (shown - from) / BeltNetwork.UNITS;
+        // 物品由近到远排，画的位置逐个变小：跳过还没到这一段的，画到离开这一段为止
+        for (int i = skipAhead(shown, to, last); i < shown.length && shown[i] >= from; i++) {
+            float t = (shown[i] - from) / BeltNetwork.UNITS;
             Item entry = place(slope, curve, t);
-            entry.render = new ItemStackRenderState();
             int cargo = line.item(i);
-            ItemStack stack = this.stacks.computeIfAbsent(cargo, BeltNetwork::display);
             entry.layers = Cargo.count(cargo);
-            this.itemModelResolver.updateForTopItem(entry.render, stack, ItemDisplayContext.FIXED, level, null, seed + i);
+            // 画出来的样子只看物品和增产等级，叠了几个、点数零头不同的共用一份；同一个样子的物品堆是同一个对象，拿它作键
+            ItemStack stack = this.stacks.computeIfAbsent(Cargo.uniform(Cargo.item(cargo), 1, Cargo.level(cargo)), BeltNetwork::display);
+            entry.render = this.models.get(stack, stack, this.itemModelResolver, level, seed + i);
             state.items.add(entry);
         }
     }
+
+    /**
+     * 线路上每个物品这一帧画在离起点多远：位置按速度往前插，不越过线路尽头，和前一个至少隔 {@link BeltLine#SPACING}。
+     * 结果逐个变小。
+     */
+    private static float[] shown(BeltLine line, float partialTicks) {
+        float[] shown = new float[line.count()];
+        float step = line.speed() * partialTicks;
+        float limit = line.length();
+        for (int i = 0; i < shown.length; i++) {
+            shown[i] = Math.min(line.position(i) + step, limit);
+            limit = shown[i] - BeltLine.SPACING;
+        }
+        return shown;
+    }
+
+    /** 第一个不在这一段前面的物品：画在 {@code to} 以前，正好在 {@code to} 上的只有线路的最后一段画。 */
+    private static int skipAhead(float[] shown, int to, boolean last) {
+        int lo = 0;
+        int hi = shown.length;
+        while (lo < hi) {
+            int mid = (lo + hi) >>> 1;
+            if (shown[mid] > to || shown[mid] == to && !last) {
+                lo = mid + 1;
+            } else {
+                hi = mid;
+            }
+        }
+        return lo;
+    }
+
 
     /** 朝北时这一段上 {@code t}（0 是后沿，1 是前沿）处的位置和朝向。 */
     private static Item place(BeltSlope slope, BeltCurve curve, float t) {

@@ -22,6 +22,7 @@ import io.github.sweetcornna.universe.core.blueprint.BlueprintGeometry;
 import io.github.sweetcornna.universe.network.BlueprintPayloads;
 import io.github.sweetcornna.universe.registry.UniverseDataComponents;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.renderer.block.BlockStateModelSet;
 import net.minecraft.client.renderer.block.dispatch.BlockStateModelPart;
@@ -79,6 +80,26 @@ public final class BlueprintClient {
     private record Preview(AABB frame, int frameColor, List<Ghost> ghosts) {
     }
 
+    /**
+     * 蓝图摆在某处的样子：每格的位置、方块状态和被相邻实心方块挡住的面（ADR-0038）。蓝图、位置、转向、只贴设备都没变时
+     * 一直用这一份，不用每帧把几千格重新转一遍、查一遍邻居。格子的顺序和原来逐帧现算时一样。
+     */
+    private record Layout(BlueprintPayloads.Content content, BlockPos origin, int turns, boolean devicesOnly, BlockPos[] positions,
+            BlockState[] states, int[] hidden) {
+        boolean matches(BlueprintPayloads.Content content, BlockPos origin, int turns, boolean devicesOnly) {
+            return this.content == content && this.origin.equals(origin) && this.turns == turns && this.devicesOnly == devicesOnly;
+        }
+    }
+
+    private static @Nullable Layout layout;
+    /**
+     * 各格有没有实体挡着（1 是没有，2 是有，0 是这一刻还没查）。实体的碰撞箱每个客户端刻才动一次，一刻里查一遍就够了，
+     * 换了一刻或者换了摆法就重新查。刻按本地玩家的刻数认：冻结时间（{@code /tick freeze}）时世界的时间停了，人还在走。
+     */
+    private static byte[] unobstructed = new byte[0];
+    private static long unobstructedTick = Long.MIN_VALUE;
+    private static @Nullable Layout unobstructedLayout;
+
     /** 上一次放的蓝图：准星落在它的范围里时对齐过去，好原地补上缺的方块。 */
     private record Paste(int id, int turns, BlockPos anchor, String dimension) {
     }
@@ -117,6 +138,9 @@ public final class BlueprintClient {
             REQUESTED.clear();
             MODELS.clear();
             lastPaste = null;
+            layout = null;
+            unobstructedLayout = null;
+            unobstructed = new byte[0];
             BlueprintCostHud.clear();
         });
     }
@@ -258,6 +282,40 @@ public final class BlueprintClient {
      */
     private static List<Ghost> ghosts(BlueprintPayloads.Content content, BlockPos origin, int turns, ClientLevel level, Vec3 camera,
             boolean devicesOnly, Map<net.minecraft.world.item.Item, Integer> cost) {
+        Layout layout = BlueprintClient.layout;
+        if (layout == null || !layout.matches(content, origin, turns, devicesOnly)) {
+            layout = layout(content, origin, turns, devicesOnly);
+            BlueprintClient.layout = layout;
+        }
+        LocalPlayer player = Minecraft.getInstance().player;
+        long tick = player != null ? player.tickCount : level.getGameTime();
+        if (tick != unobstructedTick || layout != unobstructedLayout) {
+            unobstructedTick = tick;
+            unobstructedLayout = layout;
+            unobstructed = new byte[layout.positions().length];
+        }
+        List<Ghost> ghosts = new ArrayList<>(layout.positions().length);
+        for (int i = 0; i < layout.positions().length; i++) {
+            BlockPos pos = layout.positions()[i];
+            BlockState state = layout.states()[i];
+            BlockState current = level.getBlockState(pos);
+            if (current == state) {
+                continue;
+            }
+            tally(cost, state, false);
+            List<BlockStateModelPart> parts = parts(state);
+            if (current.canBeReplaced() && unobstructed[i] == 0) {
+                unobstructed[i] = level.isUnobstructed(state, pos, CollisionContext.empty()) ? (byte) 1 : (byte) 2;
+            }
+            int color = current.canBeReplaced() && unobstructed[i] == 1 ? GHOST : BLOCKED;
+            ghosts.add(new Ghost((float) (pos.getX() - camera.x), (float) (pos.getY() - camera.y), (float) (pos.getZ() - camera.z), parts,
+                    layout.hidden()[i], color));
+        }
+        return ghosts;
+    }
+
+    /** 把蓝图转好、摆到 {@code origin}：每格的位置、状态和被相邻实心方块挡住的面。"只贴设备"时只留设备。 */
+    private static Layout layout(BlueprintPayloads.Content content, BlockPos origin, int turns, boolean devicesOnly) {
         Rotation rotation = Blueprints.rotation(turns);
         int count = content.positions().size();
         Map<BlockPos, BlockState> placed = new HashMap<>(count * 2);
@@ -269,28 +327,23 @@ public final class BlueprintClient {
                 placed.put(origin.offset(xz[0], BlueprintGeometry.y(packed), xz[1]), state);
             }
         }
-        List<Ghost> ghosts = new ArrayList<>(count);
+        BlockPos[] positions = new BlockPos[placed.size()];
+        BlockState[] states = new BlockState[placed.size()];
+        int[] hidden = new int[placed.size()];
+        int i = 0;
         for (Map.Entry<BlockPos, BlockState> entry : placed.entrySet()) {
             BlockPos pos = entry.getKey();
-            BlockState state = entry.getValue();
-            BlockState current = level.getBlockState(pos);
-            if (current == state) {
-                continue;
-            }
-            tally(cost, state, false);
-            int hidden = 0;
+            positions[i] = pos;
+            states[i] = entry.getValue();
             for (Direction direction : DIRECTIONS) {
                 BlockState neighbor = placed.get(pos.relative(direction));
                 if (neighbor != null && neighbor.canOcclude()) {
-                    hidden |= 1 << direction.ordinal();
+                    hidden[i] |= 1 << direction.ordinal();
                 }
             }
-            List<BlockStateModelPart> parts = parts(state);
-            int color = current.canBeReplaced() && level.isUnobstructed(state, pos, CollisionContext.empty()) ? GHOST : BLOCKED;
-            ghosts.add(new Ghost((float) (pos.getX() - camera.x), (float) (pos.getY() - camera.y), (float) (pos.getZ() - camera.z), parts, hidden,
-                    color));
+            i++;
         }
-        return ghosts;
+        return new Layout(content, origin, turns, devicesOnly, positions, states, hidden);
     }
 
     private static void submit(SubmitCustomGeometryEvent event) {

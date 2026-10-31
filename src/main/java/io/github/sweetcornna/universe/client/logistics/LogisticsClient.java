@@ -9,6 +9,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 
 import io.github.sweetcornna.universe.Universe;
+import io.github.sweetcornna.universe.client.SharedItemModels;
 import io.github.sweetcornna.universe.core.logistics.SpaceRoute;
 import io.github.sweetcornna.universe.network.LogisticsFlightsPayload;
 import io.github.sweetcornna.universe.registry.UniverseItems;
@@ -23,8 +24,6 @@ import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.util.Mth;
 import net.minecraft.util.context.ContextKey;
-import net.minecraft.world.item.ItemDisplayContext;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.IEventBus;
@@ -63,6 +62,7 @@ public final class LogisticsClient {
     private static final int SPACE_MAX_FAR = 64;
     /** 跃迁的闪光：淡蓝。 */
     private static final int WARP_FLASH = 0xFFA8D8FF;
+    private static final SharedItemModels MODELS = new SharedItemModels();
 
     private static List<LogisticsFlightsPayload.Flight> flights = List.of();
     private static long lastTick = Long.MIN_VALUE;
@@ -274,8 +274,6 @@ public final class LogisticsClient {
         double now = state.gameTime + state.worldPartialTicks;
         List<Craft> crafts = new ArrayList<>();
         Minecraft minecraft = Minecraft.getInstance();
-        ItemStack drone = new ItemStack(UniverseItems.LOGISTICS_DRONE.get());
-        ItemStack vessel = new ItemStack(UniverseItems.LOGISTICS_VESSEL.get());
         int seed = 0;
         int far = 0;
         for (LogisticsFlightsPayload.Flight flight : flights) {
@@ -316,9 +314,9 @@ public final class LogisticsClient {
                 BlockPos at = BlockPos.containing(p[0], p[1], p[2]);
                 light = LightCoordsUtil.pack(Math.max(9, level.getBrightness(LightLayer.BLOCK, at)), level.getBrightness(LightLayer.SKY, at));
             }
-            ItemStackRenderState model = new ItemStackRenderState();
-            minecraft.getItemModelResolver().updateForTopItem(model, flight.vessel() ? vessel : drone, ItemDisplayContext.FIXED, level, null,
-                    seed++);
+            // 无人机、运输船这一帧各解析一次，所有架次共用（ADR-0038）
+            ItemStackRenderState model = MODELS.get(flight.vessel() ? UniverseItems.LOGISTICS_VESSEL.get() : UniverseItems.LOGISTICS_DRONE.get(),
+                    minecraft.getItemModelResolver(), level, seed++);
             float stretch = p.length > 5 ? (float) p[5] : 1.0F;
             crafts.add(new Craft(dx, dy, dz, (float) p[3], (float) p[4], scale, stretch, light, model));
         }

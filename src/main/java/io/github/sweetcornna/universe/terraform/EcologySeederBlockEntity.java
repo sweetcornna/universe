@@ -170,8 +170,10 @@ public class EcologySeederBlockEntity extends MachineBlockEntity {
             if (this.progress >= SEED_TICKS) {
                 this.progress -= SEED_TICKS;
                 this.plant(level, genes.orElseThrow());
+                this.setChanged();
+            } else {
+                this.markUnsaved();
             }
-            this.setChanged();
         }
         if (--this.greenTimer <= 0) {
             this.greenTimer = Greening.INTERVAL;
@@ -202,11 +204,13 @@ public class EcologySeederBlockEntity extends MachineBlockEntity {
      */
     private boolean water(ServerLevel level) {
         boolean wanted = this.target != null && !this.naturalWater;
+        boolean drank = false;
         if (wanted && this.waterLeft <= 0 && isWater(this.getItem(WATER_SLOT))) {
             Item item = this.getItem(WATER_SLOT).getItem();
             this.consumeInput(WATER_SLOT, 1);
             ProductionLog.consumed(level, item, 1);
             this.waterLeft = WATER_TICKS;
+            drank = true;
         }
         boolean watering = wanted && this.waterLeft > 0;
         if (watering != this.irrigating) {
@@ -219,7 +223,12 @@ public class EcologySeederBlockEntity extends MachineBlockEntity {
         }
         if (watering) {
             this.waterLeft--;
-            this.setChanged();
+            // 只有用掉一格水的那一刻物品栏变了
+            if (drank) {
+                this.setChanged();
+            } else {
+                this.markUnsaved();
+            }
         }
         return watering;
     }

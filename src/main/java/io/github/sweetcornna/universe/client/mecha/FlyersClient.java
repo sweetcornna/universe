@@ -11,6 +11,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 
 import io.github.sweetcornna.universe.Universe;
+import io.github.sweetcornna.universe.client.SharedItemModels;
 import io.github.sweetcornna.universe.network.FlyersPayload;
 import io.github.sweetcornna.universe.registry.UniverseItems;
 import net.minecraft.client.Minecraft;
@@ -23,7 +24,7 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.util.LightCoordsUtil;
 import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.entity.Entity;
-import net.minecraft.world.item.ItemDisplayContext;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.LightLayer;
 import net.minecraft.world.phys.Vec3;
@@ -43,6 +44,7 @@ public final class FlyersClient {
     private static final double VIEW_DISTANCE = 128;
 
     private static final Map<Integer, FlyersPayload.Flyer> FLYERS = new HashMap<>();
+    private static final SharedItemModels MODELS = new SharedItemModels();
 
     private record Craft(double x, double y, double z, float yaw, float scale, int light, ItemStackRenderState model,
             @Nullable ItemStackRenderState cargo) {
@@ -104,9 +106,6 @@ public final class FlyersClient {
         Vec3 camera = event.getCamera().position();
         float partial = event.getDeltaTracker().getGameTimeDeltaPartialTick(false);
         double now = state.gameTime + state.worldPartialTicks;
-        Minecraft minecraft = Minecraft.getInstance();
-        ItemStack drone = new ItemStack(UniverseItems.CONSTRUCTION_DRONE.get());
-        ItemStack bot = new ItemStack(UniverseItems.LOGISTICS_BOT.get());
         List<Craft> crafts = new ArrayList<>();
         int seed = 0;
         for (FlyersPayload.Flyer flyer : FLYERS.values()) {
@@ -118,19 +117,21 @@ public final class FlyersClient {
                 continue;
             }
             boolean isBot = flyer.kind() == FlyersPayload.BOT;
-            ItemStackRenderState model = new ItemStackRenderState();
-            minecraft.getItemModelResolver().updateForTopItem(model, isBot ? bot : drone, ItemDisplayContext.FIXED, level, null, seed++);
+            ItemStackRenderState model = model(isBot ? UniverseItems.LOGISTICS_BOT.get() : UniverseItems.CONSTRUCTION_DRONE.get(), level, seed++);
             ItemStackRenderState cargo = null;
             if (flyer.cargo() >= 0) {
-                cargo = new ItemStackRenderState();
-                minecraft.getItemModelResolver().updateForTopItem(cargo, new ItemStack(BuiltInRegistries.ITEM.byId(flyer.cargo())),
-                        ItemDisplayContext.FIXED, level, null, seed++);
+                cargo = model(BuiltInRegistries.ITEM.byId(flyer.cargo()), level, seed++);
             }
             BlockPos at = BlockPos.containing(p[0], p[1], p[2]);
             int light = LightCoordsUtil.pack(Math.max(10, level.getBrightness(LightLayer.BLOCK, at)), level.getBrightness(LightLayer.SKY, at));
             crafts.add(new Craft(dx, dy, dz, (float) p[3], isBot ? 0.7F : 0.6F, light, model, cargo));
         }
         state.setRenderData(CRAFTS, crafts.isEmpty() ? null : crafts);
+    }
+
+    /** 一种物品的模型：无人机、机器人、货物这一帧里同一种共用一份（ADR-0038）。 */
+    private static ItemStackRenderState model(Item item, ClientLevel level, int seed) {
+        return MODELS.get(item, Minecraft.getInstance().getItemModelResolver(), level, seed);
     }
 
     private static void submit(SubmitCustomGeometryEvent event) {

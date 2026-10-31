@@ -13,6 +13,7 @@ import io.github.sweetcornna.universe.Universe;
 import io.github.sweetcornna.universe.core.beacon.BeaconVisibility;
 import io.github.sweetcornna.universe.dyson.Dyson;
 import io.github.sweetcornna.universe.network.HoloBeaconPayloads;
+import io.github.sweetcornna.universe.perf.ServerPerf;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.MinecraftServer;
@@ -73,7 +74,7 @@ public final class HoloBeacons extends SavedData {
                 PacketDistributor.sendToPlayer(player, get(player.level().getServer()).payload());
             }
         });
-        gameBus.addListener(ServerTickEvent.Post.class, event -> get(event.getServer()).flush(event.getServer()));
+        gameBus.addListener(ServerTickEvent.Post.class, event -> ServerPerf.time("holo_beacons", () -> get(event.getServer()).flush(event.getServer())));
     }
 
     private static String key(ResourceKey<Level> dimension, BlockPos pos) {

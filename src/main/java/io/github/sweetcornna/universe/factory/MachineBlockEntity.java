@@ -169,6 +169,16 @@ public abstract class MachineBlockEntity extends BaseContainerBlockEntity implem
      */
     protected abstract boolean tickMachine();
 
+    /**
+     * 只改了进度、批数这类存档里的数，物品栏没动时用：标记区块要存盘，不像 {@link #setChanged()} 那样挨个通知六个邻居。
+     * 比较器读的是物品栏装了多少，进度走一刻读数不变，所以每刻都要调的地方用它，物品栏真变了再 {@link #setChanged()}。
+     */
+    protected final void markUnsaved() {
+        if (this.level != null) {
+            this.level.blockEntityChanged(this.worldPosition);
+        }
+    }
+
     public boolean working() {
         return this.idleTicks < IDLE_GRACE;
     }

@@ -139,6 +139,7 @@ public final class UniverseClient {
         ClientStory.registerEvents(modBus, NeoForge.EVENT_BUS);
         GuideItem.opener = () -> Minecraft.getInstance().gui.setScreen(new GuideScreen());
         BlueprintClient.registerEvents(modBus, NeoForge.EVENT_BUS);
+        io.github.sweetcornna.universe.client.RenderFrames.registerEvents(NeoForge.EVENT_BUS);
         GhostClient.registerEvents(modBus, NeoForge.EVENT_BUS);
         MechaClient.registerEvents(modBus, NeoForge.EVENT_BUS);
         // 声音（ADR-0029）：机器的环境声、真空和水下的处理、给开发脚本记的日志

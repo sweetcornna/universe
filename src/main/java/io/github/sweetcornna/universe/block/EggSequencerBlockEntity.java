@@ -71,8 +71,10 @@ public class EggSequencerBlockEntity extends MachineBlockEntity {
             if (this.level != null) {
                 this.level.playSound(null, this.worldPosition, MachineSounds.SEQUENCER_DONE.get(), SoundSource.BLOCKS, 0.8F, 1.0F);
             }
+            this.setChanged();
+        } else {
+            this.markUnsaved();
         }
-        this.setChanged();
         return true;
     }
 

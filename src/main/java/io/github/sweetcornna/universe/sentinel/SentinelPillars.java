@@ -12,6 +12,7 @@ import io.github.sweetcornna.universe.core.sentinel.PillarLayout;
 import io.github.sweetcornna.universe.core.sentinel.SentinelLevel;
 import io.github.sweetcornna.universe.core.survival.MultitoolSpec;
 import io.github.sweetcornna.universe.core.tech.Grade;
+import io.github.sweetcornna.universe.perf.ServerPerf;
 import io.github.sweetcornna.universe.poi.PoiProgress;
 import io.github.sweetcornna.universe.poi.Pois;
 import io.github.sweetcornna.universe.poi.Waypoint;
@@ -86,7 +87,7 @@ public final class SentinelPillars {
     }
 
     public static void registerEvents(IEventBus gameBus) {
-        gameBus.addListener(ServerTickEvent.Post.class, event -> tick(event.getServer()));
+        gameBus.addListener(ServerTickEvent.Post.class, event -> ServerPerf.time("sentinel_pillars", () -> tick(event.getServer())));
         gameBus.addListener(ServerStoppedEvent.class, event -> PLANNED.clear());
     }
 

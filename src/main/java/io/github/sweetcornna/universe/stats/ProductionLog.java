@@ -42,6 +42,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.event.server.ServerStartedEvent;
 import net.neoforged.neoforge.event.server.ServerStoppedEvent;
@@ -66,6 +67,8 @@ public final class ProductionLog {
     private static final Map<ServerLevel, long[]> POWER = new WeakHashMap<>();
     /** 每个世界这一秒取的样：设备种类（方块 ID）→ 发电能力、需求（焦耳，按一秒算）。 */
     private static final Map<ServerLevel, Map<String, long[]>> DEVICES = new WeakHashMap<>();
+    /** 设备方块的注册名，每秒给每台设备取样时用。 */
+    private static final Map<Block, String> DEVICE_NAMES = new HashMap<>();
     private static final ReferenceRates REFERENCE = new ReferenceRates();
     /** 星系的统计范围写成 {@code system:<序号>}。 */
     public static final String SYSTEM_PREFIX = "system:";
@@ -188,7 +191,7 @@ public final class ProductionLog {
         if (generation <= 0 && demand <= 0 || !machine.connected()) {
             return;
         }
-        String kind = BuiltInRegistries.BLOCK.getKey(machine.getBlockState().getBlock()).toString();
+        String kind = DEVICE_NAMES.computeIfAbsent(machine.getBlockState().getBlock(), block -> BuiltInRegistries.BLOCK.getKey(block).toString());
         long[] sample = DEVICES.computeIfAbsent(level, key -> new HashMap<>()).computeIfAbsent(kind, key -> new long[2]);
         sample[0] += generation * POWER_INTERVAL;
         sample[1] += demand * POWER_INTERVAL;

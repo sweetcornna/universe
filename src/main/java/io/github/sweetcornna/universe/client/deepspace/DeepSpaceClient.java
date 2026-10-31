@@ -37,6 +37,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
@@ -44,6 +45,7 @@ import net.neoforged.neoforge.client.event.SubmitCustomGeometryEvent;
 import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 import net.neoforged.neoforge.client.network.ClientPacketDistributor;
 import net.neoforged.neoforge.client.network.event.RegisterClientPayloadHandlersEvent;
+import net.neoforged.neoforge.event.entity.EntityJoinLevelEvent;
 
 /**
  * 深空的客户端部分（ADR-0034 §四）：HUD 上标出附近的碎片带、前哨站、残骸；靠近残骸时顶上显示结构完整度，
@@ -84,6 +86,18 @@ public final class DeepSpaceClient {
                 event -> event.registerBelow(VanillaGuiLayers.CROSSHAIR, Universe.id("deep_space"), DeepSpaceClient::renderHud));
         gameBus.addListener(ClientTickEvent.Post.class, event -> tick());
         gameBus.addListener(SubmitCustomGeometryEvent.class, DeepSpaceClient::submitBeams);
+        // 新来了一艘船就重查，不等下一刻
+        gameBus.addListener(EntityJoinLevelEvent.class, event -> {
+            if (event.getEntity() instanceof ShipEntity && event.getLevel().isClientSide()) {
+                shipsTick = Long.MIN_VALUE;
+            }
+        });
+        // 退出世界时不再拿着上一个世界和里面的船
+        gameBus.addListener(ClientPlayerNetworkEvent.LoggingOut.class, event -> {
+            nearbyShips = List.of();
+            shipsLevel = null;
+            shipsTick = Long.MIN_VALUE;
+        });
         devVerbs();
     }
 
@@ -251,6 +265,31 @@ public final class DeepSpaceClient {
 
     // ---- 牵引光束
 
+    /** 摄像机周围多远的船要画牵引光束。 */
+    private static final double BEAM_VIEW = 160;
+    /**
+     * 附近的船每刻查一次（多查这么远），同一刻里各帧共用；摄像机挪出这么远、来了新船就重查。刻按本地玩家的刻数认：
+     * 冻结时间时世界的时间停了，有人开着的船还在动。
+     */
+    private static final double BEAM_MARGIN = 16;
+    private static List<ShipEntity> nearbyShips = List.of();
+    private static @Nullable Level shipsLevel;
+    private static long shipsTick = Long.MIN_VALUE;
+    private static Vec3 shipsCamera = Vec3.ZERO;
+
+    /** 摄像机附近的船。船的碰撞箱每刻才动一次，按刻查、多查一圈；每帧再按摄像机的位置筛（ADR-0038）。 */
+    private static List<ShipEntity> nearbyShips(Level level, Vec3 camera) {
+        LocalPlayer player = Minecraft.getInstance().player;
+        long tick = player != null ? player.tickCount : level.getGameTime();
+        if (level != shipsLevel || tick != shipsTick || camera.distanceToSqr(shipsCamera) > BEAM_MARGIN * BEAM_MARGIN) {
+            shipsLevel = level;
+            shipsTick = tick;
+            shipsCamera = camera;
+            nearbyShips = level.getEntitiesOfClass(ShipEntity.class, new AABB(camera, camera).inflate(BEAM_VIEW + BEAM_MARGIN));
+        }
+        return nearbyShips;
+    }
+
     /** 开着牵引光束的船：朝每样正往里拉的东西画一股淡青的束。 */
     private static void submitBeams(SubmitCustomGeometryEvent event) {
         Minecraft minecraft = Minecraft.getInstance();
@@ -261,8 +300,9 @@ public final class DeepSpaceClient {
         float partial = minecraft.getDeltaTracker().getGameTimeDeltaPartialTick(false);
         double time = minecraft.level.getGameTime() + partial;
         List<Vec3[]> beams = new ArrayList<>();
-        for (ShipEntity ship : minecraft.level.getEntitiesOfClass(ShipEntity.class, new AABB(camera, camera).inflate(160), ShipEntity::tractorOn)) {
-            if (ship.structure() == null) {
+        AABB view = new AABB(camera, camera).inflate(BEAM_VIEW);
+        for (ShipEntity ship : nearbyShips(minecraft.level, camera)) {
+            if (ship.isRemoved() || !ship.tractorOn() || !ship.getBoundingBox().intersects(view) || ship.structure() == null) {
                 continue;
             }
             ShipShape shape = ship.structure().shape();

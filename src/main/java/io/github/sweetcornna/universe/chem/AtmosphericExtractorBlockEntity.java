@@ -3,6 +3,9 @@ package io.github.sweetcornna.universe.chem;
 import java.util.List;
 import java.util.Optional;
 
+import org.jspecify.annotations.Nullable;
+
+import io.github.sweetcornna.universe.chem.reactor.ReactorRecipes;
 import io.github.sweetcornna.universe.core.chem.AtmosphereMix;
 import io.github.sweetcornna.universe.core.chem.Extraction;
 import io.github.sweetcornna.universe.core.chem.Gas;
@@ -16,8 +19,6 @@ import io.github.sweetcornna.universe.registry.UniverseMenus;
 import io.github.sweetcornna.universe.stats.ProductionLog;
 import io.github.sweetcornna.universe.terraform.Terraforming;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.item.Item;
@@ -63,6 +64,9 @@ public class AtmosphericExtractorBlockEntity extends MachineBlockEntity implemen
     private double progress;
     private boolean active;
     private double supplied;
+    /** {@link #mix} 里能取的气体（按分数排好），大气换了才重新排：设备每刻都要挑气体。 */
+    private List<Gas> collectable = List.of();
+    private @Nullable AtmosphereMix collectableMix;
 
     public AtmosphericExtractorBlockEntity(BlockPos pos, BlockState state) {
         super(UniverseBlockEntities.ATMOSPHERIC_EXTRACTOR.get(), pos, state, 1);
@@ -70,11 +74,20 @@ public class AtmosphericExtractorBlockEntity extends MachineBlockEntity implemen
 
     /** 选的气体；还没选、或者选的这里取不到时，取分数最大的那种。 */
     public Optional<Gas> gas() {
-        List<Gas> collectable = Extraction.collectable(this.mix);
+        List<Gas> collectable = this.collectable();
         if (this.selected != null && collectable.contains(this.selected)) {
             return Optional.of(this.selected);
         }
         return collectable.isEmpty() ? Optional.empty() : Optional.of(collectable.getFirst());
+    }
+
+    /** 这里的大气里能取的气体，按分数排好；大气换了才重新排。 */
+    private List<Gas> collectable() {
+        if (this.collectableMix != this.mix) {
+            this.collectableMix = this.mix;
+            this.collectable = Extraction.collectable(this.mix);
+        }
+        return this.collectable;
     }
 
     @Override
@@ -108,8 +121,10 @@ public class AtmosphericExtractorBlockEntity extends MachineBlockEntity implemen
         if (this.progress >= ticks) {
             this.progress -= ticks;
             this.extract(gas.get(), product);
+            this.setChanged();
+        } else {
+            this.markUnsaved();
         }
-        this.setChanged();
         return true;
     }
 
@@ -137,13 +152,13 @@ public class AtmosphericExtractorBlockEntity extends MachineBlockEntity implemen
 
     /** 气体对应的物品。 */
     public static Item item(Gas gas) {
-        return BuiltInRegistries.ITEM.getValue(Identifier.parse(Substances.item(gas)));
+        return ReactorRecipes.item(Substances.item(gas));
     }
 
     @Override
     public boolean clickButton(ServerPlayer player, int button) {
         Gas[] gases = Gas.values();
-        if (button < 0 || button >= gases.length || !Extraction.collectable(this.mix).contains(gases[button])) {
+        if (button < 0 || button >= gases.length || !this.collectable().contains(gases[button])) {
             return false;
         }
         if (gases[button] != this.selected) {
@@ -198,7 +213,7 @@ public class AtmosphericExtractorBlockEntity extends MachineBlockEntity implemen
         }
         if (index == COLLECTABLE) {
             int bits = 0;
-            for (Gas gas : Extraction.collectable(this.mix)) {
+            for (Gas gas : this.collectable()) {
                 bits |= 1 << gas.ordinal();
             }
             return bits;

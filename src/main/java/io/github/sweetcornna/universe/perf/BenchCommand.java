@@ -11,6 +11,14 @@ import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 
 import io.github.sweetcornna.universe.Universe;
+import io.github.sweetcornna.universe.bio.BioRecipes;
+import io.github.sweetcornna.universe.bio.BioreactorBlockEntity;
+import io.github.sweetcornna.universe.chem.reactor.ChemicalReactorBlockEntity;
+import io.github.sweetcornna.universe.chem.reactor.ReactorRecipes;
+import io.github.sweetcornna.universe.core.chem.reaction.ItemCount;
+import io.github.sweetcornna.universe.core.chem.reaction.Reaction;
+import io.github.sweetcornna.universe.core.microbe.EarthMicrobes;
+import io.github.sweetcornna.universe.core.microbe.Organism;
 import io.github.sweetcornna.universe.factory.MachineBlockEntity;
 import io.github.sweetcornna.universe.factory.RecipeMachineBlockEntity;
 import io.github.sweetcornna.universe.factory.TallMachineBlock;
@@ -40,13 +48,17 @@ import net.neoforged.neoforge.event.server.ServerStoppedEvent;
 import net.neoforged.neoforge.event.tick.ServerTickEvent;
 
 /**
- * {@code /universe bench <belts> <machines>}：在玩家脚下搭一座测性能用的参照基地（ADR-0019），配合
+ * {@code /universe bench <belts> <machines> [chemistry]}：在玩家脚下搭一座测性能用的参照基地（ADR-0019），配合
  * {@code /universe perf} 用。
  *
  * <p>布局：每排 {@link #ROW} 台一型制造台做齿轮，前面一排分拣器从一圈环形传送带上取铁锭；电力感应塔和人造恒星
  * 架在制造台顶上。设备排数够了以后，剩下的传送带搭成空转的环线，上面放着铜锭一直转。区块全部强制加载。每秒补一次
  * 环线上被取走的铁锭、清空制造台的产物，这部分单独记作 bench，看报告时扣掉。{@code /universe bench stop} 停止补给并取消
  * 强制加载，方块留着。日志里的 {@code Bench:} 一行固定用中文，验收脚本靠它找结果。
+ *
+ * <p>{@code chemistry} 是化工设备的台数（ADR-0038）：化学反应釜（合成氨、铁催化剂）和生物反应器（产甲烷菌做甲烷）一台隔一台
+ * 排在环线后面，每排前面一行人造恒星和感应塔。每秒把原料补满、产物清空。反应釜标成参照基地用的，合成氨没发现也照做，
+ * 不往存档里记发现。
  */
 public final class BenchCommand {
     /** 一排多长。 */
@@ -54,20 +66,25 @@ public final class BenchCommand {
     private static final String GEAR_RECIPE = "universe:assembling/gear";
     private static final List<Bench> BENCHES = new ArrayList<>();
 
-    private static final class Bench {
+    static final class Bench {
         final ServerLevel level;
         final List<BlockPos> machines;
+        final List<BlockPos> chemistry;
         final List<BlockPos> feedBelts;
         final Set<ChunkPos> chunks;
+        /** 一共放了几格传送带。 */
+        final int belts;
         final long builtAt;
         /** 从搭好到现在一共清走了多少个产物。 */
         long produced;
 
-        Bench(ServerLevel level, List<BlockPos> machines, List<BlockPos> feedBelts, Set<ChunkPos> chunks) {
+        Bench(ServerLevel level, List<BlockPos> machines, List<BlockPos> chemistry, List<BlockPos> feedBelts, Set<ChunkPos> chunks, int belts) {
             this.level = level;
             this.machines = machines;
+            this.chemistry = chemistry;
             this.feedBelts = feedBelts;
             this.chunks = chunks;
+            this.belts = belts;
             this.builtAt = level.getGameTime();
         }
     }
@@ -91,16 +108,33 @@ public final class BenchCommand {
                 .then(Commands.argument("belts", IntegerArgumentType.integer(0, 50_000))
                         .then(Commands.argument("machines", IntegerArgumentType.integer(0, 5_000))
                                 .executes(context -> build(context.getSource(), IntegerArgumentType.getInteger(context, "belts"),
-                                        IntegerArgumentType.getInteger(context, "machines")))));
+                                        IntegerArgumentType.getInteger(context, "machines"), 0))
+                                .then(Commands.argument("chemistry", IntegerArgumentType.integer(0, 5_000))
+                                        .executes(context -> build(context.getSource(), IntegerArgumentType.getInteger(context, "belts"),
+                                                IntegerArgumentType.getInteger(context, "machines"), IntegerArgumentType.getInteger(context, "chemistry"))))));
     }
 
-    private static int build(CommandSourceStack source, int belts, int machines) throws CommandSyntaxException {
-        ServerLevel level = source.getLevel();
+    private static int build(CommandSourceStack source, int belts, int machines, int chemistry) throws CommandSyntaxException {
         BlockPos origin = source.getPlayerOrException().blockPosition().offset(2, 0, 2);
+        Bench bench = build(source.getLevel(), origin, belts, machines, chemistry);
+        int beltCount = bench.belts;
+        int machineCount = bench.machines.size();
+        int chemistryCount = bench.chemistry.size();
+        int chunkCount = bench.chunks.size();
+        source.sendSuccess(() -> chemistryCount == 0
+                ? Component.translatable("commands.universe.bench.built", beltCount, machineCount, machineCount, chunkCount)
+                : Component.translatable("commands.universe.bench.built_chemistry", beltCount, machineCount, machineCount, chemistryCount, chunkCount),
+                true);
+        return machineCount;
+    }
+
+    /** 以 {@code origin}（平台上面一格的西北角）搭一座参照基地并开始补给。游戏内的性能测量也用它。 */
+    static Bench build(ServerLevel level, BlockPos origin, int belts, int machines, int chemistry) {
         int rows = (machines + ROW - 1) / ROW;
         int loopBelts = Math.max(0, belts - rows * 2 * ROW);
         int loops = (loopBelts + 2 * ROW - 1) / (2 * ROW);
-        int depth = rows * 4 + loops * 3 + 1;
+        int chemistryRows = (chemistry + ROW - 1) / ROW;
+        int depth = rows * 4 + loops * 3 + chemistryRows * 3 + 1;
         int x0 = origin.getX();
         int x1 = x0 + ROW - 1;
         int y = origin.getY();
@@ -152,17 +186,47 @@ public final class BenchCommand {
                 tall(level, new BlockPos(x, y + 1, z), UniverseBlocks.TESLA_TOWER.get().defaultBlockState());
             }
             for (int x = x0; x <= x1 && stars > 0; x += 7, stars--) {
-                BlockPos star = new BlockPos(x, y + 1, z);
-                tall(level, star, UniverseBlocks.ARTIFICIAL_STAR.get().defaultBlockState());
-                if (level.getBlockEntity(star) instanceof FuelGeneratorBlockEntity generator) {
-                    generator.setItem(FuelGeneratorBlockEntity.FUEL_SLOT, new ItemStack(UniverseItems.ANTIMATTER_FUEL_ROD.get(), 8));
-                }
+                star(level, new BlockPos(x, y + 1, z));
             }
         }
         // 空转的环线
         List<BlockPos> idleBelts = new ArrayList<>();
         for (int i = 0; i < loops; i++) {
             placedBelts += loop(level, x0, x1, y, z0 + rows * 4 + 1 + i * 3, idleBelts);
+        }
+        // 化工：每排前面一行人造恒星和感应塔（隔七格一座恒星，中间一座塔），后面一行设备
+        List<BlockPos> chemistryPositions = new ArrayList<>();
+        int chemistryZ = z0 + rows * 4 + 1 + loops * 3;
+        for (int row = 0; row < chemistryRows; row++) {
+            int z = chemistryZ + row * 3;
+            for (int x = x0; x <= x1; x += 7) {
+                star(level, new BlockPos(x, y, z));
+                if (x + 3 <= x1) {
+                    tall(level, new BlockPos(x + 3, y, z), UniverseBlocks.TESLA_TOWER.get().defaultBlockState());
+                }
+            }
+            for (int x = x0; x <= x1 && chemistryPositions.size() < chemistry; x++) {
+                BlockPos pos = new BlockPos(x, y, z + 1);
+                if (chemistryPositions.size() % 2 == 0) {
+                    level.setBlock(pos, UniverseBlocks.CHEMICAL_REACTOR.get().defaultBlockState(), Block.UPDATE_CLIENTS);
+                    if (level.getBlockEntity(pos) instanceof ChemicalReactorBlockEntity reactor) {
+                        reactor.setBenchmark(true);
+                        reactor.setReaction(Reaction.HABER);
+                        reactor.setItem(ChemicalReactorBlockEntity.CATALYST_SLOT,
+                                new ItemStack(ReactorRecipes.item(Reaction.HABER.catalyst().item()), 64));
+                    }
+                } else {
+                    level.setBlock(pos, UniverseBlocks.BIOREACTOR.get().defaultBlockState(), Block.UPDATE_CLIENTS);
+                    if (level.getBlockEntity(pos) instanceof BioreactorBlockEntity reactor) {
+                        CompoundTag settings = new CompoundTag();
+                        settings.putString("Recipe", "universe:" + BioRecipes.DIR + "/biomethanation");
+                        reactor.applyBlueprintSettings(settings);
+                        reactor.inoculate(Organism.wild(EarthMicrobes.METHANOSARCINA));
+                        reactor.setDensity(1);
+                    }
+                }
+                chemistryPositions.add(pos);
+            }
         }
 
         BeltNetwork network = BeltNetwork.of(level);
@@ -175,14 +239,14 @@ public final class BenchCommand {
             network.insertAt(pos, 0, copper);
             network.insertAt(pos, BeltNetwork.HALF, copper);
         }
-        BENCHES.add(new Bench(level, machinePositions, feedBelts, chunks));
+        Bench bench = new Bench(level, machinePositions, chemistryPositions, feedBelts, chunks, placedBelts);
+        feedChemistry(bench);
+        BENCHES.add(bench);
 
-        int beltCount = placedBelts;
-        String message = String.format("参照基地：传送带 %d 格，制造台 %d 台，分拣器 %d 个，强制加载 %d 个区块", beltCount, placed, placed, chunks.size());
+        String message = String.format("参照基地：传送带 %d 格，制造台 %d 台，分拣器 %d 个，化工设备 %d 台，强制加载 %d 个区块", placedBelts, placed, placed,
+                chemistryPositions.size(), chunks.size());
         Universe.LOGGER.info("Bench: {}", message);
-        int machineCount = placed;
-        source.sendSuccess(() -> Component.translatable("commands.universe.bench.built", beltCount, machineCount, machineCount, chunks.size()), true);
-        return placed;
+        return bench;
     }
 
     /** 搭一圈两格宽的环线：南边一排朝东，北边一排朝西。返回放了几格，南边那排（分拣器取货的那排）记进 {@code feed}。 */
@@ -204,7 +268,15 @@ public final class BenchCommand {
         level.setBlock(pos.above(), state.setValue(TallMachineBlock.HALF, DoubleBlockHalf.UPPER), Block.UPDATE_CLIENTS);
     }
 
-    /** 每秒一次：补上被分拣器取走的铁锭，清掉制造台做好的齿轮。 */
+    /** 一座装了反物质燃料棒的人造恒星。 */
+    private static void star(ServerLevel level, BlockPos pos) {
+        tall(level, pos, UniverseBlocks.ARTIFICIAL_STAR.get().defaultBlockState());
+        if (level.getBlockEntity(pos) instanceof FuelGeneratorBlockEntity generator) {
+            generator.setItem(FuelGeneratorBlockEntity.FUEL_SLOT, new ItemStack(UniverseItems.ANTIMATTER_FUEL_ROD.get(), 8));
+        }
+    }
+
+    /** 每秒一次：补上被分拣器取走的铁锭，清掉制造台做好的齿轮，化工设备补料清货。 */
     private static void feed() {
         int ingot = BeltNetwork.id(Items.IRON_INGOT);
         for (Bench bench : BENCHES) {
@@ -222,38 +294,78 @@ public final class BenchCommand {
                     }
                 }
             }
+            feedChemistry(bench);
         }
     }
 
-    /** 各座参照基地：开工的制造台有几台，平均每分钟做出多少个。 */
-    private static int status(CommandSourceStack source) {
-        for (Bench bench : BENCHES) {
-            int working = 0;
-            for (BlockPos pos : bench.machines) {
-                if (bench.level.getBlockEntity(pos) instanceof MachineBlockEntity machine && machine.working()) {
-                    working++;
+    /** 化工设备：原料补满，产物清掉记进 {@link Bench#produced}。 */
+    private static void feedChemistry(Bench bench) {
+        List<ItemCount> haber = Reaction.HABER.inputs();
+        for (BlockPos pos : bench.chemistry) {
+            BlockEntity entity = bench.level.getBlockEntity(pos);
+            if (entity instanceof ChemicalReactorBlockEntity reactor) {
+                for (int i = 0; i < haber.size(); i++) {
+                    reactor.setItem(i, new ItemStack(ReactorRecipes.item(haber.get(i)), 64));
+                }
+                for (int slot = ChemicalReactorBlockEntity.INPUTS; slot < ChemicalReactorBlockEntity.CATALYST_SLOT; slot++) {
+                    bench.produced += reactor.removeItemNoUpdate(slot).getCount();
+                }
+            } else if (entity instanceof BioreactorBlockEntity reactor) {
+                reactor.setItem(0, new ItemStack(UniverseItems.CARBON_DIOXIDE.get(), 64));
+                reactor.setItem(1, new ItemStack(UniverseItems.HYDROGEN.get(), 64));
+                for (int slot = BioreactorBlockEntity.INPUTS; slot < BioreactorBlockEntity.STRAIN_SLOT; slot++) {
+                    bench.produced += reactor.removeItemNoUpdate(slot).getCount();
                 }
             }
+        }
+    }
+
+    /** 各座参照基地：开工的设备有几台，平均每分钟做出多少个。 */
+    private static int status(CommandSourceStack source) {
+        for (Bench bench : BENCHES) {
+            int working = working(bench);
+            int total = bench.machines.size() + bench.chemistry.size();
             double minutes = Math.max(1, bench.level.getGameTime() - bench.builtAt) / 1200.0;
-            String message = String.format(Locale.ROOT, "参照基地：%d/%d 台在做，已做出 %d 个，每分钟 %.0f 个", working, bench.machines.size(),
-                    bench.produced, bench.produced / minutes);
+            String message = String.format(Locale.ROOT, "参照基地：%d/%d 台在做，已做出 %d 个，每分钟 %.0f 个", working, total, bench.produced,
+                    bench.produced / minutes);
             Universe.LOGGER.info("Bench: {}", message);
-            Component text = Component.translatable("commands.universe.bench.status", working, bench.machines.size(), bench.produced,
+            Component text = Component.translatable("commands.universe.bench.status", working, total, bench.produced,
                     String.format(Locale.ROOT, "%.0f", bench.produced / minutes));
             source.sendSuccess(() -> text, false);
         }
         return BENCHES.size();
     }
 
-    private static int stop(CommandSourceStack source) {
-        int count = BENCHES.size();
-        for (Bench bench : BENCHES) {
-            for (ChunkPos chunk : bench.chunks) {
-                bench.level.setChunkForced(chunk.x(), chunk.z(), false);
+    /** 这座参照基地里正在干活的设备台数（制造台和化工设备）。 */
+    static int working(Bench bench) {
+        int working = 0;
+        for (List<BlockPos> list : List.of(bench.machines, bench.chemistry)) {
+            for (BlockPos pos : list) {
+                if (bench.level.getBlockEntity(pos) instanceof MachineBlockEntity machine && machine.working()) {
+                    working++;
+                }
             }
         }
+        return working;
+    }
+
+    private static int stop(CommandSourceStack source) {
+        int count = BENCHES.size();
+        BENCHES.forEach(BenchCommand::release);
         BENCHES.clear();
         source.sendSuccess(() -> Component.translatable("commands.universe.bench.stopped", count), true);
         return count;
+    }
+
+    /** 停掉一座参照基地的补给，取消强制加载。 */
+    static void stop(Bench bench) {
+        release(bench);
+        BENCHES.remove(bench);
+    }
+
+    private static void release(Bench bench) {
+        for (ChunkPos chunk : bench.chunks) {
+            bench.level.setChunkForced(chunk.x(), chunk.z(), false);
+        }
     }
 }

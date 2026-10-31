@@ -3,6 +3,7 @@ package io.github.sweetcornna.universe.block;
 import org.jspecify.annotations.Nullable;
 
 import io.github.sweetcornna.universe.core.ecology.Incubation;
+import io.github.sweetcornna.universe.perf.ServerPerf;
 import io.github.sweetcornna.universe.registry.UniverseBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -72,7 +73,7 @@ public class CreatureEggBlock extends BaseEntityBlock {
 
     @Override
     public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
-        return level.isClientSide() ? null : createTickerHelper(type, UniverseBlockEntities.CREATURE_EGG.get(), CreatureEggBlockEntity::serverTick);
+        return level.isClientSide() ? null : ServerPerf.timed(type, createTickerHelper(type, UniverseBlockEntities.CREATURE_EGG.get(), CreatureEggBlockEntity::serverTick));
     }
 
     /** 母亲没有主人的卵（野生动物的、命令给的），孵出来归放下它的人。 */

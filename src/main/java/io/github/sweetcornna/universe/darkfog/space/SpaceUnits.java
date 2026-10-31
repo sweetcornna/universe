@@ -1,5 +1,6 @@
 package io.github.sweetcornna.universe.darkfog.space;
 
+import io.github.sweetcornna.universe.perf.ServerPerf;
 import io.github.sweetcornna.universe.registry.UniverseEntities;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
@@ -17,7 +18,7 @@ public final class SpaceUnits {
             event.put(UniverseEntities.DARK_FOG_LANCER.get(), DarkFogLancer.createAttributes().build());
             event.put(UniverseEntities.DARK_FOG_HUMPBACK.get(), DarkFogHumpback.createAttributes().build());
         });
-        gameBus.addListener(ServerTickEvent.Post.class, event -> LancerRaids.tick(event.getServer()));
+        gameBus.addListener(ServerTickEvent.Post.class, event -> ServerPerf.time("darkfog/lancers", () -> LancerRaids.tick(event.getServer())));
         gameBus.addListener(ServerStoppedEvent.class, event -> LancerRaids.clear());
         gameBus.addListener(RegisterCommandsEvent.class, event -> LancerCommand.register(event.getDispatcher()));
     }

@@ -3,6 +3,7 @@ package io.github.sweetcornna.universe.hazard;
 import org.jspecify.annotations.Nullable;
 
 import io.github.sweetcornna.universe.core.hazard.GeyserKind;
+import io.github.sweetcornna.universe.perf.ServerPerf;
 import io.github.sweetcornna.universe.registry.UniverseBlockEntities;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
@@ -39,7 +40,7 @@ public class GeyserVentBlock extends BaseEntityBlock {
     public <T extends BlockEntity> @Nullable BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
         return level.isClientSide()
                 ? createTickerHelper(type, UniverseBlockEntities.GEYSER_VENT.get(), GeyserVentBlockEntity::clientTick)
-                : createTickerHelper(type, UniverseBlockEntities.GEYSER_VENT.get(), GeyserVentBlockEntity::serverTick);
+                : ServerPerf.timed(type, createTickerHelper(type, UniverseBlockEntities.GEYSER_VENT.get(), GeyserVentBlockEntity::serverTick));
     }
 
     @Override

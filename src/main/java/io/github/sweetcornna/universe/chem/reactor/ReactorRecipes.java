@@ -1,6 +1,10 @@
 package io.github.sweetcornna.universe.chem.reactor;
 
+import java.util.EnumMap;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.jspecify.annotations.Nullable;
 
@@ -27,12 +31,24 @@ public final class ReactorRecipes {
     /** 配方 ID 的目录，也是配方类型的名字。 */
     public static final String DIR = "reactor";
     static final double TICKS_PER_MINUTE = 1200;
+    /** 物品 ID 对应的物品。反应釜每刻都要按 ID 找原料和产物，物品注册表进游戏以后不再变，找过的记下（服务端和客户端的线程都会读）。 */
+    private static final Map<String, Item> ITEMS = new ConcurrentHashMap<>();
+    /** 物品对应的催化剂，同样记下。 */
+    private static final Map<Item, Optional<Catalyst>> CATALYSTS = new ConcurrentHashMap<>();
+    /** 各条反应的配方 ID，反应釜每刻都要按它找配方。 */
+    private static final Map<Reaction, ResourceKey<Recipe<?>>> KEYS = new EnumMap<>(Reaction.class);
+
+    static {
+        for (Reaction reaction : Reaction.values()) {
+            KEYS.put(reaction, ResourceKey.create(Registries.RECIPE, Universe.id(DIR + "/" + reaction.id())));
+        }
+    }
 
     private ReactorRecipes() {
     }
 
     public static ResourceKey<Recipe<?>> key(Reaction reaction) {
-        return ResourceKey.create(Registries.RECIPE, Universe.id(DIR + "/" + reaction.id()));
+        return KEYS.get(reaction);
     }
 
     /** 配方 ID 对应的反应；不是反应釜的配方为 {@code null}。 */
@@ -54,12 +70,13 @@ public final class ReactorRecipes {
     }
 
     public static Item item(String id) {
-        return BuiltInRegistries.ITEM.getValue(Identifier.parse(id));
+        return ITEMS.computeIfAbsent(id, key -> BuiltInRegistries.ITEM.getValue(Identifier.parse(key)));
     }
 
     /** 这一堆是哪种催化剂；不是催化剂为 {@code null}。 */
     public static @Nullable Catalyst catalyst(ItemStack stack) {
-        return stack.isEmpty() ? null : Catalyst.byItem(BuiltInRegistries.ITEM.getKey(stack.getItem()).toString());
+        return stack.isEmpty() ? null : CATALYSTS.computeIfAbsent(stack.getItem(),
+                item -> Optional.ofNullable(Catalyst.byItem(BuiltInRegistries.ITEM.getKey(item).toString()))).orElse(null);
     }
 
     /** 温度写成摄氏度，整数。 */

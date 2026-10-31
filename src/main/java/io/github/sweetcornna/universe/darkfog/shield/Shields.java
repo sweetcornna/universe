@@ -12,6 +12,7 @@ import java.util.Set;
 import org.jspecify.annotations.Nullable;
 
 import io.github.sweetcornna.universe.core.darkfog.ShieldMath;
+import io.github.sweetcornna.universe.perf.ServerPerf;
 import io.github.sweetcornna.universe.registry.sound.MachineSounds;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.particles.ParticleTypes;
@@ -54,7 +55,7 @@ public final class Shields {
     }
 
     public static void registerEvents(IEventBus gameBus) {
-        gameBus.addListener(ServerTickEvent.Post.class, event -> tick(event.getServer()));
+        gameBus.addListener(ServerTickEvent.Post.class, event -> ServerPerf.time("darkfog/shields", () -> tick(event.getServer())));
         gameBus.addListener(PlayerEvent.PlayerLoggedInEvent.class, event -> {
             if (event.getEntity() instanceof ServerPlayer player) {
                 sendTo(player);

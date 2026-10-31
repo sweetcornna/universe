@@ -132,6 +132,8 @@ public class ChemicalReactorBlockEntity extends MachineBlockEntity implements Ma
     private int candidates;
     /** 老存档里选着反应的釜，第一刻把它记成发现了。 */
     private boolean migrate;
+    /** 参照基地的反应釜（ADR-0038）：选定的反应不看全服发现了没有，也不记产量图，免得测性能把反应记成已发现。不存档。 */
+    private boolean benchmark;
     private ReactorSettings settings = new ReactorSettings(ReactorSettings.MIN_TEMPERATURE, ReactorSettings.MIN_PRESSURE);
     /** 这一批做了多少（0–1）。 */
     private double batches;
@@ -143,6 +145,8 @@ public class ChemicalReactorBlockEntity extends MachineBlockEntity implements Ma
     private long power;
     private int status = NO_REACTION;
     private double ambient = Double.NaN;
+    /** 上一次 {@link #evaluate} 的条件和结果：工况不动时每刻的结果都一样，不用每刻重新解平衡。 */
+    private @Nullable Evaluation evaluated;
 
     public ChemicalReactorBlockEntity(BlockPos pos, BlockState state) {
         super(UniverseBlockEntities.CHEMICAL_REACTOR.get(), pos, state, SLOTS);
@@ -206,6 +210,11 @@ public class ChemicalReactorBlockEntity extends MachineBlockEntity implements Ma
         return this.installed() == this.wearCatalyst ? this.wear : 0;
     }
 
+    /** 参照基地用：这台釜做选定的反应时不看全服发现了没有、不记产量图（不存档，重新载入后照常）。 */
+    public void setBenchmark(boolean benchmark) {
+        this.benchmark = benchmark;
+    }
+
     /** 测试用：直接设现在这个催化剂做过的批数。 */
     public void setWear(int wear) {
         this.wearCatalyst = this.installed();
@@ -216,7 +225,30 @@ public class ChemicalReactorBlockEntity extends MachineBlockEntity implements Ma
     /** 当前工况下的读数；没有正在做的反应为 {@code null}。 */
     public @Nullable ReactorResult result() {
         Reaction active = this.active();
-        return active == null ? null : ReactorModel.evaluate(active, this.settings, this.catalyzed(), this.ambient());
+        return active == null ? null : this.evaluate(active, this.catalyzed());
+    }
+
+    /**
+     * {@link ReactorModel#evaluate} 的结果。反应、工况、催化剂对不对、气温都和上次一样时直接用上次的：
+     * 解平衡转化率要二分一百次，一台釜每刻重算要好几微秒。
+     */
+    private ReactorResult evaluate(Reaction reaction, boolean catalyzed) {
+        double ambient = this.ambient();
+        Evaluation last = this.evaluated;
+        if (last != null && last.matches(reaction, this.settings, catalyzed, ambient)) {
+            return last.result();
+        }
+        ReactorResult result = ReactorModel.evaluate(reaction, this.settings, catalyzed, ambient);
+        this.evaluated = new Evaluation(reaction, this.settings, catalyzed, ambient, result);
+        return result;
+    }
+
+    /** {@link ReactorModel#evaluate} 的条件和结果。 */
+    private record Evaluation(Reaction reaction, ReactorSettings settings, boolean catalyzed, double ambient, ReactorResult result) {
+        boolean matches(Reaction reaction, ReactorSettings settings, boolean catalyzed, double ambient) {
+            return this.reaction == reaction && this.catalyzed == catalyzed && Double.compare(this.ambient, ambient) == 0
+                    && this.settings.equals(settings);
+        }
     }
 
     private double ambient() {
@@ -339,7 +371,7 @@ public class ChemicalReactorBlockEntity extends MachineBlockEntity implements Ma
             if (reaction == null) {
                 return this.idle(this.candidates > 1 ? AMBIGUOUS : this.inputKinds().isEmpty() ? EMPTY : UNKNOWN);
             }
-        } else if (!ReactionBooks.book(serverLevel.getServer()).discovered(reaction)) {
+        } else if (!this.benchmark && !ReactionBooks.book(serverLevel.getServer()).discovered(reaction)) {
             return this.idle(LOCKED);
         }
         RecipeHolder<MachineRecipe> recipe = recipe(serverLevel, reaction);
@@ -352,7 +384,7 @@ public class ChemicalReactorBlockEntity extends MachineBlockEntity implements Ma
         if (!this.outputsFit(reaction)) {
             return this.idle(OUTPUT_FULL);
         }
-        ReactorResult result = ReactorModel.evaluate(reaction, this.settings, this.catalyzed(), this.ambient());
+        ReactorResult result = this.evaluate(reaction, this.catalyzed());
         this.power = Math.max(1, Math.round(result.power()));
         this.active = true;
         if (supplied <= 0) {
@@ -366,8 +398,10 @@ public class ChemicalReactorBlockEntity extends MachineBlockEntity implements Ma
         if (this.batches >= 1) {
             this.batches -= 1;
             this.react(serverLevel, reaction, result);
+            this.setChanged();
+        } else {
+            this.markUnsaved();
         }
-        this.setChanged();
         return true;
     }
 
@@ -472,7 +506,10 @@ public class ChemicalReactorBlockEntity extends MachineBlockEntity implements Ma
         if (reaction.catalyst() != null && result.catalyzed()) {
             this.wearCatalyst();
         }
-        ReactorKnowledge.get(level.getServer()).mark(reaction, YieldGrid.cell(this.settings).index());
+        // 参照基地的不记产量图：老存档补记发现时，产量图上做成过的反应会算发现了
+        if (!this.benchmark) {
+            ReactorKnowledge.get(level.getServer()).mark(reaction, YieldGrid.cell(this.settings).index());
+        }
         if (this.reaction == null) {
             ReactionBooks.discover(level.getServer(), reaction, true);
         }

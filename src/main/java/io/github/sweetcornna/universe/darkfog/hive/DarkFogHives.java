@@ -38,6 +38,7 @@ import io.github.sweetcornna.universe.darkfog.space.LancerRaids;
 import io.github.sweetcornna.universe.dyson.Dyson;
 import io.github.sweetcornna.universe.entity.ship.ShipTransit;
 import io.github.sweetcornna.universe.factory.power.LevelPower;
+import io.github.sweetcornna.universe.perf.ServerPerf;
 import io.github.sweetcornna.universe.registry.UniverseSounds;
 import io.github.sweetcornna.universe.rules.UniverseRules;
 import io.github.sweetcornna.universe.stats.ProductionData;
@@ -117,7 +118,7 @@ public final class DarkFogHives {
     }
 
     public static void registerEvents(IEventBus gameBus) {
-        gameBus.addListener(ServerTickEvent.Post.class, event -> tick(event.getServer()));
+        gameBus.addListener(ServerTickEvent.Post.class, event -> ServerPerf.time("darkfog/hives", () -> tick(event.getServer())));
         gameBus.addListener(ServerStoppedEvent.class, event -> {
             LIVE.clear();
             RAIDS.clear();

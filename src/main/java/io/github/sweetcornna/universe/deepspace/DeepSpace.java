@@ -21,6 +21,7 @@ import io.github.sweetcornna.universe.core.space.StationLayout;
 import io.github.sweetcornna.universe.darkfog.hive.DarkFogHives;
 import io.github.sweetcornna.universe.entity.ship.ShipTransit;
 import io.github.sweetcornna.universe.gravity.GravityCoils;
+import io.github.sweetcornna.universe.perf.ServerPerf;
 import io.github.sweetcornna.universe.world.planet.Planets;
 import io.github.sweetcornna.universe.world.space.SpaceDimensions;
 import net.minecraft.server.MinecraftServer;
@@ -57,7 +58,7 @@ public final class DeepSpace {
     public static void registerEvents(IEventBus modBus, IEventBus gameBus) {
         Hulks.registerEvents(gameBus);
         GravityCoils.registerEvents(gameBus);
-        gameBus.addListener(ServerTickEvent.Post.class, event -> tick(event.getServer()));
+        gameBus.addListener(ServerTickEvent.Post.class, event -> ServerPerf.time("deep_space", () -> tick(event.getServer())));
         gameBus.addListener(ServerStoppedEvent.class, event -> {
             SITES.clear();
             OUTPOST_CENTERS.clear();
