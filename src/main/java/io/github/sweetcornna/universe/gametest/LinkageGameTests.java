@@ -150,7 +150,7 @@ final class LinkageGameTests {
     }
 
     /** 西北角一座电力感应塔，东北角一座烧反物质燃料棒的人造恒星，和 {@link UniverseGameTests} 的电站一样。 */
-    private static void power(GameTestHelper helper) {
+    static void power(GameTestHelper helper) {
         tall(helper, new BlockPos(1, 1, 1), UniverseBlocks.TESLA_TOWER.get().defaultBlockState());
         BlockPos star = new BlockPos(5, 1, 1);
         tall(helper, star, UniverseBlocks.ARTIFICIAL_STAR.get().defaultBlockState());

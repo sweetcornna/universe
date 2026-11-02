@@ -1,0 +1,21 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 4,
+      "ingredient": "universe:optical_crystal"
+    },
+    {
+      "count": 1,
+      "ingredient": "#c:ingots/titanium"
+    }
+  ],
+  "research": "structure_matrix",
+  "results": [
+    {
+      "count": 4,
+      "id": "universe:titanium_crystal"
+    }
+  ],
+  "time": 160
+}

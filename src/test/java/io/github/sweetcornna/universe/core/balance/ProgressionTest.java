@@ -114,6 +114,30 @@ class ProgressionTest {
     }
 
     @Test
+    void rareResourcesOnlyCountWhenExploring() {
+        // 蓝矩阵两条路：3 个铁矿，或者 1 个光学晶体加 1 个铁矿（捷径）；红矩阵只能用氦做
+        List<Recipe> recipes = List.of(
+                Recipe.of(BLUE, 1, 3, in("minecraft:raw_iron", 3)),
+                Recipe.of(BLUE, 1, 3, in("universe:optical_crystal", 1), in("minecraft:raw_iron", 1)),
+                Recipe.of(RED, 1, 3, in("universe:helium", 1)));
+        Progression.Shell shell = new Progression.Shell(10, 100);
+        Progression home = new Progression(TREE, recipes, STAGES, shell);
+        Progression explored = new Progression(TREE, recipes, STAGES, shell, Progression.Reach.EXPLORED);
+        assertEquals(Progression.Reach.HOME, home.reach());
+        // 只在母星系：没有光学晶体，走 3 个铁矿；红矩阵做不出来
+        assertEquals(3, home.ore(BLUE), 1e-9);
+        assertTrue(!home.reachable(RED) && !home.reachable("universe:helium"));
+        // 出去探索：光学晶体按开采的两倍，捷径 1 × 2 + 1 = 3 不比 3 个铁矿便宜……
+        assertEquals(Progression.RARE_FACTOR, Progression.RARE.get("universe:optical_crystal"), 1e-9);
+        assertEquals(3, explored.ore(BLUE), 1e-9);
+        // ……氦按奇异星球的大气（10%）里一台提取器的产量，再乘两倍
+        assertEquals(Progression.RARE_FACTOR * Progression.MINER_ORE_PER_MINUTE / (40 * Math.sqrt(0.1)), explored.ore(RED), 1e-9);
+        // 有配方能做的稀有资源按配方算，不按表
+        List<Recipe> withHelium = List.of(Recipe.of("universe:helium", 1, 1, in("minecraft:raw_iron", 1)), recipes.get(2));
+        assertEquals(1, new Progression(TREE, withHelium, STAGES, shell).ore(RED), 1e-9);
+    }
+
+    @Test
     void valueGraphWithoutWagesOrMarkupJustAddsUp() {
         var values = ValueGraph.compute(java.util.Map.of("x", 1.0), List.of(Recipe.of("y", 2, 10, in("x", 3))), 0, 0);
         assertEquals(1.5, values.get("y"), 1e-9);

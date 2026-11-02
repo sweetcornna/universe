@@ -683,6 +683,15 @@ public final class UniverseGameTests {
     private static final ResourceKey<Consumer<GameTestHelper>> PACING_RECORDS_FIRST_TIME = function("pacing_records_first_time",
             LinkageGameTests::pacingRecordsFirstTime);
     // M22 的测试函数加在这行上面
+    // M23 稀有资源的捷径（ADR-0040），测试写在 ShortcutGameTests
+    private static final ResourceKey<Consumer<GameTestHelper>> TITANIUM_SAPPHIRE = function("titanium_sapphire", ShortcutGameTests::titaniumSapphire);
+    private static final ResourceKey<Consumer<GameTestHelper>> DOPED_SILICON_PROCESSOR = function("doped_silicon_processor",
+            ShortcutGameTests::dopedSiliconProcessor);
+    private static final ResourceKey<Consumer<GameTestHelper>> SUPERCONDUCTING_TRAP = function("superconducting_trap",
+            ShortcutGameTests::superconductingTrap);
+    private static final ResourceKey<Consumer<GameTestHelper>> PRICES_IGNORE_SHORTCUTS = function("prices_ignore_shortcuts",
+            ShortcutGameTests::pricesIgnoreShortcuts);
+    // M23 的测试函数加在这行上面
     /** 参照基地的性能测量，只在设了 {@link PerfBench#PROPERTY} 时登记（ADR-0038）。 */
     private static final ResourceKey<Consumer<GameTestHelper>> PERF_BENCH = function("perf_bench", PerfBenchGameTests::measure);
 
@@ -975,6 +984,11 @@ public final class UniverseGameTests {
         test(event, environment, M20_EXIT_TERRAFORM, 20);
         test(event, environment, PACING_RECORDS_FIRST_TIME, 40);
         // M22 的测试加在这行上面
+        test(event, environment, TITANIUM_SAPPHIRE, 600);
+        test(event, environment, DOPED_SILICON_PROCESSOR, 600);
+        test(event, environment, SUPERCONDUCTING_TRAP, 400);
+        test(event, environment, PRICES_IGNORE_SHORTCUTS, 20);
+        // M23 的测试加在这行上面
     }
 
     /**

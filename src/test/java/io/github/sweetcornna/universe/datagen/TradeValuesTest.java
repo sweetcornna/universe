@@ -23,6 +23,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import io.github.sweetcornna.universe.core.balance.Progression;
 import io.github.sweetcornna.universe.core.trade.RawValues;
 import io.github.sweetcornna.universe.core.trade.ValueGraph;
 import io.github.sweetcornna.universe.core.trade.ValueGraph.Input;
@@ -104,7 +105,8 @@ class TradeValuesTest {
         RawValues.DEFAULT.forEach((key, value) -> raw.put(TAGS.getOrDefault(key, key), value));
         List<ValueGraph.Recipe> recipes = new ArrayList<>(VANILLA);
         recipes.addAll(recipes());
-        Map<String, Double> values = ValueGraph.compute(raw, recipes);
+        // 和游戏里一样，稀有资源的捷径不参与（ADR-0040）
+        Map<String, Double> values = ValueGraph.compute(raw, ValueGraph.withoutShortcuts(raw.keySet(), Progression.RARE.keySet(), recipes));
 
         Set<String> missing = new TreeSet<>();
         Map<String, Double> table = new LinkedHashMap<>();
