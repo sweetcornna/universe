@@ -25,7 +25,8 @@ import io.github.sweetcornna.universe.core.trade.ValueGraph;
 
 /**
  * 数值平衡（ADR-0018）：拿数据生成的设备配方跑进度模型，检查每档科技一档比一档贵、没有断崖，每段游戏时间里研究占的比例合适。
- * 模型的报告打到标准输出，`gradlew test` 的测试报告里能看到。
+ * 这些按只在母星系的模型算（不出去也能通关）；出去探索的模型另外检查稀有资源的捷径让黄矩阵往上每档明显便宜（ADR-0040）。
+ * 两个模型的报告打到标准输出，`gradlew test` 的测试报告里能看到。
  *
  * <p>读的是 {@code src/generated/resources}，改了配方要先跑 {@code runData}。
  */
@@ -40,13 +41,21 @@ class BalanceTest {
     private static final double MAX_STAGE_RATIO = 3;
     /** 相邻两档每个科技要的矿（中位数）最多差几倍。工厂也在变大，所以比研究时间宽。 */
     private static final double MAX_TECH_RATIO = 6;
+    /** 出去探索时，黄矩阵往上每种矩阵至少便宜这么多（ADR-0040 的"明显更快"）。 */
+    private static final double SHORTCUT_SAVING = 0.3;
+    /** 出去探索时，黄矩阵往上每档的研究时间至少短这么多：每档还要用到下面几档的矩阵，比单个矩阵省得少。 */
+    private static final double STAGE_SAVING = 0.2;
 
     private static Progression model;
+    private static Progression explored;
 
     @BeforeAll
     static void load() throws IOException {
-        model = Progression.of(TechTree.DEFAULT, machineRecipes());
+        List<ValueGraph.Recipe> recipes = machineRecipes();
+        model = Progression.of(TechTree.DEFAULT, recipes);
+        explored = Progression.of(TechTree.DEFAULT, recipes, Progression.Reach.EXPLORED);
         model.report().forEach(System.out::println);
+        explored.report().forEach(System.out::println);
     }
 
     @Test
@@ -95,6 +104,32 @@ class BalanceTest {
         // 到第一片球壳、到任务完成：研究和造火箭占三到八成多，留出盖工厂和探索的时间
         assertBetween(windows.get(2), 0.3, 0.8);
         assertBetween(windows.get(3), 0.4, 0.85);
+    }
+
+    /** 软门槛（ADR-0040）：不出母星系也做得出每种矩阵；出去探索，黄矩阵往上每种矩阵、每档的研究时间都明显少。 */
+    @Test
+    void exploringMakesEachTierFromYellowClearlyFaster() {
+        for (String matrix : TechTree.MATRICES.subList(2, 6)) {
+            double home = model.ore(matrix);
+            double away = explored.ore(matrix);
+            assertTrue(away <= home * (1 - SHORTCUT_SAVING), matrix + " 只在母星系 " + home + "，出去探索 " + away);
+        }
+        // 蓝、红矩阵没有捷径（中子星的磁铁矿让磁铁便宜一点，不算）
+        assertTrue(explored.ore(TechTree.MATRICES.get(1)) >= model.ore(TechTree.MATRICES.get(1)) - 1e-9);
+        List<Map.Entry<Progression.Stage, Double>> home = new ArrayList<>(model.stageHours().entrySet());
+        List<Map.Entry<Progression.Stage, Double>> away = new ArrayList<>(explored.stageHours().entrySet());
+        for (int i = 2; i < home.size(); i++) {
+            assertTrue(away.get(i).getValue() <= home.get(i).getValue() * (1 - STAGE_SAVING),
+                    home.get(i).getKey().matrices() + " 只在母星系 " + home.get(i).getValue() + " 小时，出去探索 " + away.get(i).getValue());
+        }
+    }
+
+    /** 稀有资源没有设备配方做得出来，只能出去采：只在母星系的模型里一样都没有。 */
+    @Test
+    void rareResourcesCannotBeMadeAtHome() {
+        for (String item : Progression.RARE.keySet()) {
+            assertTrue(!model.reachable(item), item + " 在只在母星系的模型里做得出来");
+        }
     }
 
     private static void assertBetween(Progression.Window window, double low, double high) {

@@ -430,11 +430,11 @@ M9 实测（2026-10-20，本机，ADR-0019）：主世界 5,000 段传送带、5
 ## 6. 测试
 
 - core：JUnit 6 单元测试，随 `gradlew build` 运行，CI 上也跑。
-- 数据：`SurvivalProgressionTest` 读 `src/generated/resources`，检查科技树和配方在生存里走得通（ADR-0011）；`BalanceTest` 拿同样的配方跑进度模型（`core.balance.Progression`），检查每档研究时间没有断崖（ADR-0018）。改了数据生成要先跑 `runData`。
+- 数据：`SurvivalProgressionTest` 读 `src/generated/resources`，检查科技树和配方在生存里走得通（ADR-0011）；`BalanceTest` 拿同样的配方跑进度模型（`core.balance.Progression`），检查每档研究时间没有断崖（ADR-0018）；模型分只在母星系和出去探索两种，前一种管目标时长，后一种管稀有资源的捷径够不够明显（ADR-0040）。改了数据生成要先跑 `runData`。
 - 游戏内行为：NeoForge GameTest，`./gradlew runGameTestServer` 跑完退出。现有：通电的制造台做出齿轮、没电的制造台停在缺电、传送带把物品送进储物仓、研究站攒点数（`gametest.UniverseGameTests`）。这也顺带验证了服务端不加载客户端的类。
 - 脚本验收：`./gradlew runClient -PdevScript=<脚本>` 启动时，`client.dev.DevScript` 进存档后逐行执行脚本：执行命令、转视角、悬停、右键设备、按界面按钮、等设备动作一次、截图、退出，不碰键盘鼠标。截的是帧缓冲，窗口可以一直放在屏幕外；要在 `options.txt` 里关掉 `pauseOnLostFocus`，否则窗口没有焦点时游戏会暂停。
   - 脚本的路径按游戏目录（`run/`）的上一级算，也就是项目根目录，不是脚本自己待的地方。
-  - 没有显示器的 Linux（云端会话的容器）里用 Xvfb 跑，Mesa 软件渲染（2026-10-31 验过）：`SDL_VIDEO_FORCE_EGL=1 SDL_VIDEO_X11_FORCE_EGL=1 LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a -s "-screen 0 1600x900x24 +extension GLX +render -noreset" ./gradlew runClient -PquickPlay=<存档> -PdevScript=<脚本>`。不强制 EGL 时 NeoForge 的启动窗口（SDL）报 `Couldn't find matching GLX visual`，弹出错误框不退出，要手动结束进程。帧率二十上下，截图够用。
+  - 没有显示器的 Linux（云端会话的容器）里用 Xvfb 跑，Mesa 软件渲染（2026-10-31 验过）：`SDL_VIDEO_FORCE_EGL=1 SDL_VIDEO_X11_FORCE_EGL=1 LIBGL_ALWAYS_SOFTWARE=1 xvfb-run -a -s "-screen 0 1600x900x24 +extension GLX +render -noreset" ./gradlew runClient -PquickPlay=<存档> -PdevScript=<脚本>`。不强制 EGL 时 NeoForge 的启动窗口（SDL）报 `Couldn't find matching GLX visual`，弹出错误框不退出，要手动结束进程。容器里没装 EGL 时启动窗口报 `Could not load EGL library`，先 `apt-get update && apt-get install -y libegl1 libegl-mesa0`（2026-11-02）；声卡打不开（`Failed to open OpenAL device`）不要紧，游戏关掉声音照常跑。帧率二十上下，截图够用。
   - 用了实验性设置的存档（比如参照基地的 `m21`）第一次进时停在原版的"实验性设置"确认画面，脚本要进了存档才开始，点不到；用 python-xlib 的 XTEST 在 Xvfb 上点一下"I Know What I'm Doing!"，之后这个存档不再问。
   - `push`、`buttons` 只认原版的 `AbstractButton`。戴森球编辑器自己画可点的区域（`DysonEditorScreen.Hit`），用 `hits` 列出这一帧的文字、`hit <文字>` 点一个（色块的文字是 `color:RRGGBB`）。要选中三维视图里的东西（上色、拆掉要先选）还是得靠鼠标，脚本够不着，那条路由 `DysonEditGameTests` 在服务端验。
   - 菜单里的格子和按钮不用算坐标：`quickmove <格子序号>` 是 Shift 点一格，`menubutton <编号>` 按菜单的按钮（编号见各菜单的 `clickMenuButton`，比如机甲面板 51 是舰队页、70 是出动第一个地面编队）。M18 加的还有 `pin <种类> [目标]`（往仪表盘上钉图）、`stats <物品>`（打开统计并选中）、`queue <科技>`（排研究队列）、`press controlpanel|fleet`、`key burst on|off`（按住、松开护盾爆发）。

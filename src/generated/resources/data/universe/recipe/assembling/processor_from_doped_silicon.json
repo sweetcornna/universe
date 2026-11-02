@@ -1,0 +1,25 @@
+{
+  "type": "universe:assembling",
+  "ingredients": [
+    {
+      "count": 8,
+      "ingredient": "universe:circuit_board"
+    },
+    {
+      "count": 4,
+      "ingredient": "#c:silicon"
+    },
+    {
+      "count": 1,
+      "ingredient": "#c:ingots/uranium"
+    }
+  ],
+  "research": "information_matrix",
+  "results": [
+    {
+      "count": 4,
+      "id": "universe:processor"
+    }
+  ],
+  "time": 160
+}

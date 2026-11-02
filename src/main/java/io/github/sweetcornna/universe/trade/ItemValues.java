@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import com.mojang.logging.LogUtils;
 
 import io.github.sweetcornna.universe.Universe;
+import io.github.sweetcornna.universe.core.balance.Progression;
 import io.github.sweetcornna.universe.core.tech.Grade;
 import io.github.sweetcornna.universe.core.trade.RawValues;
 import io.github.sweetcornna.universe.core.trade.TradeCategory;
@@ -193,7 +194,8 @@ public final class ItemValues {
                 LOGGER.debug("跳过配方 {}：{}", holder.id(), e.toString());
             }
         }
-        Map<String, Double> computed = ValueGraph.compute(raw, recipes);
+        // 稀有资源的捷径不参与（ADR-0040）：价钱按母星系里的路线算
+        Map<String, Double> computed = ValueGraph.compute(raw, ValueGraph.withoutShortcuts(raw.keySet(), Progression.RARE.keySet(), recipes));
         Map<Item, Double> out = new IdentityHashMap<>();
         computed.forEach((id, value) -> BuiltInRegistries.ITEM.getOptional(Identifier.parse(id)).ifPresent(item -> out.put(item, value)));
         LOGGER.info("算出 {} 样东西的价钱（{} 个配方，{} ms）", out.size(), recipes.size(), (System.nanoTime() - start) / 1_000_000);

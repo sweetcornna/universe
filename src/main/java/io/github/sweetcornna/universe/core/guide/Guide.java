@@ -55,6 +55,11 @@ public final class Guide {
                     page("lab", "universe:matrix_lab"),
                     page("matrices", "universe:electromagnetic_matrix", "universe:electromagnetic_matrix", "universe:energy_matrix",
                             "universe:structure_matrix", "universe:information_matrix", "universe:gravity_matrix", "universe:universe_matrix"),
+                    // 稀有资源的捷径（ADR-0040）
+                    page("shortcuts", "", "universe:optical_crystal", "universe:uranium_ingot", "universe:helium"),
+                    page("titanium_sapphire", "universe:assembling/titanium_crystal_from_optical_crystal"),
+                    page("doped_silicon", "universe:assembling/processor_from_doped_silicon"),
+                    page("superconducting_trap", "universe:assembling/particle_container_superconducting"),
                     page("upgrades", ""),
                     // 研究队列（ADR-0033 §五）
                     page("queue", ""),

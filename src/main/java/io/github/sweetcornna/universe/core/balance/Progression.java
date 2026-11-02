@@ -28,6 +28,9 @@ import io.github.sweetcornna.universe.core.trade.ValueGraph;
  * 东西折算成"几个矿"，每档矩阵假定一座参考工厂（{@link Stage}），研究一个科技的时间 = 它要的矿 ÷ 工厂每分钟挖的矿，
  * 研究站不够时按研究站算。再按 ADR-0018 定的里程碑分段，看每段游戏时间里研究占多少：占得太少，研究形同虚设；
  * 占得太多，玩家只能干等。
+ *
+ * <p>模型分两种（ADR-0040）：只在母星系（{@link Reach#HOME}），目标时长按它算，不出去也能通关；出去探索
+ * （{@link Reach#EXPLORED}），稀有资源的捷径配方用得上，每档的矩阵明显便宜。
  */
 public final class Progression {
     private static final String NS = "universe:";
@@ -66,15 +69,43 @@ public final class Progression {
             Map.entry(NS + "sulfur_dioxide", atmosphere(0.02)),
             Map.entry(NS + "methane", atmosphere(0.05)),
             Map.entry(NS + "ammonia", atmosphere(0.005)),
+            // 母星的空气里有 0.93% 的氩
             Map.entry(NS + "argon", atmosphere(0.01)),
-            Map.entry(NS + "helium", atmosphere(0.1)),
             // 盐是采矿机挖的；亨特法又把盐还回来，不写在这里会被当成配方的产物
-            Map.entry(NS + "salt", 1.0),
-            // 光学晶体只在奇异星球和白矮星的行星上有（ADR-0039），要开着船去另一个星系挖，按开采的四倍算：
-            // 光子合并器的捷径配方不让按母星系开采算的进度变快
-            Map.entry(NS + "optical_crystal", 4.0)
+            Map.entry(NS + "salt", 1.0)
             // M20 别的几条线（B–E）的原料（前面加逗号）加在这行上面
             );
+
+    /** 稀有资源按开采（提取）的几倍折算：矿点稀，采到的还要开船运回来（ADR-0040）。 */
+    public static final double RARE_FACTOR = 2;
+
+    /**
+     * 稀有资源（ADR-0040）：母星系里一般没有、要去别的星系才采得到的原料，黄矩阵往上每档的捷径配方用的就是它们。
+     * 只在母星系的模型（{@link Reach#HOME}）里当作没有；出去探索的模型（{@link Reach#EXPLORED}）按这里的值折算。
+     *
+     * <ul>
+     *   <li>光学晶体：奇异星球都有，灼热、辐射星球和白矮星的行星上常有；母星系里约一半有（灼热的内行星或气态巨行星的卫星）。</li>
+     *   <li>放射性矿：辐射星球上有，母星系里约一成有。</li>
+     *   <li>氦：奇异星球的大气里六成带 1–20%，按 10% 算一台提取器的产量；母星的空气里只有百万分之五。</li>
+     *   <li>磁铁矿：只在中子星的行星上有，星团里约三分之一没有中子星，不做哪一档的捷径，只是让磁铁便宜。</li>
+     * </ul>
+     *
+     * <p>可燃冰在四分之三的母星系里有（气态巨行星的冰冻卫星），不算稀有，按 1 个矿。黑洞的奇异物质矿能直接做引力透镜，
+     * 但星团里约五分之四没有黑洞，模型里不算。
+     */
+    public static final Map<String, Double> RARE = Map.of(
+            NS + "optical_crystal", RARE_FACTOR,
+            NS + "raw_uranium", RARE_FACTOR,
+            NS + "helium", RARE_FACTOR * atmosphere(0.1),
+            NS + "raw_magnetite", RARE_FACTOR);
+
+    /** 模型假定玩家去哪里采原料（ADR-0040）。 */
+    public enum Reach {
+        /** 只在母星系：稀有资源当作没有，捷径配方用不上。目标时长按这个算，不出去也能通关。 */
+        HOME,
+        /** 出去探索：稀有资源按 {@link #RARE} 折算，捷径配方便宜就用。 */
+        EXPLORED
+    }
 
     /** 大气提取器在 1 atm、这种气体占这么多时，一个折合几个矿（{@link Extraction#perMinute}）。 */
     private static double atmosphere(double fraction) {
@@ -156,43 +187,74 @@ public final class Progression {
     private final Map<String, Double> ore;
     private final List<Stage> stages;
     private final Shell shell;
+    private final Reach reach;
 
+    /** 只在母星系的模型。 */
     public Progression(TechTree tree, List<ValueGraph.Recipe> recipes, List<Stage> stages, Shell shell) {
+        this(tree, recipes, stages, shell, Reach.HOME);
+    }
+
+    public Progression(TechTree tree, List<ValueGraph.Recipe> recipes, List<Stage> stages, Shell shell, Reach reach) {
         this.tree = tree;
         this.stages = List.copyOf(stages);
         this.shell = shell;
+        this.reach = reach;
         // 没有配方、由设备转出来的两样：分馏塔把氢转成重氢，射线接收站把戴森球的电转成临界光子（按 100 个算，免得帆的张数取整）
         List<ValueGraph.Recipe> all = new ArrayList<>(recipes);
         all.add(new ValueGraph.Recipe(List.of(new ValueGraph.Input(List.of(NS + "hydrogen"), 1), new ValueGraph.Input(List.of(FRACTIONATOR), 1)),
                 List.of(new ValueGraph.Output(NS + "deuterium", 1)), 0));
         all.add(new ValueGraph.Recipe(List.of(new ValueGraph.Input(List.of(NS + "solar_sail"), (int) Math.round(SAILS_PER_PHOTON * 100)),
                 new ValueGraph.Input(List.of(RECEIVER), 100)), List.of(new ValueGraph.Output(NS + "critical_photon", 100)), 0));
-        this.ore = ValueGraph.compute(rawOre(all), all, 0, 0);
+        this.ore = ValueGraph.compute(rawOre(all, reach), all, 0, 0);
     }
 
-    /** 用默认的参考工厂，第一片球壳按编辑器默认的网格、参考半径和应力系统之前的纬度限制算。 */
+    /** 只在母星系，用默认的参考工厂，第一片球壳按编辑器默认的网格、参考半径和应力系统之前的纬度限制算。 */
     public static Progression of(TechTree tree, List<ValueGraph.Recipe> recipes) {
-        return new Progression(tree, recipes, STAGES,
-                firstShell(DysonGrid.of(DysonGrid.Template.GEODESIC, 1), FIRST_LAYER_RADIUS, DysonSphere.LATITUDE_BASE));
+        return of(tree, recipes, Reach.HOME);
     }
 
-    /** 配方用到、却没有配方产出的东西都是原料：设备抽出来的按 {@link #EXTRACTED}，别的按 1 个矿。 */
-    private static Map<String, Double> rawOre(List<ValueGraph.Recipe> recipes) {
+    /** 同上，另给玩家去哪里采原料。 */
+    public static Progression of(TechTree tree, List<ValueGraph.Recipe> recipes, Reach reach) {
+        return new Progression(tree, recipes, STAGES,
+                firstShell(DysonGrid.of(DysonGrid.Template.GEODESIC, 1), FIRST_LAYER_RADIUS, DysonSphere.LATITUDE_BASE), reach);
+    }
+
+    /**
+     * 配方用到、却没有配方产出的东西都是原料：设备抽出来的按 {@link #EXTRACTED}，稀有资源只在出去探索时有、按 {@link #RARE}，
+     * 别的按 1 个矿。只在母星系时稀有资源不在表里，非用它们不可的配方算不出来；原料有别的选择时用别的。
+     */
+    private static Map<String, Double> rawOre(List<ValueGraph.Recipe> recipes, Reach reach) {
         Set<String> produced = new HashSet<>();
         for (ValueGraph.Recipe recipe : recipes) {
             recipe.outputs().forEach(output -> produced.add(output.item()));
         }
         Map<String, Double> raw = new LinkedHashMap<>(EXTRACTED);
+        if (reach == Reach.EXPLORED) {
+            RARE.forEach((item, value) -> {
+                if (!produced.contains(item)) {
+                    raw.put(item, value);
+                }
+            });
+        }
         for (ValueGraph.Recipe recipe : recipes) {
             for (ValueGraph.Input input : recipe.inputs()) {
                 for (String choice : input.choices()) {
-                    if (!produced.contains(choice)) {
+                    if (!produced.contains(choice) && !RARE.containsKey(choice)) {
                         raw.putIfAbsent(choice, 1.0);
                     }
                 }
             }
         }
         return raw;
+    }
+
+    public Reach reach() {
+        return this.reach;
+    }
+
+    /** 这样东西能不能做出来（只在母星系时，非用稀有资源不可的东西做不出来）。 */
+    public boolean reachable(String item) {
+        return this.ore.containsKey(item);
     }
 
     /** 纬度限制以内最便宜的一片球壳。 */
@@ -366,6 +428,7 @@ public final class Progression {
     /** 给人看的报告：每种矩阵折合几个矿，每档要研究多久，每段研究占多少。 */
     public List<String> report() {
         List<String> lines = new ArrayList<>();
+        lines.add(this.reach == Reach.HOME ? "只在母星系：" : String.format(Locale.ROOT, "出去探索（稀有资源按开采的 %.0f 倍算）：", RARE_FACTOR));
         StringBuilder matrices = new StringBuilder("每个矩阵折合矿：");
         for (String matrix : TechTree.MATRICES) {
             matrices.append(String.format(Locale.ROOT, " %s %.1f", name(matrix), this.ore(matrix)));

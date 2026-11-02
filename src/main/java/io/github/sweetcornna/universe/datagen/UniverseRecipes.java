@@ -117,6 +117,28 @@ final class UniverseRecipes extends RecipeProvider {
         // M20 生物反应器（D）的配方加在这行上面
         TerraformDatagen.recipes(this.output);
         // M20 星球改造（E）的配方加在这行上面
+        this.rareShortcuts();
+    }
+
+    /**
+     * 稀有资源的捷径（ADR-0040）：黄、紫、绿矩阵各有一条，用的是母星系里一般没有的原料，出去探索的玩家这一档的矩阵便宜三四成。
+     * 原来的配方都不动，老存档的产线照旧；捷径跟着这一档的矩阵科技解锁。
+     */
+    private void rareShortcuts() {
+        Item titanium = UniverseItems.ORE_SMELTED.get(OreKind.TITANIUM).get();
+        Item silicon = UniverseItems.ORE_SMELTED.get(OreKind.SILICON).get();
+        // 钛宝石：钛晶石当成掺钛的蓝宝石，天然的光学晶体（刚玉）做基质，钛只是千分之一的掺杂，一块钛锭掺得了四块
+        this.machine(Kind.ASSEMBLING, "titanium_crystal_from_optical_crystal", 160, "structure_matrix",
+                in(UniverseItems.oreDrop(OreKind.OPTICAL_CRYSTAL), 4, titanium, 1), out(UniverseItems.TITANIUM_CRYSTAL.get(), 4));
+        // 中子嬗变掺杂：硅片放进反应堆受中子照射，硅-30 嬗变成磷-31，掺得比扩散炉均匀，一片就是一颗处理器的核心，
+        // 不用微晶元件。一块铀锭的中子照一批四片
+        this.machine(Kind.ASSEMBLING, "processor_from_doped_silicon", 160, "information_matrix",
+                in(UniverseItems.CIRCUIT_BOARD.get(), 8, silicon, 4, UniverseItems.ORE_SMELTED.get(OreKind.URANIUM).get(), 1),
+                out(UniverseItems.PROCESSOR.get(), 4));
+        // 超导磁阱：粒子容器是潘宁阱，液氦冷却的超导线圈代替电磁涡轮（欧洲核子研究中心存反氢的阱就是这么做的）
+        this.machine(Kind.ASSEMBLING, "particle_container_superconducting", 80, "gravity_matrix",
+                in(Items.COPPER_INGOT, 2, UniverseItems.GRAPHENE.get(), 2, UniverseItems.HELIUM.get(), 4),
+                out(UniverseItems.PARTICLE_CONTAINER.get(), 1));
     }
 
     /**

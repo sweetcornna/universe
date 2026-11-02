@@ -57,6 +57,28 @@ class TradeTest {
     }
 
     @Test
+    void pricesFollowHomeRoutesNotRareShortcuts() {
+        Map<String, Double> raw = Map.of("ore", 4.0, "coal", 3.0, "crystal", 1.0, "rare_ore", 2.0);
+        List<Recipe> recipes = List.of(
+                Recipe.of("ingot", 1, 1, new Input(List.of("ore"), 1)),
+                // 捷径：稀有的晶体做锭，便宜得多
+                Recipe.of("ingot", 4, 1, new Input(List.of("crystal"), 1)),
+                // 原料里能换的选择也只留不用稀有资源的
+                Recipe.of("plate", 1, 1, new Input(List.of("crystal", "coal"), 1)),
+                // 只靠稀有资源做得出来的照旧
+                Recipe.of("rare_ingot", 1, 1, new Input(List.of("rare_ore"), 1)),
+                Recipe.of("rod", 1, 1, new Input(List.of("rare_ingot"), 1)));
+        List<Recipe> kept = ValueGraph.withoutShortcuts(raw.keySet(), Set.of("crystal", "rare_ore"), recipes);
+        assertEquals(4, kept.size());
+        Map<String, Double> values = ValueGraph.compute(raw, kept);
+        assertEquals((4 + ValueGraph.SECOND_VALUE) * (1 + ValueGraph.MARKUP), values.get("ingot"), 1e-9);
+        assertEquals((3 + ValueGraph.SECOND_VALUE) * (1 + ValueGraph.MARKUP), values.get("plate"), 1e-9);
+        assertTrue(values.containsKey("rod"));
+        // 不去掉的话捷径把锭压到四分之一
+        assertTrue(ValueGraph.compute(raw, recipes).get("ingot") < values.get("ingot") / 3);
+    }
+
+    @Test
     void byproductsShareTheCost() {
         Recipe cracking = new Recipe(List.of(new Input(List.of("ore"), 2)),
                 List.of(new ValueGraph.Output("a", 1), new ValueGraph.Output("b", 3)), 0);

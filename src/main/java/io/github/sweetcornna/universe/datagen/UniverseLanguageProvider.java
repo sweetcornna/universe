@@ -2833,6 +2833,23 @@ abstract class UniverseLanguageProvider extends LanguageProvider {
         both("guide.universe.research.matrices",
                 "六种矩阵都在制造台里做，越往后的科技要的种类越多。\n\n蓝：磁线圈 + 电路板\n红：2 高能石墨 + 2 氢\n黄：金刚石 + 钛晶石\n紫：2 处理器 + 粒子宽带\n绿：引力透镜 + 量子芯片，出 2 个\n白：复合矩阵 + 紫 + 绿 + 反物质",
                 "All six matrices are made in assemblers; later techs need more colors.\n\nBlue: coil + circuit board\nRed: 2 energetic graphite + 2 hydrogen\nYellow: diamond + titanium crystal\nPurple: 2 processors + particle broadband\nGreen: graviton lens + quantum chip, makes 2\nWhite: composite + purple + green + antimatter");
+        // 稀有资源的捷径（ADR-0040）
+        both("guide.universe.research.shortcuts.title", "稀有资源的捷径", "Rare Shortcuts");
+        both("guide.universe.research.shortcuts",
+                "黄矩阵往上，每档有一条捷径配方，用的是母星系里一般没有的原料。只在母星系也能通关；出去采回来，这一档的矩阵便宜三四成。\n\n黄：光学晶体，奇异星球都有，灼热、辐射星球和白矮星常有\n紫：铀，辐射星球\n绿：氦，奇异星球的大气\n\n白矩阵用到前面几种，跟着便宜。捷径跟着那一档的矩阵科技解锁，原来的配方照旧能用。",
+                "From yellow up, each matrix tier has a shortcut recipe that needs a resource most home systems lack. You can win without them; with them that tier costs about a third less.\n\nYellow: optical crystal. Exotic, scorched and irradiated planets, white dwarfs\nPurple: uranium. Irradiated planets\nGreen: helium. Exotic atmospheres\n\nWhite matrices are made from the others and get cheaper too. Shortcuts unlock with their tier's matrix tech.");
+        both("guide.universe.research.titanium_sapphire.title", "钛宝石", "Ti:Sapphire");
+        both("guide.universe.research.titanium_sapphire",
+                "4 光学晶体 + 1 钛锭 → 4 钛晶石，8 秒，要研究“结构矩阵”。\n\n钛晶石就是钛宝石：蓝宝石里掺千分之一的钛。天然的光学晶体做基质，钛只是掺杂，一块钛锭掺得了四块。普通的配方一块钛晶石要三块钛锭。",
+                "4 optical crystal + 1 titanium ingot → 4 titanium crystal, 8 s, after Structure Matrix.\n\nTitanium crystal is Ti:sapphire, sapphire doped with a tenth of a percent of titanium. A natural optical crystal is the host and titanium only the dopant, so one ingot does four. The usual recipe takes three ingots per crystal.");
+        both("guide.universe.research.doped_silicon.title", "嬗变掺杂", "Transmutation Doping");
+        both("guide.universe.research.doped_silicon",
+                "8 电路板 + 4 硅 + 1 铀锭 → 4 处理器，8 秒，要研究“信息矩阵”。\n\n硅片放进反应堆受中子照射，硅-30 嬗变成磷-31，掺得比扩散炉均匀，一片就是一颗处理器的核心，不用微晶元件。功率半导体的硅就是这么掺的。",
+                "8 circuit boards + 4 silicon + 1 uranium ingot → 4 processors, 8 s, after Information Matrix.\n\nIn a reactor, neutrons turn silicon-30 into phosphorus-31 and dope a wafer more evenly than a diffusion furnace. One wafer makes a whole processor core, no microcrystalline components. Power semiconductors are doped this way.");
+        both("guide.universe.research.superconducting_trap.title", "超导磁阱", "Superconducting Trap");
+        both("guide.universe.research.superconducting_trap",
+                "2 铜锭 + 2 石墨烯 + 4 氦 → 1 粒子容器，4 秒，要研究“引力矩阵”。\n\n粒子容器是磁阱。液氦把线圈冷到超导，不用电磁涡轮就有约束粒子的磁场，欧洲核子研究中心存反氢的阱就是这样。粒子容器便宜了，奇异物质和引力透镜跟着便宜。",
+                "2 copper + 2 graphene + 4 helium → 1 particle container, 4 s, after Gravity Matrix.\n\nA particle container is a magnetic trap. Liquid helium cools the coils until they superconduct, so the field needs no electromagnetic turbines; CERN's antihydrogen traps work this way. Cheaper containers mean cheaper strange matter and graviton lenses.");
         both("guide.universe.research.upgrades.title", "升级科技", "Upgrades");
         both("guide.universe.research.upgrades",
                 "科技树最右边一列是升级科技。前几级用低档矩阵；下一级要的矩阵和这一级相同时，研究会自动接着做。\n\n矿脉利用：采矿 +10%，矿耗 ×0.94\n研究速度：+25%\n物流载具引擎：+25%\n射线传输效率：损耗 ×0.85\n物流载具容量：+10%\n太阳帆寿命：+15 分钟\n（都是每级）\n\n前四条最后用白矩阵研究，没有上限；容量和寿命各 6 级。",
